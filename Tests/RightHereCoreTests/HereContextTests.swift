@@ -62,3 +62,20 @@ struct HereContextTests {
         #expect(try JSONDecoder().decode(HereContext.self, from: data) == context)
     }
 }
+
+@Suite("Path normalization")
+struct PathNormalizationTests {
+    @Test("dot components and repeated slashes are removed", arguments: [
+        ("/a/b/../c", "/a/c"), ("/a/./b", "/a/b"), ("//a///b/", "/a/b"), ("/a/b/..", "/a"), ("/..", "/"), ("/", "/"),
+        ("/a/../../b", "/b")
+    ])
+    func normalizes(input: String, expected: String) {
+        #expect(URL(fileURLWithPath: input).lexicallyNormalized.path == expected)
+    }
+
+    @Test("the /private prefix of /tmp, /var and /etc is kept", arguments: ["/private/tmp/x", "/private/var/folders/a", "/private/etc/hosts"])
+    func keepsPrivatePrefix(path: String) {
+        #expect(URL(fileURLWithPath: path).lexicallyNormalized.path == path)
+        #expect(HereContext(origin: .items, items: [URL(fileURLWithPath: path)]).items.first?.path == path)
+    }
+}

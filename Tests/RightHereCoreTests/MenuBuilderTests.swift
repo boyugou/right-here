@@ -38,6 +38,19 @@ struct MenuBuilderTests {
         #expect(titles(copy.children) == ["Full Path", "Path from Home (~)", "Path from Git Root", "File Name", "Shell-Escaped Path", "@ Mention for AI"])
     }
 
+    @Test func enabledAgentsAppearWithTheirVariantsInTheMoreMenu() throws {
+        let config = Config(enabledAgents: ["claude", "codex"])
+        let menu = MenuBuilder(config: config, facts: machine()).build(for: background)
+        #expect(titles(menu).prefix(4) == ["Open in Ghostty", "Open in Visual Studio Code", "Claude Code Here", "Codex Here"])
+        let more = try #require(menu.first { $0.title == "More Agent Options" })
+        let ids = more.children.compactMap(\.actionID)
+        #expect(ids.contains("agent.claude.continue"))
+        #expect(ids.contains("agent.claude.resume"))
+        #expect(ids.contains("agent.claude@link"))
+        #expect(ids.contains("agent.codex.last"))
+        #expect(ids.contains("agent.claude@terminal"))
+    }
+
     @Test func uninstalledAppsAreHidden() {
         let menu = MenuBuilder(config: .default, facts: machine(installed: ["com.apple.Terminal"])).build(for: background)
         #expect(titles(menu) == ["Open in Terminal", "-", "New File", "Copy Path"])
@@ -103,10 +116,17 @@ struct ActionRegistryTests {
         #expect(registry.info(.openTerminal("terminal")).available)
     }
 
-    @Test func agentsAreUnavailableWhileTheTerminalCannotRunCommands() {
+    @Test func agentsAreAvailableWhenTheTerminalCanRunCommands() {
         let info = ActionRegistry(config: .default, facts: machine()).info(.agent(id: "claude", variant: nil, launcher: nil))
         #expect(info.title == "Claude Code Here")
+        #expect(info.available)
+    }
+
+    @Test func agentsAreUnavailableWhileTheTerminalCannotRunCommands() {
+        let facts = machine(installed: ["dev.warp.Warp-Stable"])
+        let info = ActionRegistry(config: Config(terminal: "warp"), facts: facts).info(.agent(id: "claude", variant: nil, launcher: nil))
         #expect(!info.available)
+        #expect(info.unavailableReason == "Warp cannot run commands yet.")
     }
 
     @Test func agentLinksNeedNoTerminalAdapter() {

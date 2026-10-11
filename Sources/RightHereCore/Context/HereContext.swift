@@ -22,8 +22,8 @@ public struct HereContext: Sendable, Equatable, Codable {
 
     public init(origin: Origin, items: [URL] = [], container: URL? = nil) {
         self.origin = origin
-        self.items = items.map(\.standardizedFileURL)
-        self.container = container?.standardizedFileURL
+        self.items = items.map(\.lexicallyNormalized)
+        self.container = container?.lexicallyNormalized
     }
 
     /// The items path-oriented actions act on: the selection, or else the folder itself.

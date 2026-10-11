@@ -93,7 +93,7 @@ struct ContextOptions: ParsableArguments {
 
     func makeContext(facts: any SystemFacts) throws -> HereContext {
         func resolve(_ path: String) -> URL {
-            URL(fileURLWithPath: (path as NSString).expandingTildeInPath, relativeTo: facts.currentDirectory).standardizedFileURL
+            URL(fileURLWithPath: (path as NSString).expandingTildeInPath, relativeTo: facts.currentDirectory).lexicallyNormalized
         }
         let items = paths.map(resolve)
         let folder = container.map(resolve)

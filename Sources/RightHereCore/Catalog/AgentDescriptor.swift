@@ -93,8 +93,20 @@ public enum KnownAgents {
         instructionFile: "AGENTS.md"
     )
 
-    public static let gemini = AgentDescriptor(id: "gemini", name: "Gemini CLI", command: "gemini", instructionFile: "GEMINI.md")
-    public static let opencode = AgentDescriptor(id: "opencode", name: "opencode", command: "opencode", instructionFile: "AGENTS.md")
+    public static let gemini = AgentDescriptor(
+        id: "gemini",
+        name: "Gemini CLI",
+        command: "gemini",
+        variants: [.init(id: "resume", title: "Resume Latest Session", arguments: ["--resume", "latest"])],
+        instructionFile: "GEMINI.md"
+    )
+    public static let opencode = AgentDescriptor(
+        id: "opencode",
+        name: "opencode",
+        command: "opencode",
+        variants: [.init(id: "continue", title: "Continue Last Session", arguments: ["--continue"])],
+        instructionFile: "AGENTS.md"
+    )
     public static let aider = AgentDescriptor(id: "aider", name: "aider", command: "aider")
     public static let amp = AgentDescriptor(id: "amp", name: "Amp", command: "amp", instructionFile: "AGENTS.md")
 

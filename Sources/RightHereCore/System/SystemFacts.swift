@@ -59,20 +59,20 @@ public struct FakeSystemFacts: SystemFacts {
     }
 
     public func isDirectory(_ url: URL) -> Bool? {
-        let path = url.standardizedFileURL.path
+        let path = url.lexicallyNormalized.path
         if directories.contains(path) { return true }
         if files.contains(path) { return false }
         return nil
     }
 
     public func fileExists(_ url: URL) -> Bool {
-        let path = url.standardizedFileURL.path
+        let path = url.lexicallyNormalized.path
         return directories.contains(path) || files.contains(path)
     }
 
     public func gitRoot(containing url: URL) -> URL? {
-        let path = url.standardizedFileURL.path
-        let home = homeDirectory.standardizedFileURL.path
+        let path = url.lexicallyNormalized.path
+        let home = homeDirectory.lexicallyNormalized.path
         let match = gitRoots
             .filter { $0 != home && (path == $0 || path.hasPrefix($0 + "/")) }
             .max { $0.count < $1.count }

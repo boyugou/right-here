@@ -46,7 +46,7 @@ public struct PathRenderer: Sendable {
     }
 
     public func render(_ url: URL, style: PathStyle, relativeTo base: URL? = nil) -> String {
-        let url = url.standardizedFileURL
+        let url = url.lexicallyNormalized
         switch style {
         case .absolute:
             return url.path
@@ -75,7 +75,7 @@ public struct PathRenderer: Sendable {
     }
 
     private func tildePath(_ url: URL) -> String {
-        let home = facts.homeDirectory.standardizedFileURL.path
+        let home = facts.homeDirectory.lexicallyNormalized.path
         if url.path == home { return "~" }
         if url.path.hasPrefix(home + "/") { return "~" + url.path.dropFirst(home.count) }
         return url.path
@@ -95,8 +95,8 @@ enum PathMath {
     /// `""`-free relative path from `base` to `target`: `"."` when they are the same item,
     /// `nil` when `target` is not inside `base`.
     static func relativePath(from base: URL, to target: URL) -> String? {
-        let baseComponents = base.standardizedFileURL.pathComponents
-        let targetComponents = target.standardizedFileURL.pathComponents
+        let baseComponents = base.lexicallyNormalized.pathComponents
+        let targetComponents = target.lexicallyNormalized.pathComponents
         guard targetComponents.count >= baseComponents.count,
               Array(targetComponents.prefix(baseComponents.count)) == baseComponents else { return nil }
         let rest = targetComponents.dropFirst(baseComponents.count)

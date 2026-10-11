@@ -149,11 +149,51 @@ struct PlannerTests {
         }
     }
 
+    @Test func claudeStartsInTheDefaultTerminalByTypingItsCommand() throws {
+        let plan = try Planner(facts: machine()).plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
+        guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(step.arguments == ["/Users/tester/code/app", "claude", "window"])
+        #expect(step.controls == "Ghostty")
+    }
+
+    @Test func variantsAppendTheirArguments() throws {
+        let plan = try Planner(facts: machine()).plan(.agent(id: "claude", variant: "continue", launcher: nil), context: folder("/Users/tester/code/app"))
+        guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(step.arguments[1] == "claude --continue")
+    }
+
+    @Test func aConfiguredCommandReplacesTheBuiltInOne() throws {
+        let config = Config(agents: ["claude": .init(command: "claude --model opus")])
+        let plan = try Planner(config: config, facts: machine()).plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
+        guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(step.arguments[1] == "claude --model opus")
+    }
+
+    @Test func aChosenTerminalOverridesTheDefault() throws {
+        let plan = try Planner(facts: machine()).plan(.agent(id: "codex", variant: nil, launcher: .terminal("terminal")), context: folder("/Users/tester/code/app"))
+        guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(step.controls == "Terminal")
+        #expect(step.arguments == ["/Users/tester/code/app", "codex"])
+    }
+
+    @Test func aTerminalWithoutCommandSupportRefusesAgents() {
+        let facts = machine(installed: ["dev.warp.Warp-Stable"])
+        #expect(throws: PlanError.self) {
+            try Planner(facts: facts).plan(.agent(id: "claude", variant: nil, launcher: .terminal("warp")), context: folder("/Users/tester/code/app"))
+        }
+    }
+
     @Test func typedLaunchRejectsAPathWithALineBreak() {
         let facts = machine(directories: ["/Users/tester/bad\nname"])
-        #expect(throws: PlanError.self) {
+        #expect(throws: PlanError.unsafeText("/Users/tester/bad\nname")) {
             try Planner(facts: facts).plan(.agent(id: "claude", variant: nil, launcher: .terminal("terminal")), context: folder("/Users/tester/bad\nname"))
         }
+    }
+
+    @Test func linkLaunchAcceptsAPathWithALineBreakBecauseItIsPercentEncoded() throws {
+        let facts = machine(directories: ["/Users/tester/bad\nname"])
+        let plan = try Planner(facts: facts).plan(.agent(id: "claude", variant: nil, launcher: .terminalLink), context: folder("/Users/tester/bad\nname"))
+        #expect(plan.steps == [.openURL("claude-cli://open?cwd=%2FUsers%2Ftester%2Fbad%0Aname")])
     }
 
     // MARK: New file

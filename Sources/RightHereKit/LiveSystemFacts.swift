@@ -37,8 +37,8 @@ public struct LiveSystemFacts: SystemFacts {
     }
 
     public func gitRoot(containing url: URL) -> URL? {
-        let home = homeDirectory.standardizedFileURL.path
-        var directory = url.standardizedFileURL
+        let home = homeDirectory.lexicallyNormalized.path
+        var directory = url.lexicallyNormalized
         if isDirectory(directory) != true { directory.deleteLastPathComponent() }
         while true {
             let marker = directory.appendingPathComponent(".git").path

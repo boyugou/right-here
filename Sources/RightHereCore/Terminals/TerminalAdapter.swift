@@ -49,7 +49,12 @@ public struct OpenFolderTerminalAdapter: TerminalAdapter {
 }
 
 public enum TerminalAdapters {
+    /// The adapter for a terminal. Terminals without a dedicated adapter can only open a folder.
     public static func adapter(for app: AppDescriptor) -> any TerminalAdapter {
-        OpenFolderTerminalAdapter(terminalID: app.id, displayName: app.name)
+        switch app.id {
+        case "ghostty": return GhosttyAdapter()
+        case "terminal": return AppleTerminalAdapter()
+        default: return OpenFolderTerminalAdapter(terminalID: app.id, displayName: app.name)
+        }
     }
 }
