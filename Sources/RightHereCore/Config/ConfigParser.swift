@@ -29,6 +29,11 @@ public struct ConfigLoadResult: Sendable, Equatable {
     public var config: Config
     public var diagnostics: [ConfigDiagnostic]
 
+    public init(config: Config, diagnostics: [ConfigDiagnostic]) {
+        self.config = config
+        self.diagnostics = diagnostics
+    }
+
     public var hasErrors: Bool { diagnostics.contains { $0.severity == .error } }
 }
 

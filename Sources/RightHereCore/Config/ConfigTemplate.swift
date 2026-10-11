@@ -1,0 +1,58 @@
+import Foundation
+
+/// What `rh init` found on the machine.
+public struct DetectedEnvironment: Sendable, Equatable {
+    public var terminal: String?
+    public var editor: String?
+    public var agents: [String]
+
+    public init(terminal: String? = nil, editor: String? = nil, agents: [String] = []) {
+        self.terminal = terminal
+        self.editor = editor
+        self.agents = agents
+    }
+}
+
+public enum ConfigTemplate {
+    /// The text of a fresh config file: what was detected is set, everything else is a commented example.
+    public static func render(_ detected: DetectedEnvironment) -> String {
+        func line(_ key: String, _ value: String?, example: String) -> String {
+            value.map { "\(key) = \"\($0)\"" } ?? "# \(key) = \"\(example)\""
+        }
+        let terminals = KnownApps.terminals.map(\.id).joined(separator: ", ")
+        let editors = KnownApps.editors.prefix(8).map(\.id).joined(separator: ", ")
+        let agents = detected.agents.isEmpty ? "# agents = [\"claude\", \"codex\"]" : "agents = [" + detected.agents.map { "\"\($0)\"" }.joined(separator: ", ") + "]"
+        let menu = MenuBuilder.defaultItems.map { "\"\($0)\"" }.joined(separator: ", ")
+        let styles = Config.defaultCopyPathStyles.map { "\"\($0.rawValue)\"" }.joined(separator: ", ")
+
+        return """
+        # Right Here configuration. This file is yours: edit it by hand or ask an AI agent to.
+        #   rh config validate   check this file
+        #   rh docs config       every setting, with examples
+        #   rh menu              preview the Finder menu this file produces
+        version = 1
+
+        [general]
+        # Terminal for "Open in Terminal" and for agents. Known: \(terminals)
+        \(line("terminal", detected.terminal, example: "ghostty"))
+        # Editor for "Open in Editor". Known: \(editors), and more (rh apps)
+        \(line("editor", detected.editor, example: "vscode"))
+        # Agents offered in the menu. Known: \(KnownAgents.all.map(\.id).joined(separator: ", "))
+        \(agents)
+
+        # The Finder menu, in order. "-" is a separator.
+        # [menu]
+        # items = [\(menu)]
+
+        # Forms offered under "Copy Path".
+        # [copy_path]
+        # styles = [\(styles)]
+
+        # An agent can start another way: launcher = "terminal" (default), "link" or "desktop".
+        # [agent.claude]
+        # launcher = "terminal"
+        # command = "claude"
+
+        """
+    }
+}

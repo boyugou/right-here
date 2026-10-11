@@ -16,7 +16,8 @@ let package = Package(
         .executable(name: "rh", targets: ["rh"])
     ],
     dependencies: [
-        .package(url: "https://github.com/dduan/TOMLDecoder", from: "0.4.5")
+        .package(url: "https://github.com/dduan/TOMLDecoder", from: "0.4.5"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0")
     ],
     targets: [
         .target(
@@ -29,11 +30,19 @@ let package = Package(
         ),
         .executableTarget(
             name: "rh",
-            dependencies: ["RightHereCore", "RightHereKit"]
+            dependencies: [
+                "RightHereCore",
+                "RightHereKit",
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ]
         ),
         .testTarget(
             name: "RightHereCoreTests",
             dependencies: ["RightHereCore"]
+        ),
+        .testTarget(
+            name: "RightHereKitTests",
+            dependencies: ["RightHereKit", "RightHereCore"]
         )
     ]
 )

@@ -93,7 +93,7 @@ public struct Planner: Sendable {
 
     /// The app used when an action does not name one: the configured default, else the first
     /// installed one in a fixed preference order.
-    func resolveDefault(role: AppDescriptor.Role, configured: String?) throws -> AppDescriptor {
+    public func resolveDefault(role: AppDescriptor.Role, configured: String?) throws -> AppDescriptor {
         if let configured {
             guard let app = config.app(id: configured) else { throw PlanError.unknownApp(configured) }
             return app

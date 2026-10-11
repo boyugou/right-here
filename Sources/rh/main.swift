@@ -1,3 +1,0 @@
-import RightHereCore
-
-print("rh")
