@@ -1,0 +1,116 @@
+import Foundation
+import Testing
+import RightHereCore
+@testable import RightHereKit
+
+@Suite("Installer")
+struct InstallerTests {
+    @Test func runnerScriptHandsOverToRhRunWithTheAbsolutePath() {
+        let text = Installer.runnerScriptText(rhPath: "/Applications/Right Here.app/Contents/Helpers/rh")
+        #expect(text.hasPrefix("#!/bin/zsh -f\n"))
+        #expect(text.contains("exec '/Applications/Right Here.app/Contents/Helpers/rh' run \"$@\""))
+    }
+
+    @Test func installsTheRunnerScriptExecutableUnderTheExtensionsFolder() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let script = try installer.installRunnerScript(rhPath: "/opt/homebrew/bin/rh")
+        #expect(script.path == home.path + "/Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run")
+        let attributes = try FileManager.default.attributesOfItem(atPath: script.path)
+        #expect((attributes[.posixPermissions] as? NSNumber)?.intValue == 0o755)
+        #expect(installer.installedRunnerTarget() == "/opt/homebrew/bin/rh")
+    }
+
+    @Test("the runner target survives quoting round trips", arguments: ["/usr/local/bin/rh", "/Users/me/My Tools/rh", "/Users/o'brien/bin/rh"])
+    func targetRoundTrip(path: String) throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        try installer.installRunnerScript(rhPath: path)
+        #expect(installer.installedRunnerTarget() == path)
+    }
+
+    @Test func theRunnerScriptReallyRunsRhWithItsArguments() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let fake = home.appendingPathComponent("fake rh")
+        try "#!/bin/sh\nprintf '%s|' \"$@\"\n".write(to: fake, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: fake.path)
+        let installer = Installer(home: home)
+        try installer.installRunnerScript(rhPath: fake.path)
+        let output = try Shell.run(installer.runnerScript.path, args: ["copy-path.absolute", "--origin", "items", "--", "/tmp/a b"])
+        #expect(output == "run|copy-path.absolute|--origin|items|--|/tmp/a b|")
+    }
+
+    @Test func cliLinkIsReplacedWhenItAlreadyExists() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        try installer.installCLILink(rhPath: "/old/rh")
+        try installer.installCLILink(rhPath: "/new/rh")
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path) == "/new/rh")
+    }
+
+    @Test func removeRunnerScriptIsIdempotent() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        try installer.removeRunnerScript()
+        try installer.installRunnerScript(rhPath: "/x/rh")
+        try installer.removeRunnerScript()
+        #expect(installer.installedRunnerTarget() == nil)
+    }
+}
+
+@Suite("FinderExtensionManager")
+struct FinderExtensionManagerTests {
+    private let id = AppIdentity.extensionBundleID
+
+    @Test func parsesAnEnabledExtension() {
+        let output = "+    \(id)(1.0)\tA0C41BB7-BA7C-47C1-9D27-287469429570\t2026-10-11 23:29:41 +0000\t/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex\n (1 plug-in)\n"
+        let status = FinderExtensionManager.parse(output)
+        #expect(status.state == .enabled)
+        #expect(status.paths == ["/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex"])
+    }
+
+    @Test func parsesADisabledExtension() {
+        let output = "-    \(id)(1.0)\tUUID\t2026-10-11 23:29:41 +0000\t/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex\n"
+        #expect(FinderExtensionManager.parse(output).state == .disabled)
+    }
+
+    @Test func noOutputMeansNotRegistered() {
+        let status = FinderExtensionManager.parse("")
+        #expect(status.state == .notRegistered)
+        #expect(status.paths.isEmpty)
+    }
+
+    @Test func severalCopiesAreAllReported() {
+        let output = """
+        +    \(id)(1.0)\tU1\t2026-10-11 23:29:41 +0000\t/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex
+             \(id)(1.0)\tU2\t2026-10-11 23:20:00 +0000\t/Users/x/DerivedData/Build/Right Here.app/Contents/PlugIns/FinderExtension.appex
+        """
+        let status = FinderExtensionManager.parse(output)
+        #expect(status.state == .enabled)
+        #expect(status.paths.count == 2)
+    }
+
+    @Test func otherExtensionsAreIgnored() {
+        let output = "+    com.bandisoft.mac.bandizip.findersyncextension(7.22)\tU\t2026-10-11\t/Applications/Bandizip.app/Contents/PlugIns/B.appex\n"
+        #expect(FinderExtensionManager.parse(output).state == .notRegistered)
+    }
+
+    @Test func registerAddsThenEnables() async throws {
+        let runner = FakeRunner()
+        try await FinderExtensionManager(runner: runner).register(appexPath: "/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex")
+        #expect(runner.recorded.map(\.arguments) == [
+            ["-a", "/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex"],
+            ["-e", "use", "-i", id]
+        ])
+    }
+
+    @Test func aFailingPluginkitIsReported() async {
+        let runner = FakeRunner(results: [ProcessResult(status: 1, standardError: "no such plug-in")])
+        await #expect(throws: ExecutionError.self) { try await FinderExtensionManager(runner: runner).disable() }
+    }
+}
