@@ -39,11 +39,13 @@ public struct PathRenderer: Sendable {
         self.facts = facts
     }
 
-    public func render(_ urls: [URL], style: PathStyle) -> String {
-        urls.map { render($0, style: style) }.joined(separator: style.separator)
+    /// - Parameter base: A known working directory. Mentions are then relative to it (or absolute
+    ///   outside it), because that is where the agent that reads them will run.
+    public func render(_ urls: [URL], style: PathStyle, relativeTo base: URL? = nil) -> String {
+        urls.map { render($0, style: style, relativeTo: base) }.joined(separator: style.separator)
     }
 
-    public func render(_ url: URL, style: PathStyle) -> String {
+    public func render(_ url: URL, style: PathStyle, relativeTo base: URL? = nil) -> String {
         let url = url.standardizedFileURL
         switch style {
         case .absolute:
@@ -63,6 +65,7 @@ public struct PathRenderer: Sendable {
         case .fileURL:
             return url.absoluteString
         case .aiMention:
+            if let base { return mention(PathMath.relativePath(from: base, to: url) ?? url.path) }
             return mention(projectPath(url))
         case .markdownLink:
             let target = projectPath(url)

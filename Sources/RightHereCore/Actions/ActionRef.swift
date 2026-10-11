@@ -1,0 +1,135 @@
+import Foundation
+
+/// How an agent session is started.
+public enum AgentLauncher: Sendable, Equatable, Hashable {
+    /// Type the command into a new shell of a terminal; `nil` means the default terminal.
+    case terminal(String?)
+    /// The agent's own terminal deep link, which reuses the terminal of its last session.
+    case terminalLink
+    /// The agent's desktop app, through its deep link.
+    case desktop
+}
+
+/// A parsed action identifier. The text form is stable and meant to be written by people and agents:
+///
+///     copy-path.<style>              copy-path.git-relative
+///     open.terminal[@<terminal>]     open.terminal@ghostty
+///     open.editor                    the default editor
+///     open.app.<app>                 open.app.zed
+///     agent.<agent>[.<variant>][@<launcher>]
+///                                    agent.claude   agent.claude.continue@ghostty   agent.codex@desktop
+///     new-file.<template>            new-file.md
+///     reveal
+///     user.<id>                      an action defined in the config
+public enum ActionRef: Sendable, Equatable, Hashable {
+    case copyPath(PathStyle)
+    case openTerminal(String?)
+    case openEditor
+    case openApp(String)
+    /// A `nil` launcher means the one configured for the agent.
+    case agent(id: String, variant: String?, launcher: AgentLauncher?)
+    case newFile(String)
+    case reveal
+    case user(String)
+
+    public init?(parsing text: String) {
+        let (body, suffix) = Self.split(text)
+        let parts = body.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
+        guard parts.allSatisfy(Self.isWord), !parts.isEmpty else { return nil }
+
+        switch (parts[0], parts.count) {
+        case ("copy-path", 2):
+            guard suffix == nil, let style = PathStyle(rawValue: parts[1]) else { return nil }
+            self = .copyPath(style)
+        case ("open", 2) where parts[1] == "terminal":
+            guard case .valid(let terminal) = Self.terminalSuffix(suffix) else { return nil }
+            self = .openTerminal(terminal)
+        case ("open", 2) where parts[1] == "editor":
+            guard suffix == nil else { return nil }
+            self = .openEditor
+        case ("open", 3) where parts[1] == "app":
+            guard suffix == nil else { return nil }
+            self = .openApp(parts[2])
+        case ("agent", 2), ("agent", 3):
+            guard case .valid(let launcher) = Self.launcherSuffix(suffix) else { return nil }
+            self = .agent(id: parts[1], variant: parts.count == 3 ? parts[2] : nil, launcher: launcher)
+        case ("new-file", 2):
+            guard suffix == nil else { return nil }
+            self = .newFile(parts[1])
+        case ("reveal", 1):
+            guard suffix == nil else { return nil }
+            self = .reveal
+        case ("user", 2):
+            guard suffix == nil else { return nil }
+            self = .user(parts[1])
+        default:
+            return nil
+        }
+    }
+
+    public var id: String {
+        switch self {
+        case .copyPath(let style):
+            return "copy-path.\(style.rawValue)"
+        case .openTerminal(let terminal):
+            return "open.terminal" + (terminal.map { "@\($0)" } ?? "")
+        case .openEditor:
+            return "open.editor"
+        case .openApp(let app):
+            return "open.app.\(app)"
+        case .agent(let agent, let variant, let launcher):
+            let suffix: String
+            switch launcher {
+            case nil: suffix = ""
+            case .terminal(let terminal)?: suffix = terminal.map { "@\($0)" } ?? "@terminal"
+            case .terminalLink?: suffix = "@link"
+            case .desktop?: suffix = "@desktop"
+            }
+            return "agent.\(agent)" + (variant.map { ".\($0)" } ?? "") + suffix
+        case .newFile(let template):
+            return "new-file.\(template)"
+        case .reveal:
+            return "reveal"
+        case .user(let id):
+            return "user.\(id)"
+        }
+    }
+
+    // MARK: Parsing helpers
+
+    private static func split(_ text: String) -> (body: String, suffix: String?) {
+        guard let at = text.firstIndex(of: "@") else { return (text, nil) }
+        return (String(text[..<at]), String(text[text.index(after: at)...]))
+    }
+
+    private enum Parsed<Value> {
+        case valid(Value)
+        case malformed
+    }
+
+    private static func isWord(_ part: String) -> Bool {
+        guard let first = part.utf8.first, isLowercaseAlphanumeric(first) else { return false }
+        return part.utf8.allSatisfy { isLowercaseAlphanumeric($0) || $0 == UInt8(ascii: "-") }
+    }
+
+    private static func isLowercaseAlphanumeric(_ byte: UInt8) -> Bool {
+        (byte >= UInt8(ascii: "a") && byte <= UInt8(ascii: "z")) || (byte >= UInt8(ascii: "0") && byte <= UInt8(ascii: "9"))
+    }
+
+    /// `@ghostty` selects a terminal; no suffix means the default terminal.
+    private static func terminalSuffix(_ suffix: String?) -> Parsed<String?> {
+        guard let suffix else { return .valid(nil) }
+        return isWord(suffix) ? .valid(suffix) : .malformed
+    }
+
+    /// No suffix means the launcher configured for the agent.
+    private static func launcherSuffix(_ suffix: String?) -> Parsed<AgentLauncher?> {
+        guard let suffix else { return .valid(nil) }
+        switch suffix {
+        case "link": return .valid(.terminalLink)
+        case "desktop": return .valid(.desktop)
+        case "terminal": return .valid(.terminal(nil))
+        default: return isWord(suffix) ? .valid(.terminal(suffix)) : .malformed
+        }
+    }
+}
