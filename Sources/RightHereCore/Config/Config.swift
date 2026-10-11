@@ -40,6 +40,12 @@ public struct Config: Sendable, Equatable {
     /// Default editor id; `nil` picks the first installed one.
     public var editor: String?
     public var newFile: NewFileSettings
+    /// Agents offered in the menu, in order. Empty until `rh init` detects the installed ones.
+    public var enabledAgents: [String]
+    /// The entries of the Finder menu, in order; `nil` means the default layout.
+    public var menuItems: [String]?
+    /// The forms offered under "Copy Path".
+    public var copyPathStyles: [PathStyle]
     /// Settings per agent id. Agents that are absent use their built-in descriptor.
     public var agents: [String: AgentSettings]
     /// Applications added by the user, alongside the built-in ones.
@@ -51,6 +57,9 @@ public struct Config: Sendable, Equatable {
         terminal: String? = nil,
         editor: String? = nil,
         newFile: NewFileSettings = NewFileSettings(),
+        enabledAgents: [String] = [],
+        menuItems: [String]? = nil,
+        copyPathStyles: [PathStyle] = Config.defaultCopyPathStyles,
         agents: [String: AgentSettings] = [:],
         apps: [AppDescriptor] = [],
         customAgents: [AgentDescriptor] = []
@@ -58,12 +67,17 @@ public struct Config: Sendable, Equatable {
         self.terminal = terminal
         self.editor = editor
         self.newFile = newFile
+        self.enabledAgents = enabledAgents
+        self.menuItems = menuItems
+        self.copyPathStyles = copyPathStyles
         self.agents = agents
         self.apps = apps
         self.customAgents = customAgents
     }
 
     public static let `default` = Config()
+
+    public static let defaultCopyPathStyles: [PathStyle] = [.absolute, .tilde, .gitRelative, .name, .shellEscaped, .aiMention]
 
     public func app(id: String) -> AppDescriptor? {
         apps.first { $0.id == id } ?? KnownApps.app(id: id)

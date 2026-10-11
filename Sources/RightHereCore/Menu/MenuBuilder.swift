@@ -1,0 +1,135 @@
+import Foundation
+
+/// One entry of the Finder context menu, already localized and resolved.
+public struct MenuNode: Sendable, Equatable, Codable {
+    public enum Kind: String, Sendable, Codable {
+        case action
+        case submenu
+        case separator
+    }
+
+    public var kind: Kind
+    public var title: String
+    public var icon: Icon?
+    public var actionID: String?
+    public var children: [MenuNode]
+
+    public static let separator = MenuNode(kind: .separator, title: "", icon: nil, actionID: nil, children: [])
+
+    static func action(_ info: ActionInfo, title: String? = nil) -> MenuNode {
+        MenuNode(kind: .action, title: title ?? info.title, icon: info.icon, actionID: info.id, children: [])
+    }
+
+    static func submenu(_ title: String, icon: Icon? = nil, _ children: [MenuNode]) -> MenuNode {
+        MenuNode(kind: .submenu, title: title, icon: icon, actionID: nil, children: children)
+    }
+
+    /// Every action id reachable from this node.
+    public var actionIDs: [String] {
+        (actionID.map { [$0] } ?? []) + children.flatMap(\.actionIDs)
+    }
+}
+
+/// Builds the menu for a context from the config. Pure: the result depends only on the inputs.
+public struct MenuBuilder: Sendable {
+    public static let defaultItems = ["open-terminal", "open-editor", "agents", "agents-more", "-", "new-file", "copy-path"]
+    public static let groups: Set<String> = ["open-terminal", "open-editor", "open-with", "agents", "agents-more", "new-file", "copy-path"]
+
+    private let config: Config
+    private let registry: ActionRegistry
+    private let facts: any SystemFacts
+
+    public init(config: Config, facts: any SystemFacts) {
+        self.config = config
+        self.facts = facts
+        self.registry = ActionRegistry(config: config, facts: facts)
+    }
+
+    public func build(for context: HereContext) -> [MenuNode] {
+        var nodes: [MenuNode] = []
+        for entry in config.menuItems ?? Self.defaultItems {
+            switch entry {
+            case "-": nodes.append(.separator)
+            case "open-terminal": nodes += single(.openTerminal(nil))
+            case "open-editor": nodes += single(.openEditor)
+            case "open-with": nodes += openWith()
+            case "agents": nodes += config.enabledAgents.flatMap { single(.agent(id: $0, variant: nil, launcher: nil)) }
+            case "agents-more": nodes += moreAgents()
+            case "new-file": nodes += newFile(context)
+            case "copy-path": nodes += copyPath()
+            default: nodes += ActionRef(parsing: entry).map(single) ?? []
+            }
+        }
+        return Self.tidy(nodes)
+    }
+
+    // MARK: Groups
+
+    private func single(_ ref: ActionRef) -> [MenuNode] {
+        let info = registry.info(ref)
+        return info.available ? [.action(info)] : []
+    }
+
+    private func openWith() -> [MenuNode] {
+        let terminals = (config.apps + KnownApps.terminals).filter { $0.role == .terminal }
+        let others = (config.apps + KnownApps.editors).filter { $0.role != .terminal }
+        func entries(_ apps: [AppDescriptor], _ ref: (AppDescriptor) -> ActionRef) -> [MenuNode] {
+            var seen = Set<String>()
+            return apps.filter { seen.insert($0.id).inserted }.compactMap { app in
+                let info = registry.info(ref(app))
+                return info.available ? MenuNode.action(info, title: app.name) : nil
+            }
+        }
+        let children = entries(terminals) { .openTerminal($0.id) } + [.separator] + entries(others) { .openApp($0.id) }
+        let tidy = Self.tidy(children)
+        return tidy.isEmpty ? [] : [.submenu(Strings.openWithGroup, icon: .symbol("arrow.up.forward.app"), tidy)]
+    }
+
+    private func moreAgents() -> [MenuNode] {
+        var children: [MenuNode] = []
+        let defaultTerminal = try? registry.resolveDefault(role: .terminal, configured: config.terminal)
+        for id in config.enabledAgents {
+            guard let agent = config.agent(id: id) else { continue }
+            var refs: [ActionRef] = agent.variants.map { .agent(id: id, variant: $0.id, launcher: nil) }
+            if agent.desktopLink != nil { refs.append(.agent(id: id, variant: nil, launcher: .desktop)) }
+            if agent.terminalLink != nil { refs.append(.agent(id: id, variant: nil, launcher: .terminalLink)) }
+            for terminal in KnownApps.terminals where terminal.id != defaultTerminal?.id {
+                refs.append(.agent(id: id, variant: nil, launcher: .terminal(terminal.id)))
+            }
+            let nodes = refs.flatMap(single)
+            if !nodes.isEmpty { children += nodes + [.separator] }
+        }
+        let tidy = Self.tidy(children)
+        return tidy.isEmpty ? [] : [.submenu(Strings.moreAgentsGroup, icon: .symbol("ellipsis.circle"), tidy)]
+    }
+
+    private func newFile(_ context: HereContext) -> [MenuNode] {
+        guard context.items.count <= 1 else { return [] }
+        let infos = config.newFile.templates.map { registry.info(.newFile($0.id)) }.filter(\.available)
+        switch infos.count {
+        case 0: return []
+        case 1: return [.action(infos[0])]
+        default: return [.submenu(Strings.newFileGroup, icon: .symbol("doc.badge.plus"), infos.map { .action($0, title: $0.shortTitle) })]
+        }
+    }
+
+    private func copyPath() -> [MenuNode] {
+        let infos = config.copyPathStyles.map { registry.info(.copyPath($0)) }
+        switch infos.count {
+        case 0: return []
+        case 1: return [.action(infos[0])]
+        default: return [.submenu(Strings.copyPathGroup, icon: .symbol("doc.on.doc"), infos.map { .action($0, title: $0.shortTitle) })]
+        }
+    }
+
+    /// Drops leading, trailing and repeated separators.
+    static func tidy(_ nodes: [MenuNode]) -> [MenuNode] {
+        var result: [MenuNode] = []
+        for node in nodes {
+            if node.kind == .separator, result.last == nil || result.last?.kind == .separator { continue }
+            result.append(node)
+        }
+        while result.last?.kind == .separator { result.removeLast() }
+        return result
+    }
+}

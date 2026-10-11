@@ -59,7 +59,20 @@ public enum ConfigSchema {
                            example: "\"ghostty\"; known: " + terminalIDs.joined(separator: ", ")),
                 SchemaNode("editor", .string,
                            "Editor used by \"open in editor\". Omit it to use the first installed one.",
-                           example: "\"vscode\"; known: " + editorIDs.joined(separator: ", "))
+                           example: "\"vscode\"; known: " + editorIDs.joined(separator: ", ")),
+                SchemaNode("agents", .stringArray,
+                           "Agents offered in the menu, in order. `rh init` fills this with the agents it finds.",
+                           example: "[\"claude\", \"codex\"]; built in: " + KnownAgents.all.map(\.id).joined(separator: ", "))
+            ]),
+            SchemaNode("menu", .table, "The Finder context menu.", children: [
+                SchemaNode("items", .stringArray,
+                           "Entries in order. Groups: open-terminal, open-editor, open-with, agents, agents-more, new-file, copy-path. \"-\" is a separator. Any action id from `rh actions` also works.",
+                           default: "[\"open-terminal\", \"open-editor\", \"agents\", \"agents-more\", \"-\", \"new-file\", \"copy-path\"]")
+            ]),
+            SchemaNode("copy_path", .table, "The \"Copy Path\" submenu.", children: [
+                SchemaNode("styles", .stringArray, "Forms offered, in order.",
+                           default: "[\"absolute\", \"tilde\", \"git-relative\", \"name\", \"shell-escaped\", \"ai-mention\"]",
+                           example: "any of: " + PathStyle.allCases.map(\.rawValue).joined(separator: ", "))
             ]),
             SchemaNode("new_file", .table, "The \"new file\" action.", children: [
                 SchemaNode("then", .string, "What happens after the file is created.",

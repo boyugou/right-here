@@ -24,6 +24,8 @@ public struct TerminalSession: Sendable, Equatable {
 /// Knows how one terminal opens a session in a folder. Adapters only build steps.
 public protocol TerminalAdapter: Sendable {
     var terminalID: String { get }
+    /// Whether the terminal can run a command in the new session, which agents need.
+    var supportsCommands: Bool { get }
     func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step]
 }
 
@@ -31,6 +33,7 @@ public protocol TerminalAdapter: Sendable {
 public struct OpenFolderTerminalAdapter: TerminalAdapter {
     public let terminalID: String
     public let displayName: String
+    public var supportsCommands: Bool { false }
 
     public init(terminalID: String, displayName: String) {
         self.terminalID = terminalID

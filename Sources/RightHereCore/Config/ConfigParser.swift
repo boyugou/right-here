@@ -194,10 +194,29 @@ private struct Builder {
 
         var terminalChoice: String?
         var editorChoice: String?
+        var agentChoices: [String] = []
         if let general = root.subtable("general") {
             general.checkKnownKeys()
             terminalChoice = general.string("terminal")
             editorChoice = general.string("editor")
+            agentChoices = general.stringArray("agents") ?? []
+        }
+
+        if let menu = root.subtable("menu") {
+            menu.checkKnownKeys()
+            config.menuItems = menu.stringArray("items")
+        }
+
+        if let copyPath = root.subtable("copy_path") {
+            copyPath.checkKnownKeys()
+            if let names = copyPath.stringArray("styles") {
+                config.copyPathStyles = names.compactMap { name in
+                    if let style = PathStyle(rawValue: name) { return style }
+                    sink.error(["copy_path", "styles"], "unknown style \"\(name)\"",
+                               suggestion: Suggestion.closest(to: name, in: PathStyle.allCases.map(\.rawValue)).map { "did you mean \"\($0)\"?" })
+                    return nil
+                }
+            }
         }
 
         if let newFile = root.subtable("new_file") {
@@ -228,6 +247,16 @@ private struct Builder {
                 }
                 guard let reader = agents.subtable(id) else { continue }
                 agent(id: id, reader: Reader(table: reader.table, path: reader.path, schema: agentSchema, sink: sink), into: &config)
+            }
+        }
+
+        let agentIDs = (config.customAgents + KnownAgents.all).map(\.id)
+        for id in agentChoices {
+            if agentIDs.contains(id) {
+                if !config.enabledAgents.contains(id) { config.enabledAgents.append(id) }
+            } else {
+                sink.error(["general", "agents"], "unknown agent \"\(id)\"; known agents: " + agentIDs.joined(separator: ", "),
+                           suggestion: Suggestion.closest(to: id, in: agentIDs).map { "did you mean \"\($0)\"?" })
             }
         }
         return config

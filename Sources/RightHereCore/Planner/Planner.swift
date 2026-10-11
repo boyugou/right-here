@@ -23,7 +23,7 @@ public struct Planner: Sendable {
         case .openTerminal(let id):
             return try openTerminal(id, ref: ref, context: context)
         case .openEditor:
-            return try openApp(try defaultApp(role: .editor, order: Self.editorOrder, configured: config.editor), ref: ref, context: context)
+            return try openApp(try resolveDefault(role: .editor, configured: config.editor), ref: ref, context: context)
         case .openApp(let id):
             guard let app = config.app(id: id) else { throw PlanError.unknownApp(id) }
             return try openApp(app, ref: ref, context: context)
@@ -85,18 +85,21 @@ public struct Planner: Sendable {
             guard let found = config.app(id: id), found.role == .terminal else { throw PlanError.unknownApp(id) }
             app = found
         } else {
-            app = try defaultApp(role: .terminal, order: Self.terminalOrder, configured: config.terminal)
+            app = try resolveDefault(role: .terminal, configured: config.terminal)
         }
         guard let bundleID = app.installedBundleID(facts: facts) else { throw PlanError.appNotInstalled(app.name) }
         return (app, bundleID)
     }
 
-    private func defaultApp(role: AppDescriptor.Role, order: [String], configured: String?) throws -> AppDescriptor {
+    /// The app used when an action does not name one: the configured default, else the first
+    /// installed one in a fixed preference order.
+    func resolveDefault(role: AppDescriptor.Role, configured: String?) throws -> AppDescriptor {
         if let configured {
             guard let app = config.app(id: configured) else { throw PlanError.unknownApp(configured) }
             return app
         }
-        let candidates = (order.compactMap { config.app(id: $0) } + config.apps.filter { $0.role == role })
+        let order = role == .terminal ? Self.terminalOrder : Self.editorOrder
+        let candidates = order.compactMap { config.app(id: $0) } + config.apps.filter { $0.role == role }
         guard let app = candidates.first(where: { $0.installedBundleID(facts: facts) != nil }) else {
             throw PlanError.appNotInstalled(role == .terminal ? "A terminal" : "An editor")
         }
@@ -182,7 +185,7 @@ public struct Planner: Sendable {
         case .reveal:
             steps.append(.reveal([path]))
         case .open:
-            let editor = try? defaultApp(role: .editor, order: Self.editorOrder, configured: config.editor)
+            let editor = try? resolveDefault(role: .editor, configured: config.editor)
             steps.append(.open(OpenStep(bundleID: editor?.installedBundleID(facts: facts), targets: [path])))
         case .nothing:
             break

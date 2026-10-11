@@ -157,6 +157,50 @@ struct ConfigParserTests {
         #expect(ConfigParser.parse("[[agent]]\nname = \"x\"\n").hasErrors)
     }
 
+    @Test func menuAgentsAndCopyPathSettingsAreRead() {
+        let result = ConfigParser.parse("""
+        [general]
+        agents = ["claude", "codex"]
+
+        [menu]
+        items = ["open-terminal", "-", "copy-path"]
+
+        [copy_path]
+        styles = ["absolute", "ai-mention"]
+        """)
+        #expect(result.diagnostics == [])
+        #expect(result.config.enabledAgents == ["claude", "codex"])
+        #expect(result.config.menuItems == ["open-terminal", "-", "copy-path"])
+        #expect(result.config.copyPathStyles == [.absolute, .aiMention])
+    }
+
+    @Test func unknownAgentInTheListIsReportedWithASuggestion() throws {
+        let result = ConfigParser.parse("[general]\nagents = [\"claud\"]\n")
+        let error = try #require(result.diagnostics.first)
+        #expect(error.path == "general.agents")
+        #expect(error.suggestion == "did you mean \"claude\"?")
+        #expect(result.config.enabledAgents.isEmpty)
+    }
+
+    @Test func customAgentCanBeEnabled() {
+        let result = ConfigParser.parse("""
+        [general]
+        agents = ["mine"]
+
+        [agent.mine]
+        name = "Mine"
+        command = "mine"
+        """)
+        #expect(result.diagnostics == [])
+        #expect(result.config.enabledAgents == ["mine"])
+    }
+
+    @Test func unknownCopyPathStyleIsReported() throws {
+        let result = ConfigParser.parse("[copy_path]\nstyles = [\"absolut\"]\n")
+        let error = try #require(result.diagnostics.first)
+        #expect(error.suggestion == "did you mean \"absolute\"?")
+    }
+
     @Test func validConfigPartsApplyEvenWhenAnotherPartFails() {
         let result = ConfigParser.parse("[general]\nterminal = \"nope\"\neditor = \"zed\"\n")
         #expect(result.hasErrors)
@@ -179,7 +223,7 @@ struct ConfigSchemaTests {
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
         let decoded = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         let properties = try #require(decoded["properties"] as? [String: Any])
-        #expect(Set(properties.keys) == ["version", "general", "new_file", "app", "agent"])
+        #expect(Set(properties.keys) == ["version", "general", "menu", "copy_path", "new_file", "app", "agent"])
         #expect(decoded["$schema"] as? String == "http://json-schema.org/draft-07/schema#")
     }
 
