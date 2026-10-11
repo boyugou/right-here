@@ -1,0 +1,3 @@
+import RightHereCore
+
+print("rh")
