@@ -1,0 +1,26 @@
+# SwiftPM / Xcode
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+*.xcuserstate
+
+# Release output
+dist/
+
+# Local-only files; never commit credentials, signing material or machine paths
+secrets/
+CLAUDE.local.md
+.claude/settings.local.json
+.env
+.env.*
+*.p12
+*.p8
+*.provisionprofile
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
