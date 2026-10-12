@@ -31,6 +31,18 @@ usable, short UI strings, but they need native-speaker review before a public re
 means adding a `LocalizationKey`, an English entry and all thirty translations; the verifier rejects a
 partial language.
 
+A second AI pass (one reviewer per group of languages, instructed to report only definite problems, each
+suggestion then judged before it was applied) fixed, among others: "resume" translated as "restart" or "repeat",
+verbless agent labels in Korean, Japanese and Marathi, mixed imperative and infinitive in Dutch, Portuguese menus
+that were not in Apple's title case, an alert title with no object, and Latin/CJK spacing in Chinese. Two design
+changes came out of it: the built-in templates have whole "New …" phrases (`menu.newText`, `menu.newMarkdown`),
+because "New %@" plus a capitalised title put a capital mid-phrase in seven languages; and right-to-left strings
+that begin with a Latin name or a placeholder start with a right-to-left mark, so AppKit lays them out right to
+left (never the string that becomes a file name). The setup window can be checked for layout, including mirroring,
+with `script/preview_setup.sh`. Still unverified: the names of System Settings panes in each language (the
+alert quotes a path such as Privacy & Security › Automation in the person's language) and what a native
+speaker would change.
+
 ## Names of apps
 
 Terminals and editors are shown by the name the system gives them in the person's language
