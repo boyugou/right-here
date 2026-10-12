@@ -14,8 +14,12 @@ First version, running on macOS 26 and later (Apple silicon).
 - A plain-text TOML config with a schema, unknown-key suggestions, `--strict` validation and a JSON Schema.
 - A setup app, thirty languages for the menu, the app, alerts and the permission prompt (machine-translated,
   awaiting native review), a Claude Code plugin and `rh docs` for agents.
-- Hardened through three independent review rounds (`docs/decisions/0008-independent-review.md`): shell quoting
-  that holds against combining marks, one place that refuses any path that does not exist, bounded and budgeted
-  MCP calls, a process runner that stops a login shell for good, an atomic claim for the probe request.
+- Hardened through eight independent review rounds (`docs/decisions/0008-independent-review.md`) and a mutation
+  check that removes each protection and expects a test to fail: shell quoting that holds against combining
+  marks, one place that refuses any path that does not exist, bounded and budgeted MCP calls, a process runner
+  that stops a login shell for good, an atomic claim for the probe request, parsers that refuse nesting deep
+  enough to overflow the stack, and installs that keep the old Services and link when they fail halfway.
+- Terminals without a built-in adapter can be defined in the config (`open_args`, `run_args`); copied paths use
+  the spelling the file system stores.
 - Verified: the whole chain after a menu click on a real Mac; real-shell round trips of quoting; a notarized,
   stapled DMG. Not yet verified: a real Finder click (see `docs/DESIGN.md`, section 5, Open).
