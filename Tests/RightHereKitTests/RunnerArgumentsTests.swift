@@ -21,6 +21,19 @@ struct RunnerArgumentsTests {
         ])
     }
 
+    @Test func aHugeSelectionStaysWithinWhatTheSystemCanStart() {
+        let items = (0..<20_000).map { URL(fileURLWithPath: "/Users/me/a-fairly-long-folder-name/with/some/depth/file number \($0).txt") }
+        let arguments = RunnerArguments.run(actionID: "open.terminal", context: HereContext(origin: .items, items: items))
+        let bytes = arguments.reduce(0) { $0 + $1.utf8.count + 1 }
+        #expect(bytes < 200_000, "\(bytes) bytes of arguments would not leave room under the system limit (about 1 MB with the environment)")
+        let afterSeparator = arguments.drop { $0 != "--" }.dropFirst()
+        #expect(afterSeparator.count == RunnerArguments.maxItems)
+        // The first item decides the folder, and several items still read as several.
+        #expect(afterSeparator.first == items[0].path)
+        // A normal selection is passed whole.
+        #expect(RunnerArguments.run(actionID: "x", context: HereContext(origin: .items, items: Array(items.prefix(3)))).suffix(3) == items.prefix(3).map(\.path))
+    }
+
     @Test func noContainerMeansNoContainerOption() {
         let context = HereContext(origin: .services, items: [URL(fileURLWithPath: "/tmp/x")])
         #expect(!RunnerArguments.run(actionID: "reveal", context: context).contains("--container"))
