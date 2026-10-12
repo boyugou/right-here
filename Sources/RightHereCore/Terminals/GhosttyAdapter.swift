@@ -13,13 +13,14 @@ public struct GhosttyAdapter: TerminalAdapter {
     public init() {}
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
-        guard let typed = session.typedInput else {
-            return [.open(OpenStep(bundleID: bundleID, targets: [try session.requireDirectory(facts)]))]
+        let directory = try session.requireDirectory(facts)
+        guard let typed = try session.requireTypeableInput() else {
+            return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
         }
         let placement = session.placement == .newTab ? "tab" : "window"
         return [.appleScript(AppleScriptStep(
             source: Self.script,
-            arguments: [session.directory.path, typed, placement],
+            arguments: [directory, typed, placement],
             controls: "Ghostty"
         ))]
     }

@@ -33,9 +33,11 @@ struct TerminalAdapterTests {
     }
 
     @Test func ghosttyScriptNeverEmbedsUserText() throws {
-        for value in ["/tmp/a\"; do shell script \"rm -rf ~\"; \"", "/tmp/x' & (do shell script \"id\") & '"] {
+        let values = ["/tmp/a\"; do shell script \"rm -rf ~\"; \"", "/tmp/x' & (do shell script \"id\") & '"]
+        let awkward = FakeSystemFacts(directories: Set(values))
+        for value in values {
             let session = TerminalSession(directory: URL(fileURLWithPath: value), typedInput: "claude")
-            guard case .appleScript(let step)? = try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts).first else {
+            guard case .appleScript(let step)? = try GhosttyAdapter().steps(for: session, bundleID: "x", facts: awkward).first else {
                 Issue.record("expected AppleScript"); return
             }
             #expect(!step.source.contains(value))
@@ -76,6 +78,28 @@ struct TerminalAdapterTests {
         #expect(throws: PlanError.self) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try TerminalAdapters.adapter(for: KnownApps.terminal(id: "warp")!).steps(for: session, bundleID: "x", facts: facts) }
+    }
+
+    @Test("a typed launch refuses anything that is not a known folder", arguments: ["/Users/tester/run-me.command", "/Users/tester/missing"])
+    func typedLaunchRequiresAFolder(path: String) {
+        let session = TerminalSession(directory: URL(fileURLWithPath: path), typedInput: "claude")
+        #expect(throws: PlanError.self) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
+    }
+
+    @Test("a typed launch refuses text that would press Return or other keys", arguments: ["claude\nrm -rf ~", "claude\r", "claude\u{1b}[A", "claude\u{2028}"])
+    func typedLaunchRefusesControlCharacters(text: String) {
+        let session = TerminalSession(directory: directory, typedInput: text)
+        #expect(throws: PlanError.unsafeText(text)) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.unsafeText(text)) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
+    }
+
+    @Test func terminalRefusesAFolderItWouldHaveToTypeWithALineBreak() {
+        let name = "/Users/tester/two\nlines"
+        let session = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude")
+        #expect(throws: PlanError.unsafeText(name)) {
+            try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: FakeSystemFacts(directories: [name]))
+        }
     }
 
     // MARK: Registry

@@ -9,6 +9,14 @@ extension TerminalSession {
         }
         return directory.path
     }
+
+    /// The command to type, checked again here so an adapter does not rely on its caller: a line
+    /// break or any other control character would press keys the person did not choose.
+    public func requireTypeableInput() throws -> String? {
+        guard let typedInput else { return nil }
+        do { try ShellQuoting.validateForTyping(typedInput) } catch { throw PlanError.unsafeText(typedInput) }
+        return typedInput
+    }
 }
 
 public enum TerminalPlacement: String, Sendable, Codable, CaseIterable {
