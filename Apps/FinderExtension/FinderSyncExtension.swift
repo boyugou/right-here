@@ -13,10 +13,9 @@ final class FinderSyncExtension: FIFinderSync {
     private lazy var paths = RHPaths.current(facts: facts)
 
     private var configCache: (modified: Date?, loaded: LoadedConfig)?
-    /// Action ids of the menu built last, indexed by menu item tag. Finder receives a copy of the
-    /// menu, and only the tag survives the trip back to the action method.
-    private var actionTable: [String] = []
-    private var lastKind: FinderMenuKind = .items
+    /// Finder receives a copy of each menu, and only the tag survives the trip back to the action method.
+    /// The tags are stable (see `ActionTags`), so a menu built after the one being clicked cannot retarget it.
+    private var tags = ActionTags()
     private var runningTasks: [ObjectIdentifier: NSUserUnixTask] = [:]
 
     override init() {
@@ -29,11 +28,11 @@ final class FinderSyncExtension: FIFinderSync {
     /// a probe through the runner, the same way a menu action would, so the result describes what a
     /// click can really do. The marker's text picks the probe from a fixed list; `rh probe
     /// --from-extension` removes the marker, which also keeps a second extension process (several
-    /// run at once) from running it again.
+    /// run at once) from running it again. A request that has been lying there for minutes (the doctor was
+    /// interrupted) is ignored.
     private func probeIfRequested() {
-        let marker = paths.configDirectory.appendingPathComponent(".probe")
-        guard let data = FileManager.default.contents(atPath: marker.path) else { return }
-        let arguments = RunnerArguments.probe(markerText: String(decoding: data, as: UTF8.self))
+        guard let text = ProbeMarker.pending(in: paths) else { return }
+        let arguments = RunnerArguments.probe(markerText: text)
         log.notice("probe \(arguments[1], privacy: .public) requested; running it through the runner script")
         runner(arguments, label: "probe.\(arguments[1])")
     }
@@ -51,15 +50,12 @@ final class FinderSyncExtension: FIFinderSync {
     override func menu(for menuKind: FIMenuKind) -> NSMenu? {
         let started = ContinuousClock.now
         let kind = Self.kind(menuKind)
-        lastKind = kind
         let context = currentContext(kind)
         let nodes = MenuBuilder(config: currentConfig(), facts: facts, localizer: .system).build(for: context)
         guard !nodes.isEmpty else { return nil }
 
-        var table: [String] = []
-        let menu = makeMenu(nodes, table: &table)
-        actionTable = table
-        log.notice("menu \(kind.rawValue, privacy: .public): \(context.items.count, privacy: .public) items, \(table.count, privacy: .public) entries, built in \(String(describing: ContinuousClock.now - started), privacy: .public)")
+        let menu = makeMenu(nodes, kind: kind)
+        log.notice("menu \(kind.rawValue, privacy: .public): \(context.items.count, privacy: .public) items, built in \(String(describing: ContinuousClock.now - started), privacy: .public)")
         return menu
     }
 
@@ -88,7 +84,7 @@ final class FinderSyncExtension: FIFinderSync {
         return loaded.config
     }
 
-    private func makeMenu(_ nodes: [MenuNode], table: inout [String]) -> NSMenu {
+    private func makeMenu(_ nodes: [MenuNode], kind: FinderMenuKind) -> NSMenu {
         let menu = NSMenu(title: "")
         for node in nodes {
             switch node.kind {
@@ -97,14 +93,13 @@ final class FinderSyncExtension: FIFinderSync {
             case .action:
                 let item = NSMenuItem(title: node.title, action: #selector(performAction(_:)), keyEquivalent: "")
                 item.target = self
-                item.tag = table.count
-                table.append(node.actionID ?? "")
+                item.tag = tags.tag(for: node.actionID ?? "", kind: kind)
                 decorate(item, node.icon)
                 menu.addItem(item)
             case .submenu:
                 let item = NSMenuItem(title: node.title, action: nil, keyEquivalent: "")
                 decorate(item, node.icon)
-                item.submenu = makeMenu(node.children, table: &table)
+                item.submenu = makeMenu(node.children, kind: kind)
                 menu.addItem(item)
             }
         }
@@ -123,13 +118,13 @@ final class FinderSyncExtension: FIFinderSync {
     // MARK: Actions
 
     @objc func performAction(_ sender: AnyObject?) {
-        guard let item = sender as? NSMenuItem, actionTable.indices.contains(item.tag) else {
+        guard let item = sender as? NSMenuItem, let entry = tags.resolve(item.tag) else {
             log.error("action without a matching menu entry")
             return
         }
-        let id = actionTable[item.tag]
-        let context = currentContext(lastKind)
-        log.notice("action \(id, privacy: .public) from \(self.lastKind.rawValue, privacy: .public) menu, \(context.items.count, privacy: .public) items")
+        let id = entry.actionID
+        let context = currentContext(entry.kind)
+        log.notice("action \(id, privacy: .public) from \(entry.kind.rawValue, privacy: .public) menu, \(context.items.count, privacy: .public) items")
         if case .copyPath(let style)? = ActionRef(parsing: id) {
             copyPath(style, context)
         } else {

@@ -49,9 +49,7 @@ public struct ExtensionProbe: Sendable {
     /// Leaves the marker, restarts the extension so it looks for it, and waits for `rh` to report.
     private func report(_ kind: Kind, marker text: String? = nil, timeout: Duration) async -> Data? {
         let started = Date()
-        let marker = paths.configDirectory.appendingPathComponent(".probe")
-        try? FileManager.default.createDirectory(at: paths.configDirectory, withIntermediateDirectories: true)
-        guard (try? Data((text ?? kind.rawValue).utf8).write(to: marker)) != nil else { return nil }
+        guard ProbeMarker.write(text ?? kind.rawValue, in: paths) else { return nil }
 
         let manager = FinderExtensionManager(runner: runner)
         try? await manager.disable()
@@ -63,7 +61,7 @@ public struct ExtensionProbe: Sendable {
             if let json = Self.latestReport(kind, in: logFile, since: started) { return json }
             try? await Task.sleep(for: .milliseconds(500))
         }
-        try? FileManager.default.removeItem(at: marker)
+        try? FileManager.default.removeItem(at: ProbeMarker.url(in: paths))
         return nil
     }
 

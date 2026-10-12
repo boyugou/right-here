@@ -11,9 +11,9 @@ struct Probe: AsyncParsableCommand {
 
     /// The Finder extension asks for a probe by leaving `.probe` in the config folder. Several
     /// extension processes can start at once (Finder and every Open panel) and all see it, so only
-    /// the one whose `unlink` succeeds runs the probe.
+    /// the one whose `unlink` succeeds runs the probe, and only while the request is fresh.
     static func claimMarker(paths: RHPaths) -> Bool {
-        unlink(paths.configDirectory.appendingPathComponent(".probe").path) == 0
+        ProbeMarker.claim(in: paths)
     }
 
     static func record(_ name: String, _ value: some Encodable) {

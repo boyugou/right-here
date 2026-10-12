@@ -107,6 +107,9 @@ Verified on this machine (macOS 27.2, 2026-10-11):
   `/usr/bin:/bin:/usr/sbin:/sbin` plus whatever launchd carries, and the parent process is
   `com.apple.foundation.UserScriptService`. So the script names `rh` by absolute path.
 - Finder serializes the menu: only `NSMenuItem.tag` survives to the action method, not `representedObject`.
+  The extension builds a menu every time Finder asks (items, window background, sidebar, toolbar), so the tags
+  are stable (`ActionTags`: an action id keeps its number, and the tag also names the kind of menu), and a
+  click on an older menu cannot land on whatever stands at that position in a newer one.
 - For a background (container) menu, `selectedItemURLs()` is the selection of the previous column in
   column view; the folder that was clicked is `targetedURL()`.
 - `osascript -` with arguments delivers each argument unchanged to `on run argv`.
@@ -135,7 +138,10 @@ Verified on this machine (macOS 27.2, 2026-10-11):
   `zsh` in the unit tests.
 - The Finder extension's real memory footprint is about 8 MB per process (`footprint`); the 60 MB that `ps`
   shows is shared framework pages. Several extension processes run at once (three were seen, and each
-  started a probe when the marker appeared, which is why `rh` claims the marker with `unlink`).
+  started a probe when the marker appeared, which is why `rh` claims the marker). The claim is a `rename` to
+  a name of the caller's own: eight concurrent `unlink`s of one path were measured returning success in
+  393 of 400 rounds on APFS, while `rename` (and `O_EXCL`) never let two callers win in 2000. A request older
+  than two minutes is ignored, so an interrupted `rh doctor` cannot open a terminal at some later Finder start.
 - Release signing works: `SECURE_TIMESTAMP=1 ./script/build_app.sh` signs every code item with the Developer ID
   identity, hardened runtime and Apple's timestamp (the earlier "timestamps differ" failure was a wrong system
   clock), `script/package_dmg.sh` builds a DMG whose checksum file verifies with `shasum -c`, and the DMG's
