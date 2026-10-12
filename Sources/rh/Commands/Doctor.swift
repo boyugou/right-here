@@ -12,6 +12,9 @@ struct Doctor: AsyncParsableCommand {
     @Flag(help: "Print JSON.")
     var json = false
 
+    @Flag(help: "Also test the whole chain a Finder click uses, through the extension. Restarts the extension and may show a permission prompt.")
+    var probeExtension = false
+
     struct Report: Encodable {
         var ok: Bool
         var checks: [DoctorCheck]
@@ -19,7 +22,7 @@ struct Doctor: AsyncParsableCommand {
 
     func run() async throws {
         let runtime = Runtime()
-        let checks = await RightHereKit.Doctor(paths: runtime.paths, loaded: runtime.loaded).run()
+        let checks = await RightHereKit.Doctor(paths: runtime.paths, loaded: runtime.loaded).run(probeExtension: probeExtension)
         let failed = checks.contains { $0.status == .fail }
         if json {
             try Output.json(Report(ok: !failed, checks: checks))

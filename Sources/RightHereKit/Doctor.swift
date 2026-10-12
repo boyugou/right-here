@@ -47,7 +47,10 @@ public struct Doctor: Sendable {
         self.rhPath = rhPath
     }
 
-    public func run() async -> [DoctorCheck] {
+    /// - Parameter probeExtension: Also ask the Finder extension to try the whole chain a menu click
+    ///   uses, including permission to control the terminal. It restarts the extension and can make
+    ///   macOS show a permission prompt, so it is opt-in.
+    public func run(probeExtension: Bool = false) async -> [DoctorCheck] {
         var checks: [DoctorCheck] = []
         checks.append(configCheck())
         checks += menuChecks()
@@ -55,7 +58,28 @@ public struct Doctor: Sendable {
         checks.append(claudeLinkCheck())
         checks += integrationChecks()
         checks.append(await extensionCheck())
+        if probeExtension { checks.append(await chainCheck()) }
         return checks
+    }
+
+    private func chainCheck() async -> DoctorCheck {
+        guard let results = await ExtensionProbe(paths: paths, facts: facts, runner: runner).run() else {
+            return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .fail,
+                               detail: "the Finder extension did not report back",
+                               fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
+        }
+        let worst = results.first { $0.outcome != .granted && $0.outcome != .notRunning } ?? results.first
+        let summary = results.map { "\($0.application): \($0.outcome.rawValue)" }.joined(separator: ", ")
+        switch worst?.outcome {
+        case .granted?, .notRunning?:
+            return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .ok, detail: summary)
+        case .timedOut?:
+            return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .needsUser, detail: summary,
+                               fix: "macOS is waiting for you to allow Right Here to control the terminal. Click Allow, then run this again.")
+        default:
+            return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .fail, detail: summary,
+                               fix: "Allow Right Here in System Settings › Privacy & Security › Automation.")
+        }
     }
 
     // MARK: Config
