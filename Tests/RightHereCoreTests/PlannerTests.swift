@@ -443,6 +443,25 @@ struct PlannerNamedPathTests {
         }
     }
 
+    @Test func aBuiltInTerminalTheConfigTurnedIntoAnEditorIsNotPickedAsTheDefaultTerminal() throws {
+        // No terminal is configured, so the first installed one in the usual order is used; Ghostty comes first,
+        // but the config says it is an editor now, so Terminal (installed too) is the one.
+        let config = Config(apps: [redefined("ghostty", role: .editor, bundle: "com.mitchellh.ghostty")])
+        let planner = Planner(config: config, facts: machine())
+        #expect(try planner.resolveDefault(role: .terminal, configured: nil).id == "terminal")
+        let plan = try planner.plan(.openTerminal(nil), context: folder("/Users/tester/code/app"))
+        guard case .open(let open)? = plan.steps.first else { Issue.record("expected an open step"); return }
+        #expect(open.bundleID == "com.apple.Terminal")
+        let info = ActionRegistry(config: config, facts: machine()).catalog().first { $0.id == "open.terminal" }
+        #expect(info?.available == true)
+    }
+
+    @Test func aBuiltInEditorTheConfigTurnedIntoATerminalIsNotPickedAsTheDefaultEditor() throws {
+        let config = Config(apps: [redefined("vscode", role: .terminal, bundle: "com.microsoft.VSCode")])
+        let planner = Planner(config: config, facts: machine(installed: ["com.microsoft.VSCode", "com.apple.TextEdit", "com.apple.Terminal"]))
+        #expect(try planner.resolveDefault(role: .editor, configured: nil).id == "textedit")
+    }
+
     @Test func aDefaultEditorThatIsATerminalIsRefused() {
         let planner = Planner(config: Config(editor: "ghostty"), facts: machine())
         #expect(throws: PlanError.self) { try planner.plan(.openEditor, context: selection(existing)) }

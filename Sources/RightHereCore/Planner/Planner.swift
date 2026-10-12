@@ -123,7 +123,8 @@ public struct Planner: Sendable {
             return app
         }
         let order = role == .terminal ? Self.terminalOrder : Self.editorOrder
-        let candidates = order.compactMap { config.app(id: $0) } + config.apps.filter { $0.role == role }
+        // A built-in id the config redefined with another role is not a candidate for this one.
+        let candidates = order.compactMap { config.app(id: $0) }.filter { $0.role == role } + config.apps.filter { $0.role == role }
         guard let app = candidates.first(where: { $0.installedBundleID(facts: facts) != nil }) else {
             throw PlanError.appNotInstalled(role == .terminal ? "A terminal" : "An editor")
         }
