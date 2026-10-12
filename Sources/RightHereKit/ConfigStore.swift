@@ -51,7 +51,15 @@ public struct LoadedConfig: Sendable, Equatable {
 
 public enum ConfigStore {
     /// Reads the config file. A missing file is not an error: the defaults apply.
+    /// A config is a few kilobytes. The menu is built from it on every right-click, so a file far past that (a wrong
+    /// path, a log pasted over it) is refused instead of read: parsing 60 MB took four seconds.
+    public static let maxConfigBytes = 1_048_576
+
     public static func load(paths: RHPaths) -> LoadedConfig {
+        if let size = (try? FileManager.default.attributesOfItem(atPath: paths.configFile.path))?[.size] as? Int, size > maxConfigBytes {
+            let diagnostic = ConfigDiagnostic(severity: .error, path: "", message: "The file is \(size / 1_048_576) MB; a config is a few kilobytes, so it was not read. Is this the right file?")
+            return LoadedConfig(result: ConfigLoadResult(config: .default, diagnostics: [diagnostic]), fileExists: true, file: paths.configFile)
+        }
         guard let data = try? Data(contentsOf: paths.configFile) else {
             return LoadedConfig(result: ConfigLoadResult(config: .default, diagnostics: []), fileExists: false, file: paths.configFile)
         }
