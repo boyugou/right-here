@@ -28,11 +28,17 @@ let package = Package(
             name: "RightHereKit",
             dependencies: ["RightHereCore"]
         ),
+        // A small MCP server over the action registry, written against the protocol directly.
+        .target(
+            name: "RightHereMCP",
+            dependencies: ["RightHereCore", "RightHereKit"]
+        ),
         .executableTarget(
             name: "rh",
             dependencies: [
                 "RightHereCore",
                 "RightHereKit",
+                "RightHereMCP",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
         ),
@@ -43,6 +49,10 @@ let package = Package(
         .testTarget(
             name: "RightHereKitTests",
             dependencies: ["RightHereKit", "RightHereCore"]
+        ),
+        .testTarget(
+            name: "RightHereMCPTests",
+            dependencies: ["RightHereMCP", "RightHereKit", "RightHereCore"]
         )
     ]
 )

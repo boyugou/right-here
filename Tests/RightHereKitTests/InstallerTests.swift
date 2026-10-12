@@ -101,7 +101,7 @@ struct FinderExtensionManagerTests {
     }
 
     @Test func registerAddsThenEnables() async throws {
-        let runner = FakeRunner()
+        let runner = FakeProcessRunner()
         try await FinderExtensionManager(runner: runner).register(appexPath: "/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex")
         #expect(runner.recorded.map(\.arguments) == [
             ["-a", "/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex"],
@@ -110,7 +110,7 @@ struct FinderExtensionManagerTests {
     }
 
     @Test func aFailingPluginkitIsReported() async {
-        let runner = FakeRunner(results: [ProcessResult(status: 1, standardError: "no such plug-in")])
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 1, standardError: "no such plug-in")])
         await #expect(throws: ExecutionError.self) { try await FinderExtensionManager(runner: runner).disable() }
     }
 }

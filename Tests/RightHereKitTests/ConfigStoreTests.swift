@@ -104,13 +104,13 @@ struct DetectorTests {
     }
 
     @Test func detectsInstalledAppsAndAgentCommands() async {
-        let runner = FakeRunner(results: [ProcessResult(status: 0, standardOutput: "claude\ncodex\n")])
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "claude\ncodex\n")])
         let detected = await Detector(facts: facts(), runner: runner).detect()
         #expect(detected == DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude", "codex"]))
     }
 
     @Test func asksTheLoginShellInteractively() async {
-        let runner = FakeRunner()
+        let runner = FakeProcessRunner()
         _ = await Detector(facts: facts(), runner: runner).commandsFound(["claude", "codex"])
         let call = runner.recorded.first
         #expect(call?.executable == "/bin/zsh")
@@ -119,7 +119,7 @@ struct DetectorTests {
     }
 
     @Test func aFailingShellFindsNothing() async {
-        let runner = FakeRunner(results: [ProcessResult(status: 1)])
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 1)])
         let found = await Detector(facts: facts(), runner: runner).commandsFound(["claude"])
         #expect(found.isEmpty)
     }
