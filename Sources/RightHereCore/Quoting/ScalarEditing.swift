@@ -27,9 +27,13 @@ extension String {
 
 extension String {
     /// The text with control characters, line separators and paragraph separators replaced by visible
-    /// escapes (`\n`, `\t`, `\u{1b}`). Used wherever a name from the file system is printed or logged:
+    /// escapes (`\n`, `\t`, `\u001b`). Used wherever a name from the file system is printed or logged:
     /// a name with a newline must not forge a log line, and one with a terminal escape sequence must not
     /// act on a terminal. Other text, backslashes included, is left as it is.
+    ///
+    /// The escapes are JSON's own (`\uXXXX`), so a line of JSON that has been through this still parses
+    /// to the same text: `JSONEncoder` leaves U+007F to U+009F, U+2028 and U+2029 raw, and a different
+    /// spelling would have turned them into something no JSON reader accepts.
     public var withControlCharactersEscaped: String {
         var result = ""
         for scalar in unicodeScalars {
@@ -39,7 +43,9 @@ extension String {
             case "\t": result += "\\t"
             default:
                 switch scalar.properties.generalCategory {
-                case .control, .lineSeparator, .paragraphSeparator: result += "\\u{\(String(scalar.value, radix: 16))}"
+                case .control, .lineSeparator, .paragraphSeparator:
+                    let hex = String(scalar.value, radix: 16)
+                    result += "\\u" + String(repeating: "0", count: max(0, 4 - hex.count)) + hex
                 default: result.unicodeScalars.append(scalar)
                 }
             }

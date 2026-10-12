@@ -19,7 +19,7 @@ struct RunLogTests {
         #expect(lines[1].isEmpty)
         #expect(!text.unicodeScalars.dropLast().contains { $0.value < 0x20 && $0 != "\t" } , "a raw control character was written")
         #expect(text.contains("\\n2026-10-12T00:00:00Z probe automation"))
-        #expect(text.contains("\\u{1b}"))
+        #expect(text.contains("\\u001b"))
     }
 
     @Test func probeLinesStillParseAfterEscaping() throws {
@@ -29,6 +29,30 @@ struct RunLogTests {
         RunLog.record("probe launch: " + json, paths: target)
         let found = ExtensionProbe.latestReport(.launch, in: target.logFile, since: Date().addingTimeInterval(-5))
         #expect(found == Data(json.utf8))
+    }
+
+    @Test("a probe result that has odd characters in it still parses after it went through the log",
+          arguments: ["a\u{85}b", "a\u{2028}b", "a\u{2029}b", "a\u{7f}b", "a\u{1b}[2Jb", "tab\there", "quote\"back\\slash"])
+    func probeJSONSurvivesTheLog(detail: String) throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let target = paths(in: directory)
+        let result = LaunchProbe.Result(application: "Ghostty\u{85}", outcome: .failed, seconds: 1.5, shell: "/bin/zsh", detail: detail)
+        let json = String(decoding: try JSONEncoder().encode(result), as: UTF8.self)
+        RunLog.record("probe launch: " + json, paths: target)
+        let found = try #require(ExtensionProbe.latestReport(.launch, in: target.logFile, since: Date().addingTimeInterval(-5)))
+        let decoded = try JSONDecoder().decode(LaunchProbe.Result.self, from: found)
+        #expect(decoded == result, "the result changed on its way through the log")
+    }
+
+    @Test func aLogAnEarlierVersionLeftReadableByEveryoneBecomesPrivate() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let target = paths(in: directory)
+        try FileManager.default.createDirectory(at: target.logDirectory, withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: target.logFile.path, contents: Data("old\n".utf8), attributes: [.posixPermissions: 0o644])
+        RunLog.record("new", paths: target)
+        let file = try FileManager.default.attributesOfItem(atPath: target.logFile.path)
+        #expect((file[.posixPermissions] as? NSNumber)?.intValue == 0o600)
+        #expect(try String(contentsOf: target.logFile, encoding: .utf8).hasPrefix("old\n"), "the old lines must stay")
     }
 
     @Test func theLogAndItsFolderArePrivate() throws {

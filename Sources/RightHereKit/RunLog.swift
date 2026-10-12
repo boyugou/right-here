@@ -17,6 +17,8 @@ public enum RunLog {
         let descriptor = open(paths.logFile.path, O_WRONLY | O_APPEND | O_CREAT, 0o600)
         guard descriptor >= 0 else { return }
         defer { close(descriptor) }
+        // A log an earlier version created is world-readable; the mode above only applies to a new file.
+        fchmod(descriptor, 0o600)
         _ = line.withUnsafeBytes { write(descriptor, $0.baseAddress, $0.count) }
     }
 

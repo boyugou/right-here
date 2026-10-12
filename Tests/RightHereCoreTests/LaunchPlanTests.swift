@@ -62,7 +62,7 @@ struct StepSummaryTests {
                      .run(ProcessStep(executable: "/bin/echo", arguments: [hostile])), .openURL("x://" + hostile)] {
             let shown = step.summary
             #expect(!shown.unicodeScalars.contains { $0.value < 0x20 || $0.value == 0x7f }, "\(shown.debugDescription)")
-            #expect(shown.contains("\\u{1b}"))
+            #expect(shown.contains("\\u001b"))
         }
         let copy = Step.copyToPasteboard(hostile)
         #expect(copy.details.allSatisfy { !$0.unicodeScalars.contains { $0.value < 0x20 } })
@@ -76,8 +76,9 @@ struct StepSummaryTests {
 @Suite("Escaping control characters")
 struct ControlCharacterEscapingTests {
     @Test("control characters become visible escapes", arguments: [
-        ("a\nb", "a\\nb"), ("a\rb", "a\\rb"), ("a\tb", "a\\tb"), ("\u{1b}[2J", "\\u{1b}[2J"),
-        ("\u{7}", "\\u{7}"), ("a\u{2028}b", "a\\u{2028}b"), ("a\u{85}b", "a\\u{85}b"), ("a\u{0}b", "a\\u{0}b")
+        ("a\nb", "a\\nb"), ("a\rb", "a\\rb"), ("a\tb", "a\\tb"), ("\u{1b}[2J", "\\u001b[2J"),
+        ("\u{7}", "\\u0007"), ("a\u{2028}b", "a\\u2028b"), ("a\u{85}b", "a\\u0085b"), ("a\u{0}b", "a\\u0000b"),
+        ("a\u{7f}b", "a\\u007fb"), ("a\u{2029}b", "a\\u2029b")
     ])
     func escapes(input: String, expected: String) {
         #expect(input.withControlCharactersEscaped == expected)
