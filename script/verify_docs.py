@@ -2,17 +2,18 @@
 # /// script
 # requires-python = ">=3.11"
 # ///
-"""Check that every `rh` command the documentation shows still exists, with the flags it shows.
+"""Check the documentation against the repository: the `rh` commands it shows and the links it makes.
 
-Docs rot quietly: a flag is renamed, a subcommand is split, and a README or a skill keeps telling people to run
-something that now fails (the Homebrew formula's test did exactly that). This reads every `rh ...` command in
-the user-facing documentation, the plugin's skills and the embedded agent playbook, and asks the built `rh`
-whether the subcommand exists and its `--help` mentions each flag. Nothing is run: only `--help`.
+Docs rot quietly: a flag is renamed, a subcommand is split, a file moves, and a README or a skill keeps telling
+people to run something that now fails or to read a page that is gone (the Homebrew formula's test did exactly
+that). This reads every `rh ...` command in the user-facing documentation, the plugin's skills and the embedded
+agent playbook, and asks the built `rh` whether the subcommand exists and its `--help` mentions each flag
+(nothing is run but `--help`); and it checks that every relative link in every Markdown file points at a file.
 
 Needs a built `rh`: `swift build` first.
 
-    ./script/verify_docs_commands.py              uses .build/debug/rh
-    RH=/path/to/rh ./script/verify_docs_commands.py
+    ./script/verify_docs.py                       uses .build/debug/rh
+    RH=/path/to/rh ./script/verify_docs.py
 """
 import os
 import re
@@ -80,6 +81,20 @@ def problem(command: str) -> str | None:
     return None
 
 
+def broken_links() -> list[str]:
+    problems = []
+    for markdown in sorted(ROOT.rglob("*.md")):
+        if ".build" in markdown.parts or ".git" in markdown.parts:
+            continue
+        for match in re.finditer(r"\[[^\]]*\]\(([^)#\s]+)(?:#[^)]*)?\)", markdown.read_text(encoding="utf-8")):
+            target = match.group(1)
+            if re.match(r"^[a-z][a-z0-9+.-]*:", target):
+                continue
+            if not (markdown.parent / target).resolve().exists():
+                problems.append(f"{markdown.relative_to(ROOT)}: the link to {target} points at nothing")
+    return problems
+
+
 def main() -> int:
     if not os.access(RH, os.X_OK):
         print(f"no rh at {RH}; run `swift build` first", file=sys.stderr)
@@ -89,7 +104,7 @@ def main() -> int:
         if source.exists():
             for command in commands(source.read_text(encoding="utf-8")):
                 seen.setdefault(command, set()).add(source.name)
-    problems = []
+    problems = broken_links()
     for command, where in sorted(seen.items()):
         why = problem(command)
         if why:
@@ -97,7 +112,7 @@ def main() -> int:
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
-    print(f"ok: {len(seen)} distinct rh commands in the documentation all exist with the flags shown")
+    print(f"ok: {len(seen)} distinct rh commands in the documentation all exist with the flags shown, and no link is broken")
     return 0
 
 

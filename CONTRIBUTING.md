@@ -7,7 +7,7 @@ statement of the rules) and [`docs/INDEX.md`](docs/INDEX.md).
 
 ```sh
 swift build && swift test         # unit tests; none touches your home folder, Finder or an installed terminal
-./script/verify_all.sh            # what CI runs: build, tests, localization catalog, config schema, embedded docs, the commands the docs show, public-safety check
+./script/verify_all.sh            # what CI runs: build, tests, localization catalog, config schema, embedded docs, the docs check (commands and links), public-safety check
 ./script/install_local.sh         # build the app and install it for yourself
 ```
 
