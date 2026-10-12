@@ -30,7 +30,7 @@ struct Run: AsyncParsableCommand {
     @Flag(help: "Print the plan and the result as JSON.")
     var json = false
 
-    @Flag(help: "Show an alert when the action fails. The Finder extension uses this.")
+    @Flag(help: "Show an alert when the action fails. The Finder extension uses this. Never with --dry-run, and not when RH_NO_UI is set.")
     var alert = false
 
     func run() async throws {
@@ -71,7 +71,7 @@ struct Run: AsyncParsableCommand {
     /// Logs the failure, shows the alert when asked to, and exits with status 1.
     private func fail(_ error: any Error) async throws -> Never {
         RunLog.record("\(action): \(error.localizedDescription)")
-        if alert {
+        if FailureAlert.shouldShow(requested: alert, dryRun: dryRun) {
             let content = FailureAlert.content(for: error, action: action, localizer: .system)
             await MainActor.run { FailureAlert.show(content) }
         }

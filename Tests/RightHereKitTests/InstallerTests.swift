@@ -215,6 +215,17 @@ struct FailureAlertTests {
         #expect(content.settingsURL?.absoluteString.hasSuffix("Privacy_FilesAndFolders") == true)
     }
 
+    @Test("an alert is shown only for a real run that asked for one, and never when UI is switched off", arguments: [
+        (true, false, [String: String](), true),
+        (false, false, [:], false),
+        (true, true, [:], false),
+        (true, false, ["RH_NO_UI": "1"], false),
+        (true, true, ["RH_NO_UI": "1"], false)
+    ])
+    func whenAnAlertMayAppear(requested: Bool, dryRun: Bool, environment: [String: String], expected: Bool) {
+        #expect(FailureAlert.shouldShow(requested: requested, dryRun: dryRun, environment: environment) == expected)
+    }
+
     @Test func otherFailuresNameTheAction() {
         let content = FailureAlert.content(for: PlanError.appNotInstalled("Zed"), action: "open.app.zed")
         #expect(content.message.contains("Zed is not installed."))

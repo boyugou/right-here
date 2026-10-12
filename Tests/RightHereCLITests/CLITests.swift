@@ -58,6 +58,8 @@ private struct RH {
     /// The environment of every `rh` the tests start: its own config and log folders, an empty home for the shell.
     func environment() -> [String: String] {
         var environment = ProcessInfo.processInfo.environment
+        // No window can open from a test, whatever a failing action would otherwise show.
+        environment["RH_NO_UI"] = "1"
         environment["RH_LOG_DIR"] = configDirectory.appendingPathComponent("logs").path
         environment.removeValue(forKey: "RH_CONFIG")
         environment["HOME"] = shellHome.path
@@ -73,6 +75,14 @@ private struct RH {
         return environment
     }
 
+    /// Stops a process that is still running after `seconds`, so an `rh` that hangs fails the test it belongs to
+    /// (the test then sees a killed process) instead of holding the whole suite for ever.
+    func watchdog(_ process: Process, after seconds: TimeInterval = 60) -> DispatchWorkItem {
+        let item = DispatchWorkItem { if process.isRunning { process.terminate() } }
+        DispatchQueue.global().asyncAfter(deadline: .now() + seconds, execute: item)
+        return item
+    }
+
     func run(_ arguments: [String]) throws -> Output {
         let process = Process()
         process.executableURL = binary
@@ -82,6 +92,8 @@ private struct RH {
         process.standardOutput = out
         process.standardError = err
         try process.run()
+        let timer = watchdog(process)
+        defer { timer.cancel() }
         let outData = out.fileHandleForReading.readDataToEndOfFile()
         let errData = err.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
@@ -481,6 +493,8 @@ struct CLITests {
         process.standardInput = input
         process.standardOutput = output
         try process.run()
+        let timer = rh.watchdog(process)
+        defer { timer.cancel() }
         // A raw U+2028, U+2029 or U+0085 inside a JSON string is legal; Foundation's line splitting would
         // cut the request in pieces and answer with parse errors. (A raw CR or LF inside a string is not
         // legal JSON, and the transport has no way to send one.)
@@ -508,6 +522,8 @@ struct CLITests {
         process.standardInput = inputPipe
         process.standardOutput = outputPipe
         try process.run()
+        let timer = rh.watchdog(process)
+        defer { timer.cancel() }
         // Output is read on another thread: a server that answers 3000 requests would otherwise block on a
         // full pipe while this thread is still writing.
         final class Collected: @unchecked Sendable { var data = Data() }
@@ -570,6 +586,8 @@ struct CLITests {
         process.standardOutput = output
         process.standardError = errors
         try process.run()
+        let timer = rh.watchdog(process)
+        defer { timer.cancel() }
         // The client vanishes: nobody reads standard output any more, while standard input stays open.
         try output.fileHandleForReading.close()
         try input.fileHandleForWriting.write(contentsOf: Data(#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.utf8) + Data("\n".utf8))
@@ -605,6 +623,8 @@ struct CLITests {
         process.standardInput = input
         process.standardOutput = output
         try process.run()
+        let timer = rh.watchdog(process)
+        defer { timer.cancel() }
         input.fileHandleForWriting.write(Data(#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}"#.utf8) + Data("\n".utf8))
         try input.fileHandleForWriting.close()
         let data = output.fileHandleForReading.readDataToEndOfFile()
