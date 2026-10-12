@@ -556,3 +556,32 @@ struct PlannerNewFileUnreadableTests {
         #expect(NewFileNamer.firstFreeName(for: template, in: URL(fileURLWithPath: "/d"), facts: plain) == .free("untitled 2.txt"))
     }
 }
+
+
+@Suite("Planner: notices say when the result is not exactly what was selected")
+struct PlannerNoticeTests {
+    private func facts() -> FakeSystemFacts {
+        FakeSystemFacts(directories: ["/", "/p", "/p/src", "/q"], files: ["/p/src/main.swift"],
+                        applications: ["com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app")],
+                        bundleVersions: ["com.mitchellh.ghostty": "1.3.1"])
+    }
+
+    @Test func aFileSaysItsFolderIsUsedAndSeveralItemsSayTheFirstDecides() throws {
+        let planner = Planner(facts: facts())
+        let file = try planner.plan(.openTerminal(nil), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p/src/main.swift")]))
+        #expect(file.notices.contains { $0.contains("main.swift is a file") && $0.contains("/p/src") })
+        let several = try planner.plan(.agent(id: "claude", variant: nil, launcher: .terminal(nil)), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p"), URL(fileURLWithPath: "/q")]))
+        #expect(several.notices.contains { $0.contains("Several items") })
+        let folder = try planner.plan(.openTerminal(nil), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p")]))
+        #expect(folder.notices.isEmpty, "a single folder is exactly what was asked for")
+    }
+
+    @Test func gitRelativeOutsideARepositorySaysItCopiedTheAbsolutePath() throws {
+        let plain = try Planner(facts: facts()).plan(.copyPath(.gitRelative), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p/src/main.swift")]))
+        #expect(plain.notices.contains { $0.contains("Not inside a git repository") })
+        var inRepo = facts()
+        inRepo.gitRoots = ["/p"]
+        let repo = try Planner(facts: inRepo).plan(.copyPath(.gitRelative), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p/src/main.swift")]))
+        #expect(repo.notices.isEmpty)
+    }
+}

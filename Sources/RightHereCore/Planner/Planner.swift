@@ -55,7 +55,11 @@ public struct Planner: Sendable {
         if let refusal = PathRenderer.shellFormRefusal(for: targets, style: style) { throw PlanError.unsupported(refusal) }
         let text = PathRenderer(facts: facts).render(targets, style: style)
         let noun = targets.count == 1 ? "path" : "\(targets.count) paths"
-        return LaunchPlan(action: ref.id, summary: "Copy \(noun) (\(style.rawValue))", steps: [.copyToPasteboard(text)])
+        var notices: [String] = []
+        if (style == .gitRelative || style == .aiMention), targets.contains(where: { facts.gitRoot(containing: $0) == nil }) {
+            notices.append("Not inside a git repository, so the absolute path is copied.")
+        }
+        return LaunchPlan(action: ref.id, summary: "Copy \(noun) (\(style.rawValue))", steps: [.copyToPasteboard(text)], notices: notices)
     }
 
     /// The folder an action works in.
@@ -70,6 +74,15 @@ public struct Planner: Sendable {
             throw PlanError.noTarget
         }
         return directory
+    }
+
+    /// Said when the folder is not what was selected: a terminal is only ever handed a folder, so a file stands for
+    /// the folder that holds it, and with several items the first one decides.
+    private func folderNotice(for context: HereContext, directory: URL) -> [String] {
+        guard let first = context.items.first else { return [] }
+        if context.items.count > 1 { return ["Several items are selected; the folder of the first one is used: \(directory.path.withControlCharactersEscaped)."] }
+        if facts.isDirectory(first) == false { return ["\(first.lastPathComponent.withControlCharactersEscaped) is a file, so its folder is used: \(directory.path.withControlCharactersEscaped)."] }
+        return []
     }
 
     // MARK: Open with an app
@@ -98,7 +111,7 @@ public struct Planner: Sendable {
         let (app, bundleID) = try resolveTerminal(id)
         let steps = try TerminalAdapters.adapter(for: app)
             .steps(for: TerminalSession(directory: directory, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
-        return LaunchPlan(action: ref.id, summary: "Open \(directory.lastPathComponent) in \(app.name)", steps: steps)
+        return LaunchPlan(action: ref.id, summary: "Open \(directory.lastPathComponent) in \(app.name)", steps: steps, notices: folderNotice(for: context, directory: directory))
     }
 
     private func resolveTerminal(_ id: String?) throws -> (AppDescriptor, String) {
@@ -178,7 +191,8 @@ public struct Planner: Sendable {
             return LaunchPlan(
                 action: ref.id,
                 summary: "Run \(typed) in \(directory.lastPathComponent) with \(app.name)",
-                steps: steps
+                steps: steps,
+                notices: folderNotice(for: context, directory: directory)
             )
         }
     }

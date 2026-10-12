@@ -74,7 +74,7 @@ public enum ConfigParser {
         do {
             root = try TOMLTable(source: text)
         } catch {
-            sink.syntaxError(error.description)
+            sink.syntaxError(error.description + ". Usual causes: text without \"quotes\", a missing = or ], the same [table] twice. Defaults apply until it is fixed.")
             return ConfigLoadResult(config: .default, diagnostics: sink.items)
         }
         let config = Builder(sink: sink).build(Reader(table: root, path: [], schema: ConfigSchema.root, sink: sink))
@@ -336,7 +336,7 @@ private struct Builder {
                     config.editor = editor
                 }
             } else {
-                sink.error(["general", "editor"], "unknown app \"\(editor)\"",
+                sink.error(["general", "editor"], "unknown app \"\(editor)\"; the first installed editor is used instead",
                            suggestion: Suggestion.didYouMean(editor, in: allAppIDs(config)))
             }
         }
@@ -387,7 +387,7 @@ private struct Builder {
             if let other = apps.first(where: { $0.id == id }) {
                 sink.error(path, "\"\(id)\" is defined with role \"\(other.role.rawValue)\", not as a terminal; known terminals: " + terminals.joined(separator: ", "))
             } else {
-                sink.error(path, "unknown terminal \"\(id)\"; known terminals: " + terminals.joined(separator: ", "),
+                sink.error(path, "unknown terminal \"\(id)\"; known terminals: " + terminals.joined(separator: ", ") + ". The first installed terminal is used instead.",
                            suggestion: Suggestion.didYouMean(id, in: terminals))
             }
             return nil
