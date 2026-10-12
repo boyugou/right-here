@@ -37,9 +37,15 @@ final class SetupModel {
     func installOrRepair() async {
         isWorking = true
         message = nil
-        let result = try? await LiveProcessRunner().run(ProcessStep(executable: helper.path, arguments: ["install"]), timeout: .seconds(60))
-        if let result, result.status != 0 {
-            message = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
+        do {
+            let result = try await LiveProcessRunner().run(ProcessStep(executable: helper.path, arguments: ["install"]), timeout: .seconds(60))
+            if result.status != 0 {
+                let text = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
+                message = text.isEmpty ? "rh install exited with status \(result.status)" : text
+            }
+        } catch {
+            // The system's own wording, in the system language; the install did not run to its end.
+            message = error.localizedDescription
         }
         isWorking = false
         await refresh()
@@ -62,10 +68,14 @@ final class SetupModel {
     }
 
     func openConfig() async {
-        if !FileManager.default.fileExists(atPath: paths.configFile.path) {
-            _ = try? await LiveProcessRunner().run(ProcessStep(executable: helper.path, arguments: ["init"]), timeout: .seconds(30))
+        do {
+            if !FileManager.default.fileExists(atPath: paths.configFile.path) {
+                _ = try await LiveProcessRunner().run(ProcessStep(executable: helper.path, arguments: ["init"]), timeout: .seconds(30))
+            }
+            _ = try await LiveProcessRunner().run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", paths.configFile.path]))
+        } catch {
+            message = error.localizedDescription
         }
-        _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", paths.configFile.path]))
     }
 
     func copySetupPrompt() {

@@ -148,6 +148,21 @@ renamed over it.
 The signal wiring of the doctor probe moved into `InterruptGuard` (RightHereKit); a test raises SIGUSR2 in the test
 process and checks the order: request withdrawn, extension re-enabled, then finish. Nothing opens a window.
 
+## Ninth round (extension, setup app, plugin, scripts; after 8655b54)
+
+Little wrong in the runner-script argv path, selection cap, entitlements, MCP launcher or release binary. Fixed:
+
+- The Finder extension keyed its config cache on the date of the link when `config.toml` is a symlink (dotfile
+  managers), so edits never reached the menu; it uses the target's date now (`rh doctor` already warns about the link).
+- The extension read a task's stderr only after the task ended, so more than a pipe buffer of output could stall it;
+  it is drained while the task runs and kept to 8 KB.
+- The setup app swallowed a failed install, a timeout and a failed config open; it shows the error now.
+- The `review-changes` skill told an agent to read quoted `git status --porcelain`; it says `-z` now.
+- `install_local.sh` deleted the installed app before copying the new one; it copies beside it and moves it over.
+
+Left: CI and `verify_all.sh` build the package but not the app and extension targets (`script/build_app.sh` does,
+and runs on every local install); the app targets build in Swift 5 mode with no strict-concurrency setting.
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.

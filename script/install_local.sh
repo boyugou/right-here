@@ -14,8 +14,12 @@ DEST="$HOME/Applications/Right Here.app"
 
 echo "==> Installing $DEST" >&2
 mkdir -p "$HOME/Applications"
+# Copied beside the old app and moved over it, so a failed copy leaves the installed app in place.
+STAGE="$DEST.new"
+rm -rf "$STAGE"
+cp -R "$ROOT/dist/Right Here.app" "$STAGE"
 rm -rf "$DEST"
-cp -R "$ROOT/dist/Right Here.app" "$DEST"
+mv "$STAGE" "$DEST"
 "$LSREGISTER" -u "$ROOT/dist/Right Here.app" >/dev/null 2>&1 || true
 "$LSREGISTER" -f -R "$DEST"
 "$DEST/Contents/Helpers/rh" install

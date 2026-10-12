@@ -10,9 +10,10 @@ Scope: $ARGUMENTS
 
 ## 1. Collect the files
 
-If a repository is involved, `git status --porcelain` lists changed and new files; otherwise use the files you
+If a repository is involved, `git status --porcelain -z` lists changed and new files (NUL-separated and unquoted; plain `--porcelain` puts quotes
+around a name with a space or an accent, and those quotes are not part of the path); otherwise use the files you
 edited in this conversation. Resolve them to absolute paths and keep only what exists now: skip deleted files
-(status `D`), and for a rename (`R old -> new`) take the new name. Skip build output and anything ignored. A
+(status `D`), and for a rename (`R`) take the new name, the first of its two entries. Skip build output and anything ignored. A
 path that does not exist makes the whole call fail.
 
 ## 2. Reveal them

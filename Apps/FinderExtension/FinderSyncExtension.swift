@@ -77,7 +77,8 @@ final class FinderSyncExtension: FIFinderSync {
     /// The config, re-read only when the file changed.
     private func currentConfig() -> Config {
         let file = paths.configFile
-        let modified = (try? FileManager.default.attributesOfItem(atPath: file.path))?[.modificationDate] as? Date
+        // Of what the path leads to: for a config kept as a link (dotfile managers do that), the link's own date never changes.
+        let modified = (try? FileManager.default.attributesOfItem(atPath: file.resolvingSymlinksInPath().path))?[.modificationDate] as? Date
         if let cache = configCache, cache.modified == modified { return cache.loaded.config }
         let loaded = ConfigStore.load(paths: paths)
         configCache = (modified, loaded)
@@ -158,9 +159,15 @@ final class FinderSyncExtension: FIFinderSync {
             task.standardError = errors.fileHandleForWriting
             let key = ObjectIdentifier(task)
             runningTasks[key] = task
+            // Drained while the task runs: a task that fills the pipe's buffer would otherwise wait for a reader that
+            // only starts when it has finished. Only the first few kilobytes are kept.
+            let captured = CapturedOutput()
+            errors.fileHandleForReading.readabilityHandler = { handle in captured.append(handle.availableData) }
             task.execute(withArguments: arguments) { [weak self] failure in
                 try? errors.fileHandleForWriting.close()
-                let message = String(decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+                errors.fileHandleForReading.readabilityHandler = nil
+                captured.append(errors.fileHandleForReading.availableData)
+                let message = captured.text
                 DispatchQueue.main.async {
                     self?.runningTasks[key] = nil
                     guard let failure else {
@@ -178,3 +185,20 @@ final class FinderSyncExtension: FIFinderSync {
         }
     }
 }
+
+/// The start of a task's error output, kept to a few kilobytes; the rest is read and dropped.
+private final class CapturedOutput: @unchecked Sendable {
+    private let lock = NSLock()
+    private var data = Data()
+
+    func append(_ chunk: Data) {
+        lock.lock(); defer { lock.unlock() }
+        if data.count < 8_192 { data.append(chunk.prefix(8_192 - data.count)) }
+    }
+
+    var text: String {
+        lock.lock(); defer { lock.unlock() }
+        return String(decoding: data, as: UTF8.self)
+    }
+}
+
