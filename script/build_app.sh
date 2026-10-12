@@ -67,6 +67,9 @@ cp -R "$BUILT_APP" "$APP"
 "$LSREGISTER" -u "$BUILT_APP" >/dev/null 2>&1 || true
 mkdir -p "$APP/Contents/Helpers"
 cp "$RH_BINARY" "$APP/Contents/Helpers/rh"
+# The MIT license of a bundled dependency asks that its notice travels with binaries.
+mkdir -p "$APP/Contents/Resources"
+cp LICENSE THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/"
 
 log "Signing with: $IDENTITY"
 codesign "${SIGN_FLAGS[@]}" --sign "$IDENTITY" "$APP/Contents/Helpers/rh"
