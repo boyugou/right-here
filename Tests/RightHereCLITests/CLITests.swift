@@ -521,6 +521,34 @@ struct CLITests {
         #expect(Set(replies.compactMap { $0["id"] as? Int }) == Set(0..<3000))
     }
 
+    @Test func mcpFinishesQuietlyWhenItsClientHasGone() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let process = Process()
+        process.executableURL = rh.binary
+        process.arguments = ["mcp"]
+        var environment = ProcessInfo.processInfo.environment
+        environment["RH_CONFIG_DIR"] = rh.configDirectory.path
+        process.environment = environment
+        let input = Pipe(), output = Pipe(), errors = Pipe()
+        process.standardInput = input
+        process.standardOutput = output
+        process.standardError = errors
+        try process.run()
+        // The client vanishes: nobody reads standard output any more, while standard input stays open.
+        try output.fileHandleForReading.close()
+        try input.fileHandleForWriting.write(contentsOf: Data(#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.utf8) + Data("\n".utf8))
+        let deadline = Date().addingTimeInterval(10)
+        while process.isRunning && Date() < deadline { usleep(20_000) }
+        let stillRunning = process.isRunning
+        if stillRunning { process.terminate() }
+        process.waitUntilExit()
+        #expect(!stillRunning, "the server kept running with nobody to answer")
+        #expect(process.terminationReason == .exit, "it died by a signal instead of finishing")
+        #expect(process.terminationStatus == 0)
+        #expect(String(decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self).isEmpty, "it wrote a crash report")
+        try? input.fileHandleForWriting.close()
+    }
+
     @Test func mcpAnswersAMalformedRequestWithoutStoppingTheOnesAfterIt() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let input = Data("{broken\n{\"jsonrpc\":\"2.0\",\"id\":true,\"method\":\"ping\"}\n5\n{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"ping\"}\n".utf8)

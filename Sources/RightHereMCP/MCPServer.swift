@@ -212,7 +212,10 @@ public struct MCPServer: Sendable {
             func dispatch(_ text: String) async {
                 await gate.enter()
                 group.addTask {
-                    if let reply = await self.handle(text) { await writer.write(reply) }
+                    if let reply = await self.handle(text), await !writer.write(reply) {
+                        // Nobody is reading any more, so there is nobody to serve.
+                        exit(0)
+                    }
                     await gate.leave()
                 }
             }
@@ -222,7 +225,7 @@ public struct MCPServer: Sendable {
                     if byte == 0x0A {
                         defer { buffer.removeAll(keepingCapacity: true); overflowed = false }
                         if overflowed {
-                            await writer.write(Self.errorResponse(id: .null, code: -32600, message: "Request too large"))
+                            if await !writer.write(Self.errorResponse(id: .null, code: -32600, message: "Request too large")) { exit(0) }
                             continue
                         }
                         var line = buffer
@@ -270,9 +273,36 @@ actor InFlightGate {
 }
 
 /// Writes whole lines to standard output, one at a time, so concurrent replies never interleave.
+///
+/// The descriptor is written with `write(2)` and without SIGPIPE, so a client that has gone away is a failed
+/// write the server can answer by finishing, not a signal (or, with `FileHandle.write`, an Objective-C
+/// exception) that kills it with a stack trace in the client's logs.
 actor LineWriter {
-    func write(_ line: String) {
-        FileHandle.standardOutput.write(Data((line + "\n").utf8))
+    private let descriptor: Int32
+
+    init(descriptor: Int32 = STDOUT_FILENO) {
+        self.descriptor = descriptor
+        _ = fcntl(descriptor, F_SETNOSIGPIPE, 1)
+    }
+
+    /// `false` when the reader has gone.
+    @discardableResult
+    func write(_ line: String) -> Bool {
+        let bytes = Array((line + "\n").utf8)
+        var offset = 0
+        while offset < bytes.count {
+            let written = bytes.withUnsafeBytes { Darwin.write(descriptor, $0.baseAddress! + offset, $0.count - offset) }
+            if written >= 0 {
+                offset += written
+            } else if errno == EINTR {
+                continue
+            } else if errno == EAGAIN {
+                usleep(1_000)
+            } else {
+                return false
+            }
+        }
+        return true
     }
 }
 
