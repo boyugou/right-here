@@ -105,7 +105,7 @@ MUTANTS = [
     ("RH_NO_UI lets open and osascript start", "Sources/RightHereKit/ProcessRunner.swift",
      'if environment["RH_NO_UI"] != nil, Self.screenPrograms.contains(step.executable) {', "if false {"),
     ("a name with a backslash and a control character gets a shell form", "Sources/RightHereCore/Paths/PathStyle.swift",
-     'if path.unicodeScalars.contains("\\") && ShellQuoting.containsControlCharacter(path) {', "if false {"),
+     'if path.unicodeScalars.contains("\\\\") && ShellQuoting.containsControlCharacter(path) {', "if false {"),
     ("a dry run shows an alert", "Sources/RightHereKit/FailureAlert.swift",
      "requested && !dryRun && environment", "requested && environment"),
     ("a plan summary prints names raw", "Sources/RightHereCore/Plan/LaunchPlan.swift",
