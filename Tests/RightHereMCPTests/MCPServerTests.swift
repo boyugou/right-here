@@ -526,6 +526,18 @@ struct MCPShapeTests {
         #expect(items[2]["error"]?["code"] == .number(-32600))
     }
 
+    @Test func aBatchIsLimitedInSizeSoOneLineCannotQueueTensOfThousandsOfCalls() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        func batch(_ count: Int) -> String {
+            "[" + (0..<count).map { #"{"jsonrpc":"2.0","id":\#($0),"method":"ping"}"# }.joined(separator: ",") + "]"
+        }
+        let allowed = try decode(await harness.server.handle(batch(MCPServer.maxBatch)))
+        #expect(allowed.arrayValue?.count == MCPServer.maxBatch)
+        let tooMany = try decode(await harness.server.handle(batch(MCPServer.maxBatch + 1)))
+        #expect(tooMany["error"]?["code"] == .number(-32600))
+        #expect(tooMany["error"]?["message"]?.stringValue?.contains("at most \(MCPServer.maxBatch)") == true)
+    }
+
     @Test func aResponseOrAnIdlessObjectGetsNoReply() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
         #expect(await harness.server.handle(#"{"jsonrpc":"2.0","id":1,"result":{}}"#) != nil, "an object with an id and no method is a malformed request")

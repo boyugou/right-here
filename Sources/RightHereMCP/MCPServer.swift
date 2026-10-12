@@ -81,6 +81,11 @@ public struct MCPServer: Sendable {
         // A batch (JSON-RPC, allowed by protocol 2025-03-26 and earlier): answer every request in one array.
         if case .array(let batch) = message {
             guard !batch.isEmpty else { return Self.errorResponse(id: .null, code: -32600, message: "Invalid request: empty batch") }
+            // A batch is answered one member after another inside a single request slot, so its size is the amount
+            // of work one line can queue; 2 MB of tiny calls would otherwise be tens of thousands of them.
+            guard batch.count <= Self.maxBatch else {
+                return Self.errorResponse(id: .null, code: -32600, message: "Invalid request: a batch holds at most \(Self.maxBatch) requests")
+            }
             var replies: [JSONValue] = []
             for item in batch {
                 if let reply = await reply(to: item) { replies.append(reply) }
@@ -203,6 +208,8 @@ public struct MCPServer: Sendable {
     /// How many requests run at once. Reading pauses while this many are in flight, so a burst of slow calls
     /// (each may start a login shell or an osascript) cannot start hundreds of processes.
     static let maxInFlight = 8
+    /// The most requests one batch may hold.
+    static let maxBatch = 100
 
     /// Reads requests from standard input until it closes, answering on standard output. Messages are
     /// separated by line feeds only (the transport says so): Foundation's `lines` would also split on
