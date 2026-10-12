@@ -52,8 +52,9 @@ public struct LaunchProbe: Sendable {
     static let markerName = ".rh-probe-launch"
     /// Typed into the new shell. Fish accepts it as well as zsh and bash.
     static let command = "printf '%s\\n' \"$SHELL\" \"$PWD\" > \(markerName); exit"
-    /// Spaces, both kinds of quote, a backslash, `$`, a backtick and shell punctuation.
-    static let awkwardName = "a b'c\"d\\e $HOME `x` ;&|"
+    /// Spaces, both kinds of quote, a backslash (also directly before a quote, which fish reads as an
+    /// escape), `$`, a backtick and shell punctuation.
+    static let awkwardName = "a b'c\"d\\e\\' $HOME `x` ;&|"
 
     private let facts: any SystemFacts
     private let executor: LiveExecutor

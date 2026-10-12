@@ -102,14 +102,28 @@ struct TerminalAdapterTests {
         #expect(steps == [.open(OpenStep(bundleID: "com.apple.Terminal", targets: ["/Users/tester/my code"]))])
     }
 
-    @Test func terminalRunsACommandWithTheFolderQuotedByAppleScript() throws {
+    @Test func terminalRunsACommandWithTheFolderQuotedForTheLoginShell() throws {
         let session = TerminalSession(directory: directory, typedInput: "claude")
         guard case .appleScript(let step)? = try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts).first else {
             Issue.record("expected AppleScript"); return
         }
-        #expect(step.arguments == ["/Users/tester/my code", "claude"])
-        #expect(step.source.contains("quoted form of cwd"))
+        #expect(step.arguments == ["cd '/Users/tester/my code' && claude"])
         #expect(step.controls == "Terminal")
+        #expect(!step.source.contains("quoted form of"), "quoting is done in Swift, for the login shell")
+    }
+
+    @Test("a hostile folder name is quoted for the shell that will read it", arguments: [
+        ("/bin/zsh", #"cd '/tmp/q\'\''; touch x; #' && claude"#),
+        ("/opt/homebrew/bin/fish", #"cd '/tmp/q\\\'; touch x; #' && claude"#)
+    ])
+    func hostileFolderQuotedPerShell(shell: String, expected: String) throws {
+        let name = #"/tmp/q\'; touch x; #"#
+        let machine = FakeSystemFacts(loginShell: shell, directories: [name])
+        let session = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude")
+        guard case .appleScript(let step)? = try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: machine).first else {
+            Issue.record("expected AppleScript"); return
+        }
+        #expect(step.arguments == [expected])
     }
 
     // MARK: Folders only

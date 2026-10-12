@@ -15,18 +15,19 @@ public struct AppleTerminalAdapter: TerminalAdapter {
         }
         // The folder is typed after `cd`, so it is held to the same rule as the command.
         do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeText(directory) }
-        return [.appleScript(AppleScriptStep(source: Self.script, arguments: [directory, typed], controls: "Terminal"))]
+        // The line is built here, quoted for the person's own login shell: AppleScript's `quoted form of`
+        // is POSIX quoting, which fish reads differently (it treats a backslash inside single quotes as an
+        // escape), so a folder name with a backslash next to a quote could break out of it.
+        let line = "cd " + ShellQuoting.quote(directory, for: facts.shellFlavor) + " && " + typed
+        return [.appleScript(AppleScriptStep(source: Self.script, arguments: [line], controls: "Terminal"))]
     }
 
-    /// Constant source. `quoted form of` quotes the folder for the shell; `steps` has already
-    /// refused a folder or a command containing line breaks or control characters.
+    /// Constant source. The whole line to type arrives as an argument, already quoted and checked.
     static let script = """
     on run argv
-        set cwd to item 1 of argv
-        set typed to item 2 of argv
         tell application "Terminal"
             activate
-            do script ("cd " & quoted form of cwd & " && " & typed)
+            do script (item 1 of argv)
         end tell
     end run
     """
