@@ -56,6 +56,28 @@ success in 393 of 400 rounds), so the probe request is now claimed with `rename`
 `rh` died by SIGPIPE when an MCP client went away; the Homebrew formula's test named a file that does not
 exist, which has been refused since the first round.
 
+## Third round (commit bcb4d2e)
+
+The reviewer looked only at the nine commits that fixed the second round, and found regressions in two of them.
+
+| Finding | Fix |
+|---|---|
+| Medium: the existence check called a path "present" for every errno except ENOENT and ENOTDIR, so a path that cannot exist (a component over 255 bytes, a path over PATH_MAX, `/dev/fd/9999`, a link loop) passed the new "every named path must exist" rule: copy-path put attacker text on the clipboard and a terminal opened the parent of a name that was never there | only a refusal or an unreachable volume (EACCES, EPERM, EIO, ESTALE, ETIMEDOUT) is "unreadable"; everything else is missing. The planner is now also tested over the real file system, because the fake facts cannot say ENAMETOOLONG (I had found this from a test of my own and fixed it before the report arrived; the reviewer's repro refuses on the fixed code) |
+| Medium: a folder `lstat` could not see through was replaced by its parent (the same substitution the rule exists to stop); a link that points nowhere did the same | an item has three states: present, unreadable, missing. An unreadable path stops a terminal, agent or new-file action with an error that names the permission and offers the Files & Folders page; a link that points nowhere has no folder and says so. Copy, reveal and open-in-editor, which only carry the path, still work (an advisor review flagged the first of these as my own regression before the reviewer's report arrived) |
+| Medium: `copy-path.shell-quoted` was quoted for the login shell, but the text is pasted somewhere else: a fish user pasting a hostile name into an ssh session ran it | the form follows the text (POSIX single quotes, or backslash escapes when the name has a backslash), which sh, bash, zsh and fish read alike |
+| Low: the in-flight gate paused reading, so ping, initialize and tools/list waited behind eight slow calls | everything that is not a tool call is answered at once; tool calls run eight at a time and 32 are held, the rest get a JSON-RPC server-busy error at once; an MCP-started action is stopped after 120 s and says so (tests run `serve` in process over pipes) |
+| Low: "the only character shells read differently" is false for csh and tcsh (`!` is expanded inside single quotes) | the claim is narrowed, and tests show csh and tcsh can only fail the `cd`, never run anything; dash and ksh join the round trip |
+| Low: the default terminal and editor came from the preference order without a role check; a template's `open_with` could name a terminal, which then runs the new file | both check roles, in the parser and in the planner |
+| Low: the rotated log kept its old world-readable mode | rotation tightens it |
+| Low, latent: the stdin writer ran on the Swift concurrency pool and blocked threads the watchdogs need (48 runs with 300 KB of input to a sleeping child lasted its 30 s instead of 1 s) | the write happens on a Dispatch thread |
+| Cosmetic: Character-level prefix tests survived (`~` for a path whose first component starts with a combining mark; an MCP path starting with one was rejected as relative) | scalar-level |
+
+Found by me while fixing: running `serve` and its reply reader in one test process deadlocks, because `FileHandle.bytes`
+does its blocking reads on a single queue shared by every such sequence; the tests read replies on a thread of their
+own. The hand-run mutation sweep that said every protection was noticed was wrong: passing test output also contains
+the word "error:". `script/mutation_check.py` keeps the check honest (a failed test is the only kill, a compile error
+and a mutant that changes nothing are reported) and found two mutants that changed nothing.
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.
@@ -65,5 +87,6 @@ exist, which has been refused since the first round.
 
 ## Why keep doing it
 
-Both reviewers found things the author, reading their own code, had not: the quoting bug had passed 150 tests and
+Every round found things the author, reading their own code, had not: the quoting bug had passed 150 tests and
 a DESIGN claim of "round-tripped through real shells". Tests now generate their awkward input instead of listing it.
+The third round found regressions in the fixes of the second, so a round is worth running on a round's own changes.
