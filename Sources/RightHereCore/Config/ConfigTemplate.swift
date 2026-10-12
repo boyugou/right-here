@@ -44,9 +44,22 @@ public enum ConfigTemplate {
         # [menu]
         # items = [\(menu)]
 
+        # Where a terminal session starts: "window" (default) or "tab" (a new tab of the front Ghostty window).
+        # terminal_placement = "tab"   (goes under [general] above)
+
         # Forms offered under "Copy Path".
         # [copy_path]
         # styles = [\(styles)]
+
+        # New files. then = "open" opens the file after creating it; a template can name the app that opens it.
+        # Defining any template replaces the built-in Text and Markdown ones, so list the ones you want.
+        # [new_file]
+        # then = "open"
+        # [[new_file.template]]
+        # id = "md"
+        # title = "Markdown Document"
+        # extension = "md"
+        # open_with = "typora"
 
         # An agent can start another way: launcher = "terminal" (default), "link" or "desktop".
         # [agent.claude]

@@ -200,7 +200,8 @@ public struct Planner: Sendable {
         case .reveal:
             steps.append(.reveal([path]))
         case .open:
-            let editor = try? resolveDefault(role: .editor, configured: config.editor)
+            let chosen = template.openWith.flatMap(config.app(id:)).flatMap { $0.installedBundleID(facts: facts) != nil ? $0 : nil }
+            let editor = chosen ?? (try? resolveDefault(role: .editor, configured: config.editor))
             steps.append(.open(OpenStep(bundleID: editor?.installedBundleID(facts: facts), targets: [path])))
         case .nothing:
             break

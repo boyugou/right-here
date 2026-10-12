@@ -75,6 +75,15 @@ agents = ["claude", "codex"]
 [menu]
 items = ["open-terminal", "open-editor", "agents", "-", "new-file", "copy-path"]
 
+[new_file]
+then = "open"                        # open a new file after creating it...
+
+[[new_file.template]]                # ...Markdown in Typora (defining templates replaces the built-in two)
+id = "md"
+title = "Markdown Document"
+extension = "md"
+open_with = "typora"
+
 [agent.claude]
 command = "claude --model opus"      # what is typed into the shell
 

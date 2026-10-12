@@ -120,7 +120,10 @@ public enum ConfigSchema {
                                example: "\"Markdown Document\""),
                     SchemaNode("base_name", .string, "File name without extension; numbered on collision.", default: "\"untitled\""),
                     SchemaNode("extension", .string, "File extension without the dot.", example: "\"md\""),
-                    SchemaNode("contents", .string, "Initial contents.", default: "\"\"")
+                    SchemaNode("contents", .string, "Initial contents.", default: "\"\""),
+                    SchemaNode("open_with", .string,
+                               "App id (see `rh apps`) that opens this kind of file after it is created, when new_file.then is \"open\". The default editor opens it when this app is not installed.",
+                               example: "\"typora\"")
                 ])
             ]),
             SchemaNode("app", .tableArray,

@@ -298,6 +298,12 @@ private struct Builder {
             }
             return app
         }
+        for (index, template) in config.newFile.templates.enumerated() {
+            guard let app = template.openWith, config.app(id: app) == nil else { continue }
+            sink.error(["new_file", "template", String(index + 1), "open_with"], "unknown app \"\(app)\"",
+                       suggestion: Suggestion.didYouMean(app, in: allAppIDs(config)))
+            config.newFile.templates[index].openWith = nil
+        }
         config.terminal = checkedTerminal(terminalChoice, path: ["general", "terminal"], customApps: config.apps)
         if let editor = editorChoice {
             if config.app(id: editor) != nil {
@@ -371,7 +377,7 @@ private struct Builder {
         }
         return NewFileTemplate(
             id: id, title: title, baseName: baseName,
-            fileExtension: ext, contents: reader.string("contents") ?? ""
+            fileExtension: ext, contents: reader.string("contents") ?? "", openWith: reader.string("open_with")
         )
     }
 

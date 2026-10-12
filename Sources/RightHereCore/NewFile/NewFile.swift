@@ -8,6 +8,9 @@ public struct NewFileTemplate: Sendable, Equatable, Identifiable {
     public var baseName: String
     public var fileExtension: String
     public var contents: String
+    /// An app id that opens this kind of file after creation when `new_file.then` is `open`; the default
+    /// editor otherwise, or when this one is not installed.
+    public var openWith: String?
     /// Localized title and file name of a built-in template; custom templates use their own text.
     public var titleKey: LocalizationKey?
     public var baseNameKey: LocalizationKey?
@@ -18,6 +21,7 @@ public struct NewFileTemplate: Sendable, Equatable, Identifiable {
         baseName: String = "untitled",
         fileExtension: String,
         contents: String = "",
+        openWith: String? = nil,
         titleKey: LocalizationKey? = nil,
         baseNameKey: LocalizationKey? = nil
     ) {
@@ -26,6 +30,7 @@ public struct NewFileTemplate: Sendable, Equatable, Identifiable {
         self.baseName = baseName
         self.fileExtension = fileExtension
         self.contents = contents
+        self.openWith = openWith
         self.titleKey = titleKey
         self.baseNameKey = baseNameKey
     }

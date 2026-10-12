@@ -357,6 +357,53 @@ struct ConfigStrictnessTests {
         #expect(result.config.terminalPlacement == .newWindow)
     }
 
+    @Test func aTemplateCanNameTheAppThatOpensIt() {
+        let result = parse("""
+        [new_file]
+        then = "open"
+
+        [[new_file.template]]
+        id = "md"
+        title = "Markdown"
+        extension = "md"
+        open_with = "typora"
+        """)
+        #expect(result.diagnostics.isEmpty)
+        #expect(result.config.newFile.templates.first?.openWith == "typora")
+    }
+
+    @Test func anUnknownOpenWithAppIsAnErrorWithASuggestion() throws {
+        let result = parse("""
+        [[new_file.template]]
+        id = "md"
+        title = "Markdown"
+        extension = "md"
+        open_with = "typoraa"
+        """)
+        let diagnostic = try #require(result.diagnostics.first)
+        #expect(diagnostic.severity == .error)
+        #expect(diagnostic.path == "new_file.template.1.open_with")
+        #expect(diagnostic.replacement == "typora")
+        #expect(result.config.newFile.templates.first?.openWith == nil)
+    }
+
+    @Test func openWithMayNameAnAppTheConfigDefines() {
+        let result = parse("""
+        [[app]]
+        id = "mine"
+        name = "Mine"
+        bundle_id = "a.b.c"
+        role = "editor"
+
+        [[new_file.template]]
+        id = "md"
+        title = "Markdown"
+        extension = "md"
+        open_with = "mine"
+        """)
+        #expect(result.diagnostics.isEmpty)
+    }
+
     @Test func aTypoCarriesTheLikelyReplacementForTools() throws {
         let result = parse("[general]\nagnts = [\"codex\"]\n")
         let diagnostic = try #require(result.diagnostics.first)

@@ -46,6 +46,34 @@ struct PlannerTests {
         }
     }
 
+    @Test func aTemplateOpensInItsOwnAppAfterCreation() throws {
+        var config = Config()
+        config.newFile.then = .open
+        config.newFile.templates = [NewFileTemplate(id: "md", title: "Markdown", fileExtension: "md", openWith: "typora")]
+        let facts = machine(installed: ["com.mitchellh.ghostty", "com.microsoft.VSCode", "abnerworks.Typora"])
+        let plan = try Planner(config: config, facts: facts).plan(.newFile("md"), context: folder("/Users/tester/code/app"))
+        guard case .open(let open)? = plan.steps.last else { Issue.record("expected an open step"); return }
+        #expect(open.bundleID == "abnerworks.Typora")
+        #expect(open.targets == ["/Users/tester/code/app/untitled.md"])
+    }
+
+    @Test func aTemplateFallsBackToTheEditorWhenItsAppIsNotInstalled() throws {
+        var config = Config()
+        config.newFile.then = .open
+        config.newFile.templates = [NewFileTemplate(id: "md", title: "Markdown", fileExtension: "md", openWith: "typora")]
+        let plan = try Planner(config: config, facts: machine()).plan(.newFile("md"), context: folder("/Users/tester/code/app"))
+        guard case .open(let open)? = plan.steps.last else { Issue.record("expected an open step"); return }
+        #expect(open.bundleID == "com.microsoft.VSCode")
+    }
+
+    @Test func openWithIsIgnoredUnlessTheFileIsToBeOpened() throws {
+        var config = Config()
+        config.newFile.templates = [NewFileTemplate(id: "md", title: "Markdown", fileExtension: "md", openWith: "typora")]
+        let plan = try Planner(config: config, facts: machine(installed: ["abnerworks.Typora"])).plan(.newFile("md"), context: folder("/Users/tester/code/app"))
+        #expect(plan.steps.count == 2)
+        guard case .reveal? = plan.steps.last else { Issue.record("expected reveal by default"); return }
+    }
+
     @Test func aDanglingSymlinkCountsAsATakenName() throws {
         let facts = FakeSystemFacts(directories: ["/Users/tester/code"], danglingLinks: ["/Users/tester/code/untitled.md"])
         let plan = try Planner(facts: facts).plan(.newFile("md"), context: folder("/Users/tester/code"))
