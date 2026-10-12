@@ -47,7 +47,7 @@ open_args = ["{app}/Contents/MacOS/alacritty", "--working-directory", "{dir}"]
 run_args = ["{app}/Contents/MacOS/alacritty", "--working-directory", "{dir}", "-e", "{shell}", "-lic", "{command}; exec {shell} -l"]
 ```
 
-(WezTerm's entry is in `rh docs config`.) Check for each: the window opens in the folder, the command is typed
+`rh config validate` warns that each entry replaces the built-in one; that is intended, the built-in entries only know how to open the app, not how to start a command. (WezTerm's entry is in `rh docs config`.) Check for each: the window opens in the folder, the command is typed
 and runs, a folder named `it's a "test"` works, and closing the agent leaves a usable shell. Report what had to
 change so the docs can carry a verified entry.
 
