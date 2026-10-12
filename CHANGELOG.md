@@ -14,5 +14,8 @@ First version, running on macOS 26 and later (Apple silicon).
 - A plain-text TOML config with a schema, unknown-key suggestions, `--strict` validation and a JSON Schema.
 - A setup app, thirty languages for the menu, the app, alerts and the permission prompt (machine-translated,
   awaiting native review), a Claude Code plugin and `rh docs` for agents.
+- Hardened through three independent review rounds (`docs/decisions/0008-independent-review.md`): shell quoting
+  that holds against combining marks, one place that refuses any path that does not exist, bounded and budgeted
+  MCP calls, a process runner that stops a login shell for good, an atomic claim for the probe request.
 - Verified: the whole chain after a menu click on a real Mac; real-shell round trips of quoting; a notarized,
   stapled DMG. Not yet verified: a real Finder click (see `docs/DESIGN.md`, section 5, Open).

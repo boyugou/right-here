@@ -82,5 +82,5 @@ an unknown key only warns because the rest of the file still applies, but what i
 
 ## Removing it
 
-`rh uninstall` removes the runner script, Quick Actions, command link and extension registration, and keeps your
-config. Then delete Right Here.app.
+`rh uninstall` removes the runner script, Quick Actions, the command link (only when it points at Right Here's `rh`)
+and the extension registration, and keeps your config. Then delete Right Here.app.

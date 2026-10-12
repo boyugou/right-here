@@ -55,6 +55,16 @@ public struct Installer: Sendable {
         Bundle.main.executableURL.map { stablePath(forResolved: $0.resolvingSymlinksInPath().path) }
     }
 
+    /// Whether `path` is an `rh` that Right Here would have linked: the helper inside Right Here.app, or the binary
+    /// that is running now (which is what `rh install` links to). A link to anything else was made by somebody
+    /// else, whatever it is called.
+    public static func isRightHereBinary(_ path: String) -> Bool {
+        let resolved = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
+        if resolved.contains("/Right Here.app/Contents/Helpers/") { return true }
+        guard let current = Bundle.main.executableURL?.resolvingSymlinksInPath().path else { return false }
+        return resolved == current
+    }
+
     static func stablePath(forResolved resolved: String) -> String {
         guard let range = resolved.range(of: "/Cellar/") else { return resolved }
         let alias = String(resolved[..<range.lowerBound]) + "/bin/" + URL(fileURLWithPath: resolved).lastPathComponent

@@ -145,8 +145,13 @@ struct Uninstall: AsyncParsableCommand {
             Output.print("Removed \(services.count) Services.")
         }
         if let destination = try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path) {
-            try FileManager.default.removeItem(at: installer.cliLink)
-            Output.print("Removed the command link (it pointed at \(destination)).")
+            if Installer.isRightHereBinary(destination) {
+                try FileManager.default.removeItem(at: installer.cliLink)
+                Output.print("Removed the command link (it pointed at \(destination)).")
+            } else {
+                // `rh` is a short name other tools use too; a link to something that is not Right Here's is not ours to delete.
+                Output.print("Left the command link alone: \(installer.cliLink.path) points at \(destination), which is not Right Here's rh. Remove it yourself if you want it gone.")
+            }
         }
         if ProcessInfo.processInfo.environment["RH_HOME"] != nil {
             Output.print("RH_HOME is set: the Finder extension's registration is system-wide and was left alone.")

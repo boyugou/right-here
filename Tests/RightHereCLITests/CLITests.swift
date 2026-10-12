@@ -342,6 +342,23 @@ struct CLITests {
         #expect(remaining.filter { $0.hasPrefix("Right Here - ") }.isEmpty)
     }
 
+    @Test func uninstallRemovesTheCommandLinkItMadeAndLeavesSomeoneElsesAlone() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let link = home.appendingPathComponent(".local/bin/rh")
+        #expect(try rh.run(["install", "--skip-finder"]).status == 0)
+        #expect((try? FileManager.default.destinationOfSymbolicLink(atPath: link.path)) != nil)
+        let ours = try rh.run(["uninstall"])
+        #expect(ours.standardOutput.contains("Removed the command link"))
+        #expect((try? FileManager.default.destinationOfSymbolicLink(atPath: link.path)) == nil, "its own link should be gone")
+
+        // A link to some other program that happens to be called rh is not Right Here's to remove.
+        try FileManager.default.createSymbolicLink(atPath: link.path, withDestinationPath: "/bin/ls")
+        let foreign = try rh.run(["uninstall"])
+        #expect(foreign.standardOutput.contains("Left the command link alone"))
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: link.path) == "/bin/ls")
+    }
+
     @Test func aRealFileAtTheCommandLinkMakesInstallReportAProblemButFinishTheRest() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)
