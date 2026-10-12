@@ -85,7 +85,9 @@ enum Tools {
             description: """
             Run an action on files or folders: open a folder in the person's terminal or editor, start an AI \
             agent there (agent.claude, agent.codex), copy a path, create a new file, or reveal items in Finder. \
-            Action ids come from right_here_actions. Pass dry_run to see the plan without doing anything.
+            Action ids come from right_here_actions. Pass dry_run to see the plan without doing anything. \
+            Opening is budgeted: about two dozen documents or eight started commands a minute; a call over \
+            the budget is refused, and then the person should be asked rather than the call retried.
             """,
             inputSchema: schema([
                 "action": string("Action id, for example open.terminal, agent.claude, copy-path.absolute, new-file.md or reveal.", maxLength: 200),

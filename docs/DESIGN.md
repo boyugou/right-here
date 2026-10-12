@@ -221,12 +221,19 @@ applies. The app never rewrites the file, so comments and ordering stay the owne
 ## 9. Security
 
 0. A terminal app handed a file runs it (a `.command` script). The working directory is therefore always
-   validated to be a folder before any terminal action; a file becomes its folder and a missing path is
-   refused, on the planner, in every terminal adapter and on the MCP path.
+   validated to be a folder before any terminal action; a file becomes its folder, in the planner and again
+   in every terminal adapter. Any path an action names that does not exist (a link that points nowhere does)
+   is refused, whichever action it is for, so a typo is reported and never replaced by the folder around it,
+   and text that is not a path never reaches the clipboard, a terminal or another agent's prompt box. A path
+   the system merely refuses to look at (privacy-protected folders) counts as present.
 1. File names are data. A path never becomes shell or AppleScript source: values travel as argv entries
    or as AppleScript `on run argv` arguments; the single quoting module works on Unicode scalars (a quote
    followed by a combining mark is still a quote to a shell) and is tested by round-tripping every
-   metacharacter with every joining mark, plus a seeded fuzz, through real `sh`, `bash` and `zsh`.
+   metacharacter with every joining mark, plus a seeded fuzz, through real `sh`, `bash` and `zsh` (and `fish`
+   where it is installed; CI installs it). Terminal.app is the one adapter that types the folder (`cd …`)
+   into a shell the adapter cannot see (the profile's, not necessarily the account's), so it quotes the folder
+   the one way those shells agree on and refuses a backslash, the single character they read differently.
+   Paths are cut at slash scalars, as the kernel cuts them, so a combining mark cannot hide a `..`.
 2. Text typed into a terminal is read as keystrokes, so a path with a line break or any control character
    is refused for typed launches. Deep links percent-encode everything but unreserved characters.
 3. The sandbox stays on for the extension. What it cannot do is done by `rh` through the runner script,
