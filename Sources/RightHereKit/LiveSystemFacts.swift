@@ -59,6 +59,22 @@ public struct LiveSystemFacts: SystemFacts {
         }
     }
 
+    public func onDiskPath(_ url: URL) -> String {
+        var names: [String] = []
+        var prefix = URL(fileURLWithPath: "/")
+        var lookingUp = true
+        for component in url.lexicallyNormalized.pathComponents.dropFirst() {
+            prefix.appendPathComponent(component)
+            if lookingUp, let stored = try? prefix.resourceValues(forKeys: [.nameKey]).name {
+                names.append(stored)
+            } else {
+                lookingUp = false
+                names.append(component)
+            }
+        }
+        return "/" + names.joined(separator: "/")
+    }
+
     public func gitRoot(containing url: URL) -> URL? {
         let home = homeDirectory.lexicallyNormalized.path
         var directory = url.lexicallyNormalized

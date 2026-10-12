@@ -48,29 +48,54 @@ public struct PathRenderer: Sendable {
 
     public func render(_ url: URL, style: PathStyle, relativeTo base: URL? = nil) -> String {
         let url = url.lexicallyNormalized
+        let path = facts.onDiskPath(url)
+        let name = path.split(separator: "/", omittingEmptySubsequences: true).last.map(String.init) ?? ""
         switch style {
         case .absolute:
-            return url.path
+            return path
         case .tilde:
-            return tildePath(url)
+            return tildePath(url, path: path)
         case .gitRelative:
-            return projectPath(url)
+            return projectPath(url, path: path)
         case .name:
-            return url.lastPathComponent
+            return name
         case .parent:
-            return url.deletingLastPathComponent().path
+            return Self.parent(of: path)
         case .shellEscaped:
-            return ShellQuoting.backslashEscape(url.path)
+            return ShellQuoting.backslashEscape(path)
         case .shellQuoted:
-            return Self.shellQuotedForAnyShell(url.path)
+            return Self.shellQuotedForAnyShell(path)
         case .fileURL:
-            return url.absoluteString
+            return Self.fileURLString(path)
         case .aiMention:
-            if let base { return mention(PathMath.relativePath(from: base, to: url) ?? url.path) }
-            return mention(projectPath(url))
+            if let base { return mention(Self.onDiskRelative(PathMath.relativePath(from: base, to: url), path: path) ?? path) }
+            return mention(projectPath(url, path: path))
         case .markdownLink:
-            return "[\(Self.markdownText(url.lastPathComponent))](\(Self.markdownDestination(projectPath(url))))"
+            return "[\(Self.markdownText(name))](\(Self.markdownDestination(projectPath(url, path: path))))"
         }
+    }
+
+    private static func parent(of path: String) -> String {
+        var parts = path.split(separator: "/", omittingEmptySubsequences: true)
+        if !parts.isEmpty { parts.removeLast() }
+        return "/" + parts.joined(separator: "/")
+    }
+
+    /// A `file://` URL spelled from the on-disk path, percent-encoded the way `URL` does it.
+    private static func fileURLString(_ path: String) -> String {
+        var allowed = CharacterSet.urlPathAllowed
+        allowed.remove(charactersIn: ";?#")
+        return "file://" + (path.addingPercentEncoding(withAllowedCharacters: allowed) ?? path)
+    }
+
+    /// A path relative to some folder, with the on-disk spelling of its trailing names: the last components of the
+    /// full on-disk `path`, as many as the relative path has. A path that climbs out (`..`) is left as it is.
+    private static func onDiskRelative(_ relative: String?, path: String) -> String? {
+        guard let relative else { return nil }
+        let parts = relative.split(separator: "/", omittingEmptySubsequences: true)
+        let stored = path.split(separator: "/", omittingEmptySubsequences: true)
+        guard !parts.isEmpty, !parts.contains(".."), !parts.contains("."), parts.count <= stored.count else { return relative }
+        return stored.suffix(parts.count).joined(separator: "/")
     }
 
     /// Why these paths cannot be given in a shell form that every shell reads the same way, or `nil`. A name with a
@@ -96,20 +121,20 @@ public struct PathRenderer: Sendable {
         path.unicodeScalars.contains("\\") ? ShellQuoting.backslashEscape(path) : ShellQuoting.quote(path, for: .posix)
     }
 
-    private func tildePath(_ url: URL) -> String {
-        let home = facts.homeDirectory.lexicallyNormalized.path
-        if url.path == home { return "~" }
+    private func tildePath(_ url: URL, path: String) -> String {
+        let home = facts.onDiskPath(facts.homeDirectory)
+        if path == home { return "~" }
         // Scalars again: a combining mark right after the slash would hide it from a Character-level prefix test.
-        let path = url.path.unicodeScalars
-        if path.starts(with: (home + "/").unicodeScalars) {
-            return "~" + String(String.UnicodeScalarView(path.dropFirst(home.unicodeScalars.count)))
+        let scalars = path.unicodeScalars
+        if scalars.starts(with: (home + "/").unicodeScalars) {
+            return "~" + String(String.UnicodeScalarView(scalars.dropFirst(home.unicodeScalars.count)))
         }
-        return url.path
+        return path
     }
 
-    private func projectPath(_ url: URL) -> String {
-        guard let root = facts.gitRoot(containing: url) else { return url.path }
-        return PathMath.relativePath(from: root, to: url) ?? url.path
+    private func projectPath(_ url: URL, path: String) -> String {
+        guard let root = facts.gitRoot(containing: url) else { return path }
+        return Self.onDiskRelative(PathMath.relativePath(from: root, to: url), path: path) ?? path
     }
 
     /// `@path`, or `@"path"` when it has whitespace; inside the quotes a quote or backslash is escaped, so

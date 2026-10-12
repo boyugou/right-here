@@ -110,3 +110,28 @@ struct LiveSystemFactsExistenceTests {
         #expect(!(try Planner(facts: facts).plan(.copyPath(.absolute), context: context).steps.isEmpty))
     }
 }
+
+@Suite("LiveSystemFacts: on-disk spelling")
+struct LiveOnDiskPathTests {
+    @Test func aNameStoredPrecomposedComesBackPrecomposedWhateverWasTyped() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let name = "caf\u{e9} Dir"
+        // Through `mkdir` with the bytes as written: building the path from a `URL` would decompose the name first.
+        #expect(mkdir(directory.path + "/" + name, 0o755) == 0)
+        let facts = LiveSystemFacts()
+        // The file system stores the name as it was created; `URL.path` would hand back the decomposed form.
+        for typed in ["caf\u{e9} Dir", "cafe\u{301} Dir", "CAF\u{c9} DIR"] {
+            let url = directory.appendingPathComponent(typed)
+            let path = facts.onDiskPath(url)
+            #expect(path.unicodeScalars.contains("\u{e9}") && !path.unicodeScalars.contains("\u{301}"), "\(typed) -> \(path)")
+            #expect(path.hasSuffix("/" + name), "\(typed) -> \(path)")
+        }
+    }
+
+    @Test func aPathThatIsNotThereKeepsTheRestAsGiven() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let path = LiveSystemFacts().onDiskPath(directory.appendingPathComponent("nothing/here/at all"))
+        #expect(path.hasSuffix("/nothing/here/at all"))
+    }
+}
+

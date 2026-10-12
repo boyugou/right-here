@@ -130,9 +130,11 @@ A round about behavior rather than security. Fixed:
 - A style listed twice in `copy_path.styles` showed twice in the menu: now a warning, kept once. An empty
   `menu.items` is a warning. README's `rh actions` line and the doubled period in the TOML error were corrected.
 
-Known, not fixed: a file name stored in NFC on disk is copied as NFD (Foundation's `URL.path` decomposes, measured
-for `path`, `lastPathComponent` and `absoluteString`). Lookups still work because APFS ignores normalization, but a
-text search for the copied name can miss. Fixing it means carrying the original path strings through the context.
+Found and fixed afterwards: a file name stored precomposed (NFC) on disk was copied decomposed (NFD), because
+Foundation's `URL.path` decomposes (measured for `path`, `lastPathComponent` and `absoluteString`) and keeps the case
+that was typed. Lookups worked (APFS ignores normalization), but a text search for the copied name could miss.
+`SystemFacts.onDiskPath` now reads each component's stored name (`URLResourceKey.name`, measured to return the stored
+spelling and case), and `PathRenderer` builds every style from it; a component that cannot be looked up is kept as given.
 
 ## Left as they are, on purpose
 

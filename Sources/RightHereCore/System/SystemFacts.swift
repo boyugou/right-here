@@ -35,6 +35,10 @@ public protocol SystemFacts: Sendable {
     func bundleVersion(bundleID: String) -> String?
     func isRunning(bundleID: String) -> Bool
     func environment(_ key: String) -> String?
+    /// The path with each name as the file system stores it. `URL.path` decomposes accented names (a name stored as
+    /// U+00E9 comes back as `e` plus U+0301) and keeps the case that was typed, so text copied from a URL can miss
+    /// a search for the real name. Components that cannot be looked up are kept as given.
+    func onDiskPath(_ url: URL) -> String
 }
 
 extension SystemFacts {
@@ -42,6 +46,7 @@ extension SystemFacts {
     public func displayName(bundleID: String) -> String? { nil }
     public func bundleVersion(bundleID: String) -> String? { nil }
     public func itemState(_ url: URL) -> ItemState { fileExists(url) ? .present : .missing }
+    public func onDiskPath(_ url: URL) -> String { url.path }
     /// Whether the path is there as far as anyone can tell: a refusal to look is not "missing".
     public func itemExists(_ url: URL) -> Bool { itemState(url) != .missing }
 }
@@ -62,6 +67,8 @@ public struct FakeSystemFacts: SystemFacts {
     public var bundleVersions: [String: String]
     public var runningApplications: Set<String>
     public var variables: [String: String]
+    /// Paths as stored on disk where that differs from what `URL.path` gives (key: `URL.path`).
+    public var diskPaths: [String: String]
 
     public init(
         homeDirectory: URL = URL(fileURLWithPath: "/Users/tester"),
@@ -75,8 +82,10 @@ public struct FakeSystemFacts: SystemFacts {
         applications: [String: URL] = [:],
         bundleVersions: [String: String] = [:],
         runningApplications: Set<String> = [],
-        variables: [String: String] = [:]
+        variables: [String: String] = [:],
+        diskPaths: [String: String] = [:]
     ) {
+        self.diskPaths = diskPaths
         self.homeDirectory = homeDirectory
         self.currentDirectory = currentDirectory
         self.loginShell = loginShell
@@ -101,6 +110,11 @@ public struct FakeSystemFacts: SystemFacts {
     public func fileExists(_ url: URL) -> Bool {
         let path = url.lexicallyNormalized.path
         return directories.contains(path) || files.contains(path)
+    }
+
+    public func onDiskPath(_ url: URL) -> String {
+        let path = url.lexicallyNormalized.path
+        return diskPaths[path] ?? path
     }
 
     public func itemState(_ url: URL) -> ItemState {

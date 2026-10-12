@@ -113,6 +113,8 @@ MUTANTS = [
      "if chain > limit { return true }", "if chain > limit * 1_000_000 { return true }"),
     ("the probe's interrupt handler leaves the request behind", "Sources/RightHereKit/ProbeMarker.swift",
      "        _ = claim(in: paths)\n        reenableExtension()", "        reenableExtension()\n        _ = claim(in: paths)"),
+    ("copied paths use the decomposed URL spelling again", "Sources/RightHereCore/Paths/PathStyle.swift",
+     "let path = facts.onDiskPath(url)\n        let name", "let path = url.path\n        let name"),
     ("a bidirectional control is printed as it is", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
      "if Self.bidiControls.contains(scalar) {", "if false {"),
     ("a name with a backslash and a control character gets a shell form", "Sources/RightHereCore/Paths/PathStyle.swift",

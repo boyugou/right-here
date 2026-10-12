@@ -165,3 +165,25 @@ struct PathRendererTests {
         #expect(renderer.render(nested, style: .gitRelative) == "src/main.swift")
     }
 }
+
+@Suite("Paths are copied as the file system stores them")
+struct OnDiskSpellingTests {
+    // The URL spelling decomposes the accent; the disk keeps the precomposed é.
+    private static let typed = "/Users/tester/code/cafe\u{301}/Readme.md"
+    private static let stored = "/Users/tester/code/caf\u{e9}/README.md"
+
+    private func facts() -> FakeSystemFacts {
+        FakeSystemFacts(gitRoots: ["/Users/tester/code"], diskPaths: [URL(fileURLWithPath: Self.typed).lexicallyNormalized.path: Self.stored])
+    }
+
+    @Test("every style spells the names as stored", arguments: [
+        (PathStyle.absolute, stored), (.name, "README.md"), (.parent, "/Users/tester/code/caf\u{e9}"),
+        (.tilde, "~/code/caf\u{e9}/README.md"), (.gitRelative, "caf\u{e9}/README.md"),
+        (.shellQuoted, "'" + stored + "'"), (.aiMention, "@caf\u{e9}/README.md"),
+        (.fileURL, "file:///Users/tester/code/caf%C3%A9/README.md")
+    ])
+    func spelledAsStored(style: PathStyle, expected: String) {
+        #expect(PathRenderer(facts: facts()).render(URL(fileURLWithPath: Self.typed), style: style) == expected)
+    }
+}
+
