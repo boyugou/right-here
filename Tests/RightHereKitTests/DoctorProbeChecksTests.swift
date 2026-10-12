@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import RightHereKit
 
@@ -84,5 +85,51 @@ struct DoctorServicesCheckTests {
         let extra = Doctor.servicesCheck(installed: [a, b], expected: [a])
         #expect(extra.status == .warn)
         #expect(extra.detail?.contains("no longer in the config") == true)
+    }
+}
+
+@Suite("Doctor activity check")
+struct DoctorActivityCheckTests {
+    private func log(_ lines: [String]) throws -> (URL, URL) {
+        let directory = try makeTemporaryDirectory()
+        let file = directory.appendingPathComponent("rh.log")
+        try (lines.joined(separator: "\n") + "\n").write(to: file, atomically: true, encoding: .utf8)
+        return (directory, file)
+    }
+
+    private let now = ISO8601DateFormatter().date(from: "2026-10-12T06:00:00Z")!
+
+    @Test func theNewestActionFromFinderIsReported() throws {
+        let (directory, file) = try log([
+            "2026-10-12T05:00:00Z ok agent.claude [cli, 0 items]",
+            "2026-10-12T05:30:00Z ok copy-path.name [items, 2 items]",
+            "2026-10-12T05:50:00Z ok agent.codex [container, 0 items]",
+            "2026-10-12T05:55:00Z ok open.terminal [cli, 1 items]",
+            "2026-10-12T05:56:00Z probe automation: []"
+        ])
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let check = Doctor.activityCheck(logFile: file, now: now)
+        #expect(check.status == .ok)
+        #expect(check.detail?.contains("agent.codex from the container menu") == true)
+        #expect(check.detail?.contains("ago") == true)
+    }
+
+    @Test func commandLineRunsAndProbesDoNotCount() throws {
+        let (directory, file) = try log(["2026-10-12T05:00:00Z ok agent.claude [cli, 0 items]", "2026-10-12T05:01:00Z agent.claude: Ghostty is not installed."])
+        defer { try? FileManager.default.removeItem(at: directory) }
+        #expect(Doctor.activityCheck(logFile: file, now: now).detail?.hasPrefix("none yet") == true)
+    }
+
+    @Test func noLogMeansNoneYetNotAnError() {
+        let check = Doctor.activityCheck(logFile: URL(fileURLWithPath: "/nonexistent/rh.log"), now: now)
+        #expect(check.status == .ok)
+        #expect(check.detail?.hasPrefix("none yet") == true)
+    }
+
+    @Test func theRotatedLogIsReadToo() throws {
+        let (directory, file) = try log(["2026-10-12T05:58:00Z ok agent.claude [cli, 0 items]"])
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try "2026-10-11T12:00:00Z ok new-file.md [toolbar, 0 items]\n".write(to: file.appendingPathExtension("1"), atomically: true, encoding: .utf8)
+        #expect(Doctor.activityCheck(logFile: file, now: now).detail?.contains("new-file.md from the toolbar menu") == true)
     }
 }

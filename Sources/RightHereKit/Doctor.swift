@@ -61,6 +61,7 @@ public struct Doctor: Sendable {
         checks.append(claudeLinkCheck())
         checks += integrationChecks()
         checks.append(await extensionCheck())
+        checks.append(Self.activityCheck(logFile: paths.logFile))
         if probeLaunch {
             checks.append(await launchCheck(placement: launchPlacement))
         } else if probeExtension {
@@ -245,6 +246,28 @@ public struct Doctor: Sendable {
             detail: linked ? (onPath ? installer.cliLink.path : "linked at \(installer.cliLink.path), but that folder is not on PATH") : "no link at \(installer.cliLink.path)",
             fix: linked && onPath ? nil : (linked ? "Add ~/.local/bin to PATH in your shell profile." : "Run `rh install --cli`.")))
         return checks
+    }
+
+    /// Evidence that a click in Finder has reached `rh`: the newest successful action in the run log that
+    /// did not come from the command line. Informational; nothing here is wrong when there is none yet.
+    static func activityCheck(logFile: URL, now: Date = Date()) -> DoctorCheck {
+        let title = "Last action started from Finder"
+        let text = [logFile, logFile.appendingPathExtension("1")]
+            .compactMap { try? String(contentsOf: $0, encoding: .utf8) }
+            .joined(separator: "\n")
+        let formatter = ISO8601DateFormatter()
+        for line in text.split(separator: "\n").reversed() {
+            let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true).map(String.init)
+            guard parts.count == 4, parts[1] == "ok", let when = formatter.date(from: parts[0]),
+                  let origin = parts[3].split(separator: "]").first.flatMap({ $0.split(separator: "[").last })?.split(separator: ",").first.map(String.init),
+                  ["items", "container", "sidebar", "toolbar", "services"].contains(origin) else { continue }
+            let relative = RelativeDateTimeFormatter()
+            relative.unitsStyle = .full
+            return DoctorCheck(id: "finder.activity", title: title, status: .ok,
+                               detail: "\(parts[2]) from the \(origin) menu, \(relative.localizedString(for: when, relativeTo: now))")
+        }
+        return DoctorCheck(id: "finder.activity", title: title, status: .ok,
+                           detail: "none yet; right-click a folder in Finder and choose an action, then run `rh doctor` again")
     }
 
     /// Compares the Services on disk with the ones the config asks for: they are files written by
