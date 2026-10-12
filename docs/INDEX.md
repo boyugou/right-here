@@ -9,6 +9,8 @@
   - [0004 config](decisions/0004-config.md)
   - [0005 MCP server](decisions/0005-mcp-server.md)
   - [0006 localization](decisions/0006-localization.md)
+  - [0007 App Store edition](decisions/0007-app-store-edition.md)
+  - [0008 independent review](decisions/0008-independent-review.md)
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
 - [`development/RELEASING.md`](development/RELEASING.md): signing, notarizing and publishing a release.
 - [`../ROADMAP.md`](../ROADMAP.md): what works and what is next.

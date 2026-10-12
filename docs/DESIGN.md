@@ -205,8 +205,9 @@ applies. The app never rewrites the file, so comments and ordering stay the owne
    validated to be a folder before any terminal action; a file becomes its folder and a missing path is
    refused, on the planner, in every terminal adapter and on the MCP path.
 1. File names are data. A path never becomes shell or AppleScript source: values travel as argv entries
-   or as AppleScript `on run argv` arguments; the single quoting module is tested by round-tripping
-   awkward names through real `sh`, `bash` and `zsh`.
+   or as AppleScript `on run argv` arguments; the single quoting module works on Unicode scalars (a quote
+   followed by a combining mark is still a quote to a shell) and is tested by round-tripping every
+   metacharacter with every joining mark, plus a seeded fuzz, through real `sh`, `bash` and `zsh`.
 2. Text typed into a terminal is read as keystrokes, so a path with a line break or any control character
    is refused for typed launches. Deep links percent-encode everything but unreserved characters.
 3. The sandbox stays on for the extension. What it cannot do is done by `rh` through the runner script,
@@ -214,6 +215,12 @@ applies. The app never rewrites the file, so comments and ordering stay the owne
    cannot call `rh install`, `rh uninstall` or `rh init --force`.
 4. Configuration is never loaded from the folder being acted on.
 5. `rh` itself is not privileged and needs no administrator rights anywhere.
+6. Tool arguments from an AI agent are validated against the declared schema before anything runs, window-opening
+   calls are rate-limited, and only existing paths are copied to the clipboard. Names in logs and plan output
+   have control characters escaped, and the log is private and capped.
+
+An independent review and a cold-start usability test shaped several of these; see
+[0008](decisions/0008-independent-review.md). The Mac App Store question is in [0007](decisions/0007-app-store-edition.md).
 
 ## 10. Working with AI agents
 
