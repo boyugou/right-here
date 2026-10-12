@@ -240,6 +240,18 @@ struct CLITests {
         }
     }
 
+    @Test func theCommandAServiceRunsIsAcceptedByRh() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("a service folder")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        // A Quick Action runs `rh run --alert <id> --origin services -- "$@"` with the selected items as arguments.
+        let spec = ServiceSpec(title: "x", actionID: "open.terminal@terminal", command: ServiceWorkflow.command(rhPath: rh.binary.path, actionID: "open.terminal@terminal"))
+        #expect(spec.command.hasPrefix(ShellQuoting.quote(rh.binary.path) + " run --alert open.terminal@terminal --origin services -- "))
+        let result = try rh.run(["run", "--dry-run", "--json", "--alert", "open.terminal@terminal", "--origin", "services", "--", folder.path])
+        #expect(result.status == 0, "\(result.standardError)")
+        #expect((result.json as? [String: Any])?["action"] as? String == "open.terminal@terminal")
+    }
+
     @Test func theConfiguredPlacementShowsInThePlan() throws {
         let rh = try RH(config: "[general]\nterminal = \"ghostty\"\nterminal_placement = \"tab\"\n"); defer { rh.cleanUp() }
         let result = try rh.run(["run", "open.terminal@ghostty", "--dry-run", "--container", "/tmp"])
