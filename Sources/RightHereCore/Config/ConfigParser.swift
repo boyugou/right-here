@@ -74,7 +74,7 @@ public enum ConfigParser {
         do {
             root = try TOMLTable(source: text)
         } catch {
-            sink.syntaxError(error.description + ". Usual causes: text without \"quotes\", a missing = or ], the same [table] twice. Defaults apply until it is fixed.")
+            sink.syntaxError((error.description.hasSuffix(".") ? String(error.description.dropLast()) : error.description) + ". Usual causes: text without \"quotes\", a missing = or ], the same [table] twice. Defaults apply until it is fixed.")
             return ConfigLoadResult(config: .default, diagnostics: sink.items)
         }
         let config = Builder(sink: sink).build(Reader(table: root, path: [], schema: ConfigSchema.root, sink: sink))
@@ -255,6 +255,9 @@ private struct Builder {
         if let menu = root.subtable("menu") {
             menu.checkKnownKeys()
             config.menuItems = menu.stringArray("items")
+            if config.menuItems?.contains(where: { $0 != "-" }) == false {
+                sink.warning(["menu", "items"], "the list has no entries, so the Finder menu will be empty; remove the key to use the default menu")
+            }
             for entry in config.menuItems ?? [] where entry != "-" && !MenuBuilder.groups.contains(entry) && ActionRef(parsing: entry) == nil {
                 sink.warning(["menu", "items"], "\"\(entry)\" is neither a menu group nor an action id",
                              suggestion: Suggestion.didYouMean(entry, in: Array(MenuBuilder.groups)))
@@ -277,7 +280,12 @@ private struct Builder {
         if let copyPath = root.subtable("copy_path") {
             copyPath.checkKnownKeys()
             if let names = copyPath.stringArray("styles") {
+                var seen = Set<String>()
                 config.copyPathStyles = names.compactMap { name in
+                    guard seen.insert(name).inserted else {
+                        sink.warning(["copy_path", "styles"], "\"\(name)\" is listed twice; the second is ignored")
+                        return nil
+                    }
                     if let style = PathStyle(rawValue: name) { return style }
                     sink.error(["copy_path", "styles"], "unknown style \"\(name)\"",
                                suggestion: Suggestion.didYouMean(name, in: PathStyle.allCases.map(\.rawValue)))
@@ -480,7 +488,11 @@ private struct Builder {
     private func agent(id: String, reader: Reader, into config: inout Config) {
         reader.checkKnownKeys()
         var command = reader.string("command")
-        if let typed = command, (try? ShellQuoting.validateForTyping(typed)) == nil {
+        if let typed = command, typed.allSatisfy(\.isWhitespace) {
+            sink.error(reader.path + ["command"], "the command is empty, so the agent would start nothing; name the program to run")
+            command = nil
+            sink.rejectedAgents.insert(id)
+        } else if let typed = command, (try? ShellQuoting.validateForTyping(typed)) == nil {
             sink.error(reader.path + ["command"], "the command has a line break or control character, so it cannot be typed into a terminal")
             command = nil
             sink.rejectedAgents.insert(id)

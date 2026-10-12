@@ -643,6 +643,16 @@ struct CLITests {
         #expect(try rh.run(["actions"]).status == 0)
     }
 
+    @Test func aFailedRunWithJSONPrintsJSONOnStdout() throws {
+        let rh = try RH(config: "")
+        defer { rh.cleanUp() }
+        let result = try rh.run(["run", "open.terminal", "--json", "/nonexistent-rh-test-folder"])
+        #expect(result.status == 1)
+        let object = try #require(try JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [String: Any])
+        #expect(object["ok"] as? Bool == false)
+        #expect((object["error"] as? String)?.contains("does not exist") == true)
+    }
+
     @Test func aConfigNestedFarDeeperThanAnyRealOneIsASyntaxErrorNotACrash() throws {
         let rh = try RH(config: "x = " + String(repeating: "[", count: 5_000) + String(repeating: "]", count: 5_000) + "\n")
         defer { rh.cleanUp() }

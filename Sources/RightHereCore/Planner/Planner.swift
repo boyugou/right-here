@@ -18,7 +18,13 @@ public struct Planner: Sendable {
         self.localizer = localizer
     }
 
-    public func plan(_ ref: ActionRef, context: HereContext) throws -> LaunchPlan {
+    public func plan(_ ref: ActionRef, context named: HereContext) throws -> LaunchPlan {
+        // From the command line with nothing named, the folder `rh` runs in is the target, for every action (the
+        // help says so); the terminal, agent and new-file actions already took it, copy-path and reveal did not.
+        var context = named
+        if context.origin == .cli, context.items.isEmpty, context.container == nil, facts.itemState(facts.currentDirectory) != .missing {
+            context.container = facts.currentDirectory.lexicallyNormalized
+        }
         // Every path the person or an agent named has to exist, whichever action it is for. A typo is
         // reported as one rather than quietly replaced by the folder around it (`open.terminal proj
         // proj-typo` would otherwise open `proj`'s parent), and text that is not a path never reaches the

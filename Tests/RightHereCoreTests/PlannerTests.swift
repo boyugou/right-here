@@ -585,3 +585,23 @@ struct PlannerNoticeTests {
         #expect(repo.notices.isEmpty)
     }
 }
+
+@Suite("The command line with nothing named")
+struct CurrentDirectoryTargetTests {
+    @Test("every path action uses the folder rh runs in, and only from the command line", arguments: ["copy-path.absolute", "copy-path.name", "reveal"])
+    func pathActionsUseTheCurrentDirectory(id: String) throws {
+        var facts = machine()
+        facts.currentDirectory = URL(fileURLWithPath: "/Users/tester/code/app")
+        let ref = try #require(ActionRef(parsing: id))
+        #expect(!(try Planner(facts: facts).plan(ref, context: HereContext(origin: .cli))).steps.isEmpty)
+        #expect(throws: PlanError.self) { try Planner(facts: facts).plan(ref, context: HereContext(origin: .services)) }
+    }
+
+    @Test func theTextIsTheCurrentDirectory() throws {
+        var facts = machine()
+        facts.currentDirectory = URL(fileURLWithPath: "/Users/tester/code/app")
+        let plan = try Planner(facts: facts).plan(try #require(ActionRef(parsing: "copy-path.absolute")), context: HereContext(origin: .cli))
+        #expect(plan.steps.first.map { "\($0)".contains("/Users/tester/code/app") } == true)
+    }
+}
+

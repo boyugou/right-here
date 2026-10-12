@@ -75,6 +75,8 @@ struct Run: AsyncParsableCommand {
             let content = FailureAlert.content(for: error, action: action, localizer: .system)
             await MainActor.run { FailureAlert.show(content) }
         }
+        // A script that asked for JSON gets JSON on stdout for a failure too, not only an empty stream and a message on stderr.
+        if json { try Output.json(RunFailure(ok: false, error: error.localizedDescription)) }
         throw Output.fail("error: " + error.localizedDescription)
     }
 
@@ -93,4 +95,9 @@ struct RunResult: Encodable {
     var ok: Bool
     var plan: LaunchPlan
     var report: ExecutionReport
+}
+
+struct RunFailure: Encodable {
+    var ok: Bool
+    var error: String
 }

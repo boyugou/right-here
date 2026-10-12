@@ -119,6 +119,21 @@ waits for their decoding; a Ctrl-C between the probe's disable and enable leaves
   any test, since that would open a window.)
 - Nothing found in the config-defined terminal expansion, the MCP limits, or `ProbeMarker`.
 
+## Seventh round (functional correctness and usability, after 06c9616)
+
+A round about behavior rather than security. Fixed:
+
+- `rh run copy-path.* / reveal / open.editor` with no path failed ("no folder or selection") although the help says the
+  current directory is used; the planner now takes it for every action from the command line (not when it was deleted).
+- `rh run --json` printed nothing on stdout when the action failed; it prints `{"ok":false,"error":...}` now.
+- An empty agent `command` validated and then typed nothing: now a config error.
+- A style listed twice in `copy_path.styles` showed twice in the menu: now a warning, kept once. An empty
+  `menu.items` is a warning. README's `rh actions` line and the doubled period in the TOML error were corrected.
+
+Known, not fixed: a file name stored in NFC on disk is copied as NFD (Foundation's `URL.path` decomposes, measured
+for `path`, `lastPathComponent` and `absoluteString`). Lookups still work because APFS ignores normalization, but a
+text search for the copied name can miss. Fixing it means carrying the original path strings through the context.
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.

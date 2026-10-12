@@ -669,3 +669,28 @@ struct DocumentationTopicTests {
         #expect(Documentation.text(for: "troubleshooting")?.trimmingCharacters(in: .whitespacesAndNewlines) == source)
     }
 }
+
+@Suite("Config diagnostics for lists and commands")
+struct ConfigListDiagnosticTests {
+    @Test func anEmptyAgentCommandIsAnError() {
+        for command in ["", "   "] {
+            let result = ConfigParser.parse("[general]\nagents = [\"mine\"]\n[agent.mine]\nname = \"Mine\"\ncommand = \"\(command)\"\n")
+            #expect(result.hasErrors && result.diagnostics.contains { $0.message.contains("command is empty") }, Comment(rawValue: "\(result.diagnostics)"))
+        }
+    }
+
+    @Test func aStyleListedTwiceIsWarnedAboutAndKeptOnce() {
+        let result = ConfigParser.parse("[copy_path]\nstyles = [\"name\", \"absolute\", \"name\"]\n")
+        #expect(result.diagnostics.contains { $0.severity == .warning && $0.message.contains("listed twice") })
+        #expect(result.config.copyPathStyles == [.name, .absolute])
+    }
+
+    @Test func anEmptyMenuIsWarnedAbout() {
+        for items in ["[]", "[\"-\"]"] {
+            let result = ConfigParser.parse("[menu]\nitems = \(items)\n")
+            #expect(result.diagnostics.contains { $0.severity == .warning && $0.message.contains("menu will be empty") })
+        }
+        #expect(!ConfigParser.parse("[menu]\nitems = [\"copy-path\"]\n").diagnostics.contains { $0.message.contains("menu will be empty") })
+    }
+}
+
