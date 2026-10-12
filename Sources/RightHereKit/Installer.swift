@@ -121,12 +121,17 @@ public struct Installer: Sendable {
     @discardableResult
     public func installCLILink(rhPath: String) throws -> URL {
         try fileManager.createDirectory(at: locations.localBin, withIntermediateDirectories: true)
-        if (try? fileManager.destinationOfSymbolicLink(atPath: cliLink.path)) != nil {
-            try fileManager.removeItem(at: cliLink)
-        } else if fileManager.fileExists(atPath: cliLink.path) {
-            throw InstallError.notALink(path: cliLink.path)
+        let isLink = (try? fileManager.destinationOfSymbolicLink(atPath: cliLink.path)) != nil
+        if !isLink, fileManager.fileExists(atPath: cliLink.path) { throw InstallError.notALink(path: cliLink.path) }
+        // The new link is made beside the old one and renamed over it, so the name never points at nothing and a
+        // failure to create it leaves the old link.
+        let pending = locations.localBin.appendingPathComponent(".rh-link-\(UUID().uuidString)")
+        try fileManager.createSymbolicLink(atPath: pending.path, withDestinationPath: rhPath)
+        if rename(pending.path, cliLink.path) != 0 {
+            let code = errno
+            try? fileManager.removeItem(at: pending)
+            throw POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO)
         }
-        try fileManager.createSymbolicLink(atPath: cliLink.path, withDestinationPath: rhPath)
         return cliLink
     }
 
@@ -171,19 +176,39 @@ public struct Installer: Sendable {
     }
 
     /// Replaces the installed Services with `specs`. Workflows are written fresh each time, so a
-    /// Service dropped from the config disappears.
+    /// Service dropped from the config disappears. They are written to a staging folder first and moved in once
+    /// all of them exist, so a failure while writing leaves the Services that were installed before.
     @discardableResult
     public func installServices(_ specs: [ServiceSpec]) throws -> [URL] {
-        try removeServices()
+        try installServices(specs, write: Self.writeWorkflow)
+    }
+
+    static func writeWorkflow(_ spec: ServiceSpec, to bundle: URL) throws {
+        let contents = bundle.appendingPathComponent("Contents")
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        try ServiceWorkflow.infoPlist(for: spec).write(to: contents.appendingPathComponent("Info.plist"))
+        try ServiceWorkflow.workflowDocument(for: spec).write(to: contents.appendingPathComponent("document.wflow"))
+    }
+
+    func installServices(_ specs: [ServiceSpec], write: (ServiceSpec, URL) throws -> Void) throws -> [URL] {
         try fileManager.createDirectory(at: locations.services, withIntermediateDirectories: true)
-        var written: [URL] = []
+        // A name that does not start with the prefix, so nothing treats a half-written staging folder as installed.
+        let staging = locations.services.appendingPathComponent(".rh-staging-\(UUID().uuidString)")
+        try fileManager.createDirectory(at: staging, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: staging) }
+        var staged: [(name: String, url: URL)] = []
         for spec in specs {
-            let bundle = locations.services.appendingPathComponent(ServiceWorkflow.bundleName(for: spec))
-            let contents = bundle.appendingPathComponent("Contents")
-            try fileManager.createDirectory(at: contents, withIntermediateDirectories: true)
-            try ServiceWorkflow.infoPlist(for: spec).write(to: contents.appendingPathComponent("Info.plist"))
-            try ServiceWorkflow.workflowDocument(for: spec).write(to: contents.appendingPathComponent("document.wflow"))
-            written.append(bundle)
+            let name = ServiceWorkflow.bundleName(for: spec)
+            let bundle = staging.appendingPathComponent(name)
+            try write(spec, bundle)
+            staged.append((name, bundle))
+        }
+        try removeServices()
+        var written: [URL] = []
+        for (name, bundle) in staged {
+            let destination = locations.services.appendingPathComponent(name)
+            try fileManager.moveItem(at: bundle, to: destination)
+            written.append(destination)
         }
         return written
     }

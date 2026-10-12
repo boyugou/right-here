@@ -141,8 +141,9 @@ spelling and case), and `PathRenderer` builds every style from it; a component t
 Little found. The on-disk path rendering matched the old output byte for byte on awkward names (except accents now
 precomposed and `;` now `%3B`), and the suffix mapping cannot pick wrong components. Fixed: `rh uninstall` stopped at
 its first failing step and left the Services and command link behind; it now keeps going like `install` and reports
-the failures at the end (non-zero exit). Left: `installServices` and `installCLILink` remove before they write, so a
-failure halfway loses the old Services or link (not reproducible through the CLI).
+the failures at the end (non-zero exit). Also fixed: `installServices` and `installCLILink` removed before they wrote, so a failure halfway lost the old
+Services or link. Services are now staged and moved in once all exist, and the link is made beside the old one and
+renamed over it.
 
 ## Left as they are, on purpose
 

@@ -330,3 +330,42 @@ struct UnquoteTests {
         #expect(installer.installedRunnerTarget() == path)
     }
 }
+
+@Suite("Installer: a failure halfway keeps what was installed")
+struct InstallerAtomicityTests {
+    private struct Boom: Error {}
+
+    @Test func aFailureWhileWritingAServiceLeavesTheOnesThatWereThere() throws {
+        let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let before = [ServiceSpec(title: "Open in Ghostty", actionID: "open.terminal", command: "echo one")]
+        try installer.installServices(before)
+        let installed = installer.installedServices().map(\.lastPathComponent)
+        #expect(installed.count == 1)
+
+        let after = [ServiceSpec(title: "Claude Code Here", actionID: "agent.claude", command: "echo two"),
+                     ServiceSpec(title: "Codex Here", actionID: "agent.codex", command: "echo three")]
+        var written = 0
+        #expect(throws: Boom.self) {
+            try installer.installServices(after) { spec, bundle in
+                written += 1
+                if written == 2 { throw Boom() }
+                try Installer.writeWorkflow(spec, to: bundle)
+            }
+        }
+        #expect(installer.installedServices().map(\.lastPathComponent) == installed)
+        let leftovers = try FileManager.default.contentsOfDirectory(atPath: installer.locations.services.path).filter { $0.hasPrefix(".rh-staging") }
+        #expect(leftovers.isEmpty)
+    }
+
+    @Test func replacingTheCommandLinkNeverLeavesItMissingOrADuplicate() throws {
+        let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        try installer.installCLILink(rhPath: "/opt/old/rh")
+        try installer.installCLILink(rhPath: "/opt/new/rh")
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path) == "/opt/new/rh")
+        let names = try FileManager.default.contentsOfDirectory(atPath: installer.cliLink.deletingLastPathComponent().path)
+        #expect(names == ["rh"], "\(names)")
+    }
+}
+
