@@ -46,9 +46,13 @@ import SwiftUI
 func render(dark: Bool, to path: String) async {
     let model = SetupModel()
     await model.refresh()
+    // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.
+    let language = Locale.preferredLanguages.first ?? "en"
+    let rightToLeft = Locale.Language(identifier: language).characterDirection == .rightToLeft
     let view = SetupView(model: model)
         .background(Color(nsColor: .windowBackgroundColor))
         .environment(\.colorScheme, dark ? .dark : .light)
+        .environment(\.layoutDirection, rightToLeft ? .rightToLeft : .leftToRight)
     let renderer = ImageRenderer(content: view)
     renderer.scale = 2
     guard let image = renderer.nsImage, let tiff = image.tiffRepresentation,

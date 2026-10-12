@@ -12,6 +12,8 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case menuAgentDesktop = "menu.agentDesktop"
     case menuAgentLink = "menu.agentLink"
     case menuNewFile = "menu.newFile"
+    case menuNewText = "menu.newText"
+    case menuNewMarkdown = "menu.newMarkdown"
     case groupNewFile = "group.newFile"
     case groupCopyPath = "group.copyPath"
     case groupOpenWith = "group.openWith"

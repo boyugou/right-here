@@ -13,6 +13,9 @@ public struct NewFileTemplate: Sendable, Equatable, Identifiable {
     public var openWith: String?
     /// Localized title and file name of a built-in template; custom templates use their own text.
     public var titleKey: LocalizationKey?
+    /// The whole "New …" phrase of a built-in template, so a language can capitalise it correctly; custom
+    /// templates compose "New %@" from their title.
+    public var newTitleKey: LocalizationKey?
     public var baseNameKey: LocalizationKey?
 
     public init(
@@ -23,6 +26,7 @@ public struct NewFileTemplate: Sendable, Equatable, Identifiable {
         contents: String = "",
         openWith: String? = nil,
         titleKey: LocalizationKey? = nil,
+        newTitleKey: LocalizationKey? = nil,
         baseNameKey: LocalizationKey? = nil
     ) {
         self.id = id
@@ -32,6 +36,7 @@ public struct NewFileTemplate: Sendable, Equatable, Identifiable {
         self.contents = contents
         self.openWith = openWith
         self.titleKey = titleKey
+        self.newTitleKey = newTitleKey
         self.baseNameKey = baseNameKey
     }
 
@@ -39,12 +44,17 @@ public struct NewFileTemplate: Sendable, Equatable, Identifiable {
         titleKey.map { localizer.string($0) } ?? title
     }
 
+    /// The menu text that creates this kind of file: "New Markdown Document".
+    public func localizedNewTitle(_ localizer: Localizer) -> String {
+        newTitleKey.map { localizer.string($0) } ?? localizer.newFile(localizedTitle(localizer))
+    }
+
     public func localizedBaseName(_ localizer: Localizer) -> String {
         baseNameKey.map { localizer.string($0) } ?? baseName
     }
 
-    public static let text = NewFileTemplate(id: "txt", title: "Text Document", fileExtension: "txt", titleKey: .templateText, baseNameKey: .newFileBaseName)
-    public static let markdown = NewFileTemplate(id: "md", title: "Markdown Document", fileExtension: "md", titleKey: .templateMarkdown, baseNameKey: .newFileBaseName)
+    public static let text = NewFileTemplate(id: "txt", title: "Text Document", fileExtension: "txt", titleKey: .templateText, newTitleKey: .menuNewText, baseNameKey: .newFileBaseName)
+    public static let markdown = NewFileTemplate(id: "md", title: "Markdown Document", fileExtension: "md", titleKey: .templateMarkdown, newTitleKey: .menuNewMarkdown, baseNameKey: .newFileBaseName)
     public static let builtIn: [NewFileTemplate] = [.text, .markdown]
 }
 

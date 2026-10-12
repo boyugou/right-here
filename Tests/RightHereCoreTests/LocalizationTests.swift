@@ -80,8 +80,8 @@ struct LocalizerTests {
 
     @Test func positionalPlaceholdersReorderArguments() {
         let text = Localizer(languages: ["ja"]).string(.menuAgentIn, "Claude Code", "Ghostty")
-        #expect(text == "GhosttyでClaude Code")
-        #expect(Localizer(languages: ["ko"]).string(.menuAgentVariantIn, "Claude Code", "Continue", "Ghostty") == "Ghostty에서 Claude Code: Continue")
+        #expect(text == "GhosttyでClaude Codeを起動")
+        #expect(Localizer(languages: ["ko"]).string(.menuAgentVariantIn, "Claude Code", "Continue", "Ghostty") == "Claude Code: Ghostty에서 Continue")
     }
 
     @Test func aMenuBuiltInAnotherLanguageUsesItsTitles() {
@@ -135,5 +135,53 @@ struct LocalizerTests {
         #expect(chinese.info(.openTerminal(nil)).title == "在“终端”中打开")
         let english = ActionRegistry(config: config, facts: NamedFacts(), localizer: .english)
         #expect(english.info(.openTerminal(nil)).title == "Open in Terminal")
+    }
+}
+
+@Suite("Localization details")
+struct LocalizationDetailTests {
+    private let facts = FakeSystemFacts(directories: ["/Users/tester/code"])
+
+    @Test("a built-in new-file entry reads as one phrase, capitalised the way its language does", arguments: [
+        ("en", "md", "New Markdown Document"), ("en", "txt", "New Text Document"),
+        ("it", "md", "Nuovo documento Markdown"), ("it", "txt", "Nuovo documento di testo"),
+        ("es", "txt", "Nuevo documento de texto"), ("fr", "md", "Nouveau document Markdown"),
+        ("ru", "txt", "Новый текстовый документ"), ("de", "txt", "Neues Textdokument"), ("zh-Hans", "md", "新建 Markdown 文稿")
+    ])
+    func newFileTitles(language: String, template: String, expected: String) {
+        let info = ActionRegistry(config: .default, facts: facts, localizer: Localizer(languages: [language])).info(.newFile(template))
+        #expect(info.title == expected)
+    }
+
+    @Test func aCustomTemplateStillComposesNewWithItsTitle() {
+        var config = Config.default
+        config.newFile.templates = [NewFileTemplate(id: "py", title: "Python Script", fileExtension: "py")]
+        let info = ActionRegistry(config: config, facts: facts, localizer: Localizer(languages: ["es"])).info(.newFile("py"))
+        #expect(info.title == "Nuevo Python Script")
+    }
+
+    @Test func theSubmenuStillShowsTheStandaloneTemplateTitles() throws {
+        let menu = MenuBuilder(config: .default, facts: facts, localizer: Localizer(languages: ["it"]))
+            .build(for: HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/code")))
+        let newFile = try #require(menu.first { $0.title == "Nuovo file" })
+        #expect(newFile.children.map(\.title) == ["Documento di testo", "Documento Markdown"])
+    }
+
+    @Test("right-to-left strings that begin with a Latin name or a placeholder carry a right-to-left mark", arguments: ["ar", "fa", "he", "ur"])
+    func rightToLeftMarks(language: String) {
+        let localizer = Localizer(languages: [language])
+        for key in LocalizationKey.allCases where key != .newFileBaseName {
+            let text = localizer.string(key, "X", "Y", "Z")
+            guard let first = text.drop(while: { $0 == " " }).first else { continue }
+            if first.isASCII && first.isLetter { Issue.record("\(language) \(key.rawValue) starts with a Latin letter and no mark: \(text)") }
+        }
+        let marked = LocalizationKey.allCases.filter { localizer.string($0, "X", "Y", "Z").hasPrefix("\u{200F}") }
+        #expect(!marked.isEmpty, "\(language) has no string that needed a mark")
+    }
+
+    @Test("a name that becomes a file name never carries a direction mark", arguments: ["ar", "fa", "he", "ur"])
+    func fileNamesAreClean(language: String) {
+        let name = Localizer(languages: [language]).string(.newFileBaseName)
+        #expect(!name.contains("\u{200F}"))
     }
 }

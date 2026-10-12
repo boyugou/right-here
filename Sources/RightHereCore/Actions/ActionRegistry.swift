@@ -68,7 +68,7 @@ public struct ActionRegistry: Sendable {
         case .newFile(let id):
             info.group = "new-file"
             if let template = config.newFile.templates.first(where: { $0.id == id }) {
-                info.title = localizer.newFile(template.localizedTitle(localizer))
+                info.title = template.localizedNewTitle(localizer)
                 info.shortTitle = template.localizedTitle(localizer)
                 info.icon = .symbol("doc.badge.plus")
             } else {

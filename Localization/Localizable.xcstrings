@@ -164,7 +164,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder میں دکھائیں"
+            "value": "‏Finder میں دکھائیں"
           }
         },
         "vi": {
@@ -206,19 +206,19 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here konnte nicht abschließen"
+            "value": "Right Here konnte den Vorgang nicht abschließen"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Το Right Here δεν μπόρεσε να ολοκληρώσει"
+            "value": "Το Right Here δεν μπόρεσε να ολοκληρώσει την ενέργεια"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Right Here could not finish"
+            "value": "Right Here could not finish the action"
           }
         },
         "es": {
@@ -230,7 +230,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here نتوانست کار را تمام کند"
+            "value": "‏Right Here نتوانست کار را تمام کند"
           }
         },
         "fr": {
@@ -242,7 +242,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here לא הצליח להשלים"
+            "value": "‏Right Here לא הצליח להשלים את הפעולה"
           }
         },
         "hi": {
@@ -254,19 +254,19 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here tidak dapat menyelesaikan"
+            "value": "Right Here tidak dapat menyelesaikan tindakan"
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here non è riuscito a completare"
+            "value": "Right Here non ha potuto completare l’operazione"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Hereを完了できませんでした"
+            "value": "Right Hereは操作を完了できませんでした"
           }
         },
         "ko": {
@@ -284,25 +284,25 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here tidak dapat menyelesaikan"
+            "value": "Right Here tidak dapat menyelesaikan tindakan"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here kon niet voltooien"
+            "value": "Right Here kon de actie niet voltooien"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here nie mógł zakończyć"
+            "value": "Right Here nie mógł ukończyć operacji"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "O Right Here não conseguiu concluir"
+            "value": "O Right Here não conseguiu concluir a ação"
           }
         },
         "ro": {
@@ -314,7 +314,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here не удалось завершить"
+            "value": "Right Here не удалось завершить действие"
           }
         },
         "ta": {
@@ -350,7 +350,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here مکمل نہیں کر سکا"
+            "value": "‏Right Here مکمل نہیں کر سکا"
           }
         },
         "vi": {
@@ -440,7 +440,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "OK"
+            "value": "OKE"
           }
         },
         "it": {
@@ -620,7 +620,7 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "सिस्टम सेटिंग खोलें"
+            "value": "सिस्टम सेटिंग्ज़ खोलें"
           }
         },
         "id": {
@@ -752,7 +752,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمان › الأتمتة، ثم حاول مرة أخرى."
+            "value": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمن › الأتمتة، ثم حاول مرة أخرى."
           }
         },
         "bn": {
@@ -782,13 +782,13 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS impidió que Right Here controle %@. Permítelo en Ajustes del Sistema › Privacidad y seguridad › Automatización y vuelve a intentarlo."
+            "value": "macOS impidió que Right Here controlara %@. Permítelo en Ajustes del Sistema › Privacidad y seguridad › Automatización y vuelve a intentarlo."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS مانع شد که Right Here %@ را کنترل کند. در تنظیمات سیستم › حریم خصوصی و امنیت › خودکارسازی اجازه دهید و دوباره تلاش کنید."
+            "value": "‏macOS به Right Here اجازهٔ کنترل %@ را نداد. در تنظیمات سیستم › حریم خصوصی و امنیت › خودکارسازی اجازه دهید و دوباره تلاش کنید."
           }
         },
         "fr": {
@@ -800,13 +800,13 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS מנע מ-Right Here לשלוט ב-%@. אפשר זאת בהגדרות המערכת › פרטיות ואבטחה › אוטומציה ונסה שוב."
+            "value": "‏macOS מנע מ-Right Here לשלוט על %@. אפשר זאת בהגדרות המערכת › פרטיות ואבטחה › אוטומציה ונסה שוב."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS ने Right Here को %@ को नियंत्रित करने से रोक दिया। सिस्टम सेटिंग › गोपनीयता और सुरक्षा › ऑटोमेशन में इसकी अनुमति दें, फिर दोबारा कोशिश करें।"
+            "value": "macOS ने Right Here को %@ को नियंत्रित करने से रोक दिया। सिस्टम सेटिंग्ज़ › गोपनीयता और सुरक्षा › ऑटोमेशन में इसकी अनुमति दें, फिर दोबारा कोशिश करें।"
           }
         },
         "id": {
@@ -848,7 +848,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS heeft Right Here geblokkeerd om %@ te bedienen. Sta dit toe in Systeeminstellingen › Privacy en beveiliging › Automatisering en probeer het opnieuw."
+            "value": "macOS heeft voorkomen dat Right Here %@ bedient. Sta dit toe in Systeeminstellingen › Privacy en beveiliging › Automatisering en probeer het opnieuw."
           }
         },
         "pl": {
@@ -908,7 +908,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS نے Right Here کو %@ کنٹرول کرنے سے روک دیا۔ سسٹم سیٹنگز › پرائیویسی اور سیکیورٹی › آٹومیشن میں اجازت دیں، پھر دوبارہ کوشش کریں۔"
+            "value": "‏macOS نے Right Here کو %@ کنٹرول کرنے سے روک دیا۔ سسٹم سیٹنگز › پرائیویسی اور سیکیورٹی › آٹومیشن میں اجازت دیں، پھر دوبارہ کوشش کریں۔"
           }
         },
         "vi": {
@@ -974,7 +974,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here به اجازه شما نیاز دارد"
+            "value": "‏Right Here به اجازه شما نیاز دارد"
           }
         },
         "fr": {
@@ -986,7 +986,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here זקוק לאישור שלך"
+            "value": "‏Right Here זקוק לאישור שלך"
           }
         },
         "hi": {
@@ -1094,7 +1094,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here کو آپ کی اجازت درکار ہے"
+            "value": "‏Right Here کو آپ کی اجازت درکار ہے"
           }
         },
         "vi": {
@@ -1142,7 +1142,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "την εφαρμογή"
+            "value": "πρόγραμμα"
           }
         },
         "en": {
@@ -1592,7 +1592,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installatieprompt voor AI kopiëren"
+            "value": "Kopieer installatieprompt voor AI"
           }
         },
         "pl": {
@@ -1604,7 +1604,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copiar prompt de configuração para IA"
+            "value": "Copiar Prompt de Configuração para IA"
           }
         },
         "ro": {
@@ -1652,7 +1652,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI کے لیے سیٹ اپ پرامپٹ کاپی کریں"
+            "value": "‏AI کے لیے سیٹ اپ پرامپٹ کاپی کریں"
           }
         },
         "vi": {
@@ -1868,7 +1868,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "إعدادات امتداد Finder"
+            "value": "إعدادات ملحق Finder"
           }
         },
         "bn": {
@@ -1880,7 +1880,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder-Erweiterung: Einstellungen"
+            "value": "Einstellungen der Finder-Erweiterung"
           }
         },
         "el": {
@@ -1922,7 +1922,7 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder एक्सटेंशन सेटिंग"
+            "value": "Finder एक्सटेंशन सेटिंग्ज़"
           }
         },
         "id": {
@@ -1976,7 +1976,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ajustes da extensão do Finder"
+            "value": "Ajustes da Extensão do Finder"
           }
         },
         "ro": {
@@ -2024,7 +2024,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder ایکسٹینشن کی سیٹنگز"
+            "value": "‏Finder ایکسٹینشن کی سیٹنگز"
           }
         },
         "vi": {
@@ -2150,7 +2150,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installeren of repareren"
+            "value": "Installeer of repareer"
           }
         },
         "pl": {
@@ -2162,7 +2162,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instalar ou reparar"
+            "value": "Instalar ou Reparar"
           }
         },
         "ro": {
@@ -2504,7 +2504,7 @@
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "설정 열기"
+            "value": "설정 파일 열기"
           }
         },
         "mr": {
@@ -2522,7 +2522,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Configuratie openen"
+            "value": "Open configuratie"
           }
         },
         "pl": {
@@ -2534,7 +2534,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abrir configuração"
+            "value": "Abrir Configuração"
           }
         },
         "ro": {
@@ -2732,7 +2732,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Промпт настройки скопирован. Вставьте его в вашего ИИ-ассистента."
+            "value": "Промпт настройки скопирован. Вставьте его в чат с ИИ-ассистентом."
           }
         },
         "ta": {
@@ -2816,7 +2816,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Στείλτε έναν φάκελο ή μια επιλογή στα τερματικά, τους επεξεργαστές και τους πράκτορες AI σας."
+            "value": "Στείλτε έναν φάκελο ή μια επιλογή στα τερματικά, στους επεξεργαστές και στους πράκτορες AI σας."
           }
         },
         "en": {
@@ -2846,7 +2846,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "שלח תיקייה או בחירה אל הטרמינלים, העורכים וסוכני ה-AI שלך."
+            "value": "שלח תיקייה או בחירה אל המסופים, העורכים וסוכני ה-AI שלך."
           }
         },
         "hi": {
@@ -3032,7 +3032,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "בדיקת הפעלת המסוף"
+            "value": "בדוק את הפעלת המסוף"
           }
         },
         "hi": {
@@ -3044,7 +3044,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Uji peluncuran terminal"
+            "value": "Uji Peluncuran Terminal"
           }
         },
         "it": {
@@ -3074,13 +3074,13 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Uji pelancaran terminal"
+            "value": "Uji Pelancaran Terminal"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Terminalstart testen"
+            "value": "Test terminalstart"
           }
         },
         "pl": {
@@ -3092,7 +3092,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Testar a abertura do terminal"
+            "value": "Testar a Abertura do Terminal"
           }
         },
         "ro": {
@@ -3290,7 +3290,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Открываю тестовое окно в терминале…"
+            "value": "Открытие тестового окна в терминале…"
           }
         },
         "ta": {
@@ -3464,7 +3464,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Caminho completo"
+            "value": "Caminho Completo"
           }
         },
         "ro": {
@@ -3698,7 +3698,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI کے لیے @ ذکر"
+            "value": "‏AI کے لیے @ ذکر"
           }
         },
         "vi": {
@@ -3836,7 +3836,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "URL do arquivo"
+            "value": "URL do Arquivo"
           }
         },
         "ro": {
@@ -4022,7 +4022,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Caminho a partir da raiz do Git"
+            "value": "Caminho a Partir da Raiz do Git"
           }
         },
         "ro": {
@@ -4070,7 +4070,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Git روٹ سے پاتھ"
+            "value": "‏Git روٹ سے پاتھ"
           }
         },
         "vi": {
@@ -4256,7 +4256,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Markdown لنک"
+            "value": "‏Markdown لنک"
           }
         },
         "vi": {
@@ -4394,7 +4394,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Nome do arquivo"
+            "value": "Nome do Arquivo"
           }
         },
         "ro": {
@@ -4472,7 +4472,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "مسار المجلد الأصلي"
+            "value": "مسار المجلد الأصل"
           }
         },
         "bn": {
@@ -4580,7 +4580,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Caminho da pasta pai"
+            "value": "Caminho da Pasta Pai"
           }
         },
         "ro": {
@@ -4766,7 +4766,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Caminho com escape para shell"
+            "value": "Caminho com Escape para Shell"
           }
         },
         "ro": {
@@ -4952,7 +4952,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Caminho entre aspas"
+            "value": "Caminho entre Aspas"
           }
         },
         "ro": {
@@ -5042,13 +5042,13 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pfad ab Home (~)"
+            "value": "Pfad ab Benutzerordner (~)"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Διαδρομή από το Home (~)"
+            "value": "Διαδρομή από τον αρχικό φάκελο (~)"
           }
         },
         "en": {
@@ -5072,7 +5072,7 @@
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Chemin depuis le dossier personnel (~)"
+            "value": "Chemin depuis le dossier de départ (~)"
           }
         },
         "he": {
@@ -5138,7 +5138,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Caminho a partir do Início (~)"
+            "value": "Caminho a Partir do Início (~)"
           }
         },
         "ro": {
@@ -5312,7 +5312,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pad kopiëren: %@"
+            "value": "Kopieer pad: %@"
           }
         },
         "pl": {
@@ -5324,7 +5324,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copiar caminho: %@"
+            "value": "Copiar Caminho: %@"
           }
         },
         "ro": {
@@ -5498,7 +5498,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pad kopiëren"
+            "value": "Kopieer pad"
           }
         },
         "pl": {
@@ -5510,7 +5510,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copiar caminho"
+            "value": "Copiar Caminho"
           }
         },
         "ro": {
@@ -5660,7 +5660,7 @@
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "その他のエージェント"
+            "value": "エージェントのその他のオプション"
           }
         },
         "ko": {
@@ -5696,7 +5696,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Mais opções de agente"
+            "value": "Mais Opções de Agente"
           }
         },
         "ro": {
@@ -5882,7 +5882,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Novo arquivo"
+            "value": "Novo Arquivo"
           }
         },
         "ro": {
@@ -6068,7 +6068,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abrir com"
+            "value": "Abrir Com"
           }
         },
         "ro": {
@@ -6146,7 +6146,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ في تطبيق سطح المكتب"
+            "value": "‏%@ في تطبيق سطح المكتب"
           }
         },
         "bn": {
@@ -6182,7 +6182,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ در برنامه دسکتاپ"
+            "value": "‏%@ در برنامه دسکتاپ"
           }
         },
         "fr": {
@@ -6194,7 +6194,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ באפליקציית שולחן העבודה"
+            "value": "‏%@ באפליקציית שולחן העבודה"
           }
         },
         "hi": {
@@ -6218,19 +6218,19 @@
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "デスクトップアプリで%@"
+            "value": "デスクトップアプリで%@を起動"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "데스크탑 앱에서 %@"
+            "value": "데스크탑 앱에서 %@ 실행"
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "डेस्कटॉप अ‍ॅपमध्ये %@"
+            "value": "डेस्कटॉप अ‍ॅपमध्ये %@ उघडा"
           }
         },
         "ms": {
@@ -6254,7 +6254,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ no app para desktop"
+            "value": "%@ no App para Desktop"
           }
         },
         "ro": {
@@ -6332,7 +6332,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ هنا"
+            "value": "‏%@ هنا"
           }
         },
         "bn": {
@@ -6368,7 +6368,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ اینجا"
+            "value": "‏%@ اینجا"
           }
         },
         "fr": {
@@ -6380,7 +6380,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ כאן"
+            "value": "‏%@ כאן"
           }
         },
         "hi": {
@@ -6392,7 +6392,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ di sini"
+            "value": "%@ di Sini"
           }
         },
         "it": {
@@ -6410,13 +6410,13 @@
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "여기서 %@"
+            "value": "여기서 %@ 실행"
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "येथे %@"
+            "value": "येथे %@ सुरू करा"
           }
         },
         "ms": {
@@ -6440,7 +6440,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ aqui"
+            "value": "%@ Aqui"
           }
         },
         "ro": {
@@ -6518,7 +6518,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@ في %2$@"
+            "value": "‏%1$@ في %2$@"
           }
         },
         "bn": {
@@ -6554,7 +6554,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@ در %2$@"
+            "value": "‏%1$@ در %2$@"
           }
         },
         "fr": {
@@ -6566,7 +6566,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@ ב-%2$@"
+            "value": "‏%1$@ ב-%2$@"
           }
         },
         "hi": {
@@ -6590,19 +6590,19 @@
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%2$@で%1$@"
+            "value": "%2$@で%1$@を起動"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%2$@에서 %1$@"
+            "value": "%2$@에서 %1$@ 실행"
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%2$@ मध्ये %1$@"
+            "value": "%2$@ मध्ये %1$@ सुरू करा"
           }
         },
         "ms": {
@@ -6674,7 +6674,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%2$@ میں %1$@"
+            "value": "‏%2$@ میں %1$@"
           }
         },
         "vi": {
@@ -6704,7 +6704,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ في آخر طرفية مستخدمة"
+            "value": "‏%@ في آخر طرفية مستخدمة"
           }
         },
         "bn": {
@@ -6740,7 +6740,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ در آخرین ترمینال استفاده‌شده"
+            "value": "‏%@ در آخرین ترمینال استفاده‌شده"
           }
         },
         "fr": {
@@ -6752,7 +6752,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ בטרמינל שהיה בשימוש לאחרונה"
+            "value": "‏%@ במסוף שהיה בשימוש לאחרונה"
           }
         },
         "hi": {
@@ -6776,19 +6776,19 @@
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "最後に使ったターミナルで%@"
+            "value": "最後に使ったターミナルで%@を起動"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "마지막으로 사용한 터미널에서 %@"
+            "value": "마지막으로 사용한 터미널에서 %@ 실행"
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "शेवटच्या वापरलेल्या टर्मिनलमध्ये %@"
+            "value": "शेवटच्या वापरलेल्या टर्मिनलमध्ये %@ सुरू करा"
           }
         },
         "ms": {
@@ -6800,7 +6800,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ in de laatst gebruikte Terminal"
+            "value": "%@ in de laatst gebruikte terminal"
           }
         },
         "pl": {
@@ -6812,7 +6812,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ no último terminal usado"
+            "value": "%@ no Último Terminal Usado"
           }
         },
         "ro": {
@@ -6890,7 +6890,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@: %2$@"
+            "value": "‏%1$@: %2$@"
           }
         },
         "bn": {
@@ -6926,7 +6926,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@: %2$@"
+            "value": "‏%1$@: %2$@"
           }
         },
         "fr": {
@@ -6938,7 +6938,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@: %2$@"
+            "value": "‏%1$@: %2$@"
           }
         },
         "hi": {
@@ -7046,7 +7046,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@: %2$@"
+            "value": "‏%1$@: %2$@"
           }
         },
         "vi": {
@@ -7076,7 +7076,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@: %2$@ في %3$@"
+            "value": "‏%1$@: %2$@ في %3$@"
           }
         },
         "bn": {
@@ -7088,7 +7088,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@: %2$@ in %3$@"
+            "value": "%1$@ in %3$@: %2$@"
           }
         },
         "el": {
@@ -7112,7 +7112,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@: %2$@ در %3$@"
+            "value": "‏%1$@: %2$@ در %3$@"
           }
         },
         "fr": {
@@ -7124,7 +7124,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@: %2$@ ב-%3$@"
+            "value": "‏%1$@: %2$@ ב-%3$@"
           }
         },
         "hi": {
@@ -7148,19 +7148,19 @@
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%3$@で%1$@: %2$@"
+            "value": "%1$@: %3$@で%2$@"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%3$@에서 %1$@: %2$@"
+            "value": "%1$@: %3$@에서 %2$@"
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%3$@ मध्ये %1$@: %2$@"
+            "value": "%1$@: %3$@ मध्ये %2$@"
           }
         },
         "ms": {
@@ -7232,7 +7232,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%3$@ میں %1$@: %2$@"
+            "value": "‏%3$@ میں %1$@: %2$@"
           }
         },
         "vi": {
@@ -7262,7 +7262,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ جديد"
+            "value": "‏%@ جديد"
           }
         },
         "bn": {
@@ -7298,7 +7298,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ جدید"
+            "value": "‏%@ جدید"
           }
         },
         "fr": {
@@ -7310,7 +7310,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ חדש"
+            "value": "‏%@ חדש"
           }
         },
         "hi": {
@@ -7437,6 +7437,378 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "新增%@"
+          }
+        }
+      }
+    },
+    "menu.newMarkdown": {
+      "comment": "Menu item that creates a new Markdown document (the full phrase, so the language can capitalise it correctly).",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "مستند Markdown جديد"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "নতুন Markdown ডকুমেন্ট"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Neues Markdown-Dokument"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Νέο έγγραφο Markdown"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Markdown Document"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nuevo documento de Markdown"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "سند Markdown جدید"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nouveau document Markdown"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "מסמך Markdown חדש"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "नया Markdown दस्तावेज़"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dokumen Markdown Baru"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nuovo documento Markdown"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "新規Markdown書類"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "새 Markdown 문서"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "नवीन Markdown दस्तऐवज"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dokumen Markdown Baharu"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nieuw Markdown-document"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nowy dokument Markdown"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Novo Documento Markdown"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Document Markdown nou"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Новый документ Markdown"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "புதிய Markdown ஆவணம்"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "కొత్త Markdown పత్రం"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เอกสาร Markdown ใหม่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yeni Markdown Belgesi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Новий документ Markdown"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "نئی Markdown دستاویز"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tài liệu Markdown mới"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "新建 Markdown 文稿"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "新增 Markdown 文件"
+          }
+        }
+      }
+    },
+    "menu.newText": {
+      "comment": "Menu item that creates a new text document (the full phrase, so the language can capitalise it correctly).",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "مستند نصي جديد"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "নতুন টেক্সট ডকুমেন্ট"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Neues Textdokument"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Νέο έγγραφο κειμένου"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Text Document"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nuevo documento de texto"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "سند متنی جدید"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nouveau document texte"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "מסמך טקסט חדש"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "नया टेक्स्ट दस्तावेज़"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dokumen Teks Baru"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nuovo documento di testo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "新規テキスト書類"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "새 텍스트 문서"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "नवीन मजकूर दस्तऐवज"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dokumen Teks Baharu"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nieuw tekstdocument"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nowy dokument tekstowy"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Novo Documento de Texto"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Document text nou"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Новый текстовый документ"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "புதிய உரை ஆவணம்"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "కొత్త టెక్స్ట్ పత్రం"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เอกสารข้อความ ใหม่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yeni Metin Belgesi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Новий текстовий документ"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "نئی ٹیکسٹ دستاویز"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tài liệu văn bản mới"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "新建文本文稿"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "新增文字文件"
           }
         }
       }
@@ -7604,7 +7976,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ میں کھولیں"
+            "value": "‏%@ میں کھولیں"
           }
         },
         "vi": {
@@ -7976,7 +8348,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Markdown دستاویز"
+            "value": "‏Markdown دستاویز"
           }
         },
         "vi": {
@@ -8114,7 +8486,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Documento de texto"
+            "value": "Documento de Texto"
           }
         },
         "ro": {
@@ -8192,7 +8564,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "افتح هنا، انسخ مساراً، شغّل وكيلاً"
+            "value": "فتح هنا، نسخ مسار، تشغيل وكيل"
           }
         },
         "bn": {
@@ -8204,7 +8576,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Hier öffnen, Pfad kopieren, Agent starten"
+            "value": "Hier öffnen, Pfad kopieren, Agenten starten"
           }
         },
         "el": {
@@ -8228,7 +8600,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "اینجا باز کن، مسیر را کپی کن، عامل را اجرا کن"
+            "value": "باز کردن در اینجا، کپی مسیر، اجرای عامل"
           }
         },
         "fr": {
@@ -8474,7 +8846,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Laatste sessie voortzetten"
+            "value": "Ga verder met laatste sessie"
           }
         },
         "pl": {
@@ -8486,7 +8858,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Continuar a última sessão"
+            "value": "Continuar a Última Sessão"
           }
         },
         "ro": {
@@ -8582,7 +8954,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Επανάληψη συνεδρίας…"
+            "value": "Συνέχιση συνεδρίας…"
           }
         },
         "en": {
@@ -8642,7 +9014,7 @@
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "세션 다시 시작…"
+            "value": "세션 재개…"
           }
         },
         "mr": {
@@ -8660,7 +9032,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Sessie hervatten…"
+            "value": "Hervat een sessie…"
           }
         },
         "pl": {
@@ -8672,7 +9044,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Retomar uma sessão…"
+            "value": "Retomar uma Sessão…"
           }
         },
         "ro": {
@@ -8768,7 +9140,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Επανάληψη πιο πρόσφατης συνεδρίας"
+            "value": "Συνέχιση πιο πρόσφατης συνεδρίας"
           }
         },
         "en": {
@@ -8828,7 +9200,7 @@
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "가장 최근 세션 다시 시작"
+            "value": "가장 최근 세션 재개"
           }
         },
         "mr": {
@@ -8846,7 +9218,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Laatste sessie hervatten"
+            "value": "Hervat laatste sessie"
           }
         },
         "pl": {
@@ -8858,7 +9230,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Retomar a sessão mais recente"
+            "value": "Retomar a Sessão Mais Recente"
           }
         },
         "ro": {
