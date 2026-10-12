@@ -115,7 +115,7 @@ waits for their decoding; a Ctrl-C between the probe's disable and enable leaves
   non-option word after `env`. It now compares lower-cased names and refuses a launcher (`env`, a shell, `arch`,
   `xcrun`...) whose arguments name `open` or `osascript`.
 - The doctor probe's interrupt handler re-enabled the extension but left the probe request, so the extension could open
-  a terminal after the interrupt. It now claims the request first. (Code reading only; the handler itself is not run by
+  a terminal after the interrupt. It now claims the request first. (The ordering is now a tested function; the signal wiring itself is not run by
   any test, since that would open a window.)
 - Nothing found in the config-defined terminal expansion, the MCP limits, or `ProbeMarker`.
 

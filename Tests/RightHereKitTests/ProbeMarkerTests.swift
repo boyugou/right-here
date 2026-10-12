@@ -13,6 +13,15 @@ struct ProbeMarkerTests {
         try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-seconds)], ofItemAtPath: marker.path)
     }
 
+    @Test func anInterruptedProbeWithdrawsItsRequestBeforeTheExtensionIsSwitchedBackOn() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let target = paths(in: directory)
+        #expect(ProbeMarker.write("launch:tab", in: target))
+        var pendingWhenReenabled: String? = "not called"
+        ProbeMarker.cleanUpAfterInterrupt(in: target) { pendingWhenReenabled = ProbeMarker.pending(in: target) }
+        #expect(pendingWhenReenabled == nil)
+    }
+
     @Test func aFreshRequestIsPendingAndCarriesItsText() throws {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let target = paths(in: directory)

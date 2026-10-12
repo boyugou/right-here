@@ -42,13 +42,13 @@ struct Doctor: AsyncParsableCommand {
             let sources = [SIGINT, SIGTERM, SIGHUP].map { DispatchSource.makeSignalSource(signal: $0, queue: .global()) }
             for source in sources {
             source.setEventHandler {
-                // A probe request left behind would make the re-enabled extension open a terminal nobody asked for.
-                _ = ProbeMarker.claim(in: runtime.paths)
-                let reenable = Process()
-                reenable.executableURL = URL(fileURLWithPath: "/usr/bin/pluginkit")
-                reenable.arguments = ["-e", "use", "-i", AppIdentity.extensionBundleID]
-                try? reenable.run()
-                reenable.waitUntilExit()
+                ProbeMarker.cleanUpAfterInterrupt(in: runtime.paths) {
+                    let reenable = Process()
+                    reenable.executableURL = URL(fileURLWithPath: "/usr/bin/pluginkit")
+                    reenable.arguments = ["-e", "use", "-i", AppIdentity.extensionBundleID]
+                    try? reenable.run()
+                    reenable.waitUntilExit()
+                }
                 Darwin.exit(130)
             }
             source.resume()

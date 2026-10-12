@@ -58,3 +58,12 @@ public enum ProbeMarker {
         return Date(timeIntervalSince1970: TimeInterval(status.st_mtimespec.tv_sec) + TimeInterval(status.st_mtimespec.tv_nsec) / 1e9)
     }
 }
+
+extension ProbeMarker {
+    /// What an interrupted probe does before it exits: withdraw the request first, then switch the extension back
+    /// on. In the other order the extension would start with the request still there and open a terminal nobody asked for.
+    public static func cleanUpAfterInterrupt(in paths: RHPaths, reenableExtension: () -> Void) {
+        _ = claim(in: paths)
+        reenableExtension()
+    }
+}
