@@ -91,21 +91,18 @@ struct RunResult: Encodable {
     var report: ExecutionReport
 }
 
-/// A small append-only log so a failed action started from Finder leaves a trace.
+/// A small append-only log so a failed action started from Finder leaves a trace. Lines are written
+/// with O_APPEND, so several `rh` processes started at once do not overwrite each other.
 enum RunLog {
     static func record(_ message: String) {
         let facts = LiveSystemFacts()
         let directory = facts.homeDirectory.appendingPathComponent("Library/Logs/right-here")
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        let file = directory.appendingPathComponent("rh.log")
-        let line = "\(ISO8601DateFormatter().string(from: Date())) \(message)\n"
-        guard let data = line.data(using: .utf8) else { return }
-        if let handle = try? FileHandle(forWritingTo: file) {
-            handle.seekToEndOfFile()
-            handle.write(data)
-            try? handle.close()
-        } else {
-            try? data.write(to: file)
-        }
+        let path = directory.appendingPathComponent("rh.log").path
+        let line = Array("\(ISO8601DateFormatter().string(from: Date())) \(message)\n".utf8)
+        let descriptor = open(path, O_WRONLY | O_APPEND | O_CREAT, 0o644)
+        guard descriptor >= 0 else { return }
+        defer { close(descriptor) }
+        _ = line.withUnsafeBytes { write(descriptor, $0.baseAddress, $0.count) }
     }
 }
