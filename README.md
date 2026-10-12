@@ -16,8 +16,21 @@ actions from the command line.
   terminal you choose.
 - Create a new empty text or Markdown file.
 
-**Status:** early development, not released. Design notes live in
-[`docs/`](docs/INDEX.md).
+## Use
+
+```sh
+rh init                      # create ~/.config/right-here/config.toml from what is installed
+rh menu                      # preview the Finder menu
+rh run agent.claude          # start Claude Code in the current folder, in your terminal
+rh run copy-path.git-relative src/main.swift
+rh doctor                    # check the setup
+```
+
+Right-click in Finder for the same actions. `rh docs` prints the documentation, and everything has
+`--json` output for scripts and AI agents.
+
+**Status:** early development, not released. Build and install from source with
+[`docs/development/SETUP.md`](docs/development/SETUP.md). Design notes live in [`docs/`](docs/INDEX.md).
 
 ## Requirements
 

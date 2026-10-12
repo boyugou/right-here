@@ -8,6 +8,19 @@ Right Here is a macOS action layer: the `rh` command-line tool, a plain-text
 config, and Finder entry points (FinderSync menu, Quick Actions, Services) that
 send a folder or selection to terminals, editors and AI agents.
 
+## Layout
+
+```
+Sources/RightHereCore/   pure logic (context, paths, quoting, plan, planner, adapters, config, menu)
+Sources/RightHereKit/    macOS runtime (facts, process runner, executor, installer, doctor)
+Sources/rh/              the command-line tool
+Apps/RightHere/          the app (setup window)
+Apps/FinderExtension/    the Finder Sync extension
+project.yml              XcodeGen project; the .xcodeproj is generated, not committed
+script/                  build_app.sh, install_local.sh
+docs/                    DESIGN.md, decisions/, development/
+```
+
 ## Hard rules
 
 1. **No GPL code.** The project is Apache-2.0. Never copy or paraphrase code
