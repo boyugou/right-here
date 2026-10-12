@@ -46,8 +46,9 @@ public struct HereContext: Sendable, Equatable, Codable {
         }
         switch facts.isDirectory(first) {
         case true? where items.count == 1: return first
-        // A link that points nowhere is an item, not a folder: its own folder is the one to open.
-        case nil: return facts.itemExists(first) ? Self.directory(from: first.deletingLastPathComponent(), facts: facts) : nil
+        // A link that points nowhere is an item, not a folder: its own folder is the one to open. A path the
+        // system will not let us look at is nothing we can place, and its parent is not what was asked for.
+        case nil: return facts.itemState(first) == .present ? Self.directory(from: first.deletingLastPathComponent(), facts: facts) : nil
         default: return Self.directory(from: first.deletingLastPathComponent(), facts: facts)
         }
     }
@@ -56,9 +57,16 @@ public struct HereContext: Sendable, Equatable, Codable {
     /// points nowhere exists (it is listed in its folder and can be revealed or renamed); only a path with
     /// nothing at all at its end is missing.
     public func firstMissingPath(facts: any SystemFacts) -> URL? {
-        if let missing = items.first(where: { !facts.itemExists($0) }) { return missing }
-        if items.isEmpty, let container, !facts.itemExists(container) { return container }
+        if let missing = items.first(where: { facts.itemState($0) == .missing }) { return missing }
+        if items.isEmpty, let container, facts.itemState(container) == .missing { return container }
         return nil
+    }
+
+    /// The path that decides the working directory, when the system would not let us look at it. There is no
+    /// folder to give in that case, and the person is told why instead of getting some other folder.
+    public func unreadableTarget(facts: any SystemFacts) -> URL? {
+        guard let target = items.first ?? container ?? (origin == .cli ? facts.currentDirectory : nil) else { return nil }
+        return facts.itemState(target) == .unreadable ? target : nil
     }
 
     private static func directory(from url: URL, facts: any SystemFacts) -> URL? {

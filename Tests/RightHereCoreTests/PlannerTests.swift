@@ -456,3 +456,42 @@ struct PlannerNamedPathTests {
         #expect(throws: PlanError.self) { try Planner(config: config, facts: facts).plan(.openTerminal(nil), context: folder("/Users/tester/code/app")) }
     }
 }
+
+
+@Suite("Planner: paths the system will not let us look at")
+struct PlannerUnreadablePathTests {
+    private func facts() -> FakeSystemFacts {
+        var facts = machine()
+        facts.directories.insert("/Users/tester/Documents")
+        facts.unreadablePaths = ["/Users/tester/Documents/project"]
+        return facts
+    }
+
+    @Test("a terminal or an agent is never started in the folder around a path it could not look at",
+          arguments: [ActionRef.openTerminal(nil), .agent(id: "claude", variant: nil, launcher: nil),
+                      .agent(id: "claude", variant: nil, launcher: .terminalLink), .newFile("txt")])
+    func noWorkingDirectoryIsInvented(ref: ActionRef) {
+        let planner = Planner(facts: facts())
+        #expect(throws: PlanError.unreadable("/Users/tester/Documents/project")) {
+            try planner.plan(ref, context: selection("/Users/tester/Documents/project"))
+        }
+        #expect(throws: PlanError.unreadable("/Users/tester/Documents/project")) {
+            try planner.plan(ref, context: folder("/Users/tester/Documents/project"))
+        }
+    }
+
+    @Test func theErrorSaysWhatToDo() {
+        let message = PlanError.unreadable("/Users/tester/Documents/project").localizedDescription
+        #expect(message.contains("/Users/tester/Documents/project"))
+        #expect(message.contains("Files & Folders"))
+    }
+
+    @Test func actionsThatOnlyCarryThePathStillWork() throws {
+        // Copying, revealing and opening in an editor hand the path along; none needs to know what it is.
+        let planner = Planner(facts: facts())
+        let context = selection("/Users/tester/Documents/project")
+        #expect(try planner.plan(.copyPath(.absolute), context: context).steps == [.copyToPasteboard("/Users/tester/Documents/project")])
+        #expect(try planner.plan(.reveal, context: context).steps == [.reveal(["/Users/tester/Documents/project"])])
+        #expect(!(try planner.plan(.openEditor, context: context).steps.isEmpty))
+    }
+}

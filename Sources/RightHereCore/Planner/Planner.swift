@@ -59,7 +59,10 @@ public struct Planner: Sendable {
 
     /// The folder an action works in.
     private func workingDirectory(for context: HereContext) throws -> URL {
-        guard let directory = context.workingDirectory(facts: facts) else { throw PlanError.noTarget }
+        guard let directory = context.workingDirectory(facts: facts) else {
+            if let refused = context.unreadableTarget(facts: facts) { throw PlanError.unreadable(refused.path) }
+            throw PlanError.noTarget
+        }
         return directory
     }
 

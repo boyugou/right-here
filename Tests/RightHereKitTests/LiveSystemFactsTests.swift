@@ -47,10 +47,32 @@ struct LiveSystemFactsExistenceTests {
             try? FileManager.default.removeItem(at: directory)
         }
         try #require(geteuid() != 0, "root is never refused")
-        #expect(facts.itemExists(locked.appendingPathComponent("inside.txt")))
-        #expect(facts.isDirectory(locked.appendingPathComponent("inside.txt")) == nil, "its type cannot be known")
-        // And a path that really is not there, in the same folder, is still reported missing only if the system says so:
-        // here it also cannot say, so it counts as present, which is the safe side for "do not reject a real path".
-        #expect(facts.itemExists(locked.appendingPathComponent("who-knows")))
+        let inside = locked.appendingPathComponent("inside.txt")
+        #expect(facts.itemState(inside) == .unreadable)
+        #expect(facts.itemExists(inside), "not missing: nobody can say it is a typo")
+        #expect(facts.isDirectory(inside) == nil, "its type cannot be known")
+        // A path that really is not there, in the same folder, cannot be told apart either.
+        #expect(facts.itemState(locked.appendingPathComponent("who-knows")) == .unreadable)
+    }
+
+    @Test func aTerminalIsNotStartedInTheFolderAroundSomethingTheSystemWouldNotShow() throws {
+        // The planner on the real machine's facts, with a folder whose parent cannot be searched: the answer
+        // is an error that names the permission, not the parent folder (which `stat` can still see).
+        let directory = try makeTemporaryDirectory()
+        let locked = directory.appendingPathComponent("locked")
+        let project = locked.appendingPathComponent("project")
+        try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: locked.path)
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: locked.path)
+            try? FileManager.default.removeItem(at: directory)
+        }
+        try #require(geteuid() != 0, "root is never refused")
+        let context = HereContext(origin: .items, items: [project])
+        #expect(throws: PlanError.unreadable(project.lexicallyNormalized.path)) {
+            try Planner(facts: facts).plan(.openTerminal("terminal"), context: context)
+        }
+        // Copying the path still works: it is only text.
+        #expect(!(try Planner(facts: facts).plan(.copyPath(.absolute), context: context).steps.isEmpty))
     }
 }

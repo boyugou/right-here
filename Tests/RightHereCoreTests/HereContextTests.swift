@@ -207,3 +207,39 @@ struct HereContextEdgeTests {
         #expect(URL(fileURLWithPath: "/d/..\u{301}/x").lexicallyNormalized.path == "/d/..\u{301}/x")
     }
 }
+
+
+@Suite("Paths the system will not let us look at")
+struct UnreadablePathTests {
+    private let machine = FakeSystemFacts(
+        directories: ["/Users/tester/code", "/Users/tester/Documents"],
+        unreadablePaths: ["/Users/tester/Documents/project", "/Users/tester/Documents/notes.txt"]
+    )
+
+    @Test func anUnreadablePathIsNeitherMissingNorAFolder() {
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/Documents/project")])
+        #expect(machine.itemState(URL(fileURLWithPath: "/Users/tester/Documents/project")) == .unreadable)
+        #expect(context.firstMissingPath(facts: machine) == nil, "it was selected in Finder; it is not a typo")
+        #expect(context.workingDirectory(facts: machine) == nil, "its parent is not the folder that was asked for")
+        #expect(context.unreadableTarget(facts: machine)?.path == "/Users/tester/Documents/project")
+    }
+
+    @Test func aFileThatCannotBeInspectedIsNeverTakenForItsParentFolderEither() {
+        // Its type is unknown, and a file handed to a terminal runs; so there is no folder to give.
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/Documents/notes.txt")])
+        #expect(context.workingDirectory(facts: machine) == nil)
+    }
+
+    @Test func aContainerThatCannotBeInspectedIsReportedToo() {
+        let context = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/Documents/project"))
+        #expect(context.workingDirectory(facts: machine) == nil)
+        #expect(context.unreadableTarget(facts: machine)?.path == "/Users/tester/Documents/project")
+        #expect(context.firstMissingPath(facts: machine) == nil)
+    }
+
+    @Test func aReadableSelectionHasNoUnreadableTarget() {
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code")])
+        #expect(context.unreadableTarget(facts: machine) == nil)
+        #expect(HereContext(origin: .cli).unreadableTarget(facts: machine) == nil)
+    }
+}

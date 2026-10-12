@@ -1,5 +1,16 @@
 import Foundation
 
+/// What `lstat` says about a path.
+public enum ItemState: Sendable, Equatable {
+    /// Something is there: a file, a folder, or a link (one that points nowhere included).
+    case present
+    /// The system refused to say: no search permission on a folder above it, or a privacy-protected folder
+    /// such as Desktop or Documents. Nothing is known about it, but a path that was just selected in Finder
+    /// is not a typo, and it must not be treated as a folder (a file handed to a terminal runs).
+    case unreadable
+    case missing
+}
+
 /// Everything the planner needs to know about the machine. The live implementation lives in
 /// RightHereKit; tests use `FakeSystemFacts`, so planning stays pure and deterministic.
 public protocol SystemFacts: Sendable {
@@ -12,8 +23,8 @@ public protocol SystemFacts: Sendable {
     /// `nil` when the item cannot be inspected (for example it no longer exists).
     func isDirectory(_ url: URL) -> Bool?
     func fileExists(_ url: URL) -> Bool
-    /// Whether anything is at the path, a dangling symbolic link included (`lstat`, not `stat`).
-    func itemExists(_ url: URL) -> Bool
+    /// What is at the path (`lstat`, not `stat`, so a link that points nowhere is `present`).
+    func itemState(_ url: URL) -> ItemState
     /// The root of the git working tree containing `url`. A repository rooted at the home
     /// directory is ignored: a dotfiles repository would otherwise claim every path.
     func gitRoot(containing url: URL) -> URL?
@@ -30,7 +41,9 @@ extension SystemFacts {
     public var shellFlavor: ShellFlavor { ShellFlavor(loginShellPath: loginShell) }
     public func displayName(bundleID: String) -> String? { nil }
     public func bundleVersion(bundleID: String) -> String? { nil }
-    public func itemExists(_ url: URL) -> Bool { fileExists(url) }
+    public func itemState(_ url: URL) -> ItemState { fileExists(url) ? .present : .missing }
+    /// Whether the path is there as far as anyone can tell: a refusal to look is not "missing".
+    public func itemExists(_ url: URL) -> Bool { itemState(url) != .missing }
 }
 
 /// A deterministic stand-in for the machine, used by tests across modules.
@@ -40,8 +53,10 @@ public struct FakeSystemFacts: SystemFacts {
     public var loginShell: String
     public var directories: Set<String>
     public var files: Set<String>
-    /// Symbolic links that point nowhere: `itemExists` sees them, `fileExists` does not.
+    /// Symbolic links that point nowhere: `itemState` sees them, `fileExists` does not.
     public var danglingLinks: Set<String>
+    /// Paths the system refuses to look at (`itemState` is `unreadable`; `isDirectory` knows nothing).
+    public var unreadablePaths: Set<String>
     public var gitRoots: [String]
     public var applications: [String: URL]
     public var bundleVersions: [String: String]
@@ -55,6 +70,7 @@ public struct FakeSystemFacts: SystemFacts {
         directories: Set<String> = [],
         files: Set<String> = [],
         danglingLinks: Set<String> = [],
+        unreadablePaths: Set<String> = [],
         gitRoots: [String] = [],
         applications: [String: URL] = [:],
         bundleVersions: [String: String] = [:],
@@ -67,6 +83,7 @@ public struct FakeSystemFacts: SystemFacts {
         self.directories = directories
         self.files = files
         self.danglingLinks = danglingLinks
+        self.unreadablePaths = unreadablePaths
         self.gitRoots = gitRoots
         self.applications = applications
         self.bundleVersions = bundleVersions
@@ -86,8 +103,10 @@ public struct FakeSystemFacts: SystemFacts {
         return directories.contains(path) || files.contains(path)
     }
 
-    public func itemExists(_ url: URL) -> Bool {
-        fileExists(url) || danglingLinks.contains(url.lexicallyNormalized.path)
+    public func itemState(_ url: URL) -> ItemState {
+        let path = url.lexicallyNormalized.path
+        if fileExists(url) || danglingLinks.contains(path) { return .present }
+        return unreadablePaths.contains(path) ? .unreadable : .missing
     }
 
     public func gitRoot(containing url: URL) -> URL? {

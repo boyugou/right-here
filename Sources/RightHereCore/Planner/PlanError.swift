@@ -5,6 +5,8 @@ public enum PlanError: Error, Equatable, Sendable {
     case noTarget
     /// A path that was named does not exist, for example a typo on the command line.
     case pathNotFound(String)
+    /// A path the system will not let `rh` look at (a privacy-protected folder, say), so what it is cannot be told.
+    case unreadable(String)
     case unknownAction(String)
     case unknownApp(String)
     /// A terminal id (or an agent's launcher) that names no terminal.
@@ -25,6 +27,7 @@ extension PlanError: LocalizedError {
         switch self {
         case .noTarget: return "There is no folder or selection to act on."
         case .pathNotFound(let path): return "\(path) does not exist."
+        case .unreadable(let path): return "macOS did not let Right Here look at \(path), so it cannot tell whether it is a folder. Allow access to that folder under System Settings, Privacy & Security, Files & Folders (or Full Disk Access), then try again."
         case .unknownAction(let id): return "Unknown action \"\(id)\". Run `rh actions` to list them."
         case .unknownApp(let id): return "Unknown app \"\(id)\"."
         case .unknownTerminal(let id): return "Unknown terminal \"\(id)\". Run `rh apps` to list them; an agent's launcher can also be default, link or desktop."
