@@ -12,7 +12,8 @@ If that is empty, check the setup and fix what is broken.
 
 ## 1. Read the playbook and check the machine
 
-Call `right_here_docs` with topic `agent-setup`, then `right_here_doctor`.
+Call `right_here_docs` with topic `agent-setup`, then `right_here_doctor`. If the menu is missing or a click does
+nothing, read topic `troubleshooting` before guessing.
 
 - `fail`: fix it with the `fix` text. Most fixes are `rh` commands; run them in the shell.
 - `needs-user`: only the person can do this (for example, switching on the Finder extension in

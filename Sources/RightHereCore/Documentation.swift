@@ -64,6 +64,8 @@ public enum Documentation {
       the person's PATH, version managers and aliases apply.
     - Paths with line breaks or control characters are refused for typed launches.
     - Use ids from `rh actions`; `rh docs actions` explains the grammar.
+    - When something does not work (no menu, a click that does nothing, a permission prompt), read
+      `rh docs troubleshooting` before guessing.
     """
 
     public static let config = ConfigSchema.markdown()
