@@ -52,13 +52,21 @@ public struct Planner: Sendable {
         return LaunchPlan(action: ref.id, summary: "Copy \(noun) (\(style.rawValue))", steps: [.copyToPasteboard(text)])
     }
 
+    /// The folder an action works in. When there is none because a named path does not exist, the
+    /// error names that path.
+    private func workingDirectory(for context: HereContext) throws -> URL {
+        if let directory = context.workingDirectory(facts: facts) { return directory }
+        if let missing = context.firstMissingPath(facts: facts) { throw PlanError.pathNotFound(missing.path) }
+        throw PlanError.noTarget
+    }
+
     // MARK: Open with an app
 
     private func openApp(_ app: AppDescriptor, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         guard let bundleID = app.installedBundleID(facts: facts) else { throw PlanError.appNotInstalled(app.name) }
         let targets: [URL]
         if app.role == .terminal {
-            guard let directory = context.workingDirectory(facts: facts) else { throw PlanError.noTarget }
+            let directory = try workingDirectory(for: context)
             targets = [directory]
         } else {
             targets = context.pathTargets
@@ -74,7 +82,7 @@ public struct Planner: Sendable {
     // MARK: Terminals
 
     private func openTerminal(_ id: String?, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
-        guard let directory = context.workingDirectory(facts: facts) else { throw PlanError.noTarget }
+        let directory = try workingDirectory(for: context)
         let (app, bundleID) = try resolveTerminal(id)
         let steps = try TerminalAdapters.adapter(for: app)
             .steps(for: TerminalSession(directory: directory), bundleID: bundleID, facts: facts)
@@ -84,7 +92,7 @@ public struct Planner: Sendable {
     private func resolveTerminal(_ id: String?) throws -> (AppDescriptor, String) {
         let app: AppDescriptor
         if let id {
-            guard let found = config.app(id: id), found.role == .terminal else { throw PlanError.unknownApp(id) }
+            guard let found = config.app(id: id), found.role == .terminal else { throw PlanError.unknownTerminal(id) }
             app = found
         } else {
             app = try resolveDefault(role: .terminal, configured: config.terminal)
@@ -119,7 +127,7 @@ public struct Planner: Sendable {
             }
             variant = found
         }
-        guard let directory = context.workingDirectory(facts: facts) else { throw PlanError.noTarget }
+        let directory = try workingDirectory(for: context)
         let chosen = launcher ?? config.agents[id]?.launcher ?? .terminal(nil)
 
         switch chosen {
@@ -177,7 +185,7 @@ public struct Planner: Sendable {
     // MARK: New file
 
     private func newFile(_ id: String, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
-        guard let directory = context.workingDirectory(facts: facts) else { throw PlanError.noTarget }
+        let directory = try workingDirectory(for: context)
         guard let template = config.newFile.templates.first(where: { $0.id == id }) else { throw PlanError.unknownTemplate(id) }
         guard let name = NewFileNamer.uniqueName(for: template, in: directory, facts: facts, localizer: localizer) else { throw PlanError.nameExhausted }
         let path = directory.appendingPathComponent(name).path

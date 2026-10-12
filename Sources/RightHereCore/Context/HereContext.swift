@@ -37,14 +37,25 @@ public struct HereContext: Sendable, Equatable, Codable {
     ///
     /// A single selected folder is opened itself; any other selection opens the folder holding its
     /// first item; with no selection the viewed folder (or the command-line working directory) is
-    /// used. A path that is a file yields its folder, and a path that does not exist yields `nil`.
+    /// used. A path that is a file yields its folder, and a path that does not exist yields `nil`, so
+    /// a mistyped path is not quietly replaced by the folder around it.
     public func workingDirectory(facts: any SystemFacts) -> URL? {
         guard let first = items.first else {
             guard let folder = container ?? (origin == .cli ? facts.currentDirectory : nil) else { return nil }
             return Self.directory(from: folder, facts: facts)
         }
-        if items.count == 1, facts.isDirectory(first) == true { return first }
-        return Self.directory(from: first.deletingLastPathComponent(), facts: facts)
+        switch facts.isDirectory(first) {
+        case true? where items.count == 1: return first
+        case nil: return nil
+        default: return Self.directory(from: first.deletingLastPathComponent(), facts: facts)
+        }
+    }
+
+    /// The first path that was named but does not exist, so a typo can be reported as one.
+    public func firstMissingPath(facts: any SystemFacts) -> URL? {
+        if let missing = items.first(where: { facts.isDirectory($0) == nil }) { return missing }
+        if items.isEmpty, let container, facts.isDirectory(container) == nil { return container }
+        return nil
     }
 
     private static func directory(from url: URL, facts: any SystemFacts) -> URL? {

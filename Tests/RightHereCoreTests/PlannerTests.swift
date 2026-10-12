@@ -111,9 +111,29 @@ struct PlannerTests {
         #expect(mentions.contains { $0.hasPrefix("/Users/tester/code") || $0.contains("cwd=/Users/tester/code") })
     }
 
-    @Test func aMissingFolderIsRefusedForTerminals() {
+    @Test func aMissingFolderIsRefusedForTerminalsAndNamed() {
         let context = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/nowhere"))
-        #expect(throws: PlanError.noTarget) { try Planner(facts: machine()).plan(.openTerminal(nil), context: context) }
+        #expect(throws: PlanError.pathNotFound("/Users/tester/nowhere")) { try Planner(facts: machine()).plan(.openTerminal(nil), context: context) }
+    }
+
+    @Test("a mistyped path is named, not replaced by the folder around it", arguments: [
+        "open.terminal", "open.terminal@ghostty", "agent.claude", "new-file.md"
+    ])
+    func aMistypedPathIsNamed(id: String) throws {
+        let ref = try #require(ActionRef(parsing: id))
+        let planner = Planner(facts: machine())
+        for context in [selection("/Users/tester/code/appp"), HereContext(origin: .cli, items: [URL(fileURLWithPath: "/Users/tester/code/appp")])] {
+            #expect(throws: PlanError.pathNotFound("/Users/tester/code/appp")) { try planner.plan(ref, context: context) }
+        }
+    }
+
+    @Test func anUnknownTerminalIsNamedAsATerminal() {
+        #expect(throws: PlanError.unknownTerminal("nope")) {
+            try Planner(facts: machine()).plan(.openTerminal("nope"), context: folder("/Users/tester/code/app"))
+        }
+        #expect(throws: PlanError.unknownTerminal("nowhere")) {
+            try Planner(facts: machine()).plan(.agent(id: "claude", variant: nil, launcher: .terminal("nowhere")), context: folder("/Users/tester/code/app"))
+        }
     }
 
     @Test func unknownAppIsReported() {

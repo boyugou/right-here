@@ -53,10 +53,32 @@ struct HereContextTests {
         #expect(context.workingDirectory(facts: facts) == nil)
     }
 
+    @Test func aMistypedItemIsNotReplacedByTheFolderAroundIt() {
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/appp")])
+        #expect(context.workingDirectory(facts: facts) == nil)
+        #expect(context.firstMissingPath(facts: facts)?.path == "/Users/tester/code/appp")
+    }
+
+    @Test func theMissingPathIsFoundAmongSeveralItemsAndForAContainer() {
+        let several = HereContext(origin: .items, items: [
+            URL(fileURLWithPath: "/Users/tester/code/b.txt"), URL(fileURLWithPath: "/Users/tester/code/gone")
+        ])
+        #expect(several.firstMissingPath(facts: facts)?.path == "/Users/tester/code/gone")
+        let container = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/gone"))
+        #expect(container.firstMissingPath(facts: facts)?.path == "/Users/tester/gone")
+    }
+
+    @Test func nothingIsMissingWhenEverythingExistsOrNothingWasNamed() {
+        #expect(HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/b.txt")]).firstMissingPath(facts: facts) == nil)
+        #expect(HereContext(origin: .container).firstMissingPath(facts: facts) == nil)
+    }
+
     @Test func aFileWhereAFolderIsExpectedNeverBecomesTheDirectory() {
-        // /Users/tester/code/b.txt is a file: nothing under it can be a working directory.
+        // /Users/tester/code/b.txt is a file: nothing under it exists, let alone as a working directory.
         let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/b.txt/inside")])
-        #expect(context.workingDirectory(facts: facts)?.path == "/Users/tester/code")
+        #expect(context.workingDirectory(facts: facts) == nil)
+        let asContainer = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/code/b.txt/inside"))
+        #expect(asContainer.workingDirectory(facts: facts) == nil)
     }
 
     @Test func nothingToActOnYieldsNil() {
