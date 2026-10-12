@@ -71,6 +71,25 @@ struct InstallerTests {
         #expect(InstallError.isTranslocated(path) == translocated)
     }
 
+    @Test func aHomebrewInstallKeepsThePrefixPathInsteadOfTheVersionedCellarPath() throws {
+        let prefix = try makeTemporaryDirectory().appendingPathComponent("opt/homebrew")
+        defer { try? FileManager.default.removeItem(at: prefix.deletingLastPathComponent().deletingLastPathComponent()) }
+        let cellar = prefix.appendingPathComponent("Cellar/rh/0.1.0/bin")
+        try FileManager.default.createDirectory(at: cellar, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: prefix.appendingPathComponent("bin"), withIntermediateDirectories: true)
+        try "binary".write(to: cellar.appendingPathComponent("rh"), atomically: true, encoding: .utf8)
+        try FileManager.default.createSymbolicLink(atPath: prefix.appendingPathComponent("bin/rh").path, withDestinationPath: "../Cellar/rh/0.1.0/bin/rh")
+        let resolved = cellar.appendingPathComponent("rh").resolvingSymlinksInPath().path
+        let stable = Installer.stablePath(forResolved: resolved)
+        #expect(stable.hasSuffix("/opt/homebrew/bin/rh"))
+        #expect(URL(fileURLWithPath: stable).resolvingSymlinksInPath().path == resolved)
+    }
+
+    @Test func aCellarPathWithoutAMatchingPrefixLinkIsKept() {
+        #expect(Installer.stablePath(forResolved: "/nowhere/Cellar/rh/0.1.0/bin/rh") == "/nowhere/Cellar/rh/0.1.0/bin/rh")
+        #expect(Installer.stablePath(forResolved: "/Applications/Right Here.app/Contents/Helpers/rh") == "/Applications/Right Here.app/Contents/Helpers/rh")
+    }
+
     @Test func aDanglingLinkIsReplaced() throws {
         let home = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: home) }

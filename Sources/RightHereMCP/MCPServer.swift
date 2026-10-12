@@ -31,7 +31,7 @@ public struct ServerContext: Sendable {
             paths: RHPaths.current(facts: facts),
             runner: LiveProcessRunner(),
             pasteboard: SystemPasteboard(),
-            rhPath: Bundle.main.executableURL?.resolvingSymlinksInPath().path
+            rhPath: Installer.currentExecutablePath()
         )
     }
 

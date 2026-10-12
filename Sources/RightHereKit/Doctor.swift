@@ -38,7 +38,7 @@ public struct Doctor: Sendable {
         paths: RHPaths,
         loaded: LoadedConfig,
         runner: any ProcessRunner = LiveProcessRunner(),
-        rhPath: String? = Bundle.main.executableURL?.resolvingSymlinksInPath().path
+        rhPath: String? = Installer.currentExecutablePath()
     ) {
         self.facts = facts
         self.paths = paths

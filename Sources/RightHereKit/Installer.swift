@@ -47,6 +47,21 @@ public struct Installer: Sendable {
     public let locations: Locations
     private var fileManager: FileManager { .default }
 
+    /// The path of the running `rh` to write into the runner script and the Services. Symlinks are
+    /// resolved (the link in `~/.local/bin` leads into the app), except that a Homebrew install, which
+    /// resolves into a versioned Cellar folder that changes on every upgrade, keeps its prefix's
+    /// `bin/rh`.
+    public static func currentExecutablePath() -> String? {
+        Bundle.main.executableURL.map { stablePath(forResolved: $0.resolvingSymlinksInPath().path) }
+    }
+
+    static func stablePath(forResolved resolved: String) -> String {
+        guard let range = resolved.range(of: "/Cellar/") else { return resolved }
+        let alias = String(resolved[..<range.lowerBound]) + "/bin/" + URL(fileURLWithPath: resolved).lastPathComponent
+        let target = URL(fileURLWithPath: alias).resolvingSymlinksInPath().path
+        return target == URL(fileURLWithPath: resolved).resolvingSymlinksInPath().path ? alias : resolved
+    }
+
     public init(home: URL) {
         locations = Locations(home: home)
     }

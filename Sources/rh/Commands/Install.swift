@@ -47,7 +47,7 @@ struct Install: AsyncParsableCommand {
     func run() async throws {
         let runtime = Runtime()
         let everything = !(scripts || cli || services || finder)
-        guard let rhPath = Bundle.main.executableURL?.resolvingSymlinksInPath().path else {
+        guard let rhPath = Installer.currentExecutablePath() else {
             throw Output.fail("error: cannot tell where rh is installed.")
         }
         if InstallError.isTranslocated(rhPath) { throw Output.fail("error: " + InstallError.translocated.localizedDescription) }
@@ -85,7 +85,14 @@ struct Install: AsyncParsableCommand {
             }
         }
         if everything || finder {
-            await attempt("Finder extension") { try await installExtension(rhPath: rhPath, facts: runtime.facts) }
+            await attempt("Finder extension") {
+                do {
+                    try await installExtension(rhPath: rhPath, facts: runtime.facts)
+                } catch InstallError.appNotFound where everything {
+                    // A command-line-only install (Homebrew formula) has no app, and Quick Actions still work.
+                    Output.print("Finder extension: skipped, Right Here.app is not installed. Quick Actions work without it.")
+                }
+            }
         }
         if problems > 0 {
             throw Output.fail("Finished with \(problems) problem(s). Run `rh doctor` to see what is still missing.")
