@@ -14,7 +14,8 @@ public enum PathStyle: String, Sendable, Codable, CaseIterable {
     case parent
     /// Backslash-escaped, ready to paste into a shell: `/Users/me/project/a\ b.txt`
     case shellEscaped = "shell-escaped"
-    /// Single-quoted: `'/Users/me/project/a b.txt'`
+    /// Single-quoted, `'/Users/me/project/a b.txt'` (backslash-escaped instead when the path has a backslash). It
+    /// reads the same in every shell, whichever one the person uses: they may paste it into an ssh session.
     case shellQuoted = "shell-quoted"
     /// `file:///Users/me/project/a%20b.txt`
     case fileURL = "file-url"
@@ -61,7 +62,7 @@ public struct PathRenderer: Sendable {
         case .shellEscaped:
             return ShellQuoting.backslashEscape(url.path)
         case .shellQuoted:
-            return ShellQuoting.quote(url.path, for: facts.shellFlavor)
+            return Self.shellQuotedForAnyShell(url.path)
         case .fileURL:
             return url.absoluteString
         case .aiMention:
@@ -72,10 +73,22 @@ public struct PathRenderer: Sendable {
         }
     }
 
+    /// POSIX single quotes read identically in sh, bash, zsh and fish unless the text has a backslash (fish takes one
+    /// inside single quotes as an escape, so `\'` ends the quoting in the others and not in fish); a backslash-escaped
+    /// word reads identically everywhere. So the form follows the text and never the person's login shell: this
+    /// text is pasted somewhere, and not necessarily into the shell they log in with.
+    static func shellQuotedForAnyShell(_ path: String) -> String {
+        path.unicodeScalars.contains("\\") ? ShellQuoting.backslashEscape(path) : ShellQuoting.quote(path, for: .posix)
+    }
+
     private func tildePath(_ url: URL) -> String {
         let home = facts.homeDirectory.lexicallyNormalized.path
         if url.path == home { return "~" }
-        if url.path.hasPrefix(home + "/") { return "~" + url.path.dropFirst(home.count) }
+        // Scalars again: a combining mark right after the slash would hide it from a Character-level prefix test.
+        let path = url.path.unicodeScalars
+        if path.starts(with: (home + "/").unicodeScalars) {
+            return "~" + String(String.UnicodeScalarView(path.dropFirst(home.unicodeScalars.count)))
+        }
         return url.path
     }
 

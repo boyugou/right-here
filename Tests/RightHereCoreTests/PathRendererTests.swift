@@ -27,6 +27,12 @@ struct PathRendererTests {
         #expect(renderer.render(outside, style: .tilde) == "/Volumes/Data/x.txt")
     }
 
+    @Test("tilde works however the first component after the home folder begins", arguments: ["\u{301}notes.txt", "e\u{301}/x", "plain/\u{301}", "a b/c"])
+    func tildeSeesThroughACombiningMarkAfterTheSlash(rest: String) {
+        let url = URL(fileURLWithPath: "/Users/tester/" + rest)
+        #expect(PathRenderer(facts: facts()).render(url, style: .tilde) == "~/" + rest)
+    }
+
     @Test func tildeDoesNotMatchSiblingWithSamePrefix() {
         let renderer = PathRenderer(facts: facts())
         #expect(renderer.render(URL(fileURLWithPath: "/Users/tester2/file"), style: .tilde) == "/Users/tester2/file")
@@ -54,6 +60,21 @@ struct PathRendererTests {
         let renderer = PathRenderer(facts: facts())
         #expect(renderer.render(spaced, style: .shellEscaped) == "/Users/tester/code/app/My\\ Notes.md")
         #expect(renderer.render(spaced, style: .shellQuoted) == "'/Users/tester/code/app/My Notes.md'")
+    }
+
+    @Test("a shell-quoted path reads the same in every shell, whichever shell the person logs in with", arguments: [
+        #"x\'; touch CANARY #"#, #"back\slash"#, "it's", #"a\"#, "plain", "with space", "a'b'c", #"q"uo"te"#, "dollar $HOME `x`", "tab\there", "ünï\u{301}", "-dash"
+    ])
+    func shellQuotedIsIndependentOfTheLoginShell(name: String) throws {
+        let url = URL(fileURLWithPath: "/tmp/" + name)
+        let zsh = PathRenderer(facts: FakeSystemFacts(loginShell: "/bin/zsh")).render(url, style: .shellQuoted)
+        let fish = PathRenderer(facts: FakeSystemFacts(loginShell: "/opt/homebrew/bin/fish")).render(url, style: .shellQuoted)
+        #expect(zsh == fish, "the text changed with the login shell")
+        // And the same text, read by the shells that are here, gives the path back (a canary file would appear if a
+        // name could break out).
+        for shell in ["/bin/sh", "/bin/bash", "/bin/zsh"] + (fishPath.map { [$0] } ?? []) {
+            #expect(try Shell.run(shell, "printf %s " + zsh) == "/tmp/" + name, "\(shell) read \(zsh.debugDescription) differently")
+        }
     }
 
     @Test func fileURL() {
