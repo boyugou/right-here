@@ -32,7 +32,7 @@ version = 1
 terminal = "ghostty"
 terminal_placement = "tab"
 editor = "vscode"
-agents = ["claude", "codex"]
+agents = ["claude", "codex", "lazygit"]
 [menu]
 items = ["open-terminal", "-", "agents", "copy-path"]
 [services]

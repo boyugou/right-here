@@ -241,14 +241,15 @@ struct PlannerTests {
         }
     }
 
-    @Test func unknownAgentAndVariant() {
+    @Test func unknownAgentAndVariantNameTheCloseOnesAndWhatExists() {
         let planner = Planner(facts: machine())
-        #expect(throws: PlanError.unknownAgent("nope")) {
-            try planner.plan(.agent(id: "nope", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
+        func message(_ ref: ActionRef) -> String {
+            do { _ = try planner.plan(ref, context: folder("/Users/tester/code/app")); return "" } catch { return error.localizedDescription }
         }
-        #expect(throws: PlanError.unknownVariant(agent: "claude", variant: "nope")) {
-            try planner.plan(.agent(id: "claude", variant: "nope", launcher: nil), context: folder("/Users/tester/code/app"))
-        }
+        let agent = message(.agent(id: "cluade", variant: nil, launcher: nil))
+        #expect(agent.contains("Unknown agent \"cluade\"") && agent.contains("Did you mean \"claude\"?") && agent.contains("Known:") && agent.contains("rh agents"), Comment(rawValue: agent))
+        let variant = message(.agent(id: "claude", variant: "contiune", launcher: nil))
+        #expect(variant.contains("Did you mean \"continue\"?"), Comment(rawValue: variant))
     }
 
     @Test func claudeStartsInTheDefaultTerminalByTypingItsCommand() throws {
@@ -372,9 +373,11 @@ struct PlannerTests {
     }
 
     @Test func unknownTemplate() {
-        #expect(throws: PlanError.unknownTemplate("rtf")) {
+        #expect(throws: PlanError.unknownTemplate("rtf", choices: ["txt", "md"])) {
             try Planner(facts: machine()).plan(.newFile("rtf"), context: folder("/Users/tester/code/app"))
         }
+        let text = PlanError.unknownTemplate("tx", choices: ["txt", "md"]).localizedDescription
+        #expect(text.contains("Did you mean \"txt\"?") && text.contains("replaces the built-in"), Comment(rawValue: text))
     }
 
     // MARK: Reveal

@@ -50,6 +50,8 @@ struct MenuCommand: ParsableCommand {
         let runtime = Runtime()
         runtime.reportConfigProblems()
         let here = try context.makeContext(facts: runtime.facts)
+        // The same rule as `rh run`: a preview of a menu for a path that is not there would only mislead.
+        if let missing = here.firstMissingPath(facts: runtime.facts) { throw Output.fail("error: \(missing.path.withControlCharactersEscaped) does not exist.") }
         let localizer = language.map { Localizer(languages: [$0]) } ?? .english
         let menu = MenuBuilder(config: runtime.config, facts: runtime.facts, localizer: localizer).build(for: here)
         if json {

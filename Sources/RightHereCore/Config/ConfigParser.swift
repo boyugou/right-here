@@ -361,6 +361,10 @@ private struct Builder {
                            suggestion: Suggestion.didYouMean(id, in: agentIDs))
             }
         }
+        // An agent the config defines is not in the menu until general.agents lists it, and nothing else says so.
+        for agent in config.customAgents where !config.enabledAgents.contains(agent.id) {
+            sink.warning(["agent", agent.id], "defined, but not in general.agents, so the menu does not offer it (it still runs as `rh run agent.\(agent.id)`); add \"\(agent.id)\" to general.agents")
+        }
         return config
     }
 

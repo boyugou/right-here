@@ -8,6 +8,7 @@ version = 1
 [general]
 terminal = "ghostty"
 editor = "vscode"
+agents = ["mine"]
 
 [new_file]
 then = "open"
@@ -342,6 +343,25 @@ struct ConfigStrictnessTests {
         """)
         #expect(!result.hasErrors)
         #expect(result.config.editor == "viewer")
+    }
+
+    @Test func aCustomAgentThatIsNotInTheAgentsListIsWarnedAboutBecauseTheMenuHidesIt() throws {
+        let result = parse("""
+        [agent.lazygit]
+        name = "lazygit"
+        command = "lazygit"
+        """)
+        let warning = try #require(result.diagnostics.first { $0.path == "agent.lazygit" })
+        #expect(warning.severity == .warning)
+        #expect(warning.message.contains("general.agents"))
+        let listed = parse("""
+        [general]
+        agents = ["lazygit"]
+        [agent.lazygit]
+        name = "lazygit"
+        command = "lazygit"
+        """)
+        #expect(listed.diagnostics.isEmpty)
     }
 
     @Test func aDuplicateTemplateIdIsAnError() {

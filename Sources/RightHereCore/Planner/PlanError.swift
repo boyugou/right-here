@@ -12,9 +12,9 @@ public enum PlanError: Error, Equatable, Sendable {
     /// A terminal id (or an agent's launcher) that names no terminal.
     case unknownTerminal(String)
     case appNotInstalled(String)
-    case unknownAgent(String)
-    case unknownVariant(agent: String, variant: String)
-    case unknownTemplate(String)
+    case unknownAgent(String, choices: [String])
+    case unknownVariant(agent: String, variant: String, choices: [String])
+    case unknownTemplate(String, choices: [String])
     /// The target exists but cannot do what was asked, for example a terminal that cannot run a command.
     case unsupported(String)
     /// Text that would be typed into a terminal contains line breaks or control characters.
@@ -28,6 +28,14 @@ extension PlanError: LocalizedError {
         message.withControlCharactersEscaped
     }
 
+    /// " Did you mean "x"?" when one is close, then what exists (so a typo is fixed without a second command).
+    private static func hint(_ word: String, _ choices: [String]) -> String {
+        var text = ""
+        if let close = Suggestion.closest(to: word, in: choices) { text += " Did you mean \"\(close)\"?" }
+        if !choices.isEmpty { text += " Known: " + choices.joined(separator: ", ") + "." }
+        return text
+    }
+
     private var message: String {
         switch self {
         case .noTarget: return "There is no folder or selection to act on."
@@ -37,9 +45,9 @@ extension PlanError: LocalizedError {
         case .unknownApp(let id): return "Unknown app \"\(id)\"."
         case .unknownTerminal(let id): return "Unknown terminal \"\(id)\". Run `rh apps` to list them; an agent's launcher can also be default, link or desktop."
         case .appNotInstalled(let name): return "\(name) is not installed."
-        case .unknownAgent(let id): return "Unknown agent \"\(id)\"."
-        case .unknownVariant(let agent, let variant): return "Agent \"\(agent)\" has no variant \"\(variant)\"."
-        case .unknownTemplate(let id): return "Unknown new-file template \"\(id)\"."
+        case .unknownAgent(let id, let choices): return "Unknown agent \"\(id)\"." + Self.hint(id, choices) + " `rh agents` lists them."
+        case .unknownVariant(let agent, let variant, let choices): return "Agent \"\(agent)\" has no variant \"\(variant)\"." + Self.hint(variant, choices)
+        case .unknownTemplate(let id, let choices): return "Unknown new-file template \"\(id)\"." + Self.hint(id, choices) + " A `[[new_file.template]]` in the config replaces the built-in ones."
         case .unsupported(let reason): return reason
         case .unsafeText(let text): return "\"\(text.debugDescription)\" contains line breaks or control characters and cannot be typed into a terminal."
         case .nameExhausted: return "No free file name was found."

@@ -71,7 +71,7 @@ One TOML file, `~/.config/right-here/config.toml`, which the app never rewrites.
 terminal = "ghostty"
 terminal_placement = "tab"           # a new tab in the front Ghostty window instead of a new window
 editor = "vscode"
-agents = ["claude", "codex"]
+agents = ["claude", "codex", "lazygit"]   # what the menu offers, in order (custom agents too)
 
 [menu]
 items = ["open-terminal", "open-editor", "agents", "-", "new-file", "copy-path"]

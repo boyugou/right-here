@@ -469,6 +469,13 @@ struct CLITests {
         #expect(nodes[0]["title"] as? String == "Copy Path")
     }
 
+    @Test func aMenuPreviewOfAPathThatIsNotThereIsRefusedLikeARun() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let result = try rh.run(["menu", "--", "/definitely/not/here"])
+        #expect(result.status == 1)
+        #expect(result.standardError.contains("does not exist"))
+    }
+
     @Test func menuCanBePreviewedInAnotherLanguage() throws {
         let rh = try RH(config: "[menu]\nitems = [\"copy-path\"]\n"); defer { rh.cleanUp() }
         let text = try rh.run(["menu", "--container", "/tmp", "--language", "de"]).standardOutput

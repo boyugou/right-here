@@ -140,11 +140,11 @@ public struct Planner: Sendable {
     // MARK: Agents
 
     private func launchAgent(id: String, variant variantID: String?, launcher: AgentLauncher?, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
-        guard let agent = config.agent(id: id) else { throw PlanError.unknownAgent(id) }
+        guard let agent = config.agent(id: id) else { throw PlanError.unknownAgent(id, choices: (config.customAgents + KnownAgents.all).map(\.id)) }
         var variant: AgentDescriptor.Variant?
         if let variantID {
             guard let found = agent.variants.first(where: { $0.id == variantID }) else {
-                throw PlanError.unknownVariant(agent: id, variant: variantID)
+                throw PlanError.unknownVariant(agent: id, variant: variantID, choices: agent.variants.map(\.id))
             }
             variant = found
         }
@@ -209,7 +209,7 @@ public struct Planner: Sendable {
 
     private func newFile(_ id: String, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         let directory = try workingDirectory(for: context)
-        guard let template = config.newFile.templates.first(where: { $0.id == id }) else { throw PlanError.unknownTemplate(id) }
+        guard let template = config.newFile.templates.first(where: { $0.id == id }) else { throw PlanError.unknownTemplate(id, choices: config.newFile.templates.map(\.id)) }
         let name: String
         switch NewFileNamer.firstFreeName(for: template, in: directory, facts: facts, localizer: localizer) {
         case .free(let free): name = free
