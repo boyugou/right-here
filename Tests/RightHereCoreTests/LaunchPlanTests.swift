@@ -36,3 +36,39 @@ struct LaunchPlanTests {
         #expect(throws: DecodingError.self) { try JSONDecoder().decode(Step.self, from: data) }
     }
 }
+
+@Suite("Step summaries")
+struct StepSummaryTests {
+    @Test func aCopyShowsWhatIsCopied() {
+        #expect(Step.copyToPasteboard("@/tmp").details == ["text: \"@/tmp\""])
+        #expect(Step.copyToPasteboard("a\nb").details == ["text: \"a\\nb\""])
+    }
+
+    @Test func anAppleScriptShowsItsArguments() {
+        let step = Step.appleScript(AppleScriptStep(source: "x", arguments: ["/tmp", "codex", "window"], controls: "Ghostty"))
+        #expect(step.details == ["arguments: \"/tmp\", \"codex\", \"window\""])
+        #expect(Step.appleScript(AppleScriptStep(source: "x")).details.isEmpty)
+    }
+
+    @Test func longTextIsCutOff() throws {
+        let detail = try #require(Step.copyToPasteboard(String(repeating: "a", count: 500)).details.first)
+        #expect(detail.count < 260)
+        #expect(detail.hasSuffix("…\""))
+    }
+
+    @Test func controlCharactersInNamesNeverReachATerminal() {
+        let hostile = "/tmp/\u{1b}[2Jevil\nname"
+        for step in [Step.open(OpenStep(bundleID: "x", targets: [hostile])), .reveal([hostile]), .createFile(CreateFileStep(path: hostile)),
+                     .run(ProcessStep(executable: "/bin/echo", arguments: [hostile])), .openURL("x://" + hostile)] {
+            let shown = step.summary
+            #expect(!shown.unicodeScalars.contains { $0.value < 0x20 || $0.value == 0x7f }, "\(shown.debugDescription)")
+            #expect(shown.contains("\\u{1b}"))
+        }
+        let copy = Step.copyToPasteboard(hostile)
+        #expect(copy.details.allSatisfy { !$0.unicodeScalars.contains { $0.value < 0x20 } })
+    }
+
+    @Test func ordinaryNamesAreUnchanged() {
+        #expect(Step.open(OpenStep(bundleID: "x", targets: ["/Users/me/my code/日本語 é"])).summary == "open x /Users/me/my code/日本語 é")
+    }
+}

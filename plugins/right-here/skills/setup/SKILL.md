@@ -27,7 +27,9 @@ edit that does what the user asked, and keep their comments. Look up keys with `
 
 ## 3. Check your work
 
-1. `right_here_config_validate`. Fix every error; unknown-key warnings usually carry a suggestion.
+1. `right_here_config_validate`. Fix every error and every warning (`clean` must be true): an unknown key
+   is only a warning, but it is almost always a typo and what it was meant to set is silently missing.
+   Each diagnostic's `replacement` is the likely fix.
 2. `right_here_menu` with a folder path, to show the user the menu their config now produces.
 3. For an action you changed, `right_here_run` with `dry_run` to show what it will do.
 

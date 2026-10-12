@@ -194,10 +194,9 @@ public struct ActionRegistry: Sendable {
         var refs: [ActionRef] = []
         refs += PathStyle.allCases.map { .copyPath($0) }
         refs.append(.openTerminal(nil))
-        refs += KnownApps.terminals.map { .openTerminal($0.id) }
-        refs += config.apps.filter { $0.role == .terminal }.map { .openTerminal($0.id) }
+        refs += config.allApps.filter { $0.role == .terminal }.map { .openTerminal($0.id) }
         refs.append(.openEditor)
-        refs += (config.apps + KnownApps.editors).filter { $0.role != .terminal }.map { .openApp($0.id) }
+        refs += config.allApps.filter { $0.role != .terminal }.map { .openApp($0.id) }
         for agent in (config.customAgents + KnownAgents.all).map({ config.agent(id: $0.id) ?? $0 }) {
             refs.append(.agent(id: agent.id, variant: nil, launcher: nil))
             refs += agent.variants.map { .agent(id: agent.id, variant: $0.id, launcher: nil) }

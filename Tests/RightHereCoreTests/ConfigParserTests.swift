@@ -232,3 +232,169 @@ struct ConfigSchemaTests {
         #expect(!result.diagnostics.contains { $0.message == "unknown key" })
     }
 }
+
+@Suite("Config strictness")
+struct ConfigStrictnessTests {
+    private func parse(_ text: String) -> ConfigLoadResult { ConfigParser.parse(text) }
+
+    @Test func aDuplicateAppIdIsAnErrorAndTheFirstWins() {
+        let result = parse("""
+        [[app]]
+        id = "tower"
+        name = "First"
+        bundle_id = "a.b.c"
+
+        [[app]]
+        id = "tower"
+        name = "Second"
+        bundle_id = "d.e.f"
+        """)
+        #expect(result.hasErrors)
+        #expect(result.diagnostics.contains { $0.message.contains("duplicate app id") && $0.path == "app.2.id" })
+        #expect(result.config.apps.map(\.name) == ["First"])
+    }
+
+    @Test func anAppWithABuiltInIdReplacesItAndIsWarnedAbout() throws {
+        let result = parse("""
+        [[app]]
+        id = "typora"
+        name = "My Typora"
+        bundle_id = "com.example.typora"
+        role = "editor"
+        """)
+        #expect(!result.hasErrors)
+        let warning = try #require(result.diagnostics.first { $0.severity == .warning })
+        #expect(warning.message.contains("replaces the built-in app \"typora\""))
+        #expect(result.config.app(id: "typora")?.name == "My Typora")
+        // The listing has one Typora, the replacement, not two.
+        let typoras = result.config.allApps.filter { $0.id == "typora" }
+        #expect(typoras.map(\.name) == ["My Typora"])
+        #expect(Set(result.config.allApps.map(\.id)).count == result.config.allApps.count)
+    }
+
+    @Test func aDuplicateTemplateIdIsAnError() {
+        let result = parse("""
+        [[new_file.template]]
+        id = "py"
+        title = "Python"
+        extension = "py"
+
+        [[new_file.template]]
+        id = "py"
+        title = "Python Again"
+        extension = "py"
+        """)
+        #expect(result.diagnostics.contains { $0.message.contains("duplicate template id") })
+        #expect(result.config.newFile.templates.map(\.title) == ["Python"])
+    }
+
+    @Test func aVariantIdThatAgentsAlreadyHasIsAnError() {
+        let result = parse("""
+        [agent.claude]
+        [[agent.claude.variant]]
+        id = "continue"
+        title = "Mine"
+        arguments = ["-c"]
+
+        [[agent.claude.variant]]
+        id = "opus"
+        title = "Opus"
+        arguments = ["--model", "opus"]
+
+        [[agent.claude.variant]]
+        id = "opus"
+        title = "Opus Again"
+        """)
+        #expect(result.diagnostics.filter { $0.message.contains("is already used by agent") }.count == 2)
+        #expect(result.config.agent(id: "claude")?.variants.map(\.id) == ["continue", "resume", "opus"])
+    }
+
+    @Test func aTypoCarriesTheLikelyReplacementForTools() throws {
+        let result = parse("[general]\nagnts = [\"codex\"]\n")
+        let diagnostic = try #require(result.diagnostics.first)
+        #expect(diagnostic.severity == .warning)
+        #expect(diagnostic.suggestion == "did you mean \"agents\"?")
+        #expect(diagnostic.replacement == "agents")
+    }
+
+    @Test func aWrongValueCarriesTheReplacementToo() throws {
+        let result = parse("[general]\nterminal = \"ghostyy\"\n")
+        let diagnostic = try #require(result.diagnostics.first)
+        #expect(diagnostic.replacement == "ghostty")
+    }
+
+    @Test func aDiagnosticWithoutACandidateHasNoReplacement() throws {
+        let result = parse("[general]\nzzzzzzzzzz = 1\n")
+        let diagnostic = try #require(result.diagnostics.first)
+        #expect(diagnostic.replacement == nil)
+    }
+
+    @Test func aTypoedMenuEntryIsWarnedAboutWithAReplacement() throws {
+        let result = parse("[menu]\nitems = [\"open-terminl\"]\n")
+        let diagnostic = try #require(result.diagnostics.first)
+        #expect(diagnostic.severity == .warning)
+        #expect(diagnostic.replacement == "open-terminal")
+    }
+}
+
+@Suite("ConfigSchema documentation and JSON Schema")
+struct ConfigSchemaDetailTests {
+    private var schema: [String: Any] { ConfigSchema.jsonSchema() }
+
+    private func property(_ path: [String]) -> [String: Any]? {
+        var node: [String: Any]? = schema
+        for key in path {
+            var next = (node?["properties"] as? [String: Any])?[key] as? [String: Any]
+            if next == nil, let items = node?["items"] as? [String: Any] { next = (items["properties"] as? [String: Any])?[key] as? [String: Any] }
+            if next == nil, let extra = node?["additionalProperties"] as? [String: Any] { next = (extra["properties"] as? [String: Any])?[key] as? [String: Any] }
+            node = next
+        }
+        return node
+    }
+
+    @Test func theDocumentationNamesEveryWayTheConfigIsLocated() {
+        let text = ConfigSchema.markdown()
+        for name in ["RH_CONFIG", "RH_CONFIG_DIR", "XDG_CONFIG_HOME", "RH_LOG_DIR", "--strict"] {
+            #expect(text.contains(name), "the config reference does not mention \(name)")
+        }
+    }
+
+    @Test func theDocumentationExplainsGroupsAndWhatHappensAfterANewFile() {
+        let text = ConfigSchema.markdown()
+        for fragment in ["open-with (", "agents-more (", "opens it in the default editor", "New <title>"] {
+            #expect(text.contains(fragment), "missing: \(fragment)")
+        }
+    }
+
+    @Test func theSchemaRequiresWhatTheValidatorRequires() throws {
+        let template = try #require(property(["new_file", "template"]))
+        _ = template
+        let templates = try #require((property(["new_file"])?["properties"] as? [String: Any])?["template"] as? [String: Any])
+        #expect((templates["items"] as? [String: Any])?["required"] as? [String] == ["id", "title", "extension"])
+        let apps = try #require((schema["properties"] as? [String: Any])?["app"] as? [String: Any])
+        let appItems = try #require(apps["items"] as? [String: Any])
+        #expect(appItems["required"] as? [String] == ["id", "name"])
+        #expect((appItems["anyOf"] as? [[String: Any]])?.count == 2)
+    }
+
+    @Test func theSchemaListsTheAllowedValues() throws {
+        #expect(property(["version"])?["enum"] as? [Int] == [1])
+        let styles = try #require(property(["copy_path", "styles"]))
+        #expect((styles["items"] as? [String: Any])?["enum"] as? [String] == PathStyle.allCases.map(\.rawValue))
+        #expect(property(["new_file", "then"])?["enum"] as? [String] == ["reveal", "open", "nothing"])
+    }
+
+    @Test func idsMustLookLikeIds() throws {
+        let apps = try #require((schema["properties"] as? [String: Any])?["app"] as? [String: Any])
+        let id = try #require(((apps["items"] as? [String: Any])?["properties"] as? [String: Any])?["id"] as? [String: Any])
+        #expect(id["pattern"] as? String == "^[a-z0-9-]+$")
+        let agents = try #require((schema["properties"] as? [String: Any])?["agent"] as? [String: Any])
+        #expect((agents["propertyNames"] as? [String: Any])?["pattern"] as? String == "^[a-z0-9-]+$")
+    }
+
+    @Test func knownTerminalsAreSuggestedNotEnforced() throws {
+        let terminal = try #require(property(["general", "terminal"]))
+        #expect(terminal["enum"] == nil)
+        #expect((terminal["examples"] as? [String])?.contains("ghostty") == true)
+    }
+}

@@ -87,6 +87,13 @@ public struct Config: Sendable, Equatable {
         apps.first { $0.id == id } ?? KnownApps.app(id: id)
     }
 
+    /// Every app Right Here offers: the ones the config defines, then the built-in ones they do not
+    /// replace. An app defined under a built-in id replaces that built-in everywhere.
+    public var allApps: [AppDescriptor] {
+        let replaced = Set(apps.map(\.id))
+        return apps + KnownApps.all.filter { !replaced.contains($0.id) }
+    }
+
     public func agent(id: String) -> AgentDescriptor? {
         guard var agent = customAgents.first(where: { $0.id == id }) ?? KnownAgents.agent(id: id) else { return nil }
         if let settings = agents[id] {

@@ -212,16 +212,19 @@ enum Tools {
         let loaded = server.loadConfig()
         let structured = JSONValue.object([
             "file": .string(loaded.file.path), "exists": .bool(loaded.fileExists), "ok": .bool(!loaded.result.hasErrors),
+            "clean": .bool(loaded.result.diagnostics.isEmpty),
             "diagnostics": try JSONValue(encoding: loaded.result.diagnostics)
         ])
-        var lines = [loaded.fileExists ? (loaded.result.hasErrors ? "The config has errors." : "The config is valid.") : "There is no config file yet; defaults apply. Run `rh init`."]
+        var lines = [loaded.fileExists
+                     ? (loaded.result.hasErrors ? "The config has errors." : (loaded.result.diagnostics.isEmpty ? "The config is valid." : "The config is valid, but has warnings; they are usually typos, so fix them."))
+                     : "There is no config file yet; defaults apply. Run `rh init`."]
         lines += loaded.result.diagnostics.map { $0.summary(file: loaded.file) }
         return ToolOutput(text: lines.joined(separator: "\n"), structured: structured)
     }
 
     private static func catalog(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         let config = server.loadConfig().config
-        let apps = (config.apps + KnownApps.all).map { app -> JSONValue in
+        let apps = config.allApps.map { app -> JSONValue in
             .object(["id": .string(app.id), "name": .string(app.name), "role": .string(app.role.rawValue),
                      "installed": .bool(app.installedBundleID(facts: server.facts) != nil)])
         }

@@ -79,7 +79,10 @@ struct Run: AsyncParsableCommand {
 
     static func describe(_ plan: LaunchPlan) -> String {
         var lines = [plan.summary]
-        for (index, step) in plan.steps.enumerated() { lines.append("  \(index + 1). \(step.summary)") }
+        for (index, step) in plan.steps.enumerated() {
+            lines.append("  \(index + 1). \(step.summary)")
+            lines += step.details.map { "       \($0)" }
+        }
         for notice in plan.notices { lines.append("  note: \(notice)") }
         return lines.joined(separator: "\n")
     }

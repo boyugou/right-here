@@ -33,23 +33,34 @@ struct ConfigCommand: ParsableCommand {
     struct Validate: ParsableCommand {
         static let configuration = CommandConfiguration(
             abstract: "Check the config file and report every problem.",
-            discussion: "Exits with status 1 when there are errors. Warnings (unknown keys) do not fail the check."
+            discussion: """
+            Exits with status 1 when there are errors. Warnings (unknown keys, unknown menu entries, an app that \
+            replaces a built-in one) do not fail the check by default, because the rest of the file still applies; \
+            but they are nearly always mistakes, so use --strict to fail on them too.
+            """
         )
 
         @Flag(help: "Print JSON.")
         var json = false
 
+        @Flag(help: "Also exit with status 1 when there are warnings.")
+        var strict = false
+
         struct Report: Encodable {
             var file: String
             var exists: Bool
+            /// No errors.
             var ok: Bool
+            /// No errors and no warnings.
+            var clean: Bool
             var diagnostics: [ConfigDiagnostic]
         }
 
         func run() throws {
             let runtime = Runtime()
             let result = runtime.loaded.result
-            let report = Report(file: runtime.paths.configFile.path, exists: runtime.loaded.fileExists, ok: !result.hasErrors, diagnostics: result.diagnostics)
+            let report = Report(file: runtime.paths.configFile.path, exists: runtime.loaded.fileExists, ok: !result.hasErrors,
+                                clean: result.diagnostics.isEmpty, diagnostics: result.diagnostics)
             if json {
                 try Output.json(report)
             } else if !runtime.loaded.fileExists {
@@ -59,7 +70,7 @@ struct ConfigCommand: ParsableCommand {
             } else {
                 for diagnostic in result.diagnostics { Output.print(diagnostic.summary(file: runtime.loaded.file)) }
             }
-            if result.hasErrors { throw ExitCode(1) }
+            if result.hasErrors || (strict && !result.diagnostics.isEmpty) { throw ExitCode(1) }
         }
     }
 
@@ -82,19 +93,23 @@ struct Init: AsyncParsableCommand {
         discussion: "Detects your terminals, editors and agent commands (through your login shell) and writes a commented config. An existing file is kept unless --force is given."
     )
 
-    @Flag(help: "Replace an existing config file.")
+    @Flag(help: "Replace an existing config file. The old one is saved next to it first.")
     var force = false
 
     func run() async throws {
         let runtime = Runtime()
         let detected = await Detector(facts: runtime.facts).detect()
-        let wrote = try ConfigStore.initialize(paths: runtime.paths, detected: detected, force: force)
-        if wrote {
+        let outcome = try ConfigStore.initialize(paths: runtime.paths, detected: detected, force: force)
+        switch outcome {
+        case .kept:
+            Output.print("\(runtime.paths.configFile.path) already exists; kept it. Use --force to replace it (the old file is saved first).")
+            return
+        case .created:
             Output.print("Created \(runtime.paths.configFile.path)")
-            Output.print("terminal: \(detected.terminal ?? "none found"), editor: \(detected.editor ?? "none found"), agents: \(detected.agents.isEmpty ? "none found" : detected.agents.joined(separator: ", "))")
-            Output.print("Next: `rh menu` to preview the Finder menu, `rh doctor` to check the setup.")
-        } else {
-            Output.print("\(runtime.paths.configFile.path) already exists; kept it. Use --force to replace it.")
+        case .replaced(let backup):
+            Output.print("Replaced \(runtime.paths.configFile.path); the old file is saved as \(backup.path)")
         }
+        Output.print("terminal: \(detected.terminal ?? "none found"), editor: \(detected.editor ?? "none found"), agents: \(detected.agents.isEmpty ? "none found" : detected.agents.joined(separator: ", "))")
+        Output.print("Next: `rh menu` to preview the Finder menu, `rh doctor` to check the setup.")
     }
 }

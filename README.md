@@ -76,7 +76,8 @@ command = "claude --model opus"      # what is typed into the shell
 ```
 
 `rh docs config` lists every key with defaults, `rh config validate` checks the file (unknown keys come
-with a "did you mean"), `rh config schema` prints a JSON Schema for your editor.
+with a "did you mean"; `--strict` also fails on warnings), `rh config schema` prints a JSON Schema for your
+editor. `rh init --force` saves your old file before replacing it.
 
 ## For AI agents
 

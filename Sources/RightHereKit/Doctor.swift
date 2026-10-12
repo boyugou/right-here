@@ -138,12 +138,12 @@ public struct Doctor: Sendable {
 
     private func configCheck() -> DoctorCheck {
         if !loaded.fileExists {
-            return DoctorCheck(id: "config.file", title: "Config file", status: .warn,
+            return DoctorCheck(id: "config", title: "Config file", status: .warn,
                                detail: "none at \(loaded.file.path); defaults apply", fix: "Run `rh init`.")
         }
         if loaded.result.hasErrors {
             let first = loaded.result.diagnostics.first { $0.severity == .error }
-            return DoctorCheck(id: "config.valid", title: "Config file", status: .fail,
+            return DoctorCheck(id: "config", title: "Config file", status: .fail,
                                detail: first.map { $0.summary(file: loaded.file) },
                                fix: "Run `rh config validate` and fix the errors.")
         }
@@ -154,7 +154,8 @@ public struct Doctor: Sendable {
             detail += "; the file is a symlink, which the Finder extension's sandbox may not be able to follow"
             status = .warn
         }
-        return DoctorCheck(id: "config.valid", title: "Config file", status: status, detail: detail)
+        return DoctorCheck(id: "config", title: "Config file", status: status, detail: detail,
+                           fix: warnings == 0 ? nil : "Run `rh config validate`; warnings are usually typos, and what they were meant to set is missing.")
     }
 
     // MARK: Apps and agents
@@ -231,11 +232,10 @@ public struct Doctor: Sendable {
                                       fix: "Run `rh install --scripts`."))
         }
 
-        let services = installer.installedServices()
-        checks.append(DoctorCheck(
-            id: "services", title: "Finder Services", status: services.isEmpty ? .warn : .ok,
-            detail: services.isEmpty ? "none installed; Quick Actions and keyboard shortcuts are not available" : "\(services.count) installed",
-            fix: services.isEmpty ? "Run `rh install --services`." : nil))
+        checks.append(Self.servicesCheck(
+            installed: Set(installer.installedServices().map(\.lastPathComponent)),
+            expected: Set(ActionRegistry(config: loaded.config, facts: facts, localizer: .system)
+                .serviceSpecs(rhPath: rhPath ?? "rh").map(ServiceWorkflow.bundleName(for:)))))
 
         let linked = (try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path)) != nil
         let onPath = (facts.environment("PATH") ?? "").split(separator: ":").contains { String($0) == installer.locations.localBin.path }
@@ -245,6 +245,27 @@ public struct Doctor: Sendable {
             detail: linked ? (onPath ? installer.cliLink.path : "linked at \(installer.cliLink.path), but that folder is not on PATH") : "no link at \(installer.cliLink.path)",
             fix: linked && onPath ? nil : (linked ? "Add ~/.local/bin to PATH in your shell profile." : "Run `rh install --cli`.")))
         return checks
+    }
+
+    /// Compares the Services on disk with the ones the config asks for: they are files written by
+    /// `rh install --services`, so editing the config does not change them by itself.
+    static func servicesCheck(installed: Set<String>, expected: Set<String>) -> DoctorCheck {
+        if installed.isEmpty {
+            return DoctorCheck(id: "services", title: "Finder Services", status: .warn,
+                               detail: "none installed; Quick Actions and keyboard shortcuts are not available",
+                               fix: "Run `rh install --services`.")
+        }
+        if installed == expected {
+            return DoctorCheck(id: "services", title: "Finder Services", status: .ok, detail: "\(installed.count) installed")
+        }
+        let missing = expected.subtracting(installed).count
+        let extra = installed.subtracting(expected).count
+        var parts: [String] = []
+        if missing > 0 { parts.append("\(missing) the config asks for \(missing == 1 ? "is" : "are") missing") }
+        if extra > 0 { parts.append("\(extra) installed \(extra == 1 ? "is" : "are") no longer in the config") }
+        return DoctorCheck(id: "services", title: "Finder Services", status: .warn,
+                           detail: "\(installed.count) installed; " + parts.joined(separator: ", "),
+                           fix: "Run `rh install --services`.")
     }
 
     private func extensionCheck() async -> DoctorCheck {

@@ -71,7 +71,7 @@ struct Install: AsyncParsableCommand {
         if everything {
             await attempt("config file") {
                 let detected = await Detector(facts: runtime.facts).detect()
-                if try ConfigStore.initialize(paths: runtime.paths, detected: detected) {
+                if try ConfigStore.initialize(paths: runtime.paths, detected: detected) == .created {
                     Output.print("Config file: \(runtime.paths.configFile.path) (new)")
                 }
             }

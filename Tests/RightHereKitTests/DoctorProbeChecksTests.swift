@@ -59,3 +59,30 @@ struct DoctorProbeChecksTests {
         #expect(Doctor.chainCheck(for: nil).status == .fail)
     }
 }
+
+@Suite("Doctor services check")
+struct DoctorServicesCheckTests {
+    private let a = "Right Here - Open in Ghostty.workflow"
+    private let b = "Right Here - Codex Here.workflow"
+
+    @Test func noServicesIsAWarningWithTheCommand() {
+        let check = Doctor.servicesCheck(installed: [], expected: [a])
+        #expect(check.status == .warn)
+        #expect(check.fix?.contains("rh install --services") == true)
+    }
+
+    @Test func servicesMatchingTheConfigAreOk() {
+        let check = Doctor.servicesCheck(installed: [a, b], expected: [a, b])
+        #expect(check.status == .ok)
+        #expect(check.detail == "2 installed")
+    }
+
+    @Test func servicesThatDifferFromTheConfigAreFlagged() {
+        let missing = Doctor.servicesCheck(installed: [a], expected: [a, b])
+        #expect(missing.status == .warn)
+        #expect(missing.detail?.contains("missing") == true)
+        let extra = Doctor.servicesCheck(installed: [a, b], expected: [a])
+        #expect(extra.status == .warn)
+        #expect(extra.detail?.contains("no longer in the config") == true)
+    }
+}

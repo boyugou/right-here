@@ -28,6 +28,10 @@ public enum Documentation {
         rh run new-file.md --container ~/notes
 
     Add --dry-run to see the plan without running it, and --json for machine-readable output.
+
+    `rh actions` marks an action available when it can run on this machine (the terminal or app is
+    installed, the terminal can run commands). It does not check that an agent's own command is
+    installed: `rh agents` shows which agent commands your login shell finds.
     """
 
     public static let agentSetup = """
@@ -41,10 +45,16 @@ public enum Documentation {
     2. Run `rh init` if there is no config file, then read it. It is TOML with comments.
     3. Edit `config.toml` to match what the person asked for. `rh docs config` lists every key.
        Prefer small edits; never delete the person's comments.
-    4. Run `rh config validate --json`. Fix every error. Unknown-key warnings usually carry a suggestion.
-    5. Run `rh menu` to preview the menu and confirm it matches the request.
-    6. To test an action without side effects, use `rh run <action> --dry-run`.
-    7. Only if the person wants agents to start in a terminal, and agrees to a window opening and closing for
+    4. Run `rh config validate --json --strict`. Fix every error and every warning: an unknown key is
+       only a warning because the rest of the file still applies, but it is almost always a typo, and
+       whatever it was meant to set is then silently missing. The `replacement` field of a diagnostic
+       is the likely fix. `--strict` exits with status 1 until the file is clean.
+    5. Run `rh menu --container <a folder>` to preview the menu and confirm it matches the request.
+    6. To test an action without side effects, use `rh run <action> --dry-run --json`.
+    7. The Finder menu reads the config each time it opens, so menu edits take effect at once. Quick
+       Actions (Services) are files written by `rh install --services`: run it after changing
+       `[services]` or the menu titles, and check `rh doctor` afterwards.
+    8. Only if the person wants agents to start in a terminal, and agrees to a window opening and closing for
        a second, run `rh doctor --probe-launch`: the Finder extension starts a throwaway terminal session
        and proves a typed command runs there. The first time, macOS asks whether Right Here may control
        the terminal; tell the person to click Allow and run it again if it reports "needs-user".

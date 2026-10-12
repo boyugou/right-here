@@ -55,7 +55,22 @@ struct MenuCommand: ParsableCommand {
         if json {
             try Output.json(menu)
         } else {
+            Output.print(Self.describe(here) + ":")
             Output.print(Self.render(menu, indent: 0))
+        }
+    }
+
+    /// What the preview is for, since the menu depends on it: a menu on a selection differs from one on a folder.
+    static func describe(_ here: HereContext) -> String {
+        switch here.origin {
+        case .items, .services, .sidebar, .toolbar:
+            if here.items.isEmpty, let container = here.container { return "Menu for the folder \(container.path) (\(here.origin.rawValue))" }
+            let names = here.items.prefix(3).map(\.lastPathComponent).joined(separator: ", ")
+            return "Menu for \(here.items.count) selected item\(here.items.count == 1 ? "" : "s") (\(here.origin.rawValue)): \(names)" + (here.items.count > 3 ? ", …" : "")
+        case .container:
+            return "Menu for the folder \(here.container?.path ?? "?") (container)"
+        case .cli:
+            return "Menu for the current folder (cli; pass a path or --container to preview another)"
         }
     }
 
@@ -127,7 +142,7 @@ struct Apps: ParsableCommand {
 
     func run() throws {
         let runtime = Runtime()
-        let apps = runtime.config.apps + KnownApps.all
+        let apps = runtime.config.allApps
         let rows = apps.map { app -> Row in
             let bundleID = app.installedBundleID(facts: runtime.facts)
             return Row(id: app.id, name: app.name, role: app.role.rawValue, installed: bundleID != nil, bundleID: bundleID)
@@ -136,8 +151,11 @@ struct Apps: ParsableCommand {
             try Output.json(rows)
             return
         }
-        for row in rows {
-            Output.print("\(row.id.padding(toLength: 16, withPad: " ", startingAt: 0))\(row.name.padding(toLength: 22, withPad: " ", startingAt: 0))\(row.role.padding(toLength: 10, withPad: " ", startingAt: 0))\(row.installed ? "installed" : "-")")
+        func line(_ id: String, _ name: String, _ role: String, _ state: String) -> String {
+            id.padding(toLength: 16, withPad: " ", startingAt: 0) + name.padding(toLength: 22, withPad: " ", startingAt: 0)
+                + role.padding(toLength: 10, withPad: " ", startingAt: 0) + state
         }
+        Output.print(line("ID", "NAME", "ROLE", "INSTALLED"))
+        for row in rows { Output.print(line(row.id, row.name, row.role, row.installed ? "installed" : "-")) }
     }
 }

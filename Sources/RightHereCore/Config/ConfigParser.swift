@@ -15,13 +15,16 @@ public struct ConfigDiagnostic: Sendable, Equatable, Codable {
     public var line: Int?
     /// A concrete fix, for example `did you mean "terminal"?`.
     public var suggestion: String?
+    /// The text to put in place of the wrong key or value, when there is a likely candidate.
+    public var replacement: String?
 
-    public init(severity: Severity, path: String, message: String, line: Int? = nil, suggestion: String? = nil) {
+    public init(severity: Severity, path: String, message: String, line: Int? = nil, suggestion: String? = nil, replacement: String? = nil) {
         self.severity = severity
         self.path = path
         self.message = message
         self.line = line
         self.suggestion = suggestion
+        self.replacement = replacement
     }
 
     /// One line for a terminal or a log: `error: config.toml:3 [agent.claude.launcher]: message (suggestion)`.
@@ -69,12 +72,14 @@ public enum ConfigParser {
 private final class Sink {
     var items: [ConfigDiagnostic] = []
 
-    func error(_ path: [String], _ message: String, suggestion: String? = nil) {
-        items.append(ConfigDiagnostic(severity: .error, path: path.joined(separator: "."), message: message, suggestion: suggestion))
+    func error(_ path: [String], _ message: String, suggestion: Hint? = nil) {
+        items.append(ConfigDiagnostic(severity: .error, path: path.joined(separator: "."), message: message,
+                                      suggestion: suggestion?.text, replacement: suggestion?.replacement))
     }
 
-    func warning(_ path: [String], _ message: String, suggestion: String? = nil) {
-        items.append(ConfigDiagnostic(severity: .warning, path: path.joined(separator: "."), message: message, suggestion: suggestion))
+    func warning(_ path: [String], _ message: String, suggestion: Hint? = nil) {
+        items.append(ConfigDiagnostic(severity: .warning, path: path.joined(separator: "."), message: message,
+                                      suggestion: suggestion?.text, replacement: suggestion?.replacement))
     }
 
     func syntaxError(_ description: String) {
@@ -155,7 +160,7 @@ private struct Reader {
     func checkKnownKeys(extra: Set<String> = []) {
         let known = schema.map(\.key)
         for key in table.keys.sorted() where !known.contains(key) && !extra.contains(key) {
-            sink.warning(path + [key], "unknown key", suggestion: Suggestion.closest(to: key, in: known).map { "did you mean \"\($0)\"?" })
+            sink.warning(path + [key], "unknown key", suggestion: Suggestion.didYouMean(key, in: known))
         }
     }
 
@@ -163,14 +168,24 @@ private struct Reader {
         guard let value else { return nil }
         guard allowed.contains(value) else {
             sink.error(path + [key], "\"\(value)\" is not one of " + allowed.joined(separator: ", "),
-                       suggestion: Suggestion.closest(to: value, in: allowed).map { "did you mean \"\($0)\"?" })
+                       suggestion: Suggestion.didYouMean(value, in: allowed))
             return nil
         }
         return value
     }
 }
 
+/// A suggested fix for a diagnostic: prose for people and the replacement text for tools.
+struct Hint {
+    var text: String
+    var replacement: String
+}
+
 enum Suggestion {
+    static func didYouMean(_ word: String, in candidates: [String]) -> Hint? {
+        closest(to: word, in: candidates).map { Hint(text: "did you mean \"\($0)\"?", replacement: $0) }
+    }
+
     /// The closest candidate within a small edit distance, if any.
     static func closest(to word: String, in candidates: [String]) -> String? {
         let best = candidates.map { ($0, distance(word, $0)) }.min { $0.1 < $1.1 }
@@ -222,7 +237,7 @@ private struct Builder {
             config.menuItems = menu.stringArray("items")
             for entry in config.menuItems ?? [] where entry != "-" && !MenuBuilder.groups.contains(entry) && ActionRef(parsing: entry) == nil {
                 sink.warning(["menu", "items"], "\"\(entry)\" is neither a menu group nor an action id",
-                             suggestion: Suggestion.closest(to: entry, in: Array(MenuBuilder.groups)).map { "did you mean \"\($0)\"?" })
+                             suggestion: Suggestion.didYouMean(entry, in: Array(MenuBuilder.groups)))
             }
         }
 
@@ -245,7 +260,7 @@ private struct Builder {
                 config.copyPathStyles = names.compactMap { name in
                     if let style = PathStyle(rawValue: name) { return style }
                     sink.error(["copy_path", "styles"], "unknown style \"\(name)\"",
-                               suggestion: Suggestion.closest(to: name, in: PathStyle.allCases.map(\.rawValue)).map { "did you mean \"\($0)\"?" })
+                               suggestion: Suggestion.didYouMean(name, in: PathStyle.allCases.map(\.rawValue)))
                     return nil
                 }
             }
@@ -256,18 +271,37 @@ private struct Builder {
             if let then = newFile.checkAllowed(newFile.string("then"), key: "then", allowed: Config.AfterNewFile.allCases.map(\.rawValue)) {
                 config.newFile.then = Config.AfterNewFile(rawValue: then) ?? .reveal
             }
-            let templates = newFile.tableArray("template").compactMap(template)
+            var seenTemplates = Set<String>()
+            let templates = newFile.tableArray("template").compactMap { reader -> NewFileTemplate? in
+                guard let template = template(reader) else { return nil }
+                guard seenTemplates.insert(template.id).inserted else {
+                    sink.error(reader.path + ["id"], "duplicate template id \"\(template.id)\"; the first definition is used")
+                    return nil
+                }
+                return template
+            }
             if !templates.isEmpty { config.newFile.templates = templates }
         }
 
-        config.apps = root.tableArray("app").compactMap(app)
+        var seenApps = Set<String>()
+        config.apps = root.tableArray("app").compactMap { reader -> AppDescriptor? in
+            guard let app = app(reader) else { return nil }
+            guard seenApps.insert(app.id).inserted else {
+                sink.error(reader.path + ["id"], "duplicate app id \"\(app.id)\"; the first definition is used")
+                return nil
+            }
+            if KnownApps.app(id: app.id) != nil {
+                sink.warning(reader.path + ["id"], "replaces the built-in app \"\(app.id)\"; use another id to add one beside it")
+            }
+            return app
+        }
         config.terminal = checkedTerminal(terminalChoice, path: ["general", "terminal"], customApps: config.apps)
         if let editor = editorChoice {
             if config.app(id: editor) != nil {
                 config.editor = editor
             } else {
                 sink.error(["general", "editor"], "unknown app \"\(editor)\"",
-                           suggestion: Suggestion.closest(to: editor, in: allAppIDs(config)).map { "did you mean \"\($0)\"?" })
+                           suggestion: Suggestion.didYouMean(editor, in: allAppIDs(config)))
             }
         }
 
@@ -288,7 +322,7 @@ private struct Builder {
                 if !config.enabledAgents.contains(id) { config.enabledAgents.append(id) }
             } else {
                 sink.error(["general", "agents"], "unknown agent \"\(id)\"; known agents: " + agentIDs.joined(separator: ", "),
-                           suggestion: Suggestion.closest(to: id, in: agentIDs).map { "did you mean \"\($0)\"?" })
+                           suggestion: Suggestion.didYouMean(id, in: agentIDs))
             }
         }
         return config
@@ -307,7 +341,7 @@ private struct Builder {
         let terminals = (customApps + KnownApps.terminals).filter { $0.role == .terminal }.map(\.id)
         guard terminals.contains(id) else {
             sink.error(path, "unknown terminal \"\(id)\"; known terminals: " + terminals.joined(separator: ", "),
-                       suggestion: Suggestion.closest(to: id, in: terminals).map { "did you mean \"\($0)\"?" })
+                       suggestion: Suggestion.didYouMean(id, in: terminals))
             return nil
         }
         return id
@@ -355,7 +389,7 @@ private struct Builder {
     private func agent(id: String, reader: Reader, into config: inout Config) {
         reader.checkKnownKeys()
         let command = reader.string("command")
-        let variants: [AgentDescriptor.Variant] = reader.tableArray("variant").compactMap { variant in
+        let declaredVariants: [AgentDescriptor.Variant] = reader.tableArray("variant").compactMap { variant in
             variant.checkKnownKeys()
             guard let variantID = variant.string("id"), let title = variant.string("title") else {
                 sink.error(variant.path, "a variant needs id and title")
@@ -366,6 +400,15 @@ private struct Builder {
                 return nil
             }
             return AgentDescriptor.Variant(id: variantID, title: title, arguments: variant.stringArray("arguments") ?? [])
+        }
+
+        var takenVariants = Set((KnownAgents.agent(id: id)?.variants ?? []).map(\.id))
+        let variants = declaredVariants.filter { variant in
+            guard takenVariants.insert(variant.id).inserted else {
+                sink.error(reader.path + ["variant"], "variant id \"\(variant.id)\" is already used by agent \"\(id)\"; the first one is used")
+                return false
+            }
+            return true
         }
 
         var settings = Config.AgentSettings()

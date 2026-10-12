@@ -73,8 +73,8 @@ public struct MenuBuilder: Sendable {
     }
 
     private func openWith() -> [MenuNode] {
-        let terminals = (config.apps + KnownApps.terminals).filter { $0.role == .terminal }
-        let others = (config.apps + KnownApps.editors).filter { $0.role != .terminal }
+        let terminals = config.allApps.filter { $0.role == .terminal }
+        let others = config.allApps.filter { $0.role != .terminal }
         func entries(_ apps: [AppDescriptor], _ ref: (AppDescriptor) -> ActionRef) -> [MenuNode] {
             var seen = Set<String>()
             return apps.filter { seen.insert($0.id).inserted }.compactMap { app in
@@ -95,7 +95,7 @@ public struct MenuBuilder: Sendable {
             var refs: [ActionRef] = agent.variants.map { .agent(id: id, variant: $0.id, launcher: nil) }
             if agent.desktopLink != nil { refs.append(.agent(id: id, variant: nil, launcher: .desktop)) }
             if agent.terminalLink != nil { refs.append(.agent(id: id, variant: nil, launcher: .terminalLink)) }
-            for terminal in KnownApps.terminals where terminal.id != defaultTerminal?.id {
+            for terminal in config.allApps where terminal.role == .terminal && terminal.id != defaultTerminal?.id {
                 refs.append(.agent(id: id, variant: nil, launcher: .terminal(terminal.id)))
             }
             let nodes = refs.flatMap(single)

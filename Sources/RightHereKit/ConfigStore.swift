@@ -62,12 +62,42 @@ public enum ConfigStore {
         return LoadedConfig(result: ConfigParser.parse(text), fileExists: true, file: paths.configFile)
     }
 
-    /// Writes a fresh config file unless one exists (or `force` is set). Returns whether it wrote.
+    public enum InitializeOutcome: Sendable, Equatable {
+        case created
+        /// An existing file was replaced because `force` was set; the old one was copied here first.
+        case replaced(backup: URL)
+        case kept
+    }
+
+    /// Writes a fresh config file unless one exists. With `force` an existing file is replaced, after
+    /// a copy of it is saved next to it (`config.toml.bak-<date>`), since it may hold hand-made settings.
     @discardableResult
-    public static func initialize(paths: RHPaths, detected: DetectedEnvironment, force: Bool = false) throws -> Bool {
-        if FileManager.default.fileExists(atPath: paths.configFile.path), !force { return false }
+    public static func initialize(paths: RHPaths, detected: DetectedEnvironment, force: Bool = false, now: Date = Date()) throws -> InitializeOutcome {
+        let exists = FileManager.default.fileExists(atPath: paths.configFile.path)
+        if exists, !force { return .kept }
         try FileManager.default.createDirectory(at: paths.configDirectory, withIntermediateDirectories: true)
+        var backup: URL?
+        if exists {
+            let copy = backupURL(for: paths.configFile, now: now)
+            try FileManager.default.copyItem(at: paths.configFile, to: copy)
+            backup = copy
+        }
         try ConfigTemplate.render(detected).write(to: paths.configFile, atomically: true, encoding: .utf8)
-        return true
+        return backup.map { .replaced(backup: $0) } ?? .created
+    }
+
+    /// `config.toml.bak-20261011-215500`, numbered when that name is taken.
+    static func backupURL(for file: URL, now: Date) -> URL {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        let base = file.deletingLastPathComponent().appendingPathComponent(file.lastPathComponent + ".bak-" + formatter.string(from: now))
+        var candidate = base
+        var number = 2
+        while FileManager.default.fileExists(atPath: candidate.path) {
+            candidate = URL(fileURLWithPath: base.path + "-\(number)")
+            number += 1
+        }
+        return candidate
     }
 }

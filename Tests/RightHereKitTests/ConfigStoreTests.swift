@@ -75,11 +75,35 @@ struct ConfigStoreTests {
         let directory = try makeTemporaryDirectory().appendingPathComponent("nested")
         defer { try? FileManager.default.removeItem(at: directory.deletingLastPathComponent()) }
         let target = paths(in: directory)
-        #expect(try ConfigStore.initialize(paths: target, detected: DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude"])))
+        #expect(try ConfigStore.initialize(paths: target, detected: DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude"])) == .created)
         let first = try String(contentsOf: target.configFile, encoding: .utf8)
-        #expect(!(try ConfigStore.initialize(paths: target, detected: DetectedEnvironment())))
+        #expect(try ConfigStore.initialize(paths: target, detected: DetectedEnvironment()) == .kept)
         #expect(try String(contentsOf: target.configFile, encoding: .utf8) == first)
-        #expect(try ConfigStore.initialize(paths: target, detected: DetectedEnvironment(), force: true))
+    }
+
+    @Test func forcingReplacesTheFileAfterSavingACopy() throws {
+        let directory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let target = paths(in: directory)
+        try "# my hand-made settings\n".write(to: target.configFile, atomically: true, encoding: .utf8)
+        let outcome = try ConfigStore.initialize(paths: target, detected: DetectedEnvironment(), force: true)
+        guard case .replaced(let backup) = outcome else { Issue.record("expected a replacement, got \(outcome)"); return }
+        #expect(backup.lastPathComponent.hasPrefix("config.toml.bak-"))
+        #expect(try String(contentsOf: backup, encoding: .utf8) == "# my hand-made settings\n")
+        #expect(try String(contentsOf: target.configFile, encoding: .utf8) != "# my hand-made settings\n")
+    }
+
+    @Test func twoBackupsInTheSameSecondDoNotCollide() throws {
+        let directory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let target = paths(in: directory)
+        try "a".write(to: target.configFile, atomically: true, encoding: .utf8)
+        let now = Date()
+        let first = try ConfigStore.initialize(paths: target, detected: DetectedEnvironment(), force: true, now: now)
+        let second = try ConfigStore.initialize(paths: target, detected: DetectedEnvironment(), force: true, now: now)
+        guard case .replaced(let one) = first, case .replaced(let two) = second else { Issue.record("expected replacements"); return }
+        #expect(one != two)
+        #expect(try String(contentsOf: one, encoding: .utf8) == "a")
     }
 
     @Test func theGeneratedTemplateParsesCleanly() {

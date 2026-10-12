@@ -143,6 +143,73 @@ struct CLITests {
         #expect(!FileManager.default.fileExists(atPath: "/tmp/rh-should-not-run"))
     }
 
+    @Test func aWarningDoesNotFailValidationUnlessItIsStrict() throws {
+        let rh = try RH(config: "[general]\nagnts = [\"codex\"]\n"); defer { rh.cleanUp() }
+        let lenient = try rh.run(["config", "validate"])
+        #expect(lenient.status == 0)
+        #expect(lenient.standardOutput.contains("did you mean \"agents\""))
+        let strict = try rh.run(["config", "validate", "--strict"])
+        #expect(strict.status == 1)
+        let json = try #require(try rh.run(["config", "validate", "--json"]).json as? [String: Any])
+        #expect(json["ok"] as? Bool == true)
+        #expect(json["clean"] as? Bool == false)
+        let diagnostic = try #require((json["diagnostics"] as? [[String: Any]])?.first)
+        #expect(diagnostic["replacement"] as? String == "agents")
+    }
+
+    @Test func aCleanConfigPassesStrictValidation() throws {
+        let rh = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        #expect(try rh.run(["config", "validate", "--strict"]).status == 0)
+    }
+
+    @Test func forcingInitKeepsTheOldFileAsABackup() throws {
+        let rh = try RH(config: "# hand-made\n[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let result = try rh.run(["init", "--force"])
+        #expect(result.status == 0)
+        #expect(result.standardOutput.contains("the old file is saved as"))
+        let backups = try FileManager.default.contentsOfDirectory(atPath: rh.configDirectory.path).filter { $0.hasPrefix("config.toml.bak-") }
+        #expect(backups.count == 1)
+        let saved = try String(contentsOf: rh.configDirectory.appendingPathComponent(try #require(backups.first)), encoding: .utf8)
+        #expect(saved.hasPrefix("# hand-made"))
+    }
+
+    @Test func theMenuPreviewSaysWhatItIsFor() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let result = try rh.run(["menu", "--container", "/tmp"])
+        #expect(result.standardOutput.hasPrefix("Menu for the folder /tmp (container):\n"))
+        #expect(try rh.run(["menu", "--json", "--container", "/tmp"]).json is [Any])
+    }
+
+    @Test func aDryRunShowsTheTextAndTheArgumentsItWouldUse() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let copy = try rh.run(["run", "copy-path.ai-mention", "/tmp", "--dry-run"]).standardOutput
+        #expect(copy.contains("text: \"@/tmp\""))
+        let agent = try rh.run(["run", "agent.codex@terminal", "--dry-run", "--container", "/tmp"])
+        // Terminal.app is always installed, so this plans an AppleScript whose arguments are shown.
+        #expect(agent.standardOutput.contains("arguments: \"/tmp\", \"codex\""))
+    }
+
+    @Test func aMistypedPathIsNamedAndNothingIsOpened() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let result = try rh.run(["run", "open.terminal", "/definitely/not/here", "--dry-run"])
+        #expect(result.status == 1)
+        #expect(result.standardError.contains("/definitely/not/here does not exist"))
+    }
+
+    @Test func theAppListHasAHeaderAndNoDuplicateIds() throws {
+        let rh = try RH(config: "[[app]]\nid = \"typora\"\nname = \"Mine\"\nbundle_id = \"a.b.c\"\nrole = \"editor\"\n"); defer { rh.cleanUp() }
+        let lines = try rh.run(["apps"]).standardOutput.split(separator: "\n").map(String.init)
+        #expect(lines.first?.hasPrefix("ID") == true)
+        #expect(lines.first?.contains("INSTALLED") == true)
+        #expect(lines.filter { $0.hasPrefix("typora") }.count == 1)
+    }
+
+    @Test func theConfigReferenceNamesTheEnvironmentVariables() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let text = try rh.run(["docs", "config"]).standardOutput
+        for name in ["RH_CONFIG_DIR", "RH_LOG_DIR", "XDG_CONFIG_HOME"] { #expect(text.contains(name)) }
+    }
+
     @Test func probeLaunchRefusesAnUnknownTerminal() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let result = try rh.run(["probe", "launch", "no-such-terminal"])

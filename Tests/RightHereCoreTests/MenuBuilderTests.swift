@@ -136,3 +136,22 @@ struct ActionRegistryTests {
         #expect(!ActionRegistry(config: .default, facts: machine()).info(.agent(id: "claude", variant: nil, launcher: .desktop)).available)
     }
 }
+
+@Suite("Menu with replaced apps")
+struct MenuReplacedAppTests {
+    @Test func aReplacedBuiltInAppAppearsOnceInOpenWith() throws {
+        var config = Config.default
+        config.menuItems = ["open-with"]
+        config.apps = [AppDescriptor(id: "zed", name: "My Zed", bundleIDs: ["com.example.zed"], role: .editor)]
+        let facts = FakeSystemFacts(
+            directories: ["/Users/tester/code"],
+            applications: ["com.example.zed": URL(fileURLWithPath: "/Applications/Zed.app"), "dev.zed.Zed": URL(fileURLWithPath: "/Applications/Z.app"),
+                           "com.microsoft.VSCode": URL(fileURLWithPath: "/Applications/Code.app")]
+        )
+        let menu = MenuBuilder(config: config, facts: facts).build(for: HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/code")))
+        let group = try #require(menu.first)
+        let zeds = group.children.filter { $0.actionID == "open.app.zed" }
+        #expect(zeds.count == 1)
+        #expect(zeds.first?.title.contains("My Zed") == true)
+    }
+}
