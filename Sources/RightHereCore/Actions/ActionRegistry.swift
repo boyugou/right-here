@@ -158,10 +158,15 @@ public struct ActionRegistry: Sendable {
                 unavailable(&info, reason: terminalID.map { "Unknown terminal \"\($0)\"." } ?? "No terminal is installed.")
                 return
             }
-            if terminal.installedBundleID(facts: facts) == nil {
+            if let bundleID = terminal.installedBundleID(facts: facts) {
+                let adapter = TerminalAdapters.adapter(for: terminal)
+                if !adapter.supportsCommands {
+                    unavailable(&info, reason: "\(terminal.name) cannot run commands yet.")
+                } else if let blocker = adapter.commandBlocker(bundleID: bundleID, facts: facts) {
+                    unavailable(&info, reason: blocker)
+                }
+            } else {
                 unavailable(&info, reason: "\(terminal.name) is not installed.")
-            } else if !TerminalAdapters.adapter(for: terminal).supportsCommands {
-                unavailable(&info, reason: "\(terminal.name) cannot run commands yet.")
             }
         }
     }

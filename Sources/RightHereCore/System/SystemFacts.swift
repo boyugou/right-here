@@ -18,6 +18,8 @@ public protocol SystemFacts: Sendable {
     func applicationURL(bundleID: String) -> URL?
     /// The name the system shows for an installed app, in the system language.
     func displayName(bundleID: String) -> String?
+    /// The marketing version of an installed app (`CFBundleShortVersionString`), such as "1.3.1".
+    func bundleVersion(bundleID: String) -> String?
     func isRunning(bundleID: String) -> Bool
     func environment(_ key: String) -> String?
 }
@@ -25,6 +27,7 @@ public protocol SystemFacts: Sendable {
 extension SystemFacts {
     public var shellFlavor: ShellFlavor { ShellFlavor(loginShellPath: loginShell) }
     public func displayName(bundleID: String) -> String? { nil }
+    public func bundleVersion(bundleID: String) -> String? { nil }
 }
 
 /// A deterministic stand-in for the machine, used by tests across modules.
@@ -36,6 +39,7 @@ public struct FakeSystemFacts: SystemFacts {
     public var files: Set<String>
     public var gitRoots: [String]
     public var applications: [String: URL]
+    public var bundleVersions: [String: String]
     public var runningApplications: Set<String>
     public var variables: [String: String]
 
@@ -47,6 +51,7 @@ public struct FakeSystemFacts: SystemFacts {
         files: Set<String> = [],
         gitRoots: [String] = [],
         applications: [String: URL] = [:],
+        bundleVersions: [String: String] = [:],
         runningApplications: Set<String> = [],
         variables: [String: String] = [:]
     ) {
@@ -57,6 +62,7 @@ public struct FakeSystemFacts: SystemFacts {
         self.files = files
         self.gitRoots = gitRoots
         self.applications = applications
+        self.bundleVersions = bundleVersions
         self.runningApplications = runningApplications
         self.variables = variables
     }
@@ -83,6 +89,7 @@ public struct FakeSystemFacts: SystemFacts {
     }
 
     public func applicationURL(bundleID: String) -> URL? { applications[bundleID] }
+    public func bundleVersion(bundleID: String) -> String? { bundleVersions[bundleID] }
     public func isRunning(bundleID: String) -> Bool { runningApplications.contains(bundleID) }
     public func environment(_ key: String) -> String? { variables[key] }
 }

@@ -45,7 +45,14 @@ public protocol TerminalAdapter: Sendable {
     var terminalID: String { get }
     /// Whether the terminal can run a command in the new session, which agents need.
     var supportsCommands: Bool { get }
+    /// Why this installed terminal cannot run a command on this machine even though it normally can
+    /// (an old version, say), or `nil` when nothing stands in the way.
+    func commandBlocker(bundleID: String, facts: any SystemFacts) -> String?
     func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step]
+}
+
+extension TerminalAdapter {
+    public func commandBlocker(bundleID: String, facts: any SystemFacts) -> String? { nil }
 }
 
 /// For a terminal that opens a window in a folder when handed the folder, and has no way to run a command.

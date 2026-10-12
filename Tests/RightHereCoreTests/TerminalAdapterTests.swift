@@ -53,6 +53,48 @@ struct TerminalAdapterTests {
         }
     }
 
+    // MARK: Ghostty versions
+
+    private func ghosttyMachine(version: String?) -> FakeSystemFacts {
+        FakeSystemFacts(
+            directories: ["/Users/tester/my code"],
+            applications: ["com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app")],
+            bundleVersions: version.map { ["com.mitchellh.ghostty": $0] } ?? [:]
+        )
+    }
+
+    @Test func aGhosttyWithoutAppleScriptRefusesCommandsButStillOpensFolders() throws {
+        let old = ghosttyMachine(version: "1.2.3")
+        #expect(throws: PlanError.self) {
+            try GhosttyAdapter().steps(for: TerminalSession(directory: directory, typedInput: "claude"), bundleID: "com.mitchellh.ghostty", facts: old)
+        }
+        let steps = try GhosttyAdapter().steps(for: TerminalSession(directory: directory), bundleID: "com.mitchellh.ghostty", facts: old)
+        #expect(steps == [.open(OpenStep(bundleID: "com.mitchellh.ghostty", targets: ["/Users/tester/my code"]))])
+    }
+
+    @Test func theReasonNamesBothVersions() {
+        let reason = GhosttyAdapter().commandBlocker(bundleID: "com.mitchellh.ghostty", facts: ghosttyMachine(version: "1.2.3"))
+        #expect(reason?.contains("1.2.3") == true)
+        #expect(reason?.contains("1.3") == true)
+    }
+
+    @Test("Ghostty versions that can run commands, or are not known", arguments: ["1.3", "1.3.1", "1.4.0-dev+abc123", "2.0", nil as String?])
+    func newEnoughGhosttyIsNotBlocked(version: String?) throws {
+        let machine = ghosttyMachine(version: version)
+        #expect(GhosttyAdapter().commandBlocker(bundleID: "com.mitchellh.ghostty", facts: machine) == nil)
+        let session = TerminalSession(directory: directory, typedInput: "claude")
+        guard case .appleScript? = try GhosttyAdapter().steps(for: session, bundleID: "com.mitchellh.ghostty", facts: machine).first else {
+            Issue.record("expected AppleScript"); return
+        }
+    }
+
+    @Test func theRegistryExplainsWhyAnAgentCannotStartInAnOldGhostty() {
+        let registry = ActionRegistry(config: Config(enabledAgents: ["claude"]), facts: ghosttyMachine(version: "1.2.3"))
+        let info = registry.info(.agent(id: "claude", variant: nil, launcher: nil))
+        #expect(!info.available)
+        #expect(info.unavailableReason?.contains("1.3") == true)
+    }
+
     // MARK: Terminal.app
 
     @Test func terminalOpensAFolderWithoutAppleScript() throws {

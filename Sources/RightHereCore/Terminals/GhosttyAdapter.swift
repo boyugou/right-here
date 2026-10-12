@@ -10,13 +10,24 @@ public struct GhosttyAdapter: TerminalAdapter {
     public let terminalID = "ghostty"
     public var supportsCommands: Bool { true }
 
+    /// The first release with an AppleScript dictionary.
+    static let firstScriptableVersion = AppVersion("1.3")!
+
     public init() {}
+
+    public func commandBlocker(bundleID: String, facts: any SystemFacts) -> String? {
+        guard let text = facts.bundleVersion(bundleID: bundleID), let version = AppVersion(text), version < Self.firstScriptableVersion else {
+            return nil
+        }
+        return "Ghostty \(version) cannot run commands; Ghostty \(Self.firstScriptableVersion) or later can. Update Ghostty or choose another terminal."
+    }
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
         let directory = try session.requireDirectory(facts)
         guard let typed = try session.requireTypeableInput() else {
             return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
         }
+        if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.unsupported(blocker) }
         let placement = session.placement == .newTab ? "tab" : "window"
         return [.appleScript(AppleScriptStep(
             source: Self.script,

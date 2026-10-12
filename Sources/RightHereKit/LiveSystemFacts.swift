@@ -58,6 +58,11 @@ public struct LiveSystemFacts: SystemFacts {
         return FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
     }
 
+    public func bundleVersion(bundleID: String) -> String? {
+        guard let url = applicationURL(bundleID: bundleID) else { return nil }
+        return Bundle(url: url)?.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+    }
+
     public func isRunning(bundleID: String) -> Bool {
         !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty
     }
