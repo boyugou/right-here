@@ -31,4 +31,7 @@ edit that does what the user asked, and keep their comments. Look up keys with `
 2. `right_here_menu` with a folder path, to show the user the menu their config now produces.
 3. For an action you changed, `right_here_run` with `dry_run` to show what it will do.
 
-Do not run an action for real unless the user asked for it.
+Do not run an action for real unless the user asked for it. The one exception worth offering when the
+user starts agents in a terminal: `rh doctor --probe-launch` in the shell. It opens and closes a terminal
+window for a second and proves that the Finder click chain can run a typed command; the first run makes
+macOS ask the user to allow Right Here to control the terminal, so ask before you start it.

@@ -92,8 +92,8 @@ public enum KnownAgents {
         name: "Codex",
         command: "codex",
         variants: [
-            .init(id: "resume", title: "Resume a Session…", arguments: ["resume"], titleKey: .variantResume),
-            .init(id: "last", title: "Continue Last Session", arguments: ["resume", "--last"], titleKey: .variantContinue)
+            .init(id: "last", title: "Continue Last Session", arguments: ["resume", "--last"], titleKey: .variantContinue),
+            .init(id: "resume", title: "Resume a Session…", arguments: ["resume"], titleKey: .variantResume)
         ],
         iconBundleID: "com.openai.codex",
         desktopLink: .init(template: "codex://threads/new?path={dir}"),

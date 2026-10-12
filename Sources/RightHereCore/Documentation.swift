@@ -44,6 +44,10 @@ public enum Documentation {
     4. Run `rh config validate --json`. Fix every error. Unknown-key warnings usually carry a suggestion.
     5. Run `rh menu` to preview the menu and confirm it matches the request.
     6. To test an action without side effects, use `rh run <action> --dry-run`.
+    7. Only if the person wants agents to start in a terminal, and agrees to a window opening and closing for
+       a second, run `rh doctor --probe-launch`: the Finder extension starts a throwaway terminal session
+       and proves a typed command runs there. The first time, macOS asks whether Right Here may control
+       the terminal; tell the person to click Allow and run it again if it reports "needs-user".
 
     Rules of thumb:
     - Agents start in the folder that was right-clicked. The command typed is the agent's own command, so
