@@ -96,6 +96,16 @@ Left: a batch that holds a tool call is answered as a whole (a ping inside it wa
 waits for their decoding; a Ctrl-C between the probe's disable and enable leaves the extension disabled until
 `rh install --finder`.
 
+## Fifth round (commit 53c13a4)
+
+- The TOML depth scanner closed a multiline string at the first triple quote; `\"\"\"a\"\"\"\"` has up to two more
+  quotes that belong to the string, so brackets after it were read as inside it. Now consumed.
+- The `RH_NO_UI` guard compared the program name literally: `/usr/bin//open` and `/usr/bin/env open` passed. The
+  path is standardized and `env` is looked through.
+- Printed names now escape bidirectional controls (U+202E and the like), which can make a name read differently.
+- A doctor probe killed by SIGINT, SIGTERM or SIGHUP left the Finder extension disabled; the handlers re-enable it.
+- The config parser warns when `{dir}` sits inside a string a shell reads (`sh -c "cd {dir}"`).
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.
