@@ -152,13 +152,13 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here, terminalinizden seçtiğiniz klasörde bir pencere açmasını ve seçtiğiniz komutu, örneğin yapay zekâ aracınızı, çalıştırmasını ister."
+            "value": "Right Here, terminalinizden seçtiğiniz klasörde bir pencere açmasını ve seçtiğiniz komutu, örneğin yapay zekâ ajanınızı, çalıştırmasını ister."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here просить ваш термінал відкрити вікно у вибраній теці та виконати вибрану команду, наприклад запустити вашого ШІ-агента."
+            "value": "Right Here просить ваш термінал відкрити вікно у вибраній папці та виконати вибрану команду, наприклад запустити вашого ШІ-агента."
           }
         },
         "ur": {
@@ -170,7 +170,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here yêu cầu terminal của bạn mở một cửa sổ trong thư mục bạn chọn và chạy lệnh bạn đã chọn, chẳng hạn như tác nhân AI của bạn."
+            "value": "Right Here yêu cầu terminal của bạn mở một cửa sổ trong thư mục bạn chọn và chạy lệnh bạn đã chọn, chẳng hạn như tác tử AI của bạn."
           }
         },
         "zh-Hans": {
@@ -182,7 +182,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here 會請求你的終端機在所選資料夾中開啟視窗，並執行你選擇的指令，例如你的 AI 代理。"
+            "value": "Right Here 會請求你的終端機在所選檔案夾中開啟視窗，並執行你選擇的指令，例如你的 AI 代理。"
           }
         }
       }

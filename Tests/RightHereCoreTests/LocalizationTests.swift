@@ -75,7 +75,7 @@ struct LocalizerTests {
     @Test func formatsArguments() {
         #expect(Localizer.english.string(.menuOpenIn, "Ghostty") == "Open in Ghostty")
         #expect(Localizer(languages: ["de"]).string(.menuOpenIn, "Ghostty") == "In Ghostty öffnen")
-        #expect(Localizer(languages: ["zh-Hans"]).string(.menuOpenIn, "Ghostty") == "在Ghostty中打开")
+        #expect(Localizer(languages: ["zh-Hans"]).string(.menuOpenIn, "Ghostty") == "在“Ghostty”中打开")
     }
 
     @Test func positionalPlaceholdersReorderArguments() {
@@ -94,7 +94,7 @@ struct LocalizerTests {
         }
         #expect(titles("en") == ["Open in Ghostty", "New File", "Copy Path"])
         #expect(titles("de") == ["In Ghostty öffnen", "Neue Datei", "Pfad kopieren"])
-        #expect(titles("zh-Hans") == ["在Ghostty中打开", "新建文件", "拷贝路径"])
+        #expect(titles("zh-Hans") == ["在“Ghostty”中打开", "新建文件", "拷贝路径"])
         #expect(titles("ar") == ["فتح في Ghostty", "ملف جديد", "نسخ المسار"])
     }
 
@@ -132,7 +132,7 @@ struct LocalizerTests {
         }
         let config = Config(terminal: "terminal")
         let chinese = ActionRegistry(config: config, facts: NamedFacts(), localizer: Localizer(languages: ["zh-Hans"]))
-        #expect(chinese.info(.openTerminal(nil)).title == "在终端中打开")
+        #expect(chinese.info(.openTerminal(nil)).title == "在“终端”中打开")
         let english = ActionRegistry(config: config, facts: NamedFacts(), localizer: .english)
         #expect(english.info(.openTerminal(nil)).title == "Open in Terminal")
     }

@@ -140,7 +140,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finderలో చూపించు"
+            "value": "Finderలో చూపించండి"
           }
         },
         "th": {
@@ -344,7 +344,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here не вдалося завершити"
+            "value": "Right Here не вдалося завершити дію"
           }
         },
         "ur": {
@@ -710,7 +710,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Sistem Ayarlarını Aç"
+            "value": "Sistem Ayarları’nı Aç"
           }
         },
         "uk": {
@@ -902,7 +902,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS не дозволила Right Here керувати %@. Дозвольте це в Системних параметрах › Конфіденційність і безпека › Автоматизація та повторіть спробу."
+            "value": "macOS не дозволила Right Here керувати %@. Дозвольте це в Системних параметрах › Приватність і безпека › Автоматизація та повторіть спробу."
           }
         },
         "ur": {
@@ -2186,7 +2186,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ఇన్‌స్టాల్ చేయండి లేదా మరమ్మతు చేయండి"
+            "value": "ఇన్‌స్టాల్ లేదా మరమ్మతు చేయండి"
           }
         },
         "th": {
@@ -2378,7 +2378,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "บางรายการตรวจสอบต้องการให้คุณดู"
+            "value": "การตรวจสอบบางรายการต้องให้คุณดำเนินการ"
           }
         },
         "tr": {
@@ -2786,7 +2786,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "已拷貝設定提示詞。請貼到你的 AI 助手中。"
+            "value": "已拷貝設定提示詞。請貼到你的 AI 助理中。"
           }
         }
       }
@@ -2954,13 +2954,13 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "کسی فولڈر یا انتخاب کو اپنے ٹرمینلز، ایڈیٹرز اور AI ایجنٹس کو بھیجیں۔"
+            "value": "کوئی فولڈر یا انتخاب اپنے ٹرمینلز، ایڈیٹرز اور AI ایجنٹس کو بھیجیں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Gửi một thư mục hoặc vùng chọn tới terminal, trình soạn thảo và tác tử AI của bạn."
+            "value": "Gửi một thư mục hoặc các mục đã chọn tới terminal, trình soạn thảo và tác tử AI của bạn."
           }
         },
         "zh-Hans": {
@@ -3110,7 +3110,7 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "டெர்மினல் தொடக்கத்தைச் சோதிக்கவும்"
+            "value": "டெர்மினல் தொடக்கத்தைச் சோதி"
           }
         },
         "te": {
@@ -3128,7 +3128,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Terminal başlatmayı test et"
+            "value": "Terminal Başlatmayı Test Et"
           }
         },
         "uk": {
@@ -3320,7 +3320,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Відкриваю тестове вікно в терміналі…"
+            "value": "Відкриття тестового вікна в терміналі…"
           }
         },
         "ur": {
@@ -3686,7 +3686,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Yapay Zekâ İçin @ Anması"
+            "value": "Yapay Zekâ İçin @ Bahsetme"
           }
         },
         "uk": {
@@ -4808,7 +4808,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Шлях з екрануванням для shell"
+            "value": "Екранований шлях для оболонки"
           }
         },
         "ur": {
@@ -5000,13 +5000,13 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "اقتباس میں پاتھ"
+            "value": "کوٹس میں پاتھ"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Đường dẫn trong dấu ngoặc kép"
+            "value": "Đường dẫn trong dấu nháy đơn"
           }
         },
         "zh-Hans": {
@@ -6290,7 +6290,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Masaüstü uygulamasında %@"
+            "value": "Masaüstü Uygulamasında %@"
           }
         },
         "uk": {
@@ -6314,13 +6314,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在桌面 App 中启动%@"
+            "value": "在桌面 App 中启动 %@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在桌面 App 中啟動%@"
+            "value": "在桌面 App 中啟動 %@"
           }
         }
       }
@@ -6500,13 +6500,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在此处启动%@"
+            "value": "在此处启动 %@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在此處啟動%@"
+            "value": "在此處啟動 %@"
           }
         }
       }
@@ -6686,13 +6686,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在%2$@中启动%1$@"
+            "value": "在“%2$@”中启动 %1$@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在%2$@中啟動%1$@"
+            "value": "在「%2$@」中啟動 %1$@"
           }
         }
       }
@@ -6848,7 +6848,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Son kullanılan Terminal’de %@"
+            "value": "Son Kullanılan Terminalde %@"
           }
         },
         "uk": {
@@ -6866,19 +6866,19 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ trong Terminal dùng gần nhất"
+            "value": "%@ trong terminal dùng gần nhất"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在上次使用的终端中启动%@"
+            "value": "在上次使用的终端中启动 %@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在上次使用的終端機中啟動%@"
+            "value": "在上次使用的終端機中啟動 %@"
           }
         }
       }
@@ -7592,7 +7592,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ içinde aç"
+            "value": "%@ ile Aç"
           }
         },
         "uk": {
@@ -7616,13 +7616,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在%@中打开"
+            "value": "在“%@”中打开"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在%@中打開"
+            "value": "在「%@」中打開"
           }
         }
       }
@@ -8504,7 +8504,7 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "கடைசி அமர்வைத் தொடரவும்"
+            "value": "கடைசி அமர்வைத் தொடர்"
           }
         },
         "te": {
@@ -8690,13 +8690,13 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "அமர்வை மீண்டும் தொடங்கு…"
+            "value": "அமர்வை மீண்டும் தொடர்…"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "సెషన్‌ను తిరిగి ప్రారంభించండి…"
+            "value": "సెషన్‌ను తిరిగి కొనసాగించండి…"
           }
         },
         "th": {
@@ -8720,7 +8720,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "سیشن دوبارہ شروع کریں…"
+            "value": "سیشن دوبارہ جاری رکھیں…"
           }
         },
         "vi": {
@@ -8876,13 +8876,13 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "சமீபத்திய அமர்வை மீண்டும் தொடங்கு"
+            "value": "சமீபத்திய அமர்வை மீண்டும் தொடர்"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ఇటీవలి సెషన్‌ను తిరిగి ప్రారంభించండి"
+            "value": "ఇటీవలి సెషన్‌ను తిరిగి కొనసాగించండి"
           }
         },
         "th": {
@@ -8906,7 +8906,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "تازہ ترین سیشن دوبارہ شروع کریں"
+            "value": "تازہ ترین سیشن دوبارہ جاری رکھیں"
           }
         },
         "vi": {
