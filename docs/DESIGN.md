@@ -117,6 +117,13 @@ Verified on this machine (macOS 27.2, 2026-10-11):
   `/usr/bin/automator` into `rh`, creating a file in the selected folder.
 - The MCP server answers `initialize`, `tools/list` and `tools/call` over real stdio.
 - A failure alert shown by `rh run --alert` blocks on a window instead of crashing, when started outside Finder.
+- The whole chain a menu click uses works: the extension runs the runner script, which runs `rh`, which
+  runs `osascript` to control Ghostty (`rh doctor --probe-extension`, 0.4 s). macOS holds the Finder
+  extension responsible for the Apple events `rh` sends on its behalf (TCC logs name
+  `com.boyugou.righthere.FinderExtension` as the responsible process), so the extension carries the
+  `com.apple.security.automation.apple-events` entitlement; without it tccd logs that a hardened
+  process lacking it cannot be prompted. Verified only where Ghostty already allowed the control: a first-ever
+  permission prompt on a clean machine has not been seen.
 
 Sourced:
 
@@ -139,9 +146,10 @@ Sourced:
 
 Open (to check on a real run, in the order they matter):
 
-- A real Finder click reaching `rh` through the runner script: tag dispatch, `NSUserUnixTask`, `osascript`
-  under `UserScriptService`, whether `initial input` with a linefeed executes in zsh, and which process the
-  Automation prompt names. The extension and `rh` log each step at notice level for this.
+- A real Finder click reaching `rh`: the tag dispatch of the menu action and whether `initial input` with a
+  linefeed executes in zsh. The extension and `rh` log each step at notice level (`log show --predicate
+  'subsystem == "com.boyugou.righthere.FinderExtension"'`, and `~/Library/Logs/right-here/rh.log`).
+- A first-ever Automation prompt on a machine that has never allowed the control.
 - The items, sidebar and toolbar menus (the container menu has been observed).
 - Whether Quick Actions appear on a folder's empty background.
 - A cold start of Terminal.app or Ghostty through AppleScript may open an extra startup window.

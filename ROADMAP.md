@@ -12,8 +12,8 @@
 
 ## Next
 
-- Confirm the typed agent launch end to end from a real Finder click, and record which process the
-  Automation prompt names.
+- Confirm the typed agent launch from a real Finder click (the chain up to the Apple event is verified by
+  `rh doctor --probe-extension`), and the first-ever Automation prompt on a clean machine.
 - Notarized DMG, Homebrew cask and formula (`script/package_dmg.sh`).
 - App icon.
 - Adapters for iTerm2, WezTerm, kitty, Alacritty, Warp, cmux (documented, to be checked on real installs);
