@@ -707,3 +707,43 @@ struct TrappingTextTests {
     }
 }
 
+
+@Suite("Truncated configs")
+struct TruncatedConfigTests {
+    /// A file cut off anywhere (a disk that filled up, a half-saved editor buffer) must be a diagnostic, never a crash:
+    /// the TOML library traps on some inputs that end at an unlucky byte.
+    @Test func everyPrefixOfARealConfigParses() {
+        let template = ConfigTemplate.render(DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude", "codex"]))
+        for text in [template, fullConfig] {
+            let bytes = Array(text.utf8)
+            for length in 0...bytes.count {
+                guard let prefix = String(bytes: bytes[0..<length], encoding: .utf8) else { continue }
+                _ = ConfigParser.parse(prefix)
+            }
+        }
+    }
+
+    @Test func everyOpenBracketCutOffAfterAKeyOrAQuotePairIsAnErrorNotACrash() {
+        var failures: [String] = []
+        for lead in ["", "x = 1\n", "[general]\n", "  "] {
+            for open in ["[", "[[", "[ ", "[a.", "[[a.", "x = [", "x = {", "x = [[", "x = {a=", "x = {a = ["] {
+                for tail in ["\"\"", "''", "\"a\"", "'a'", "\"\".\"\"", "''.''", "a", "a.b", "1", "\"\" ", ""] {
+                    let result = ConfigParser.parse(lead + open + tail)
+                    if !result.hasErrors { failures.append(lead + open + tail) }
+                }
+            }
+        }
+        #expect(failures.isEmpty, "parsed without an error: \(failures.prefix(5))")
+    }
+
+    @Test func theSameWithEveryByteReplacedByAQuoteOrBracket() {
+        let bytes = Array(fullConfig.utf8)
+        for index in stride(from: 0, to: bytes.count, by: 3) {
+            for replacement in [UInt8(ascii: "\""), UInt8(ascii: "'"), UInt8(ascii: "["), UInt8(ascii: "]"), UInt8(ascii: "{"), UInt8(ascii: "="), UInt8(ascii: "\n")] {
+                var changed = bytes
+                changed[index] = replacement
+                if let text = String(bytes: changed, encoding: .utf8) { _ = ConfigParser.parse(text); _ = ConfigParser.parse(String(text.dropLast(text.count / 2))) }
+            }
+        }
+    }
+}
