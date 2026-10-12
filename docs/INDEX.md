@@ -10,5 +10,6 @@
   - [0005 MCP server](decisions/0005-mcp-server.md)
   - [0006 localization](decisions/0006-localization.md)
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
+- [`development/RELEASING.md`](development/RELEASING.md): signing, notarizing and publishing a release.
 - [`../ROADMAP.md`](../ROADMAP.md): what works and what is next.
 - [`../CLAUDE.md`](../CLAUDE.md): operating manual for agents working in this repository.

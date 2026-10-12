@@ -95,10 +95,9 @@ struct RunResult: Encodable {
 /// with O_APPEND, so several `rh` processes started at once do not overwrite each other.
 enum RunLog {
     static func record(_ message: String) {
-        let facts = LiveSystemFacts()
-        let directory = facts.homeDirectory.appendingPathComponent("Library/Logs/right-here")
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        let path = directory.appendingPathComponent("rh.log").path
+        let paths = RHPaths.current()
+        try? FileManager.default.createDirectory(at: paths.logDirectory, withIntermediateDirectories: true)
+        let path = paths.logFile.path
         let line = Array("\(ISO8601DateFormatter().string(from: Date())) \(message)\n".utf8)
         let descriptor = open(path, O_WRONLY | O_APPEND | O_CREAT, 0o644)
         guard descriptor >= 0 else { return }

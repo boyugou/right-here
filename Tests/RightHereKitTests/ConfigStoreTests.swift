@@ -28,6 +28,11 @@ struct RHPathsTests {
         #expect(paths.configDirectory.path == "/tmp")
     }
 
+    @Test func logDirectoryDefaultsToLibraryLogsAndCanBeOverridden() {
+        #expect(RHPaths(environment: [:], home: home).logFile.path == "/Users/tester/Library/Logs/right-here/rh.log")
+        #expect(RHPaths(environment: ["RH_LOG_DIR": "/tmp/logs"], home: home).logFile.path == "/tmp/logs/rh.log")
+    }
+
     @Test func emptyOverridesAreIgnored() {
         let paths = RHPaths(environment: ["RH_CONFIG": "", "RH_CONFIG_DIR": ""], home: home)
         #expect(paths.configFile.path == "/Users/tester/.config/right-here/config.toml")

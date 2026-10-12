@@ -37,6 +37,7 @@ private struct RH {
         process.arguments = arguments
         var environment = ProcessInfo.processInfo.environment
         environment["RH_CONFIG_DIR"] = configDirectory.path
+        environment["RH_LOG_DIR"] = configDirectory.appendingPathComponent("logs").path
         environment.removeValue(forKey: "RH_CONFIG")
         process.environment = environment
         let out = Pipe(), err = Pipe()

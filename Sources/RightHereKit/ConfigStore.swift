@@ -5,12 +5,21 @@ import RightHereCore
 public struct RHPaths: Sendable, Equatable {
     public var configDirectory: URL
     public var configFile: URL
+    /// `RH_LOG_DIR`, else `~/Library/Logs/right-here`.
+    public var logDirectory: URL
+
+    public var logFile: URL { logDirectory.appendingPathComponent("rh.log") }
 
     /// `RH_CONFIG` names the file itself; `RH_CONFIG_DIR` or `XDG_CONFIG_HOME` name its folder;
     /// otherwise it is `~/.config/right-here/config.toml`.
     public init(environment: [String: String], home: URL) {
         func expanded(_ path: String) -> URL {
             URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
+        }
+        if let logs = environment["RH_LOG_DIR"], !logs.isEmpty {
+            logDirectory = expanded(logs)
+        } else {
+            logDirectory = home.appendingPathComponent("Library/Logs/right-here")
         }
         if let file = environment["RH_CONFIG"], !file.isEmpty {
             configFile = expanded(file)

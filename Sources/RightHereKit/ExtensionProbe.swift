@@ -14,9 +14,7 @@ public struct ExtensionProbe: Sendable {
         self.runner = runner
     }
 
-    private var logFile: URL {
-        facts.homeDirectory.appendingPathComponent("Library/Logs/right-here/rh.log")
-    }
+    private var logFile: URL { paths.logFile }
 
     /// Leaves the marker, restarts the extension so it looks for it, and waits for `rh` to report.
     /// Returns `nil` when nothing was reported in time.

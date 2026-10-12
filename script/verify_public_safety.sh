@@ -15,7 +15,7 @@ while IFS= read -r f; do files+=("$f"); done < <(git ls-files)
 
 # Email addresses. The only allowed @ forms are file-mention examples and git remotes, neither of which matches.
 if grep -nE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z]{2,}' -- "${files[@]}" 2>/dev/null \
-  | grep -vE 'git@github\.com'; then
+  | grep -vE 'git@github\.com|@[0-9]x\.(png|jpg)'; then
   report "email address found"
 fi
 
