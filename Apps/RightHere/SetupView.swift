@@ -36,6 +36,7 @@ struct SetupView: View {
             Image(nsImage: NSApplication.shared.applicationIconImage)
                 .resizable()
                 .frame(width: 56, height: 56)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Right Here").font(.title2.weight(.semibold))
                 Text(l10n.string(.appSubtitle))
@@ -53,6 +54,8 @@ struct SetupView: View {
             } else {
                 Image(systemName: model.needsAttention ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                     .foregroundStyle(model.needsAttention ? Color.orange : Color.green)
+                    // The sentence beside it says the same; VoiceOver would read the symbol's name first.
+                    .accessibilityHidden(true)
                 Text(l10n.string(model.needsAttention ? .appNeedsAttention : .appAllSet)).font(.body.weight(.medium))
             }
             Spacer(minLength: 0)
@@ -106,6 +109,7 @@ private struct CheckRow: View {
             Image(systemName: symbol)
                 .foregroundStyle(color)
                 .frame(width: 20)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(check.title).font(.body.weight(.medium))
                 if let detail = check.detail {
@@ -119,6 +123,8 @@ private struct CheckRow: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
+        // One stop for VoiceOver per check (title, detail and fix read together) instead of three.
+        .accessibilityElement(children: .combine)
     }
 
     /// The doctor writes commands between backticks (it prints for a terminal too): show them as
