@@ -2798,31 +2798,31 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Needs your action"
+            "value": "يتطلب إجراءً منك"
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "يتطلب إجراءً منك"
+            "value": "আপনার পদক্ষেপ দরকার"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "আপনার পদক্ষেপ দরকার"
+            "value": "Erfordert Ihre Aktion"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Erfordert Ihre Aktion"
+            "value": "Απαιτεί ενέργεια από εσάς"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Απαιτεί ενέργεια από εσάς"
+            "value": "Needs your action"
           }
         },
         "es": {
@@ -2984,31 +2984,31 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "OK"
+            "value": "سليم"
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "سليم"
+            "value": "ঠিক আছে"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ঠিক আছে"
+            "value": "In Ordnung"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "In Ordnung"
+            "value": "Εντάξει"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Εντάξει"
+            "value": "OK"
           }
         },
         "es": {
@@ -3170,31 +3170,31 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Problem"
+            "value": "مشكلة"
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "مشكلة"
+            "value": "সমস্যা"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "সমস্যা"
+            "value": "Problem"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Problem"
+            "value": "Πρόβλημα"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Πρόβλημα"
+            "value": "Problem"
           }
         },
         "es": {
@@ -3356,31 +3356,31 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Warning"
+            "value": "تحذير"
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "تحذير"
+            "value": "সতর্কতা"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "সতর্কতা"
+            "value": "Warnung"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Warnung"
+            "value": "Προειδοποίηση"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Προειδοποίηση"
+            "value": "Warning"
           }
         },
         "es": {
