@@ -172,8 +172,19 @@ enum Tools {
         if arguments["dry_run"]?.boolValue == true {
             return ToolOutput(text: "Plan (nothing was run):\n" + planJSON.pretty(), structured: .object(["ran": .bool(false), "plan": planJSON]))
         }
+        if Self.opensWindows(ref), !(await server.launchLimiter.allow()) {
+            throw ToolError("Too many windows were opened by tool calls in the last minute. Ask the person before opening more.")
+        }
         try await LiveExecutor(runner: server.runner, pasteboard: server.pasteboard).execute(plan)
         return ToolOutput(text: "Done: " + plan.summary, structured: .object(["ran": .bool(true), "plan": planJSON]))
+    }
+
+    /// Whether running the action puts a new window on the person's screen.
+    private static func opensWindows(_ ref: ActionRef) -> Bool {
+        switch ref {
+        case .openTerminal, .openEditor, .openApp, .agent: return true
+        default: return false
+        }
     }
 
     private static func actions(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {

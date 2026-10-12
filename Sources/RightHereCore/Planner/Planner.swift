@@ -47,6 +47,9 @@ public struct Planner: Sendable {
     private func copyPath(_ style: PathStyle, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         let targets = context.pathTargets
         guard !targets.isEmpty else { throw PlanError.noTarget }
+        // The text goes on the clipboard to be pasted somewhere, often into a terminal. A path that does
+        // not exist is a typo or text somebody chose, not a path, so it is refused rather than copied.
+        if let missing = context.firstMissingPath(facts: facts) { throw PlanError.pathNotFound(missing.path) }
         let text = PathRenderer(facts: facts).render(targets, style: style)
         let noun = targets.count == 1 ? "path" : "\(targets.count) paths"
         return LaunchPlan(action: ref.id, summary: "Copy \(noun) (\(style.rawValue))", steps: [.copyToPasteboard(text)])

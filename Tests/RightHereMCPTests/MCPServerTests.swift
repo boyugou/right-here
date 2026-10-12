@@ -239,3 +239,101 @@ struct MCPToolTests {
         #expect(result["structuredContent"]?["checks"]?.arrayValue?.isEmpty == false)
     }
 }
+
+@Suite("MCP hardening")
+struct MCPHardeningTests {
+    private func text(_ result: JSONValue) -> String {
+        result["content"]?.arrayValue?.first?["text"]?.stringValue ?? ""
+    }
+
+    @Test("a dry_run that is not a boolean never runs the action",
+          arguments: [JSONValue.string("true"), .string("yes"), .number(1), .null, .array([]), .object([:])])
+    func dryRunMustBeABoolean(value: JSONValue) async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_run", ["action": .string("open.terminal"), "container": .string("/Users/tester/code/app"), "dry_run": value])
+        #expect(result["isError"]?.boolValue == true)
+        #expect(text(result).contains("dry_run"))
+        #expect(harness.runner.recorded.isEmpty, "the action ran although dry_run was not a boolean")
+    }
+
+    @Test func aMisspelledArgumentIsRefusedInsteadOfIgnored() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_run", ["action": .string("open.terminal"), "container": .string("/Users/tester/code/app"), "dryRun": .bool(true)])
+        #expect(result["isError"]?.boolValue == true)
+        #expect(text(result).contains("Unknown argument \"dryRun\""))
+        #expect(harness.runner.recorded.isEmpty)
+    }
+
+    @Test("arguments of the wrong type are refused", arguments: [
+        ["action": JSONValue.string("reveal"), "paths": .string("/a")],
+        ["action": .string("reveal"), "paths": .array([.number(1)])],
+        ["action": .string("reveal"), "container": .number(5)],
+        ["action": .bool(true)]
+    ])
+    func wrongTypes(arguments: [String: JSONValue]) async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_run", arguments)
+        #expect(result["isError"]?.boolValue == true)
+        #expect(text(result).hasPrefix("Invalid arguments for right_here_run"))
+        #expect(harness.runner.recorded.isEmpty)
+    }
+
+    @Test func aMissingRequiredArgumentIsNamed() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        #expect(text(try await harness.call("right_here_run")).contains("\"action\" is required"))
+        #expect(text(try await harness.call("right_here_docs", ["topic": .string("nope")])).contains("must be one of"))
+    }
+
+    @Test func aToolThatTakesNoArgumentsRefusesAny() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_doctor", ["sneaky": .bool(true)])
+        #expect(result["isError"]?.boolValue == true)
+        #expect(text(result).contains("takes no arguments"))
+    }
+
+    @Test func nullArgumentsMeanNone() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let reply = try #require(try await harness.send("tools/call", params: .object(["name": .string("right_here_catalog"), "arguments": .null])))
+        #expect(reply["result"]?["isError"]?.boolValue == false)
+    }
+
+    @Test func aBatchIsAnsweredWithABatch() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let line = #"[{"jsonrpc":"2.0","id":1,"method":"ping"},{"jsonrpc":"2.0","method":"notifications/initialized"},{"jsonrpc":"2.0","id":"b","method":"ping"}]"#
+        let reply = try #require(await harness.server.handle(line))
+        let replies = try #require(try JSONDecoder().decode(JSONValue.self, from: Data(reply.utf8)).arrayValue)
+        #expect(replies.map { $0["id"] } == [.number(1), .string("b")])
+    }
+
+    @Test func aBatchOfNotificationsGetsNoReplyAndAnEmptyBatchIsInvalid() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        #expect(await harness.server.handle(#"[{"jsonrpc":"2.0","method":"notifications/initialized"}]"#) == nil)
+        let empty = try #require(await harness.server.handle("[]"))
+        #expect(try JSONDecoder().decode(JSONValue.self, from: Data(empty.utf8))["error"]?["code"] == .number(-32600))
+    }
+
+    @Test func windowsOpenedByToolCallsAreLimited() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        var refused = 0
+        for _ in 0..<12 {
+            let result = try await harness.call("right_here_run", ["action": .string("open.terminal"), "container": .string("/Users/tester/code/app")])
+            if result["isError"]?.boolValue == true {
+                refused += 1
+                #expect(text(result).contains("Too many windows"))
+            }
+        }
+        #expect(refused == 4)
+        #expect(harness.runner.recorded.count == 8)
+        // Planning and copying are not limited.
+        let copy = try await harness.call("right_here_run", ["action": .string("copy-path.absolute"), "paths": .array([.string("/Users/tester/code/app/a.txt")])])
+        #expect(copy["isError"]?.boolValue == false)
+    }
+
+    @Test func aDryRunDoesNotCountTowardsTheLimit() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        for _ in 0..<20 {
+            let result = try await harness.call("right_here_run", ["action": .string("open.terminal"), "container": .string("/Users/tester/code/app"), "dry_run": .bool(true)])
+            #expect(result["isError"]?.boolValue == false)
+        }
+    }
+}

