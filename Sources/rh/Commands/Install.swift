@@ -23,9 +23,10 @@ struct Install: AsyncParsableCommand {
         discussion: """
         Without options everything is installed:
 
-          --scripts  the runner script the Finder extension uses to reach rh
-          --cli      a link to rh in ~/.local/bin
-          --finder   register and switch on the Finder extension of Right Here.app
+          --scripts   the runner script the Finder extension uses to reach rh
+          --cli       a link to rh in ~/.local/bin
+          --services  Finder Services (Quick Actions) for the actions in [services] of the config
+          --finder    register and switch on the Finder extension of Right Here.app
 
         Nothing here needs administrator rights. Run it again at any time; it repairs what is out of date.
         """
@@ -37,12 +38,15 @@ struct Install: AsyncParsableCommand {
     @Flag(help: "Install only the command-line link.")
     var cli = false
 
+    @Flag(help: "Install only the Finder Services (Quick Actions).")
+    var services = false
+
     @Flag(help: "Register and switch on only the Finder extension.")
     var finder = false
 
     func run() async throws {
         let runtime = Runtime()
-        let everything = !(scripts || cli || finder)
+        let everything = !(scripts || cli || services || finder)
         guard let rhPath = Bundle.main.executableURL?.resolvingSymlinksInPath().path else {
             throw Output.fail("error: cannot tell where rh is installed.")
         }
@@ -59,6 +63,12 @@ struct Install: AsyncParsableCommand {
             if try ConfigStore.initialize(paths: runtime.paths, detected: detected) {
                 Output.print("Config file: \(runtime.paths.configFile.path) (new)")
             }
+        }
+        if everything || services {
+            let specs = ActionRegistry(config: runtime.config, facts: runtime.facts).serviceSpecs(rhPath: rhPath)
+            let written = try installer.installServices(specs)
+            _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
+            Output.print("Services: \(written.count) installed in \(installer.locations.services.path)")
         }
         if everything || finder {
             try await installExtension(rhPath: rhPath, facts: runtime.facts)
@@ -95,6 +105,12 @@ struct Uninstall: AsyncParsableCommand {
         let installer = Installer(home: runtime.facts.homeDirectory)
         try installer.removeRunnerScript()
         Output.print("Removed the runner script.")
+        let services = installer.installedServices()
+        if !services.isEmpty {
+            try installer.removeServices()
+            _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
+            Output.print("Removed \(services.count) Services.")
+        }
         if let destination = try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path) {
             try FileManager.default.removeItem(at: installer.cliLink)
             Output.print("Removed the command link (it pointed at \(destination)).")

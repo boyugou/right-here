@@ -69,6 +69,11 @@ public enum ConfigSchema {
                            "Entries in order. Groups: open-terminal, open-editor, open-with, agents, agents-more, new-file, copy-path. \"-\" is a separator. Any action id from `rh actions` also works.",
                            default: "[\"open-terminal\", \"open-editor\", \"agents\", \"agents-more\", \"-\", \"new-file\", \"copy-path\"]")
             ]),
+            SchemaNode("services", .table, "Finder Services (Quick Actions), written by `rh install --services`.", children: [
+                SchemaNode("items", .stringArray,
+                           "Action ids to offer. By default: open in terminal and editor, each enabled agent, new Markdown file, and two copy-path forms.",
+                           example: "[\"open.terminal\", \"agent.claude\", \"copy-path.absolute\"]")
+            ]),
             SchemaNode("copy_path", .table, "The \"Copy Path\" submenu.", children: [
                 SchemaNode("styles", .stringArray, "Forms offered, in order.",
                            default: "[\"absolute\", \"tilde\", \"git-relative\", \"name\", \"shell-escaped\", \"ai-mention\"]",

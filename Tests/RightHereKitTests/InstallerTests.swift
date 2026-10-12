@@ -130,3 +130,42 @@ struct FailureAlertTests {
         #expect(content.settingsURL == nil)
     }
 }
+
+@Suite("Installer services")
+struct InstallerServicesTests {
+    private let specs = [
+        ServiceSpec(title: "Open in Ghostty", actionID: "open.terminal", command: "echo one"),
+        ServiceSpec(title: "Claude Code Here", actionID: "agent.claude", command: "echo two")
+    ]
+
+    @Test func writesLoadableWorkflowBundles() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let written = try installer.installServices(specs)
+        #expect(written.map(\.lastPathComponent) == ["Right Here - Open in Ghostty.workflow", "Right Here - Claude Code Here.workflow"])
+        for bundle in written {
+            for file in ["Info.plist", "document.wflow"] {
+                let data = try Data(contentsOf: bundle.appendingPathComponent("Contents/\(file)"))
+                #expect((try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]) != nil)
+            }
+        }
+    }
+
+    @Test func reinstallingReplacesWhatWasThereAndLeavesOtherServicesAlone() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let foreign = installer.locations.services.appendingPathComponent("Claude - ask.workflow")
+        try FileManager.default.createDirectory(at: foreign, withIntermediateDirectories: true)
+
+        try installer.installServices(specs)
+        try installer.installServices([specs[0]])
+        #expect(installer.installedServices().map(\.lastPathComponent) == ["Right Here - Open in Ghostty.workflow"])
+        #expect(FileManager.default.fileExists(atPath: foreign.path))
+
+        try installer.removeServices()
+        #expect(installer.installedServices().isEmpty)
+        #expect(FileManager.default.fileExists(atPath: foreign.path))
+    }
+}

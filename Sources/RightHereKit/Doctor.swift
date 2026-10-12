@@ -164,6 +164,12 @@ public struct Doctor: Sendable {
                                       fix: "Run `rh install --scripts`."))
         }
 
+        let services = installer.installedServices()
+        checks.append(DoctorCheck(
+            id: "services", title: "Finder Services", status: services.isEmpty ? .warn : .ok,
+            detail: services.isEmpty ? "none installed; Quick Actions and keyboard shortcuts are not available" : "\(services.count) installed",
+            fix: services.isEmpty ? "Run `rh install --services`." : nil))
+
         let linked = (try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path)) != nil
         let onPath = (facts.environment("PATH") ?? "").split(separator: ":").contains { String($0) == installer.locations.localBin.path }
         checks.append(DoctorCheck(

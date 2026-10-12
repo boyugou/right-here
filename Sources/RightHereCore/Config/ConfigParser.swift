@@ -210,6 +210,23 @@ private struct Builder {
         if let menu = root.subtable("menu") {
             menu.checkKnownKeys()
             config.menuItems = menu.stringArray("items")
+            for entry in config.menuItems ?? [] where entry != "-" && !MenuBuilder.groups.contains(entry) && ActionRef(parsing: entry) == nil {
+                sink.warning(["menu", "items"], "\"\(entry)\" is neither a menu group nor an action id",
+                             suggestion: Suggestion.closest(to: entry, in: Array(MenuBuilder.groups)).map { "did you mean \"\($0)\"?" })
+            }
+        }
+
+        if let services = root.subtable("services") {
+            services.checkKnownKeys()
+            if let items = services.stringArray("items") {
+                config.serviceItems = items.filter { item in
+                    guard ActionRef(parsing: item) != nil else {
+                        sink.warning(["services", "items"], "\"\(item)\" is not an action id; see `rh docs actions`")
+                        return false
+                    }
+                    return true
+                }
+            }
         }
 
         if let copyPath = root.subtable("copy_path") {

@@ -7,10 +7,12 @@ public struct Installer: Sendable {
     public struct Locations: Sendable, Equatable {
         public var applicationScripts: URL
         public var localBin: URL
+        public var services: URL
 
         public init(home: URL) {
             applicationScripts = home.appendingPathComponent("Library/Application Scripts/\(AppIdentity.extensionBundleID)")
             localBin = home.appendingPathComponent(".local/bin")
+            services = home.appendingPathComponent("Library/Services")
         }
     }
 
@@ -74,6 +76,37 @@ public struct Installer: Sendable {
     static func unquote(_ word: String) -> String {
         guard word.hasPrefix("'"), word.hasSuffix("'"), word.count >= 2 else { return word }
         return String(word.dropFirst().dropLast()).replacingOccurrences(of: "'\\''", with: "'")
+    }
+
+    // MARK: Services
+
+    /// The workflow bundles Right Here has installed.
+    public func installedServices() -> [URL] {
+        let names = (try? fileManager.contentsOfDirectory(atPath: locations.services.path)) ?? []
+        return names.filter { $0.hasPrefix(ServiceWorkflow.namePrefix) && $0.hasSuffix(".workflow") }
+            .sorted().map { locations.services.appendingPathComponent($0) }
+    }
+
+    /// Replaces the installed Services with `specs`. Workflows are written fresh each time, so a
+    /// Service dropped from the config disappears.
+    @discardableResult
+    public func installServices(_ specs: [ServiceSpec]) throws -> [URL] {
+        try removeServices()
+        try fileManager.createDirectory(at: locations.services, withIntermediateDirectories: true)
+        var written: [URL] = []
+        for spec in specs {
+            let bundle = locations.services.appendingPathComponent(ServiceWorkflow.bundleName(for: spec))
+            let contents = bundle.appendingPathComponent("Contents")
+            try fileManager.createDirectory(at: contents, withIntermediateDirectories: true)
+            try ServiceWorkflow.infoPlist(for: spec).write(to: contents.appendingPathComponent("Info.plist"))
+            try ServiceWorkflow.workflowDocument(for: spec).write(to: contents.appendingPathComponent("document.wflow"))
+            written.append(bundle)
+        }
+        return written
+    }
+
+    public func removeServices() throws {
+        for bundle in installedServices() { try fileManager.removeItem(at: bundle) }
     }
 
     public func removeRunnerScript() throws {
