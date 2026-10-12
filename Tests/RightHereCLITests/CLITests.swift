@@ -501,7 +501,7 @@ struct CLITests {
     @Test func mcpRefusesAnOversizedLineAndKeepsServing() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         // A request bigger than the server will buffer: it is answered once, with an error, and then ignored.
-        let huge = Data(repeating: UInt8(ascii: "x"), count: 9 * 1024 * 1024)
+        let huge = Data(repeating: UInt8(ascii: "x"), count: 3 * 1024 * 1024)
         var input = Data(#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.utf8) + Data("\n".utf8)
         input += huge + Data("\n".utf8)
         input += Data(#"{"jsonrpc":"2.0","id":2,"method":"ping"}"#.utf8) + Data("\n".utf8)
@@ -511,6 +511,18 @@ struct CLITests {
         #expect(errors.count == 1)
         #expect((errors.first?["error"] as? [String: Any])?["code"] as? Int == -32600)
         #expect(Set(replies.compactMap { $0["id"] as? Int }) == [1, 2], "the requests either side of the huge line were not both answered")
+    }
+
+    @Test func aRequestAsBigAsTheBiggestHonestOneIsStillServed() throws {
+        // 200 paths of 1024 characters each: the schema's own limits, about 200 KB of JSON.
+        let rh = try RH(); defer { rh.cleanUp() }
+        let paths = (0..<200).map { index in "\"/" + String(repeating: "a", count: 1023 - String(index).count) + String(index) + "\"" }
+        let line = #"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"right_here_run","arguments":{"action":"reveal","dry_run":true,"paths":["# + paths.joined(separator: ",") + "]}}}\n"
+        let replies = try mcpReplies(rh, to: Data(line.utf8))
+        #expect(replies.count == 1)
+        // It reached the tool (which then says the paths do not exist); it was not turned away as too large.
+        #expect(replies.first?["error"] == nil)
+        #expect(((replies.first?["result"] as? [String: Any])?["isError"] as? Bool) == true)
     }
 
     @Test func mcpAnswersEveryRequestOfALongPipelinedBurst() throws {

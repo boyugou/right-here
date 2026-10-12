@@ -196,8 +196,10 @@ public struct MCPServer: Sendable {
     }
 
     /// The longest request line accepted. A line without a line feed that grows past it is discarded, so a
-    /// peer cannot make the server buffer without end.
-    static let maxLineBytes = 8 * 1024 * 1024
+    /// peer cannot make the server buffer without end. The largest honest request is a call with 200 paths of
+    /// 1024 characters (under 1 MB even at four bytes each); measured, an 8 MB array of tiny strings cost 170 MB
+    /// and three seconds of CPU to decode, eight at once 780 MB and a minute, so the cap sits just above honest use.
+    static let maxLineBytes = 2 * 1024 * 1024
     /// How many requests run at once. Reading pauses while this many are in flight, so a burst of slow calls
     /// (each may start a login shell or an osascript) cannot start hundreds of processes.
     static let maxInFlight = 8

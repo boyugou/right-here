@@ -41,14 +41,18 @@ public struct LiveSystemFacts: SystemFacts {
         FileManager.default.fileExists(atPath: url.path)
     }
 
-    /// What is at the path. Only "no such file or directory" (or a file where a folder should be) means missing.
-    /// When the system refuses to look (`EACCES`, or `EPERM` under a privacy-protected folder such as Desktop or
-    /// Documents) the item may well be there, and saying it is not would reject a path the person just selected
-    /// in Finder; saying it is a folder would be as wrong, so it is its own state.
+    /// What is at the path. When the system refuses to look (`EACCES`, or `EPERM` under a privacy-protected folder
+    /// such as Desktop or Documents) or cannot (a network volume that does not answer), the item may well be there,
+    /// and saying it is not would reject a path the person just selected in Finder; saying it is a folder would be
+    /// as wrong, so it is its own state. Every other failure means there is no such path (`ENOENT`, a file where a
+    /// folder should be, a name longer than the file system allows, a link loop): it cannot be a typo-proof item.
     public func itemState(_ url: URL) -> ItemState {
         var status = stat()
         if lstat(url.path, &status) == 0 { return .present }
-        return errno == ENOENT || errno == ENOTDIR ? .missing : .unreadable
+        switch errno {
+        case EACCES, EPERM, EIO, ESTALE, ETIMEDOUT: return .unreadable
+        default: return .missing
+        }
     }
 
     public func gitRoot(containing url: URL) -> URL? {

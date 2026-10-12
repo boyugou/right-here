@@ -249,7 +249,7 @@ applies. The app never rewrites the file, so comments and ordering stay the owne
    and length of paths are capped. What a call would open or create is added up from its plan (a document, a
    Finder window, a new file: one unit each; a started command or link: three) and charged against twenty-four
    units a minute, so a loop cannot flood the screen however it splits the work; a dry run is free. Only existing
-   paths are copied to the clipboard. At most eight requests run at once and a request line is capped at 8 MB.
+   paths are copied to the clipboard. At most eight requests run at once and a request line is capped at 2 MB.
    Names in logs and plan output have control characters escaped, and the log is private and capped.
 
 An independent review and a cold-start usability test shaped several of these; see

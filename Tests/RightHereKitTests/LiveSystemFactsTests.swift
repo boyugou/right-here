@@ -26,6 +26,20 @@ struct LiveSystemFactsExistenceTests {
         #expect(!facts.itemExists(file.appendingPathComponent("inside")))
     }
 
+    @Test func aNameTheFileSystemCannotHoldIsMissingNotRefused() throws {
+        // lstat answers ENAMETOOLONG for a component over 255 bytes. That is not a permission problem: no such
+        // path can exist, and treating it as "present" would let a made-up path through every check.
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let long = directory.appendingPathComponent(String(repeating: "a", count: 300))
+        #expect(facts.itemState(long) == .missing)
+        #expect(!facts.itemExists(long))
+        // A symbolic link loop in the middle of a path is not a refusal either.
+        let loop = directory.appendingPathComponent("loop")
+        try FileManager.default.createSymbolicLink(atPath: loop.path, withDestinationPath: loop.path)
+        #expect(facts.itemState(loop.appendingPathComponent("inside")) == .missing)
+        #expect(facts.itemState(loop) == .present, "the link itself is there")
+    }
+
     @Test func aLinkThatPointsNowhereExistsButIsNotAFolder() throws {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let link = directory.appendingPathComponent("broken")
