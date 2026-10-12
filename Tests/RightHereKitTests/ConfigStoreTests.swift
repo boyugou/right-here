@@ -144,7 +144,21 @@ struct DetectorTests {
         let call = runner.recorded.first
         #expect(call?.executable == "/bin/zsh")
         #expect(call?.arguments.first == "-lic")
-        #expect(call?.arguments.last?.contains("command -v") == true)
+        let script = try? #require(call?.arguments[1])
+        #expect(script?.contains("command -v") == true)
+        // The names are operands after the script ($0 first), never part of it.
+        #expect(script?.contains("claude") == false)
+        #expect(Array(call?.arguments.dropFirst(2) ?? []) == ["rh-detect", "claude", "codex"])
+    }
+
+    @Test func fishGetsTheNamesAsArgvWithoutAZeroSlot() async {
+        let runner = FakeProcessRunner()
+        let fish = FakeSystemFacts(loginShell: "/opt/homebrew/bin/fish")
+        _ = await Detector(facts: fish, runner: runner).commandsFound(["claude"])
+        let call = runner.recorded.first
+        #expect(call?.executable == "/opt/homebrew/bin/fish")
+        #expect(call?.arguments.dropFirst(2).map { $0 } == ["claude"])
+        #expect(call?.arguments[1].contains("$argv") == true)
     }
 
     @Test func aFailingShellFindsNothing() async {
