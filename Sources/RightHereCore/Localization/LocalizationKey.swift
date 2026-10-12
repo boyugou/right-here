@@ -54,4 +54,8 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appAllSet = "app.allSet"
     case appNeedsAttention = "app.needsAttention"
     case appDetails = "app.details"
+    case appStatusOK = "app.statusOK"
+    case appStatusWarning = "app.statusWarning"
+    case appStatusProblem = "app.statusProblem"
+    case appStatusNeedsYou = "app.statusNeedsYou"
 }

@@ -125,6 +125,16 @@ private struct CheckRow: View {
         .padding(.vertical, 9)
         // One stop for VoiceOver per check (title, detail and fix read together) instead of three.
         .accessibilityElement(children: .combine)
+        .accessibilityValue(Localizer.system.string(statusKey))
+    }
+
+    private var statusKey: LocalizationKey {
+        switch check.status {
+        case .ok: return .appStatusOK
+        case .warn: return .appStatusWarning
+        case .fail: return .appStatusProblem
+        case .needsUser: return .appStatusNeedsYou
+        }
     }
 
     /// The doctor writes commands between backticks (it prints for a terminal too): show them as
