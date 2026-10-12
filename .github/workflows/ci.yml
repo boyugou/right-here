@@ -26,6 +26,11 @@ jobs:
         run: swift build
       - name: Test
         run: swift test
+      - name: App and Finder extension build
+        # Not part of the package: ad hoc signed, as script/verify_all.sh does it.
+        run: |
+          brew install xcodegen
+          ./script/build_app.sh
       - name: Localization catalog
         run: |
           brew install uv
