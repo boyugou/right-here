@@ -165,7 +165,8 @@ public enum ConfigSchema {
             "File: `~/.config/right-here/config.toml`. Format: TOML.",
             "Where it is read from, first match wins: `RH_CONFIG` (the file itself), `RH_CONFIG_DIR` (its folder),",
             "`$XDG_CONFIG_HOME/right-here/`, then `~/.config/right-here/`. `RH_LOG_DIR` moves the log folder",
-            "(default `~/Library/Logs/right-here`).", "",
+            "(default `~/Library/Logs/right-here`). `RH_HOME` points every per-user path at another folder, to try",
+            "an install without touching your own.", "",
             "Validate with `rh config validate` (add `--strict` to fail on warnings too). Print the effective menu with `rh menu`.",
             "A key the file does not know is a warning, not an error, so everything else still applies; it is",
             "almost always a typo, so treat warnings as problems.", ""

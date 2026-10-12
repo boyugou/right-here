@@ -449,7 +449,7 @@ struct ConfigSchemaDetailTests {
 
     @Test func theDocumentationNamesEveryWayTheConfigIsLocated() {
         let text = ConfigSchema.markdown()
-        for name in ["RH_CONFIG", "RH_CONFIG_DIR", "XDG_CONFIG_HOME", "RH_LOG_DIR", "--strict"] {
+        for name in ["RH_CONFIG", "RH_CONFIG_DIR", "XDG_CONFIG_HOME", "RH_LOG_DIR", "RH_HOME", "--strict"] {
             #expect(text.contains(name), "the config reference does not mention \(name)")
         }
     }
