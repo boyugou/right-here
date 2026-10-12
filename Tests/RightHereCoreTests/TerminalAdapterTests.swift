@@ -93,9 +93,9 @@ struct TerminalAdapterTests {
 
     // MARK: Ghostty versions
 
-    private func ghosttyMachine(version: String?) -> FakeSystemFacts {
+    private func ghosttyMachine(version: String?, directories: Set<String> = []) -> FakeSystemFacts {
         FakeSystemFacts(
-            directories: ["/Users/tester/my code"],
+            directories: Set(["/Users/tester/my code"]).union(directories),
             applications: ["com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app")],
             bundleVersions: version.map { ["com.mitchellh.ghostty": $0] } ?? [:]
         )
@@ -150,18 +150,59 @@ struct TerminalAdapterTests {
         #expect(!step.source.contains("quoted form of"), "quoting is done in Swift, for the login shell")
     }
 
-    @Test("a hostile folder name is quoted for the shell that will read it", arguments: [
-        ("/bin/zsh", #"cd '/tmp/q\'\''; touch x; #' && claude"#),
-        ("/opt/homebrew/bin/fish", #"cd '/tmp/q\\\'; touch x; #' && claude"#)
-    ])
-    func hostileFolderQuotedPerShell(shell: String, expected: String) throws {
-        let name = #"/tmp/q\'; touch x; #"#
+    @Test("the cd line is quoted the one way every shell reads alike, whatever the login shell is",
+          arguments: ["/bin/zsh", "/opt/homebrew/bin/fish", "/bin/bash"])
+    func theQuotingDoesNotDependOnTheLoginShell(shell: String) throws {
+        // Terminal.app starts whatever shell its profile names, which need not be the account's login shell.
+        let name = #"/tmp/q'; touch x; #"#
         let machine = FakeSystemFacts(loginShell: shell, directories: [name])
         let session = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude")
         guard case .appleScript(let step)? = try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: machine).first else {
             Issue.record("expected AppleScript"); return
         }
-        #expect(step.arguments == [expected])
+        #expect(step.arguments == [#"cd '/tmp/q'\''; touch x; #' && claude"#])
+    }
+
+    @Test("a folder with a backslash is refused, because fish and the other shells read it differently",
+          arguments: [#"/tmp/q\'; touch x; #"#, #"/tmp/back\slash"#, #"/tmp/a\"#])
+    func aBackslashInTheFolderIsRefused(name: String) {
+        for shell in ["/bin/zsh", "/opt/homebrew/bin/fish"] {
+            let machine = FakeSystemFacts(loginShell: shell, directories: [name])
+            let session = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude")
+            #expect(throws: PlanError.self) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: machine) }
+        }
+        // A plain open hands the folder over untyped, so it is fine.
+        let machine = FakeSystemFacts(directories: [name])
+        #expect(throws: Never.self) { try AppleTerminalAdapter().steps(for: TerminalSession(directory: URL(fileURLWithPath: name)), bundleID: "x", facts: machine) }
+    }
+
+    @Test func ghosttyIsNotAffectedByABackslashBecauseItNeverTypesTheFolder() throws {
+        let name = #"/tmp/back\slash"#
+        let machine = ghosttyMachine(version: "1.3.1", directories: [name])
+        let steps = try GhosttyAdapter().steps(for: TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude"), bundleID: "com.mitchellh.ghostty", facts: machine)
+        guard case .appleScript(let step)? = steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(step.arguments.contains(name))
+        #expect(!GhosttyAdapter().typesTheFolder)
+        #expect(AppleTerminalAdapter().typesTheFolder)
+    }
+
+    @Test("the line Terminal types reaches the folder in every shell that is installed (fish only where it is)",
+          arguments: ["/bin/sh", "/bin/bash", "/bin/zsh"] + (fishPath.map { [$0] } ?? []))
+    func theLineReachesTheFolderInARealShell(shell: String) throws {
+        let root = try makeScratchDirectory(); defer { try? FileManager.default.removeItem(at: root) }
+        for name in ["plain", "with space", "it's", "a'b'c", "dollar $HOME `x`", "semi;colon&pipe|x", "quote\"d", "tilde ~", "-dash", "ünï\u{301}code", "emoji 🚀", "a'\u{301}b"] {
+            let folder = root.appendingPathComponent(name)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let machine = FakeSystemFacts(directories: [folder.path])
+            let session = TerminalSession(directory: folder, typedInput: "pwd -P")
+            guard case .appleScript(let step)? = try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: machine).first else {
+                Issue.record("expected AppleScript"); return
+            }
+            let line = try #require(step.arguments.first)
+            let reported = try Shell.run(shell, line, in: root).trimmingCharacters(in: .newlines)
+            #expect(URL(fileURLWithPath: reported).resolvingSymlinksInPath().path == folder.resolvingSymlinksInPath().path,
+                    "\(shell) read \(line.debugDescription) as \(reported.debugDescription)")
+        }
     }
 
     // MARK: Folders only

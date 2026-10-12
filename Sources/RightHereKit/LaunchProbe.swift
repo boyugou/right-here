@@ -55,6 +55,9 @@ public struct LaunchProbe: Sendable {
     /// Spaces, both kinds of quote, a backslash (also directly before a quote, which fish reads as an
     /// escape), `$`, a backtick and shell punctuation.
     static let awkwardName = "a b'c\"d\\e\\' $HOME `x` ;&|"
+    /// The same without the backslashes, for a terminal that types the folder into a shell: it refuses a
+    /// backslash because shells read it differently, and the probe has to be able to start there.
+    static let awkwardNameWithoutBackslash = "a b'c\"d' $HOME `x` ;&|"
 
     private let facts: any SystemFacts
     private let executor: LiveExecutor
@@ -81,8 +84,9 @@ public struct LaunchProbe: Sendable {
     }
 
     /// The throwaway folder the session starts in (it exists only while `run` is working).
-    func folder() -> URL {
-        scratchRoot.appendingPathComponent("right-here-probe-\(token)").appendingPathComponent(Self.awkwardName)
+    func folder(typesTheFolder: Bool = false) -> URL {
+        scratchRoot.appendingPathComponent("right-here-probe-\(token)")
+            .appendingPathComponent(typesTheFolder ? Self.awkwardNameWithoutBackslash : Self.awkwardName)
     }
 
     /// Runs the probe in `app`, which must be installed under `bundleID`.
@@ -91,7 +95,7 @@ public struct LaunchProbe: Sendable {
         guard adapter.supportsCommands else {
             return Result(application: app.name, outcome: .unsupported, detail: "\(app.name) cannot run a command yet.")
         }
-        let folder = folder()
+        let folder = folder(typesTheFolder: adapter.typesTheFolder)
         let root = folder.deletingLastPathComponent()
         do {
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

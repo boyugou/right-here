@@ -29,7 +29,7 @@ private let awkwardWords: [String] = [
     "(parens)"
 ]
 
-private let fishPath: String? = ["/opt/homebrew/bin/fish", "/usr/local/bin/fish"].first(where: FileManager.default.isExecutableFile)
+let fishPath: String? = ["/opt/homebrew/bin/fish", "/usr/local/bin/fish"].first(where: FileManager.default.isExecutableFile)
 
 /// Marks that join the character before them into one grapheme cluster. A shell does not know about
 /// grapheme clusters: it still sees the quote or the semicolon underneath.
@@ -119,7 +119,7 @@ struct ShellQuotingJoiningMarkTests {
     }
 }
 
-private func makeScratchDirectory() throws -> URL {
+func makeScratchDirectory() throws -> URL {
     let url = FileManager.default.temporaryDirectory.appendingPathComponent("rh-quote-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     return url
