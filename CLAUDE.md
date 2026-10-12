@@ -62,6 +62,13 @@ docs/                    DESIGN.md, decisions/, development/
   add a `LocalizationKey`, an English entry and all thirty translations, run
   `script/compile_localizations.py`, and `script/verify_localizations.py` must pass. CLI and MCP output
   stays English.
+- Check desktop behavior through the product's own chain, never by driving the person's apps from your own
+  shell. `rh doctor --probe-launch` runs extension, runner script, `rh` and the terminal (a window opens and
+  closes). An Apple event or UI-scripting call from your shell would make macOS grant your host app standing
+  control of their terminals. Tests never open windows: CLI tests use a terminal that cannot run commands, and
+  everything else uses fake runners.
+- To look at the setup window without a screen, render the SwiftUI view to a PNG with `ImageRenderer` from a
+  scratch package that links the app's view files; `-AppleLanguages "(de)"` switches the language.
 - Before pushing run `./script/verify_all.sh` (build, tests, catalog, public-safety check).
 - Python tooling uses `uv`.
 - Commit in small steps; every commit builds and its tests pass.
