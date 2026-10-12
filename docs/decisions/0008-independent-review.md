@@ -106,6 +106,19 @@ waits for their decoding; a Ctrl-C between the probe's disable and enable leaves
 - A doctor probe killed by SIGINT, SIGTERM or SIGHUP left the Finder extension disabled; the handlers re-enable it.
 - The config parser warns when `{dir}` sits inside a string a shell reads (`sh -c "cd {dir}"`).
 
+## Sixth round (commit following 0e25e74)
+
+- A config with a dotted key of about 200 segments (`a.a.a.…`) killed every `rh` command with a stack overflow: the
+  TOML decoder recurses per segment, and the depth guard counted only brackets. Reproduced at exit 138; the scanner
+  now counts a chain of dots (a float's single dot never builds one) against the same limit.
+- The `RH_NO_UI` guard was case-sensitive (`/usr/bin/OPEN` exists on the default volume) and read only the first
+  non-option word after `env`. It now compares lower-cased names and refuses a launcher (`env`, a shell, `arch`,
+  `xcrun`...) whose arguments name `open` or `osascript`.
+- The doctor probe's interrupt handler re-enabled the extension but left the probe request, so the extension could open
+  a terminal after the interrupt. It now claims the request first. (Code reading only; the handler itself is not run by
+  any test, since that would open a window.)
+- Nothing found in the config-defined terminal expansion, the MCP limits, or `ProbeMarker`.
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.

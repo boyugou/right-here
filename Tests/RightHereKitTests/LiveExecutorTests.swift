@@ -180,7 +180,9 @@ struct LiveProcessRunnerTests {
     }
 
     @Test("RH_NO_UI sees through other spellings of open and osascript", arguments: [
-        ("/usr/bin//open", [String]()), ("/usr/bin/../bin/osascript", []), ("/usr/bin/env", ["open", "-b", "x"]), ("/usr/bin/env", ["osascript"])
+        ("/usr/bin//open", [String]()), ("/usr/bin/../bin/osascript", []), ("/usr/bin/env", ["open", "-b", "x"]), ("/usr/bin/env", ["osascript"]),
+        ("/usr/bin/OPEN", []), ("/USR/BIN/osascript", []), ("/usr/bin/env", ["-u", "FOO", "open", "x"]), ("/usr/bin/env", ["-S", "open x"]),
+        ("/bin/sh", ["-c", "open x"]), ("/usr/bin/arch", ["-arm64", "open"]), ("/bin/zsh", ["-lc", "cd /tmp; osascript -e x"])
     ])
     func noUISeesThroughSpellings(executable: String, arguments: [String]) async {
         let runner = LiveProcessRunner(environment: ["RH_NO_UI": "1"])

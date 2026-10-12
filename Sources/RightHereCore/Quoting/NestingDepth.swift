@@ -36,6 +36,10 @@ public enum NestingDepth {
         let bytes = Array(text.utf8)
         var depth = 0
         var index = 0
+        // The decoder also recurses once per segment of a dotted key (`a.b.c = 1`), about 8 KB of stack each, and
+        // 200 segments killed `rh`. A chain is segments joined by dots; any other punctuation ends it, so the
+        // single dot of a float never builds one.
+        var chain = 0
         func hasPrefix(_ quote: UInt8, at position: Int) -> Bool {
             position + 2 < bytes.count && bytes[position] == quote && bytes[position + 1] == quote && bytes[position + 2] == quote
         }
@@ -66,12 +70,20 @@ public enum NestingDepth {
                 }
                 continue
             case UInt8(ascii: "["), UInt8(ascii: "{"):
+                chain = 0
                 depth += 1
                 if depth > limit { return true }
             case UInt8(ascii: "]"), UInt8(ascii: "}"):
+                chain = 0
                 depth = max(0, depth - 1)
-            default:
+            case UInt8(ascii: "."):
+                chain += 1
+                if chain > limit { return true }
+            case UInt8(ascii: "a")...UInt8(ascii: "z"), UInt8(ascii: "A")...UInt8(ascii: "Z"), UInt8(ascii: "0")...UInt8(ascii: "9"),
+                 UInt8(ascii: "_"), UInt8(ascii: "-"), UInt8(ascii: " "), UInt8(ascii: "\t"):
                 break
+            default:
+                chain = 0
             }
             index += 1
         }

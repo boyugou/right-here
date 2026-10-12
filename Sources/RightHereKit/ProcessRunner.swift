@@ -46,14 +46,23 @@ public struct LiveProcessRunner: ProcessRunner {
 
     private let environment: [String: String]
 
-    /// The screen program a step would start, however it is spelled (`/usr/bin//open`, `/usr/bin/env open`).
+    /// Programs that start another program from their arguments; with `RH_NO_UI` any of them naming a screen
+    /// program is refused too, since parsing every option of `env` or a shell is a losing game.
+    static let launchers: Set<String> = ["env", "sh", "bash", "zsh", "dash", "ksh", "fish", "arch", "xcrun", "nohup", "caffeinate", "sudo", "time", "exec"]
+
+    /// The screen program a step would start, however it is spelled (`/usr/bin//open`, `/USR/BIN/OPEN`,
+    /// `/usr/bin/env -u X open`, `sh -c "open x"`). The check is on lower-cased names, the default volume ignores case.
     static func screenProgram(of step: ProcessStep) -> String? {
-        func standard(_ path: String) -> String { URL(fileURLWithPath: path).standardizedFileURL.path }
+        func standard(_ path: String) -> String { URL(fileURLWithPath: path).standardizedFileURL.path.lowercased() }
+        let names = ["open": "/usr/bin/open", "osascript": "/usr/bin/osascript"]
         let executable = standard(step.executable)
         if screenPrograms.contains(executable) { return executable }
-        if executable == "/usr/bin/env", let named = step.arguments.first(where: { !$0.contains("=") && !$0.hasPrefix("-") }) {
-            let resolved = ["open": "/usr/bin/open", "osascript": "/usr/bin/osascript"][named] ?? (screenPrograms.contains(standard(named)) ? standard(named) : nil)
-            return resolved
+        guard launchers.contains(executable.split(separator: "/").last.map(String.init) ?? executable) else { return nil }
+        for argument in step.arguments {
+            for word in argument.lowercased().split(whereSeparator: { " \t\n;|&()`'\"=".contains($0) }) {
+                let text = String(word)
+                if let found = names[text] ?? (screenPrograms.contains(standard(text)) ? standard(text) : nil) { return found }
+            }
         }
         return nil
     }

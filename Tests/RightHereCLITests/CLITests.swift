@@ -633,6 +633,16 @@ struct CLITests {
         #expect(replies.contains { $0["id"] as? Int == 2 && $0["result"] != nil }, "the ping after it was not answered")
     }
 
+    @Test("a dotted key a thousand segments long is a syntax error, not a stack overflow", arguments: ["", "x = {"])
+    func aLongDottedKeyIsASyntaxErrorNotACrash(prefix: String) throws {
+        let key = String(repeating: "a.", count: 1_000) + "b = 1"
+        let rh = try RH(config: prefix + key + (prefix.isEmpty ? "" : "}") + "\n")
+        defer { rh.cleanUp() }
+        let result = try rh.run(["config", "validate"])
+        #expect(result.status == 1, "status \(result.status): \(result.standardError)")
+        #expect(try rh.run(["actions"]).status == 0)
+    }
+
     @Test func aConfigNestedFarDeeperThanAnyRealOneIsASyntaxErrorNotACrash() throws {
         let rh = try RH(config: "x = " + String(repeating: "[", count: 5_000) + String(repeating: "]", count: 5_000) + "\n")
         defer { rh.cleanUp() }

@@ -55,6 +55,21 @@ struct NestingDepthTests {
         #expect(!NestingDepth.tomlExceeds("x = [\(closing), [1]]", limit: 64), "\(closing)")
     }
 
+    private static let dottedCases: [(String, Bool)] = {
+        let segments = String(repeating: "a.", count: 1_000)
+        let quoted = String(repeating: "\"a\".", count: 200)
+        let numbers = String(repeating: "1.", count: 200)
+        let floats = String(repeating: "1.5, ", count: 500)
+        return [(segments + "b = 1", true), ("x = {" + segments + "b = 1}", true), (quoted + "b = 1", true), (numbers + "1 = 1", true),
+                ("a.b.c.d = 1", false), ("x = [" + floats + "2.5]", false), ("a = 1.5\nb = 2.5", false)]
+    }()
+
+    @Test("TOML: a long dotted key is refused (the decoder recurses per segment); floats and short keys are not",
+          arguments: dottedCases)
+    func dottedKeys(text: String, exceeds: Bool) {
+        #expect(NestingDepth.tomlExceeds(text, limit: 64) == exceeds)
+    }
+
     @Test func aRealConfigIsFarFromTheLimit() {
         #expect(!NestingDepth.tomlExceeds(ConfigTemplate.render(DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude", "codex"])), limit: 8))
     }
