@@ -52,17 +52,29 @@ enum Tools {
         return .object(object)
     }
 
-    private static func string(_ description: String) -> JSONValue {
-        .object(["type": .string("string"), "description": .string(description)])
+    private static func string(_ description: String, maxLength: Int? = nil) -> JSONValue {
+        var object: [String: JSONValue] = ["type": .string("string"), "description": .string(description)]
+        if let maxLength { object["maxLength"] = .number(Double(maxLength)) }
+        return .object(object)
     }
 
     private static func boolean(_ description: String) -> JSONValue {
         .object(["type": .string("boolean"), "description": .string(description)])
     }
 
-    private static func strings(_ description: String) -> JSONValue {
-        .object(["type": .string("array"), "items": .object(["type": .string("string")]), "description": .string(description)])
+    /// A list of absolute paths. Both limits are generous for real use (a path cannot be longer than
+    /// 1024 bytes on macOS) and keep a call, and the plan it makes, from growing without bound.
+    private static func pathList(_ description: String) -> JSONValue {
+        .object([
+            "type": .string("array"),
+            "items": .object(["type": .string("string"), "maxLength": .number(Double(maxPathLength))]),
+            "maxItems": .number(Double(maxPaths)),
+            "description": .string(description)
+        ])
     }
+
+    static let maxPaths = 200
+    static let maxPathLength = 1024
 
     // MARK: Definitions
 
@@ -76,9 +88,9 @@ enum Tools {
             Action ids come from right_here_actions. Pass dry_run to see the plan without doing anything.
             """,
             inputSchema: schema([
-                "action": string("Action id, for example open.terminal, agent.claude, copy-path.absolute, new-file.md or reveal."),
-                "paths": strings("Absolute paths of the files or folders to act on."),
-                "container": string("Absolute path of a folder to act on when no paths are given."),
+                "action": string("Action id, for example open.terminal, agent.claude, copy-path.absolute, new-file.md or reveal.", maxLength: 200),
+                "paths": pathList("Absolute paths of the files or folders to act on."),
+                "container": string("Absolute path of a folder to act on when no paths are given.", maxLength: maxPathLength),
                 "dry_run": boolean("Return the plan and do nothing.")
             ], required: ["action"]),
             readOnly: false,
@@ -96,7 +108,7 @@ enum Tools {
             name: "right_here_menu",
             title: "Preview the Finder menu",
             description: "Show the Finder menu the person's config produces for the given items or folder.",
-            inputSchema: schema(["paths": strings("Absolute paths of selected items."), "container": string("Absolute path of the folder.")]),
+            inputSchema: schema(["paths": pathList("Absolute paths of selected items."), "container": string("Absolute path of the folder.", maxLength: maxPathLength)]),
             readOnly: true,
             handler: menu
         ),
@@ -172,19 +184,19 @@ enum Tools {
         if arguments["dry_run"]?.boolValue == true {
             return ToolOutput(text: "Plan (nothing was run):\n" + planJSON.pretty(), structured: .object(["ran": .bool(false), "plan": planJSON]))
         }
-        if Self.opensWindows(ref), !(await server.launchLimiter.allow()) {
-            throw ToolError("Too many windows were opened by tool calls in the last minute. Ask the person before opening more.")
+        let cost = LaunchCost.of(plan)
+        if cost > 0 {
+            switch await server.launchLimiter.allow(cost: cost) {
+            case .allowed:
+                break
+            case .tooLarge:
+                throw ToolError("This would open or create more than tool calls may in a minute (\(cost) against \(server.launchLimiter.budgetPerWindow)). Pass fewer paths, or ask the person.")
+            case .tooMany:
+                throw ToolError("Too many windows and files were opened by tool calls in the last minute. Ask the person before opening more.")
+            }
         }
         try await LiveExecutor(runner: server.runner, pasteboard: server.pasteboard).execute(plan)
         return ToolOutput(text: "Done: " + plan.summary, structured: .object(["ran": .bool(true), "plan": planJSON]))
-    }
-
-    /// Whether running the action puts a new window on the person's screen.
-    private static func opensWindows(_ ref: ActionRef) -> Bool {
-        switch ref {
-        case .openTerminal, .openEditor, .openApp, .agent: return true
-        default: return false
-        }
     }
 
     private static func actions(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {

@@ -9,8 +9,8 @@ public struct ServerContext: Sendable {
     public var runner: any ProcessRunner
     public var pasteboard: any PasteboardWriting
     public var rhPath: String?
-    /// Limits how often tool calls may open windows (terminals, agents, editors): an agent that has been
-    /// talked into it could otherwise open hundreds.
+    /// Limits how many windows and files tool calls may open or create: an agent that has been talked
+    /// into it could otherwise open hundreds.
     let launchLimiter: LaunchLimiter
 
     public init(
@@ -86,12 +86,22 @@ public struct MCPServer: Sendable {
     }
 
     private func reply(to message: JSONValue) async -> JSONValue? {
+        // Only an object can be a request or a notification; anything else is answered, not dropped.
+        guard case .object = message else {
+            return Self.errorObject(id: .null, code: -32600, message: "Invalid request: expected a JSON object")
+        }
+        let id = message["id"]
+        // JSON-RPC ids are strings or integers. Echoing a boolean, array or object back would only
+        // confuse a client, so such a request is refused (with a null id, as the spec says).
+        if let id, !Self.isValidID(id) {
+            return Self.errorObject(id: .null, code: -32600, message: "Invalid request: id must be a string or an integer")
+        }
         guard let method = message["method"]?.stringValue else {
             // A response or something unrecognizable: nothing to answer unless it claims to be a request.
-            guard let id = message["id"] else { return nil }
+            guard let id else { return nil }
             return Self.errorObject(id: id, code: -32600, message: "Invalid request")
         }
-        guard let id = message["id"] else { return nil }
+        guard let id else { return nil }
 
         switch method {
         case "initialize":
@@ -105,6 +115,11 @@ public struct MCPServer: Sendable {
         default:
             return Self.errorObject(id: id, code: -32601, message: "Method not found: \(method)")
         }
+    }
+
+    /// Ids are strings or integers a Double holds exactly: a larger one would come back changed.
+    static func isValidID(_ id: JSONValue) -> Bool {
+        id.stringValue != nil || id.intValue != nil
     }
 
     // MARK: Methods
@@ -175,32 +190,81 @@ public struct MCPServer: Sendable {
         errorObject(id: id, code: code, message: message).line()
     }
 
+    /// The longest request line accepted. A line without a line feed that grows past it is discarded, so a
+    /// peer cannot make the server buffer without end.
+    static let maxLineBytes = 8 * 1024 * 1024
+    /// How many requests run at once. Reading pauses while this many are in flight, so a burst of slow calls
+    /// (each may start a login shell or an osascript) cannot start hundreds of processes.
+    static let maxInFlight = 8
+
     /// Reads requests from standard input until it closes, answering on standard output. Messages are
     /// separated by line feeds only (the transport says so): Foundation's `lines` would also split on
     /// U+2028, U+0085 and a bare carriage return, all of which can appear raw inside a JSON string such
     /// as a file name. Requests run concurrently, so a slow tool call does not hold up `ping`.
     public func serve() async {
         let writer = LineWriter()
-        await withTaskGroup(of: Void.self) { group in
+        let gate = InFlightGate(limit: Self.maxInFlight)
+        // A discarding group frees each finished request; an ordinary group would keep every result.
+        await withDiscardingTaskGroup { group in
             var buffer: [UInt8] = []
-            func dispatch() {
-                var line = buffer
-                buffer.removeAll(keepingCapacity: true)
-                if line.last == 0x0D { line.removeLast() }
-                guard !line.allSatisfy({ $0 == 0x20 || $0 == 0x09 }) else { return }
-                let text = String(decoding: line, as: UTF8.self)
+            var overflowed = false
+
+            func dispatch(_ text: String) async {
+                await gate.enter()
                 group.addTask {
                     if let reply = await self.handle(text) { await writer.write(reply) }
+                    await gate.leave()
                 }
             }
+
             do {
                 for try await byte in FileHandle.standardInput.bytes {
-                    if byte == 0x0A { dispatch() } else { buffer.append(byte) }
+                    if byte == 0x0A {
+                        defer { buffer.removeAll(keepingCapacity: true); overflowed = false }
+                        if overflowed {
+                            await writer.write(Self.errorResponse(id: .null, code: -32600, message: "Request too large"))
+                            continue
+                        }
+                        var line = buffer
+                        if line.last == 0x0D { line.removeLast() }
+                        guard !line.allSatisfy({ $0 == 0x20 || $0 == 0x09 }) else { continue }
+                        await dispatch(String(decoding: line, as: UTF8.self))
+                    } else if !overflowed {
+                        buffer.append(byte)
+                        if buffer.count > Self.maxLineBytes { buffer.removeAll(); overflowed = true }
+                    }
                 }
-                if !buffer.isEmpty { dispatch() }
+                if !buffer.isEmpty && !overflowed {
+                    await dispatch(String(decoding: buffer, as: UTF8.self))
+                }
             } catch {
                 FileHandle.standardError.write(Data("right-here mcp: \(error.localizedDescription)\n".utf8))
             }
+        }
+    }
+}
+
+/// Lets at most `limit` requests run at once; `enter` waits when that many are in flight.
+actor InFlightGate {
+    private let limit: Int
+    private var running = 0
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    init(limit: Int) { self.limit = limit }
+
+    func enter() async {
+        if running < limit {
+            running += 1
+        } else {
+            await withCheckedContinuation { waiters.append($0) }
+        }
+    }
+
+    func leave() {
+        if waiters.isEmpty {
+            running -= 1
+        } else {
+            waiters.removeFirst().resume()
         }
     }
 }
@@ -212,22 +276,51 @@ actor LineWriter {
     }
 }
 
-/// At most `limit` window-opening calls per `window`.
+/// A budget of window-and-file "units" per `window`; see `LaunchCost` for what a call costs.
 actor LaunchLimiter {
-    private let limit: Int
-    private let window: Duration
-    private var times: [ContinuousClock.Instant] = []
+    enum Verdict: Equatable, Sendable { case allowed, tooLarge, tooMany }
 
-    init(limit: Int = 8, window: Duration = .seconds(60)) {
-        self.limit = limit
+    /// What one minute may spend: eight commands at three each, or twenty-four documents.
+    static let defaultBudget = 24
+
+    private let budget: Int
+    private let window: Duration
+    private var spent: [(at: ContinuousClock.Instant, cost: Int)] = []
+
+    init(budget: Int = LaunchLimiter.defaultBudget, window: Duration = .seconds(60)) {
+        self.budget = budget
         self.window = window
     }
 
-    func allow() -> Bool {
+    /// Charges `cost` when the window has room for it. A call dearer than the whole budget can never run,
+    /// which is a different message from "wait".
+    func allow(cost: Int) -> Verdict {
+        guard cost <= budget else { return .tooLarge }
         let now = ContinuousClock.now
-        times.removeAll { now - $0 > window }
-        guard times.count < limit else { return false }
-        times.append(now)
-        return true
+        spent.removeAll { now - $0.at > window }
+        guard spent.reduce(0, { $0 + $1.cost }) + cost <= budget else { return .tooMany }
+        spent.append((now, cost))
+        return .allowed
+    }
+
+    nonisolated var budgetPerWindow: Int { budget }
+}
+
+/// What running a plan puts in front of the person, as a number the limiter adds up. Every document,
+/// folder, Finder window and new file costs one; starting a command or a link (a terminal session, an
+/// agent) costs three, because it also starts a shell or an app. Copying to the clipboard is free.
+enum LaunchCost {
+    static let command = 3
+
+    static func of(_ plan: LaunchPlan) -> Int {
+        plan.steps.reduce(0) { total, step in
+            switch step {
+            case .open(let open): return total + max(1, open.targets.count)
+            case .openURL, .run, .appleScript: return total + command
+            case .reveal(let paths): return total + max(1, Set(paths.map { URL(fileURLWithPath: $0).deletingLastPathComponent().path }).count)
+            case .createFile: return total + 1
+            case .copyToPasteboard, .pause: return total
+            }
+        }
     }
 }

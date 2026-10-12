@@ -46,6 +46,12 @@ public enum JSONValue: Sendable, Equatable, Codable {
         return nil
     }
 
+    /// The number as an integer, when it is one that a Double holds exactly (up to 2^53).
+    public var intValue: Int? {
+        if case .number(let value) = self, value == value.rounded(), abs(value) < 9_007_199_254_740_992 { return Int(value) }
+        return nil
+    }
+
     public var boolValue: Bool? {
         if case .bool(let value) = self { return value }
         return nil

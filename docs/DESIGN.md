@@ -228,9 +228,12 @@ applies. The app never rewrites the file, so comments and ordering stay the owne
    cannot call `rh install`, `rh uninstall` or `rh init --force`.
 4. Configuration is never loaded from the folder being acted on.
 5. `rh` itself is not privileged and needs no administrator rights anywhere.
-6. Tool arguments from an AI agent are validated against the declared schema before anything runs, window-opening
-   calls are rate-limited, and only existing paths are copied to the clipboard. Names in logs and plan output
-   have control characters escaped, and the log is private and capped.
+6. Tool arguments from an AI agent are validated against the declared schema before anything runs, and the number
+   and length of paths are capped. What a call would open or create is added up from its plan (a document, a
+   Finder window, a new file: one unit each; a started command or link: three) and charged against twenty-four
+   units a minute, so a loop cannot flood the screen however it splits the work; a dry run is free. Only existing
+   paths are copied to the clipboard. At most eight requests run at once and a request line is capped at 8 MB.
+   Names in logs and plan output have control characters escaped, and the log is private and capped.
 
 An independent review and a cold-start usability test shaped several of these; see
 [0008](decisions/0008-independent-review.md). The Mac App Store question is in [0007](decisions/0007-app-store-edition.md).

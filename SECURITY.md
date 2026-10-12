@@ -15,5 +15,6 @@ or runs the wrong thing, or an MCP call that does more than its arguments say ar
 
 - Anything that needs write access to the person's own config file, `~/.config/right-here`, or the Application
   Scripts folder: the person owns those, and `rh` runs commands they configured.
-- An AI agent that runs `right_here_run` when the person told it to. Calls that open windows are rate limited and
-  arguments are validated, but an agent the person trusts with a terminal is trusted with a terminal.
+- An AI agent that runs `right_here_run` when the person told it to. What a call opens or creates is budgeted per
+  minute (a document, a Finder window or a new file is one unit, a started command three, twenty-four in all) and
+  arguments are validated and capped, but an agent the person trusts with a terminal is trusted with a terminal.

@@ -10,18 +10,20 @@ private struct Harness {
     let pasteboard: RecordingPasteboard
     let configDirectory: URL
 
-    init(config: String? = nil, runnerResults: [ProcessResult] = []) throws {
+    init(config: String? = nil, runnerResults: [ProcessResult] = [], files: Set<String> = [], directories: Set<String> = [],
+         bundleVersions: [String: String] = [:]) throws {
         configDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("rh-mcp-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
         if let config { try config.write(to: configDirectory.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8) }
         runner = FakeProcessRunner(results: runnerResults)
         pasteboard = RecordingPasteboard()
         let facts = FakeSystemFacts(
-            directories: ["/Users/tester/code", "/Users/tester/code/app"],
-            files: ["/Users/tester/code/app/a.txt"],
+            directories: Set(["/Users/tester/code", "/Users/tester/code/app"]).union(directories),
+            files: Set(["/Users/tester/code/app/a.txt"]).union(files),
             gitRoots: ["/Users/tester/code/app"],
             applications: ["com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app"),
-                           "com.microsoft.VSCode": URL(fileURLWithPath: "/Applications/Visual Studio Code.app")]
+                           "com.microsoft.VSCode": URL(fileURLWithPath: "/Applications/Visual Studio Code.app")],
+            bundleVersions: bundleVersions
         )
         let paths = RHPaths(environment: ["RH_CONFIG_DIR": configDirectory.path], home: URL(fileURLWithPath: "/Users/tester"))
         server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: runner, pasteboard: pasteboard, rhPath: nil))
@@ -315,26 +317,181 @@ struct MCPHardeningTests {
     @Test func windowsOpenedByToolCallsAreLimited() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
         var refused = 0
-        for _ in 0..<12 {
+        for _ in 0..<30 {
             let result = try await harness.call("right_here_run", ["action": .string("open.terminal"), "container": .string("/Users/tester/code/app")])
             if result["isError"]?.boolValue == true {
                 refused += 1
                 #expect(text(result).contains("Too many windows"))
             }
         }
-        #expect(refused == 4)
-        #expect(harness.runner.recorded.count == 8)
+        // A plain terminal window is one unit and a minute holds twenty-four.
+        #expect(refused == 6)
+        #expect(harness.runner.recorded.count == 24)
         // Planning and copying are not limited.
         let copy = try await harness.call("right_here_run", ["action": .string("copy-path.absolute"), "paths": .array([.string("/Users/tester/code/app/a.txt")])])
         #expect(copy["isError"]?.boolValue == false)
     }
 
+    @Test func startingACommandCostsMoreThanOpeningAWindow() async throws {
+        // Ghostty 1.3 types a command into a new session: one AppleScript step, three units, eight a minute.
+        let harness = try Harness(bundleVersions: ["com.mitchellh.ghostty": "1.3.1"]); defer { harness.cleanUp() }
+        var refused = 0
+        for _ in 0..<12 {
+            let result = try await harness.call("right_here_run", ["action": .string("agent.claude@ghostty"), "container": .string("/Users/tester/code/app")])
+            if result["isError"]?.boolValue == true { refused += 1 }
+        }
+        #expect(refused == 4, "eight launches should fit in a minute and the rest should not")
+        #expect(harness.runner.recorded.count == 8)
+    }
+
+    @Test func manyDocumentsCostOneEachSoABulkOpenCannotFloodTheScreen() async throws {
+        let many = (0..<30).map { "/Users/tester/code/app/file\($0).txt" }
+        let harness = try Harness(files: Set(many)); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_run", ["action": .string("open.editor"), "paths": .array(many.map(JSONValue.string))])
+        #expect(result["isError"]?.boolValue == true)
+        #expect(text(result).contains("Pass fewer paths"))
+        #expect(harness.runner.recorded.isEmpty, "thirty documents must not open in one call")
+        // Fewer documents than the budget go through.
+        let few = try await harness.call("right_here_run", ["action": .string("open.editor"), "paths": .array(many.prefix(5).map(JSONValue.string))])
+        #expect(few["isError"]?.boolValue == false)
+    }
+
+    @Test func revealIsChargedPerFolderAndCreatingAFileIsCharged() async throws {
+        let folders = (0..<30).map { "/Users/tester/code/dir\($0)" }
+        let harness = try Harness(files: Set(folders.map { $0 + "/f.txt" }), directories: Set(folders)); defer { harness.cleanUp() }
+        let wide = try await harness.call("right_here_run", ["action": .string("reveal"), "paths": .array(folders.map { .string($0 + "/f.txt") })])
+        #expect(wide["isError"]?.boolValue == true, "thirty folders mean thirty Finder windows")
+        // Many files in one folder are one window.
+        let one = try await harness.call("right_here_run", ["action": .string("reveal"), "paths": .array((0..<10).map { _ in .string("/Users/tester/code/dir1/f.txt") })])
+        #expect(one["isError"]?.boolValue == false)
+        // A new file costs a unit (and the reveal after it another), so a loop of them is stopped too.
+        var refused = 0
+        for _ in 0..<30 {
+            let result = try await harness.call("right_here_run", ["action": .string("new-file.txt"), "container": .string("/Users/tester/code/app")])
+            if result["isError"]?.boolValue == true { refused += 1 }
+        }
+        #expect(refused > 0)
+    }
+
+    @Test func aCallWithTooManyOrTooLongPathsIsRefusedBeforeAnythingIsPlanned() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let tooMany = try await harness.call("right_here_run", ["action": .string("reveal"), "paths": .array((0..<(Tools.maxPaths + 1)).map { .string("/nonexistent/\($0)") })])
+        #expect(tooMany["isError"]?.boolValue == true)
+        #expect(text(tooMany).contains("at most \(Tools.maxPaths)"))
+        let tooLong = try await harness.call("right_here_run", ["action": .string("reveal"), "paths": .array([.string("/" + String(repeating: "a", count: Tools.maxPathLength))])])
+        #expect(text(tooLong).contains("too long"))
+        let longContainer = try await harness.call("right_here_menu", ["container": .string("/" + String(repeating: "a", count: 5000))])
+        #expect(text(longContainer).contains("too long"))
+        #expect(harness.runner.recorded.isEmpty)
+    }
+
+    @Test func thePlanCostsAddUpTheWayTheDocumentationSays() {
+        let open = Step.open(OpenStep(bundleID: "x", targets: ["/a", "/b", "/c"]))
+        #expect(LaunchCost.of(LaunchPlan(action: "a", summary: "", steps: [open])) == 3)
+        #expect(LaunchCost.of(LaunchPlan(action: "a", summary: "", steps: [.appleScript(AppleScriptStep(source: ""))])) == LaunchCost.command)
+        #expect(LaunchCost.of(LaunchPlan(action: "a", summary: "", steps: [.openURL("x://y")])) == LaunchCost.command)
+        #expect(LaunchCost.of(LaunchPlan(action: "a", summary: "", steps: [.reveal(["/a/1", "/a/2", "/b/1"])])) == 2)
+        #expect(LaunchCost.of(LaunchPlan(action: "a", summary: "", steps: [.createFile(CreateFileStep(path: "/a/n")), .reveal(["/a/n"])])) == 2)
+        #expect(LaunchCost.of(LaunchPlan(action: "a", summary: "", steps: [.copyToPasteboard("x"), .pause(milliseconds: 5)])) == 0)
+        // An action with nothing to open still costs one, so it can never be a free way round the limit.
+        #expect(LaunchCost.of(LaunchPlan(action: "a", summary: "", steps: [.open(OpenStep(bundleID: "x", targets: []))])) == 1)
+    }
+
     @Test func aDryRunDoesNotCountTowardsTheLimit() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
-        for _ in 0..<20 {
+        for _ in 0..<40 {
             let result = try await harness.call("right_here_run", ["action": .string("open.terminal"), "container": .string("/Users/tester/code/app"), "dry_run": .bool(true)])
             #expect(result["isError"]?.boolValue == false)
         }
+    }
+}
+
+@Suite("MCP limiter and gate")
+struct MCPLimiterTests {
+    @Test func theBudgetRefillsAsTheWindowPasses() async throws {
+        let limiter = LaunchLimiter(budget: 4, window: .milliseconds(150))
+        #expect(await limiter.allow(cost: 3) == .allowed)
+        #expect(await limiter.allow(cost: 2) == .tooMany)
+        #expect(await limiter.allow(cost: 5) == .tooLarge, "dearer than the whole budget can never run, so it must not say wait")
+        try await Task.sleep(for: .milliseconds(250))
+        #expect(await limiter.allow(cost: 2) == .allowed)
+    }
+
+    @Test func aRefusedCallSpendsNothing() async {
+        let limiter = LaunchLimiter(budget: 4, window: .seconds(60))
+        #expect(await limiter.allow(cost: 3) == .allowed)
+        #expect(await limiter.allow(cost: 3) == .tooMany)
+        #expect(await limiter.allow(cost: 1) == .allowed, "the refused call must not have used up the last unit")
+    }
+
+    @Test func theGateLetsInOnlyAsManyAsItsLimitUntilSomeoneLeaves() async throws {
+        let gate = InFlightGate(limit: 2)
+        await gate.enter()
+        await gate.enter()
+        let counter = EntryCounter()
+        let third = Task { await gate.enter(); await counter.add() }
+        try await Task.sleep(for: .milliseconds(150))
+        #expect(await counter.value == 0, "a third request got in while two were running")
+        await gate.leave()
+        await third.value
+        #expect(await counter.value == 1)
+        await gate.leave()
+        await gate.leave()
+        // Everyone has left, so the full limit is free again.
+        await gate.enter()
+        await gate.enter()
+    }
+}
+
+private actor EntryCounter {
+    private(set) var value = 0
+    func add() { value += 1 }
+}
+
+@Suite("MCP JSON-RPC shape")
+struct MCPShapeTests {
+    private func decode(_ line: String?) throws -> JSONValue {
+        try JSONDecoder().decode(JSONValue.self, from: Data(try #require(line).utf8))
+    }
+
+    @Test("an id that is not a string or an integer is an invalid request",
+          arguments: ["true", "[1]", "{}", "null", "1.5", "9007199254740993", "1e300"])
+    func invalidIDs(id: String) async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let reply = try decode(await harness.server.handle(#"{"jsonrpc":"2.0","id":\#(id),"method":"ping"}"#))
+        #expect(reply["error"]?["code"] == .number(-32600))
+        #expect(reply["id"] == .null, "the bad id must not be echoed back")
+        #expect(reply["result"] == nil)
+    }
+
+    @Test("an id that is a string or a safe integer is answered", arguments: ["0", "-5", "42", "\"x\"", "\"\"", "9007199254740991"])
+    func validIDs(id: String) async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let reply = try decode(await harness.server.handle(#"{"jsonrpc":"2.0","id":\#(id),"method":"ping"}"#))
+        #expect(reply["result"] == .object([:]))
+    }
+
+    @Test("a message that is not an object is answered, not dropped", arguments: ["5", "\"text\"", "null", "true"])
+    func nonObjects(message: String) async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let reply = try decode(await harness.server.handle(message))
+        #expect(reply["error"]?["code"] == .number(-32600))
+    }
+
+    @Test func badMembersOfABatchAreAnsweredAndTheGoodOnesStillRun() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let reply = try decode(await harness.server.handle(#"[1,{"jsonrpc":"2.0","id":"a","method":"ping"},{"jsonrpc":"2.0","id":[],"method":"ping"}]"#))
+        let items = try #require(reply.arrayValue)
+        #expect(items.count == 3)
+        #expect(items[0]["error"]?["code"] == .number(-32600))
+        #expect(items[1]["id"] == .string("a") && items[1]["result"] != nil)
+        #expect(items[2]["error"]?["code"] == .number(-32600))
+    }
+
+    @Test func aResponseOrAnIdlessObjectGetsNoReply() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        #expect(await harness.server.handle(#"{"jsonrpc":"2.0","id":1,"result":{}}"#) != nil, "an object with an id and no method is a malformed request")
+        #expect(await harness.server.handle(#"{"jsonrpc":"2.0","result":{}}"#) == nil)
     }
 }
 

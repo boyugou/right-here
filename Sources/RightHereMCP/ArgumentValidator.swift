@@ -1,7 +1,7 @@
 import Foundation
 
 /// Checks tool arguments against the small subset of JSON Schema the tools declare (object, properties,
-/// required, additionalProperties: false, string / boolean / array of string, enum). The model is told
+/// required, additionalProperties: false, string / boolean / array of string, enum, maxLength, maxItems). The model is told
 /// the schema, but nothing makes it follow it: without this a `dry_run` given as the string "true" is
 /// not `true`, and the action would really run.
 enum ArgumentValidator {
@@ -33,12 +33,22 @@ enum ArgumentValidator {
             if case .array(let allowed)? = schema["enum"], !allowed.contains(.string(text)) {
                 return "\"\(name)\" must be one of: " + allowed.compactMap(\.stringValue).joined(separator: ", ") + "."
             }
+            if let longest = schema["maxLength"]?.intValue, text.unicodeScalars.count > longest {
+                return "\"\(name)\" is too long (at most \(longest) characters)."
+            }
         case "boolean":
             guard case .bool = value else { return "\"\(name)\" must be true or false (a JSON boolean), not \(describe(value))." }
         case "array":
             guard case .array(let items) = value else { return "\"\(name)\" must be an array, not \(describe(value))." }
-            if schema["items"]?["type"]?.stringValue == "string", items.contains(where: { $0.stringValue == nil }) {
-                return "Every entry of \"\(name)\" must be a string."
+            if let most = schema["maxItems"]?.intValue, items.count > most {
+                return "\"\(name)\" has \(items.count) entries; at most \(most) are accepted. Split the work into several calls."
+            }
+            if schema["items"]?["type"]?.stringValue == "string" {
+                if items.contains(where: { $0.stringValue == nil }) { return "Every entry of \"\(name)\" must be a string." }
+                if let longest = schema["items"]?["maxLength"]?.intValue,
+                   items.contains(where: { ($0.stringValue ?? "").unicodeScalars.count > longest }) {
+                    return "An entry of \"\(name)\" is too long (at most \(longest) characters)."
+                }
             }
         default:
             break

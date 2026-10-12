@@ -442,6 +442,67 @@ struct CLITests {
         #expect(replies.allSatisfy { $0["error"] == nil })
     }
 
+    /// Feeds `input` to `rh mcp`, closes standard input, and returns every line it answered.
+    private func mcpReplies(_ rh: RH, to input: Data) throws -> [[String: Any]] {
+        let process = Process()
+        process.executableURL = rh.binary
+        process.arguments = ["mcp"]
+        var environment = ProcessInfo.processInfo.environment
+        environment["RH_CONFIG_DIR"] = rh.configDirectory.path
+        process.environment = environment
+        let inputPipe = Pipe(), outputPipe = Pipe()
+        process.standardInput = inputPipe
+        process.standardOutput = outputPipe
+        try process.run()
+        // Output is read on another thread: a server that answers 3000 requests would otherwise block on a
+        // full pipe while this thread is still writing.
+        final class Collected: @unchecked Sendable { var data = Data() }
+        let collected = Collected()
+        let reader = Thread { collected.data = outputPipe.fileHandleForReading.readDataToEndOfFile() }
+        reader.start()
+        try inputPipe.fileHandleForWriting.write(contentsOf: input)
+        try inputPipe.fileHandleForWriting.close()
+        process.waitUntilExit()
+        while !reader.isFinished { usleep(10_000) }
+        return try String(decoding: collected.data, as: UTF8.self).split(separator: "\n").map {
+            try #require(try JSONSerialization.jsonObject(with: Data($0.utf8)) as? [String: Any])
+        }
+    }
+
+    @Test func mcpRefusesAnOversizedLineAndKeepsServing() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        // A request bigger than the server will buffer: it is answered once, with an error, and then ignored.
+        let huge = Data(repeating: UInt8(ascii: "x"), count: 9 * 1024 * 1024)
+        var input = Data(#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.utf8) + Data("\n".utf8)
+        input += huge + Data("\n".utf8)
+        input += Data(#"{"jsonrpc":"2.0","id":2,"method":"ping"}"#.utf8) + Data("\n".utf8)
+        let replies = try mcpReplies(rh, to: input)
+        #expect(replies.count == 3, "got \(replies.count) replies")
+        let errors = replies.filter { $0["error"] != nil }
+        #expect(errors.count == 1)
+        #expect((errors.first?["error"] as? [String: Any])?["code"] as? Int == -32600)
+        #expect(Set(replies.compactMap { $0["id"] as? Int }) == [1, 2], "the requests either side of the huge line were not both answered")
+    }
+
+    @Test func mcpAnswersEveryRequestOfALongPipelinedBurst() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        var input = Data()
+        for id in 0..<3000 { input += Data(#"{"jsonrpc":"2.0","id":\#(id),"method":"ping"}"#.utf8) + Data("\n".utf8) }
+        let replies = try mcpReplies(rh, to: input)
+        #expect(replies.count == 3000)
+        #expect(Set(replies.compactMap { $0["id"] as? Int }) == Set(0..<3000))
+    }
+
+    @Test func mcpAnswersAMalformedRequestWithoutStoppingTheOnesAfterIt() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let input = Data("{broken\n{\"jsonrpc\":\"2.0\",\"id\":true,\"method\":\"ping\"}\n5\n{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"ping\"}\n".utf8)
+        let replies = try mcpReplies(rh, to: input)
+        #expect(replies.count == 4)
+        #expect(replies.filter { $0["result"] != nil }.count == 1)
+        #expect(replies.filter { ($0["error"] as? [String: Any])?["code"] as? Int == -32700 }.count == 1)
+        #expect(replies.filter { ($0["error"] as? [String: Any])?["code"] as? Int == -32600 }.count == 2, "the boolean id and the bare 5")
+    }
+
     @Test func mcpAnswersOverStandardInput() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let process = Process()
