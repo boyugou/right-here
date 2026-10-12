@@ -53,7 +53,7 @@ let package = Package(
         // Starts the real `rh` binary; nothing here touches the real home directory or Finder.
         .testTarget(
             name: "RightHereCLITests",
-            dependencies: ["rh"]
+            dependencies: ["rh", "RightHereKit", "RightHereCore"]
         ),
         .testTarget(
             name: "RightHereMCPTests",

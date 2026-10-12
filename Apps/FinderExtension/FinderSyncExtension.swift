@@ -28,20 +28,12 @@ final class FinderSyncExtension: FIFinderSync {
     /// `rh doctor --probe-extension` leaves a marker in the config folder; the extension then runs
     /// a probe through the runner, the same way a menu action would, so the result describes what a
     /// click can really do. The marker's text picks the probe from a fixed list; `rh probe
-    /// --from-extension` removes the marker, which also keeps a second extension process (every
-    /// Open panel hosts one) from running it again.
+    /// --from-extension` removes the marker, which also keeps a second extension process (several
+    /// run at once) from running it again.
     private func probeIfRequested() {
         let marker = paths.configDirectory.appendingPathComponent(".probe")
         guard let data = FileManager.default.contents(atPath: marker.path) else { return }
-        let kind = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
-        // A fixed vocabulary: `launch`, `launch:window`, `launch:tab`; anything else is the harmless automation probe.
-        var arguments = ["probe", "automation", "--from-extension"]
-        switch kind {
-        case "launch": arguments = ["probe", "launch", "--from-extension"]
-        case "launch:window": arguments = ["probe", "launch", "--from-extension", "--placement", "window"]
-        case "launch:tab": arguments = ["probe", "launch", "--from-extension", "--placement", "tab"]
-        default: break
-        }
+        let arguments = RunnerArguments.probe(markerText: String(decoding: data, as: UTF8.self))
         log.notice("probe \(arguments[1], privacy: .public) requested; running it through the runner script")
         runner(arguments, label: "probe.\(arguments[1])")
     }
@@ -154,11 +146,7 @@ final class FinderSyncExtension: FIFinderSync {
     }
 
     private func runThroughRunner(_ id: String, _ context: HereContext) {
-        var arguments = ["run", "--alert", id, "--origin", context.origin.rawValue]
-        if let container = context.container { arguments += ["--container", container.path] }
-        arguments.append("--")
-        arguments += context.items.map(\.path)
-        runner(arguments, label: id)
+        runner(RunnerArguments.run(actionID: id, context: context), label: id)
     }
 
     /// Runs `rh` through the runner script, outside the sandbox.

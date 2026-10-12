@@ -1,5 +1,7 @@
 import Foundation
 import Testing
+import RightHereCore
+import RightHereKit
 
 /// Runs the built `rh` with a throwaway config directory and its own HOME-independent paths.
 private struct RH {
@@ -202,6 +204,40 @@ struct CLITests {
         let agent = try rh.run(["run", "agent.codex@terminal", "--dry-run", "--container", "/tmp"])
         // Terminal.app is always installed, so this plans an AppleScript whose arguments are shown.
         #expect(agent.standardOutput.contains("arguments: \"cd /tmp && codex\""))
+    }
+
+    @Test("what a menu click sends is accepted by the real rh, for every kind of Finder menu", arguments: [
+        FinderMenuKind.items, .container, .sidebar, .toolbar
+    ])
+    func theExtensionsArgumentsAreAcceptedByRh(kind: FinderMenuKind) throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("my folder")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        var files: [URL] = []
+        for name in ["a b.txt", "-dash.txt", "日本語 é.md"] {
+            let file = folder.appendingPathComponent(name)
+            try "x".write(to: file, atomically: true, encoding: .utf8)
+            files.append(file)
+        }
+        // The context is built the way the extension builds it, then turned into the runner's arguments.
+        let context = HereContext.finder(kind: kind, selected: files, targeted: folder)
+        // Terminal.app is on every Mac, so these plan without anything else installed.
+        for action in ["open.terminal@terminal", "agent.claude@terminal", "copy-path.absolute", "copy-path.git-relative", "new-file.md", "reveal"] {
+            var arguments = RunnerArguments.run(actionID: action, context: context)
+            arguments.insert(contentsOf: ["--dry-run", "--json"], at: 1)
+            let result = try rh.run(arguments)
+            // An action may be unavailable (a new file needs a single item); what must never happen is a
+            // usage error, which is what a mismatch between the extension and the CLI would look like.
+            #expect(result.status != 64, "rh rejected the extension's arguments for \(action) from the \(kind) menu: \(arguments) \(result.standardError)")
+            if result.status == 0 { #expect(result.json != nil, "no plan for \(action): \(result.standardOutput)") }
+        }
+        // And the two that always plan for a folder or a selection do succeed.
+        for action in ["open.terminal@terminal", "copy-path.absolute", "reveal"] {
+            var arguments = RunnerArguments.run(actionID: action, context: context)
+            arguments.insert(contentsOf: ["--dry-run", "--json"], at: 1)
+            let result = try rh.run(arguments)
+            #expect(result.status == 0, "\(action) from the \(kind) menu failed: \(result.standardError)")
+        }
     }
 
     @Test func theConfiguredPlacementShowsInThePlan() throws {
