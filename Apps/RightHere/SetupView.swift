@@ -1,3 +1,4 @@
+import AppKit
 import RightHereCore
 import RightHereKit
 import SwiftUI
@@ -5,21 +6,18 @@ import SwiftUI
 struct SetupView: View {
     let model: SetupModel
     private let l10n = Localizer.system
+    @State private var detailsExpanded: Bool
+
+    init(model: SetupModel) {
+        self.model = model
+        _detailsExpanded = State(initialValue: model.needsAttention)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 18) {
             header
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(model.checks.enumerated()), id: \.element.id) { index, check in
-                    CheckRow(check: check)
-                    if index < model.checks.count - 1 { Divider() }
-                }
-                if model.checks.isEmpty {
-                    ProgressView().frame(maxWidth: .infinity).padding(.vertical, 40)
-                }
-            }
-            .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
-
+            summary
+            details
             if let message = model.message {
                 Text(message).font(.callout).foregroundStyle(.secondary)
             }
@@ -28,14 +26,16 @@ struct SetupView: View {
         .padding(24)
         .frame(width: 560)
         .task { await model.refresh() }
+        .onChange(of: model.needsAttention) { _, attention in
+            if attention { detailsExpanded = true }
+        }
     }
 
     private var header: some View {
         HStack(spacing: 14) {
-            Image(systemName: "contextualmenu.and.cursorarrow")
-                .font(.system(size: 34, weight: .regular))
-                .foregroundStyle(.tint)
-                .frame(width: 52, height: 52)
+            Image(nsImage: NSApplication.shared.applicationIconImage)
+                .resizable()
+                .frame(width: 56, height: 56)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Right Here").font(.title2.weight(.semibold))
                 Text(l10n.string(.appSubtitle))
@@ -45,16 +45,54 @@ struct SetupView: View {
         }
     }
 
+    /// One line that says whether anything needs the person, so a healthy setup stays quiet.
+    private var summary: some View {
+        HStack(spacing: 10) {
+            if model.checks.isEmpty {
+                ProgressView().controlSize(.small)
+            } else {
+                Image(systemName: model.needsAttention ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                    .foregroundStyle(model.needsAttention ? Color.orange : Color.green)
+                Text(l10n.string(model.needsAttention ? .appNeedsAttention : .appAllSet)).font(.body.weight(.medium))
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    private var details: some View {
+        DisclosureGroup(l10n.string(.appDetails), isExpanded: $detailsExpanded) {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(model.checks.enumerated()), id: \.element.id) { index, check in
+                    CheckRow(check: check)
+                    if index < model.checks.count - 1 { Divider() }
+                }
+            }
+            .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+            .padding(.top, 8)
+        }
+    }
+
     private var actions: some View {
-        HStack {
-            Button(l10n.string(.appInstallOrRepair)) { Task { await model.installOrRepair() } }
-                .keyboardShortcut(.defaultAction)
-                .disabled(model.isWorking)
-            Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } }
-            Button(l10n.string(.appCopySetupPrompt)) { model.copySetupPrompt() }
-            Spacer()
-            if model.checks.contains(where: { $0.id == "finder.extension" && $0.status != .ok }) {
-                Button(l10n.string(.appExtensionSettings)) { model.showExtensionSettings() }
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Button(l10n.string(.appInstallOrRepair)) { Task { await model.installOrRepair() } }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(model.isWorking)
+                Button(l10n.string(.appTestLaunch)) { Task { await model.testTerminalLaunch() } }
+                    .disabled(model.isWorking)
+                if model.isWorking && !model.checks.isEmpty { ProgressView().controlSize(.small) }
+                Spacer()
+            }
+            HStack {
+                Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } }
+                Button(l10n.string(.appCopySetupPrompt)) { model.copySetupPrompt() }
+                Spacer()
+                if model.checks.contains(where: { $0.id == "finder.extension" && $0.status != .ok }) {
+                    Button(l10n.string(.appExtensionSettings)) { model.showExtensionSettings() }
+                }
             }
         }
     }
@@ -71,16 +109,28 @@ private struct CheckRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(check.title).font(.body.weight(.medium))
                 if let detail = check.detail {
-                    Text(detail).font(.callout).foregroundStyle(.secondary).lineLimit(2).textSelection(.enabled)
+                    Text(Self.styled(detail)).font(.callout).foregroundStyle(.secondary).lineLimit(2).textSelection(.enabled)
                 }
                 if let fix = check.fix {
-                    Text(fix).font(.callout).foregroundStyle(color).lineLimit(3)
+                    Text(Self.styled(fix)).font(.callout).foregroundStyle(color).lineLimit(3)
                 }
             }
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.vertical, 9)
+    }
+
+    /// The doctor writes commands between backticks (it prints for a terminal too): show them as
+    /// code instead of with the backticks.
+    static func styled(_ text: String) -> AttributedString {
+        var result = AttributedString()
+        for (index, part) in text.split(separator: "`", omittingEmptySubsequences: false).enumerated() {
+            var piece = AttributedString(String(part))
+            if index % 2 == 1 { piece.font = .system(.callout, design: .monospaced) }
+            result += piece
+        }
+        return result
     }
 
     private var symbol: String {

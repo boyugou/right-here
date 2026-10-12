@@ -47,4 +47,9 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appCopySetupPrompt = "app.copySetupPrompt"
     case appExtensionSettings = "app.extensionSettings"
     case appPromptCopied = "app.promptCopied"
+    case appTestLaunch = "app.testLaunch"
+    case appTesting = "app.testing"
+    case appAllSet = "app.allSet"
+    case appNeedsAttention = "app.needsAttention"
+    case appDetails = "app.details"
 }

@@ -21,8 +21,9 @@ final class SetupModel {
 
     private var paths: RHPaths { RHPaths.current(facts: facts) }
 
+    /// Whether any check is anything but ok, warnings included.
     var needsAttention: Bool {
-        checks.contains { $0.status == .fail || $0.status == .needsUser }
+        checks.contains { $0.status != .ok }
     }
 
     func refresh() async {
@@ -42,6 +43,18 @@ final class SetupModel {
         }
         isWorking = false
         await refresh()
+    }
+
+    /// Has the Finder extension start a throwaway terminal session that runs a typed command, the
+    /// way a menu click starts an agent, and shows what the doctor makes of it. A window opens and
+    /// closes; the first time, macOS asks whether Right Here may control the terminal.
+    func testTerminalLaunch() async {
+        isWorking = true
+        message = Localizer.system.string(.appTesting)
+        let doctor = Doctor(facts: facts, paths: paths, loaded: ConfigStore.load(paths: paths), rhPath: helper.path)
+        checks = await doctor.run(probeLaunch: true)
+        message = nil
+        isWorking = false
     }
 
     func showExtensionSettings() {
