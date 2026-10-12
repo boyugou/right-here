@@ -8,7 +8,7 @@ struct InstallerTests {
     @Test func runnerScriptHandsOverToRhRunWithTheAbsolutePath() {
         let text = Installer.runnerScriptText(rhPath: "/Applications/Right Here.app/Contents/Helpers/rh")
         #expect(text.hasPrefix("#!/bin/zsh -f\n"))
-        #expect(text.contains("exec '/Applications/Right Here.app/Contents/Helpers/rh' run \"$@\""))
+        #expect(text.contains("exec '/Applications/Right Here.app/Contents/Helpers/rh' run --alert \"$@\""))
     }
 
     @Test func installsTheRunnerScriptExecutableUnderTheExtensionsFolder() throws {
@@ -40,7 +40,7 @@ struct InstallerTests {
         let installer = Installer(home: home)
         try installer.installRunnerScript(rhPath: fake.path)
         let output = try Shell.run(installer.runnerScript.path, args: ["copy-path.absolute", "--origin", "items", "--", "/tmp/a b"])
-        #expect(output == "run|copy-path.absolute|--origin|items|--|/tmp/a b|")
+        #expect(output == "run|--alert|copy-path.absolute|--origin|items|--|/tmp/a b|")
     }
 
     @Test func cliLinkIsReplacedWhenItAlreadyExists() throws {
@@ -112,5 +112,21 @@ struct FinderExtensionManagerTests {
     @Test func aFailingPluginkitIsReported() async {
         let runner = FakeRunner(results: [ProcessResult(status: 1, standardError: "no such plug-in")])
         await #expect(throws: ExecutionError.self) { try await FinderExtensionManager(runner: runner).disable() }
+    }
+}
+
+@Suite("FailureAlert")
+struct FailureAlertTests {
+    @Test func aDeniedAutomationOffersTheSettingsPage() {
+        let content = FailureAlert.content(for: ExecutionError.automationDenied(application: "Ghostty"), action: "agent.claude")
+        #expect(content.message.contains("Ghostty"))
+        #expect(content.settingsURL == FailureAlert.automationSettingsURL)
+    }
+
+    @Test func otherFailuresNameTheAction() {
+        let content = FailureAlert.content(for: PlanError.appNotInstalled("Zed"), action: "open.app.zed")
+        #expect(content.message.contains("Zed is not installed."))
+        #expect(content.message.contains("open.app.zed"))
+        #expect(content.settingsURL == nil)
     }
 }

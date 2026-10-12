@@ -18,6 +18,8 @@ public enum AgentLauncher: Sendable, Equatable, Hashable {
 ///     open.app.<app>                 open.app.zed
 ///     agent.<agent>[.<variant>][@<launcher>]
 ///                                    agent.claude   agent.claude.continue@ghostty   agent.codex@desktop
+///                                    launcher: a terminal id, "default" (the default terminal),
+///                                    "link" or "desktop"
 ///     new-file.<template>            new-file.md
 ///     reveal
 ///     user.<id>                      an action defined in the config
@@ -81,7 +83,7 @@ public enum ActionRef: Sendable, Equatable, Hashable {
             let suffix: String
             switch launcher {
             case nil: suffix = ""
-            case .terminal(let terminal)?: suffix = terminal.map { "@\($0)" } ?? "@terminal"
+            case .terminal(let terminal)?: suffix = "@" + (terminal ?? "default")
             case .terminalLink?: suffix = "@link"
             case .desktop?: suffix = "@desktop"
             }
@@ -128,7 +130,7 @@ public enum ActionRef: Sendable, Equatable, Hashable {
         switch suffix {
         case "link": return .valid(.terminalLink)
         case "desktop": return .valid(.desktop)
-        case "terminal": return .valid(.terminal(nil))
+        case "default": return .valid(.terminal(nil))
         default: return isWord(suffix) ? .valid(.terminal(suffix)) : .malformed
         }
     }

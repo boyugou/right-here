@@ -41,7 +41,7 @@ struct Docs: ParsableCommand {
         open.app.<app>                 open the selection with any app (see `rh apps`)
         agent.<agent>[.<variant>][@<launcher>]
                                        start an AI agent in the folder (see `rh agents`)
-                                       launcher: a terminal id, "terminal" (default terminal),
+                                       launcher: a terminal id, "default" (the default terminal),
                                        "link" (the agent's own terminal deep link, reuses its
                                        last terminal) or "desktop" (its desktop app)
         new-file.<template>            create an empty file next to the selection or in the folder

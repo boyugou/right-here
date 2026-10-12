@@ -30,6 +30,9 @@ struct Run: AsyncParsableCommand {
     @Flag(help: "Print the plan and the result as JSON.")
     var json = false
 
+    @Flag(help: "Show an alert when the action fails. The Finder extension uses this.")
+    var alert = false
+
     func run() async throws {
         guard let ref = ActionRef(parsing: action) else {
             throw ValidationError("\"\(action)\" is not an action id. Run `rh actions` to list them, or `rh docs actions` for the grammar.")
@@ -42,8 +45,7 @@ struct Run: AsyncParsableCommand {
         do {
             plan = try runtime.planner.plan(ref, context: here)
         } catch {
-            RunLog.record("\(action): \(error.localizedDescription)")
-            throw Output.fail("error: " + error.localizedDescription)
+            try await fail(error)
         }
 
         if dryRun {
@@ -58,9 +60,18 @@ struct Run: AsyncParsableCommand {
                 Output.print("ok: " + plan.summary)
             }
         } catch {
-            RunLog.record("\(action): \(error.localizedDescription)")
-            throw Output.fail("error: " + error.localizedDescription)
+            try await fail(error)
         }
+    }
+
+    /// Logs the failure, shows the alert when asked to, and exits with status 1.
+    private func fail(_ error: any Error) async throws -> Never {
+        RunLog.record("\(action): \(error.localizedDescription)")
+        if alert {
+            let content = FailureAlert.content(for: error, action: action)
+            await MainActor.run { FailureAlert.show(content) }
+        }
+        throw Output.fail("error: " + error.localizedDescription)
     }
 
     static func describe(_ plan: LaunchPlan) -> String {

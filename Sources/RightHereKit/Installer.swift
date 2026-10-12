@@ -35,7 +35,7 @@ public struct Installer: Sendable {
         """
         #!/bin/zsh -f
         # Installed by `rh install`. The Finder extension runs this outside its sandbox.
-        exec \(ShellQuoting.quote(rhPath)) run "$@"
+        exec \(ShellQuoting.quote(rhPath)) run --alert "$@"
 
         """
     }

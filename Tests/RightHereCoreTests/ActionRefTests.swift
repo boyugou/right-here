@@ -8,7 +8,7 @@ struct ActionRefTests {
         "copy-path.absolute", "copy-path.git-relative", "copy-path.ai-mention",
         "open.terminal", "open.terminal@ghostty", "open.editor", "open.app.zed",
         "agent.claude", "agent.claude.continue", "agent.claude@ghostty", "agent.claude.continue@ghostty",
-        "agent.codex@desktop", "agent.claude@link", "agent.claude@terminal",
+        "agent.codex@desktop", "agent.claude@link", "agent.claude@default", "agent.claude@terminal",
         "new-file.md", "reveal", "user.build-all"
     ])
     func roundTrip(id: String) throws {
@@ -25,7 +25,9 @@ struct ActionRefTests {
                 == .agent(id: "claude", variant: "continue", launcher: .terminal("ghostty")))
         #expect(ActionRef(parsing: "agent.claude@link") == .agent(id: "claude", variant: nil, launcher: .terminalLink))
         #expect(ActionRef(parsing: "agent.codex@desktop") == .agent(id: "codex", variant: nil, launcher: .desktop))
-        #expect(ActionRef(parsing: "agent.claude@terminal") == .agent(id: "claude", variant: nil, launcher: .terminal(nil)))
+        #expect(ActionRef(parsing: "agent.claude@default") == .agent(id: "claude", variant: nil, launcher: .terminal(nil)))
+        // "terminal" is the id of Terminal.app, not a keyword.
+        #expect(ActionRef(parsing: "agent.claude@terminal") == .agent(id: "claude", variant: nil, launcher: .terminal("terminal")))
     }
 
     @Test("malformed ids are rejected", arguments: [
