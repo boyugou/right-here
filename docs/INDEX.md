@@ -7,6 +7,8 @@
   - [0002 Finder extension](decisions/0002-finder-extension.md)
   - [0003 agent launch](decisions/0003-agent-launch.md)
   - [0004 config](decisions/0004-config.md)
+  - [0005 MCP server](decisions/0005-mcp-server.md)
+  - [0006 localization](decisions/0006-localization.md)
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
 - [`../ROADMAP.md`](../ROADMAP.md): what works and what is next.
 - [`../CLAUDE.md`](../CLAUDE.md): operating manual for agents working in this repository.

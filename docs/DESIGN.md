@@ -1,6 +1,6 @@
 # Right Here: design
 
-Status: working draft, 2026-10-11. Written against macOS 27.2 (build 26B5101f), Xcode 27.1, Ghostty 1.3.1.
+Status: working draft, 2026-10-12. Written against macOS 27.2 (build 26B5101f), Xcode 27.1, Ghostty 1.3.1.
 Each platform claim is marked **verified** (tested on that machine), **sourced** (from Apple documentation, a
 primary source or an issue tracker, with the source named) or **open** (not yet checked).
 
@@ -11,9 +11,9 @@ Right Here sends "here" (a folder, or whatever is selected in Finder) to termina
 - A command-line tool, `rh`, is the core. It runs actions: copy a path in the form you need, open a
   folder in a terminal or editor, start an AI agent there, create a file.
 - A plain-text config (`~/.config/right-here/config.toml`) says what is offered and how.
-- Finder is one surface over the same actions: a right-click menu from a Finder extension, Quick
-  Actions, and (planned) Services with keyboard shortcuts. AI agents are another surface: they call `rh`
-  and read the same config.
+- Finder is one surface over the same actions: a right-click menu from a Finder extension, and Quick
+  Actions (Services, which also take keyboard shortcuts). AI agents are another surface: they call `rh`
+  or its MCP server and read the same config.
 
 The form was chosen by what works, not by what is customary. A Finder menu cannot exist without an app
 bundle that carries the extension, so there is an app. Everything the menu does is done by `rh`, which
@@ -61,7 +61,8 @@ repository must not be able to run commands because it was right-clicked).
 | Module | Role |
 |---|---|
 | `RightHereCore` | Pure logic: context, path styles, shell quoting, launch plans, planner, terminal adapters, catalogs, config parser and schema, menu builder. Foundation only; deterministic; fully unit-tested. |
-| `RightHereKit` | macOS runtime: real system facts, process runner, plan executor, config store, installer, doctor, extension manager, failure alerts. |
+| `RightHereKit` | macOS runtime: real system facts, process runner, plan executor, config store, installer, doctor, extension manager, Finder query, failure alerts. |
+| `RightHereMCP` | The MCP server over the same registry. |
 | `rh` | The command-line tool (swift-argument-parser). |
 | `Apps/RightHere` | The app: setup and status window. Dormant otherwise. |
 | `Apps/FinderExtension` | The Finder Sync extension. Builds the menu and hands actions over. |
@@ -84,6 +85,8 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 5 | The config is TOML, described by a schema; the app does not rewrite it. | [0004](decisions/0004-config.md) |
 | 6 | macOS 26 and later, Apple silicon only. | The owner's call; keeps the code free of fallbacks. |
 | 7 | Direct distribution first (notarized DMG, Homebrew cask and formula); an App Store "menu only" build later. | [0001](decisions/0001-form-factor.md) |
+| 8 | The MCP server is written against the protocol, with fenced file names and a folder-only working directory. | [0005](decisions/0005-mcp-server.md) |
+| 9 | Thirty languages from a String Catalog compiled into Swift; human-facing surfaces follow the system language, the CLI and MCP stay English. | [0006](decisions/0006-localization.md) |
 
 ## 5. Platform facts
 
@@ -109,6 +112,11 @@ Verified on this machine (macOS 27.2, 2026-10-11):
   also when Ghostty was not running. The Ghostty and Terminal.app AppleScripts compile against the
   installed dictionaries.
 - `rh` builds a menu in about 20 ms including process start.
+- A generated Quick Action workflow (hand-built `Info.plist` and `document.wflow`, in the format of the
+  workflows already in `~/Library/Services`) is registered by `pbs`, and runs through
+  `/usr/bin/automator` into `rh`, creating a file in the selected folder.
+- The MCP server answers `initialize`, `tools/list` and `tools/call` over real stdio.
+- A failure alert shown by `rh run --alert` blocks on a window instead of crashing, when started outside Finder.
 
 Sourced:
 
@@ -129,9 +137,11 @@ Sourced:
   for its desktop app. Ghostty 1.3.1 supports AppleScript, with `new surface configuration`,
   `initial working directory` and `initial input`.
 
-Open (to check on a real run):
+Open (to check on a real run, in the order they matter):
 
-- Which process the Automation permission prompt names when `rh` sends Apple events from the runner script.
+- A real Finder click reaching `rh` through the runner script: tag dispatch, `NSUserUnixTask`, `osascript`
+  under `UserScriptService`, whether `initial input` with a linefeed executes in zsh, and which process the
+  Automation prompt names. The extension and `rh` log each step at notice level for this.
 - The items, sidebar and toolbar menus (the container menu has been observed).
 - Whether Quick Actions appear on a folder's empty background.
 - A cold start of Terminal.app or Ghostty through AppleScript may open an extra startup window.
@@ -173,6 +183,9 @@ applies. The app never rewrites the file, so comments and ordering stay the owne
 
 ## 9. Security
 
+0. A terminal app handed a file runs it (a `.command` script). The working directory is therefore always
+   validated to be a folder before any terminal action; a file becomes its folder and a missing path is
+   refused, on the planner, in every terminal adapter and on the MCP path.
 1. File names are data. A path never becomes shell or AppleScript source: values travel as argv entries
    or as AppleScript `on run argv` arguments; the single quoting module is tested by round-tripping
    awkward names through real `sh`, `bash` and `zsh`.
@@ -190,8 +203,9 @@ applies. The app never rewrites the file, so comments and ordering stay the owne
   `rh docs agent-setup` is the playbook an agent follows to set Right Here up for someone.
 - The app has a "Copy Setup Prompt for AI" button.
 - Agents can start agents: `rh run agent.codex --container <dir>`.
-- Planned: an MCP server over the same registry, a Claude Code plugin with skills, and a command that
-  reports what is selected in Finder.
+- `rh mcp` is an MCP server over the same registry (eight tools, including what is selected in Finder),
+  and `plugins/right-here` is a Claude Code plugin that starts it and adds skills for setup, opening
+  things, and showing the files an agent changed in Finder. File names in tool output are fenced as data.
 
 ## 11. Distribution
 
@@ -211,7 +225,15 @@ product there. The name is a working name; the identifiers derive from `AppIdent
 | Config symlinked outside the sandbox exception. | `rh doctor` warns. |
 | Agent CLIs change flags. | Variants are data in one catalog; the adapter list is small. |
 
-## 13. Status
+## 13. Localization
 
-Working: the core and CLI, Ghostty and Terminal.app adapters, the app and extension, installer, doctor.
-Next: Services, MCP server and plugin, localization, notarized packaging. See the [roadmap](../ROADMAP.md).
+Thirty languages from `Localization/Localizable.xcstrings`, compiled into Swift (see
+[0006](decisions/0006-localization.md)). The initial translations are AI-generated and marked
+`needs_review`.
+
+## 14. Status
+
+Working and tested headlessly: the core and CLI, Ghostty and Terminal.app adapters, the app and
+extension, installer, doctor, Services, the MCP server and plugin, localization. Not yet confirmed by
+a real Finder click: the typed agent launch (see section 5, "Open"). Next: notarized packaging and
+adapters for other terminals. See the [roadmap](../ROADMAP.md).

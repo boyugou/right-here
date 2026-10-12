@@ -26,8 +26,13 @@ rh run copy-path.git-relative src/main.swift
 rh doctor                    # check the setup
 ```
 
-Right-click in Finder for the same actions. `rh docs` prints the documentation, and everything has
-`--json` output for scripts and AI agents.
+Right-click in Finder for the same actions (also available as Quick Actions, which cover iCloud Drive
+and take keyboard shortcuts). `rh docs` prints the documentation, and everything has `--json` output
+for scripts and AI agents.
+
+AI agents can use it directly: `claude mcp add right-here -- rh mcp`, or install the Claude Code
+plugin from this repository (`/plugin marketplace add boyugou/right-here`). The menu and the app are
+available in thirty languages.
 
 **Status:** early development, not released. Build and install from source with
 [`docs/development/SETUP.md`](docs/development/SETUP.md). Design notes live in [`docs/`](docs/INDEX.md).
