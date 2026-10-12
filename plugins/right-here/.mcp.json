@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "right-here": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/right-here-mcp"
+    }
+  }
+}
