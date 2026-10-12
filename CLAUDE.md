@@ -76,6 +76,8 @@ docs/                    DESIGN.md, decisions/, development/
   scratch package that links the app's view files; `-AppleLanguages "(de)"` switches the language.
 - Before pushing run `./script/verify_all.sh` (build, tests, catalog, config schema, embedded docs, the docs check
   (commands and links), public-safety check).
+- After changing a protection that `docs/DESIGN.md` section 9 relies on, run `./script/mutation_check.py`: it removes
+  each protection in a throwaway clone and expects a test to fail. Add an entry when you add a protection.
 - Python tooling uses `uv`.
 - Commit in small steps; every commit builds and its tests pass.
 

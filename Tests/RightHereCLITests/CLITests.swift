@@ -3,6 +3,8 @@ import Testing
 import RightHereCore
 import RightHereKit
 
+private final class BundleToken {}
+
 /// Runs the built `rh` with a throwaway config directory and its own HOME-independent paths.
 private struct RH {
     let configDirectory: URL
@@ -31,12 +33,18 @@ private struct RH {
 
     func cleanUp() { try? FileManager.default.removeItem(at: configDirectory) }
 
-    /// The package builds `rh` as a dependency of this test target; SwiftPM links the build folder at
-    /// <repository>/.build/debug.
+    /// The package builds `rh` as a dependency of this test target, into the folder that holds the test bundle (so
+    /// `swift test --scratch-path <folder>` finds its own copy); failing that, the repository's default build folder.
     private static func locateBinary() throws -> URL {
+        let manager = FileManager.default
+        let bundle = Bundle(for: BundleToken.self).bundleURL
+        if bundle.pathExtension == "xctest" {
+            let beside = bundle.deletingLastPathComponent().appendingPathComponent("rh")
+            if manager.isExecutableFile(atPath: beside.path) { return beside }
+        }
         let repository = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let candidate = repository.appendingPathComponent(".build/debug/rh")
-        guard FileManager.default.isExecutableFile(atPath: candidate.path) else { throw CocoaError(.fileNoSuchFile) }
+        guard manager.isExecutableFile(atPath: candidate.path) else { throw CocoaError(.fileNoSuchFile) }
         return candidate
     }
 
