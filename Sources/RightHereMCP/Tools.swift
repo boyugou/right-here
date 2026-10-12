@@ -167,6 +167,9 @@ enum Tools {
     private static func context(from arguments: JSONValue, facts: any SystemFacts) throws -> HereContext {
         func absolute(_ value: JSONValue) throws -> URL {
             guard let path = value.stringValue, path.hasPrefix("/") else { throw ToolError("Paths must be absolute strings.") }
+            // No real path holds a NUL, and the system calls that check a path stop reading at one, so what is
+            // checked would differ from what is later handed to an app.
+            guard !path.unicodeScalars.contains("\0") else { throw ToolError("A path cannot contain a NUL character.") }
             return URL(fileURLWithPath: path)
         }
         let items = try (arguments["paths"]?.arrayValue ?? []).map(absolute)

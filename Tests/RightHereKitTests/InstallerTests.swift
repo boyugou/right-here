@@ -208,6 +208,13 @@ struct FailureAlertTests {
         #expect(content.settingsURL == FailureAlert.automationSettingsURL)
     }
 
+    @Test func aPathMacOSWouldNotShowOffersTheFilesAndFoldersPage() {
+        let content = FailureAlert.content(for: PlanError.unreadable("/Users/me/Documents/project"), action: "open.terminal")
+        #expect(content.message.contains("/Users/me/Documents/project"))
+        #expect(content.settingsURL == FailureAlert.filesAndFoldersSettingsURL)
+        #expect(content.settingsURL?.absoluteString.hasSuffix("Privacy_FilesAndFolders") == true)
+    }
+
     @Test func otherFailuresNameTheAction() {
         let content = FailureAlert.content(for: PlanError.appNotInstalled("Zed"), action: "open.app.zed")
         #expect(content.message.contains("Zed is not installed."))

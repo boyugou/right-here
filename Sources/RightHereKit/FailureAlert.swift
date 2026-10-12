@@ -8,6 +8,9 @@ public enum FailureAlert {
     /// System Settings › Privacy & Security › Automation.
     public static let automationSettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")!
 
+    /// System Settings › Privacy & Security › Files & Folders.
+    public static let filesAndFoldersSettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders")!
+
     public struct Content: Sendable, Equatable {
         public var title: String
         public var message: String
@@ -28,12 +31,15 @@ public enum FailureAlert {
                 settingsURL: automationSettingsURL
             )
         }
+        // A path macOS would not let `rh` look at is a permission the person can grant, so the alert can take them there.
+        var settingsURL: URL?
+        if let plan = error as? PlanError, case .unreadable = plan { settingsURL = filesAndFoldersSettingsURL }
         return Content(
             title: localizer.string(.alertFailedTitle),
             message: error.localizedDescription + "\n\n(\(action))",
             okTitle: localizer.string(.alertOK),
             settingsTitle: localizer.string(.alertOpenSettings),
-            settingsURL: nil
+            settingsURL: settingsURL
         )
     }
 

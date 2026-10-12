@@ -173,6 +173,19 @@ struct MCPToolTests {
         #expect(result["isError"]?.boolValue == true)
     }
 
+    @Test("a path with a NUL in it is refused before anything is checked or planned",
+          arguments: ["/Users/tester/code/app\u{0}/../../x", "/Users/tester/code/app/a.txt\u{0}evil", "/\u{0}"])
+    func aNulInAPathIsRefused(path: String) async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        for arguments in [["action": JSONValue.string("reveal"), "paths": .array([.string(path)])],
+                          ["action": .string("open.terminal"), "container": .string(path)]] {
+            let result = try await harness.call("right_here_run", arguments)
+            #expect(result["isError"]?.boolValue == true)
+            #expect(result["content"]?.arrayValue?.first?["text"]?.stringValue?.contains("NUL") == true)
+        }
+        #expect(harness.runner.recorded.isEmpty)
+    }
+
     @Test func aMissingActionIsAToolError() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
         #expect(try await harness.call("right_here_run")["isError"]?.boolValue == true)
