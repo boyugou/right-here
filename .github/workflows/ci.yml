@@ -23,5 +23,7 @@ jobs:
         run: |
           brew install uv
           uv run script/verify_localizations.py
+      - name: Config schema
+        run: uv run script/verify_config_schema.py
       - name: Public safety
         run: ./script/verify_public_safety.sh
