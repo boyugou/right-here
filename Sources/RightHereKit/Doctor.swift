@@ -282,12 +282,9 @@ public struct Doctor: Sendable {
             return DoctorCheck(id: "services", title: "Finder Services", status: .ok, detail: "\(installed.count) installed")
         }
         let missing = expected.subtracting(installed).count
-        let extra = installed.subtracting(expected).count
-        var parts: [String] = []
-        if missing > 0 { parts.append("\(missing) the config asks for \(missing == 1 ? "is" : "are") missing") }
-        if extra > 0 { parts.append("\(extra) installed \(extra == 1 ? "is" : "are") no longer in the config") }
+        let stale = installed.subtracting(expected).count
         return DoctorCheck(id: "services", title: "Finder Services", status: .warn,
-                           detail: "\(installed.count) installed; " + parts.joined(separator: ", "),
+                           detail: "\(installed.count) installed, but they differ from the config (\(missing) missing, \(stale) stale)",
                            fix: "Run `rh install --services`.")
     }
 

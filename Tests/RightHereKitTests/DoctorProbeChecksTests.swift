@@ -81,10 +81,10 @@ struct DoctorServicesCheckTests {
     @Test func servicesThatDifferFromTheConfigAreFlagged() {
         let missing = Doctor.servicesCheck(installed: [a], expected: [a, b])
         #expect(missing.status == .warn)
-        #expect(missing.detail?.contains("missing") == true)
+        #expect(missing.detail == "1 installed, but they differ from the config (1 missing, 0 stale)")
         let extra = Doctor.servicesCheck(installed: [a, b], expected: [a])
         #expect(extra.status == .warn)
-        #expect(extra.detail?.contains("no longer in the config") == true)
+        #expect(extra.detail == "2 installed, but they differ from the config (0 missing, 1 stale)")
     }
 }
 
