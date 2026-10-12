@@ -1,0 +1,19 @@
+# Security
+
+Right Here turns file names and configuration into commands, so it takes care over what may become
+shell or AppleScript text. The rules are in [`docs/DESIGN.md`](docs/DESIGN.md), section 9, and the review that
+shaped them in [`docs/decisions/0008-independent-review.md`](docs/decisions/0008-independent-review.md).
+
+## Reporting a problem
+
+Please report a vulnerability privately, through GitHub's "Report a vulnerability" button on the repository's
+Security tab, rather than in a public issue. Include the macOS version, the command or Finder action, and the
+file name or config that triggers it. A file name that makes a copied path run a command, an action that opens
+or runs the wrong thing, or an MCP call that does more than its arguments say are all in scope.
+
+## What is not a vulnerability
+
+- Anything that needs write access to the person's own config file, `~/.config/right-here`, or the Application
+  Scripts folder: the person owns those, and `rh` runs commands they configured.
+- An AI agent that runs `right_here_run` when the person told it to. Calls that open windows are rate limited and
+  arguments are validated, but an agent the person trusts with a terminal is trusted with a terminal.
