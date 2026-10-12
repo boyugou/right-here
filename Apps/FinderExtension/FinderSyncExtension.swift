@@ -45,7 +45,7 @@ final class FinderSyncExtension: FIFinderSync {
         var table: [String] = []
         let menu = makeMenu(nodes, table: &table)
         actionTable = table
-        log.debug("menu \(kind.rawValue, privacy: .public) built in \(String(describing: ContinuousClock.now - started), privacy: .public)")
+        log.notice("menu \(kind.rawValue, privacy: .public): \(context.items.count, privacy: .public) items, \(table.count, privacy: .public) entries, built in \(String(describing: ContinuousClock.now - started), privacy: .public)")
         return menu
     }
 
@@ -115,6 +115,7 @@ final class FinderSyncExtension: FIFinderSync {
         }
         let id = actionTable[item.tag]
         let context = currentContext(lastKind)
+        log.notice("action \(id, privacy: .public) from \(self.lastKind.rawValue, privacy: .public) menu, \(context.items.count, privacy: .public) items")
         if case .copyPath(let style)? = ActionRef(parsing: id) {
             copyPath(style, context)
         } else {
@@ -148,7 +149,10 @@ final class FinderSyncExtension: FIFinderSync {
                 let message = String(decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
                 DispatchQueue.main.async {
                     self?.runningTasks[key] = nil
-                    guard let failure else { return }
+                    guard let failure else {
+                        self?.log.notice("\(id, privacy: .public) finished ok")
+                        return
+                    }
                     self?.log.error("\(id, privacy: .public) failed: \(message, privacy: .public) \(failure.localizedDescription, privacy: .public)")
                     NSSound.beep()
                 }

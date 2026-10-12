@@ -1,9 +1,10 @@
 name: CI
 
+# macOS minutes are billed at ten times the rate on a private repository, so CI runs on pull
+# requests and on demand, not on every push. Run ./script/verify_all.sh locally before pushing.
 on:
-  push:
-    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:

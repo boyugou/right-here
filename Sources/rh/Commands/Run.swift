@@ -56,6 +56,7 @@ struct Run: AsyncParsableCommand {
         }
         do {
             let report = try await LiveExecutor().execute(plan)
+            RunLog.record("ok \(action) [\(here.origin.rawValue), \(here.items.count) items]: \(plan.summary)")
             if json {
                 try Output.json(RunResult(ok: true, plan: plan, report: report))
             } else {
