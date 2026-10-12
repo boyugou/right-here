@@ -14,5 +14,6 @@
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
 - [`development/RELEASING.md`](development/RELEASING.md): signing, notarizing and publishing a release.
+- [`development/MANUAL_CHECKS.md`](development/MANUAL_CHECKS.md): the checks that need a person at the machine.
 - [`../ROADMAP.md`](../ROADMAP.md): what works and what is next.
 - [`../CLAUDE.md`](../CLAUDE.md): operating manual for agents working in this repository.
