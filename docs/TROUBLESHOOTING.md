@@ -38,12 +38,33 @@ Allow, switch it on in System Settings, Privacy & Security, Automation, or reset
 tccutil reset AppleEvents com.boyugou.righthere.FinderExtension
 ```
 
+## An action says macOS did not let Right Here look at a folder
+
+Desktop, Documents, Downloads, iCloud Drive and some other folders are protected: a process needs your
+permission to look inside them, and it is asked once. If the alert names a path in one of them, choose Allow when
+macOS asks (the alert has a button for System Settings, Privacy & Security, Files & Folders; Full Disk Access also
+works), then run the action again. Right Here stops there on purpose: it will not guess at what the path is, and a
+terminal is never started in some other folder instead. Copying a path, revealing it and opening it in an editor
+go ahead without it, because they only pass the path on.
+
+## An action says a path does not exist
+
+Every action checks the paths it is given, so a typo is reported and not quietly replaced by the folder around it.
+Check the spelling; `rh run <action> --dry-run <path>` shows what would happen without doing it. A link that points
+nowhere counts as existing.
+
 ## An agent says "not found", or starts without my aliases
 
 The agent's command is typed into your own login shell, so it sees what a new terminal window sees: nvm, your
 PATH and your aliases. If `claude` works in a new window of your terminal it works here. `rh agents` shows which
 agent commands your login shell finds. If your shell takes a few seconds to start, the agent starts that much
 later; that is your shell's startup time, and `rh doctor --probe-launch` reports how long the round trip took.
+
+## Terminal says it will not start a command in a folder
+
+Terminal types `cd <folder>` into whichever shell its profile starts, and shells disagree about a backslash in a
+name, so Terminal will not start an agent in a folder whose name has one (opening the folder alone works). Rename
+the folder, or use Ghostty, which is handed the folder and types nothing.
 
 ## The agent opens in a window and I want a tab
 
