@@ -60,7 +60,12 @@ public struct Planner: Sendable {
     /// The folder an action works in.
     private func workingDirectory(for context: HereContext) throws -> URL {
         guard let directory = context.workingDirectory(facts: facts) else {
-            if let refused = context.unreadableTarget(facts: facts) { throw PlanError.unreadable(refused.path) }
+            if let target = context.unplaceableTarget(facts: facts) {
+                switch target.reason {
+                case .unreadable: throw PlanError.unreadable(target.url.path)
+                case .dangling: throw PlanError.unsupported("\(target.url.path) is a link that points nowhere, so there is no folder to open.")
+                }
+            }
             throw PlanError.noTarget
         }
         return directory
@@ -212,7 +217,8 @@ public struct Planner: Sendable {
         case .reveal:
             steps.append(.reveal([path]))
         case .open:
-            let chosen = template.openWith.flatMap(config.app(id:)).flatMap { $0.installedBundleID(facts: facts) != nil ? $0 : nil }
+            // Never a terminal: handed a file, it would run it.
+            let chosen = template.openWith.flatMap(config.app(id:)).flatMap { $0.role != .terminal && $0.installedBundleID(facts: facts) != nil ? $0 : nil }
             let editor = chosen ?? (try? resolveDefault(role: .editor, configured: config.editor))
             steps.append(.open(OpenStep(bundleID: editor?.installedBundleID(facts: facts), targets: [path])))
         case .nothing:

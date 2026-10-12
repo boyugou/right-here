@@ -178,9 +178,12 @@ struct HereContextEdgeTests {
         #expect(asContainer.firstMissingPath(facts: machine) == nil)
     }
 
-    @Test func aDanglingLinkOpensTheFolderThatHoldsIt() {
+    @Test func aDanglingLinkHasNoFolderAndItsParentIsNotSubstituted() {
+        // It exists (copy and reveal work), but it names nowhere: the folder holding it is not what was asked for.
         let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/broken-link")])
-        #expect(context.workingDirectory(facts: machine)?.path == "/Users/tester/code")
+        #expect(context.workingDirectory(facts: machine) == nil)
+        #expect(context.unplaceableTarget(facts: machine)?.reason == .dangling)
+        #expect(context.firstMissingPath(facts: machine) == nil)
     }
 
     @Test func aPathWithNothingAtAllIsStillMissing() {
@@ -221,7 +224,8 @@ struct UnreadablePathTests {
         #expect(machine.itemState(URL(fileURLWithPath: "/Users/tester/Documents/project")) == .unreadable)
         #expect(context.firstMissingPath(facts: machine) == nil, "it was selected in Finder; it is not a typo")
         #expect(context.workingDirectory(facts: machine) == nil, "its parent is not the folder that was asked for")
-        #expect(context.unreadableTarget(facts: machine)?.path == "/Users/tester/Documents/project")
+        #expect(context.unplaceableTarget(facts: machine)?.url.path == "/Users/tester/Documents/project")
+        #expect(context.unplaceableTarget(facts: machine)?.reason == .unreadable)
     }
 
     @Test func aFileThatCannotBeInspectedIsNeverTakenForItsParentFolderEither() {
@@ -233,13 +237,13 @@ struct UnreadablePathTests {
     @Test func aContainerThatCannotBeInspectedIsReportedToo() {
         let context = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/Documents/project"))
         #expect(context.workingDirectory(facts: machine) == nil)
-        #expect(context.unreadableTarget(facts: machine)?.path == "/Users/tester/Documents/project")
+        #expect(context.unplaceableTarget(facts: machine)?.url.path == "/Users/tester/Documents/project")
         #expect(context.firstMissingPath(facts: machine) == nil)
     }
 
     @Test func aReadableSelectionHasNoUnreadableTarget() {
         let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code")])
-        #expect(context.unreadableTarget(facts: machine) == nil)
-        #expect(HereContext(origin: .cli).unreadableTarget(facts: machine) == nil)
+        #expect(context.unplaceableTarget(facts: machine) == nil)
+        #expect(HereContext(origin: .cli).unplaceableTarget(facts: machine) == nil)
     }
 }

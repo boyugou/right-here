@@ -57,6 +57,18 @@ struct PlannerTests {
         #expect(open.targets == ["/Users/tester/code/app/untitled.md"])
     }
 
+    @Test func aTemplateNeverOpensItsFileInATerminalEvenIfAConfigBuiltInCodeSaysSo() throws {
+        // The parser refuses `open_with = "terminal"`; the planner does not rely on that. A terminal handed a file
+        // (a `.command` file) would run it.
+        var config = Config()
+        config.newFile.then = .open
+        config.newFile.templates = [NewFileTemplate(id: "cmd", title: "Command", fileExtension: "command", openWith: "terminal")]
+        let plan = try Planner(config: config, facts: machine()).plan(.newFile("cmd"), context: folder("/Users/tester/code/app"))
+        guard case .open(let open)? = plan.steps.last else { Issue.record("expected an open step"); return }
+        #expect(open.bundleID != "com.apple.Terminal")
+        #expect(open.bundleID == "com.microsoft.VSCode", "it falls back to the default editor")
+    }
+
     @Test func aTemplateFallsBackToTheEditorWhenItsAppIsNotInstalled() throws {
         var config = Config()
         config.newFile.then = .open
@@ -422,8 +434,15 @@ struct PlannerNamedPathTests {
         #expect(copy.steps == [.copyToPasteboard("/Users/tester/code/app/broken")])
         let reveal = try planner.plan(.reveal, context: selection("/Users/tester/code/app/broken"))
         #expect(reveal.steps == [.reveal(["/Users/tester/code/app/broken"])])
-        let terminal = try planner.plan(.openTerminal(nil), context: selection("/Users/tester/code/app/broken"))
-        #expect(terminal.summary.contains("app"))
+        // A link that points nowhere has no folder to give, and the folder around it is not what was asked for.
+        for ref in [ActionRef.openTerminal(nil), .agent(id: "claude", variant: nil, launcher: nil), .newFile("txt")] {
+            do {
+                _ = try planner.plan(ref, context: selection("/Users/tester/code/app/broken"))
+                Issue.record("\(ref.id) was planned for a link that points nowhere")
+            } catch {
+                #expect(error.localizedDescription.contains("link that points nowhere"), "\(error)")
+            }
+        }
     }
 
     private func redefined(_ id: String, role: AppDescriptor.Role, bundle: String) -> AppDescriptor {

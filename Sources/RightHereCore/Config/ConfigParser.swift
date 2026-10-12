@@ -306,10 +306,18 @@ private struct Builder {
             return app
         }
         for (index, template) in config.newFile.templates.enumerated() {
-            guard let app = template.openWith, config.app(id: app) == nil else { continue }
-            sink.error(["new_file", "template", String(index + 1), "open_with"], "unknown app \"\(app)\"",
-                       suggestion: Suggestion.didYouMean(app, in: allAppIDs(config)))
-            config.newFile.templates[index].openWith = nil
+            guard let app = template.openWith else { continue }
+            let path = ["new_file", "template", String(index + 1), "open_with"]
+            guard let found = config.app(id: app) else {
+                sink.error(path, "unknown app \"\(app)\"", suggestion: Suggestion.didYouMean(app, in: allAppIDs(config)))
+                config.newFile.templates[index].openWith = nil
+                continue
+            }
+            // A terminal handed a file runs it (a `.command` file, say), so it can never be what opens one.
+            if found.role == .terminal {
+                sink.error(path, "\"\(app)\" is a terminal, and a terminal handed a file runs it; name an editor or viewer")
+                config.newFile.templates[index].openWith = nil
+            }
         }
         config.terminal = checkedTerminal(terminalChoice, path: ["general", "terminal"], customApps: config.apps)
         if let editor = editorChoice {

@@ -459,6 +459,37 @@ struct ConfigStrictnessTests {
         #expect(result.config.newFile.templates.first?.openWith == nil)
     }
 
+    @Test("open_with can never name a terminal: a terminal handed a file runs it", arguments: ["terminal", "ghostty", "iterm"])
+    func openWithRefusesATerminal(app: String) throws {
+        let result = parse("""
+        [[new_file.template]]
+        id = "cmd"
+        title = "Command"
+        extension = "command"
+        open_with = "\(app)"
+        """)
+        let error = try #require(result.diagnostics.first { $0.path == "new_file.template.1.open_with" && $0.severity == .error })
+        #expect(error.message.contains("terminal"))
+        #expect(result.config.newFile.templates.first { $0.id == "cmd" }?.openWith == nil, "the setting must not survive")
+    }
+
+    @Test func openWithRefusesAnAppTheConfigTurnedIntoATerminal() throws {
+        let result = parse("""
+        [[app]]
+        id = "viewer"
+        name = "Viewer"
+        bundle_id = "com.example.viewer"
+        role = "terminal"
+
+        [[new_file.template]]
+        id = "x"
+        title = "X"
+        extension = "x"
+        open_with = "viewer"
+        """)
+        #expect(result.diagnostics.contains { $0.path == "new_file.template.1.open_with" && $0.severity == .error })
+    }
+
     @Test func openWithMayNameAnAppTheConfigDefines() {
         let result = parse("""
         [[app]]

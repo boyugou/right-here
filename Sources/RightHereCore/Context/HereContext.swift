@@ -46,9 +46,9 @@ public struct HereContext: Sendable, Equatable, Codable {
         }
         switch facts.isDirectory(first) {
         case true? where items.count == 1: return first
-        // A link that points nowhere is an item, not a folder: its own folder is the one to open. A path the
-        // system will not let us look at is nothing we can place, and its parent is not what was asked for.
-        case nil: return facts.itemState(first) == .present ? Self.directory(from: first.deletingLastPathComponent(), facts: facts) : nil
+        // What it is cannot be told: a path the system will not let us look at, or a link that points nowhere.
+        // Neither gives a folder, and the folder around it is not what was asked for.
+        case nil: return nil
         default: return Self.directory(from: first.deletingLastPathComponent(), facts: facts)
         }
     }
@@ -62,12 +62,19 @@ public struct HereContext: Sendable, Equatable, Codable {
         return nil
     }
 
-    /// The path that decides the working directory, when the system would not let us look at it. There is no
-    /// folder to give in that case, and the person is told why instead of getting some other folder.
-    public func unreadableTarget(facts: any SystemFacts) -> URL? {
+    /// The path that decided the working directory, when it is there but is no folder anyone can name: the system
+    /// would not let us look at it (`unreadable`), or it is a link that points nowhere (`dangling`). The person is
+    /// told which, instead of getting some other folder.
+    public func unplaceableTarget(facts: any SystemFacts) -> (url: URL, reason: UnplaceableReason)? {
         guard let target = items.first ?? container ?? (origin == .cli ? facts.currentDirectory : nil) else { return nil }
-        return facts.itemState(target) == .unreadable ? target : nil
+        switch facts.itemState(target) {
+        case .unreadable: return (target, .unreadable)
+        case .present: return facts.isDirectory(target) == nil ? (target, .dangling) : nil
+        case .missing: return nil
+        }
     }
+
+    public enum UnplaceableReason: Sendable, Equatable { case unreadable, dangling }
 
     private static func directory(from url: URL, facts: any SystemFacts) -> URL? {
         switch facts.isDirectory(url) {
