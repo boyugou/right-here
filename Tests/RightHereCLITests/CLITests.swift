@@ -148,13 +148,14 @@ struct CLITests {
         let rh = try RH(); defer { rh.cleanUp() }
         let script = rh.configDirectory.appendingPathComponent("evil.command")
         try "#!/bin/sh\ntouch /tmp/rh-should-not-run\n".write(to: script, atomically: true, encoding: .utf8)
+        // A dry run plans and prints; the plan is where the file would have to appear.
         let result = try rh.run(["run", "open.terminal", "--container", script.path, "--dry-run", "--json"])
-        if result.status == 0 {
-            let steps = try #require((result.json as? [String: Any])?["steps"] as? [[String: Any]])
-            let targets = steps.flatMap { ($0["targets"] as? [String]) ?? [] }
-            #expect(!targets.contains { $0.hasSuffix("evil.command") })
-        }
-        #expect(!FileManager.default.fileExists(atPath: "/tmp/rh-should-not-run"))
+        let plan = try #require(result.json as? [String: Any], "no plan was printed: \(result.standardError)")
+        let steps = try #require(plan["steps"] as? [[String: Any]])
+        let targets = steps.flatMap { ($0["targets"] as? [String]) ?? [] }
+        #expect(targets.count == 1)
+        #expect(targets.allSatisfy { !$0.hasSuffix("evil.command") }, "the file itself was planned as the terminal's target: \(targets)")
+        #expect(targets.first?.hasSuffix(rh.configDirectory.lastPathComponent) == true, "expected the folder around the file: \(targets)")
     }
 
     @Test func aWarningDoesNotFailValidationUnlessItIsStrict() throws {

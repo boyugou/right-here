@@ -46,31 +46,11 @@ extension Step {
     private static func preview(_ text: String) -> String {
         let limit = 200
         let shown = text.count > limit ? String(text.prefix(limit)) + "…" : text
-        let escaped = shown.unicodeScalars.map { scalar -> String in
-            switch scalar {
-            case "\"": return "\\\""
-            case "\\": return "\\\\"
-            default: return escapeControl(scalar)
-            }
-        }.joined()
-        return "\"" + escaped + "\""
+        return "\"" + shown.withControlCharactersEscaped.scalarReplacing(["\"": "\\\""]) + "\""
     }
 
     /// The text with control characters replaced by visible escapes; everything else is unchanged.
     static func visible(_ text: String) -> String {
-        text.unicodeScalars.map { $0 == "\\" ? "\\" : escapeControl($0) }.joined()
-    }
-
-    private static func escapeControl(_ scalar: Unicode.Scalar) -> String {
-        switch scalar {
-        case "\n": return "\\n"
-        case "\r": return "\\r"
-        case "\t": return "\\t"
-        default:
-            switch scalar.properties.generalCategory {
-            case .control, .lineSeparator, .paragraphSeparator: return "\\u{\(String(scalar.value, radix: 16))}"
-            default: return String(scalar)
-            }
-        }
+        text.withControlCharactersEscaped
     }
 }

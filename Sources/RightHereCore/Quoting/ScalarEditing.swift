@@ -24,3 +24,27 @@ extension String {
         unicodeScalars.contains { scalars.contains($0) }
     }
 }
+
+extension String {
+    /// The text with control characters, line separators and paragraph separators replaced by visible
+    /// escapes (`\n`, `\t`, `\u{1b}`). Used wherever a name from the file system is printed or logged:
+    /// a name with a newline must not forge a log line, and one with a terminal escape sequence must not
+    /// act on a terminal. Other text, backslashes included, is left as it is.
+    public var withControlCharactersEscaped: String {
+        var result = ""
+        for scalar in unicodeScalars {
+            switch scalar {
+            case "\n": result += "\\n"
+            case "\r": result += "\\r"
+            case "\t": result += "\\t"
+            default:
+                switch scalar.properties.generalCategory {
+                case .control, .lineSeparator, .paragraphSeparator: result += "\\u{\(String(scalar.value, radix: 16))}"
+                default: result.unicodeScalars.append(scalar)
+                }
+            }
+        }
+        return result
+    }
+}
+

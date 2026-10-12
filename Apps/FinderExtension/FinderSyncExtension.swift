@@ -172,7 +172,8 @@ final class FinderSyncExtension: FIFinderSync {
                         self?.log.notice("\(id, privacy: .public) finished ok")
                         return
                     }
-                    self?.log.error("\(id, privacy: .public) failed: \(message, privacy: .public) \(failure.localizedDescription, privacy: .public)")
+                    // What `rh` printed can name the person's files, so it stays private in the unified log.
+                    self?.log.error("\(id, privacy: .public) failed: \(message, privacy: .private) \(failure.localizedDescription, privacy: .private)")
                     NSSound.beep()
                 }
             }

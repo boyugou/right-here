@@ -56,7 +56,8 @@ struct Run: AsyncParsableCommand {
         }
         do {
             let report = try await LiveExecutor().execute(plan)
-            RunLog.record("ok \(action) [\(here.origin.rawValue), \(here.items.count) items]: \(plan.summary)")
+            // The plan's summary is left out: it names the typed command, which may carry a key someone put in it.
+            RunLog.record("ok \(action) [\(here.origin.rawValue), \(here.items.count) items]")
             if json {
                 try Output.json(RunResult(ok: true, plan: plan, report: report))
             } else {
@@ -92,19 +93,4 @@ struct RunResult: Encodable {
     var ok: Bool
     var plan: LaunchPlan
     var report: ExecutionReport
-}
-
-/// A small append-only log so a failed action started from Finder leaves a trace. Lines are written
-/// with O_APPEND, so several `rh` processes started at once do not overwrite each other.
-enum RunLog {
-    static func record(_ message: String) {
-        let paths = RHPaths.current()
-        try? FileManager.default.createDirectory(at: paths.logDirectory, withIntermediateDirectories: true)
-        let path = paths.logFile.path
-        let line = Array("\(ISO8601DateFormatter().string(from: Date())) \(message)\n".utf8)
-        let descriptor = open(path, O_WRONLY | O_APPEND | O_CREAT, 0o644)
-        guard descriptor >= 0 else { return }
-        defer { close(descriptor) }
-        _ = line.withUnsafeBytes { write(descriptor, $0.baseAddress, $0.count) }
-    }
 }

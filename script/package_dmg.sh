@@ -81,5 +81,7 @@ if [[ "$NOTARIZED" == 1 ]]; then
   spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
 fi
 
-shasum -a 256 "$DMG" | tee "$DMG.sha256"
+# The checksum names the file without its folder, so `shasum -c` works where it is downloaded and the
+# developer's paths stay out of a file that is published.
+( cd "$(dirname "$DMG")" && shasum -a 256 "$(basename "$DMG")" | tee "$(basename "$DMG").sha256" )
 echo "$DMG"

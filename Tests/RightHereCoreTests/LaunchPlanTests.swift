@@ -72,3 +72,19 @@ struct StepSummaryTests {
         #expect(Step.open(OpenStep(bundleID: "x", targets: ["/Users/me/my code/日本語 é"])).summary == "open x /Users/me/my code/日本語 é")
     }
 }
+
+@Suite("Escaping control characters")
+struct ControlCharacterEscapingTests {
+    @Test("control characters become visible escapes", arguments: [
+        ("a\nb", "a\\nb"), ("a\rb", "a\\rb"), ("a\tb", "a\\tb"), ("\u{1b}[2J", "\\u{1b}[2J"),
+        ("\u{7}", "\\u{7}"), ("a\u{2028}b", "a\\u{2028}b"), ("a\u{85}b", "a\\u{85}b"), ("a\u{0}b", "a\\u{0}b")
+    ])
+    func escapes(input: String, expected: String) {
+        #expect(input.withControlCharactersEscaped == expected)
+    }
+
+    @Test("ordinary text is untouched, backslashes and unicode included", arguments: ["plain", "back\\slash", "日本語 é 🚀", "a b/c.d", "e\u{301}"])
+    func leavesTheRest(input: String) {
+        #expect(input.withControlCharactersEscaped == input)
+    }
+}
