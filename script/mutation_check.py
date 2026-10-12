@@ -17,8 +17,10 @@ quoting, planning, the MCP server, the process runner or the Finder probe.
     ./script/mutation_check.py --list       what they are
     ./script/mutation_check.py 3 7          only these
 """
+import os
 import pathlib
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -90,7 +92,8 @@ MUTANTS = [
     ("the rotated log keeps its old mode", "Sources/RightHereKit/RunLog.swift",
      "chmod(older.path, 0o600)", "_ = older"),
     ("a name the file system cannot hold counts as unreadable", "Sources/RightHereKit/LiveSystemFacts.swift",
-     "default: return .missing", "default: return .unreadable"),
+     "case EACCES, EPERM, EIO, ESTALE, ETIMEDOUT: return .unreadable",
+     "case EACCES, EPERM, EIO, ESTALE, ETIMEDOUT, ENAMETOOLONG, ELOOP, EBADF: return .unreadable"),
     ("uninstall removes any link", "Sources/RightHereKit/Installer.swift",
      'if resolved.contains("/Right Here.app/Contents/Helpers/") { return true }', "return true"),
     ("the runner takes every item", "Sources/RightHereKit/RunnerArguments.swift",
@@ -123,12 +126,22 @@ def main() -> int:
                 continue
             path.write_text(original.replace(old, new, 1), encoding="utf-8")
             started = time.time()
+            hung = False
+            # Its own session, so that on a hang the test host and every rh it started are stopped together.
+            process = subprocess.Popen(["swift", "test"], cwd=clone, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                       text=True, start_new_session=True)
             try:
-                result = subprocess.run(["swift", "test"], cwd=clone, capture_output=True, text=True, timeout=1800)
-                output = result.stdout + result.stderr
+                output, _ = process.communicate(timeout=900)
+            except subprocess.TimeoutExpired:
+                hung = True
+                os.killpg(process.pid, signal.SIGKILL)
+                output, _ = process.communicate()
             finally:
                 path.write_text(original, encoding="utf-8")
-            if "\u2718 Test" in output:
+            if hung:
+                status = "HUNG"
+                problems.append(f"[{index}] the tests hung instead of failing for: {name} ({file})")
+            elif "\u2718 Test" in output:
                 status = "killed"
             elif re.search(r"^error: |\.swift:\d+:\d+: error:", output, re.M):
                 # A passing test run prints "error:" too (in the names of cases about error messages), so only a
