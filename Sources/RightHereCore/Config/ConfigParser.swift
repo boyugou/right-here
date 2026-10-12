@@ -357,12 +357,17 @@ private struct Builder {
             sink.error(reader.path + ["id"], "ids use lowercase letters, digits and dashes")
             return nil
         }
-        if ext.contains(".") || ext.contains("/") {
-            sink.error(reader.path + ["extension"], "write the extension without a dot or slash")
+        if ext.containsAnyScalar(of: [".", "/", "\0"]) || ext.isEmpty {
+            sink.error(reader.path + ["extension"], "write the extension without a dot or slash, and not empty")
+            return nil
+        }
+        let baseName = reader.string("base_name") ?? "untitled"
+        if baseName.isEmpty || baseName == "." || baseName == ".." || baseName.containsAnyScalar(of: ["/", "\0"]) {
+            sink.error(reader.path + ["base_name"], "a file name cannot be empty, \".\" or \"..\", or contain a slash")
             return nil
         }
         return NewFileTemplate(
-            id: id, title: title, baseName: reader.string("base_name") ?? "untitled",
+            id: id, title: title, baseName: baseName,
             fileExtension: ext, contents: reader.string("contents") ?? ""
         )
     }

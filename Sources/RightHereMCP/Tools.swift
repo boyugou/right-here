@@ -39,7 +39,7 @@ struct ToolDefinition: Sendable {
 /// in sentinels (and removing the sentinel characters inside) marks them as data for the model.
 enum Fence {
     static func wrap(_ text: String) -> String {
-        "⟦user⟧" + text.replacingOccurrences(of: "⟦", with: "[").replacingOccurrences(of: "⟧", with: "]") + "⟦/user⟧"
+        "⟦user⟧" + text.scalarReplacing(["⟦": "[", "⟧": "]"]) + "⟦/user⟧"
     }
 }
 

@@ -309,6 +309,30 @@ struct ConfigStrictnessTests {
         #expect(result.config.agent(id: "claude")?.variants.map(\.id) == ["continue", "resume", "opus"])
     }
 
+    @Test("a template file name cannot leave the folder", arguments: ["../escaped", "a/b", ".", "..", ""])
+    func aTemplateBaseNameStaysInsideTheFolder(baseName: String) {
+        let result = parse("""
+        [[new_file.template]]
+        id = "x"
+        title = "X"
+        base_name = "\(baseName)"
+        extension = "txt"
+        """)
+        #expect(result.hasErrors)
+        #expect(result.diagnostics.contains { $0.path.hasSuffix("base_name") })
+        #expect(result.config.newFile.templates == NewFileTemplate.builtIn)
+    }
+
+    @Test func anExtensionWithASlashHiddenBehindACombiningMarkIsRefused() {
+        let result = parse("""
+        [[new_file.template]]
+        id = "x"
+        title = "X"
+        extension = "md/\u{301}x"
+        """)
+        #expect(result.hasErrors)
+    }
+
     @Test func aTypoCarriesTheLikelyReplacementForTools() throws {
         let result = parse("[general]\nagnts = [\"codex\"]\n")
         let diagnostic = try #require(result.diagnostics.first)

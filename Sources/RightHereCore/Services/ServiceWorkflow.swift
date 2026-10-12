@@ -33,7 +33,7 @@ public enum ServiceWorkflow {
 
     public static func bundleName(for spec: ServiceSpec) -> String {
         // A slash would split the file name, and a colon shows as a slash in Finder.
-        let safe = spec.title.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
+        let safe = spec.title.scalarReplacing(["/": "-", ":": "-"])
         return namePrefix + safe + ".workflow"
     }
 

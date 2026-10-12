@@ -22,23 +22,23 @@ public enum ShellQuotingError: Error, Equatable, Sendable {
 }
 
 /// The single place where user-derived text becomes shell syntax.
+///
+/// Everything here works on Unicode scalars, never on `Character`s: a shell reads bytes, so a quote or a
+/// semicolon followed by a combining mark is still a quote or a semicolon.
 public enum ShellQuoting {
-    private static let bareSafe: Set<Character> = Set(
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.,:+@/-"
+    private static let bareSafe: Set<Unicode.Scalar> = Set(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.,:+@/-".unicodeScalars
     )
 
     /// Quote one word so the shell reads it back as exactly `value`.
     public static func quote(_ value: String, for flavor: ShellFlavor = .posix) -> String {
         if value.isEmpty { return "''" }
-        if value.allSatisfy({ bareSafe.contains($0) }) { return value }
+        if value.unicodeScalars.allSatisfy({ bareSafe.contains($0) }) { return value }
         switch flavor {
         case .posix:
-            return "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
+            return "'" + value.scalarReplacing(["'": "'\\''"]) + "'"
         case .fish:
-            let escaped = value
-                .replacingOccurrences(of: "\\", with: "\\\\")
-                .replacingOccurrences(of: "'", with: "\\'")
-            return "'" + escaped + "'"
+            return "'" + value.scalarReplacing(["\\": "\\\\", "'": "\\'"]) + "'"
         }
     }
 
@@ -51,16 +51,16 @@ public enum ShellQuoting {
     public static func backslashEscape(_ value: String) -> String {
         if value.isEmpty { return "''" }
         if value.unicodeScalars.contains(where: { isControl($0) }) { return quote(value) }
-        var result = ""
-        for character in value {
-            if bareSafe.contains(character) || !character.isASCII {
-                result.append(character)
+        var result = String.UnicodeScalarView()
+        for scalar in value.unicodeScalars {
+            if bareSafe.contains(scalar) || !scalar.isASCII {
+                result.append(scalar)
             } else {
                 result.append("\\")
-                result.append(character)
+                result.append(scalar)
             }
         }
-        return result
+        return String(result)
     }
 
     /// Reject text that must not be typed into a terminal.
