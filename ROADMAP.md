@@ -27,7 +27,7 @@
 - Publish a release: tag, GitHub release with the notarized DMG and its checksum, then the Homebrew cask and
   formula (the pipeline is verified; publishing needs the repository to be public, the owner's call).
 - Adapters for iTerm2, WezTerm, kitty, Alacritty, Warp, cmux, to be written and checked on a machine that has
-  them (none is installed on the development machine); possibly a generic config-defined adapter.
+  them (none is installed on the development machine); a config-defined launcher (`open_args`, `run_args`) exists for the meantime.
 - Native-speaker review of the translations.
 - A menu-only App Store build (scope and risks in the design notes).
 

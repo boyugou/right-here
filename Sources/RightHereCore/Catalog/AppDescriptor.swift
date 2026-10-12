@@ -1,6 +1,21 @@
 import Foundation
 
 /// An application Right Here knows how to open a folder with.
+/// How a terminal that has no built-in adapter is started, written in the config. Each is an argument vector, never a
+/// shell line: `{dir}`, `{command}`, `{shell}` (the login shell) and `{app}` (the installed .app) are replaced inside its
+/// elements, and the first element must be an absolute path (or start with `{app}/`).
+public struct TerminalLaunch: Sendable, Equatable {
+    /// Opens a folder. Without it the app is handed the folder with `open`.
+    public var open: [String]?
+    /// Starts a typed command in a folder. Without it the terminal cannot start agents.
+    public var run: [String]?
+
+    public init(open: [String]? = nil, run: [String]? = nil) {
+        self.open = open
+        self.run = run
+    }
+}
+
 public struct AppDescriptor: Sendable, Equatable, Identifiable {
     public enum Role: String, Sendable, Codable, CaseIterable {
         case terminal
@@ -14,12 +29,15 @@ public struct AppDescriptor: Sendable, Equatable, Identifiable {
     /// Candidate bundle identifiers, most preferred first (stable, preview and beta builds).
     public var bundleIDs: [String]
     public var role: Role
+    /// Only for a terminal defined in the config.
+    public var launch: TerminalLaunch?
 
-    public init(id: String, name: String, bundleIDs: [String], role: Role) {
+    public init(id: String, name: String, bundleIDs: [String], role: Role, launch: TerminalLaunch? = nil) {
         self.id = id
         self.name = name
         self.bundleIDs = bundleIDs
         self.role = role
+        self.launch = launch
     }
 
     /// The first candidate that is installed on this machine.

@@ -136,7 +136,13 @@ public enum ConfigSchema {
                 SchemaNode("bundle_id", .string, "Bundle identifier of the app.", example: "\"com.fournova.Tower3\""),
                 SchemaNode("bundle_ids", .stringArray, "Several bundle identifiers, most preferred first. Use instead of bundle_id."),
                 SchemaNode("role", .string, "terminal: opens a folder; editor and general: open the selection.",
-                           default: "\"general\"", allowed: AppDescriptor.Role.allCases.map(\.rawValue))
+                           default: "\"general\"", allowed: AppDescriptor.Role.allCases.map(\.rawValue)),
+                SchemaNode("open_args", .stringArray,
+                           "Terminals only: the program and arguments that open a folder, instead of handing the folder to the app. `{dir}`, `{shell}` and `{app}` (the installed .app) are replaced inside each element; the first element must be an absolute path or start with `{app}/`. Never write `{dir}` inside a string a shell will read: give it as an argument of its own.",
+                           example: "[\"{app}/Contents/MacOS/wezterm\", \"start\", \"--cwd\", \"{dir}\"]"),
+                SchemaNode("run_args", .stringArray,
+                           "Terminals only: the program and arguments that start a typed command (an agent) in a folder, which lets a terminal without a built-in adapter start agents. As `open_args`, plus `{command}`, which must appear. Not checked on your terminal by Right Here: try it with `rh run agent.claude@<id>` and `--dry-run` first.",
+                           example: "[\"{app}/Contents/MacOS/wezterm\", \"start\", \"--cwd\", \"{dir}\", \"--\", \"{shell}\", \"-lic\", \"{command}; exec {shell} -l\"]")
             ]),
             SchemaNode("agent", .tableMap, "AI agents, one table per agent: `[agent.claude]`. Built-in agents are listed by `rh agents`. Any command you want typed into a terminal in the folder works the same way, for example `[agent.lazygit]` with `name = \"lazygit\"` and `command = \"lazygit\"`.",
                        pattern: identifierPattern, children: [

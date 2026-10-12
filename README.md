@@ -93,6 +93,11 @@ name = "lazygit"
 command = "lazygit"
 ```
 
+A terminal without a built-in adapter (WezTerm, kitty, Alacritty, ...) can start agents too, if you say how: give its
+`[[app]]` entry `role = "terminal"` and `run_args`, an argument vector with `{dir}`, `{command}`, `{shell}` and `{app}`
+placeholders (see `rh docs config`). Right Here has not tried those terminals, so check with `rh run agent.claude@<id> --dry-run`
+and then for real.
+
 `rh docs config` lists every key with defaults, `rh config validate` checks the file (unknown keys come
 with a "did you mean"; `--strict` also fails on warnings), `rh config schema` prints a JSON Schema for your
 editor. `rh init --force` saves your old file before replacing it.

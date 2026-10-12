@@ -438,7 +438,28 @@ private struct Builder {
             return nil
         }
         let roleName = reader.checkAllowed(reader.string("role"), key: "role", allowed: AppDescriptor.Role.allCases.map(\.rawValue))
-        return AppDescriptor(id: id, name: name, bundleIDs: bundleIDs, role: roleName.flatMap(AppDescriptor.Role.init(rawValue:)) ?? .general)
+        let role = roleName.flatMap(AppDescriptor.Role.init(rawValue:)) ?? .general
+        var launch: TerminalLaunch?
+        let open = reader.stringArray("open_args"), run = reader.stringArray("run_args")
+        if open != nil || run != nil {
+            if role != .terminal {
+                sink.error(reader.path, "open_args and run_args only apply to an app with role = \"terminal\"")
+            } else {
+                for (key, argv) in [("open_args", open), ("run_args", run)] {
+                    guard let argv else { continue }
+                    if let first = argv.first, TemplateTerminalAdapter.isValidExecutable(first) { continue }
+                    sink.error(reader.path + [key], "the first element must be an absolute path to a program, or start with {app}/")
+                }
+                if let run, !run.contains(where: { $0.contains("{command}") }) {
+                    sink.error(reader.path + ["run_args"], "run_args has to place {command} somewhere, or the agent would not be started")
+                }
+                if let run, !run.contains(where: { $0.contains("{dir}") }), !(open ?? []).contains(where: { $0.contains("{dir}") }) {
+                    sink.warning(reader.path + ["run_args"], "run_args does not use {dir}, so the session will not start in the folder")
+                }
+                launch = TerminalLaunch(open: open, run: run)
+            }
+        }
+        return AppDescriptor(id: id, name: name, bundleIDs: bundleIDs, role: role, launch: launch)
     }
 
     private func agent(id: String, reader: Reader, into config: inout Config) {
