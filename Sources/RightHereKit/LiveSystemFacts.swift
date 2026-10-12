@@ -41,9 +41,14 @@ public struct LiveSystemFacts: SystemFacts {
         FileManager.default.fileExists(atPath: url.path)
     }
 
+    /// Whether anything is there, a link that points nowhere included. Only "no such file or directory" (or a
+    /// file where a folder should be) means missing: when the system refuses to look (`EACCES`, or `EPERM`
+    /// under a privacy-protected folder such as Desktop or Documents), the item is there, and saying it is not
+    /// would reject a path the person just selected in Finder.
     public func itemExists(_ url: URL) -> Bool {
         var status = stat()
-        return lstat(url.path, &status) == 0
+        if lstat(url.path, &status) == 0 { return true }
+        return errno != ENOENT && errno != ENOTDIR
     }
 
     public func gitRoot(containing url: URL) -> URL? {
