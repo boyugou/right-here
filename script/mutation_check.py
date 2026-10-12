@@ -79,7 +79,7 @@ MUTANTS = [
     ("the server holds any amount of request data", "Sources/RightHereMCP/MCPServer.swift",
      "guard held < outstanding, heldBytes + bytes <= queuedBytes else { return false }", "guard held < outstanding else { return false }"),
     ("copy-path.shell-quoted follows the login shell again", "Sources/RightHereCore/Paths/PathStyle.swift",
-     "return Self.shellQuotedForAnyShell(url.path)", "return ShellQuoting.quote(url.path, for: facts.shellFlavor)"),
+     "return Self.shellQuotedForAnyShell(path)", "return ShellQuoting.quote(path, for: facts.shellFlavor)"),
     ("a terminal may open a new file", "Sources/RightHereCore/Planner/Planner.swift",
      "$0.role != .terminal && $0.installedBundleID(facts: facts) != nil", "$0.installedBundleID(facts: facts) != nil"),
     ("open_with may name a terminal in the config", "Sources/RightHereCore/Config/ConfigParser.swift",
