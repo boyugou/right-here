@@ -11,6 +11,7 @@
 - The app (summary, details, a launch test button) with its icon, and the Finder extension; installer;
   `rh doctor`.
 - Finder Services (Quick Actions) generated from the config; the doctor notices when they drift from it.
+- A notarized, stapled DMG builds with `script/package_dmg.sh` (Apple accepted it; Gatekeeper accepts it).
 - MCP server and the Claude Code plugin (setup, open-here and review-changes skills).
 - Thirty languages for the menu, the app, alerts and the permission-prompt text (machine-translated,
   awaiting review).
@@ -21,7 +22,8 @@
 
 - Confirm a real Finder click reaching `rh` (everything after it, typed launch included, is verified by
   `rh doctor --probe-launch`), and the first-ever Automation prompt on a clean machine.
-- Notarized DMG, Homebrew cask and formula (`script/package_dmg.sh`). Needs the owner's notarytool profile.
+- Publish a release: tag, GitHub release with the notarized DMG and its checksum, then the Homebrew cask and
+  formula (the pipeline is verified; publishing needs the repository to be public, the owner's call).
 - Adapters for iTerm2, WezTerm, kitty, Alacritty, Warp, cmux, to be written and checked on a machine that has
   them (none is installed on the development machine); possibly a generic config-defined adapter.
 - Native-speaker review of the translations.

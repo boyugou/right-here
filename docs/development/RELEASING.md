@@ -3,7 +3,8 @@
 1. `./script/verify_all.sh` passes and the working tree is clean.
 2. Raise the version in `Sources/rh/RH.swift` (`RightHereInfo.version`) and `MARKETING_VERSION` in
    `project.yml`.
-3. Store notarization credentials once per machine:
+3. Store notarization credentials once per machine (skip this if a notarytool keychain profile for the same team is
+   already there; `xcrun notarytool history --keychain-profile <name>` shows whether it works):
 
    ```sh
    xcrun notarytool store-credentials RightHereNotary --apple-id <id> --team-id <team> --password <app-specific-password>
@@ -20,7 +21,8 @@
    `dist/Right-Here-<version>.dmg` and its `.sha256`.
 
    If codesign reports "timestamps differ", the system clock is wrong: turn on Date & Time > Set time and
-   date automatically.
+   date automatically. The pipeline was run end to end on 2026-10-12: Apple accepted the app and the DMG, both
+   were stapled, and `spctl` reported "Notarized Developer ID".
 
 5. Tag `v<version>`, create a GitHub release with the DMG and its checksum, then update
    `packaging/homebrew/right-here.rb` (version, `sha256`) and `rh.rb` in the tap.

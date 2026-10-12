@@ -139,7 +139,9 @@ Verified on this machine (macOS 27.2, 2026-10-11):
 - Release signing works: `SECURE_TIMESTAMP=1 ./script/build_app.sh` signs every code item with the Developer ID
   identity, hardened runtime and Apple's timestamp (the earlier "timestamps differ" failure was a wrong system
   clock), `script/package_dmg.sh` builds a DMG whose checksum file verifies with `shasum -c`, and the DMG's
-  app verifies when mounted. Notarization itself needs the owner's notarytool credentials and has not been run.
+  app verifies when mounted. Notarization was run with a notarytool keychain profile already on the machine:
+  Apple accepted the app and the DMG, both are stapled, and Gatekeeper reports `accepted` with `source=Notarized
+  Developer ID` for the DMG and the app in it (2026-10-12). Nothing was published; the DMG is a local artifact.
 
 Sourced:
 
