@@ -272,3 +272,35 @@ struct InstallerServicesTests {
         #expect(FileManager.default.fileExists(atPath: foreign.path))
     }
 }
+
+
+@Suite("FinderExtensionManager: a registration has to stay")
+struct ExtensionRegistrationTests {
+    private let appex = "/Users/me/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex"
+    private var listed: String { "+    \(AppIdentity.extensionBundleID)(0.1.0)\tAAAA-BBBB\t2026-10-12 16:24:09 +0000\t\(appex)\n" }
+
+    @Test func aRegistrationThatStaysIsNotRepeated() async throws {
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0), ProcessResult(status: 0), ProcessResult(status: 0, standardOutput: listed)])
+        let again = try await FinderExtensionManager(runner: runner).registerAndConfirm(appexPath: appex, settle: .zero)
+        #expect(!again)
+        #expect(runner.recorded.map { $0.arguments.first } == ["-a", "-e", "-m"], "register, enable, then one look")
+    }
+
+    @Test func aRegistrationThatVanishedIsMadeOnceMore() async throws {
+        let runner = FakeProcessRunner(results: [
+            ProcessResult(status: 0), ProcessResult(status: 0),          // register, enable
+            ProcessResult(status: 0, standardOutput: ""),                // pluginkit no longer knows the extension
+            ProcessResult(status: 0), ProcessResult(status: 0)           // register, enable again
+        ])
+        let again = try await FinderExtensionManager(runner: runner).registerAndConfirm(appexPath: appex, settle: .zero)
+        #expect(again)
+        #expect(runner.recorded.map { $0.arguments.first } == ["-a", "-e", "-m", "-a", "-e"])
+        #expect(runner.recorded.last?.arguments == ["-e", "use", "-i", AppIdentity.extensionBundleID])
+    }
+
+    @Test func anExtensionThatIsRegisteredButSwitchedOffIsEnabledAgainToo() async throws {
+        let off = "-    \(AppIdentity.extensionBundleID)(0.1.0)\tAAAA\t2026-10-12 16:24:09 +0000\t\(appex)\n"
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0), ProcessResult(status: 0), ProcessResult(status: 0, standardOutput: off), ProcessResult(status: 0), ProcessResult(status: 0)])
+        #expect(try await FinderExtensionManager(runner: runner).registerAndConfirm(appexPath: appex, settle: .zero))
+    }
+}

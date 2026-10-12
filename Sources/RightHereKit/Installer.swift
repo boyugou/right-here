@@ -225,6 +225,20 @@ public struct FinderExtensionManager: Sendable {
         try await run(["-e", "use", "-i", AppIdentity.extensionBundleID])
     }
 
+    /// Registers the extension and checks, once macOS has had a moment to settle, that the registration stayed. Right
+    /// after the installed app is replaced, pluginkit was seen dropping the entry again a few seconds later, which left
+    /// Finder without its menu until `rh install --finder` was run by hand. It registers once more when the first did
+    /// not stay.
+    /// - Returns: whether it had to register again.
+    @discardableResult
+    public func registerAndConfirm(appexPath: String, settle: Duration = .seconds(3)) async throws -> Bool {
+        try await register(appexPath: appexPath)
+        try? await Task.sleep(for: settle)
+        guard await status().state != .enabled else { return false }
+        try await register(appexPath: appexPath)
+        return true
+    }
+
     public func disable() async throws {
         try await run(["-e", "ignore", "-i", AppIdentity.extensionBundleID])
     }

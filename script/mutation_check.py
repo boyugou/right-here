@@ -96,6 +96,8 @@ MUTANTS = [
     ("a name the file system cannot hold counts as unreadable", "Sources/RightHereKit/LiveSystemFacts.swift",
      "case EACCES, EPERM, EIO, ESTALE, ETIMEDOUT: return .unreadable",
      "case EACCES, EPERM, EIO, ESTALE, ETIMEDOUT, ENAMETOOLONG, ELOOP, EBADF: return .unreadable"),
+    ("an extension registration that vanished is not made again", "Sources/RightHereKit/Installer.swift",
+     "guard await status().state != .enabled else { return false }", "guard true else { return false }"),
     ("uninstall removes any link", "Sources/RightHereKit/Installer.swift",
      'if resolved.contains("/Right Here.app/Contents/Helpers/") { return true }', "return true"),
     ("the runner takes every item", "Sources/RightHereKit/RunnerArguments.swift",

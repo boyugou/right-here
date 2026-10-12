@@ -121,8 +121,8 @@ struct Install: AsyncParsableCommand {
             try? await manager.unregister(appexPath: stale)
             Output.print("Removed stale registration: \(stale)")
         }
-        try await manager.register(appexPath: appex)
-        Output.print("Finder extension: \(appex) (enabled)")
+        let registeredAgain = try await manager.registerAndConfirm(appexPath: appex)
+        Output.print("Finder extension: \(appex) (enabled)" + (registeredAgain ? "; the first registration did not stay, so it was registered again" : ""))
     }
 }
 
