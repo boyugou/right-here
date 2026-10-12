@@ -163,19 +163,21 @@ final class FinderSyncExtension: FIFinderSync {
             // only starts when it has finished. Only the first few kilobytes are kept.
             let captured = CapturedOutput()
             errors.fileHandleForReading.readabilityHandler = { handle in captured.append(handle.availableData) }
-            task.execute(withArguments: arguments) { [weak self] failure in
+            let owner = MainThreadOwner(self)
+            task.execute(withArguments: arguments) { failure in
                 try? errors.fileHandleForWriting.close()
                 errors.fileHandleForReading.readabilityHandler = nil
                 captured.append(errors.fileHandleForReading.availableData)
                 let message = captured.text
                 DispatchQueue.main.async {
-                    self?.runningTasks[key] = nil
+                    let extensionObject = owner.object
+                    extensionObject?.runningTasks[key] = nil
                     guard let failure else {
-                        self?.log.notice("\(id, privacy: .public) finished ok")
+                        extensionObject?.log.notice("\(id, privacy: .public) finished ok")
                         return
                     }
                     // What `rh` printed can name the person's files, so it stays private in the unified log.
-                    self?.log.error("\(id, privacy: .public) failed: \(message, privacy: .private) \(failure.localizedDescription, privacy: .private)")
+                    extensionObject?.log.error("\(id, privacy: .public) failed: \(message, privacy: .private) \(failure.localizedDescription, privacy: .private)")
                     NSSound.beep()
                 }
             }
@@ -200,5 +202,13 @@ private final class CapturedOutput: @unchecked Sendable {
         lock.lock(); defer { lock.unlock() }
         return String(decoding: data, as: UTF8.self)
     }
+}
+
+/// A weak reference to the extension that is only ever read on the main queue, so it can be captured by the task's
+/// completion handler (which the system calls on another thread) without making the extension itself Sendable.
+private final class MainThreadOwner: @unchecked Sendable {
+    private weak var target: FinderSyncExtension?
+    init(_ target: FinderSyncExtension) { self.target = target }
+    var object: FinderSyncExtension? { target }
 }
 

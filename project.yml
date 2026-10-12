@@ -21,6 +21,8 @@ settings:
     # The thin app and extension shells use Swift 5 mode: FinderSync's overrides are not
     # actor-annotated. All logic lives in the package, which builds in Swift 6.
     SWIFT_VERSION: "5.0"
+    # Still checked: a data race the Swift 6 mode would reject shows up here as a warning.
+    SWIFT_STRICT_CONCURRENCY: complete
     ENABLE_HARDENED_RUNTIME: YES
     # Signing is chosen by script/build_app.sh through the environment; "-" signs ad hoc.
     CODE_SIGN_STYLE: Manual

@@ -160,8 +160,9 @@ Little wrong in the runner-script argv path, selection cap, entitlements, MCP la
 - The `review-changes` skill told an agent to read quoted `git status --porcelain`; it says `-z` now.
 - `install_local.sh` deleted the installed app before copying the new one; it copies beside it and moves it over.
 
-Left: CI and `verify_all.sh` build the package but not the app and extension targets (`script/build_app.sh` does,
-and runs on every local install); the app targets build in Swift 5 mode with no strict-concurrency setting.
+Afterwards: `verify_all.sh` builds the app and extension too (CI does not: it would need xcodegen on the runner, and
+the change could not be tried here), and the app targets build with `SWIFT_STRICT_CONCURRENCY: complete`; the one
+warning it showed (the extension's completion handler capturing `self`) is fixed with a main-thread-only weak box.
 
 ## Left as they are, on purpose
 

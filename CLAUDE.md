@@ -75,7 +75,7 @@ docs/                    DESIGN.md, decisions/, development/
   run) and a config that does not open or reveal anything; every fix gets a test that fails against the old code.
 - To look at the setup window without a screen, render the SwiftUI view to a PNG with `ImageRenderer` from a
   scratch package that links the app's view files; `-AppleLanguages "(de)"` switches the language.
-- Before pushing run `./script/verify_all.sh` (build, tests, catalog, config schema, embedded docs, the docs check
+- Before pushing run `./script/verify_all.sh` (build, tests, the app and extension build, catalog, config schema, embedded docs, the docs check
   (commands and links), public-safety check).
 - After changing a protection that `docs/DESIGN.md` section 9 relies on, run `./script/mutation_check.py`: it removes
   each protection in a throwaway clone and expects a test to fail. Add an entry when you add a protection.
