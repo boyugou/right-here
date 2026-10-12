@@ -91,4 +91,15 @@ struct TemplateTerminalTests {
         let result = ConfigParser.parse("[[app]]\nid = \"w\"\nname = \"W\"\nbundle_id = \"a.b\"\nrole = \"terminal\"\nrun_args = [\"/bin/x\", \"{command}\"]\n")
         #expect(result.diagnostics.contains { $0.severity == .warning && $0.message.contains("{dir}") })
     }
+
+    @Test("a folder placeholder inside a string a shell reads is warned about, one of its own is not", arguments: [
+        ("run_args = [\"/bin/sh\", \"-c\", \"cd {dir} && {command}\"]", true),
+        ("run_args = [\"/bin/x\", \"-lc\", \"cd {dir}; {command}\"]", true),
+        ("run_args = [\"/bin/x\", \"--cwd\", \"{dir}\", \"--\", \"{shell}\", \"-lic\", \"{command}\"]", false),
+        ("run_args = [\"/bin/x\", \"--working-directory={dir}\", \"{command}\"]", false)
+    ])
+    func folderInsideAShellString(args: String, warns: Bool) {
+        let result = ConfigParser.parse("[[app]]\nid = \"w\"\nname = \"W\"\nbundle_id = \"a.b\"\nrole = \"terminal\"\n" + args + "\n")
+        #expect(result.diagnostics.contains { $0.message.contains("shell will read") } == warns, Comment(rawValue: "\(result.diagnostics)"))
+    }
 }

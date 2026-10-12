@@ -36,10 +36,11 @@ struct Doctor: AsyncParsableCommand {
         let runtime = Runtime()
         // A probe switches the Finder extension off and on again to make it look for its request. Ctrl-C in between
         // would leave it off (no menu until `rh install --finder`), so an interrupt switches it back on first.
-        var interrupt: DispatchSourceSignal?
+        var interrupt: [DispatchSourceSignal] = []
         if probeExtension || probeLaunch {
-            signal(SIGINT, SIG_IGN)
-            let source = DispatchSource.makeSignalSource(signal: SIGINT, queue: .global())
+            for number in [SIGINT, SIGTERM, SIGHUP] { signal(number, SIG_IGN) }
+            let sources = [SIGINT, SIGTERM, SIGHUP].map { DispatchSource.makeSignalSource(signal: $0, queue: .global()) }
+            for source in sources {
             source.setEventHandler {
                 let reenable = Process()
                 reenable.executableURL = URL(fileURLWithPath: "/usr/bin/pluginkit")
@@ -49,9 +50,10 @@ struct Doctor: AsyncParsableCommand {
                 Darwin.exit(130)
             }
             source.resume()
-            interrupt = source
+            }
+            interrupt = sources
         }
-        defer { interrupt?.cancel() }
+        defer { interrupt.forEach { $0.cancel() } }
         let checks = await RightHereKit.Doctor(paths: runtime.paths, loaded: runtime.loaded).run(probeExtension: probeExtension, probeLaunch: probeLaunch, launchPlacement: try launchPlacement())
         let failed = checks.contains { $0.status == .fail }
         if json {

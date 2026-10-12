@@ -46,6 +46,18 @@ public struct LiveProcessRunner: ProcessRunner {
 
     private let environment: [String: String]
 
+    /// The screen program a step would start, however it is spelled (`/usr/bin//open`, `/usr/bin/env open`).
+    static func screenProgram(of step: ProcessStep) -> String? {
+        func standard(_ path: String) -> String { URL(fileURLWithPath: path).standardizedFileURL.path }
+        let executable = standard(step.executable)
+        if screenPrograms.contains(executable) { return executable }
+        if executable == "/usr/bin/env", let named = step.arguments.first(where: { !$0.contains("=") && !$0.hasPrefix("-") }) {
+            let resolved = ["open": "/usr/bin/open", "osascript": "/usr/bin/osascript"][named] ?? (screenPrograms.contains(standard(named)) ? standard(named) : nil)
+            return resolved
+        }
+        return nil
+    }
+
     /// How long to keep reading after the process has exited. A child that was left running in the
     /// background (a shell startup file doing `(sleep 30 &)`) inherits the pipes and holds them open
     /// long after the process we started is gone; waiting for end-of-file would wait for it too.
@@ -65,8 +77,8 @@ public struct LiveProcessRunner: ProcessRunner {
     }
 
     public func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
-        if environment["RH_NO_UI"] != nil, Self.screenPrograms.contains(step.executable) {
-            throw UIDisabledError(executable: step.executable)
+        if environment["RH_NO_UI"] != nil, let program = Self.screenProgram(of: step) {
+            throw UIDisabledError(executable: program)
         }
         let process = Process()
         process.executableURL = URL(fileURLWithPath: step.executable)

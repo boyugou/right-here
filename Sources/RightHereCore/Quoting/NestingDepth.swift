@@ -51,7 +51,13 @@ public enum NestingDepth {
                 while index < bytes.count {
                     if byte == UInt8(ascii: "\""), bytes[index] == UInt8(ascii: "\\") { index += 2; continue }
                     if multiline {
-                        if hasPrefix(byte, at: index) { index += 3; break }
+                        if hasPrefix(byte, at: index) {
+                            index += 3
+                            // TOML lets up to two more quotes sit just before the closing three: `"""a""""` is `a"`.
+                            var extra = 0
+                            while extra < 2, index < bytes.count, bytes[index] == byte { index += 1; extra += 1 }
+                            break
+                        }
                     } else if bytes[index] == byte || bytes[index] == UInt8(ascii: "\n") {
                         index += 1
                         break

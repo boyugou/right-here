@@ -179,6 +179,14 @@ struct LiveProcessRunnerTests {
         #expect(try await runner.run(ProcessStep(executable: "/bin/echo", arguments: ["fine"])).standardOutput == "fine\n")
     }
 
+    @Test("RH_NO_UI sees through other spellings of open and osascript", arguments: [
+        ("/usr/bin//open", [String]()), ("/usr/bin/../bin/osascript", []), ("/usr/bin/env", ["open", "-b", "x"]), ("/usr/bin/env", ["osascript"])
+    ])
+    func noUISeesThroughSpellings(executable: String, arguments: [String]) async {
+        let runner = LiveProcessRunner(environment: ["RH_NO_UI": "1"])
+        await #expect(throws: UIDisabledError.self) { try await runner.run(ProcessStep(executable: executable, arguments: arguments)) }
+    }
+
     @Test func missingExecutableThrows() async {
         await #expect(throws: (any Error).self) {
             try await LiveProcessRunner().run(ProcessStep(executable: "/nonexistent/rh-test-binary"))

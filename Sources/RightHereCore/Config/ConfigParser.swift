@@ -456,10 +456,25 @@ private struct Builder {
                 if let run, !run.contains(where: { $0.contains("{dir}") }), !(open ?? []).contains(where: { $0.contains("{dir}") }) {
                     sink.warning(reader.path + ["run_args"], "run_args does not use {dir}, so the session will not start in the folder")
                 }
+                // `{dir}` as an argument of its own is safe. Inside a string a shell reads (`sh -c "cd {dir}"`) a folder
+                // called `x'; touch y; '` becomes shell syntax, which only the template's author can prevent.
+                for (key, argv) in [("open_args", open), ("run_args", run)] {
+                    guard let argv, Self.shellReadsAString(argv) else { continue }
+                    if argv.contains(where: { $0 != "{dir}" && $0.contains("{dir}") }) {
+                        sink.warning(reader.path + [key], "{dir} sits inside a string a shell will read, so a folder name can become shell syntax; pass {dir} as an argument of its own")
+                    }
+                }
                 launch = TerminalLaunch(open: open, run: run)
             }
         }
         return AppDescriptor(id: id, name: name, bundleIDs: bundleIDs, role: role, launch: launch)
+    }
+
+    /// A shell is given a string to interpret: the program is a shell, or an element is a `-c` style option.
+    private static func shellReadsAString(_ argv: [String]) -> Bool {
+        let shells: Set<String> = ["sh", "bash", "zsh", "fish", "dash", "ksh", "{shell}"]
+        if let first = argv.first, shells.contains(first.split(separator: "/").last.map(String.init) ?? first) { return true }
+        return argv.contains { $0.hasPrefix("-") && !$0.hasPrefix("--") && $0.dropFirst().contains("c") && $0.dropFirst().allSatisfy(\.isLetter) }
     }
 
     private func agent(id: String, reader: Reader, into config: inout Config) {

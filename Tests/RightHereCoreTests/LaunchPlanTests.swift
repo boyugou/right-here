@@ -78,7 +78,8 @@ struct ControlCharacterEscapingTests {
     @Test("control characters become visible escapes", arguments: [
         ("a\nb", "a\\nb"), ("a\rb", "a\\rb"), ("a\tb", "a\\tb"), ("\u{1b}[2J", "\\u001b[2J"),
         ("\u{7}", "\\u0007"), ("a\u{2028}b", "a\\u2028b"), ("a\u{85}b", "a\\u0085b"), ("a\u{0}b", "a\\u0000b"),
-        ("a\u{7f}b", "a\\u007fb"), ("a\u{2029}b", "a\\u2029b")
+        ("a\u{7f}b", "a\\u007fb"), ("a\u{2029}b", "a\\u2029b"),
+        ("a\u{202E}b", "a\\u202eb"), ("a\u{2066}b", "a\\u2066b"), ("a\u{200F}b", "a\\u200fb")
     ])
     func escapes(input: String, expected: String) {
         #expect(input.withControlCharactersEscaped == expected)

@@ -34,6 +34,10 @@ extension String {
     /// The escapes are JSON's own (`\uXXXX`), so a line of JSON that has been through this still parses
     /// to the same text: `JSONEncoder` leaves U+007F to U+009F, U+2028 and U+2029 raw, and a different
     /// spelling would have turned them into something no JSON reader accepts.
+    /// Marks and embeddings that reorder how text is shown (a name can be made to read differently from what it is).
+    private static let bidiControls: Set<Unicode.Scalar> = ["\u{061C}", "\u{200E}", "\u{200F}", "\u{202A}", "\u{202B}", "\u{202C}", "\u{202D}", "\u{202E}",
+                                                           "\u{2066}", "\u{2067}", "\u{2068}", "\u{2069}"]
+
     public var withControlCharactersEscaped: String {
         var result = ""
         for scalar in unicodeScalars {
@@ -42,6 +46,10 @@ extension String {
             case "\r": result += "\\r"
             case "\t": result += "\\t"
             default:
+                if Self.bidiControls.contains(scalar) {
+                    result += "\\u" + String(repeating: "0", count: 4 - String(scalar.value, radix: 16).count) + String(scalar.value, radix: 16)
+                    continue
+                }
                 switch scalar.properties.generalCategory {
                 case .control, .lineSeparator, .paragraphSeparator:
                     let hex = String(scalar.value, radix: 16)

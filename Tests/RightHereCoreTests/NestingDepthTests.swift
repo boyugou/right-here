@@ -48,6 +48,13 @@ struct NestingDepthTests {
         #expect(!NestingDepth.tomlExceeds(text, limit: 8))
     }
 
+    @Test("a multiline string may close with up to two extra quotes, and the brackets after it still count",
+          arguments: ["\"\"\"a\"\"\"\"", "\"\"\"a\"\"\"\"\"", "'''a''''", "'''a'''''"])
+    func extraClosingQuotes(closing: String) {
+        #expect(NestingDepth.tomlExceeds("x = [\(closing), \(nested("[", "]", 200))]", limit: 64), "\(closing)")
+        #expect(!NestingDepth.tomlExceeds("x = [\(closing), [1]]", limit: 64), "\(closing)")
+    }
+
     @Test func aRealConfigIsFarFromTheLimit() {
         #expect(!NestingDepth.tomlExceeds(ConfigTemplate.render(DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude", "codex"])), limit: 8))
     }
