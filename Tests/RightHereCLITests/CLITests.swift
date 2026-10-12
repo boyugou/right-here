@@ -362,6 +362,21 @@ struct CLITests {
         #expect(remaining.filter { $0.hasPrefix("Right Here - ") }.isEmpty)
     }
 
+    @Test func uninstallKeepsGoingAfterAFailedStepAndSaysWhatFailed() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        #expect(try rh.run(["install", "--skip-finder"]).status == 0)
+        // A runner script that cannot be removed (its folder is read-only) must not keep the Services installed.
+        let scripts = home.appendingPathComponent("Library/Application Scripts/com.boyugou.righthere.FinderExtension")
+        try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: scripts.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: scripts.path) }
+        let result = try rh.run(["uninstall"])
+        #expect(result.status == 1, "status \(result.status)")
+        #expect(result.standardError.contains("runner script"))
+        let remaining = (try? FileManager.default.contentsOfDirectory(atPath: home.appendingPathComponent("Library/Services").path)) ?? []
+        #expect(remaining.filter { $0.hasPrefix("Right Here - ") }.isEmpty, "the Services were left installed")
+    }
+
     @Test func uninstallRemovesTheCommandLinkItMadeAndLeavesSomeoneElsesAlone() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)

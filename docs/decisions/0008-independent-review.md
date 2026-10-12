@@ -136,6 +136,14 @@ that was typed. Lookups worked (APFS ignores normalization), but a text search f
 `SystemFacts.onDiskPath` now reads each component's stored name (`URLResourceKey.name`, measured to return the stored
 spelling and case), and `PathRenderer` builds every style from it; a component that cannot be looked up is kept as given.
 
+## Eighth round (regressions and install flow, after c588935)
+
+Little found. The on-disk path rendering matched the old output byte for byte on awkward names (except accents now
+precomposed and `;` now `%3B`), and the suffix mapping cannot pick wrong components. Fixed: `rh uninstall` stopped at
+its first failing step and left the Services and command link behind; it now keeps going like `install` and reports
+the failures at the end (non-zero exit). Left: `installServices` and `installCLILink` remove before they write, so a
+failure halfway loses the old Services or link (not reproducible through the CLI).
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.
