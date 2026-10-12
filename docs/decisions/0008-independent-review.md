@@ -145,6 +145,9 @@ the failures at the end (non-zero exit). Also fixed: `installServices` and `inst
 Services or link. Services are now staged and moved in once all exist, and the link is made beside the old one and
 renamed over it.
 
+The signal wiring of the doctor probe moved into `InterruptGuard` (RightHereKit); a test raises SIGUSR2 in the test
+process and checks the order: request withdrawn, extension re-enabled, then finish. Nothing opens a window.
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.

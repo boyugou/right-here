@@ -145,4 +145,27 @@ struct ActionTagsTests {
         for number in 0..<50 { _ = tags.tag(for: "later.\(number)", kind: .items) }
         #expect(tags.resolve(old)?.actionID == "agent.removed")
     }
+
+    @Test func aSignalWithdrawsTheRequestThenReenablesTheExtensionThenFinishes() async throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let target = RHPaths(environment: ["RH_CONFIG_DIR": directory.path], home: directory)
+        #expect(ProbeMarker.write("launch:tab", in: target))
+        let order = Recorder()
+        // SIGUSR2 stands in for Ctrl-C: the wiring is the same and the test runner is not interrupted.
+        let guardian = InterruptGuard(signals: [SIGUSR2], paths: target,
+                                      reenableExtension: { order.add("reenable:" + (ProbeMarker.pending(in: target) ?? "no request")) },
+                                      finish: { order.add("finish") })
+        defer { guardian.cancel() }
+        kill(getpid(), SIGUSR2)
+        for _ in 0..<100 where order.events.count < 2 { try await Task.sleep(for: .milliseconds(50)) }
+        #expect(order.events == ["reenable:no request", "finish"], "\(order.events)")
+    }
 }
+
+private final class Recorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var items: [String] = []
+    func add(_ event: String) { lock.lock(); items.append(event); lock.unlock() }
+    var events: [String] { lock.lock(); defer { lock.unlock() }; return items }
+}
+

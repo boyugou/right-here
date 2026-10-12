@@ -118,6 +118,8 @@ MUTANTS = [
     ("the Services are removed before the new ones are written", "Sources/RightHereKit/Installer.swift",
      "        try fileManager.createDirectory(at: locations.services, withIntermediateDirectories: true)\n        // A name that does not",
      "        try removeServices()\n        try fileManager.createDirectory(at: locations.services, withIntermediateDirectories: true)\n        // A name that does not"),
+    ("an interrupt is not wired to the cleanup", "Sources/RightHereKit/ProbeMarker.swift",
+     "            source.resume()\n            return source", "            return source"),
     ("a bidirectional control is printed as it is", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
      "if Self.bidiControls.contains(scalar) {", "if false {"),
     ("a name with a backslash and a control character gets a shell form", "Sources/RightHereCore/Paths/PathStyle.swift",

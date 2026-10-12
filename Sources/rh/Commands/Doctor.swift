@@ -36,26 +36,15 @@ struct Doctor: AsyncParsableCommand {
         let runtime = Runtime()
         // A probe switches the Finder extension off and on again to make it look for its request. Ctrl-C in between
         // would leave it off (no menu until `rh install --finder`), so an interrupt switches it back on first.
-        var interrupt: [DispatchSourceSignal] = []
-        if probeExtension || probeLaunch {
-            for number in [SIGINT, SIGTERM, SIGHUP] { signal(number, SIG_IGN) }
-            let sources = [SIGINT, SIGTERM, SIGHUP].map { DispatchSource.makeSignalSource(signal: $0, queue: .global()) }
-            for source in sources {
-            source.setEventHandler {
-                ProbeMarker.cleanUpAfterInterrupt(in: runtime.paths) {
-                    let reenable = Process()
-                    reenable.executableURL = URL(fileURLWithPath: "/usr/bin/pluginkit")
-                    reenable.arguments = ["-e", "use", "-i", AppIdentity.extensionBundleID]
-                    try? reenable.run()
-                    reenable.waitUntilExit()
-                }
-                Darwin.exit(130)
-            }
-            source.resume()
-            }
-            interrupt = sources
-        }
-        defer { interrupt.forEach { $0.cancel() } }
+        let paths = runtime.paths
+        let interrupt = (probeExtension || probeLaunch) ? InterruptGuard(paths: paths, reenableExtension: {
+            let reenable = Process()
+            reenable.executableURL = URL(fileURLWithPath: "/usr/bin/pluginkit")
+            reenable.arguments = ["-e", "use", "-i", AppIdentity.extensionBundleID]
+            try? reenable.run()
+            reenable.waitUntilExit()
+        }, finish: { Darwin.exit(130) }) : nil
+        defer { interrupt?.cancel() }
         let checks = await RightHereKit.Doctor(paths: runtime.paths, loaded: runtime.loaded).run(probeExtension: probeExtension, probeLaunch: probeLaunch, launchPlacement: try launchPlacement())
         let failed = checks.contains { $0.status == .fail }
         if json {

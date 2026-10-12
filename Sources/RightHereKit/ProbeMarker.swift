@@ -67,3 +67,29 @@ extension ProbeMarker {
         reenableExtension()
     }
 }
+
+/// Runs the interrupt cleanup when the process gets one of `signals`. The signals are ignored by default and read
+/// through dispatch sources, so the handler runs on a normal thread and may start a process; `finish` is what ends
+/// the process (`exit(130)` in `rh`, a recorder in tests).
+public final class InterruptGuard: @unchecked Sendable {
+    private var sources: [DispatchSourceSignal] = []
+
+    public init(signals: [Int32] = [SIGINT, SIGTERM, SIGHUP], paths: RHPaths, reenableExtension: @escaping @Sendable () -> Void, finish: @escaping @Sendable () -> Void) {
+        for number in signals { signal(number, SIG_IGN) }
+        sources = signals.map { number in
+            let source = DispatchSource.makeSignalSource(signal: number, queue: .global())
+            source.setEventHandler {
+                ProbeMarker.cleanUpAfterInterrupt(in: paths, reenableExtension: reenableExtension)
+                finish()
+            }
+            source.resume()
+            return source
+        }
+    }
+
+    public func cancel() {
+        sources.forEach { $0.cancel() }
+        sources = []
+    }
+}
+
