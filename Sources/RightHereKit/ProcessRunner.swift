@@ -89,11 +89,13 @@ public struct LiveProcessRunner: ProcessRunner {
                 return
             }
             if let text = step.standardInput {
-                // Written off the cooperative pool, and without SIGPIPE: a process that exits before it reads
-                // its input must not take this one down with it.
+                // Written on a Dispatch thread, not the Swift concurrency pool: a child that does not read leaves
+                // `write` blocked, and blocked pool threads are the ones the watchdogs (and everything else
+                // `async`) need to get the child stopped. Written without SIGPIPE: a process that exits before it
+                // reads its input must not take this one down with it.
                 let writer = input.fileHandleForWriting
                 _ = fcntl(writer.fileDescriptor, F_SETNOSIGPIPE, 1)
-                Task.detached {
+                DispatchQueue.global(qos: .userInitiated).async {
                     do { try writer.write(contentsOf: Data(text.utf8)) } catch {}
                     try? writer.close()
                 }

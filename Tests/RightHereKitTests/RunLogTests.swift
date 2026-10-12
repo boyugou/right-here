@@ -55,6 +55,19 @@ struct RunLogTests {
         #expect(try String(contentsOf: target.logFile, encoding: .utf8).hasPrefix("old\n"), "the old lines must stay")
     }
 
+    @Test func theRotatedLogAnEarlierVersionLeftReadableByEveryoneBecomesPrivateToo() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let target = paths(in: directory)
+        try FileManager.default.createDirectory(at: target.logDirectory, withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: target.logFile.path, contents: Data(repeating: UInt8(ascii: "x"), count: Int(RunLog.maxBytes) + 10),
+                                       attributes: [.posixPermissions: 0o644])
+        RunLog.record("after", paths: target)
+        let older = target.logFile.appendingPathExtension("1")
+        #expect((try FileManager.default.attributesOfItem(atPath: older.path)[.posixPermissions] as? NSNumber)?.intValue == 0o600,
+                "the rotated copy kept the old, world-readable mode")
+        #expect((try FileManager.default.attributesOfItem(atPath: target.logFile.path)[.posixPermissions] as? NSNumber)?.intValue == 0o600)
+    }
+
     @Test func theLogAndItsFolderArePrivate() throws {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let target = paths(in: directory)

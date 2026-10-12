@@ -149,6 +149,26 @@ struct LiveProcessRunnerTests {
         #expect(recorder.limits == [.seconds(7), .seconds(2)])
     }
 
+    @Test func manyRunsWithInputToProcessesThatNeverReadStillTimeOutPromptly() async throws {
+        // A child that does not read leaves the writer blocked in write(2). If the writers ran on the Swift
+        // concurrency pool, as many of them as the pool has threads would keep the watchdog tasks that stop the
+        // children from ever running, and every run would last as long as its child (here 30 seconds).
+        let big = String(repeating: "x", count: 300_000)
+        let runs = ProcessInfo.processInfo.activeProcessorCount * 2 + 4
+        let started = ContinuousClock.now
+        let stopped = await withTaskGroup(of: Bool.self) { group -> Int in
+            for _ in 0..<runs {
+                group.addTask {
+                    let result = try? await LiveProcessRunner().run(ProcessStep(executable: "/bin/sleep", arguments: ["30"], standardInput: big), timeout: .seconds(1))
+                    return result?.terminatedAfter != nil
+                }
+            }
+            return await group.reduce(0) { $0 + ($1 ? 1 : 0) }
+        }
+        let took = ContinuousClock.now - started
+        #expect(stopped == runs && took < .seconds(12), "\(stopped) of \(runs) were stopped, after \(took)")
+    }
+
     @Test func missingExecutableThrows() async {
         await #expect(throws: (any Error).self) {
             try await LiveProcessRunner().run(ProcessStep(executable: "/nonexistent/rh-test-binary"))

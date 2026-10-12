@@ -28,5 +28,7 @@ public enum RunLog {
         let older = file.appendingPathExtension("1")
         try? FileManager.default.removeItem(at: older)
         try? FileManager.default.moveItem(at: file, to: older)
+        // The old log keeps whatever mode an earlier version gave it (world-readable), and it is the one left behind.
+        chmod(older.path, 0o600)
     }
 }
