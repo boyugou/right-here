@@ -159,7 +159,8 @@ def main() -> int:
             if hung:
                 status = "HUNG"
                 problems.append(f"[{index}] the tests hung instead of failing for: {name} ({file})")
-            elif "\u2718 Test" in output:
+            elif "\u2718 Test" in output or "unexpected signal code" in output:
+                # A test host that dies by a signal (SIGPIPE, SIGBUS) is as good as a failed test.
                 status = "killed"
             elif re.search(r"^error: |\.swift:\d+:\d+: error:", output, re.M):
                 # A passing test run prints "error:" too (in the names of cases about error messages), so only a
