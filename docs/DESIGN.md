@@ -134,7 +134,8 @@ Verified on this machine (macOS 27.2, 2026-10-11):
   took 8.6 s, and the shell's own startup is about 1.7 s here. The same command runs in `sh`, `bash` and
   `zsh` in the unit tests.
 - The Finder extension's real memory footprint is about 8 MB per process (`footprint`); the 60 MB that `ps`
-  shows is shared framework pages. Finder and each Open or Save panel host one process each.
+  shows is shared framework pages. Several extension processes run at once (three were seen, and each
+  started a probe when the marker appeared, which is why `rh` claims the marker with `unlink`).
 - Release signing works: `SECURE_TIMESTAMP=1 ./script/build_app.sh` signs every code item with the Developer ID
   identity, hardened runtime and Apple's timestamp (the earlier "timestamps differ" failure was a wrong system
   clock), `script/package_dmg.sh` builds a DMG whose checksum file verifies with `shasum -c`, and the DMG's
