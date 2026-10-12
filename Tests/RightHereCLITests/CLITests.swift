@@ -47,10 +47,8 @@ private struct RH {
         var json: Any? { try? JSONSerialization.jsonObject(with: Data(standardOutput.utf8)) }
     }
 
-    func run(_ arguments: [String]) throws -> Output {
-        let process = Process()
-        process.executableURL = binary
-        process.arguments = arguments
+    /// The environment of every `rh` the tests start: its own config and log folders, an empty home for the shell.
+    func environment() -> [String: String] {
         var environment = ProcessInfo.processInfo.environment
         environment["RH_LOG_DIR"] = configDirectory.appendingPathComponent("logs").path
         environment.removeValue(forKey: "RH_CONFIG")
@@ -64,7 +62,14 @@ private struct RH {
         } else {
             environment["RH_CONFIG_DIR"] = configDirectory.path
         }
-        process.environment = environment
+        return environment
+    }
+
+    func run(_ arguments: [String]) throws -> Output {
+        let process = Process()
+        process.executableURL = binary
+        process.arguments = arguments
+        process.environment = environment()
         let out = Pipe(), err = Pipe()
         process.standardOutput = out
         process.standardError = err
@@ -446,9 +451,7 @@ struct CLITests {
         let process = Process()
         process.executableURL = rh.binary
         process.arguments = ["mcp"]
-        var environment = ProcessInfo.processInfo.environment
-        environment["RH_CONFIG_DIR"] = rh.configDirectory.path
-        process.environment = environment
+        process.environment = rh.environment()
         let input = Pipe(), output = Pipe()
         process.standardInput = input
         process.standardOutput = output
@@ -475,9 +478,7 @@ struct CLITests {
         let process = Process()
         process.executableURL = rh.binary
         process.arguments = ["mcp"]
-        var environment = ProcessInfo.processInfo.environment
-        environment["RH_CONFIG_DIR"] = rh.configDirectory.path
-        process.environment = environment
+        process.environment = rh.environment()
         let inputPipe = Pipe(), outputPipe = Pipe()
         process.standardInput = inputPipe
         process.standardOutput = outputPipe
@@ -526,9 +527,7 @@ struct CLITests {
         let process = Process()
         process.executableURL = rh.binary
         process.arguments = ["mcp"]
-        var environment = ProcessInfo.processInfo.environment
-        environment["RH_CONFIG_DIR"] = rh.configDirectory.path
-        process.environment = environment
+        process.environment = rh.environment()
         let input = Pipe(), output = Pipe(), errors = Pipe()
         process.standardInput = input
         process.standardOutput = output
@@ -564,9 +563,7 @@ struct CLITests {
         let process = Process()
         process.executableURL = rh.binary
         process.arguments = ["mcp"]
-        var environment = ProcessInfo.processInfo.environment
-        environment["RH_CONFIG_DIR"] = rh.configDirectory.path
-        process.environment = environment
+        process.environment = rh.environment()
         let input = Pipe(), output = Pipe()
         process.standardInput = input
         process.standardOutput = output

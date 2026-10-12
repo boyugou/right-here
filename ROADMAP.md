@@ -13,6 +13,8 @@
 - Finder Services (Quick Actions) generated from the config; the doctor notices when they drift from it.
 - A notarized, stapled DMG builds with `script/package_dmg.sh` (Apple accepted it; Gatekeeper accepts it).
 - MCP server and the Claude Code plugin (setup, open-here and review-changes skills).
+- Independent reviews in three rounds (see `docs/decisions/0008-independent-review.md`), every finding fixed
+  with a test that fails on the old code.
 - Thirty languages for the menu, the app, alerts and the permission-prompt text (machine-translated,
   awaiting review).
 - A strict, self-describing config: unique ids, no silent shadowing, `--strict`, replacements in
@@ -34,3 +36,6 @@
 - Whether Quick Actions appear on a folder background.
 - The items, sidebar and toolbar menus on a real run.
 - Which process macOS holds responsible when a Quick Action controls a terminal.
+- Whether `rh`, started through the runner script, can look at items under Desktop, Documents and Downloads
+  (privacy-protected folders). If it cannot, an action on such an item stops with an error that names the
+  permission to grant instead of opening some other folder; only a real click shows which case this is.

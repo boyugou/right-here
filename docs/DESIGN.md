@@ -174,6 +174,10 @@ Open (to check on a real run, in the order they matter):
   (above). The extension and `rh` log each step at notice level (`log show --predicate 'subsystem ==
   "com.boyugou.righthere.FinderExtension"'`, and `~/Library/Logs/right-here/rh.log`).
 - A first-ever Automation prompt on a machine that has never allowed the control.
+- Items under Desktop, Documents and Downloads: whether `rh`, started through the runner script, may look at
+  them. `lstat` failing with `EACCES` or `EPERM` is treated as "there, but nothing is known" (it is neither
+  rejected as a typo nor taken for a folder), and a terminal action on such an item stops with an error that
+  names the permission, never opening the folder around it. Only a real click shows whether this happens.
 - Quick Actions that start an agent: which process macOS holds responsible for the Apple event (the
   Services runner, not the Finder extension) and so which Automation entry has to be allowed. It cannot be
   probed without a real invocation from Finder; `rh doctor --probe-launch` only covers the extension.
