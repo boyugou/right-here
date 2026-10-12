@@ -87,6 +87,8 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 7 | Direct distribution first (notarized DMG, Homebrew cask and formula); an App Store "menu only" build later. | [0001](decisions/0001-form-factor.md) |
 | 8 | The MCP server is written against the protocol, with fenced file names and a folder-only working directory. | [0005](decisions/0005-mcp-server.md) |
 | 9 | Thirty languages from a String Catalog compiled into Swift; human-facing surfaces follow the system language, the CLI and MCP stay English. | [0006](decisions/0006-localization.md) |
+| 10 | A Mac App Store edition, if any, is a reduced menu-only app, built only after a one-day sandbox spike. | [0007](decisions/0007-app-store-edition.md) |
+| 11 | Independent review and a cold-start usability test follow large changes; findings are reproduced first and each fix has a test that fails without it. | [0008](decisions/0008-independent-review.md) |
 
 ## 5. Platform facts
 
@@ -131,6 +133,12 @@ Verified on this machine (macOS 27.2, 2026-10-11):
   is honored and nothing needed quoting. 1.1 s when warm (0.3 s to accept the Apple event); one cold run
   took 8.6 s, and the shell's own startup is about 1.7 s here. The same command runs in `sh`, `bash` and
   `zsh` in the unit tests.
+- The Finder extension's real memory footprint is about 8 MB per process (`footprint`); the 60 MB that `ps`
+  shows is shared framework pages. Finder and each Open or Save panel host one process each.
+- Release signing works: `SECURE_TIMESTAMP=1 ./script/build_app.sh` signs every code item with the Developer ID
+  identity, hardened runtime and Apple's timestamp (the earlier "timestamps differ" failure was a wrong system
+  clock), `script/package_dmg.sh` builds a DMG whose checksum file verifies with `shasum -c`, and the DMG's
+  app verifies when mounted. Notarization itself needs the owner's notarytool credentials and has not been run.
 
 Sourced:
 
