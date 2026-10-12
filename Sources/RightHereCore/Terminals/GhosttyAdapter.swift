@@ -14,7 +14,7 @@ public struct GhosttyAdapter: TerminalAdapter {
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
         guard let typed = session.typedInput else {
-            return [.open(OpenStep(bundleID: bundleID, targets: [session.directory.path]))]
+            return [.open(OpenStep(bundleID: bundleID, targets: [try session.requireDirectory(facts)]))]
         }
         let placement = session.placement == .newTab ? "tab" : "window"
         return [.appleScript(AppleScriptStep(

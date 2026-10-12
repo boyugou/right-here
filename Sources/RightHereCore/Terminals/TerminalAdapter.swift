@@ -1,5 +1,16 @@
 import Foundation
 
+extension TerminalSession {
+    /// The session's folder as a path, after checking it is a folder. Handing a file to a terminal
+    /// app would run it, so an adapter never passes on anything else.
+    public func requireDirectory(_ facts: any SystemFacts) throws -> String {
+        guard facts.isDirectory(directory) == true else {
+            throw PlanError.unsupported("\(directory.path) is not a folder.")
+        }
+        return directory.path
+    }
+}
+
 public enum TerminalPlacement: String, Sendable, Codable, CaseIterable {
     case newWindow
     case newTab
@@ -44,7 +55,7 @@ public struct OpenFolderTerminalAdapter: TerminalAdapter {
         if session.typedInput != nil {
             throw PlanError.unsupported("\(displayName) cannot run a command yet. Choose another terminal for this agent.")
         }
-        return [.open(OpenStep(bundleID: bundleID, targets: [session.directory.path]))]
+        return [.open(OpenStep(bundleID: bundleID, targets: [try session.requireDirectory(facts)]))]
     }
 }
 

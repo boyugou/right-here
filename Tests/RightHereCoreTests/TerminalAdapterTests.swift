@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import RightHereCore
 
-private let facts = FakeSystemFacts()
+private let facts = FakeSystemFacts(directories: ["/Users/tester/my code"], files: ["/Users/tester/run-me.command"])
 private let directory = URL(fileURLWithPath: "/Users/tester/my code")
 
 @Suite("Terminal adapters")
@@ -66,6 +66,16 @@ struct TerminalAdapterTests {
         #expect(step.arguments == ["/Users/tester/my code", "claude"])
         #expect(step.source.contains("quoted form of cwd"))
         #expect(step.controls == "Terminal")
+    }
+
+    // MARK: Folders only
+
+    @Test("a plain open refuses anything that is not a known folder", arguments: ["/Users/tester/run-me.command", "/Users/tester/missing"])
+    func plainOpenRequiresAFolder(path: String) {
+        let session = TerminalSession(directory: URL(fileURLWithPath: path))
+        #expect(throws: PlanError.self) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try TerminalAdapters.adapter(for: KnownApps.terminal(id: "warp")!).steps(for: session, bundleID: "x", facts: facts) }
     }
 
     // MARK: Registry

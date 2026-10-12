@@ -93,6 +93,29 @@ struct PlannerTests {
         #expect(plan.steps == [.open(OpenStep(bundleID: "com.fournova.Tower3", targets: ["/Users/tester/code/app"]))])
     }
 
+    @Test("a file given as the folder never reaches a terminal app, which would run it", arguments: ["open.terminal", "agent.claude@link", "agent.claude"])
+    func aFileIsNotOpenedByATerminal(id: String) throws {
+        let facts = machine(files: ["/Users/tester/code/run-me.command"])
+        let context = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/code/run-me.command"))
+        let plan = try Planner(facts: facts).plan(try #require(ActionRef(parsing: id)), context: context)
+        func mentioned(_ step: Step) -> [String] {
+            switch step {
+            case .open(let open): return open.targets
+            case .openURL(let url): return [url.removingPercentEncoding ?? url]
+            case .appleScript(let script): return script.arguments
+            default: return []
+            }
+        }
+        let mentions = plan.steps.flatMap(mentioned)
+        #expect(!mentions.contains { $0.contains("run-me.command") }, "the plan mentions the file: \(mentions)")
+        #expect(mentions.contains { $0.hasPrefix("/Users/tester/code") || $0.contains("cwd=/Users/tester/code") })
+    }
+
+    @Test func aMissingFolderIsRefusedForTerminals() {
+        let context = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/nowhere"))
+        #expect(throws: PlanError.noTarget) { try Planner(facts: machine()).plan(.openTerminal(nil), context: context) }
+    }
+
     @Test func unknownAppIsReported() {
         #expect(throws: PlanError.unknownApp("nope")) {
             try Planner(facts: machine()).plan(.openApp("nope"), context: folder("/Users/tester/code/app"))

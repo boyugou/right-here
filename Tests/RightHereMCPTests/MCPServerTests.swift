@@ -143,6 +143,21 @@ struct MCPToolTests {
         #expect(harness.runner.recorded.first?.arguments == ["-b", "com.microsoft.VSCode", "/Users/tester/code/app"])
     }
 
+    @Test func aFilePassedAsTheContainerIsNeverHandedToATerminal() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_run", ["action": .string("open.terminal"), "container": .string("/Users/tester/code/app/a.txt"), "dry_run": .bool(true)])
+        let steps = try #require(result["structuredContent"]?["plan"]?["steps"]?.arrayValue)
+        let targets = steps.flatMap { $0["targets"]?.arrayValue ?? [] }.compactMap(\.stringValue)
+        #expect(targets == ["/Users/tester/code/app"])
+    }
+
+    @Test func aMissingContainerIsAToolError() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_run", ["action": .string("open.terminal"), "container": .string("/Users/tester/nowhere")])
+        #expect(result["isError"]?.boolValue == true)
+        #expect(harness.runner.recorded.isEmpty)
+    }
+
     @Test func anInvalidActionIsAToolError() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
         let result = try await harness.call("right_here_run", ["action": .string("explode")])

@@ -10,7 +10,7 @@ public struct AppleTerminalAdapter: TerminalAdapter {
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
         guard let typed = session.typedInput else {
-            return [.open(OpenStep(bundleID: bundleID, targets: [session.directory.path]))]
+            return [.open(OpenStep(bundleID: bundleID, targets: [try session.requireDirectory(facts)]))]
         }
         return [.appleScript(AppleScriptStep(
             source: Self.script,

@@ -38,6 +38,27 @@ struct HereContextTests {
         #expect(context.workingDirectory(facts: facts)?.path == "/Users/tester/work")
     }
 
+    @Test func aFileAsTheContainerYieldsItsFolder() {
+        let context = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/code/b.txt"))
+        #expect(context.workingDirectory(facts: facts)?.path == "/Users/tester/code")
+    }
+
+    @Test func aContainerThatDoesNotExistYieldsNil() {
+        let context = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/gone"))
+        #expect(context.workingDirectory(facts: facts) == nil)
+    }
+
+    @Test func anItemInAFolderThatDoesNotExistYieldsNil() {
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/gone/x.txt")])
+        #expect(context.workingDirectory(facts: facts) == nil)
+    }
+
+    @Test func aFileWhereAFolderIsExpectedNeverBecomesTheDirectory() {
+        // /Users/tester/code/b.txt is a file: nothing under it can be a working directory.
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/b.txt/inside")])
+        #expect(context.workingDirectory(facts: facts)?.path == "/Users/tester/code")
+    }
+
     @Test func nothingToActOnYieldsNil() {
         #expect(HereContext(origin: .container).workingDirectory(facts: facts) == nil)
     }
