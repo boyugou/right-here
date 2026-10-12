@@ -75,7 +75,7 @@ MOUNT="$(mktemp -d)"
 hdiutil attach "$DMG" -readonly -nobrowse -mountpoint "$MOUNT" >/dev/null
 codesign --verify --deep --strict "$MOUNT/$APP_NAME"
 "$MOUNT/$APP_NAME/Contents/Helpers/rh" --version >&2
-hdiutil detach "$MOUNT" >/dev/null
+diskutil eject "$MOUNT" >/dev/null
 if [[ "$NOTARIZED" == 1 ]]; then
   xcrun stapler validate "$DMG"
   spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
