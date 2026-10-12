@@ -1,0 +1,92 @@
+name: RightHere
+
+options:
+  bundleIdPrefix: com.boyugou.righthere
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+
+# The logic lives in the SwiftPM package at the repository root; the app and the extension link
+# its libraries. Regenerate the project with `xcodegen generate` after editing this file. The
+# .xcodeproj is generated and not committed.
+packages:
+  RightHerePackage:
+    path: .
+
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: NO
+    # The thin app and extension shells use Swift 5 mode: FinderSync's overrides are not
+    # actor-annotated. All logic lives in the package, which builds in Swift 6.
+    SWIFT_VERSION: "5.0"
+    ENABLE_HARDENED_RUNTIME: YES
+    # Signing is chosen by script/build_app.sh through the environment; "-" signs ad hoc.
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    # Xcode would add get-task-allow, which notarization rejects.
+    CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
+    MARKETING_VERSION: 0.1.0
+    CURRENT_PROJECT_VERSION: 1
+
+targets:
+  RightHere:
+    type: application
+    platform: macOS
+    sources:
+      - path: Apps/RightHere
+        excludes:
+          - "*.entitlements"
+          - Generated-Info.plist
+    info:
+      path: Apps/RightHere/Generated-Info.plist
+      properties:
+        CFBundleName: Right Here
+        CFBundleDisplayName: Right Here
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.utilities
+        LSMinimumSystemVersion: "26.0"
+        NSHumanReadableCopyright: Licensed under the Apache License 2.0.
+    dependencies:
+      - target: FinderExtension
+      - package: RightHerePackage
+        product: RightHereCore
+      - package: RightHerePackage
+        product: RightHereKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.boyugou.righthere
+        PRODUCT_NAME: Right Here
+        EXECUTABLE_NAME: RightHere
+        CODE_SIGN_ENTITLEMENTS: Apps/RightHere/RightHere.entitlements
+
+  FinderExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: Apps/FinderExtension
+        excludes:
+          - "*.entitlements"
+          - Generated-Info.plist
+    info:
+      path: Apps/FinderExtension/Generated-Info.plist
+      properties:
+        CFBundleName: Right Here
+        CFBundleDisplayName: Right Here
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: "26.0"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.FinderSync
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).FinderSyncExtension
+    dependencies:
+      - package: RightHerePackage
+        product: RightHereCore
+      - package: RightHerePackage
+        product: RightHereKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.boyugou.righthere.FinderExtension
+        CODE_SIGN_ENTITLEMENTS: Apps/FinderExtension/FinderExtension.entitlements
