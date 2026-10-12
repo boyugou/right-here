@@ -427,6 +427,11 @@ private struct Builder {
             sink.error(reader.path + ["base_name"], "a file name cannot be empty, \".\" or \"..\", or contain a slash")
             return nil
         }
+        // APFS allows 255 bytes in a name; a number is added to avoid a clash (`name 2.md`), so leave room for it.
+        if baseName.utf8.count + 1 + ext.utf8.count > 240 {
+            sink.error(reader.path + ["base_name"], "base_name and extension together are too long for a file name (at most 240 bytes)")
+            return nil
+        }
         return NewFileTemplate(
             id: id, title: title, baseName: baseName,
             fileExtension: ext, contents: reader.string("contents") ?? "", openWith: reader.string("open_with")

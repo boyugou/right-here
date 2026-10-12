@@ -747,3 +747,20 @@ struct TruncatedConfigTests {
         }
     }
 }
+
+@Suite("New-file template names")
+struct TemplateNameLengthTests {
+    private func parse(baseName: String, ext: String = "md") -> ConfigLoadResult {
+        ConfigParser.parse("[[new_file.template]]\nid = \"t\"\ntitle = \"T\"\nbase_name = \"\(baseName)\"\nextension = \"\(ext)\"\n")
+    }
+
+    @Test func aNameTooLongForTheFileSystemIsAnErrorAtValidationTime() {
+        #expect(parse(baseName: String(repeating: "a", count: 300)).hasErrors)
+        #expect(parse(baseName: String(repeating: "é", count: 130)).hasErrors, "counted in bytes, not characters")
+    }
+
+    @Test func aLongButFittingNameIsAccepted() {
+        #expect(!parse(baseName: String(repeating: "a", count: 200)).hasErrors)
+    }
+}
+
