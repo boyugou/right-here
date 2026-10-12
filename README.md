@@ -53,7 +53,7 @@ rh doctor --probe-launch      # prove a click can start a command in your termin
 ```
 
 Shell completions: `rh --generate-completion-script zsh` (or `bash`, `fish`) prints a script; the Homebrew
-formula installs them.
+formula installs them, and a man page (`man rh`).
 
 The Finder menu is not shown inside iCloud Drive (including a synced Desktop or Documents folder), a
 limit of Finder extensions. The same actions are installed as **Quick Actions**, which work there and take

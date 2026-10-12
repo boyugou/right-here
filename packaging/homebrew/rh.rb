@@ -14,6 +14,11 @@ class Rh < Formula
   def install
     system "swift", "build", "--disable-sandbox", "-c", "release", "--product", "rh", "--arch", "arm64"
     bin.install ".build/arm64-apple-macosx/release/rh"
+    # The man page comes from the same argument definitions as `rh --help` (swift-argument-parser's plugin).
+    mkdir "man"
+    system "swift", "package", "--disable-sandbox", "plugin", "--allow-writing-to-directory", "man",
+           "generate-manual", "--output-directory", "man"
+    man1.install "man/rh.1"
     generate_completions_from_executable(bin/"rh", "--generate-completion-script", shell_parameter_format: :arg,
                                          shells: [:bash, :zsh, :fish])
   end
