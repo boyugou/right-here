@@ -23,7 +23,7 @@ private struct Harness {
     let configDirectory: URL
 
     init(config: String? = nil, runnerResults: [ProcessResult] = [], files: Set<String> = [], directories: Set<String> = [],
-         bundleVersions: [String: String] = [:], hangingRunner: Duration? = nil) throws {
+         bundleVersions: [String: String] = [:], hangingRunner: Duration? = nil, limits: MCPServer.Limits = MCPServer.Limits()) throws {
         configDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("rh-mcp-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
         if let config { try config.write(to: configDirectory.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8) }
@@ -39,9 +39,9 @@ private struct Harness {
         )
         let paths = RHPaths(environment: ["RH_CONFIG_DIR": configDirectory.path], home: URL(fileURLWithPath: "/Users/tester"))
         if let limit = hangingRunner {
-            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: WaitsForAPrompt(wait: limit), pasteboard: pasteboard, rhPath: nil, executionLimit: limit))
+            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: WaitsForAPrompt(wait: limit), pasteboard: pasteboard, rhPath: nil, executionLimit: limit), limits: limits)
         } else {
-            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: runner, pasteboard: pasteboard, rhPath: nil))
+            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: runner, pasteboard: pasteboard, rhPath: nil), limits: limits)
         }
     }
 
@@ -495,13 +495,23 @@ struct MCPLimiterTests {
     }
 
     @Test func theGateRefusesToHoldMoreThanItsCapacityAndFinishingFreesAPlace() async {
-        let gate = RequestGate(running: 2, outstanding: 4)
+        let gate = RequestGate(running: 2, outstanding: 4, queuedBytes: 1_000)
         for _ in 0..<4 { #expect(await gate.reserve()) }
         #expect(await gate.reserve() == false, "a fifth call must be turned away, not queued")
         await gate.start()
         await gate.finish()
         #expect(await gate.reserve(), "a place was freed")
         #expect(await gate.reserve() == false)
+    }
+
+    @Test func theGateAlsoCountsTheSizeOfWhatItHolds() async {
+        let gate = RequestGate(running: 2, outstanding: 100, queuedBytes: 1_000)
+        #expect(await gate.reserve(bytes: 600))
+        #expect(await gate.reserve(bytes: 600) == false, "two requests of 600 bytes do not fit in 1000: memory, not a count, is what a flood costs")
+        #expect(await gate.reserve(bytes: 400))
+        await gate.start()
+        await gate.finish(bytes: 600)
+        #expect(await gate.reserve(bytes: 500), "finishing a call gives its bytes back")
     }
 }
 
@@ -578,9 +588,10 @@ struct MCPServingTests {
 
     @Test func aPingIsAnsweredAtOnceWhileEightSlowCallsAreRunning() async throws {
         // Eight slow calls take every running slot for 1.5 seconds; the quick requests must not wait for them.
-        let harness = try Harness(hangingRunner: .milliseconds(1_500)); defer { harness.cleanUp() }
+        let limits = MCPServer.Limits(running: 8, outstanding: 32)
+        let harness = try Harness(hangingRunner: .milliseconds(1_500), limits: limits); defer { harness.cleanUp() }
         let session = ServeSession(server: harness.server)
-        session.send((1...MCPServer.maxInFlight).map(slowCall) + [#"{"jsonrpc":"2.0","id":100,"method":"ping"}"#,
+        session.send((1...limits.running).map(slowCall) + [#"{"jsonrpc":"2.0","id":100,"method":"ping"}"#,
                                                                    #"{"jsonrpc":"2.0","id":101,"method":"tools/list"}"#,
                                                                    #"{"jsonrpc":"2.0","id":102,"method":"initialize","params":{}}"#])
         let quick: Set<Int> = [100, 101, 102]
@@ -589,22 +600,23 @@ struct MCPServingTests {
         #expect(Set(early.compactMap { $0.reply["id"]?.intValue }) == quick,
                 Comment(rawValue: "the quick requests should be answered while the slow calls still run, got \(early.map(\.reply))"))
         let all = await session.finish()
-        #expect(all.count == MCPServer.maxInFlight + 3, "every request is answered in the end")
+        #expect(all.count == limits.running + 3, "every request is answered in the end")
         #expect(all.allSatisfy { $0.reply["error"] == nil }, "slow calls end as tool errors, not protocol errors")
     }
 
     @Test func callsBeyondTheServersCapacityAreTurnedAwayAtOnceWithABusyError() async throws {
-        let harness = try Harness(hangingRunner: .milliseconds(400)); defer { harness.cleanUp() }
+        let limits = MCPServer.Limits(running: 8, outstanding: 32)
+        let harness = try Harness(hangingRunner: .milliseconds(400), limits: limits); defer { harness.cleanUp() }
         let session = ServeSession(server: harness.server)
-        let total = MCPServer.maxOutstanding + 8
+        let total = limits.outstanding + 8
         session.send((1...total).map(slowCall))
         func busy() -> [(at: ContinuousClock.Instant, reply: JSONValue)] { session.replies.filter { $0.reply["error"]?["code"] == .number(-32000) } }
         await wait(upTo: .seconds(2)) { busy().count >= 8 }
         #expect(busy().count == 8, "eight calls over the capacity should have been refused, got \(busy().count)")
-        #expect(Set(busy().compactMap { $0.reply["id"]?.intValue }) == Set((MCPServer.maxOutstanding + 1)...total), "the ones that arrived last are the ones turned away")
+        #expect(Set(busy().compactMap { $0.reply["id"]?.intValue }) == Set((limits.outstanding + 1)...total), "the ones that arrived last are the ones turned away")
         let all = await session.finish()
         #expect(all.count == total, "nothing is dropped without an answer")
-        #expect(all.filter { $0.reply["result"]?["isError"]?.boolValue == true }.count == MCPServer.maxOutstanding, "the rest ran, and ended as tool errors")
+        #expect(all.filter { $0.reply["result"]?["isError"]?.boolValue == true }.count == limits.outstanding, "the rest ran, and ended as tool errors")
     }
 
     @Test func aBatchOfSlowCallsIsHeldAsOneAndTurnedAwayAsOne() async throws {
