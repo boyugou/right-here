@@ -23,5 +23,8 @@ removes it (the config stays).
   extension makes macOS drop it, so `build_app.sh` unregisters the build folder copy.
 - codesign with a secure timestamp fails with "timestamps differ" when the system clock is off.
   Local builds skip the timestamp; release builds need a correct clock.
+- A downloaded app that was not moved yet runs from a temporary copy (App Translocation). `rh install`
+  refuses there, because the runner script and the Services would point into a folder that disappears
+  when the app quits. Move Right Here.app into Applications first.
 - Test an action without side effects with `rh run <id> --dry-run`.
 - Point a command at a throwaway config with `RH_CONFIG_DIR=/tmp/x`.

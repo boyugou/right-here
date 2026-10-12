@@ -50,6 +50,7 @@ struct Install: AsyncParsableCommand {
         guard let rhPath = Bundle.main.executableURL?.resolvingSymlinksInPath().path else {
             throw Output.fail("error: cannot tell where rh is installed.")
         }
+        if InstallError.isTranslocated(rhPath) { throw Output.fail("error: " + InstallError.translocated.localizedDescription) }
         let installer = Installer(home: runtime.facts.homeDirectory)
 
         // A step that fails does not stop the others: this is also the repair command.

@@ -62,6 +62,15 @@ struct InstallerTests {
         #expect(try String(contentsOf: installer.cliLink, encoding: .utf8) == "#!/bin/sh\necho mine\n")
     }
 
+    @Test("an app run from App Translocation is recognized", arguments: [
+        ("/private/var/folders/ab/cd/T/AppTranslocation/6F1B/d/Right Here.app/Contents/Helpers/rh", true),
+        ("/Applications/Right Here.app/Contents/Helpers/rh", false),
+        ("/Users/tester/Applications/Right Here.app/Contents/Helpers/rh", false)
+    ])
+    func translocation(path: String, translocated: Bool) {
+        #expect(InstallError.isTranslocated(path) == translocated)
+    }
+
     @Test func aDanglingLinkIsReplaced() throws {
         let home = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: home) }

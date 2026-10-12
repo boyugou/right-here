@@ -6,6 +6,9 @@ public enum InstallError: Error, Equatable, LocalizedError {
     case notALink(path: String)
     case appNotFound
     case extensionMissing(path: String)
+    /// The app is running from the temporary copy macOS makes of a downloaded app that was not moved
+    /// anywhere yet. The runner script and the Services would point into a folder that disappears.
+    case translocated
 
     public var errorDescription: String? {
         switch self {
@@ -15,7 +18,14 @@ public enum InstallError: Error, Equatable, LocalizedError {
             return "Right Here.app was not found. Install the app, then run `rh install --finder`."
         case .extensionMissing(let path):
             return "\(path) does not exist."
+        case .translocated:
+            return "Right Here is running from the temporary location macOS uses for a downloaded app. Move Right Here.app into your Applications folder, open it from there, and install again."
         }
+    }
+
+    /// Whether `path` is inside App Translocation's temporary mount.
+    public static func isTranslocated(_ path: String) -> Bool {
+        path.contains("/AppTranslocation/")
     }
 }
 
