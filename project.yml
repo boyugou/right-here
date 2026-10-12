@@ -39,6 +39,9 @@ targets:
         excludes:
           - "*.entitlements"
           - Generated-Info.plist
+      # The permission-prompt text, in every shipped language (one catalog for both targets).
+      - path: Localization/InfoPlist.xcstrings
+        buildPhase: resources
     info:
       path: Apps/RightHere/Generated-Info.plist
       properties:
@@ -49,6 +52,7 @@ targets:
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "26.0"
         NSHumanReadableCopyright: Licensed under the Apache License 2.0.
+        NSAppleEventsUsageDescription: "Right Here asks your terminal to open a window in the folder you picked and to run the command you chose, such as your AI agent."
     dependencies:
       - target: FinderExtension
       - package: RightHerePackage
@@ -71,6 +75,8 @@ targets:
         excludes:
           - "*.entitlements"
           - Generated-Info.plist
+      - path: Localization/InfoPlist.xcstrings
+        buildPhase: resources
     info:
       path: Apps/FinderExtension/Generated-Info.plist
       properties:
@@ -79,6 +85,7 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: "26.0"
+        NSAppleEventsUsageDescription: "Right Here asks your terminal to open a window in the folder you picked and to run the command you chose, such as your AI agent."
         NSExtension:
           NSExtensionPointIdentifier: com.apple.FinderSync
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).FinderSyncExtension

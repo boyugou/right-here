@@ -249,6 +249,10 @@ Thirty languages from `Localization/Localizable.xcstrings`, compiled into Swift 
 [0006](decisions/0006-localization.md)). The initial translations are AI-generated and marked
 `needs_review`.
 
+The text of the macOS Automation prompt (`NSAppleEventsUsageDescription`, which Apple's hardened-runtime guidance
+asks for next to the apple-events entitlement, and App Review checks) is in `Localization/InfoPlist.xcstrings`.
+Xcode compiles that one catalog into a `.lproj` folder per language in both the app and the extension.
+
 ## 14. Status
 
 Working and tested headlessly: the core and CLI, Ghostty and Terminal.app adapters, the app and
