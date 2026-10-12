@@ -52,38 +52,50 @@ struct Install: AsyncParsableCommand {
         }
         let installer = Installer(home: runtime.facts.homeDirectory)
 
+        // A step that fails does not stop the others: this is also the repair command.
+        var problems = 0
+        func attempt(_ label: String, _ body: () async throws -> Void) async {
+            do { try await body() } catch {
+                problems += 1
+                Output.error("error: \(label): \(error.localizedDescription)")
+            }
+        }
+
         if everything || scripts {
-            Output.print("Runner script: \(try installer.installRunnerScript(rhPath: rhPath).path)")
+            await attempt("runner script") { Output.print("Runner script: \(try installer.installRunnerScript(rhPath: rhPath).path)") }
         }
         if everything || cli {
-            Output.print("Command link: \(try installer.installCLILink(rhPath: rhPath).path)")
+            await attempt("command link") { Output.print("Command link: \(try installer.installCLILink(rhPath: rhPath).path)") }
         }
         if everything {
-            let detected = await Detector(facts: runtime.facts).detect()
-            if try ConfigStore.initialize(paths: runtime.paths, detected: detected) {
-                Output.print("Config file: \(runtime.paths.configFile.path) (new)")
+            await attempt("config file") {
+                let detected = await Detector(facts: runtime.facts).detect()
+                if try ConfigStore.initialize(paths: runtime.paths, detected: detected) {
+                    Output.print("Config file: \(runtime.paths.configFile.path) (new)")
+                }
             }
         }
         if everything || services {
-            let specs = ActionRegistry(config: runtime.config, facts: runtime.facts, localizer: .system).serviceSpecs(rhPath: rhPath)
-            let written = try installer.installServices(specs)
-            _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
-            Output.print("Services: \(written.count) installed in \(installer.locations.services.path)")
+            await attempt("Finder Services") {
+                let specs = ActionRegistry(config: runtime.config, facts: runtime.facts, localizer: .system).serviceSpecs(rhPath: rhPath)
+                let written = try installer.installServices(specs)
+                _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
+                Output.print("Services: \(written.count) installed in \(installer.locations.services.path)")
+            }
         }
         if everything || finder {
-            try await installExtension(rhPath: rhPath, facts: runtime.facts)
+            await attempt("Finder extension") { try await installExtension(rhPath: rhPath, facts: runtime.facts) }
+        }
+        if problems > 0 {
+            throw Output.fail("Finished with \(problems) problem(s). Run `rh doctor` to see what is still missing.")
         }
         Output.print("Done. Run `rh doctor` to check the setup.")
     }
 
     private func installExtension(rhPath: String, facts: any SystemFacts) async throws {
-        guard let app = HostApp.locate(rhPath: rhPath, facts: facts) else {
-            throw Output.fail("error: Right Here.app was not found. Install the app, then run `rh install --finder`.")
-        }
+        guard let app = HostApp.locate(rhPath: rhPath, facts: facts) else { throw InstallError.appNotFound }
         let appex = HostApp.extensionURL(in: app).path
-        guard FileManager.default.fileExists(atPath: appex) else {
-            throw Output.fail("error: \(appex) does not exist.")
-        }
+        guard FileManager.default.fileExists(atPath: appex) else { throw InstallError.extensionMissing(path: appex) }
         let manager = FinderExtensionManager()
         // A build folder or an old copy registered under the same identifier makes macOS drop the extension.
         for stale in await manager.status().paths where stale != appex {

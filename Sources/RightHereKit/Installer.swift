@@ -1,6 +1,24 @@
 import Foundation
 import RightHereCore
 
+public enum InstallError: Error, Equatable, LocalizedError {
+    /// Something that is not a link already sits where the command link goes.
+    case notALink(path: String)
+    case appNotFound
+    case extensionMissing(path: String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .notALink(let path):
+            return "\(path) exists and is not a link, so it was left alone. Move it away, then run `rh install --cli` again."
+        case .appNotFound:
+            return "Right Here.app was not found. Install the app, then run `rh install --finder`."
+        case .extensionMissing(let path):
+            return "\(path) does not exist."
+        }
+    }
+}
+
 /// Installs the pieces that connect Finder to `rh`. Everything here writes under the user's
 /// home directory, so no privileges are needed.
 public struct Installer: Sendable {
@@ -52,12 +70,15 @@ public struct Installer: Sendable {
         return runnerScript
     }
 
-    /// Links `rh` into `~/.local/bin`, replacing a link or file already there.
+    /// Links `rh` into `~/.local/bin`, replacing a link already there. A real file or folder with that
+    /// name belongs to the person, so it is refused rather than deleted.
     @discardableResult
     public func installCLILink(rhPath: String) throws -> URL {
         try fileManager.createDirectory(at: locations.localBin, withIntermediateDirectories: true)
-        if (try? fileManager.destinationOfSymbolicLink(atPath: cliLink.path)) != nil || fileManager.fileExists(atPath: cliLink.path) {
+        if (try? fileManager.destinationOfSymbolicLink(atPath: cliLink.path)) != nil {
             try fileManager.removeItem(at: cliLink)
+        } else if fileManager.fileExists(atPath: cliLink.path) {
+            throw InstallError.notALink(path: cliLink.path)
         }
         try fileManager.createSymbolicLink(atPath: cliLink.path, withDestinationPath: rhPath)
         return cliLink

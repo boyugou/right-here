@@ -52,6 +52,26 @@ struct InstallerTests {
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path) == "/new/rh")
     }
 
+    @Test func aRealFileInThePlaceOfTheLinkIsLeftAlone() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        try FileManager.default.createDirectory(at: installer.locations.localBin, withIntermediateDirectories: true)
+        try "#!/bin/sh\necho mine\n".write(to: installer.cliLink, atomically: true, encoding: .utf8)
+        #expect(throws: InstallError.notALink(path: installer.cliLink.path)) { try installer.installCLILink(rhPath: "/new/rh") }
+        #expect(try String(contentsOf: installer.cliLink, encoding: .utf8) == "#!/bin/sh\necho mine\n")
+    }
+
+    @Test func aDanglingLinkIsReplaced() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        try FileManager.default.createDirectory(at: installer.locations.localBin, withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(atPath: installer.cliLink.path, withDestinationPath: "/gone/rh")
+        try installer.installCLILink(rhPath: "/new/rh")
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path) == "/new/rh")
+    }
+
     @Test func removeRunnerScriptIsIdempotent() throws {
         let home = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: home) }
