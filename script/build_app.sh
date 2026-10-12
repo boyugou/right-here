@@ -27,6 +27,14 @@ LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchSe
 
 log() { printf '\n==> %s\n' "$1" >&2; }
 
+# Fail early, and say what to do, when something the build needs is missing.
+need() { command -v "$1" >/dev/null 2>&1 || { echo "error: $1 not found. $2" >&2; exit 1; }; }
+need swift "Install Xcode 26 or later (the App Store or developer.apple.com)."
+need xcodebuild "Install Xcode 26 or later, then: sudo xcode-select -s /Applications/Xcode.app"
+need xcodegen "Install it with: brew install xcodegen"
+[[ "$(uname -m)" == "arm64" ]] || { echo "error: Right Here is built for Apple silicon (arm64) only." >&2; exit 1; }
+[[ "$(sw_vers -productVersion | cut -d. -f1)" -ge 26 ]] || { echo "error: macOS 26 or later is required (this is $(sw_vers -productVersion))." >&2; exit 1; }
+
 resolve_identity() {
   if [[ -n "${SIGN_IDENTITY:-}" ]]; then
     printf '%s' "$SIGN_IDENTITY"
