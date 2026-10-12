@@ -9,6 +9,9 @@ public struct ServerContext: Sendable {
     public var runner: any ProcessRunner
     public var pasteboard: any PasteboardWriting
     public var rhPath: String?
+    /// How long a started action may run before it is stopped. An Apple event can wait on a permission prompt
+    /// nobody answers, and each such call would keep one of the server's few request slots for good.
+    public var executionLimit: Duration
     /// Limits how many windows and files tool calls may open or create: an agent that has been talked
     /// into it could otherwise open hundreds.
     let launchLimiter: LaunchLimiter
@@ -18,13 +21,15 @@ public struct ServerContext: Sendable {
         paths: RHPaths,
         runner: any ProcessRunner,
         pasteboard: any PasteboardWriting,
-        rhPath: String?
+        rhPath: String?,
+        executionLimit: Duration = .seconds(120)
     ) {
         self.facts = facts
         self.paths = paths
         self.runner = runner
         self.pasteboard = pasteboard
         self.rhPath = rhPath
+        self.executionLimit = executionLimit
         self.launchLimiter = LaunchLimiter()
     }
 

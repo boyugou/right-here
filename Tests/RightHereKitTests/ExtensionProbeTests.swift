@@ -82,4 +82,10 @@ struct AutomationProbeTests {
         let result = await AutomationProbe(facts: facts, runner: runner).check(name: "Ghostty", bundleID: "com.mitchellh.ghostty")
         #expect(result.outcome == expected)
     }
+
+    @Test func aProbeTheWatchdogHadToStopIsATimeOutWhateverItPrinted() async {
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 15, terminatedAfter: .seconds(40))])
+        let result = await AutomationProbe(facts: facts, runner: runner).check(name: "Ghostty", bundleID: "com.mitchellh.ghostty")
+        #expect(result.outcome == .timedOut)
+    }
 }

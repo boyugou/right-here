@@ -117,6 +117,38 @@ struct LiveProcessRunnerTests {
         #expect(Date().timeIntervalSince(started) < 10)
     }
 
+    @Test func aProcessStoppedForRunningTooLongSaysSoAndOneThatFinishedDoesNot() async throws {
+        let stopped = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/sleep", arguments: ["30"]), timeout: .milliseconds(300))
+        #expect(stopped.terminatedAfter == .milliseconds(300))
+        let finished = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/echo", arguments: ["hi"]), timeout: .seconds(10))
+        #expect(finished.terminatedAfter == nil)
+        #expect(finished.standardOutput == "hi\n")
+        // And a process that fails on its own, quickly, is a failure and not a time-out.
+        let failed = try await LiveProcessRunner().run(ProcessStep(executable: "/usr/bin/false"), timeout: .seconds(10))
+        #expect(failed.status != 0 && failed.terminatedAfter == nil)
+    }
+
+    @Test func aStepThatRanOutOfTimeIsReportedAsThatNotAsACrypticExitStatus() async throws {
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 15, terminatedAfter: .seconds(120))])
+        let plan = LaunchPlan(action: "x", summary: "x", steps: [.appleScript(AppleScriptStep(source: "on run argv\nend run", controls: "Ghostty"))])
+        do {
+            try await LiveExecutor(runner: runner, pasteboard: RecordingPasteboard()).execute(plan)
+            Issue.record("expected a time-out")
+        } catch let error as ExecutionError {
+            guard case .timedOut(_, let seconds) = error else { Issue.record("wrong error \(error)"); return }
+            #expect(seconds == 120)
+            #expect(error.localizedDescription.contains("permission"))
+        }
+    }
+
+    @Test func theTimeLimitedRunnerGivesAProcessADefaultLimitButKeepsItsOwn() async throws {
+        let recorder = LimitRecorder()
+        let limited = TimeLimitedRunner(base: recorder, limit: .seconds(7))
+        _ = try await limited.run(ProcessStep(executable: "/bin/echo"), timeout: nil)
+        _ = try await limited.run(ProcessStep(executable: "/bin/echo"), timeout: .seconds(2))
+        #expect(recorder.limits == [.seconds(7), .seconds(2)])
+    }
+
     @Test func missingExecutableThrows() async {
         await #expect(throws: (any Error).self) {
             try await LiveProcessRunner().run(ProcessStep(executable: "/nonexistent/rh-test-binary"))
@@ -182,5 +214,17 @@ struct LiveProcessRunnerTests {
     @Test func largeOutputDoesNotDeadlock() async throws {
         let result = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/sh", arguments: ["-c", "head -c 400000 /dev/zero | tr '\\0' 'x'"]))
         #expect(result.standardOutput.count == 400_000)
+    }
+}
+
+
+private final class LimitRecorder: ProcessRunner, @unchecked Sendable {
+    private let lock = NSLock()
+    private var seen: [Duration?] = []
+    var limits: [Duration?] { lock.withLock { seen } }
+
+    func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
+        lock.withLock { seen.append(timeout) }
+        return ProcessResult(status: 0)
     }
 }

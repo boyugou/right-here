@@ -4,6 +4,16 @@ import RightHereCore
 import RightHereKit
 @testable import RightHereMCP
 
+/// Behaves like an `osascript` that waits for a permission prompt nobody answers: it only returns when its
+/// time limit stops it.
+private final class WaitsForAPrompt: ProcessRunner, @unchecked Sendable {
+    func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
+        let limit = timeout ?? .seconds(30)
+        try await Task.sleep(for: limit)
+        return ProcessResult(status: 15, terminatedAfter: timeout)
+    }
+}
+
 private struct Harness {
     let server: MCPServer
     let runner: FakeProcessRunner
@@ -11,7 +21,7 @@ private struct Harness {
     let configDirectory: URL
 
     init(config: String? = nil, runnerResults: [ProcessResult] = [], files: Set<String> = [], directories: Set<String> = [],
-         bundleVersions: [String: String] = [:]) throws {
+         bundleVersions: [String: String] = [:], hangingRunner: Duration? = nil) throws {
         configDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("rh-mcp-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
         if let config { try config.write(to: configDirectory.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8) }
@@ -26,7 +36,11 @@ private struct Harness {
             bundleVersions: bundleVersions
         )
         let paths = RHPaths(environment: ["RH_CONFIG_DIR": configDirectory.path], home: URL(fileURLWithPath: "/Users/tester"))
-        server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: runner, pasteboard: pasteboard, rhPath: nil))
+        if let limit = hangingRunner {
+            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: WaitsForAPrompt(), pasteboard: pasteboard, rhPath: nil, executionLimit: limit))
+        } else {
+            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: runner, pasteboard: pasteboard, rhPath: nil))
+        }
     }
 
     func cleanUp() { try? FileManager.default.removeItem(at: configDirectory) }
@@ -408,6 +422,17 @@ struct MCPHardeningTests {
         #expect(LaunchCost.of(LaunchPlan(action: "a", summary: "", steps: [.copyToPasteboard("x"), .pause(milliseconds: 5)])) == 0)
         // An action with nothing to open still costs one, so it can never be a free way round the limit.
         #expect(LaunchCost.of(LaunchPlan(action: "a", summary: "", steps: [.open(OpenStep(bundleID: "x", targets: []))])) == 1)
+    }
+
+    @Test func aStartedActionThatWaitsForeverIsStoppedAndSaysWhy() async throws {
+        // A permission prompt nobody answers must not pin one of the server's request slots for good.
+        let harness = try Harness(bundleVersions: ["com.mitchellh.ghostty": "1.3.1"], hangingRunner: .milliseconds(300)); defer { harness.cleanUp() }
+        let started = ContinuousClock.now
+        let result = try await harness.call("right_here_run", ["action": .string("agent.claude@ghostty"), "container": .string("/Users/tester/code/app")])
+        #expect(ContinuousClock.now - started < .seconds(5))
+        #expect(result["isError"]?.boolValue == true)
+        #expect(text(result).contains("did not finish"), Comment(rawValue: text(result)))
+        #expect(text(result).contains("permission"))
     }
 
     @Test func aDryRunDoesNotCountTowardsTheLimit() async throws {

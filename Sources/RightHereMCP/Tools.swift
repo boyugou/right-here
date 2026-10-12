@@ -200,7 +200,7 @@ enum Tools {
                 throw ToolError("Too many windows and files were opened by tool calls in the last minute. Ask the person before opening more.")
             }
         }
-        try await LiveExecutor(runner: server.runner, pasteboard: server.pasteboard).execute(plan)
+        try await LiveExecutor(runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), pasteboard: server.pasteboard).execute(plan)
         return ToolOutput(text: "Done: " + plan.summary, structured: .object(["ran": .bool(true), "plan": planJSON]))
     }
 

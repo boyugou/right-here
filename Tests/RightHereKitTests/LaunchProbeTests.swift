@@ -160,10 +160,19 @@ struct LaunchProbeTests {
 
     @Test func anAppleEventCutOffAtTheLimitMeansNobodyAnsweredThePrompt() async throws {
         let root = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: root) }
-        let cutOff = ProcessResult(status: 15)
-        let probe = makeProbe(FakeTerminal(.answers(cutOff, after: .milliseconds(1_200))), root: root, executionLimit: .seconds(2))
+        let cutOff = ProcessResult(status: 15, terminatedAfter: .seconds(2))
+        let probe = makeProbe(FakeTerminal(.answers(cutOff, after: .milliseconds(100))), root: root, executionLimit: .seconds(2))
         let result = await probe.run(terminal: ghostty, bundleID: "com.mitchellh.ghostty", timeout: .seconds(1))
         #expect(result.outcome == .timedOut)
+    }
+
+    @Test func aProcessThatDiedQuicklyOnItsOwnIsNeverReadAsATimeout() async throws {
+        // The old test for this guessed from how long the step took; a slow failure looked like a time-out.
+        let root = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: root) }
+        let slowFailure = ProcessResult(status: 1, standardError: "syntax error")
+        let probe = makeProbe(FakeTerminal(.answers(slowFailure, after: .milliseconds(1_300))), root: root, executionLimit: .seconds(2))
+        let result = await probe.run(terminal: ghostty, bundleID: "com.mitchellh.ghostty", timeout: .seconds(1))
+        #expect(result.outcome == .failed, "\(result)")
     }
 
     @Test func aQuickFailureIsAFailureNotATimeout() async throws {

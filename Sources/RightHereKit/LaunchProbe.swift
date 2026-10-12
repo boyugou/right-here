@@ -117,11 +117,10 @@ public struct LaunchProbe: Sendable {
             try await executor.execute(LaunchPlan(action: "probe.launch", summary: "Probe \(app.name)", steps: steps))
         } catch ExecutionError.automationDenied {
             return Result(application: app.name, outcome: .denied)
-        } catch {
+        } catch ExecutionError.timedOut {
             // A step cut off at the limit means macOS never got an answer to its permission prompt.
-            if clock.now - started >= executionLimit - .seconds(1) {
-                return Result(application: app.name, outcome: .timedOut, detail: "No answer to the permission prompt within \(executionLimit).")
-            }
+            return Result(application: app.name, outcome: .timedOut, detail: "No answer to the permission prompt within \(executionLimit).")
+        } catch {
             return Result(application: app.name, outcome: .failed, detail: error.localizedDescription)
         }
 
@@ -161,15 +160,5 @@ public struct LaunchProbe: Sendable {
     private static func seconds(_ duration: Duration) -> Double {
         let parts = duration.components
         return ((Double(parts.seconds) + Double(parts.attoseconds) / 1e18) * 10).rounded() / 10
-    }
-}
-
-/// Applies a default time limit to every process, so a step that waits for a person cannot hang a probe.
-private struct TimeLimitedRunner: ProcessRunner {
-    let base: any ProcessRunner
-    let limit: Duration
-
-    func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
-        try await base.run(step, timeout: timeout ?? limit)
     }
 }

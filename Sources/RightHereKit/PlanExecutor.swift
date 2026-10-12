@@ -7,6 +7,9 @@ public enum ExecutionError: Error, Equatable, Sendable, LocalizedError {
     /// macOS refused to let the caller control an application (Automation permission).
     case automationDenied(application: String?)
     case fileExists(path: String)
+    /// A step was stopped because it ran past its limit; most often macOS is waiting for the person to answer a
+    /// permission prompt.
+    case timedOut(step: String, seconds: Int)
 
     public var errorDescription: String? {
         switch self {
@@ -17,6 +20,8 @@ public enum ExecutionError: Error, Equatable, Sendable, LocalizedError {
             return "macOS blocked controlling\(target). Allow it in System Settings › Privacy & Security › Automation, then try again."
         case .fileExists(let path):
             return "\(path) already exists."
+        case .timedOut(let step, let seconds):
+            return "\(step) did not finish within \(seconds) seconds and was stopped. If macOS is waiting for you to allow Right Here to control an app (a permission prompt), answer it and try again."
         }
     }
 }
@@ -109,6 +114,9 @@ public struct LiveExecutor: Sendable {
 
     private func check(_ process: ProcessStep, step: Step, controls: String? = nil) async throws -> String? {
         let result = try await runner.run(process)
+        if let limit = result.terminatedAfter {
+            throw ExecutionError.timedOut(step: step.summary, seconds: Int(limit.components.seconds))
+        }
         guard result.status == 0 else {
             if result.standardError.contains("(-1743)") { throw ExecutionError.automationDenied(application: controls) }
             let message = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -5,11 +5,15 @@ public struct ProcessResult: Sendable, Equatable {
     public var status: Int32
     public var standardOutput: String
     public var standardError: String
+    /// Set when the process was stopped for running past its limit (the limit it was given). `status` then says
+    /// how it died, not what it would have answered.
+    public var terminatedAfter: Duration?
 
-    public init(status: Int32, standardOutput: String = "", standardError: String = "") {
+    public init(status: Int32, standardOutput: String = "", standardError: String = "", terminatedAfter: Duration? = nil) {
         self.status = status
         self.standardOutput = standardOutput
         self.standardError = standardError
+        self.terminatedAfter = terminatedAfter
     }
 }
 
@@ -61,10 +65,12 @@ public struct LiveProcessRunner: ProcessRunner {
         let errorCollector = PipeCollector(error.fileHandleForReading)
 
         let launchFailure = LaunchFailure()
+        let cutOff = CutOff()
         let watchdog = timeout.map { limit in
             Task.detached {
                 try? await Task.sleep(for: limit)
                 guard !Task.isCancelled, process.isRunning else { return }
+                cutOff.mark()
                 process.terminate()
                 // An interactive login shell ignores SIGTERM, so a startup file that never returns would hold
                 // the caller forever: give it a moment, then kill it and whatever it left in its group.
@@ -107,7 +113,8 @@ public struct LiveProcessRunner: ProcessRunner {
         return ProcessResult(
             status: status,
             standardOutput: String(decoding: outputCollector.collected, as: UTF8.self),
-            standardError: String(decoding: errorCollector.collected, as: UTF8.self)
+            standardError: String(decoding: errorCollector.collected, as: UTF8.self),
+            terminatedAfter: cutOff.happened ? timeout : nil
         )
     }
 }
@@ -151,4 +158,29 @@ private final class PipeCollector: @unchecked Sendable {
 
 private final class LaunchFailure: @unchecked Sendable {
     var error: (any Error)?
+}
+
+/// Whether the watchdog stopped the process, written by the watchdog's task and read once the process is gone.
+private final class CutOff: @unchecked Sendable {
+    private let lock = NSLock()
+    private var fired = false
+
+    func mark() { lock.withLock { fired = true } }
+    var happened: Bool { lock.withLock { fired } }
+}
+
+/// Gives every process that has no limit of its own a default one, so a step that waits for a person (an Apple
+/// event held up by a permission prompt) cannot hold its caller, and an MCP server's request slot, forever.
+public struct TimeLimitedRunner: ProcessRunner {
+    public let base: any ProcessRunner
+    public let limit: Duration
+
+    public init(base: any ProcessRunner, limit: Duration) {
+        self.base = base
+        self.limit = limit
+    }
+
+    public func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
+        try await base.run(step, timeout: timeout ?? limit)
+    }
 }

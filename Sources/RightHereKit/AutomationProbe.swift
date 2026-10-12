@@ -59,7 +59,7 @@ public struct AutomationProbe: Sendable {
             )
             if result.status == 0 { return Result(application: name, bundleID: bundleID, outcome: .granted) }
             let error = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
-            let outcome: Outcome = error.contains("(-1743)") ? .denied : error.contains("(-1712)") ? .timedOut : .failed
+            let outcome: Outcome = error.contains("(-1743)") ? .denied : (error.contains("(-1712)") || result.terminatedAfter != nil) ? .timedOut : .failed
             return Result(application: name, bundleID: bundleID, outcome: outcome, detail: error)
         } catch {
             return Result(application: name, bundleID: bundleID, outcome: .failed, detail: error.localizedDescription)
