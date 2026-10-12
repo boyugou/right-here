@@ -71,6 +71,16 @@ struct ConfigStoreTests {
         #expect(loaded.result.hasErrors)
     }
 
+    @Test func aByteOrderMarkAtTheStartOfTheFileIsIgnored() throws {
+        let directory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let target = paths(in: directory)
+        try ("\u{FEFF}[general]\nterminal = \"terminal\"\n").write(to: target.configFile, atomically: true, encoding: .utf8)
+        let loaded = ConfigStore.load(paths: target)
+        #expect(loaded.result.diagnostics.isEmpty)
+        #expect(loaded.config.terminal == "terminal")
+    }
+
     @Test func initializeWritesOnceAndDoesNotOverwrite() throws {
         let directory = try makeTemporaryDirectory().appendingPathComponent("nested")
         defer { try? FileManager.default.removeItem(at: directory.deletingLastPathComponent()) }

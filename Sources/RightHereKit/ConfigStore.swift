@@ -59,7 +59,9 @@ public enum ConfigStore {
             let diagnostic = ConfigDiagnostic(severity: .error, path: "", message: "The file is not valid UTF-8.")
             return LoadedConfig(result: ConfigLoadResult(config: .default, diagnostics: [diagnostic]), fileExists: true, file: paths.configFile)
         }
-        return LoadedConfig(result: ConfigParser.parse(text), fileExists: true, file: paths.configFile)
+        // Some editors put a byte order mark at the start of a UTF-8 file; TOML does not allow one.
+        let body = text.hasPrefix("\u{FEFF}") ? String(text.dropFirst()) : text
+        return LoadedConfig(result: ConfigParser.parse(body), fileExists: true, file: paths.configFile)
     }
 
     public enum InitializeOutcome: Sendable, Equatable {
