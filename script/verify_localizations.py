@@ -16,6 +16,7 @@
 """
 import json
 import re
+import unicodedata
 import subprocess
 import sys
 from pathlib import Path
@@ -29,6 +30,34 @@ SHIPPED = [
     "pt-BR", "ro", "ru", "ta", "te", "th", "tr", "uk", "ur", "vi", "zh-Hans", "zh-Hant",
 ]
 PLACEHOLDER = re.compile(r"%(?:\d+\$)?@")
+
+
+# The script each language is written in. A translation with letters but none of them in its script was pasted
+# against the wrong language (one catalog entry once got its neighbour's text); a value with no letters at all
+# (a bare placeholder) and one equal to English ("OK") are fine.
+SCRIPT = {
+    "ar": "ARABIC", "fa": "ARABIC", "ur": "ARABIC", "he": "HEBREW", "bn": "BENGALI", "hi": "DEVANAGARI", "mr": "DEVANAGARI",
+    "ta": "TAMIL", "te": "TELUGU", "th": "THAI", "ko": "HANGUL", "el": "GREEK", "ru": "CYRILLIC", "uk": "CYRILLIC",
+}
+CJK = {"ja", "zh-Hans", "zh-Hant"}
+LATIN = {"de", "es", "fr", "id", "it", "ms", "nl", "pl", "pt-BR", "ro", "tr", "vi"}
+
+
+def scripts_in(text: str) -> set[str]:
+    return {unicodedata.name(c, "").split()[0] for c in text if c.isalpha()}
+
+
+def wrong_script(language: str, value: str, english: str) -> bool:
+    found = scripts_in(value)
+    if not found or value == english:
+        return False
+    if language in SCRIPT:
+        return SCRIPT[language] not in found
+    if language in CJK:
+        return not (found & {"CJK", "HIRAGANA", "KATAKANA"})
+    if language in LATIN:
+        return bool(found - {"LATIN"})
+    return False
 
 
 def main() -> int:
@@ -53,6 +82,8 @@ def main() -> int:
                 continue
             if sorted(PLACEHOLDER.findall(unit["value"])) != sorted(PLACEHOLDER.findall(english)):
                 problems.append(f"{key} [{language}]: placeholders differ from English")
+            if wrong_script(language, unit["value"], english):
+                problems.append(f"{key} [{language}]: not written in the script of {language}: {unit['value']!r}")
         extra = set(localizations) - set(SHIPPED)
         if extra:
             problems.append(f"{key}: unexpected languages {sorted(extra)}")
