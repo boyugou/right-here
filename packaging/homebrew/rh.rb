@@ -35,6 +35,9 @@ class Rh < Formula
 
   test do
     assert_match(/\d+\.\d+\.\d+/, shell_output("#{bin}/rh --version"))
+    # A path that is not there is refused, so the test makes the file it names.
+    (testpath/"a.txt").write("x")
     assert_match "Copy path", shell_output("#{bin}/rh run copy-path.name --dry-run #{testpath}/a.txt")
+    assert_match "does not exist", shell_output("#{bin}/rh run copy-path.name --dry-run #{testpath}/missing.txt 2>&1", 1)
   end
 end

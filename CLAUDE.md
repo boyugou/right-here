@@ -67,6 +67,11 @@ docs/                    DESIGN.md, decisions/, development/
   closes). An Apple event or UI-scripting call from your shell would make macOS grant your host app standing
   control of their terminals. Tests never open windows: CLI tests use a terminal that cannot run commands, and
   everything else uses fake runners.
+- A claim about what the file system or the OS guarantees is measured before anything is built on it: eight
+  concurrent `unlink`s of one path mostly all succeeded on APFS, so "whoever unlinks wins" was wrong, while
+  `rename` and `O_EXCL` held in thousands of rounds (`ProbeMarker`).
+- Tests that run the real `rh` give it an empty home for the login shell (the person's startup files must not
+  run) and a config that does not open or reveal anything; every fix gets a test that fails against the old code.
 - To look at the setup window without a screen, render the SwiftUI view to a PNG with `ImageRenderer` from a
   scratch package that links the app's view files; `-AppleLanguages "(de)"` switches the language.
 - Before pushing run `./script/verify_all.sh` (build, tests, catalog, public-safety check).
