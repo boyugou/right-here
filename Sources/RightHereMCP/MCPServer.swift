@@ -72,12 +72,18 @@ public struct MCPServer: Sendable {
 
     /// Handles one incoming line. Returns the line to send back, or `nil` for a notification.
     public func handle(_ line: String) async -> String? {
-        let message: JSONValue
-        do {
-            message = try JSONDecoder().decode(JSONValue.self, from: Data(line.utf8))
-        } catch {
-            return Self.errorResponse(id: .null, code: -32700, message: "Parse error")
-        }
+        guard let message = Self.decode(line) else { return Self.parseError }
+        return await handle(message: message)
+    }
+
+    static let parseError = errorResponse(id: .null, code: -32700, message: "Parse error")
+
+    static func decode(_ line: String) -> JSONValue? {
+        try? JSONDecoder().decode(JSONValue.self, from: Data(line.utf8))
+    }
+
+    /// Handles one decoded message: a request, a notification, or a batch of them.
+    func handle(message: JSONValue) async -> String? {
         // A batch (JSON-RPC, allowed by protocol 2025-03-26 and earlier): answer every request in one array.
         if case .array(let batch) = message {
             guard !batch.isEmpty else { return Self.errorResponse(id: .null, code: -32600, message: "Invalid request: empty batch") }
@@ -93,6 +99,31 @@ public struct MCPServer: Sendable {
             return replies.isEmpty ? nil : JSONValue.array(replies).line()
         }
         return await reply(to: message)?.line()
+    }
+
+    /// Whether answering takes real work (a tool runs, perhaps a login shell or an Apple event), so it has to wait
+    /// for a request slot. Everything else (`ping`, `initialize`, `tools/list`, notifications, malformed input) is
+    /// answered at once, whatever else is running.
+    static func needsASlot(_ message: JSONValue) -> Bool {
+        switch message {
+        case .object: return message["method"]?.stringValue == "tools/call"
+        case .array(let batch): return batch.contains { $0["method"]?.stringValue == "tools/call" }
+        default: return false
+        }
+    }
+
+    /// The answer to a request that arrived when the server was already as busy as it will be: one error per request,
+    /// so a client waiting on an id is told rather than left to time out.
+    static func busyReply(for message: JSONValue) -> String? {
+        func busy(_ item: JSONValue) -> JSONValue? {
+            guard let id = item["id"], isValidID(id) else { return nil }
+            return errorObject(id: id, code: -32000, message: "Server busy: too many requests in progress; try again shortly")
+        }
+        if case .array(let batch) = message {
+            let replies = batch.compactMap(busy)
+            return replies.isEmpty ? nil : JSONValue.array(replies).line()
+        }
+        return busy(message)?.line()
     }
 
     private func reply(to message: JSONValue) async -> JSONValue? {
@@ -205,41 +236,54 @@ public struct MCPServer: Sendable {
     /// 1024 characters (under 1 MB even at four bytes each); measured, an 8 MB array of tiny strings cost 170 MB
     /// and three seconds of CPU to decode, eight at once 780 MB and a minute, so the cap sits just above honest use.
     static let maxLineBytes = 2 * 1024 * 1024
-    /// How many requests run at once. Reading pauses while this many are in flight, so a burst of slow calls
-    /// (each may start a login shell or an osascript) cannot start hundreds of processes.
+    /// How many tool calls run at once (each may start a login shell or an osascript), and how many may be waiting
+    /// besides: past that, a call is answered with a "busy" error at once. Anything that is not a tool call is never
+    /// held up by either.
     static let maxInFlight = 8
+    static let maxOutstanding = 32
     /// The most requests one batch may hold.
     static let maxBatch = 100
 
-    /// Reads requests from standard input until it closes, answering on standard output. Messages are
-    /// separated by line feeds only (the transport says so): Foundation's `lines` would also split on
-    /// U+2028, U+0085 and a bare carriage return, all of which can appear raw inside a JSON string such
-    /// as a file name. Requests run concurrently, so a slow tool call does not hold up `ping`.
-    public func serve() async {
-        let writer = LineWriter()
-        let gate = InFlightGate(limit: Self.maxInFlight)
+    /// Reads requests from `input` until it closes, answering on `output` (standard input and output by default).
+    /// Messages are separated by line feeds only (the transport says so): Foundation's `lines` would also split on
+    /// U+2028, U+0085 and a bare carriage return, all of which can appear raw inside a JSON string such as a file
+    /// name. Tool calls run concurrently, a bounded number at a time; a slow one does not hold up `ping`.
+    public func serve(input: FileHandle = .standardInput, output: Int32 = STDOUT_FILENO) async {
+        let writer = LineWriter(descriptor: output)
+        let gate = RequestGate(running: Self.maxInFlight, outstanding: Self.maxOutstanding)
         // A discarding group frees each finished request; an ordinary group would keep every result.
         await withDiscardingTaskGroup { group in
             var buffer: [UInt8] = []
             var overflowed = false
 
+            func send(_ reply: String) async {
+                // Nobody is reading any more, so there is nobody to serve.
+                if await !writer.write(reply) { exit(0) }
+            }
+
             func dispatch(_ text: String) async {
-                await gate.enter()
+                guard let message = Self.decode(text) else { return await send(Self.parseError) }
+                guard Self.needsASlot(message) else {
+                    if let reply = await self.handle(message: message) { await send(reply) }
+                    return
+                }
+                guard await gate.reserve() else {
+                    if let busy = Self.busyReply(for: message) { await send(busy) }
+                    return
+                }
                 group.addTask {
-                    if let reply = await self.handle(text), await !writer.write(reply) {
-                        // Nobody is reading any more, so there is nobody to serve.
-                        exit(0)
-                    }
-                    await gate.leave()
+                    await gate.start()
+                    if let reply = await self.handle(message: message) { await send(reply) }
+                    await gate.finish()
                 }
             }
 
             do {
-                for try await byte in FileHandle.standardInput.bytes {
+                for try await byte in input.bytes {
                     if byte == 0x0A {
                         defer { buffer.removeAll(keepingCapacity: true); overflowed = false }
                         if overflowed {
-                            if await !writer.write(Self.errorResponse(id: .null, code: -32600, message: "Request too large")) { exit(0) }
+                            await send(Self.errorResponse(id: .null, code: -32600, message: "Request too large"))
                             continue
                         }
                         var line = buffer
@@ -261,25 +305,41 @@ public struct MCPServer: Sendable {
     }
 }
 
-/// Lets at most `limit` requests run at once; `enter` waits when that many are in flight.
-actor InFlightGate {
-    private let limit: Int
-    private var running = 0
+/// Bounds the tool calls in progress: at most `running` execute at once and at most `outstanding` are held (executing
+/// or waiting for a turn). `reserve` says whether there is room to hold one more, without waiting.
+actor RequestGate {
+    private let running: Int
+    private let outstanding: Int
+    private var active = 0
+    private var held = 0
     private var waiters: [CheckedContinuation<Void, Never>] = []
 
-    init(limit: Int) { self.limit = limit }
+    init(running: Int, outstanding: Int) {
+        self.running = running
+        self.outstanding = max(outstanding, running)
+    }
 
-    func enter() async {
-        if running < limit {
-            running += 1
+    /// Holds a place for one more call, or `false` when the server is already holding as many as it will.
+    func reserve() -> Bool {
+        guard held < outstanding else { return false }
+        held += 1
+        return true
+    }
+
+    /// Waits for a turn to execute.
+    func start() async {
+        if active < running {
+            active += 1
         } else {
             await withCheckedContinuation { waiters.append($0) }
         }
     }
 
-    func leave() {
+    /// Gives the place back; a waiting call takes over the turn.
+    func finish() {
+        held -= 1
         if waiters.isEmpty {
-            running -= 1
+            active -= 1
         } else {
             waiters.removeFirst().resume()
         }

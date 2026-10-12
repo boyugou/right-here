@@ -4,12 +4,14 @@ import RightHereCore
 import RightHereKit
 @testable import RightHereMCP
 
-/// Behaves like an `osascript` that waits for a permission prompt nobody answers: it only returns when its
-/// time limit stops it.
+/// Behaves like an `osascript` that waits for a permission prompt nobody answers: it only comes back after `wait`
+/// (standing in for the time limit that stops it).
 private final class WaitsForAPrompt: ProcessRunner, @unchecked Sendable {
+    let wait: Duration
+    init(wait: Duration) { self.wait = wait }
+
     func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
-        let limit = timeout ?? .seconds(30)
-        try await Task.sleep(for: limit)
+        try await Task.sleep(for: wait)
         return ProcessResult(status: 15, terminatedAfter: timeout)
     }
 }
@@ -37,7 +39,7 @@ private struct Harness {
         )
         let paths = RHPaths(environment: ["RH_CONFIG_DIR": configDirectory.path], home: URL(fileURLWithPath: "/Users/tester"))
         if let limit = hangingRunner {
-            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: WaitsForAPrompt(), pasteboard: pasteboard, rhPath: nil, executionLimit: limit))
+            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: WaitsForAPrompt(wait: limit), pasteboard: pasteboard, rhPath: nil, executionLimit: limit))
         } else {
             server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: runner, pasteboard: pasteboard, rhPath: nil))
         }
@@ -198,6 +200,15 @@ struct MCPToolTests {
             #expect(result["content"]?.arrayValue?.first?["text"]?.stringValue?.contains("NUL") == true)
         }
         #expect(harness.runner.recorded.isEmpty)
+    }
+
+    @Test func anAbsolutePathWhoseFirstComponentStartsWithACombiningMarkIsStillAbsolute() async throws {
+        // "/" followed by U+0301 is one Character that is not "/"; a Character-level prefix test called it relative.
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_run", ["action": .string("reveal"), "paths": .array([.string("/\u{301}missing")]), "dry_run": .bool(true)])
+        let message = result["content"]?.arrayValue?.first?["text"]?.stringValue ?? ""
+        #expect(!message.contains("absolute"), Comment(rawValue: "refused as relative: \(message)"))
+        #expect(message.contains("does not exist"), Comment(rawValue: message))
     }
 
     @Test func aMissingActionIsAToolError() async throws {
@@ -462,28 +473,149 @@ struct MCPLimiterTests {
         #expect(await limiter.allow(cost: 1) == .allowed, "the refused call must not have used up the last unit")
     }
 
-    @Test func theGateLetsInOnlyAsManyAsItsLimitUntilSomeoneLeaves() async throws {
-        let gate = InFlightGate(limit: 2)
-        await gate.enter()
-        await gate.enter()
+    @Test func theGateRunsOnlyAsManyAtOnceAsItsLimitAndHandsTurnsOnAsCallsFinish() async throws {
+        let gate = RequestGate(running: 2, outstanding: 10)
+        for _ in 0..<3 { #expect(await gate.reserve()) }
+        await gate.start()
+        await gate.start()
         let counter = EntryCounter()
-        let third = Task { await gate.enter(); await counter.add() }
+        let third = Task { await gate.start(); await counter.add() }
         try await Task.sleep(for: .milliseconds(150))
-        #expect(await counter.value == 0, "a third request got in while two were running")
-        await gate.leave()
+        #expect(await counter.value == 0, "a third call got a turn while two were running")
+        await gate.finish()
         await third.value
         #expect(await counter.value == 1)
-        await gate.leave()
-        await gate.leave()
-        // Everyone has left, so the full limit is free again.
-        await gate.enter()
-        await gate.enter()
+        await gate.finish()
+        await gate.finish()
+        // Everyone has finished, so the full limit is free again.
+        #expect(await gate.reserve())
+        await gate.start()
+        #expect(await gate.reserve())
+        await gate.start()
+    }
+
+    @Test func theGateRefusesToHoldMoreThanItsCapacityAndFinishingFreesAPlace() async {
+        let gate = RequestGate(running: 2, outstanding: 4)
+        for _ in 0..<4 { #expect(await gate.reserve()) }
+        #expect(await gate.reserve() == false, "a fifth call must be turned away, not queued")
+        await gate.start()
+        await gate.finish()
+        #expect(await gate.reserve(), "a place was freed")
+        #expect(await gate.reserve() == false)
     }
 }
 
 private actor EntryCounter {
     private(set) var value = 0
     func add() { value += 1 }
+}
+
+/// Runs `serve` over two pipes inside the test process and stamps every reply with the moment it arrived.
+private final class ServeSession: @unchecked Sendable {
+    private let input = Pipe()
+    private let output = Pipe()
+    private let lock = NSLock()
+    private var arrived: [(at: ContinuousClock.Instant, reply: JSONValue)] = []
+    private let readerDone: AsyncStream<Void>
+    private var serving: Task<Void, Never>?
+
+    init(server: MCPServer) {
+        // Replies are read on a thread of their own. `FileHandle.bytes` (what `serve` reads requests with) does its
+        // blocking reads on one queue shared by every such sequence in the process, so a second sequence waiting
+        // for replies on that same queue would keep the server from ever reading its requests.
+        let (done, finished) = AsyncStream<Void>.makeStream()
+        readerDone = done
+        let reader = output.fileHandleForReading
+        Thread.detachNewThread { [self] in
+            var buffer = Data()
+            while true {
+                let chunk = reader.availableData
+                if chunk.isEmpty { break }
+                buffer.append(chunk)
+                while let newline = buffer.firstIndex(of: 0x0A) {
+                    let line = buffer[buffer.startIndex..<newline]
+                    buffer = Data(buffer[buffer.index(after: newline)...])
+                    if let value = try? JSONDecoder().decode(JSONValue.self, from: line) {
+                        lock.withLock { arrived.append((ContinuousClock.now, value)) }
+                    }
+                }
+            }
+            finished.yield()
+            finished.finish()
+        }
+        let readEnd = input.fileHandleForReading
+        let writeDescriptor = output.fileHandleForWriting.fileDescriptor
+        serving = Task { await server.serve(input: readEnd, output: writeDescriptor) }
+    }
+
+    func send(_ lines: [String]) {
+        try? input.fileHandleForWriting.write(contentsOf: Data((lines.joined(separator: "\n") + "\n").utf8))
+    }
+
+    var replies: [(at: ContinuousClock.Instant, reply: JSONValue)] { lock.withLock { arrived } }
+
+    /// Closes the input, waits for `serve` to answer everything and return, and returns every reply.
+    func finish() async -> [(at: ContinuousClock.Instant, reply: JSONValue)] {
+        try? input.fileHandleForWriting.close()
+        await serving?.value
+        try? output.fileHandleForWriting.close()
+        for await _ in readerDone { break }
+        return replies
+    }
+}
+
+@Suite("MCP serving: slow calls never hold up the rest")
+struct MCPServingTests {
+    private func slowCall(_ id: Int) -> String {
+        #"{"jsonrpc":"2.0","id":\#(id),"method":"tools/call","params":{"name":"right_here_finder_selection","arguments":{}}}"#
+    }
+
+    /// Polls until `condition` holds or `limit` passes, so a loaded machine slows the test down but cannot fail it.
+    private func wait(upTo limit: Duration, until condition: () -> Bool) async {
+        let deadline = ContinuousClock.now + limit
+        while !condition() && ContinuousClock.now < deadline { try? await Task.sleep(for: .milliseconds(10)) }
+    }
+
+    @Test func aPingIsAnsweredAtOnceWhileEightSlowCallsAreRunning() async throws {
+        // Eight slow calls take every running slot for 1.5 seconds; the quick requests must not wait for them.
+        let harness = try Harness(hangingRunner: .milliseconds(1_500)); defer { harness.cleanUp() }
+        let session = ServeSession(server: harness.server)
+        session.send((1...MCPServer.maxInFlight).map(slowCall) + [#"{"jsonrpc":"2.0","id":100,"method":"ping"}"#,
+                                                                   #"{"jsonrpc":"2.0","id":101,"method":"tools/list"}"#,
+                                                                   #"{"jsonrpc":"2.0","id":102,"method":"initialize","params":{}}"#])
+        let quick: Set<Int> = [100, 101, 102]
+        await wait(upTo: .seconds(1)) { Set(session.replies.compactMap { $0.reply["id"]?.intValue }).isSuperset(of: quick) }
+        let early = session.replies
+        #expect(Set(early.compactMap { $0.reply["id"]?.intValue }) == quick,
+                Comment(rawValue: "the quick requests should be answered while the slow calls still run, got \(early.map(\.reply))"))
+        let all = await session.finish()
+        #expect(all.count == MCPServer.maxInFlight + 3, "every request is answered in the end")
+        #expect(all.allSatisfy { $0.reply["error"] == nil }, "slow calls end as tool errors, not protocol errors")
+    }
+
+    @Test func callsBeyondTheServersCapacityAreTurnedAwayAtOnceWithABusyError() async throws {
+        let harness = try Harness(hangingRunner: .milliseconds(400)); defer { harness.cleanUp() }
+        let session = ServeSession(server: harness.server)
+        let total = MCPServer.maxOutstanding + 8
+        session.send((1...total).map(slowCall))
+        func busy() -> [(at: ContinuousClock.Instant, reply: JSONValue)] { session.replies.filter { $0.reply["error"]?["code"] == .number(-32000) } }
+        await wait(upTo: .seconds(2)) { busy().count >= 8 }
+        #expect(busy().count == 8, "eight calls over the capacity should have been refused, got \(busy().count)")
+        #expect(Set(busy().compactMap { $0.reply["id"]?.intValue }) == Set((MCPServer.maxOutstanding + 1)...total), "the ones that arrived last are the ones turned away")
+        let all = await session.finish()
+        #expect(all.count == total, "nothing is dropped without an answer")
+        #expect(all.filter { $0.reply["result"]?["isError"]?.boolValue == true }.count == MCPServer.maxOutstanding, "the rest ran, and ended as tool errors")
+    }
+
+    @Test func aBatchOfSlowCallsIsHeldAsOneAndTurnedAwayAsOne() async throws {
+        let harness = try Harness(hangingRunner: .milliseconds(300)); defer { harness.cleanUp() }
+        let session = ServeSession(server: harness.server)
+        let batch = "[" + (1...3).map(slowCall).joined(separator: ",") + "]"
+        session.send([batch])
+        let all = await session.finish()
+        let replies = try #require(all.first?.reply.arrayValue)
+        #expect(replies.count == 3)
+    }
 }
 
 @Suite("MCP JSON-RPC shape")
