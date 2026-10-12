@@ -197,4 +197,14 @@ struct ConfigStoreSizeTests {
         try ("# " + String(repeating: "x", count: 100_000) + "\n").write(to: paths.configFile, atomically: true, encoding: .utf8)
         #expect(!ConfigStore.load(paths: paths).result.hasErrors)
     }
+
+    @Test func aSymlinkToAnOversizedFileIsRefusedToo() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let paths = RHPaths(environment: ["RH_CONFIG_DIR": directory.path], home: directory)
+        let big = directory.appendingPathComponent("elsewhere.toml")
+        try ("# " + String(repeating: "x", count: ConfigStore.maxConfigBytes + 10) + "\n").write(to: big, atomically: true, encoding: .utf8)
+        try FileManager.default.createSymbolicLink(at: paths.configFile, withDestinationURL: big)
+        #expect(ConfigStore.load(paths: paths).result.diagnostics.contains { $0.message.contains("a few kilobytes") })
+    }
 }
+

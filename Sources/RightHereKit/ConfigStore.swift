@@ -56,8 +56,10 @@ public enum ConfigStore {
     public static let maxConfigBytes = 1_048_576
 
     public static func load(paths: RHPaths) -> LoadedConfig {
-        if let size = (try? FileManager.default.attributesOfItem(atPath: paths.configFile.path))?[.size] as? Int, size > maxConfigBytes {
-            let diagnostic = ConfigDiagnostic(severity: .error, path: "", message: "The file is \(size / 1_048_576) MB; a config is a few kilobytes, so it was not read. Is this the right file?")
+        // Through a link: a config kept in a dotfiles repository is a symlink, and the link itself is a few bytes.
+        let target = paths.configFile.resolvingSymlinksInPath().path
+        if let size = (try? FileManager.default.attributesOfItem(atPath: target))?[.size] as? Int, size > maxConfigBytes {
+            let diagnostic = ConfigDiagnostic(severity: .error, path: "", message: "The file is \(size / 1024) KB; a config is a few kilobytes, so it was not read. Is this the right file?")
             return LoadedConfig(result: ConfigLoadResult(config: .default, diagnostics: [diagnostic]), fileExists: true, file: paths.configFile)
         }
         guard let data = try? Data(contentsOf: paths.configFile) else {

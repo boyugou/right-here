@@ -182,6 +182,13 @@ Minimized with the real CLI (delta debugging over lines) and fixed by giving the
 turns it into the ordinary syntax error. After the fix 6000 seeds (1.5 million documents) ran clean. The fixed
 seed counts in `FuzzTests.swift` are unchanged; run them wider after touching the parser.
 
+## Eleventh round (regressions in the last 15 commits, after 5e0c17c)
+
+One defect and one false positive. Fixed: the 1 MiB config cap measured a symlink's own size, so a symlink to a huge
+file bypassed it (the ninth round had made symlinked configs supported); it stats the target now, and the message
+gives kilobytes. The localization script check treated the ordinal and micro signs (º ª µ) as another script. Not
+fixable by that check: a neighbour swap between languages that share a script (ru/uk, ar/fa/ur, hi/mr, ja/zh).
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.

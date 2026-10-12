@@ -44,7 +44,9 @@ LATIN = {"de", "es", "fr", "id", "it", "ms", "nl", "pl", "pt-BR", "ro", "tr", "v
 
 
 def scripts_in(text: str) -> set[str]:
-    return {unicodedata.name(c, "").split()[0] for c in text if c.isalpha()}
+    # Ordinal and micro signs (º ª µ) are Latin letters whose Unicode names do not begin with the script.
+    return {"LATIN" if unicodedata.name(c, "").split()[0] in ("MASCULINE", "FEMININE", "MICRO") else unicodedata.name(c, "").split()[0]
+            for c in text if c.isalpha()}
 
 
 def wrong_script(language: str, value: str, english: str) -> bool:
