@@ -53,7 +53,7 @@ public enum NewFileNamer {
         for number in 1...attemptLimit {
             let stem = number == 1 ? baseName : "\(baseName) \(number)"
             let name = stem + suffix
-            if !facts.fileExists(directory.appendingPathComponent(name)) { return name }
+            if !facts.itemExists(directory.appendingPathComponent(name)) { return name }
         }
         return nil
     }

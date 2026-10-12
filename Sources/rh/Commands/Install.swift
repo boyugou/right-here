@@ -29,6 +29,8 @@ struct Install: AsyncParsableCommand {
           --finder    register and switch on the Finder extension of Right Here.app
 
         Nothing here needs administrator rights. Run it again at any time; it repairs what is out of date.
+        With RH_HOME set, every per-user path (config, Services, runner script, command link) moves under that \
+        folder, to try an install without touching your own.
         """
     )
 
@@ -43,6 +45,9 @@ struct Install: AsyncParsableCommand {
 
     @Flag(help: "Register and switch on only the Finder extension.")
     var finder = false
+
+    @Flag(name: .customLong("skip-finder"), help: "Install everything except the Finder extension.")
+    var skipFinder = false
 
     func run() async throws {
         let runtime = Runtime()
@@ -78,13 +83,19 @@ struct Install: AsyncParsableCommand {
         }
         if everything || services {
             await attempt("Finder Services") {
-                let specs = ActionRegistry(config: runtime.config, facts: runtime.facts, localizer: .system).serviceSpecs(rhPath: rhPath)
+                // The config may have been created a moment ago, so read it again: the Services follow what is in the file now.
+                let config = ConfigStore.load(paths: runtime.paths).config
+                let specs = ActionRegistry(config: config, facts: runtime.facts, localizer: .system).serviceSpecs(rhPath: rhPath)
                 let written = try installer.installServices(specs)
-                _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
+                if ProcessInfo.processInfo.environment["RH_HOME"] == nil {
+                    _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
+                }
                 Output.print("Services: \(written.count) installed in \(installer.locations.services.path)")
             }
         }
-        if everything || finder {
+        // The extension's registration is system-wide, not per home folder, so a trial under RH_HOME leaves it alone.
+        let trialHome = ProcessInfo.processInfo.environment["RH_HOME"] != nil
+        if finder || (everything && !skipFinder && !trialHome) {
             await attempt("Finder extension") {
                 do {
                     try await installExtension(rhPath: rhPath, facts: runtime.facts)
@@ -128,12 +139,18 @@ struct Uninstall: AsyncParsableCommand {
         let services = installer.installedServices()
         if !services.isEmpty {
             try installer.removeServices()
-            _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
+            if ProcessInfo.processInfo.environment["RH_HOME"] == nil {
+                _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
+            }
             Output.print("Removed \(services.count) Services.")
         }
         if let destination = try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path) {
             try FileManager.default.removeItem(at: installer.cliLink)
             Output.print("Removed the command link (it pointed at \(destination)).")
+        }
+        if ProcessInfo.processInfo.environment["RH_HOME"] != nil {
+            Output.print("RH_HOME is set: the Finder extension's registration is system-wide and was left alone.")
+            return
         }
         let manager = FinderExtensionManager()
         for path in await manager.status().paths {

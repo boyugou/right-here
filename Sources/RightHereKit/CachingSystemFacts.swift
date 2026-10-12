@@ -19,6 +19,7 @@ public final class CachingSystemFacts: SystemFacts, @unchecked Sendable {
     public var loginShell: String { base.loginShell }
     public func isDirectory(_ url: URL) -> Bool? { base.isDirectory(url) }
     public func fileExists(_ url: URL) -> Bool { base.fileExists(url) }
+    public func itemExists(_ url: URL) -> Bool { base.itemExists(url) }
     public func gitRoot(containing url: URL) -> URL? { base.gitRoot(containing: url) }
     public func isRunning(bundleID: String) -> Bool { base.isRunning(bundleID: bundleID) }
     public func displayName(bundleID: String) -> String? { base.displayName(bundleID: bundleID) }

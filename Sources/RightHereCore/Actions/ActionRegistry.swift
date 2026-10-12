@@ -101,6 +101,9 @@ public struct ActionRegistry: Sendable {
             return
         }
         describeApp(&info, app: app)
+        if info.available, app.role != .terminal {
+            unavailable(&info, reason: "\(app.name) is not a terminal. Use open.app.\(app.id) to open files with it.")
+        }
     }
 
     private func describeApp(_ info: inout ActionInfo, app: AppDescriptor) {
@@ -129,8 +132,14 @@ public struct ActionRegistry: Sendable {
         }
         info.icon = agent.iconBundleID.flatMap { facts.applicationURL(bundleID: $0) != nil ? Icon.app($0) : nil } ?? .symbol("terminal")
 
-        let chosen = launcher ?? config.agents[id]?.launcher ?? .terminal(nil)
-        switch chosen {
+        let resolved = config.launcher(forAgent: id, explicit: launcher, hasVariant: variant != nil)
+        if let conflict = resolved.conflict {
+            info.title = localizer.agentVariant(agent.name, variant?.localizedTitle(localizer) ?? "")
+            info.shortTitle = variant?.localizedTitle(localizer) ?? info.title
+            unavailable(&info, reason: conflict)
+            return
+        }
+        switch resolved.launcher {
         case .desktop:
             info.title = localizer.agentDesktop(agent.name)
             info.shortTitle = info.title
@@ -144,7 +153,7 @@ public struct ActionRegistry: Sendable {
             if agent.terminalLink == nil { unavailable(&info, reason: "\(agent.name) has no terminal link.") }
         case .terminal(let terminalID):
             let terminal: AppDescriptor?
-            if let terminalID { terminal = config.app(id: terminalID) } else { terminal = try? resolveDefault(role: .terminal, configured: config.terminal) }
+            if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? resolveDefault(role: .terminal, configured: config.terminal) }
             let terminalName = terminal.map(name(of:)) ?? terminalID ?? ""
             if let variant {
                 let variantTitle = variant.localizedTitle(localizer)

@@ -210,7 +210,8 @@ applies. The app never rewrites the file, so comments and ordering stay the owne
 2. Text typed into a terminal is read as keystrokes, so a path with a line break or any control character
    is refused for typed launches. Deep links percent-encode everything but unreserved characters.
 3. The sandbox stays on for the extension. What it cannot do is done by `rh` through the runner script,
-   which only the user can install.
+   which only the user can install and which passes on only `run` and `probe`: a compromised extension
+   cannot call `rh install`, `rh uninstall` or `rh init --force`.
 4. Configuration is never loaded from the folder being acted on.
 5. `rh` itself is not privileged and needs no administrator rights anywhere.
 

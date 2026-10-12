@@ -46,6 +46,13 @@ struct PlannerTests {
         }
     }
 
+    @Test func aDanglingSymlinkCountsAsATakenName() throws {
+        let facts = FakeSystemFacts(directories: ["/Users/tester/code"], danglingLinks: ["/Users/tester/code/untitled.md"])
+        let plan = try Planner(facts: facts).plan(.newFile("md"), context: folder("/Users/tester/code"))
+        guard case .createFile(let file)? = plan.steps.first else { Issue.record("expected a file"); return }
+        #expect(file.path == "/Users/tester/code/untitled 2.md")
+    }
+
     @Test func copyPathOfBackgroundIsTheFolder() throws {
         let plan = try Planner(facts: machine()).plan(.copyPath(.tilde), context: folder("/Users/tester/code/app"))
         #expect(plan.steps == [.copyToPasteboard("~/code/app")])
@@ -222,6 +229,38 @@ struct PlannerTests {
         let plan = try Planner(config: config, facts: machine()).plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
         guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }
         #expect(step.arguments[1] == "claude --model opus")
+    }
+
+    @Test func aVariantStartsInATerminalEvenWhenTheDefaultLauncherIsTheLink() throws {
+        let config = Config(agents: ["claude": .init(launcher: .terminalLink)])
+        let planner = Planner(config: config, facts: machine())
+        // The plain action follows the configured launcher...
+        let plain = try planner.plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
+        guard case .openURL? = plain.steps.first else { Issue.record("expected the deep link"); return }
+        // ...but a variant is a command-line option, so it is typed, not dropped.
+        let variant = try planner.plan(.agent(id: "claude", variant: "continue", launcher: nil), context: folder("/Users/tester/code/app"))
+        guard case .appleScript(let step)? = variant.steps.first else { Issue.record("expected a typed launch, got \(variant.steps)"); return }
+        #expect(step.arguments[1] == "claude --continue")
+    }
+
+    @Test("naming a link or desktop launcher together with a variant is refused", arguments: [AgentLauncher.desktop, .terminalLink])
+    func aVariantWithALinkLauncherIsRefused(launcher: AgentLauncher) {
+        #expect(throws: PlanError.self) {
+            try Planner(facts: machine()).plan(.agent(id: "claude", variant: "continue", launcher: launcher), context: folder("/Users/tester/code/app"))
+        }
+        let info = ActionRegistry(config: .default, facts: machine()).info(.agent(id: "claude", variant: "continue", launcher: launcher))
+        #expect(!info.available)
+        #expect(info.unavailableReason?.contains("variant") == true)
+    }
+
+    @Test func anAppThatIsNotATerminalIsNotOfferedAsOne() {
+        let registry = ActionRegistry(config: .default, facts: machine(installed: ["com.microsoft.VSCode", "com.apple.Terminal"]))
+        let info = registry.info(.openTerminal("vscode"))
+        #expect(!info.available)
+        #expect(info.unavailableReason?.contains("not a terminal") == true)
+        #expect(registry.info(.openTerminal("terminal")).available)
+        let agent = registry.info(.agent(id: "claude", variant: nil, launcher: .terminal("vscode")))
+        #expect(!agent.available)
     }
 
     @Test func aChosenTerminalOverridesTheDefault() throws {

@@ -26,5 +26,8 @@ removes it (the config stays).
 - A downloaded app that was not moved yet runs from a temporary copy (App Translocation). `rh install`
   refuses there, because the runner script and the Services would point into a folder that disappears
   when the app quits. Move Right Here.app into Applications first.
+- Try an install without touching your own: `RH_HOME=/tmp/trial rh install --skip-finder` writes the config,
+  runner script, command link and Services under that folder (the Finder extension's registration is
+  system-wide, so a trial leaves it alone). `rh uninstall` under the same `RH_HOME` undoes it.
 - Test an action without side effects with `rh run <id> --dry-run`.
 - Point a command at a throwaway config with `RH_CONFIG_DIR=/tmp/x`.

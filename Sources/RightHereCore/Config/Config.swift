@@ -94,6 +94,19 @@ public struct Config: Sendable, Equatable {
         return apps + KnownApps.all.filter { !replaced.contains($0.id) }
     }
 
+    /// How an agent action starts. Variants are command-line options typed into a shell, so an action with
+    /// a variant always types, even when the agent's default launcher is its deep link or desktop app;
+    /// naming such a launcher together with a variant has no meaning and is reported as `conflict`.
+    public func launcher(forAgent id: String, explicit: AgentLauncher?, hasVariant: Bool) -> (launcher: AgentLauncher, conflict: String?) {
+        let wanted = explicit ?? agents[id]?.launcher ?? .terminal(nil)
+        guard hasVariant else { return (wanted, nil) }
+        if case .terminal = wanted { return (wanted, nil) }
+        let conflict = explicit.map { _ in
+            "A variant adds command-line options, so it can only start in a terminal, not through \(wanted == .desktop ? "the desktop app" : "the agent's own terminal link")."
+        }
+        return (.terminal(nil), conflict)
+    }
+
     public func agent(id: String) -> AgentDescriptor? {
         guard var agent = customAgents.first(where: { $0.id == id }) ?? KnownAgents.agent(id: id) else { return nil }
         if let settings = agents[id] {

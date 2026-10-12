@@ -9,6 +9,11 @@ public struct LiveSystemFacts: SystemFacts {
     /// The real home directory. In a sandboxed process `NSHomeDirectory()` is the container, so the
     /// account database is asked instead.
     public var homeDirectory: URL {
+        // `RH_HOME` points every per-user path (config, logs, Services, the runner script, the command
+        // link) at another folder, so an install can be tried or tested without touching the real one.
+        if let override = ProcessInfo.processInfo.environment["RH_HOME"], !override.isEmpty {
+            return URL(fileURLWithPath: (override as NSString).expandingTildeInPath)
+        }
         if let entry = getpwuid(getuid()), let directory = entry.pointee.pw_dir {
             return URL(fileURLWithPath: String(cString: directory))
         }
@@ -34,6 +39,11 @@ public struct LiveSystemFacts: SystemFacts {
 
     public func fileExists(_ url: URL) -> Bool {
         FileManager.default.fileExists(atPath: url.path)
+    }
+
+    public func itemExists(_ url: URL) -> Bool {
+        var status = stat()
+        return lstat(url.path, &status) == 0
     }
 
     public func gitRoot(containing url: URL) -> URL? {

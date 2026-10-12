@@ -6,10 +6,15 @@ private struct RH {
     let configDirectory: URL
     let binary: URL
 
-    init(config: String? = nil) throws {
+    /// A folder standing in for the home directory (`RH_HOME`), for tests of what `rh install` writes.
+    let home: URL?
+
+    init(config: String? = nil, trialHome: Bool = false) throws {
         configDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("rh-cli-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
         if let config { try config.write(to: configDirectory.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8) }
+        home = trialHome ? configDirectory.appendingPathComponent("home") : nil
+        if let home { try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true) }
         binary = try Self.locateBinary()
     }
 
@@ -36,9 +41,16 @@ private struct RH {
         process.executableURL = binary
         process.arguments = arguments
         var environment = ProcessInfo.processInfo.environment
-        environment["RH_CONFIG_DIR"] = configDirectory.path
         environment["RH_LOG_DIR"] = configDirectory.appendingPathComponent("logs").path
         environment.removeValue(forKey: "RH_CONFIG")
+        if let home {
+            // Everything per-user, the config included, goes under the trial home.
+            environment["RH_HOME"] = home.path
+            environment.removeValue(forKey: "RH_CONFIG_DIR")
+            environment.removeValue(forKey: "XDG_CONFIG_HOME")
+        } else {
+            environment["RH_CONFIG_DIR"] = configDirectory.path
+        }
         process.environment = environment
         let out = Pipe(), err = Pipe()
         process.standardOutput = out
@@ -217,6 +229,59 @@ struct CLITests {
         let rh = try RH(); defer { rh.cleanUp() }
         let text = try rh.run(["docs", "config"]).standardOutput
         for name in ["RH_CONFIG_DIR", "RH_LOG_DIR", "XDG_CONFIG_HOME"] { #expect(text.contains(name)) }
+    }
+
+    @Test func aFirstInstallWritesEverythingUnderTheTrialHomeAndTheServicesFollowTheNewConfig() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let install = try rh.run(["install", "--skip-finder"])
+        #expect(install.status == 0, "\(install.standardError)")
+        let manager = FileManager.default
+        #expect(manager.fileExists(atPath: home.appendingPathComponent(".config/right-here/config.toml").path))
+        #expect(manager.fileExists(atPath: home.appendingPathComponent("Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run").path))
+        #expect((try? manager.destinationOfSymbolicLink(atPath: home.appendingPathComponent(".local/bin/rh").path)) != nil)
+        let services = try manager.contentsOfDirectory(atPath: home.appendingPathComponent("Library/Services").path).filter { $0.hasPrefix("Right Here - ") }
+        #expect(!services.isEmpty)
+        // The doctor compares the installed Services with what the config just written asks for. If
+        // they were built from the config as it was before `rh install` created it, agents would be missing.
+        let doctor = try #require(try rh.run(["doctor", "--json"]).json as? [String: Any])
+        let checks = try #require(doctor["checks"] as? [[String: Any]])
+        let servicesCheck = try #require(checks.first { $0["id"] as? String == "services" })
+        #expect(servicesCheck["status"] as? String == "ok", "\(servicesCheck)")
+    }
+
+    @Test func uninstallUnderATrialHomeRemovesItsFilesAndLeavesTheSystemWideExtensionAlone() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        #expect(try rh.run(["install", "--skip-finder"]).status == 0)
+        let result = try rh.run(["uninstall"])
+        #expect(result.status == 0)
+        #expect(result.standardOutput.contains("left alone"))
+        #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run").path))
+        let remaining = (try? FileManager.default.contentsOfDirectory(atPath: home.appendingPathComponent("Library/Services").path)) ?? []
+        #expect(remaining.filter { $0.hasPrefix("Right Here - ") }.isEmpty)
+    }
+
+    @Test func aRealFileAtTheCommandLinkMakesInstallReportAProblemButFinishTheRest() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        try FileManager.default.createDirectory(at: home.appendingPathComponent(".local/bin"), withIntermediateDirectories: true)
+        try "mine".write(to: home.appendingPathComponent(".local/bin/rh"), atomically: true, encoding: .utf8)
+        let result = try rh.run(["install", "--skip-finder"])
+        #expect(result.status == 1)
+        #expect(result.standardError.contains("left alone"))
+        #expect(try String(contentsOf: home.appendingPathComponent(".local/bin/rh"), encoding: .utf8) == "mine")
+        #expect(FileManager.default.fileExists(atPath: home.appendingPathComponent(".config/right-here/config.toml").path), "the other steps still ran")
+    }
+
+    @Test func aDanglingSymlinkDoesNotBlockANewFileForever() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("notes")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(atPath: folder.appendingPathComponent("untitled.txt").path, withDestinationPath: "/nowhere/at/all")
+        let result = try rh.run(["run", "new-file.txt", "--container", folder.path])
+        #expect(result.status == 0, "\(result.standardError)")
+        #expect(FileManager.default.fileExists(atPath: folder.appendingPathComponent("untitled 2.txt").path))
     }
 
     @Test func probeLaunchRefusesAnUnknownTerminal() throws {

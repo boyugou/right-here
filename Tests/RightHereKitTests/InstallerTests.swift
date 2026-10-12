@@ -43,6 +43,43 @@ struct InstallerTests {
         #expect(output == "run|--alert|copy-path.absolute|--origin|items|--|/tmp/a b|")
     }
 
+    /// Runs the installed runner script, with a fake `rh` that records that it was called.
+    private func runRunner(_ arguments: [String]) throws -> (status: Int32, called: Bool, standardError: String) {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let marker = home.appendingPathComponent("called")
+        let fake = home.appendingPathComponent("fake rh")
+        try "#!/bin/sh\ntouch '\(marker.path)'\n".write(to: fake, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: fake.path)
+        let installer = Installer(home: home)
+        try installer.installRunnerScript(rhPath: fake.path)
+        let process = Process()
+        process.executableURL = installer.runnerScript
+        process.arguments = arguments
+        let errors = Pipe()
+        process.standardError = errors
+        try process.run()
+        let text = String(decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        process.waitUntilExit()
+        return (process.terminationStatus, FileManager.default.fileExists(atPath: marker.path), text)
+    }
+
+    @Test("the runner passes on only run and probe", arguments: ["run", "probe"])
+    func runnerAllowsRunAndProbe(subcommand: String) throws {
+        let result = try runRunner([subcommand, "x"])
+        #expect(result.status == 0)
+        #expect(result.called)
+    }
+
+    @Test("the runner refuses everything else, so a compromised extension cannot reconfigure the machine",
+          arguments: ["install", "uninstall", "init", "config", "mcp", "doctor", "--version", "-h", ""])
+    func runnerRefusesOtherSubcommands(subcommand: String) throws {
+        let result = try runRunner(subcommand.isEmpty ? [] : [subcommand, "--force"])
+        #expect(result.status == 64)
+        #expect(!result.called, "the runner started rh for \(subcommand.debugDescription)")
+        #expect(result.standardError.contains("refusing"))
+    }
+
     @Test func cliLinkIsReplacedWhenItAlreadyExists() throws {
         let home = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: home) }

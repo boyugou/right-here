@@ -81,6 +81,12 @@ public struct Installer: Sendable {
         """
         #!/bin/zsh -f
         # Installed by `rh install`. The Finder extension runs this outside its sandbox.
+        # Only `run` and `probe` are passed on: the extension has no reason to call anything else, and a
+        # compromised extension should not be able to (rh install, rh uninstall, rh init --force, ...).
+        case "${1:-}" in
+          run|probe) ;;
+          *) echo "right-here runner: refusing '${1:-}'" >&2; exit 64 ;;
+        esac
         exec \(ShellQuoting.quote(rhPath)) "$@"
 
         """

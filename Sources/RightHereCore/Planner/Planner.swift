@@ -131,7 +131,9 @@ public struct Planner: Sendable {
             variant = found
         }
         let directory = try workingDirectory(for: context)
-        let chosen = launcher ?? config.agents[id]?.launcher ?? .terminal(nil)
+        let resolved = config.launcher(forAgent: id, explicit: launcher, hasVariant: variant != nil)
+        if let conflict = resolved.conflict { throw PlanError.unsupported(conflict) }
+        let chosen = resolved.launcher
 
         switch chosen {
         case .desktop:
