@@ -333,6 +333,14 @@ struct ConfigStrictnessTests {
         #expect(result.hasErrors)
     }
 
+    @Test("an agent command that cannot be typed into a terminal is refused when the file is read", arguments: ["claude\nrm -rf ~", "claude\u{1b}[2J", "a\rb"])
+    func aCommandWithControlCharactersIsAnError(command: String) {
+        let escaped = command.unicodeScalars.map { $0.value < 0x20 ? String(format: "\\u%04X", $0.value) : String($0) }.joined()
+        let result = parse("[agent.claude]\ncommand = \"\(escaped)\"\n")
+        #expect(result.diagnostics.contains { $0.path == "agent.claude.command" && $0.severity == .error })
+        #expect(result.config.agent(id: "claude")?.command == "claude")
+    }
+
     @Test func aTypoCarriesTheLikelyReplacementForTools() throws {
         let result = parse("[general]\nagnts = [\"codex\"]\n")
         let diagnostic = try #require(result.diagnostics.first)

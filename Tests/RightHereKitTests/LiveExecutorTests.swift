@@ -123,6 +123,36 @@ struct LiveProcessRunnerTests {
         }
     }
 
+    @Test func aChildLeftRunningInTheBackgroundDoesNotHoldTheResultUp() async throws {
+        // `(sleep 6 &)` is what a shell startup file can do: the sleep inherits the pipes and outlives the shell.
+        let clock = ContinuousClock()
+        let started = clock.now
+        let result = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/sh", arguments: ["-c", "(sleep 6 &) ; echo done"]), timeout: .seconds(10))
+        #expect(result.status == 0)
+        #expect(result.standardOutput == "done\n")
+        #expect(clock.now - started < .seconds(3), "waited for the background child")
+    }
+
+    @Test func theTimeoutHoldsWhenTheKilledProcessLeftAChildHoldingThePipes() async throws {
+        let clock = ContinuousClock()
+        let started = clock.now
+        // The shell is terminated at the limit; its `sleep` keeps the pipes open.
+        _ = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/sh", arguments: ["-c", "sleep 8 & wait"]), timeout: .milliseconds(300))
+        #expect(clock.now - started < .seconds(3), "took \(clock.now - started)")
+    }
+
+    @Test func standardErrorIsCollectedSeparately() async throws {
+        let result = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/sh", arguments: ["-c", "echo out; echo err >&2; exit 3"]))
+        #expect(result.status == 3)
+        #expect(result.standardOutput == "out\n")
+        #expect(result.standardError == "err\n")
+    }
+
+    @Test func aMegabyteOfOutputIsCollectedWhole() async throws {
+        let result = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/sh", arguments: ["-c", "head -c 1000000 /dev/zero | tr '\\0' 'y'"]))
+        #expect(result.standardOutput.count == 1_000_000)
+    }
+
     @Test func largeOutputDoesNotDeadlock() async throws {
         let result = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/sh", arguments: ["-c", "head -c 400000 /dev/zero | tr '\\0' 'x'"]))
         #expect(result.standardOutput.count == 400_000)

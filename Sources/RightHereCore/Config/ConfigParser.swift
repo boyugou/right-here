@@ -393,7 +393,11 @@ private struct Builder {
 
     private func agent(id: String, reader: Reader, into config: inout Config) {
         reader.checkKnownKeys()
-        let command = reader.string("command")
+        var command = reader.string("command")
+        if let typed = command, (try? ShellQuoting.validateForTyping(typed)) == nil {
+            sink.error(reader.path + ["command"], "the command has a line break or control character, so it cannot be typed into a terminal")
+            command = nil
+        }
         let declaredVariants: [AgentDescriptor.Variant] = reader.tableArray("variant").compactMap { variant in
             variant.checkKnownKeys()
             guard let variantID = variant.string("id"), let title = variant.string("title") else {

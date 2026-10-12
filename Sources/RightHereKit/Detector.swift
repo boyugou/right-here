@@ -21,22 +21,21 @@ public struct Detector: Sendable {
         return DetectedEnvironment(terminal: terminal?.id, editor: editor?.id, agents: agents)
     }
 
-    /// The subset of `commands` that the login shell can resolve.
+    /// The subset of `commands` that the login shell can resolve. The names travel as arguments of the
+    /// script (`$@` or `$argv`), never as part of its text, so a command from the config cannot be read
+    /// as shell syntax.
     public func commandsFound(_ commands: [String]) async -> Set<String> {
-        let shell = facts.loginShell
-        let flavor = facts.shellFlavor
-        let list = commands.joined(separator: " ")
+        guard !commands.isEmpty else { return [] }
         let script: String
-        let arguments: [String]
-        switch flavor {
+        switch facts.shellFlavor {
         case .posix:
-            script = "for n in \(list); do command -v \"$n\" >/dev/null 2>&1 && echo \"$n\"; done"
-            arguments = ["-lic", script]
+            script = "for n in \"$@\"; do command -v -- \"$n\" >/dev/null 2>&1 && printf '%s\\n' \"$n\"; done"
         case .fish:
-            script = "for n in \(list); command -v $n >/dev/null 2>&1; and echo $n; end"
-            arguments = ["-lic", script]
+            script = "for n in $argv; command -v -- $n >/dev/null 2>&1; and echo $n; end"
         }
-        let result = try? await runner.run(ProcessStep(executable: shell, arguments: arguments), timeout: .seconds(10))
+        // With `-c`, a POSIX shell takes the first operand as `$0`; fish has no such slot.
+        let operands = facts.shellFlavor == .posix ? ["rh-detect"] + commands : commands
+        let result = try? await runner.run(ProcessStep(executable: facts.loginShell, arguments: ["-lic", script] + operands), timeout: .seconds(10))
         guard let output = result?.standardOutput else { return [] }
         return Set(output.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) })
     }

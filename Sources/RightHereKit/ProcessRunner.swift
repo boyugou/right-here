@@ -26,6 +26,11 @@ extension ProcessRunner {
 }
 
 public struct LiveProcessRunner: ProcessRunner {
+    /// How long to keep reading after the process has exited. A child that was left running in the
+    /// background (a shell startup file doing `(sleep 30 &)`) inherits the pipes and holds them open
+    /// long after the process we started is gone; waiting for end-of-file would wait for it too.
+    static let drainGrace: Duration = .milliseconds(300)
+
     public init() {}
 
     public func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
@@ -42,9 +47,9 @@ public struct LiveProcessRunner: ProcessRunner {
         process.standardError = error
         process.standardInput = step.standardInput == nil ? FileHandle.nullDevice : input
 
-        // Drain both pipes while the process runs so a chatty child cannot fill a pipe and block.
-        let outputTask = Task.detached { output.fileHandleForReading.readDataToEndOfFile() }
-        let errorTask = Task.detached { error.fileHandleForReading.readDataToEndOfFile() }
+        // Collect both pipes while the process runs so a chatty child cannot fill a pipe and block.
+        let outputCollector = PipeCollector(output.fileHandleForReading)
+        let errorCollector = PipeCollector(error.fileHandleForReading)
 
         let launchFailure = LaunchFailure()
         let watchdog = timeout.map { limit in
@@ -68,15 +73,58 @@ public struct LiveProcessRunner: ProcessRunner {
             }
         }
         if let failure = launchFailure.error {
+            outputCollector.stop()
+            errorCollector.stop()
             try? output.fileHandleForWriting.close()
             try? error.fileHandleForWriting.close()
             throw failure
         }
+        await outputCollector.waitForEnd(upTo: Self.drainGrace)
+        await errorCollector.waitForEnd(upTo: Self.drainGrace)
+        outputCollector.stop()
+        errorCollector.stop()
         return ProcessResult(
             status: status,
-            standardOutput: String(decoding: await outputTask.value, as: UTF8.self),
-            standardError: String(decoding: await errorTask.value, as: UTF8.self)
+            standardOutput: String(decoding: outputCollector.collected, as: UTF8.self),
+            standardError: String(decoding: errorCollector.collected, as: UTF8.self)
         )
+    }
+}
+
+/// Accumulates what a pipe delivers, and notices when every writer has closed it.
+private final class PipeCollector: @unchecked Sendable {
+    private let handle: FileHandle
+    private let lock = NSLock()
+    private var data = Data()
+    private var reachedEnd = false
+
+    init(_ handle: FileHandle) {
+        self.handle = handle
+        handle.readabilityHandler = { [weak self] source in
+            let chunk = source.availableData
+            guard let self else { return }
+            if chunk.isEmpty {
+                source.readabilityHandler = nil
+                self.lock.withLock { self.reachedEnd = true }
+            } else {
+                self.lock.withLock { self.data.append(chunk) }
+            }
+        }
+    }
+
+    var collected: Data { lock.withLock { data } }
+
+    /// Returns as soon as the pipe reaches its end, or after `limit`.
+    func waitForEnd(upTo limit: Duration) async {
+        let deadline = ContinuousClock.now + limit
+        while !lock.withLock({ reachedEnd }), ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(5))
+        }
+    }
+
+    func stop() {
+        handle.readabilityHandler = nil
+        try? handle.close()
     }
 }
 
