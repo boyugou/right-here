@@ -79,3 +79,42 @@ struct PathNormalizationTests {
         #expect(HereContext(origin: .items, items: [URL(fileURLWithPath: path)]).items.first?.path == path)
     }
 }
+
+@Suite("Finder context")
+struct FinderContextTests {
+    private let folder = URL(fileURLWithPath: "/Users/tester/code")
+    private let file = URL(fileURLWithPath: "/Users/tester/code/a.txt")
+
+    @Test func itemsKeepTheSelectionAndTheContainer() {
+        let context = HereContext.finder(kind: .items, selected: [file], targeted: folder)
+        #expect(context.origin == .items)
+        #expect(context.items == [file])
+        #expect(context.container == folder)
+    }
+
+    @Test func aBackgroundMenuIgnoresTheReportedSelection() {
+        let previousColumnSelection = URL(fileURLWithPath: "/Users/tester")
+        let context = HereContext.finder(kind: .container, selected: [previousColumnSelection], targeted: folder)
+        #expect(context.origin == .container)
+        #expect(context.items.isEmpty)
+        #expect(context.container == folder)
+    }
+
+    @Test func aBackgroundMenuFallsBackToTheSelectionWhenNothingIsTargeted() {
+        #expect(HereContext.finder(kind: .container, selected: [folder], targeted: nil).container == folder)
+    }
+
+    @Test func sidebarUsesTheTargetedFolder() {
+        let context = HereContext.finder(kind: .sidebar, selected: [], targeted: folder)
+        #expect(context.origin == .sidebar)
+        #expect(context.container == folder)
+    }
+
+    @Test func toolbarActsOnTheSelectionWhenThereIsOne() {
+        let withSelection = HereContext.finder(kind: .toolbar, selected: [file], targeted: folder)
+        #expect(withSelection.items == [file])
+        let without = HereContext.finder(kind: .toolbar, selected: [], targeted: folder)
+        #expect(without.items.isEmpty)
+        #expect(without.container == folder)
+    }
+}

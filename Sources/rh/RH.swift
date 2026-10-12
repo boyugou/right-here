@@ -18,7 +18,7 @@ struct RH: AsyncParsableCommand {
         version: RightHereInfo.version,
         subcommands: [
             Run.self, Actions.self, MenuCommand.self, Agents.self, Apps.self,
-            ConfigCommand.self, Init.self, Docs.self, Doctor.self
+            ConfigCommand.self, Init.self, Install.self, Uninstall.self, Docs.self, Doctor.self
         ]
     )
 }
