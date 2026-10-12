@@ -337,3 +337,54 @@ struct MCPHardeningTests {
         }
     }
 }
+
+@Suite("Fuzz: MCP messages")
+struct MCPFuzzTests {
+    private func randomJSON(_ depth: Int, _ random: inout SystemRandomNumberGenerator) -> JSONValue {
+        let choice = Int.random(in: 0..<(depth > 2 ? 5 : 7), using: &random)
+        switch choice {
+        case 0: return .null
+        case 1: return .bool(Bool.random(using: &random))
+        case 2: return .number(Double(Int.random(in: -3...300, using: &random)))
+        case 3, 4: return .string(["", "right_here_run", "ping", "open.terminal", "/tmp", "initialize", "tools/call", "tools/list", "a\u{2028}b", "🚀"].randomElement(using: &random)!)
+        case 5: return .array((0..<Int.random(in: 0...3, using: &random)).map { _ in randomJSON(depth + 1, &random) })
+        default:
+            let keys = ["jsonrpc", "id", "method", "params", "name", "arguments", "action", "paths", "container", "dry_run", "topic", "protocolVersion"]
+            return .object(Dictionary((0..<Int.random(in: 0...5, using: &random)).map { _ in (keys.randomElement(using: &random)!, randomJSON(depth + 1, &random)) }, uniquingKeysWith: { $1 }))
+        }
+    }
+
+    @Test func anyJSONGetsNoReplyOrAValidOne() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        var random = SystemRandomNumberGenerator()
+        for _ in 0..<400 {
+            let message = randomJSON(0, &random)
+            if let reply = await harness.server.handle(message.line()) {
+                let decoded = try JSONDecoder().decode(JSONValue.self, from: Data(reply.utf8))
+                switch decoded {
+                case .object(let object): #expect(object["jsonrpc"]?.stringValue == "2.0" && (object["result"] != nil || object["error"] != nil), "\(reply)")
+                case .array(let items): #expect(!items.isEmpty)
+                default: Issue.record("reply is neither an object nor an array: \(reply)")
+                }
+            }
+        }
+        // Text that is not JSON at all is a parse error, never a crash.
+        for garbage in ["", " ", "{", "[", "nul", "\u{0}", "{\"a\":", "\"\\ud800\"", String(repeating: "[", count: 3000)] {
+            _ = await harness.server.handle(garbage)
+        }
+    }
+
+    @Test func randomToolCallsNeverRunAnythingForReal() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        var random = SystemRandomNumberGenerator()
+        for _ in 0..<300 {
+            let call = JSONValue.object([
+                "jsonrpc": .string("2.0"), "id": .number(1), "method": .string("tools/call"),
+                "params": .object(["name": .string(["right_here_run", "right_here_menu", "right_here_actions", "right_here_docs"].randomElement(using: &random)!), "arguments": randomJSON(1, &random)])
+            ])
+            _ = await harness.server.handle(call.line())
+        }
+        // The harness uses a fake runner and clipboard: nothing reached the real machine, and the limiter held.
+        #expect(harness.runner.recorded.count <= 8)
+    }
+}
