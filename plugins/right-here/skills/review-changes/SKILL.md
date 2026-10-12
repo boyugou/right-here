@@ -11,12 +11,19 @@ Scope: $ARGUMENTS
 ## 1. Collect the files
 
 If a repository is involved, `git status --porcelain` lists changed and new files; otherwise use the files you
-edited in this conversation. Resolve them to absolute paths. Skip build output and anything ignored.
+edited in this conversation. Resolve them to absolute paths and keep only what exists now: skip deleted files
+(status `D`), and for a rename (`R old -> new`) take the new name. Skip build output and anything ignored. A
+path that does not exist makes the whole call fail.
 
 ## 2. Reveal them
 
-`right_here_run` with `action` `reveal` and `paths`. Finder opens windows and selects the items. If there are
-more than about twenty files, reveal the folders that contain them instead.
+`right_here_run` with `action` `reveal` and `paths`. Finder opens one window per folder that holds a revealed
+item and selects the items in it, so what costs the person's screen is the number of folders, not files.
+
+- Many files in a few folders: reveal them all in one call (at most 200 paths).
+- Changes spread over more than about ten folders: reveal the few folders that contain them instead.
+- Tool calls may open only about two dozen windows or files a minute. If a call is refused for opening too
+  much, do not retry it or split it to get round the limit: reveal fewer, larger things, or ask the person.
 
 ## 3. Tell the user
 
