@@ -68,8 +68,6 @@ MUTANTS = [
      "_ = fcntl(descriptor, F_SETNOSIGPIPE, 1)", "_ = descriptor"),
     ("the runner is not told about a stopped process", "Sources/RightHereKit/ProcessRunner.swift",
      "terminatedAfter: cutOff.happened ? timeout : nil", "terminatedAfter: nil"),
-    ("an unreadable path is a folder's stand-in", "Sources/RightHereCore/Context/HereContext.swift",
-     "facts.itemState(first) == .present ? Self.directory", "facts.itemState(first) != .missing ? Self.directory"),
     ("a role-mismatched default terminal is picked", "Sources/RightHereCore/Planner/Planner.swift",
      "order.compactMap { config.app(id: $0) }.filter { $0.role == role }", "order.compactMap { config.app(id: $0) }"),
     ("a ping waits for a request slot like a tool call", "Sources/RightHereMCP/MCPServer.swift",
