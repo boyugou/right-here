@@ -620,7 +620,7 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "सिस्टम सेटिंग्ज़ खोलें"
+            "value": "सिस्टम सेटिंग खोलें"
           }
         },
         "id": {
@@ -656,7 +656,7 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Buka Tetapan Sistem"
+            "value": "Buka Seting Sistem"
           }
         },
         "nl": {
@@ -674,13 +674,13 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abrir Ajustes do Sistema"
+            "value": "Abrir Ajustes"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deschide Setările de sistem"
+            "value": "Deschide Configurări sistem"
           }
         },
         "ru": {
@@ -728,7 +728,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Mở Cài đặt Hệ thống"
+            "value": "Mở Cài đặt hệ thống"
           }
         },
         "zh-Hans": {
@@ -752,13 +752,13 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمن › الأتمتة، ثم حاول مرة أخرى."
+            "value": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمن › التحكم التلقائي، ثم حاول مرة أخرى."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS Right Here-কে %@ নিয়ন্ত্রণ করতে বাধা দিয়েছে। সিস্টেম সেটিংস › গোপনীয়তা ও নিরাপত্তা › অটোমেশনে অনুমতি দিন, তারপর আবার চেষ্টা করুন।"
+            "value": "macOS Right Here-কে %@ নিয়ন্ত্রণ করতে বাধা দিয়েছে। System Settings › Privacy & Security › Automation-এ অনুমতি দিন, তারপর আবার চেষ্টা করুন।"
           }
         },
         "de": {
@@ -770,7 +770,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Το macOS εμπόδισε το Right Here να ελέγξει το %@. Επιτρέψτε το στις Ρυθμίσεις συστήματος › Απόρρητο και ασφάλεια › Αυτοματισμός και δοκιμάστε ξανά."
+            "value": "Το macOS εμπόδισε το Right Here να ελέγξει το %@. Επιτρέψτε το στις Ρυθμίσεις συστήματος › Απόρρητο και ασφάλεια › Αυτοματοποίηση και δοκιμάστε ξανά."
           }
         },
         "en": {
@@ -788,7 +788,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏macOS به Right Here اجازهٔ کنترل %@ را نداد. در تنظیمات سیستم › حریم خصوصی و امنیت › خودکارسازی اجازه دهید و دوباره تلاش کنید."
+            "value": "‏macOS به Right Here اجازهٔ کنترل %@ را نداد. در System Settings › Privacy & Security › Automation اجازه دهید و دوباره تلاش کنید."
           }
         },
         "fr": {
@@ -800,19 +800,19 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏macOS מנע מ-Right Here לשלוט על %@. אפשר זאת בהגדרות המערכת › פרטיות ואבטחה › אוטומציה ונסה שוב."
+            "value": "‏macOS מנע מ-Right Here לשלוט על %@. אפשר זאת בהגדרות המערכת › פרטיות ואבטחה › פעולות אוטומטיות ונסה שוב."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS ने Right Here को %@ को नियंत्रित करने से रोक दिया। सिस्टम सेटिंग्ज़ › गोपनीयता और सुरक्षा › ऑटोमेशन में इसकी अनुमति दें, फिर दोबारा कोशिश करें।"
+            "value": "macOS ने Right Here को %@ को नियंत्रित करने से रोक दिया। सिस्टम सेटिंग › गोपनीयता और सुरक्षा › ऑटोमेशन में इसकी अनुमति दें, फिर दोबारा कोशिश करें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS mencegah Right Here mengendalikan %@. Izinkan di Pengaturan Sistem › Privasi & Keamanan › Otomatisasi, lalu coba lagi."
+            "value": "macOS mencegah Right Here mengendalikan %@. Izinkan di Pengaturan Sistem › Privasi & Keamanan › Automasi, lalu coba lagi."
           }
         },
         "it": {
@@ -836,13 +836,13 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS ने Right Here ला %@ नियंत्रित करण्यापासून रोखले. सिस्टम सेटिंग्ज › गोपनीयता आणि सुरक्षा › ऑटोमेशन मध्ये परवानगी द्या आणि पुन्हा प्रयत्न करा."
+            "value": "macOS ने Right Here ला %@ नियंत्रित करण्यापासून रोखले. System Settings › Privacy & Security › Automation मध्ये परवानगी द्या आणि पुन्हा प्रयत्न करा."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS menghalang Right Here daripada mengawal %@. Benarkan dalam Tetapan Sistem › Privasi & Keselamatan › Automasi, kemudian cuba lagi."
+            "value": "macOS menghalang Right Here daripada mengawal %@. Benarkan dalam Seting Sistem › Privasi & Keselamatan › Automasi, kemudian cuba lagi."
           }
         },
         "nl": {
@@ -860,13 +860,13 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "O macOS impediu o Right Here de controlar %@. Permita em Ajustes do Sistema › Privacidade e Segurança › Automação e tente novamente."
+            "value": "O macOS impediu o Right Here de controlar %@. Permita em Ajustes › Privacidade e Segurança › Automação e tente novamente."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS a împiedicat Right Here să controleze %@. Permite acest lucru în Setări de sistem › Confidențialitate și securitate › Automatizare, apoi încearcă din nou."
+            "value": "macOS a împiedicat Right Here să controleze %@. Permite acest lucru în Configurări sistem › Intimitate și securitate › Automatizare, apoi încearcă din nou."
           }
         },
         "ru": {
@@ -878,19 +878,19 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ ஐக் கட்டுப்படுத்த Right Here ஐ macOS தடுத்தது. கணினி அமைப்புகள் › தனியுரிமை & பாதுகாப்பு › தானியக்கத்தில் அனுமதித்து, மீண்டும் முயலவும்."
+            "value": "%@ ஐக் கட்டுப்படுத்த Right Here ஐ macOS தடுத்தது. System Settings › Privacy & Security › Automation இல் அனுமதித்து, மீண்டும் முயலவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ను నియంత్రించకుండా Right Hereను macOS అడ్డుకుంది. సిస్టమ్ సెట్టింగ్‌లు › గోప్యత & భద్రత › ఆటోమేషన్‌లో అనుమతించి, మళ్లీ ప్రయత్నించండి."
+            "value": "%@ను నియంత్రించకుండా Right Hereను macOS అడ్డుకుంది. System Settings › Privacy & Security › Automation లో అనుమతించి, మళ్లీ ప్రయత్నించండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS ป้องกันไม่ให้ Right Here ควบคุม %@ อนุญาตได้ที่การตั้งค่าระบบ › ความเป็นส่วนตัวและความปลอดภัย › ระบบอัตโนมัติ แล้วลองอีกครั้ง"
+            "value": "macOS ป้องกันไม่ให้ Right Here ควบคุม %@ อนุญาตได้ที่การตั้งค่าระบบ › ความเป็นส่วนตัวและความปลอดภัย › การทำงานอัตโนมัติ แล้วลองอีกครั้ง"
           }
         },
         "tr": {
@@ -908,19 +908,19 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏macOS نے Right Here کو %@ کنٹرول کرنے سے روک دیا۔ سسٹم سیٹنگز › پرائیویسی اور سیکیورٹی › آٹومیشن میں اجازت دیں، پھر دوبارہ کوشش کریں۔"
+            "value": "‏macOS نے Right Here کو %@ کنٹرول کرنے سے روک دیا۔ System Settings › Privacy & Security › Automation میں اجازت دیں، پھر دوبارہ کوشش کریں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS đã chặn Right Here điều khiển %@. Hãy cho phép trong Cài đặt Hệ thống › Quyền riêng tư & Bảo mật › Tự động hóa, rồi thử lại."
+            "value": "macOS đã chặn Right Here điều khiển %@. Hãy cho phép trong Cài đặt hệ thống › Quyền riêng tư & Bảo mật › Tự động hóa, rồi thử lại."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS 阻止了 Right Here 控制%@。请在“系统设置” › “隐私与安全性” › “自动化”中允许，然后重试。"
+            "value": "macOS 阻止了 Right Here 控制%@。请在“系统设置” › “隐私与安全” › “自动化”中允许，然后重试。"
           }
         },
         "zh-Hant": {
@@ -1922,7 +1922,7 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder एक्सटेंशन सेटिंग्ज़"
+            "value": "Finder एक्सटेंशन सेटिंग"
           }
         },
         "id": {

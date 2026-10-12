@@ -39,9 +39,12 @@ changes came out of it: the built-in templates have whole "New …" phrases (`me
 because "New %@" plus a capitalised title put a capital mid-phrase in seven languages; and right-to-left strings
 that begin with a Latin name or a placeholder start with a right-to-left mark, so AppKit lays them out right to
 left (never the string that becomes a file name). The setup window can be checked for layout, including mirroring,
-with `script/preview_setup.sh`. Still unverified: the names of System Settings panes in each language (the
-alert quotes a path such as Privacy & Security › Automation in the person's language) and what a native
-speaker would change.
+with `script/preview_setup.sh`. The Settings path the permission alert quotes (System Settings › Privacy &
+Security › Automation) is checked against macOS's own wording, which ships in System Settings and its
+Privacy & Security extension: `script/verify_macos_wording.py` reads it and found real mismatches (Arabic,
+Greek, Hebrew, Indonesian, Malay, Portuguese, Romanian, Thai, Vietnamese, Simplified Chinese), all fixed; for
+Bengali, Persian, Marathi, Tamil, Telugu and Urdu, which macOS does not ship, the alert quotes the English path
+because that is what Settings shows. Run it after a macOS update. What a native speaker would change is still open.
 
 ## Names of apps
 
