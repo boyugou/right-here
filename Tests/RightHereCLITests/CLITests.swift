@@ -11,12 +11,21 @@ private struct RH {
     /// A folder standing in for the home directory (`RH_HOME`), for tests of what `rh install` writes.
     let home: URL?
 
+    /// What the login shell that `rh` starts (to find agent commands) sees as its home: an empty folder, so
+    /// the person's own startup files never run during `swift test` (they may be slow, noisy or do things).
+    let shellHome: URL
+
     init(config: String? = nil, trialHome: Bool = false) throws {
         configDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("rh-cli-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
         if let config { try config.write(to: configDirectory.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8) }
         home = trialHome ? configDirectory.appendingPathComponent("home") : nil
         if let home { try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true) }
+        shellHome = configDirectory.appendingPathComponent("shell-home")
+        try FileManager.default.createDirectory(at: shellHome, withIntermediateDirectories: true)
+        for name in [".zshrc", ".zprofile", ".bashrc", ".bash_profile", ".profile"] {
+            try Data().write(to: shellHome.appendingPathComponent(name))
+        }
         binary = try Self.locateBinary()
     }
 
@@ -45,6 +54,8 @@ private struct RH {
         var environment = ProcessInfo.processInfo.environment
         environment["RH_LOG_DIR"] = configDirectory.appendingPathComponent("logs").path
         environment.removeValue(forKey: "RH_CONFIG")
+        environment["HOME"] = shellHome.path
+        environment["ZDOTDIR"] = shellHome.path
         if let home {
             // Everything per-user, the config included, goes under the trial home.
             environment["RH_HOME"] = home.path
@@ -338,8 +349,25 @@ struct CLITests {
         #expect(FileManager.default.fileExists(atPath: home.appendingPathComponent(".config/right-here/config.toml").path), "the other steps still ran")
     }
 
-    @Test func aDanglingSymlinkDoesNotBlockANewFileForever() throws {
+    @Test func aProbeRequestThatWasLeftBehindIsRemovedAndNothingRuns() throws {
+        // Only the stale case is run for real: a fresh request would start a probe in the person's terminal.
         let rh = try RH(); defer { rh.cleanUp() }
+        let marker = rh.configDirectory.appendingPathComponent(".probe")
+        try "launch".write(to: marker, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-3_600)], ofItemAtPath: marker.path)
+        let result = try rh.run(["probe", "launch", "--from-extension"])
+        #expect(result.status == 0, "\(result.standardError)")
+        #expect(result.standardOutput.isEmpty, "the probe ran: \(result.standardOutput)")
+        #expect(!FileManager.default.fileExists(atPath: marker.path), "a stale request must not stay behind")
+        let log = rh.configDirectory.appendingPathComponent("logs/rh.log")
+        #expect(!((try? String(contentsOf: log, encoding: .utf8)) ?? "").contains("probe launch"))
+        // And with no request at all there is nothing to run either.
+        #expect(try rh.run(["probe", "automation", "--from-extension"]).standardOutput.isEmpty)
+    }
+
+    @Test func aDanglingSymlinkDoesNotBlockANewFileForever() throws {
+        // `then = "nothing"`: the default would reveal the new file, which opens a Finder window while the tests run.
+        let rh = try RH(config: "[new_file]\nthen = \"nothing\"\n"); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("notes")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         try FileManager.default.createSymbolicLink(atPath: folder.appendingPathComponent("untitled.txt").path, withDestinationPath: "/nowhere/at/all")

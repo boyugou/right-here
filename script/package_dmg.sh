@@ -50,8 +50,26 @@ notarize() { # path
   xcrun notarytool submit "$target" --keychain-profile "$NOTARY_PROFILE" --wait
 }
 
+# Everything temporary lives under one folder that is removed however the script ends, and a DMG mounted for
+# verification is unmounted first, so a failed run leaves neither files nor a mounted volume behind.
+WORK="$(mktemp -d)"
+MOUNT="$WORK/mount"
+cleanup() {
+  if [[ -d "$MOUNT" ]]; then
+    # `detach` unmounts the volume and releases the image; `diskutil unmount` alone would leave the image attached.
+    hdiutil detach "$MOUNT" -force >/dev/null 2>&1 || diskutil unmount force "$MOUNT" >/dev/null 2>&1 || true
+    # Never delete through a volume that is still mounted: a different device number means it is.
+    if [[ "$(stat -f %d "$MOUNT")" != "$(stat -f %d "$WORK")" ]]; then
+      echo "warning: $MOUNT is still mounted; eject it with: diskutil eject '$MOUNT'" >&2
+      return
+    fi
+  fi
+  rm -rf "$WORK"
+}
+trap cleanup EXIT
+
 NOTARIZED=0
-ZIP="$(mktemp -d)/app.zip"
+ZIP="$WORK/app.zip"
 ditto -c -k --keepParent "$APP" "$ZIP"
 if notarize "$ZIP"; then
   xcrun stapler staple "$APP"
@@ -59,7 +77,8 @@ if notarize "$ZIP"; then
 fi
 
 log "Creating the DMG"
-STAGE="$(mktemp -d)"
+STAGE="$WORK/stage"
+mkdir -p "$STAGE"
 cp -R "$APP" "$STAGE/"
 ln -s /Applications "$STAGE/Applications"
 hdiutil create -volname "Right Here" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >&2
@@ -71,7 +90,7 @@ fi
 log "Verifying"
 hdiutil verify "$DMG" >&2
 codesign --verify --strict "$DMG"
-MOUNT="$(mktemp -d)"
+mkdir -p "$MOUNT"
 hdiutil attach "$DMG" -readonly -nobrowse -mountpoint "$MOUNT" >/dev/null
 codesign --verify --deep --strict "$MOUNT/$APP_NAME"
 "$MOUNT/$APP_NAME/Contents/Helpers/rh" --version >&2

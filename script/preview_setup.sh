@@ -14,6 +14,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="${1:?usage: preview_setup.sh out.png [language] [--dark]}"
+# The script changes folder before it renders, so a relative output path is resolved against where it was started.
+case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="${2:-en}"
 DARK="${3:-}"
 PREVIEW="$ROOT/.build/preview"

@@ -6,6 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# The workflow only reads the repository.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: macos-26
@@ -15,6 +19,9 @@ jobs:
         run: |
           xcodebuild -version
           swift --version
+      - name: Shells for the quoting tests
+        # fish reads quoting differently from sh, bash and zsh; its round trips are skipped where it is missing.
+        run: brew install fish
       - name: Build
         run: swift build
       - name: Test
