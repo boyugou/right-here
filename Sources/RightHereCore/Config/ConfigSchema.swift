@@ -131,7 +131,7 @@ public enum ConfigSchema {
                 SchemaNode("role", .string, "terminal: opens a folder; editor and general: open the selection.",
                            default: "\"general\"", allowed: AppDescriptor.Role.allCases.map(\.rawValue))
             ]),
-            SchemaNode("agent", .tableMap, "AI agents, one table per agent: `[agent.claude]`. Built-in agents are listed by `rh agents`.",
+            SchemaNode("agent", .tableMap, "AI agents, one table per agent: `[agent.claude]`. Built-in agents are listed by `rh agents`. Any command you want typed into a terminal in the folder works the same way, for example `[agent.lazygit]` with `name = \"lazygit\"` and `command = \"lazygit\"`.",
                        pattern: identifierPattern, children: [
                 SchemaNode("name", .string, "Display name. Required for an agent that is not built in."),
                 SchemaNode("command", .string, "What is typed into the shell to start the agent, including any flags.",

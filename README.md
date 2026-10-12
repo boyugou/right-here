@@ -76,6 +76,10 @@ items = ["open-terminal", "open-editor", "agents", "-", "new-file", "copy-path"]
 
 [agent.claude]
 command = "claude --model opus"      # what is typed into the shell
+
+[agent.lazygit]                      # any command you want started in the folder works like an agent
+name = "lazygit"
+command = "lazygit"
 ```
 
 `rh docs config` lists every key with defaults, `rh config validate` checks the file (unknown keys come
