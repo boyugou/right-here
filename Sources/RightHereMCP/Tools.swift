@@ -215,7 +215,7 @@ enum Tools {
             "diagnostics": try JSONValue(encoding: loaded.result.diagnostics)
         ])
         var lines = [loaded.fileExists ? (loaded.result.hasErrors ? "The config has errors." : "The config is valid.") : "There is no config file yet; defaults apply. Run `rh init`."]
-        lines += loaded.result.diagnostics.map { Doctor.describe($0, file: loaded.file) }
+        lines += loaded.result.diagnostics.map { $0.summary(file: loaded.file) }
         return ToolOutput(text: lines.joined(separator: "\n"), structured: structured)
     }
 

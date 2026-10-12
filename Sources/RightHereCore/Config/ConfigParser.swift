@@ -23,6 +23,16 @@ public struct ConfigDiagnostic: Sendable, Equatable, Codable {
         self.line = line
         self.suggestion = suggestion
     }
+
+    /// One line for a terminal or a log: `error: config.toml:3 [agent.claude.launcher]: message (suggestion)`.
+    public func summary(file: URL) -> String {
+        var text = "\(severity.rawValue): \(file.lastPathComponent)"
+        if let line { text += ":\(line)" }
+        if !path.isEmpty { text += " [\(path)]" }
+        text += ": \(message)"
+        if let suggestion { text += " (\(suggestion))" }
+        return text
+    }
 }
 
 public struct ConfigLoadResult: Sendable, Equatable {

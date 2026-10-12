@@ -70,8 +70,13 @@ public struct Doctor: Sendable {
     }
 
     private func launchCheck() async -> DoctorCheck {
+        Self.launchCheck(for: await ExtensionProbe(paths: paths, facts: facts, runner: runner).runLaunch())
+    }
+
+    /// What the launch probe reported, as a check. `nil` means the extension never reported back.
+    static func launchCheck(for result: LaunchProbe.Result?) -> DoctorCheck {
         let title = "Finder click runs a command in the terminal"
-        guard let result = await ExtensionProbe(paths: paths, facts: facts, runner: runner).runLaunch() else {
+        guard let result else {
             return DoctorCheck(id: "finder.launch", title: title, status: .fail,
                                detail: "the Finder extension did not report back",
                                fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
@@ -105,7 +110,12 @@ public struct Doctor: Sendable {
     }
 
     private func chainCheck() async -> DoctorCheck {
-        guard let results = await ExtensionProbe(paths: paths, facts: facts, runner: runner).runAutomation() else {
+        Self.chainCheck(for: await ExtensionProbe(paths: paths, facts: facts, runner: runner).runAutomation())
+    }
+
+    /// What the automation probe reported, as a check. `nil` means the extension never reported back.
+    static func chainCheck(for results: [AutomationProbe.Result]?) -> DoctorCheck {
+        guard let results else {
             return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .fail,
                                detail: "the Finder extension did not report back",
                                fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
@@ -134,7 +144,7 @@ public struct Doctor: Sendable {
         if loaded.result.hasErrors {
             let first = loaded.result.diagnostics.first { $0.severity == .error }
             return DoctorCheck(id: "config.valid", title: "Config file", status: .fail,
-                               detail: first.map { Self.describe($0, file: loaded.file) },
+                               detail: first.map { $0.summary(file: loaded.file) },
                                fix: "Run `rh config validate` and fix the errors.")
         }
         let warnings = loaded.result.diagnostics.count
@@ -145,15 +155,6 @@ public struct Doctor: Sendable {
             status = .warn
         }
         return DoctorCheck(id: "config.valid", title: "Config file", status: status, detail: detail)
-    }
-
-    public static func describe(_ diagnostic: ConfigDiagnostic, file: URL) -> String {
-        var text = "\(diagnostic.severity.rawValue): \(file.lastPathComponent)"
-        if let line = diagnostic.line { text += ":\(line)" }
-        if !diagnostic.path.isEmpty { text += " [\(diagnostic.path)]" }
-        text += ": \(diagnostic.message)"
-        if let suggestion = diagnostic.suggestion { text += " (\(suggestion))" }
-        return text
     }
 
     // MARK: Apps and agents

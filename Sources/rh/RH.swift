@@ -45,7 +45,7 @@ struct Runtime {
     /// Prints config problems to standard error. The valid parts of the config still apply.
     func reportConfigProblems() {
         for diagnostic in loaded.result.diagnostics {
-            Output.error(Output.describe(diagnostic, file: loaded.file))
+            Output.error(diagnostic.summary(file: loaded.file))
         }
     }
 }
@@ -69,15 +69,6 @@ enum Output {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         Swift.print(String(decoding: try encoder.encode(value), as: UTF8.self))
-    }
-
-    static func describe(_ diagnostic: ConfigDiagnostic, file: URL) -> String {
-        var text = "\(diagnostic.severity.rawValue): \(file.lastPathComponent)"
-        if let line = diagnostic.line { text += ":\(line)" }
-        if !diagnostic.path.isEmpty { text += " [\(diagnostic.path)]" }
-        text += ": \(diagnostic.message)"
-        if let suggestion = diagnostic.suggestion { text += " (\(suggestion))" }
-        return text
     }
 }
 

@@ -57,7 +57,7 @@ struct ConfigCommand: ParsableCommand {
             } else if result.diagnostics.isEmpty {
                 Output.print("ok: \(report.file)")
             } else {
-                for diagnostic in result.diagnostics { Output.print(Output.describe(diagnostic, file: runtime.loaded.file)) }
+                for diagnostic in result.diagnostics { Output.print(diagnostic.summary(file: runtime.loaded.file)) }
             }
             if result.hasErrors { throw ExitCode(1) }
         }
