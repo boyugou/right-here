@@ -173,6 +173,15 @@ neither is given; `rh install --help` wraps cleanly. Left, as lenient rather tha
 params and a request without `"jsonrpc":"2.0"` are served, and `notifications/cancelled` is ignored (calls are short
 and bounded by the 120 s limit).
 
+## Extended fuzzing (after 692a8a4)
+
+The seeded fuzz tests run a few seeds so `swift test` stays fast. A one-off run over 3000 seeds of the config parser
+(750,000 random documents) found a crash no review had: a config that ends right after an empty quoted key inside an
+open bracket (`[""`, `[ ''`, `[[""`) made TOMLDecoder trap, which killed every `rh` command and the Finder menu.
+Minimized with the real CLI (delta debugging over lines) and fixed by giving the library a final line break, which
+turns it into the ordinary syntax error. After the fix 6000 seeds (1.5 million documents) ran clean. The fixed
+seed counts in `FuzzTests.swift` are unchanged; run them wider after touching the parser.
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.

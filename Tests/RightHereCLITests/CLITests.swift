@@ -681,6 +681,14 @@ struct CLITests {
         #expect((object["error"] as? String)?.contains("does not exist") == true)
     }
 
+    @Test("a config that ends inside an unterminated header is a syntax error, not a crash", arguments: ["[\"\"", "[ ''", "[[\"\"", "x = 1\n[\"\"", "[\"\".\"\""])
+    func aTruncatedHeaderIsASyntaxErrorNotACrash(text: String) throws {
+        let rh = try RH(config: text); defer { rh.cleanUp() }
+        let result = try rh.run(["config", "validate"])
+        #expect(result.status == 1, "status \(result.status): \(result.standardError)")
+        #expect(try rh.run(["actions"]).status == 0)
+    }
+
     @Test func aConfigNestedFarDeeperThanAnyRealOneIsASyntaxErrorNotACrash() throws {
         let rh = try RH(config: "x = " + String(repeating: "[", count: 5_000) + String(repeating: "]", count: 5_000) + "\n")
         defer { rh.cleanUp() }

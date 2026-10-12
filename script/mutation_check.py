@@ -120,6 +120,8 @@ MUTANTS = [
      "        try removeServices()\n        try fileManager.createDirectory(at: locations.services, withIntermediateDirectories: true)\n        // A name that does not"),
     ("an interrupt is not wired to the cleanup", "Sources/RightHereKit/ProbeMarker.swift",
      "            source.resume()\n            return source", "            return source"),
+    ("a config cut off inside an open bracket reaches the TOML library as it is", "Sources/RightHereCore/Config/ConfigParser.swift",
+     'root = try TOMLTable(source: text + "\\n")', "root = try TOMLTable(source: text)"),
     ("a bidirectional control is printed as it is", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
      "if Self.bidiControls.contains(scalar) {", "if false {"),
     ("a name with a backslash and a control character gets a shell form", "Sources/RightHereCore/Paths/PathStyle.swift",

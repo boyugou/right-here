@@ -694,3 +694,16 @@ struct ConfigListDiagnosticTests {
     }
 }
 
+@Suite("Config text that used to trap the TOML library")
+struct TrappingTextTests {
+    @Test("a text cut off inside an open bracket is a syntax error", arguments: ["[\"\"", "[ ''", "[[\"\"", "x = 1\n[\"\"", "[\"\".\"\""])
+    func truncatedHeader(text: String) {
+        let result = ConfigParser.parse(text)
+        #expect(result.hasErrors)
+    }
+
+    @Test func aValidFileWithoutAFinalNewlineStillParses() {
+        #expect(!ConfigParser.parse("[general]\nterminal = \"ghostty\"").hasErrors)
+    }
+}
+
