@@ -687,6 +687,29 @@ struct CLITests {
         #expect(text.contains("no folder"), Comment(rawValue: text))
     }
 
+    @Test func aConfigDefinedTerminalReallyStartsACommandThroughItsTemplate() throws {
+        // The "terminal" is /usr/bin/touch: no window, but the real executor runs the real argument vector.
+        let config = """
+        [general]
+        agents = ["marker"]
+        [[app]]
+        id = "faketerm"
+        name = "Fake"
+        bundle_id = "com.apple.finder"
+        role = "terminal"
+        run_args = ["/usr/bin/touch", "{dir}/ran-{command}"]
+        [agent.marker]
+        name = "marker"
+        command = "marker"
+        """
+        let rh = try RH(config: config); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("it's a folder")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let result = try rh.run(["run", "agent.marker@faketerm", "--container", folder.path])
+        #expect(result.status == 0, Comment(rawValue: result.standardError))
+        #expect(FileManager.default.fileExists(atPath: folder.appendingPathComponent("ran-marker").path), "the template did not run in the folder")
+    }
+
     @Test func mcpAnswersAMalformedRequestWithoutStoppingTheOnesAfterIt() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let input = Data("{broken\n{\"jsonrpc\":\"2.0\",\"id\":true,\"method\":\"ping\"}\n5\n{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"ping\"}\n".utf8)
