@@ -157,6 +157,9 @@ Open (to check on a real run, in the order they matter):
   (above). The extension and `rh` log each step at notice level (`log show --predicate 'subsystem ==
   "com.boyugou.righthere.FinderExtension"'`, and `~/Library/Logs/right-here/rh.log`).
 - A first-ever Automation prompt on a machine that has never allowed the control.
+- Quick Actions that start an agent: which process macOS holds responsible for the Apple event (the
+  Services runner, not the Finder extension) and so which Automation entry has to be allowed. It cannot be
+  probed without a real invocation from Finder; `rh doctor --probe-launch` only covers the extension.
 - The items, sidebar and toolbar menus (the container menu has been observed).
 - Whether Quick Actions appear on a folder's empty background.
 - A cold start of Terminal.app or Ghostty through AppleScript may open an extra startup window.
