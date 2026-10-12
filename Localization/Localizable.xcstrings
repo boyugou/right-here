@@ -8,7 +8,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "إظهار في Finder"
+            "value": "إظهار في فايندر"
           }
         },
         "bn": {
@@ -20,7 +20,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Im Finder anzeigen"
+            "value": "Im Finder zeigen"
           }
         },
         "el": {
@@ -56,7 +56,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "הצג ב-Finder"
+            "value": "הצגה ב-Finder"
           }
         },
         "hi": {
@@ -68,7 +68,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tampilkan di Finder"
+            "value": "Tampilkan pada Finder"
           }
         },
         "it": {
@@ -80,7 +80,7 @@
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finderで表示"
+            "value": "Finderに表示"
           }
         },
         "ko": {
@@ -122,7 +122,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Afișează în Finder"
+            "value": "Afișați în Finder"
           }
         },
         "ru": {
@@ -182,7 +182,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在 Finder 中顯示"
+            "value": "顯示於Finder"
           }
         }
       }
@@ -308,7 +308,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here nu a putut termina"
+            "value": "Right Here nu a putut finaliza acțiunea"
           }
         },
         "ru": {
@@ -680,7 +680,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deschide Configurări sistem"
+            "value": "Deschideți Configurări sistem"
           }
         },
         "ru": {
@@ -866,7 +866,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS a împiedicat Right Here să controleze %@. Permite acest lucru în Configurări sistem › Intimitate și securitate › Automatizare, apoi încearcă din nou."
+            "value": "macOS a împiedicat Right Here să controleze %@. Permiteți acest lucru în Configurări sistem › Intimitate și securitate › Automatizare, apoi încercați din nou."
           }
         },
         "ru": {
@@ -1052,7 +1052,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here are nevoie de permisiunea ta"
+            "value": "Right Here are nevoie de permisiunea dvs."
           }
         },
         "ru": {
@@ -1610,7 +1610,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copiază promptul de configurare pentru AI"
+            "value": "Copiați promptul de configurare pentru AI"
           }
         },
         "ru": {
@@ -1868,7 +1868,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "إعدادات ملحق Finder"
+            "value": "إعدادات ملحق فايندر"
           }
         },
         "bn": {
@@ -2168,7 +2168,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instalează sau repară"
+            "value": "Instalați sau reparați"
           }
         },
         "ru": {
@@ -2354,7 +2354,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Unele verificări necesită atenția ta."
+            "value": "Unele verificări necesită atenția dvs."
           }
         },
         "ru": {
@@ -2540,7 +2540,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deschide configurația"
+            "value": "Deschideți configurația"
           }
         },
         "ru": {
@@ -2726,7 +2726,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Promptul de configurare a fost copiat. Lipește-l în asistentul tău AI."
+            "value": "Promptul de configurare a fost copiat. Lipiți-l în asistentul dvs. AI."
           }
         },
         "ru": {
@@ -2912,7 +2912,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Trimite un folder sau o selecție către terminalele, editoarele și agenții tăi AI."
+            "value": "Trimiteți un folder sau o selecție către terminalele, editoarele și agenții dvs. AI."
           }
         },
         "ru": {
@@ -3098,7 +3098,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Testează lansarea terminalului"
+            "value": "Testați lansarea terminalului"
           }
         },
         "ru": {
@@ -3416,7 +3416,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Path Lengkap"
+            "value": "Jalur Lengkap"
           }
         },
         "it": {
@@ -3494,7 +3494,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "พาธเต็ม"
+            "value": "เส้นทางเต็ม"
           }
         },
         "tr": {
@@ -3974,7 +3974,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Path dari Root Git"
+            "value": "Jalur dari Root Git"
           }
         },
         "it": {
@@ -4052,7 +4052,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "พาธจากรูท Git"
+            "value": "เส้นทางจากรูท Git"
           }
         },
         "tr": {
@@ -4532,7 +4532,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Path Folder Induk"
+            "value": "Jalur Folder Induk"
           }
         },
         "it": {
@@ -4610,7 +4610,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "พาธของโฟลเดอร์หลัก"
+            "value": "เส้นทางของโฟลเดอร์หลัก"
           }
         },
         "tr": {
@@ -4718,7 +4718,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Path dengan Escape Shell"
+            "value": "Jalur dengan Escape Shell"
           }
         },
         "it": {
@@ -4796,7 +4796,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "พาธที่ escape สำหรับเชลล์"
+            "value": "เส้นทางที่ escape สำหรับเชลล์"
           }
         },
         "tr": {
@@ -4904,7 +4904,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Path dalam Tanda Kutip"
+            "value": "Jalur dalam Tanda Kutip"
           }
         },
         "it": {
@@ -4982,7 +4982,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "พาธในเครื่องหมายคำพูด"
+            "value": "เส้นทางในเครื่องหมายคำพูด"
           }
         },
         "tr": {
@@ -5090,7 +5090,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Path dari Home (~)"
+            "value": "Jalur dari Home (~)"
           }
         },
         "it": {
@@ -5168,7 +5168,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "พาธจากโฮม (~)"
+            "value": "เส้นทางจากโฮม (~)"
           }
         },
         "tr": {
@@ -5276,7 +5276,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Salin Path: %@"
+            "value": "Salin Jalur: %@"
           }
         },
         "it": {
@@ -5330,7 +5330,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copiază calea: %@"
+            "value": "Copiați calea: %@"
           }
         },
         "ru": {
@@ -5354,7 +5354,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "คัดลอกพาธ: %@"
+            "value": "คัดลอกเส้นทาง: %@"
           }
         },
         "tr": {
@@ -5462,7 +5462,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Salin Path"
+            "value": "Salin Jalur"
           }
         },
         "it": {
@@ -5516,7 +5516,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copiază calea"
+            "value": "Copiați calea"
           }
         },
         "ru": {
@@ -5540,7 +5540,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "คัดลอกพาธ"
+            "value": "คัดลอกเส้นทาง"
           }
         },
         "tr": {
@@ -5960,7 +5960,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "فتح باستخدام"
+            "value": "فتح بواسطة"
           }
         },
         "bn": {
@@ -6008,13 +6008,13 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "פתח באמצעות"
+            "value": "פתיחה באמצעות"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "इसके साथ खोलें"
+            "value": "इसमें खोलें"
           }
         },
         "id": {
@@ -6062,7 +6062,7 @@
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Otwórz za pomocą"
+            "value": "Otwórz w aplikacji"
           }
         },
         "pt-BR": {
@@ -6074,13 +6074,13 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deschide cu"
+            "value": "Deschideți cu"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Открыть с помощью"
+            "value": "Открыть в приложении"
           }
         },
         "ta": {
@@ -6104,13 +6104,13 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Birlikte Aç"
+            "value": "Şununla Aç"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Відкрити за допомогою"
+            "value": "Відкрити програмою"
           }
         },
         "ur": {
@@ -6134,7 +6134,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "打開方式"
+            "value": "打開檔案的應用程式"
           }
         }
       }
@@ -7934,7 +7934,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deschide în %@"
+            "value": "Deschideți în %@"
           }
         },
         "ru": {
@@ -8624,7 +8624,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Buka di sini, salin path, jalankan agen"
+            "value": "Buka di sini, salin jalur, jalankan agen"
           }
         },
         "it": {
@@ -8678,7 +8678,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deschide aici, copiază o cale, pornește un agent"
+            "value": "Deschideți aici, copiați o cale, porniți un agent"
           }
         },
         "ru": {
@@ -8702,7 +8702,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เปิดที่นี่ คัดลอกพาธ เริ่มเอเจนต์"
+            "value": "เปิดที่นี่ คัดลอกเส้นทาง เริ่มเอเจนต์"
           }
         },
         "tr": {
@@ -8864,7 +8864,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Continuă ultima sesiune"
+            "value": "Continuați ultima sesiune"
           }
         },
         "ru": {
@@ -9050,7 +9050,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Reia o sesiune…"
+            "value": "Reluați o sesiune…"
           }
         },
         "ru": {
@@ -9236,7 +9236,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Reia cea mai recentă sesiune"
+            "value": "Reluați cea mai recentă sesiune"
           }
         },
         "ru": {

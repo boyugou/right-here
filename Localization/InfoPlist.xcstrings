@@ -122,7 +122,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here cere terminalului tău să deschidă o fereastră în folderul ales și să ruleze comanda selectată, de exemplu agentul tău AI."
+            "value": "Right Here solicită terminalului dvs. să deschidă o fereastră în folderul ales și să ruleze comanda selectată, de exemplu agentul dvs. AI."
           }
         },
         "ru": {

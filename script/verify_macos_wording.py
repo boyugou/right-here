@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Check the Settings path quoted by the permission alert against macOS's own wording on this Mac.
+"""Check our wording against macOS's own, as shipped on this Mac.
 
-The alert tells the person where to allow the control: System Settings > Privacy & Security > Automation.
-macOS ships those names in its own languages (inside System Settings and its Privacy & Security extension),
-so this reads them and checks each translation of `alert.permissionMessage` and `alert.openSettings` uses the
-same words. Languages macOS does not ship (Bengali, Persian, Marathi, Tamil, Telugu, Urdu) show an English
-Settings, so their alert must quote the English path.
+1. The Settings path the permission alert quotes (System Settings > Privacy & Security > Automation). macOS
+   ships those names in its own languages (inside System Settings and its Privacy & Security extension), so
+   this reads them and checks each translation of `alert.permissionMessage` and `alert.openSettings` uses
+   the same words. Languages macOS does not ship (Bengali, Persian, Marathi, Tamil, Telugu, Urdu) show an
+   English Settings, so their alert must quote the English path.
+2. Two menu items Finder has itself: "Open With" (`group.openWith`) and "Show in Finder" (`action.reveal`)
+   read exactly as Finder's own menus do, so ours sits comfortably beside them.
 
 It depends on the macOS version it runs on, so it is not part of verify_all.sh; run it after a macOS update:
 
@@ -17,6 +19,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+FINDER = Path("/System/Library/CoreServices/Finder.app/Contents/Resources")
 PANE = Path("/System/Library/ExtensionKit/Extensions/SecurityPrivacyExtension.appex/Contents/Resources")
 SETTINGS = Path("/System/Applications/System Settings.app/Contents/Resources")
 ALIASES = {"pt-BR": ["pt_BR"], "zh-Hans": ["zh_CN"], "zh-Hant": ["zh_TW", "zh_HK"]}
@@ -40,6 +43,18 @@ def lookup(table: dict, language: str, key: str):
         for candidate in (code, code.replace("-", "_")):
             if key in table.get(candidate, {}):
                 return table[candidate][key]
+    return None
+
+
+def finder_strings(language: str, name: str):
+    for code in [language] + ALIASES.get(language, []):
+        for candidate in (code, code.replace("-", "_")):
+            path = FINDER / f"{candidate}.lproj" / name
+            if path.exists():
+                try:
+                    return plistlib.loads(path.read_bytes())
+                except Exception:
+                    return None
     return None
 
 
@@ -75,10 +90,27 @@ def main() -> int:
                 problems.append(f"{language}: the alert does not use macOS's word for {label}: {name}")
         if not uses(names[0], normalize(button[language]["stringUnit"]["value"])):
             problems.append(f"{language}: alert.openSettings does not use macOS's name for the app: {names[0]}")
+    finder_checked = 0
+    for language in sorted(message):
+        if language == "en":
+            continue
+        merged = finder_strings(language, "LocalizableMerged.strings")
+        services = finder_strings(language, "ServicesMenu.strings")
+        if not merged:
+            continue
+        finder_checked += 1
+        open_with = normalize(strings["group.openWith"]["localizations"][language]["stringUnit"]["value"])
+        if normalize(merged.get("N152", open_with)) != open_with:
+            problems.append(f"{language}: group.openWith is {open_with!r} but Finder's Open With is {normalize(merged['N152'])!r}")
+        reveal = normalize(strings["action.reveal"]["localizations"][language]["stringUnit"]["value"])
+        theirs = normalize((services or {}).get("Finder/Reveal", "/" + reveal).split("/")[-1])
+        if theirs != reveal:
+            problems.append(f"{language}: action.reveal is {reveal!r} but Finder's Show in Finder is {theirs!r}")
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
-    print(f"ok: the permission alert uses macOS's own wording in {sum(1 for l in message if l != 'en')} languages")
+    print(f"ok: the permission alert uses macOS's own wording in {sum(1 for l in message if l != 'en')} languages; "
+          f"Open With and Show in Finder match Finder's in {finder_checked}")
     return 0
 
 

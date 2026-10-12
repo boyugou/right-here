@@ -44,7 +44,11 @@ Security › Automation) is checked against macOS's own wording, which ships in 
 Privacy & Security extension: `script/verify_macos_wording.py` reads it and found real mismatches (Arabic,
 Greek, Hebrew, Indonesian, Malay, Portuguese, Romanian, Thai, Vietnamese, Simplified Chinese), all fixed; for
 Bengali, Persian, Marathi, Tamil, Telugu and Urdu, which macOS does not ship, the alert quotes the English path
-because that is what Settings shows. Run it after a macOS update. What a native speaker would change is still open.
+because that is what Settings shows. The same script holds "Open With" and "Show in Finder" to Finder's own
+wording in the 23 languages Finder ships, which changed Arabic, Hebrew, Hindi, Polish, Russian, Turkish,
+Ukrainian and Traditional Chinese for Open With, and several for Show in Finder; Thai and Indonesian now say
+"route" and "jalur" for a path as Finder does, and Romanian uses the formal register macOS uses. Run it after a
+macOS update. What a native speaker would change is still open.
 
 ## Names of apps
 
