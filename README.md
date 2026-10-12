@@ -59,7 +59,8 @@ The Finder menu is not shown inside iCloud Drive (including a synced Desktop or 
 limit of Finder extensions. The same actions are installed as **Quick Actions**, which work there and take
 keyboard shortcuts: System Settings, Keyboard, Keyboard Shortcuts, Services, Files and Folders.
 
-The first time an action controls a terminal, macOS asks whether Right Here may. Allow it once.
+The first time an action controls a terminal, macOS asks whether Right Here may. Allow it once. If something
+does not work, start with `rh doctor` and [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
 
 ## Configure
 

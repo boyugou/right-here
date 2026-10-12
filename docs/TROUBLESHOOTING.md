@@ -1,0 +1,65 @@
+# Troubleshooting
+
+Start with `rh doctor`. Every check says what is wrong and what to run. `rh doctor --json` is the same for
+scripts and AI agents, and `rh doctor --probe-launch` proves the whole click chain by opening and closing a
+throwaway terminal window.
+
+## The Finder menu does not appear
+
+- `rh doctor` says the extension is switched off or not registered: run `rh install --finder`, or switch on
+  Right Here in System Settings, General, Login Items & Extensions, Finder (the app's window has a button).
+- You are inside iCloud Drive (including a Desktop or Documents folder that syncs with iCloud). Finder does not
+  show extension menus there; use the Quick Actions instead (right-click, Quick Actions), or give them keyboard
+  shortcuts in System Settings, Keyboard, Keyboard Shortcuts, Services.
+- The doctor warns that the extension is registered from more than one place (a build folder next to the installed
+  app): `rh install --finder` removes the stale copies. macOS drops an extension that is registered twice.
+- It worked until a macOS update: `rh install --finder` registers it again.
+
+## I click an item and nothing happens
+
+- `rh doctor` has a line "Last action started from Finder". If it says "none yet" after you clicked, the click did
+  not reach `rh`: check the runner script line (`rh install --scripts`) and look at the extension's log:
+
+  ```sh
+  /usr/bin/log show --last 10m --predicate 'subsystem == "com.boyugou.righthere.FinderExtension"'
+  ```
+
+- A failed action shows an alert and writes a line to `~/Library/Logs/right-here/rh.log`.
+- Try the action from a terminal with `--dry-run` to see exactly what it would do: `rh run agent.claude --dry-run
+  --container ~/code/project`.
+
+## macOS asks whether Right Here may control the terminal
+
+That is the Automation permission, and it is asked once per terminal. Choose Allow. It is the Finder extension
+that asks, because it is the process macOS holds responsible for what `rh` does on its behalf. If you chose Don't
+Allow, switch it on in System Settings, Privacy & Security, Automation, or reset the question:
+
+```sh
+tccutil reset AppleEvents com.boyugou.righthere.FinderExtension
+```
+
+## An agent says "not found", or starts without my aliases
+
+The agent's command is typed into your own login shell, so it sees what a new terminal window sees: nvm, your
+PATH and your aliases. If `claude` works in a new window of your terminal it works here. `rh agents` shows which
+agent commands your login shell finds. If your shell takes a few seconds to start, the agent starts that much
+later; that is your shell's startup time, and `rh doctor --probe-launch` reports how long the round trip took.
+
+## The agent opens in a window and I want a tab
+
+Set `terminal_placement = "tab"` under `[general]` (Ghostty).
+
+## Quick Actions are missing or out of date
+
+`rh install --services` rewrites them from the config. The doctor says when they differ from it. Changing the
+system language also changes their names, so run it again after that.
+
+## The config has a mistake
+
+`rh config validate --strict` lists every problem, with a likely replacement for a typo. Warnings are worth fixing:
+an unknown key only warns because the rest of the file still applies, but what it was meant to set is missing.
+
+## Removing it
+
+`rh uninstall` removes the runner script, Quick Actions, command link and extension registration, and keeps your
+config. Then delete Right Here.app.
