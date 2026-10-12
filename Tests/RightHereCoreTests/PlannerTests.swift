@@ -263,6 +263,22 @@ struct PlannerTests {
         #expect(!agent.available)
     }
 
+    @Test func theConfiguredPlacementReachesBothThePlainOpenAndAnAgentLaunch() throws {
+        let config = Config(terminalPlacement: .newTab)
+        let planner = Planner(config: config, facts: machine())
+        let open = try planner.plan(.openTerminal(nil), context: folder("/Users/tester/code/app"))
+        guard case .appleScript(let openStep)? = open.steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(openStep.arguments == ["/Users/tester/code/app", "", "tab"])
+        let agent = try planner.plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
+        guard case .appleScript(let agentStep)? = agent.steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(agentStep.arguments == ["/Users/tester/code/app", "claude", "tab"])
+    }
+
+    @Test func theDefaultPlacementIsAWindow() throws {
+        let plan = try Planner(facts: machine()).plan(.openTerminal(nil), context: folder("/Users/tester/code/app"))
+        guard case .open? = plan.steps.first else { Issue.record("expected a plain open"); return }
+    }
+
     @Test func aChosenTerminalOverridesTheDefault() throws {
         let plan = try Planner(facts: machine()).plan(.agent(id: "codex", variant: nil, launcher: .terminal("terminal")), context: folder("/Users/tester/code/app"))
         guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }

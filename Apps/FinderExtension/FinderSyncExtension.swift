@@ -34,9 +34,16 @@ final class FinderSyncExtension: FIFinderSync {
         let marker = paths.configDirectory.appendingPathComponent(".probe")
         guard let data = FileManager.default.contents(atPath: marker.path) else { return }
         let kind = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
-        let probe = kind == "launch" ? "launch" : "automation"
-        log.notice("probe \(probe, privacy: .public) requested; running it through the runner script")
-        runner(["probe", probe, "--from-extension"], label: "probe.\(probe)")
+        // A fixed vocabulary: `launch`, `launch:window`, `launch:tab`; anything else is the harmless automation probe.
+        var arguments = ["probe", "automation", "--from-extension"]
+        switch kind {
+        case "launch": arguments = ["probe", "launch", "--from-extension"]
+        case "launch:window": arguments = ["probe", "launch", "--from-extension", "--placement", "window"]
+        case "launch:tab": arguments = ["probe", "launch", "--from-extension", "--placement", "tab"]
+        default: break
+        }
+        log.notice("probe \(arguments[1], privacy: .public) requested; running it through the runner script")
+        runner(arguments, label: "probe.\(arguments[1])")
     }
 
     // MARK: Toolbar

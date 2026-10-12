@@ -227,6 +227,9 @@ private struct Builder {
         var agentChoices: [String] = []
         if let general = root.subtable("general") {
             general.checkKnownKeys()
+            if let placement = general.checkAllowed(general.string("terminal_placement"), key: "terminal_placement", allowed: TerminalPlacement.configNames) {
+                config.terminalPlacement = TerminalPlacement(configName: placement) ?? .newWindow
+            }
             terminalChoice = general.string("terminal")
             editorChoice = general.string("editor")
             agentChoices = general.stringArray("agents") ?? []

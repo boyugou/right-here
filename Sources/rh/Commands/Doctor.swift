@@ -18,14 +18,23 @@ struct Doctor: AsyncParsableCommand {
     @Flag(help: "Go further: have the extension start a throwaway terminal session that runs a typed command, as an agent launch does. A window opens and closes.")
     var probeLaunch = false
 
+    @Option(help: "With --probe-launch: start the session in a \"window\" or a \"tab\" instead of what general.terminal_placement says.")
+    var placement: String?
+
     struct Report: Encodable {
         var ok: Bool
         var checks: [DoctorCheck]
     }
 
+    private func launchPlacement() throws -> TerminalPlacement? {
+        guard let placement else { return nil }
+        guard let parsed = TerminalPlacement(configName: placement) else { throw ValidationError("--placement is \"window\" or \"tab\".") }
+        return parsed
+    }
+
     func run() async throws {
         let runtime = Runtime()
-        let checks = await RightHereKit.Doctor(paths: runtime.paths, loaded: runtime.loaded).run(probeExtension: probeExtension, probeLaunch: probeLaunch)
+        let checks = await RightHereKit.Doctor(paths: runtime.paths, loaded: runtime.loaded).run(probeExtension: probeExtension, probeLaunch: probeLaunch, launchPlacement: try launchPlacement())
         let failed = checks.contains { $0.status == .fail }
         if json {
             try Output.json(Report(ok: !failed, checks: checks))

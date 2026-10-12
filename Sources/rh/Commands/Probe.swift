@@ -95,6 +95,9 @@ struct Probe: AsyncParsableCommand {
         @Argument(help: "A terminal id from `rh apps`. Default: the default terminal.")
         var terminal: String?
 
+        @Option(help: "Start the session in a new \"window\" or a new \"tab\". Default: general.terminal_placement.")
+        var placement: String?
+
         @Flag(help: "Print JSON.")
         var json = false
 
@@ -124,6 +127,12 @@ struct Probe: AsyncParsableCommand {
         }
 
         private func probe(_ runtime: Runtime) async throws -> LaunchProbe.Result {
+            // Arguments are checked before anything is looked up or started.
+            var chosen = runtime.config.terminalPlacement
+            if let placement {
+                guard let parsed = TerminalPlacement(configName: placement) else { throw ValidationError("--placement is \"window\" or \"tab\".") }
+                chosen = parsed
+            }
             let app: AppDescriptor
             if let terminal {
                 guard let found = runtime.config.app(id: terminal), found.role == .terminal else {
@@ -140,7 +149,7 @@ struct Probe: AsyncParsableCommand {
             guard let bundleID = app.installedBundleID(facts: runtime.facts) else {
                 return .init(application: app.name, outcome: .notInstalled, detail: "\(app.name) is not installed.")
             }
-            return await LaunchProbe(facts: runtime.facts).run(terminal: app, bundleID: bundleID)
+            return await LaunchProbe(facts: runtime.facts).run(terminal: app, bundleID: bundleID, placement: chosen)
         }
     }
 }

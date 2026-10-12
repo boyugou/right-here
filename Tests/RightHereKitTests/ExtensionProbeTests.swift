@@ -42,6 +42,12 @@ struct ExtensionProbeTests {
         #expect(ExtensionProbe.latestResults(in: log, since: start)?.map(\.outcome) == [.granted])
     }
 
+    @Test func theMarkerNamesAPlacementOnlyFromAFixedVocabulary() {
+        #expect(ExtensionProbe.markerText(placement: nil) == "launch")
+        #expect(ExtensionProbe.markerText(placement: .newTab) == "launch:tab")
+        #expect(ExtensionProbe.markerText(placement: .newWindow) == "launch:window")
+    }
+
     @Test func aMissingLogMeansNoResult() {
         #expect(ExtensionProbe.latestResults(in: URL(fileURLWithPath: "/nonexistent/rh.log"), since: Date()) == nil)
     }

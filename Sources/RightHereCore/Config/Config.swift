@@ -39,6 +39,8 @@ public struct Config: Sendable, Equatable {
     public var terminal: String?
     /// Default editor id; `nil` picks the first installed one.
     public var editor: String?
+    /// Whether a terminal session starts in a new window or a new tab of the front one (Ghostty only).
+    public var terminalPlacement: TerminalPlacement
     public var newFile: NewFileSettings
     /// Agents offered in the menu, in order. Empty until `rh init` detects the installed ones.
     public var enabledAgents: [String]
@@ -58,6 +60,7 @@ public struct Config: Sendable, Equatable {
     public init(
         terminal: String? = nil,
         editor: String? = nil,
+        terminalPlacement: TerminalPlacement = .newWindow,
         newFile: NewFileSettings = NewFileSettings(),
         enabledAgents: [String] = [],
         menuItems: [String]? = nil,
@@ -69,6 +72,7 @@ public struct Config: Sendable, Equatable {
     ) {
         self.terminal = terminal
         self.editor = editor
+        self.terminalPlacement = terminalPlacement
         self.newFile = newFile
         self.enabledAgents = enabledAgents
         self.menuItems = menuItems

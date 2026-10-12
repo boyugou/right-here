@@ -341,6 +341,22 @@ struct ConfigStrictnessTests {
         #expect(result.config.agent(id: "claude")?.command == "claude")
     }
 
+    @Test("terminal_placement accepts window and tab and defaults to a window", arguments: [("window", TerminalPlacement.newWindow), ("tab", .newTab)])
+    func terminalPlacement(name: String, expected: TerminalPlacement) {
+        let result = parse("[general]\nterminal_placement = \"\(name)\"\n")
+        #expect(result.diagnostics.isEmpty)
+        #expect(result.config.terminalPlacement == expected)
+        #expect(parse("").config.terminalPlacement == .newWindow)
+    }
+
+    @Test func anUnknownPlacementIsAnErrorWithAReplacement() throws {
+        let result = parse("[general]\nterminal_placement = \"tabs\"\n")
+        let diagnostic = try #require(result.diagnostics.first)
+        #expect(diagnostic.severity == .error)
+        #expect(diagnostic.replacement == "tab")
+        #expect(result.config.terminalPlacement == .newWindow)
+    }
+
     @Test func aTypoCarriesTheLikelyReplacementForTools() throws {
         let result = parse("[general]\nagnts = [\"codex\"]\n")
         let diagnostic = try #require(result.diagnostics.first)

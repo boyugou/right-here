@@ -24,14 +24,17 @@ public struct GhosttyAdapter: TerminalAdapter {
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
         let directory = try session.requireDirectory(facts)
-        guard let typed = try session.requireTypeableInput() else {
+        let typed = try session.requireTypeableInput()
+        // Handing Ghostty a folder always opens a window, and needs no permission. A new tab, or a command,
+        // is done through its AppleScript dictionary (Ghostty 1.3 and later).
+        if typed == nil, session.placement == .newWindow {
             return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
         }
         if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.unsupported(blocker) }
         let placement = session.placement == .newTab ? "tab" : "window"
         return [.appleScript(AppleScriptStep(
             source: Self.script,
-            arguments: [directory, typed, placement],
+            arguments: [directory, typed ?? "", placement],
             controls: "Ghostty"
         ))]
     }

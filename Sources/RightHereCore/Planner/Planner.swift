@@ -88,7 +88,7 @@ public struct Planner: Sendable {
         let directory = try workingDirectory(for: context)
         let (app, bundleID) = try resolveTerminal(id)
         let steps = try TerminalAdapters.adapter(for: app)
-            .steps(for: TerminalSession(directory: directory), bundleID: bundleID, facts: facts)
+            .steps(for: TerminalSession(directory: directory, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
         return LaunchPlan(action: ref.id, summary: "Open \(directory.lastPathComponent) in \(app.name)", steps: steps)
     }
 
@@ -156,7 +156,7 @@ public struct Planner: Sendable {
             do { try ShellQuoting.validateForTyping(directory.path) } catch { throw PlanError.unsafeText(directory.path) }
             let (app, bundleID) = try resolveTerminal(terminalID)
             let steps = try TerminalAdapters.adapter(for: app)
-                .steps(for: TerminalSession(directory: directory, typedInput: typed), bundleID: bundleID, facts: facts)
+                .steps(for: TerminalSession(directory: directory, typedInput: typed, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
             return LaunchPlan(
                 action: ref.id,
                 summary: "Run \(typed) in \(directory.lastPathComponent) with \(app.name)",

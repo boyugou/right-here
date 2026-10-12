@@ -35,17 +35,23 @@ public struct ExtensionProbe: Sendable {
 
     /// Returns `nil` when nothing was reported in time. The time covers the permission prompt, the
     /// terminal starting and the person's shell starting up.
-    public func runLaunch(timeout: Duration = .seconds(75)) async -> LaunchProbe.Result? {
-        guard let json = await report(.launch, timeout: timeout) else { return nil }
+    /// - Parameter placement: `nil` tests what the config says; otherwise a window or a tab is forced.
+    public func runLaunch(placement: TerminalPlacement? = nil, timeout: Duration = .seconds(75)) async -> LaunchProbe.Result? {
+        guard let json = await report(.launch, marker: Self.markerText(placement: placement), timeout: timeout) else { return nil }
         return try? JSONDecoder().decode(LaunchProbe.Result.self, from: json)
     }
 
+    /// The marker's text: `launch`, or `launch:window` / `launch:tab`. The extension accepts only these.
+    static func markerText(placement: TerminalPlacement?) -> String {
+        placement.map { "launch:" + $0.configName } ?? "launch"
+    }
+
     /// Leaves the marker, restarts the extension so it looks for it, and waits for `rh` to report.
-    private func report(_ kind: Kind, timeout: Duration) async -> Data? {
+    private func report(_ kind: Kind, marker text: String? = nil, timeout: Duration) async -> Data? {
         let started = Date()
         let marker = paths.configDirectory.appendingPathComponent(".probe")
         try? FileManager.default.createDirectory(at: paths.configDirectory, withIntermediateDirectories: true)
-        guard (try? Data(kind.rawValue.utf8).write(to: marker)) != nil else { return nil }
+        guard (try? Data((text ?? kind.rawValue).utf8).write(to: marker)) != nil else { return nil }
 
         let manager = FinderExtensionManager(runner: runner)
         try? await manager.disable()

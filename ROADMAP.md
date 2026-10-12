@@ -4,8 +4,8 @@
 
 - Core: actions, planner, config, menu, catalogs, path styles, quoting (with real-shell tests).
 - `rh`: run, actions, menu, agents, apps, config, init, install, uninstall, docs, doctor, finder, mcp, probe.
-- Terminal adapters: Ghostty (1.3 and later for commands), Terminal.app. Agent launchers: typed, terminal
-  link, desktop app.
+- Terminal adapters: Ghostty (1.3 and later for commands, new window or new tab), Terminal.app. Agent
+  launchers: typed, terminal link, desktop app.
 - `rh doctor --probe-launch`: a throwaway terminal session started through the Finder extension proves a
   typed command runs, in the right folder, in the login shell.
 - The app (summary, details, a launch test button) with its icon, and the Finder extension; installer;
@@ -26,7 +26,6 @@
   them (none is installed on the development machine); possibly a generic config-defined adapter.
 - Native-speaker review of the translations.
 - A menu-only App Store build (scope and risks in the design notes).
-- New terminal tab instead of a new window, as an option.
 
 ## Open
 

@@ -22,6 +22,19 @@ extension TerminalSession {
 public enum TerminalPlacement: String, Sendable, Codable, CaseIterable {
     case newWindow
     case newTab
+
+    /// How the config file spells it: `window` or `tab`.
+    public static let configNames = ["window", "tab"]
+
+    public init?(configName: String) {
+        switch configName {
+        case "window": self = .newWindow
+        case "tab": self = .newTab
+        default: return nil
+        }
+    }
+
+    public var configName: String { self == .newTab ? "tab" : "window" }
 }
 
 /// A shell session to start in a terminal.

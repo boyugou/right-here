@@ -53,6 +53,44 @@ struct TerminalAdapterTests {
         }
     }
 
+    // MARK: Tabs
+
+    @Test func ghosttyOpensAFolderInATabWithAnEmptyCommand() throws {
+        let session = TerminalSession(directory: directory, placement: .newTab)
+        guard case .appleScript(let step)? = try GhosttyAdapter().steps(for: session, bundleID: "com.mitchellh.ghostty", facts: facts).first else {
+            Issue.record("expected AppleScript, a plain open always makes a window"); return
+        }
+        #expect(step.arguments == ["/Users/tester/my code", "", "tab"])
+        #expect(step.controls == "Ghostty")
+    }
+
+    @Test func aPlainOpenInAWindowStillNeedsNoAppleScript() throws {
+        let steps = try GhosttyAdapter().steps(for: TerminalSession(directory: directory, placement: .newWindow), bundleID: "com.mitchellh.ghostty", facts: facts)
+        #expect(steps == [.open(OpenStep(bundleID: "com.mitchellh.ghostty", targets: ["/Users/tester/my code"]))])
+    }
+
+    @Test func aTabInAnOldGhosttyIsRefusedWithTheVersionReason() {
+        let old = FakeSystemFacts(directories: ["/Users/tester/my code"], bundleVersions: ["com.mitchellh.ghostty": "1.2.3"])
+        #expect(throws: PlanError.self) {
+            try GhosttyAdapter().steps(for: TerminalSession(directory: directory, placement: .newTab), bundleID: "com.mitchellh.ghostty", facts: old)
+        }
+    }
+
+    @Test func terminalAppIgnoresThePlacementAndAlwaysOpensAWindow() throws {
+        let plain = try AppleTerminalAdapter().steps(for: TerminalSession(directory: directory, placement: .newTab), bundleID: "com.apple.Terminal", facts: facts)
+        #expect(plain == [.open(OpenStep(bundleID: "com.apple.Terminal", targets: ["/Users/tester/my code"]))])
+        let typed = try AppleTerminalAdapter().steps(for: TerminalSession(directory: directory, typedInput: "claude", placement: .newTab), bundleID: "x", facts: facts)
+        let window = try AppleTerminalAdapter().steps(for: TerminalSession(directory: directory, typedInput: "claude", placement: .newWindow), bundleID: "x", facts: facts)
+        #expect(typed == window)
+    }
+
+    @Test func placementNamesRoundTrip() {
+        #expect(TerminalPlacement(configName: "tab") == .newTab)
+        #expect(TerminalPlacement(configName: "window") == .newWindow)
+        #expect(TerminalPlacement(configName: "split") == nil)
+        for placement in TerminalPlacement.allCases { #expect(TerminalPlacement(configName: placement.configName) == placement) }
+    }
+
     // MARK: Ghostty versions
 
     private func ghosttyMachine(version: String?) -> FakeSystemFacts {

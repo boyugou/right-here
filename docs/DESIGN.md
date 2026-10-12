@@ -160,6 +160,8 @@ Open (to check on a real run, in the order they matter):
 - Quick Actions that start an agent: which process macOS holds responsible for the Apple event (the
   Services runner, not the Finder extension) and so which Automation entry has to be allowed. It cannot be
   probed without a real invocation from Finder; `rh doctor --probe-launch` only covers the extension.
+- That the tab placement really lands in a tab: `rh doctor --probe-launch --placement tab` passes (the session
+  ran in the right folder) but cannot tell a tab from a window.
 - The items, sidebar and toolbar menus (the container menu has been observed).
 - Whether Quick Actions appear on a folder's empty background.
 - A cold start of Terminal.app or Ghostty through AppleScript may open an extra startup window.

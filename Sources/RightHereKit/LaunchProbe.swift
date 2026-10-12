@@ -86,7 +86,7 @@ public struct LaunchProbe: Sendable {
     }
 
     /// Runs the probe in `app`, which must be installed under `bundleID`.
-    public func run(terminal app: AppDescriptor, bundleID: String, timeout: Duration = .seconds(15)) async -> Result {
+    public func run(terminal app: AppDescriptor, bundleID: String, placement: TerminalPlacement = .newWindow, timeout: Duration = .seconds(15)) async -> Result {
         let adapter = TerminalAdapters.adapter(for: app)
         guard adapter.supportsCommands else {
             return Result(application: app.name, outcome: .unsupported, detail: "\(app.name) cannot run a command yet.")
@@ -102,7 +102,7 @@ public struct LaunchProbe: Sendable {
 
         let steps: [Step]
         do {
-            steps = try adapter.steps(for: TerminalSession(directory: folder, typedInput: Self.command), bundleID: bundleID, facts: facts)
+            steps = try adapter.steps(for: TerminalSession(directory: folder, typedInput: Self.command, placement: placement), bundleID: bundleID, facts: facts)
         } catch {
             return Result(application: app.name, outcome: .failed, detail: error.localizedDescription)
         }
