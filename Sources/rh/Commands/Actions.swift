@@ -64,11 +64,11 @@ struct MenuCommand: ParsableCommand {
     static func describe(_ here: HereContext) -> String {
         switch here.origin {
         case .items, .services, .sidebar, .toolbar:
-            if here.items.isEmpty, let container = here.container { return "Menu for the folder \(container.path) (\(here.origin.rawValue))" }
-            let names = here.items.prefix(3).map(\.lastPathComponent).joined(separator: ", ")
+            if here.items.isEmpty, let container = here.container { return "Menu for the folder \(container.path.withControlCharactersEscaped) (\(here.origin.rawValue))" }
+            let names = here.items.prefix(3).map(\.lastPathComponent).joined(separator: ", ").withControlCharactersEscaped
             return "Menu for \(here.items.count) selected item\(here.items.count == 1 ? "" : "s") (\(here.origin.rawValue)): \(names)" + (here.items.count > 3 ? ", …" : "")
         case .container:
-            return "Menu for the folder \(here.container?.path ?? "?") (container)"
+            return "Menu for the folder \((here.container?.path ?? "?").withControlCharactersEscaped) (container)"
         case .cli:
             return "Menu for the current folder (cli; pass a path or --container to preview another)"
         }

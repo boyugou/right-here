@@ -29,13 +29,31 @@ extension ProcessRunner {
     }
 }
 
+/// What `RH_NO_UI` refuses to start.
+public struct UIDisabledError: Error, Equatable, LocalizedError {
+    public let executable: String
+    public var errorDescription: String? {
+        "RH_NO_UI is set, so rh will not start \(executable): nothing may open a window, start an app or send an Apple event."
+    }
+}
+
 public struct LiveProcessRunner: ProcessRunner {
+    /// With `RH_NO_UI` set, the two programs that put something on a screen (`open`, which starts an app or a window,
+    /// and `osascript`, which sends Apple events) are never started. The tests set it, so a test that goes wrong
+    /// cannot open a window or control a terminal; the one place that does that on purpose, `rh doctor --probe-launch`,
+    /// is run by hand without it.
+    static let screenPrograms: Set<String> = ["/usr/bin/open", "/usr/bin/osascript"]
+
+    private let environment: [String: String]
+
     /// How long to keep reading after the process has exited. A child that was left running in the
     /// background (a shell startup file doing `(sleep 30 &)`) inherits the pipes and holds them open
     /// long after the process we started is gone; waiting for end-of-file would wait for it too.
     static let drainGrace: Duration = .milliseconds(300)
 
-    public init() {}
+    public init(environment: [String: String] = ProcessInfo.processInfo.environment) {
+        self.environment = environment
+    }
 
     /// After a timeout: SIGKILL for a process that is still running, and for its process group when it leads
     /// one (it does, for what `Process` starts), so background children of a startup file die with it.
@@ -47,6 +65,9 @@ public struct LiveProcessRunner: ProcessRunner {
     }
 
     public func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
+        if environment["RH_NO_UI"] != nil, Self.screenPrograms.contains(step.executable) {
+            throw UIDisabledError(executable: step.executable)
+        }
         let process = Process()
         process.executableURL = URL(fileURLWithPath: step.executable)
         process.arguments = step.arguments

@@ -12,7 +12,9 @@ public struct LaunchPlan: Sendable, Equatable, Codable {
 
     public init(action: String, summary: String, steps: [Step], notices: [String] = []) {
         self.action = action
-        self.summary = summary
+        // The summary names folders and files, which are whatever somebody called them: a terminal escape sequence
+        // in one must not reach the screen of the person reading `rh run`.
+        self.summary = summary.withControlCharactersEscaped
         self.steps = steps
         self.notices = notices
     }

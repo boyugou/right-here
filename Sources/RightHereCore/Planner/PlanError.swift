@@ -23,7 +23,12 @@ public enum PlanError: Error, Equatable, Sendable {
 }
 
 extension PlanError: LocalizedError {
+    /// Messages name paths, which are whatever somebody called them, so control characters are shown as escapes.
     public var errorDescription: String? {
+        message.withControlCharactersEscaped
+    }
+
+    private var message: String {
         switch self {
         case .noTarget: return "There is no folder or selection to act on."
         case .pathNotFound(let path): return "\(path) does not exist."

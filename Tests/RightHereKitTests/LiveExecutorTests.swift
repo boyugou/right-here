@@ -169,6 +169,16 @@ struct LiveProcessRunnerTests {
         #expect(stopped == runs && took < .seconds(12), "\(stopped) of \(runs) were stopped, after \(took)")
     }
 
+    @Test("with RH_NO_UI set the programs that put something on a screen are never started", arguments: ["/usr/bin/open", "/usr/bin/osascript"])
+    func noUIRefusesToStartScreenPrograms(executable: String) async throws {
+        let runner = LiveProcessRunner(environment: ["RH_NO_UI": "1"])
+        await #expect(throws: UIDisabledError(executable: executable)) {
+            try await runner.run(ProcessStep(executable: executable, arguments: ["-b", "com.apple.Terminal"]))
+        }
+        // Everything else still runs.
+        #expect(try await runner.run(ProcessStep(executable: "/bin/echo", arguments: ["fine"])).standardOutput == "fine\n")
+    }
+
     @Test func missingExecutableThrows() async {
         await #expect(throws: (any Error).self) {
             try await LiveProcessRunner().run(ProcessStep(executable: "/nonexistent/rh-test-binary"))

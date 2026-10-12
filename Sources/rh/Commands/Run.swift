@@ -30,7 +30,7 @@ struct Run: AsyncParsableCommand {
     @Flag(help: "Print the plan and the result as JSON.")
     var json = false
 
-    @Flag(help: "Show an alert when the action fails. The Finder extension uses this. Never with --dry-run, and not when RH_NO_UI is set.")
+    @Flag(help: "Show an alert when the action fails. The Finder extension uses this. Never with --dry-run. RH_NO_UI turns alerts off and stops rh from starting open or osascript.")
     var alert = false
 
     func run() async throws {

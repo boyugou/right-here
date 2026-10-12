@@ -533,3 +533,23 @@ struct PlannerUnreadablePathTests {
         #expect(!(try planner.plan(.openEditor, context: context).steps.isEmpty))
     }
 }
+
+
+@Suite("Planner: new files in a folder that cannot be searched")
+struct PlannerNewFileUnreadableTests {
+    @Test func aFolderWhoseNamesCannotBeLookedUpIsAPermissionErrorNotTenThousandLookups() {
+        var facts = FakeSystemFacts(directories: ["/Users/tester/Documents"], unreadablePaths: ["/Users/tester/Documents/untitled.txt"])
+        facts.applications = ["com.microsoft.VSCode": URL(fileURLWithPath: "/Applications/Code.app")]
+        #expect(throws: PlanError.unreadable("/Users/tester/Documents")) {
+            try Planner(facts: facts).plan(.newFile("txt"), context: HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/Documents")))
+        }
+    }
+
+    @Test func aTakenNameIsSkippedButAnUnreadableOneStopsTheSearch() {
+        let template = NewFileTemplate.text
+        let facts = FakeSystemFacts(directories: ["/d"], files: ["/d/untitled.txt"], unreadablePaths: ["/d/untitled 2.txt"])
+        #expect(NewFileNamer.firstFreeName(for: template, in: URL(fileURLWithPath: "/d"), facts: facts) == .unreadable)
+        let plain = FakeSystemFacts(directories: ["/d"], files: ["/d/untitled.txt"])
+        #expect(NewFileNamer.firstFreeName(for: template, in: URL(fileURLWithPath: "/d"), facts: plain) == .free("untitled 2.txt"))
+    }
+}

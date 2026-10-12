@@ -135,6 +135,11 @@ final class FinderSyncExtension: FIFinderSync {
     private func copyPath(_ style: PathStyle, _ context: HereContext) {
         let targets = context.pathTargets
         guard !targets.isEmpty else { return }
+        if let refusal = PathRenderer.shellFormRefusal(for: targets, style: style) {
+            log.error("copy refused: \(refusal, privacy: .private)")
+            NSSound.beep()
+            return
+        }
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(PathRenderer(facts: facts).render(targets, style: style), forType: .string)

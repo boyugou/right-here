@@ -61,15 +61,32 @@ public struct NewFileTemplate: Sendable, Equatable, Identifiable {
 public enum NewFileNamer {
     private static let attemptLimit = 10_000
 
+    public enum Name: Equatable, Sendable {
+        case free(String)
+        /// The system will not say whether a candidate exists (the folder cannot be searched), and ten thousand more
+        /// lookups would not change that.
+        case unreadable
+        case exhausted
+    }
+
     /// The first free name in `directory`: `untitled.txt`, then `untitled 2.txt`, `untitled 3.txt`, and so on.
-    public static func uniqueName(for template: NewFileTemplate, in directory: URL, facts: any SystemFacts, localizer: Localizer = .english) -> String? {
+    public static func firstFreeName(for template: NewFileTemplate, in directory: URL, facts: any SystemFacts, localizer: Localizer = .english) -> Name {
         let suffix = template.fileExtension.isEmpty ? "" : "." + template.fileExtension
         let baseName = template.localizedBaseName(localizer)
         for number in 1...attemptLimit {
             let stem = number == 1 ? baseName : "\(baseName) \(number)"
             let name = stem + suffix
-            if !facts.itemExists(directory.appendingPathComponent(name)) { return name }
+            switch facts.itemState(directory.appendingPathComponent(name)) {
+            case .missing: return .free(name)
+            case .present: continue
+            case .unreadable: return .unreadable
+            }
         }
+        return .exhausted
+    }
+
+    public static func uniqueName(for template: NewFileTemplate, in directory: URL, facts: any SystemFacts, localizer: Localizer = .english) -> String? {
+        if case .free(let name) = firstFreeName(for: template, in: directory, facts: facts, localizer: localizer) { return name }
         return nil
     }
 }

@@ -70,6 +70,11 @@ public enum ShellQuoting {
         }
     }
 
+    /// Whether the text holds a control character, a line separator or a paragraph separator.
+    public static func containsControlCharacter(_ value: String) -> Bool {
+        value.unicodeScalars.contains(where: { isControl($0) })
+    }
+
     private static func isControl(_ scalar: Unicode.Scalar) -> Bool {
         switch scalar.properties.generalCategory {
         case .control, .lineSeparator, .paragraphSeparator: return true

@@ -52,6 +52,7 @@ public struct Planner: Sendable {
     private func copyPath(_ style: PathStyle, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         let targets = context.pathTargets
         guard !targets.isEmpty else { throw PlanError.noTarget }
+        if let refusal = PathRenderer.shellFormRefusal(for: targets, style: style) { throw PlanError.unsupported(refusal) }
         let text = PathRenderer(facts: facts).render(targets, style: style)
         let noun = targets.count == 1 ? "path" : "\(targets.count) paths"
         return LaunchPlan(action: ref.id, summary: "Copy \(noun) (\(style.rawValue))", steps: [.copyToPasteboard(text)])
@@ -63,7 +64,7 @@ public struct Planner: Sendable {
             if let target = context.unplaceableTarget(facts: facts) {
                 switch target.reason {
                 case .unreadable: throw PlanError.unreadable(target.url.path)
-                case .dangling: throw PlanError.unsupported("\(target.url.path) is a link that points nowhere, so there is no folder to open.")
+                case .dangling: throw PlanError.unsupported("\(target.url.path) is a link that points nowhere (or into a place macOS will not let Right Here look at), so there is no folder to open.")
                 }
             }
             throw PlanError.noTarget
@@ -209,7 +210,12 @@ public struct Planner: Sendable {
     private func newFile(_ id: String, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         let directory = try workingDirectory(for: context)
         guard let template = config.newFile.templates.first(where: { $0.id == id }) else { throw PlanError.unknownTemplate(id) }
-        guard let name = NewFileNamer.uniqueName(for: template, in: directory, facts: facts, localizer: localizer) else { throw PlanError.nameExhausted }
+        let name: String
+        switch NewFileNamer.firstFreeName(for: template, in: directory, facts: facts, localizer: localizer) {
+        case .free(let free): name = free
+        case .unreadable: throw PlanError.unreadable(directory.path)
+        case .exhausted: throw PlanError.nameExhausted
+        }
         let path = directory.appendingPathComponent(name).path
 
         var steps: [Step] = [.createFile(CreateFileStep(path: path, contents: template.contents))]

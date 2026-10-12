@@ -111,6 +111,11 @@ public struct Installer: Sendable {
         return runnerScript
     }
 
+    /// Where the command link points now, when there is one.
+    public func existingCLILinkTarget() -> String? {
+        try? fileManager.destinationOfSymbolicLink(atPath: cliLink.path)
+    }
+
     /// Links `rh` into `~/.local/bin`, replacing a link already there. A real file or folder with that
     /// name belongs to the person, so it is refused rather than deleted.
     @discardableResult
@@ -136,9 +141,24 @@ public struct Installer: Sendable {
         return nil
     }
 
+    /// Undoes `ShellQuoting.quote` for one word. On scalars: a quote followed by a combining mark is one `Character`, and
+    /// a search for `'\''` that works on Characters does not see it.
     static func unquote(_ word: String) -> String {
-        guard word.hasPrefix("'"), word.hasSuffix("'"), word.count >= 2 else { return word }
-        return String(word.dropFirst().dropLast()).replacingOccurrences(of: "'\\''", with: "'")
+        let scalars = Array(word.unicodeScalars)
+        guard scalars.count >= 2, scalars.first == "'", scalars.last == "'" else { return word }
+        let end = scalars.count - 1
+        var result = String.UnicodeScalarView()
+        var index = 1
+        while index < end {
+            if index + 3 < end + 1, scalars[index] == "'", scalars[index + 1] == "\\", scalars[index + 2] == "'", scalars[index + 3] == "'" {
+                result.append("'")
+                index += 4
+            } else {
+                result.append(scalars[index])
+                index += 1
+            }
+        }
+        return String(result)
     }
 
     // MARK: Services

@@ -515,6 +515,11 @@ struct MCPLimiterTests {
     }
 }
 
+private actor GoneCounter {
+    private(set) var count = 0
+    func record() { count += 1 }
+}
+
 private actor EntryCounter {
     private(set) var value = 0
     func add() { value += 1 }
@@ -574,6 +579,18 @@ private final class ServeSession: @unchecked Sendable {
     }
 }
 
+/// Records the time limit each process was given, and answers at once.
+private final class RecordsLimits: ProcessRunner, @unchecked Sendable {
+    private let lock = NSLock()
+    private var seen: [Duration?] = []
+    var limits: [Duration?] { lock.withLock { seen } }
+
+    func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
+        lock.withLock { seen.append(timeout) }
+        return ProcessResult(status: 0)
+    }
+}
+
 @Suite("MCP serving: slow calls never hold up the rest")
 struct MCPServingTests {
     private func slowCall(_ id: Int) -> String {
@@ -617,6 +634,34 @@ struct MCPServingTests {
         let all = await session.finish()
         #expect(all.count == total, "nothing is dropped without an answer")
         #expect(all.filter { $0.reply["result"]?["isError"]?.boolValue == true }.count == limits.outstanding, "the rest ran, and ended as tool errors")
+    }
+
+    @Test func theDoctorRunsUnderTheSameTimeLimitAsAnAction() async throws {
+        // A pluginkit that never answers would otherwise keep a request slot for good.
+        let recorder = RecordsLimits()
+        let facts = FakeSystemFacts()
+        let paths = RHPaths(environment: ["RH_CONFIG_DIR": FileManager.default.temporaryDirectory.appendingPathComponent("rh-doc-\(UUID().uuidString)").path], home: URL(fileURLWithPath: "/Users/tester"))
+        let server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: recorder, pasteboard: RecordingPasteboard(), rhPath: nil, executionLimit: .seconds(42)))
+        let reply = await server.handle(#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"right_here_doctor","arguments":{}}}"#)
+        #expect(reply != nil)
+        #expect(!recorder.limits.isEmpty, "the doctor ran no process at all, so there is nothing to check")
+        #expect(recorder.limits.allSatisfy { $0 == .seconds(42) }, "a process ran without the limit: \(recorder.limits)")
+    }
+
+    @Test func aClientThatHasGoneIsReportedToTheCallerInsteadOfEndingTheProcess() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let input = Pipe(), output = Pipe()
+        let gone = GoneCounter()
+        let descriptor = output.fileHandleForWriting.fileDescriptor
+        let readEnd = input.fileHandleForReading
+        let serving = Task { await harness.server.serve(input: readEnd, output: descriptor, onClientGone: { Task { await gone.record() } }) }
+        try output.fileHandleForReading.close()                       // nobody is reading the replies
+        try input.fileHandleForWriting.write(contentsOf: Data(#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#.utf8) + Data("\n".utf8))
+        try input.fileHandleForWriting.close()
+        await serving.value                                             // serve returns; the test run is still here
+        try? await Task.sleep(for: .milliseconds(50))
+        #expect(await gone.count >= 1)
+        try? output.fileHandleForWriting.close()
     }
 
     @Test func aBatchOfSlowCallsIsHeldAsOneAndTurnedAwayAsOne() async throws {
@@ -680,6 +725,23 @@ struct MCPShapeTests {
         let tooMany = try decode(await harness.server.handle(batch(MCPServer.maxBatch + 1)))
         #expect(tooMany["error"]?["code"] == .number(-32600))
         #expect(tooMany["error"]?["message"]?.stringValue?.contains("at most \(MCPServer.maxBatch)") == true)
+    }
+
+    @Test func aFullServerStillAnswersEveryMemberOfABatchAsItWouldWhenIdle() throws {
+        let batch = JSONValue.array([
+            .number(5),                                                                            // not an object
+            .object(["jsonrpc": .string("2.0"), "id": .bool(true), "method": .string("tools/call")]), // an id that is not allowed
+            .object(["jsonrpc": .string("2.0"), "method": .string("tools/call")]),                  // a notification: no answer
+            .object(["jsonrpc": .string("2.0"), "id": .number(9), "method": .string("tools/call")]) // a request: busy
+        ])
+        let reply = try decode(MCPServer.busyReply(for: batch))
+        let items = try #require(reply.arrayValue)
+        #expect(items.count == 3)
+        #expect(items[0]["error"]?["code"] == .number(-32600) && items[0]["id"] == .null)
+        #expect(items[1]["error"]?["code"] == .number(-32600) && items[1]["id"] == .null)
+        #expect(items[2]["error"]?["code"] == .number(-32000) && items[2]["id"] == .number(9))
+        #expect(MCPServer.busyReply(for: .object(["jsonrpc": .string("2.0"), "method": .string("tools/call")])) == nil)
+        #expect(MCPServer.busyReply(for: .array([.object(["method": .string("tools/call")])])) == nil)
     }
 
     @Test func aResponseOrAnIdlessObjectGetsNoReply() async throws {

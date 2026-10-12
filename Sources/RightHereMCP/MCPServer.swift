@@ -92,15 +92,25 @@ public struct MCPServer: Sendable {
 
     /// Handles one incoming line. Returns the line to send back, or `nil` for a notification.
     public func handle(_ line: String) async -> String? {
-        guard let message = Self.decode(line) else { return Self.parseError }
-        return await handle(message: message)
+        switch Self.decode(line) {
+        case .failure(let failure): return failure.reply
+        case .success(let message): return await handle(message: message)
+        }
     }
 
     static let parseError = errorResponse(id: .null, code: -32700, message: "Parse error")
+    /// Honest messages nest about six levels; the decoder recurses once per level on a small stack.
+    static let maxNesting = 32
+    static let tooDeep = errorResponse(id: .null, code: -32600, message: "Invalid request: nested more than \(maxNesting) levels deep")
 
-    static func decode(_ line: String) -> JSONValue? {
-        try? JSONDecoder().decode(JSONValue.self, from: Data(line.utf8))
+    /// The decoded message, or the reply to send when the line cannot be taken in.
+    static func decode(_ line: String) -> Result<JSONValue, ReplyFailure> {
+        if NestingDepth.jsonExceeds(line.utf8, limit: maxNesting) { return .failure(ReplyFailure(reply: tooDeep)) }
+        guard let message = try? JSONDecoder().decode(JSONValue.self, from: Data(line.utf8)) else { return .failure(ReplyFailure(reply: parseError)) }
+        return .success(message)
     }
+
+    struct ReplyFailure: Error { let reply: String }
 
     /// Handles one decoded message: a request, a notification, or a batch of them.
     func handle(message: JSONValue) async -> String? {
@@ -133,17 +143,22 @@ public struct MCPServer: Sendable {
     }
 
     /// The answer to a request that arrived when the server was already as busy as it will be: one error per request,
-    /// so a client waiting on an id is told rather than left to time out.
+    /// so a client waiting on an id is told rather than left to time out. (A batch that holds a tool call is answered as
+    /// a whole when that call finishes, so a `ping` inside it waits too; a client that wants a quick answer sends it alone.)
     static func busyReply(for message: JSONValue) -> String? {
-        func busy(_ item: JSONValue) -> JSONValue? {
-            guard let id = item["id"], isValidID(id) else { return nil }
+        // Every member is answered as it would be when the server is idle: a request with an id is told the server is
+        // busy, a malformed member is told so, and only a notification (no id) gets nothing.
+        func answer(_ item: JSONValue) -> JSONValue? {
+            guard case .object = item else { return errorObject(id: .null, code: -32600, message: "Invalid request: expected a JSON object") }
+            guard let id = item["id"] else { return nil }
+            guard isValidID(id) else { return errorObject(id: .null, code: -32600, message: "Invalid request: id must be a string or an integer") }
             return errorObject(id: id, code: -32000, message: "Server busy: too many requests in progress; try again shortly")
         }
         if case .array(let batch) = message {
-            let replies = batch.compactMap(busy)
+            let replies = batch.compactMap(answer)
             return replies.isEmpty ? nil : JSONValue.array(replies).line()
         }
-        return busy(message)?.line()
+        return answer(message)?.line()
     }
 
     private func reply(to message: JSONValue) async -> JSONValue? {
@@ -263,7 +278,10 @@ public struct MCPServer: Sendable {
     /// Messages are separated by line feeds only (the transport says so): Foundation's `lines` would also split on
     /// U+2028, U+0085 and a bare carriage return, all of which can appear raw inside a JSON string such as a file
     /// name. Tool calls run concurrently, a bounded number at a time; a slow one does not hold up `ping`.
-    public func serve(input: FileHandle = .standardInput, output: Int32 = STDOUT_FILENO) async {
+    ///
+    /// `onClientGone` runs when a reply cannot be written because nobody is reading any more. The command ends the
+    /// process there; a test passes its own closure, since ending the process would end the whole test run.
+    public func serve(input: FileHandle = .standardInput, output: Int32 = STDOUT_FILENO, onClientGone: @escaping @Sendable () -> Void = { exit(0) }) async {
         let writer = LineWriter(descriptor: output)
         let gate = RequestGate(running: limits.running, outstanding: limits.outstanding, queuedBytes: limits.queuedBytes)
         // A discarding group frees each finished request; an ordinary group would keep every result.
@@ -272,12 +290,15 @@ public struct MCPServer: Sendable {
             var overflowed = false
 
             func send(_ reply: String) async {
-                // Nobody is reading any more, so there is nobody to serve.
-                if await !writer.write(reply) { exit(0) }
+                if await !writer.write(reply) { onClientGone() }
             }
 
             func dispatch(_ text: String) async {
-                guard let message = Self.decode(text) else { return await send(Self.parseError) }
+                let message: JSONValue
+                switch Self.decode(text) {
+                case .failure(let failure): return await send(failure.reply)
+                case .success(let decoded): message = decoded
+                }
                 guard Self.needsASlot(message) else {
                     if let reply = await self.handle(message: message) { await send(reply) }
                     return

@@ -60,8 +60,16 @@ public enum ConfigParser {
 
     /// Parses config text. A file with a syntax error yields the default config plus the error;
     /// semantic problems are reported while everything valid is still applied.
+    /// The deepest nesting of arrays and inline tables a config may have; real ones nest a few levels.
+    static let maxNesting = 64
+
     public static func parse(_ text: String) -> ConfigLoadResult {
         let sink = Sink()
+        // The TOML library recurses once per level and a deep enough file overflowed the stack and killed `rh`.
+        if NestingDepth.tomlExceeds(text, limit: maxNesting) {
+            sink.syntaxError("arrays or tables nested more than \(maxNesting) levels deep")
+            return ConfigLoadResult(config: .default, diagnostics: sink.items)
+        }
         let root: TOMLTable
         do {
             root = try TOMLTable(source: text)

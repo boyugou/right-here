@@ -391,20 +391,29 @@ struct CLITests {
         #expect(FileManager.default.fileExists(atPath: home.appendingPathComponent(".config/right-here/config.toml").path), "the other steps still ran")
     }
 
+    /// A terminal that cannot be installed (its bundle id does not exist), so a probe aimed at it can never start a
+    /// window or send an Apple event, even if the guard that is being tested regresses.
+    private static let ghostTerminal = """
+    [[app]]
+    id = "ghost"
+    name = "Ghost"
+    bundle_id = "com.example.right-here-test-never-installed"
+    role = "terminal"
+    """
+
     @Test func aProbeRequestThatWasLeftBehindIsRemovedAndNothingRuns() throws {
-        // Only the stale case is run for real: a fresh request would start a probe in the person's terminal.
-        let rh = try RH(); defer { rh.cleanUp() }
+        let rh = try RH(config: Self.ghostTerminal); defer { rh.cleanUp() }
         let marker = rh.configDirectory.appendingPathComponent(".probe")
         try "launch".write(to: marker, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-3_600)], ofItemAtPath: marker.path)
-        let result = try rh.run(["probe", "launch", "--from-extension"])
+        let result = try rh.run(["probe", "launch", "ghost", "--from-extension"])
         #expect(result.status == 0, "\(result.standardError)")
         #expect(result.standardOutput.isEmpty, "the probe ran: \(result.standardOutput)")
         #expect(!FileManager.default.fileExists(atPath: marker.path), "a stale request must not stay behind")
         let log = rh.configDirectory.appendingPathComponent("logs/rh.log")
         #expect(!((try? String(contentsOf: log, encoding: .utf8)) ?? "").contains("probe launch"))
         // And with no request at all there is nothing to run either.
-        #expect(try rh.run(["probe", "automation", "--from-extension"]).standardOutput.isEmpty)
+        #expect(try rh.run(["probe", "automation", "ghost", "--from-extension"]).standardOutput.isEmpty)
     }
 
     @Test func aDanglingSymlinkDoesNotBlockANewFileForever() throws {
@@ -437,17 +446,17 @@ struct CLITests {
     }
 
     @Test func aProbeRequestedByTheExtensionRunsOnceAndAnythingAfterItDoesNothing() throws {
-        let rh = try RH(); defer { rh.cleanUp() }
+        let rh = try RH(config: Self.ghostTerminal); defer { rh.cleanUp() }
         let marker = rh.configDirectory.appendingPathComponent(".probe")
         try "launch".write(to: marker, atomically: true, encoding: .utf8)
-        // Warp cannot run commands, so this never opens a window whether or not it is installed.
-        let first = try rh.run(["probe", "launch", "warp", "--from-extension"])
+        // The ghost terminal is never installed, so this opens nothing and sends no Apple event.
+        let first = try rh.run(["probe", "launch", "ghost", "--from-extension"])
         #expect(first.status == 1)
         #expect(!FileManager.default.fileExists(atPath: marker.path))
         let log = rh.configDirectory.appendingPathComponent("logs/rh.log")
         let logged = try String(contentsOf: log, encoding: .utf8)
         #expect(logged.contains("probe launch: "))
-        let second = try rh.run(["probe", "launch", "warp", "--from-extension"])
+        let second = try rh.run(["probe", "launch", "ghost", "--from-extension"])
         #expect(second.status == 0)
         #expect(try String(contentsOf: log, encoding: .utf8) == logged)
     }
@@ -601,6 +610,74 @@ struct CLITests {
         #expect(process.terminationStatus == 0)
         #expect(String(decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self).isEmpty, "it wrote a crash report")
         try? input.fileHandleForWriting.close()
+    }
+
+    @Test("a request nested far deeper than any honest one is refused, and the server lives on", arguments: [40, 480, 100_000])
+    func mcpSurvivesDeepNesting(depth: Int) throws {
+        // About 1 KB of "[" used to overflow the decoder's stack and kill the server (SIGBUS).
+        let rh = try RH(); defer { rh.cleanUp() }
+        let deep = String(repeating: "[", count: depth) + "1" + String(repeating: "]", count: depth)
+        let input = Data(("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\",\"params\":{\"x\":" + deep + "}}\n"
+                          + "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"ping\"}\n").utf8)
+        let replies = try mcpReplies(rh, to: input)
+        #expect(replies.count == 2, "got \(replies)")
+        let refusal = replies.first { ($0["error"] as? [String: Any])?["code"] as? Int == -32600 }
+        #expect(refusal != nil, "the deep request should be refused as invalid")
+        #expect(replies.contains { $0["id"] as? Int == 2 && $0["result"] != nil }, "the ping after it was not answered")
+    }
+
+    @Test func aConfigNestedFarDeeperThanAnyRealOneIsASyntaxErrorNotACrash() throws {
+        let rh = try RH(config: "x = " + String(repeating: "[", count: 5_000) + String(repeating: "]", count: 5_000) + "\n")
+        defer { rh.cleanUp() }
+        let result = try rh.run(["config", "validate"])
+        #expect(result.status == 1, "status \(result.status): \(result.standardError)")
+        #expect((result.standardOutput + result.standardError).contains("nested more than"))
+        // Every other command keeps working with that config in place: defaults apply.
+        #expect(try rh.run(["actions"]).status == 0)
+    }
+
+    @Test("a folder name with terminal escape sequences never reaches the screen unescaped, in any text rh prints")
+    func namesAreEscapedInEveryLineRhPrints() throws {
+        let rh = try RH(config: "[new_file]\nthen = \"nothing\"\n"); defer { rh.cleanUp() }
+        let hostile = "dir\u{1b}]0;PWNED\u{7}\u{1b}[31mred"
+        let folder = rh.configDirectory.appendingPathComponent(hostile)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let missing = rh.configDirectory.appendingPathComponent("nope\u{1b}[2J").path
+        let outputs = [
+            try rh.run(["run", "open.terminal@terminal", "--dry-run", "--container", folder.path]),
+            try rh.run(["run", "new-file.md", "--dry-run", "--container", folder.path]),
+            try rh.run(["run", "reveal", "--dry-run", missing]),
+            try rh.run(["run", "reveal", "--dry-run", "--", folder.path]),
+            try rh.run(["menu", "--container", folder.path]),
+            try rh.run(["menu", "--", folder.path]),
+            try rh.run(["run", "new-file.md", "--container", folder.path])
+        ]
+        for output in outputs {
+            let bytes = Array((output.standardOutput + output.standardError).utf8)
+            #expect(!bytes.contains(0x1b) && !bytes.contains(0x07), "raw terminal control bytes in: \(output.standardOutput.debugDescription) \(output.standardError.debugDescription)")
+        }
+        #expect(outputs[0].status == 0 && outputs[2].status == 1, "the commands were meant to run")
+    }
+
+    @Test func aWorkingDirectoryThatWasDeletedIsNoTargetNotTheRelativePathDot() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let doomed = rh.configDirectory.appendingPathComponent("doomed")
+        try FileManager.default.createDirectory(at: doomed, withIntermediateDirectories: true)
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/sh")
+        process.arguments = ["-c", "cd \"$1\" && rmdir \"$1\" && exec \"$2\" run agent.claude@terminal --dry-run", "sh", doomed.path, rh.binary.path]
+        process.environment = rh.environment()
+        let out = Pipe(), err = Pipe()
+        process.standardOutput = out
+        process.standardError = err
+        try process.run()
+        let timer = rh.watchdog(process)
+        defer { timer.cancel() }
+        let text = String(decoding: out.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self) + String(decoding: err.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        process.waitUntilExit()
+        #expect(process.terminationStatus == 1, Comment(rawValue: text))
+        #expect(!text.contains("cd . "), "it planned a cd into the relative path dot")
+        #expect(text.contains("no folder"), Comment(rawValue: text))
     }
 
     @Test func mcpAnswersAMalformedRequestWithoutStoppingTheOnesAfterIt() throws {

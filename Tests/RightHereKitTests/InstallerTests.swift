@@ -304,3 +304,29 @@ struct ExtensionRegistrationTests {
         #expect(try await FinderExtensionManager(runner: runner).registerAndConfirm(appexPath: appex, settle: .zero))
     }
 }
+
+
+@Suite("Installer.unquote")
+struct UnquoteTests {
+    @Test("unquote undoes ShellQuoting.quote, even where a quote is followed by a combining mark", arguments: [
+        "/Users/me/plain", "/Users/me/it's here", "/Users/me/a'b'c", "/Users/me/q'\u{301}x", "/Users/me/q'\u{FE0F}x", "/Users/me/q'\u{20E3}x",
+        "/Users/me/''", "/Users/me/'", "/Users/me/日本語 'x'", "/a'\u{200D}'\u{301}b"
+    ])
+    func roundTrip(path: String) {
+        #expect(Installer.unquote(ShellQuoting.quote(path)) == path, "\(path.debugDescription) came back as \(Installer.unquote(ShellQuoting.quote(path)).debugDescription)")
+    }
+
+    @Test func aWordThatIsNotQuotedIsLeftAlone() {
+        #expect(Installer.unquote("/bin/rh") == "/bin/rh")
+        #expect(Installer.unquote("'") == "'")
+        #expect(Installer.unquote("") == "")
+    }
+
+    @Test func theRunnerScriptTargetSurvivesAHostilePath() throws {
+        let path = "/Users/me/Apps/it's\u{301} here/Right Here.app/Contents/Helpers/rh"
+        let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        try installer.installRunnerScript(rhPath: path)
+        #expect(installer.installedRunnerTarget() == path)
+    }
+}

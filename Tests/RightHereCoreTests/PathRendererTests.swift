@@ -77,6 +77,25 @@ struct PathRendererTests {
         }
     }
 
+    @Test("a name with both a backslash and a control character has no shell form that every shell reads alike", arguments: [PathStyle.shellEscaped, .shellQuoted])
+    func backslashPlusControlCharacterIsRefused(style: PathStyle) throws {
+        let hostile = URL(fileURLWithPath: "/tmp/a\\';touch\tpwned;\\'")
+        #expect(PathRenderer.shellFormRefusal(for: [hostile], style: style) != nil)
+        // Either one alone has a form every shell agrees on.
+        for fine in ["/tmp/back\\slash", "/tmp/tab\there", "/tmp/it's", "/tmp/plain"] {
+            #expect(PathRenderer.shellFormRefusal(for: [URL(fileURLWithPath: fine)], style: style) == nil, "\(fine)")
+        }
+        // The other styles are plain text, not shell syntax.
+        for other in [PathStyle.absolute, .name, .tilde, .fileURL, .markdownLink, .aiMention] {
+            #expect(PathRenderer.shellFormRefusal(for: [hostile], style: other) == nil)
+        }
+        let machine = FakeSystemFacts(files: [hostile.path])
+        #expect(throws: PlanError.self) {
+            try Planner(facts: machine).plan(.copyPath(style), context: HereContext(origin: .items, items: [hostile]))
+        }
+        #expect(try Planner(facts: machine).plan(.copyPath(.absolute), context: HereContext(origin: .items, items: [hostile])).steps.count == 1)
+    }
+
     @Test func fileURL() {
         #expect(PathRenderer(facts: facts()).render(spaced, style: .fileURL) == "file:///Users/tester/code/app/My%20Notes.md")
     }

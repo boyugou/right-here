@@ -9,8 +9,9 @@ public enum FailureAlert {
     public static let automationSettingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")!
 
     /// Whether a failure may put a window on the screen. Only a real run started on purpose from Finder asks for one:
-    /// a dry run never shows an alert (it is a question, answered on the command line), and `RH_NO_UI` switches every
-    /// window off (the tests set it, so a failing action can never leave a dialog waiting on someone's desktop).
+    /// a dry run never shows an alert (it is a question, answered on the command line), and `RH_NO_UI` switches alerts
+    /// off (the tests set it, and under it `rh` also never starts `open` or `osascript`, so nothing a test does can
+    /// leave a window on someone's desktop).
     public static func shouldShow(requested: Bool, dryRun: Bool, environment: [String: String] = ProcessInfo.processInfo.environment) -> Bool {
         requested && !dryRun && environment["RH_NO_UI"] == nil
     }

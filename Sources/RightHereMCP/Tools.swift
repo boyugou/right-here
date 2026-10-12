@@ -230,7 +230,7 @@ enum Tools {
 
     private static func doctor(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         let loaded = server.loadConfig()
-        let checks = await Doctor(facts: server.facts, paths: server.paths, loaded: loaded, runner: server.runner, rhPath: server.rhPath).run()
+        let checks = await Doctor(facts: server.facts, paths: server.paths, loaded: loaded, runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), rhPath: server.rhPath).run()
         let lines = checks.map { check in
             "[\(check.status.rawValue)] \(check.title)" + (check.detail.map { ": \($0)" } ?? "") + (check.fix.map { "\n    fix: \($0)" } ?? "")
         }

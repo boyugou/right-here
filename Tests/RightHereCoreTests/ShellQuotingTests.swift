@@ -191,6 +191,18 @@ struct ShellQuotingTests {
     }
 }
 
+/// The environment a test shell gets: an empty home and no startup variables, so the person's own `.zshenv`, `.profile`
+/// or `$ENV` never run during `swift test` (they may be slow, noisy or do things).
+func emptyHomeEnvironment() -> [String: String] {
+    let home = FileManager.default.temporaryDirectory.appendingPathComponent("rh-empty-home", isDirectory: true)
+    try? FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+    var environment = ProcessInfo.processInfo.environment
+    for name in ["ENV", "BASH_ENV", "ZDOTDIR", "SHELL"] { environment.removeValue(forKey: name) }
+    environment["HOME"] = home.path
+    environment["ZDOTDIR"] = home.path
+    return environment
+}
+
 /// Runs a shell command line and returns its standard output.
 enum Shell {
     static func run(_ shell: String, _ command: String, in directory: URL? = nil) throws -> String {
@@ -198,6 +210,7 @@ enum Shell {
         process.executableURL = URL(fileURLWithPath: shell)
         process.arguments = ["-c", command]
         process.currentDirectoryURL = directory
+        process.environment = emptyHomeEnvironment()
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = FileHandle.nullDevice

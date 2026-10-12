@@ -57,26 +57,49 @@ def commands(text: str) -> set[str]:
     return found
 
 
+def subcommands(path: tuple[str, ...]) -> set[str]:
+    """The subcommands `rh <path> --help` lists. (`rh <anything> --help` exits 0 and prints the parent's help, so
+    asking whether a word is a subcommand by its exit status can never say no.)"""
+    names: set[str] = set()
+    listing = False
+    for line in help_for(path)[1].splitlines():
+        if line.strip() == "SUBCOMMANDS:":
+            listing = True
+            continue
+        if listing:
+            if not line.strip():
+                if names:
+                    break
+                continue
+            match = re.match(r"^  ([a-z][a-z-]*)\b", line)
+            if match:
+                names.add(match.group(1))
+            elif not line.startswith(" "):
+                break
+    return names
+
+
 def problem(command: str) -> str | None:
     try:
         tokens = shlex.split(command)
     except ValueError:
         return None
     rest = tokens[1:]
-    flags = [t.split("=")[0] for t in rest if t.startswith("--")]
     path: list[str] = []
-    # A subcommand is a lowercase word before any flag; placeholders (<x>, [x]) and arguments end the path.
-    for word in rest[:2]:
-        if word.startswith("-") or not re.fullmatch(r"[a-z][a-z-]*", word):
+    for word in rest:
+        if word.startswith("-"):
             break
-        if help_for((*path, word))[0] != 0:
+        known = subcommands(tuple(path))
+        if word in known:
+            path.append(word)
+        elif known and re.fullmatch(r"[a-z][a-z-]*", word):
+            return f"`{word}` is not a subcommand of `rh {' '.join(path)}`".replace("`rh `", "`rh`")
+        else:
             break
-        path.append(word)
-    if rest and not path and re.fullmatch(r"[a-z][a-z-]*", rest[0]) and help_for((rest[0],))[0] != 0:
-        return f"`rh {rest[0]}` is not a subcommand"
     text = help_for(tuple(path))[1]
-    for flag in flags:
-        if flag not in BUILT_IN and flag not in text:
+    for flag in (t.split("=")[0] for t in rest if t.startswith("--")):
+        # Whole option names only: "--dry" is not "--dry-run".
+        if flag not in BUILT_IN and not re.search(rf"(?<![\w-]){re.escape(flag)}(?![\w-])", text):
             return f"{flag} is not an option of `rh {' '.join(path)}`".replace("`rh `", "`rh`")
     return None
 

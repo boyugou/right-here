@@ -66,8 +66,8 @@ docs/                    DESIGN.md, decisions/, development/
   shell. `rh doctor --probe-launch` runs extension, runner script, `rh` and the terminal (a window opens and
   closes). An Apple event or UI-scripting call from your shell would make macOS grant your host app standing
   control of their terminals. Tests never open windows: CLI tests use a terminal that cannot run commands, and
-  everything else uses fake runners. The CLI harness also sets `RH_NO_UI=1` (it switches every `rh` window off; a
-  failing `--alert` run once left modal dialogs on the screen) and puts a watchdog on every `rh` it starts.
+  everything else uses fake runners. The CLI harness also sets `RH_NO_UI=1`, under which `rh` shows no alert and never starts `open` or
+  `osascript` (a failing `--alert` run once left modal dialogs on the screen), and puts a watchdog on every `rh` it starts.
 - A claim about what the file system or the OS guarantees is measured before anything is built on it: eight
   concurrent `unlink`s of one path mostly all succeeded on APFS, so "whoever unlinks wins" was wrong, while
   `rename` and `O_EXCL` held in thousands of rounds (`ProbeMarker`).

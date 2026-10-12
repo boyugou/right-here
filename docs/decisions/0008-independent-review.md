@@ -78,6 +78,24 @@ own. The hand-run mutation sweep that said every protection was noticed was wron
 the word "error:". `script/mutation_check.py` keeps the check honest (a failed test is the only kill, a compile error
 and a mutant that changes nothing are reported) and found two mutants that changed nothing.
 
+## Fourth round (commit 0b0d3cb)
+
+No critical or high finding; two medium.
+
+| Finding | Fix |
+|---|---|
+| Medium: a request line of about 1 KB (an array nested 480 deep) overflowed the decoder's stack and killed `rh mcp` (SIGBUS); a config nested a few hundred deep killed every `rh` command | a byte scan refuses JSON nested past 32 levels and TOML past 64 before any decoder sees it |
+| Medium: `shell-escaped` and `shell-quoted` were still unsafe for fish for a name with both a backslash and a control character (the fallback quoting is POSIX) | such a name has no form every shell reads alike, so copying it in a shell form is refused (the extension beeps; absolute path still works) |
+| Low-medium: names reached the terminal raw in plan summaries, error text and the menu header (ESC and OSC sequences) | escaped at the source |
+| Low-medium: the mutation check's own mutant made a test start a real terminal probe, and `RH_NO_UI` only gated alerts | the probe tests aim at a terminal that cannot be installed; under `RH_NO_UI` the process runner never starts `open` or `osascript` |
+| Low: `rh doctor` over MCP ran outside the 120 s limit; `serve()` called `exit(0)` from inside tests; a busy server dropped malformed batch members; `unquote` was Character-level | the doctor is limited; `serve` takes an `onClientGone` callback; every member is answered; scalar-level |
+| Low: a deleted working directory planned `cd .`; a new file in a folder that cannot be searched did 10,000 lookups and said "no free name"; a link into such a folder was called dangling | no target; the permission error; the message names both causes |
+| Low: `verify_docs.py` could not tell `rh doctr` from `rh doctor`, nor `--dry` from `--dry-run`; unit tests read the real startup files via `$ENV` and `.zshenv`; `rh install` replaced a foreign link silently | subcommands are read from the help, flags matched whole; test shells get an empty home; install says what it replaced |
+
+Left: a batch that holds a tool call is answered as a whole (a ping inside it waits); a ping behind several 2 MB lines
+waits for their decoding; a Ctrl-C between the probe's disable and enable leaves the extension disabled until
+`rh install --finder`.
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.

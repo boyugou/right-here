@@ -20,8 +20,12 @@ public struct LiveSystemFacts: SystemFacts {
         return URL(fileURLWithPath: NSHomeDirectory())
     }
 
+    /// Where the command started. When that folder has been deleted `currentDirectoryPath` is empty and a URL made
+    /// from it is the relative path ".", which names whatever folder a terminal starts in: a path that cannot exist
+    /// stands in instead, so the action reports there is no folder instead of planning `cd .`.
     public var currentDirectory: URL {
-        URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let path = FileManager.default.currentDirectoryPath
+        return URL(fileURLWithPath: path.hasPrefix("/") ? path : "/dev/null/no-working-directory")
     }
 
     public var loginShell: String {

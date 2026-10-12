@@ -71,7 +71,11 @@ struct Install: AsyncParsableCommand {
             await attempt("runner script") { Output.print("Runner script: \(try installer.installRunnerScript(rhPath: rhPath).path)") }
         }
         if everything || cli {
-            await attempt("command link") { Output.print("Command link: \(try installer.installCLILink(rhPath: rhPath).path)") }
+            await attempt("command link") {
+                let replaced = installer.existingCLILinkTarget().flatMap { $0 == rhPath ? nil : $0 }
+                let link = try installer.installCLILink(rhPath: rhPath).path
+                Output.print("Command link: \(link)" + (replaced.map { " (replaced a link to \($0))" } ?? ""))
+            }
         }
         if everything {
             await attempt("config file") {
