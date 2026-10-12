@@ -187,7 +187,7 @@ struct TerminalAdapterTests {
     }
 
     @Test("the line Terminal types reaches the folder in every shell that is installed (fish only where it is)",
-          arguments: ["/bin/sh", "/bin/bash", "/bin/zsh"] + (fishPath.map { [$0] } ?? []))
+          arguments: ["/bin/sh", "/bin/bash", "/bin/zsh", "/bin/dash", "/bin/ksh"] + (fishPath.map { [$0] } ?? []))
     func theLineReachesTheFolderInARealShell(shell: String) throws {
         let root = try makeScratchDirectory(); defer { try? FileManager.default.removeItem(at: root) }
         for name in ["plain", "with space", "it's", "a'b'c", "dollar $HOME `x`", "semi;colon&pipe|x", "quote\"d", "tilde ~", "-dash", "ünï\u{301}code", "emoji 🚀", "a'\u{301}b"] {
@@ -202,6 +202,26 @@ struct TerminalAdapterTests {
             let reported = try Shell.run(shell, line, in: root).trimmingCharacters(in: .newlines)
             #expect(URL(fileURLWithPath: reported).resolvingSymlinksInPath().path == folder.resolvingSymlinksInPath().path,
                     "\(shell) read \(line.debugDescription) as \(reported.debugDescription)")
+        }
+    }
+
+    @Test("csh and tcsh also expand ! inside single quotes, which can only make the cd fail: nothing else ever runs",
+          arguments: ["/bin/csh", "/bin/tcsh"])
+    func cshAndTcshFailSafe(shell: String) throws {
+        try #require(FileManager.default.isExecutableFile(atPath: shell), "\(shell) is not installed here")
+        let root = try makeScratchDirectory(); defer { try? FileManager.default.removeItem(at: root) }
+        for name in ["plain", "with space", "it's", "a'b'c", "bang!here", "a!!b", "x!$", "dollar $HOME", "semi;colon", "evil';touch CANARY;'x"] {
+            let folder = root.appendingPathComponent(name)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let machine = FakeSystemFacts(directories: [folder.path])
+            guard case .appleScript(let step)? = try AppleTerminalAdapter().steps(for: TerminalSession(directory: folder, typedInput: "pwd -P"), bundleID: "x", facts: machine).first else {
+                Issue.record("expected AppleScript"); return
+            }
+            let reported = try Shell.run(shell, try #require(step.arguments.first), in: root).trimmingCharacters(in: .newlines)
+            let landed = URL(fileURLWithPath: reported).resolvingSymlinksInPath().path == folder.resolvingSymlinksInPath().path
+            #expect(landed || reported.isEmpty, "\(shell) printed \(reported.debugDescription) for \(name.debugDescription)")
+            #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("CANARY").path), "\(shell) ran the injected command")
+            if !name.contains("!") { #expect(landed, "\(shell) did not reach \(name.debugDescription)") }
         }
     }
 

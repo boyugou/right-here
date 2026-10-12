@@ -236,7 +236,9 @@ applies. The app never rewrites the file, so comments and ordering stay the owne
    metacharacter with every joining mark, plus a seeded fuzz, through real `sh`, `bash` and `zsh` (and `fish`
    where it is installed; CI installs it). Terminal.app is the one adapter that types the folder (`cd …`)
    into a shell the adapter cannot see (the profile's, not necessarily the account's), so it quotes the folder
-   the one way those shells agree on and refuses a backslash, the single character they read differently.
+   the one way sh, bash, zsh, dash, ksh and fish agree on and refuses a backslash, the character that splits fish
+   from the rest (csh and tcsh also expand `!` inside single quotes, which in a new session only makes the `cd`
+   fail, so nothing runs).
    Paths are cut at slash scalars, as the kernel cuts them, so a combining mark cannot hide a `..`.
 2. Text typed into a terminal is read as keystrokes, so a path with a line break or any control character
    is refused for typed launches. Deep links percent-encode everything but unreserved characters.
@@ -299,5 +301,5 @@ Xcode compiles that one catalog into a `.lproj` folder per language in both the 
 Working and tested headlessly: the core and CLI, Ghostty and Terminal.app adapters, the app and
 extension, installer, doctor, Services, the MCP server and plugin, localization. The whole chain after
 a menu click is verified, typed launch included (`rh doctor --probe-launch`); not yet confirmed is the
-click itself (see section 5, "Open"). Next: notarized packaging and adapters for other terminals. See the
-[roadmap](../ROADMAP.md).
+click itself (see section 5, "Open"). A notarized, stapled DMG builds and verifies (`script/package_dmg.sh`).
+Next: publishing it, and adapters for other terminals. See the [roadmap](../ROADMAP.md).

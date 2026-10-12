@@ -18,11 +18,14 @@ public struct AppleTerminalAdapter: TerminalAdapter {
         do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeText(directory) }
         // The line is read by whichever shell the Terminal profile starts: the account's login shell unless
         // the profile names a command, and nothing here can tell which. POSIX single quotes are read the same
-        // way by sh, bash, zsh and fish with one exception: fish takes a backslash inside them as an escape,
-        // so `\'` ends the quoting in sh and not in fish. A folder name with a backslash is therefore
-        // refused rather than quoted for a guessed shell, and every other name is quoted the one way all of
-        // them agree on. (Quoting it for the login shell, as this used to, breaks as soon as the profile runs
-        // a different one.) AppleScript's `quoted form of` is not used for the same reason.
+        // way by sh, bash, zsh, dash, ksh and fish (the tests run the first five, and fish where installed)
+        // with one exception that matters: fish takes a backslash inside them as an escape, so `\'` ends the
+        // quoting in sh and not in fish. A folder name with a backslash is therefore refused rather than
+        // quoted for a guessed shell, and every other name is quoted the one way those shells agree on.
+        // (csh and tcsh also expand `!` inside single quotes. In a fresh session that finds no such event,
+        // so `cd` fails and `&&` stops the command: it cannot run anything.) Quoting for the login shell,
+        // as this used to, breaks as soon as the profile runs a different one, and AppleScript's
+        // `quoted form of` is not used for the same reason.
         if directory.unicodeScalars.contains("\\") {
             throw PlanError.unsupported("Terminal types the folder into a shell, and shells disagree about a backslash in a name, so it will not start a command in \(directory). Rename the folder, or use a terminal that is handed the folder, such as Ghostty.")
         }

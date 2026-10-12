@@ -74,7 +74,8 @@ public struct LiveSystemFacts: SystemFacts {
 
     public func displayName(bundleID: String) -> String? {
         guard let url = applicationURL(bundleID: bundleID) else { return nil }
-        return FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
+        let name = FileManager.default.displayName(atPath: url.path)
+        return name.hasSuffix(".app") ? String(name.dropLast(4)) : name
     }
 
     public func bundleVersion(bundleID: String) -> String? {
