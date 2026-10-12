@@ -233,6 +233,23 @@ struct ConfigSchemaTests {
     }
 }
 
+/// A TOML basic string for any text: control characters and quotes escaped.
+private enum JSONValueString {
+    static func quote(_ text: String) throws -> String {
+        var out = "\""
+        for scalar in text.unicodeScalars {
+            switch scalar {
+            case "\"": out += "\\\""
+            case "\\": out += "\\\\"
+            case "\n": out += "\\n"
+            default:
+                if scalar.value < 0x20 || scalar.value == 0x7f { out += String(format: "\\u%04X", scalar.value) } else { out.unicodeScalars.append(scalar) }
+            }
+        }
+        return out + "\""
+    }
+}
+
 @Suite("Config strictness")
 struct ConfigStrictnessTests {
     private func parse(_ text: String) -> ConfigLoadResult { ConfigParser.parse(text) }
@@ -270,6 +287,61 @@ struct ConfigStrictnessTests {
         let typoras = result.config.allApps.filter { $0.id == "typora" }
         #expect(typoras.map(\.name) == ["My Typora"])
         #expect(Set(result.config.allApps.map(\.id)).count == result.config.allApps.count)
+    }
+
+    @Test func aBuiltInTerminalRedefinedAsAnEditorCannotBeTheDefaultTerminal() throws {
+        let result = parse("""
+        [general]
+        terminal = "ghostty"
+
+        [[app]]
+        id = "ghostty"
+        name = "Ghostty as an editor"
+        bundle_id = "com.mitchellh.ghostty"
+        role = "editor"
+        """)
+        let error = try #require(result.diagnostics.first { $0.path == "general.terminal" && $0.severity == .error })
+        #expect(error.message.contains("not as a terminal"))
+        #expect(result.config.terminal == nil)
+    }
+
+    @Test func aRedefinedTerminalKeepsWorkingAsTheDefaultWhenItIsStillATerminal() {
+        let result = parse("""
+        [general]
+        terminal = "ghostty"
+
+        [[app]]
+        id = "ghostty"
+        name = "My Ghostty"
+        bundle_id = "com.example.ghostty"
+        role = "terminal"
+        """)
+        #expect(!result.hasErrors)
+        #expect(result.config.terminal == "ghostty")
+    }
+
+    @Test func aTerminalCannotBeTheDefaultEditor() throws {
+        let result = parse("""
+        [general]
+        editor = "ghostty"
+        """)
+        let error = try #require(result.diagnostics.first { $0.path == "general.editor" && $0.severity == .error })
+        #expect(error.message.contains("is a terminal"))
+        #expect(result.config.editor == nil)
+    }
+
+    @Test func aGeneralRoleAppMayBeTheDefaultEditor() {
+        let result = parse("""
+        [general]
+        editor = "viewer"
+
+        [[app]]
+        id = "viewer"
+        name = "Viewer"
+        bundle_id = "com.example.viewer"
+        """)
+        #expect(!result.hasErrors)
+        #expect(result.config.editor == "viewer")
     }
 
     @Test func aDuplicateTemplateIdIsAnError() {
@@ -482,9 +554,32 @@ struct ConfigSchemaDetailTests {
     @Test func idsMustLookLikeIds() throws {
         let apps = try #require((schema["properties"] as? [String: Any])?["app"] as? [String: Any])
         let id = try #require(((apps["items"] as? [String: Any])?["properties"] as? [String: Any])?["id"] as? [String: Any])
-        #expect(id["pattern"] as? String == "^[a-z0-9-]+$")
+        #expect(id["pattern"] as? String == ConfigSchema.identifierPattern)
         let agents = try #require((schema["properties"] as? [String: Any])?["agent"] as? [String: Any])
-        #expect((agents["propertyNames"] as? [String: Any])?["pattern"] as? String == "^[a-z0-9-]+$")
+        #expect((agents["propertyNames"] as? [String: Any])?["pattern"] as? String == ConfigSchema.identifierPattern)
+    }
+
+    @Test("the schema's id pattern and the parser's id rule accept exactly the same ids",
+          arguments: ["a", "a-b", "0", "0a", "a0-", "-a", "-", "--x", "A", "a_b", "a b", "", "é", "a.b", "a/b", "x\n"])
+    func theIdPatternMatchesTheParser(id: String) throws {
+        // ICU's `$` also matches before a final line feed, which ECMA-262 (the dialect JSON Schema names) does
+        // not, so the match has to cover the whole text to count.
+        let regex = try NSRegularExpression(pattern: ConfigSchema.identifierPattern)
+        let whole = NSRange(id.startIndex..., in: id)
+        let matches = regex.firstMatch(in: id, range: whole)?.range == whole
+        #expect(matches == ConfigParser.isIdentifier(id), "pattern and parser disagree about \(id.debugDescription)")
+    }
+
+    @Test("the schema's extension pattern and the parser's extension rule agree",
+          arguments: ["md", "tar", "a b", "", ".md", "m.d", "a/b", "a\u{0}b", "mdé", "m\u{301}/d"])
+    func theExtensionPatternMatchesTheParser(ext: String) throws {
+        let template = try #require(ConfigSchema.root.first { $0.key == "new_file" }?.child("template")?.child("extension"))
+        let regex = try NSRegularExpression(pattern: try #require(template.pattern))
+        let whole = NSRange(ext.startIndex..., in: ext)
+        let matches = regex.firstMatch(in: ext, range: whole)?.range == whole
+        let parsed = ConfigParser.parse("[[new_file.template]]\nid = \"t\"\ntitle = \"T\"\nextension = \(try JSONValueString.quote(ext))\n")
+        let accepted = !parsed.hasErrors && parsed.config.newFile.templates.contains { $0.id == "t" }
+        #expect(matches == accepted, "pattern and parser disagree about \(ext.debugDescription)")
     }
 
     @Test func knownTerminalsAreSuggestedNotEnforced() throws {

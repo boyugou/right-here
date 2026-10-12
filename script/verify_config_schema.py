@@ -69,7 +69,12 @@ INVALID = {
     "a template without a title": '[[new_file.template]]\nid = "x"\nextension = "txt"\n',
     "an app without a bundle id": '[[app]]\nid = "x"\nname = "X"\n',
     "an app id that is not an id": '[[app]]\nid = "Bad Id"\nname = "X"\nbundle_id = "a.b"\n',
+    "an app id that starts with a dash": '[[app]]\nid = "-x"\nname = "X"\nbundle_id = "a.b"\n',
     "an agent id that is not an id": '[agent."Bad Id"]\nname = "X"\ncommand = "x"\n',
+    "an agent id that starts with a dash": '[agent."-x"]\nname = "X"\ncommand = "x"\n',
+    "a template extension with a slash": '[[new_file.template]]\nid = "x"\ntitle = "X"\nextension = "a/b"\n',
+    "a template extension with a dot": '[[new_file.template]]\nid = "x"\ntitle = "X"\nextension = ".md"\n',
+    "an empty template extension": '[[new_file.template]]\nid = "x"\ntitle = "X"\nextension = ""\n',
     "an unknown launcher": '[agent.claude]\nlauncher = "magic"\n',
 }
 

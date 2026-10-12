@@ -161,3 +161,49 @@ struct FinderContextTests {
         #expect(without.container == folder)
     }
 }
+
+
+@Suite("Links that point nowhere, and paths cut like the kernel cuts them")
+struct HereContextEdgeTests {
+    private let machine = FakeSystemFacts(
+        directories: ["/Users/tester/code"],
+        files: ["/Users/tester/code/real.txt"],
+        danglingLinks: ["/Users/tester/code/broken-link"]
+    )
+
+    @Test func aDanglingLinkExistsAndIsNotReportedMissing() {
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/broken-link")])
+        #expect(context.firstMissingPath(facts: machine) == nil, "lstat sees the link; only a stat-based check calls it missing")
+        let asContainer = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/code/broken-link"))
+        #expect(asContainer.firstMissingPath(facts: machine) == nil)
+    }
+
+    @Test func aDanglingLinkOpensTheFolderThatHoldsIt() {
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/broken-link")])
+        #expect(context.workingDirectory(facts: machine)?.path == "/Users/tester/code")
+    }
+
+    @Test func aPathWithNothingAtAllIsStillMissing() {
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/nothing")])
+        #expect(context.firstMissingPath(facts: machine)?.path == "/Users/tester/code/nothing")
+        #expect(context.workingDirectory(facts: machine) == nil)
+    }
+
+    @Test("a slash followed by a combining mark is still a slash to the file system", arguments: [
+        ("/d/a/\u{301}/../b", "/d/a/b"),
+        ("/d/a/\u{FE0F}/../b", "/d/a/b"),
+        ("/d/a/\u{200D}/../b", "/d/a/b"),
+        ("/d/a/\u{20E3}/./c", "/d/a/\u{20E3}/c"),
+        ("/d/./a//b/../c", "/d/a/c"),
+        ("/../..", "/")
+    ])
+    func normalizationSplitsOnScalars(input: String, expected: String) {
+        #expect(URL(fileURLWithPath: input).lexicallyNormalized.path == expected)
+    }
+
+    @Test func aDotWithAMarkAfterItIsAnOrdinaryName() {
+        // "." followed by a combining acute is a real file name, not the current directory.
+        #expect(URL(fileURLWithPath: "/d/.\u{301}/x").lexicallyNormalized.path == "/d/.\u{301}/x")
+        #expect(URL(fileURLWithPath: "/d/..\u{301}/x").lexicallyNormalized.path == "/d/..\u{301}/x")
+    }
+}

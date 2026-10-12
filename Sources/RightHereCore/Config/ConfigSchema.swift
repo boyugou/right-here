@@ -65,7 +65,8 @@ public enum ConfigSchema {
     public static let version = 1
 
     /// Ids of things the user names (apps, templates, variants, agents).
-    static let identifierPattern = "^[a-z0-9-]+$"
+    /// Matches `ConfigParser.isIdentifier`: no leading dash (it would read as an option on a command line).
+    static let identifierPattern = "^[a-z0-9][a-z0-9-]*$"
 
     public static var root: [SchemaNode] {
         let terminalIDs = KnownApps.terminals.map(\.id)
@@ -119,7 +120,7 @@ public enum ConfigSchema {
                                "Name of the document type. The menu shows it as is inside the New File submenu, and as \"New <title>\" when it stands alone.",
                                example: "\"Markdown Document\""),
                     SchemaNode("base_name", .string, "File name without extension; numbered on collision.", default: "\"untitled\""),
-                    SchemaNode("extension", .string, "File extension without the dot.", example: "\"md\""),
+                    SchemaNode("extension", .string, "File extension without the dot or a slash.", example: "\"md\"", pattern: "^[^./\\u0000]+$"),
                     SchemaNode("contents", .string, "Initial contents.", default: "\"\""),
                     SchemaNode("open_with", .string,
                                "App id (see `rh apps`) that opens this kind of file after it is created, when new_file.then is \"open\". The default editor opens it when this app is not installed.",

@@ -46,15 +46,18 @@ public struct HereContext: Sendable, Equatable, Codable {
         }
         switch facts.isDirectory(first) {
         case true? where items.count == 1: return first
-        case nil: return nil
+        // A link that points nowhere is an item, not a folder: its own folder is the one to open.
+        case nil: return facts.itemExists(first) ? Self.directory(from: first.deletingLastPathComponent(), facts: facts) : nil
         default: return Self.directory(from: first.deletingLastPathComponent(), facts: facts)
         }
     }
 
-    /// The first path that was named but does not exist, so a typo can be reported as one.
+    /// The first path that was named but does not exist, so a typo can be reported as one. A link that
+    /// points nowhere exists (it is listed in its folder and can be revealed or renamed); only a path with
+    /// nothing at all at its end is missing.
     public func firstMissingPath(facts: any SystemFacts) -> URL? {
-        if let missing = items.first(where: { facts.isDirectory($0) == nil }) { return missing }
-        if items.isEmpty, let container, facts.isDirectory(container) == nil { return container }
+        if let missing = items.first(where: { !facts.itemExists($0) }) { return missing }
+        if items.isEmpty, let container, !facts.itemExists(container) { return container }
         return nil
     }
 

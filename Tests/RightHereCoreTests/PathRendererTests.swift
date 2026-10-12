@@ -73,6 +73,35 @@ struct PathRendererTests {
         #expect(renderer.render(spaced, style: .markdownLink) == "[My Notes.md](<My Notes.md>)")
     }
 
+    @Test("a link or mention made from a hostile name stays one link or one mention", arguments: [
+        ("a]b (1).md", "[a\\]b (1).md](<a]b (1).md>)"),
+        ("x*y_z.md", "[x\\*y\\_z.md](x*y_z.md)"),
+        ("a)b.md", "[a)b.md](<a)b.md>)"),
+        ("<b>.md", "[\\<b\\>.md](<\\<b\\>.md>)"),
+        ("t`k.md", "[t\\`k.md](t`k.md)"),
+        ("a&amp;b.md", "[a\\&amp;b.md](a&amp;b.md)"),
+        ("back\\slash.md", "[back\\\\slash.md](<back\\\\slash.md>)"),
+        ("line\nbreak.md", "[line\nbreak.md](<line%0Abreak.md>)")
+    ])
+    func markdownLinkEscapes(name: String, expected: String) {
+        var machine = facts()
+        machine.files.insert("/Users/tester/code/app/" + name)
+        let url = URL(fileURLWithPath: "/Users/tester/code/app/" + name)
+        #expect(PathRenderer(facts: machine).render(url, style: .markdownLink) == expected.replacingOccurrences(of: "\u{1}", with: ""))
+    }
+
+    @Test("a quote or backslash in a mention cannot end it early", arguments: [
+        ("a \"b\".md", "@\"a \\\"b\\\".md\""),
+        ("a\\ b.md", "@\"a\\\\ b.md\""),
+        ("plain.md", "@plain.md"),
+        ("q\"uote.md", "@q\"uote.md"),
+        ("a \u{301}b.md", "@\"a \u{301}b.md\"")
+    ])
+    func mentionEscapes(name: String, expected: String) {
+        let url = URL(fileURLWithPath: "/Users/tester/code/app/" + name)
+        #expect(PathRenderer(facts: facts()).render(url, style: .aiMention) == expected)
+    }
+
     @Test func severalItemsJoinPerStyle() {
         let renderer = PathRenderer(facts: facts())
         #expect(renderer.render([nested, spaced], style: .name) == "main.swift\nMy Notes.md")

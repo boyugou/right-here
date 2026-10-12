@@ -51,6 +51,13 @@ public struct ConfigLoadResult: Sendable, Equatable {
 }
 
 public enum ConfigParser {
+    /// Lowercase letters, digits and dashes, not starting with a dash (it would read as an option on a command
+    /// line). `ConfigSchema.identifierPattern` says the same in the JSON Schema, and a test holds them together.
+    static func isIdentifier(_ text: String) -> Bool {
+        guard let first = text.utf8.first, first != UInt8(ascii: "-") else { return false }
+        return text.utf8.allSatisfy { ($0 >= 97 && $0 <= 122) || ($0 >= 48 && $0 <= 57) || $0 == UInt8(ascii: "-") }
+    }
+
     /// Parses config text. A file with a syntax error yields the default config plus the error;
     /// semantic problems are reported while everything valid is still applied.
     public static func parse(_ text: String) -> ConfigLoadResult {
@@ -306,8 +313,12 @@ private struct Builder {
         }
         config.terminal = checkedTerminal(terminalChoice, path: ["general", "terminal"], customApps: config.apps)
         if let editor = editorChoice {
-            if config.app(id: editor) != nil {
-                config.editor = editor
+            if let app = config.app(id: editor) {
+                if app.role == .terminal {
+                    sink.error(["general", "editor"], "\"\(editor)\" is a terminal, not an editor; set general.terminal for it")
+                } else {
+                    config.editor = editor
+                }
             } else {
                 sink.error(["general", "editor"], "unknown app \"\(editor)\"",
                            suggestion: Suggestion.didYouMean(editor, in: allAppIDs(config)))
@@ -316,7 +327,7 @@ private struct Builder {
 
         if let agents = root.subtable("agent") {
             for id in agents.table.keys.sorted() {
-                guard Self.isIdentifier(id) else {
+                guard ConfigParser.isIdentifier(id) else {
                     sink.error(["agent", id], "agent ids use lowercase letters, digits and dashes")
                     continue
                 }
@@ -347,10 +358,18 @@ private struct Builder {
 
     private func checkedTerminal(_ id: String?, path: [String], customApps: [AppDescriptor]) -> String? {
         guard let id else { return nil }
-        let terminals = (customApps + KnownApps.terminals).filter { $0.role == .terminal }.map(\.id)
+        // An `[[app]]` with a built-in id replaces the built-in, role included, so the choice is checked
+        // against the apps as they will be, not against the built-in list.
+        let replaced = Set(customApps.map(\.id))
+        let apps = customApps + KnownApps.all.filter { !replaced.contains($0.id) }
+        let terminals = apps.filter { $0.role == .terminal }.map(\.id)
         guard terminals.contains(id) else {
-            sink.error(path, "unknown terminal \"\(id)\"; known terminals: " + terminals.joined(separator: ", "),
-                       suggestion: Suggestion.didYouMean(id, in: terminals))
+            if let other = apps.first(where: { $0.id == id }) {
+                sink.error(path, "\"\(id)\" is defined with role \"\(other.role.rawValue)\", not as a terminal; known terminals: " + terminals.joined(separator: ", "))
+            } else {
+                sink.error(path, "unknown terminal \"\(id)\"; known terminals: " + terminals.joined(separator: ", "),
+                           suggestion: Suggestion.didYouMean(id, in: terminals))
+            }
             return nil
         }
         return id
@@ -362,7 +381,7 @@ private struct Builder {
             sink.error(reader.path, "a template needs id, title and extension")
             return nil
         }
-        guard Self.isIdentifier(id) else {
+        guard ConfigParser.isIdentifier(id) else {
             sink.error(reader.path + ["id"], "ids use lowercase letters, digits and dashes")
             return nil
         }
@@ -387,7 +406,7 @@ private struct Builder {
             sink.error(reader.path, "an app needs id and name")
             return nil
         }
-        guard Self.isIdentifier(id) else {
+        guard ConfigParser.isIdentifier(id) else {
             sink.error(reader.path + ["id"], "ids use lowercase letters, digits and dashes")
             return nil
         }
@@ -413,7 +432,7 @@ private struct Builder {
                 sink.error(variant.path, "a variant needs id and title")
                 return nil
             }
-            guard Self.isIdentifier(variantID) else {
+            guard ConfigParser.isIdentifier(variantID) else {
                 sink.error(variant.path + ["id"], "ids use lowercase letters, digits and dashes")
                 return nil
             }
@@ -452,8 +471,4 @@ private struct Builder {
         config.agents[id] = settings
     }
 
-    static func isIdentifier(_ text: String) -> Bool {
-        guard let first = text.utf8.first, first != UInt8(ascii: "-") else { return false }
-        return text.utf8.allSatisfy { ($0 >= 97 && $0 <= 122) || ($0 >= 48 && $0 <= 57) || $0 == UInt8(ascii: "-") }
-    }
 }

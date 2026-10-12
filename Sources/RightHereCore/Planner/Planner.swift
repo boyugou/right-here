@@ -19,6 +19,11 @@ public struct Planner: Sendable {
     }
 
     public func plan(_ ref: ActionRef, context: HereContext) throws -> LaunchPlan {
+        // Every path the person or an agent named has to exist, whichever action it is for. A typo is
+        // reported as one rather than quietly replaced by the folder around it (`open.terminal proj
+        // proj-typo` would otherwise open `proj`'s parent), and text that is not a path never reaches the
+        // clipboard, a terminal or another agent's prompt box.
+        if case .user = ref {} else if let missing = context.firstMissingPath(facts: facts) { throw PlanError.pathNotFound(missing.path) }
         switch ref {
         case .copyPath(let style):
             return try copyPath(style, ref: ref, context: context)
@@ -47,20 +52,15 @@ public struct Planner: Sendable {
     private func copyPath(_ style: PathStyle, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         let targets = context.pathTargets
         guard !targets.isEmpty else { throw PlanError.noTarget }
-        // The text goes on the clipboard to be pasted somewhere, often into a terminal. A path that does
-        // not exist is a typo or text somebody chose, not a path, so it is refused rather than copied.
-        if let missing = context.firstMissingPath(facts: facts) { throw PlanError.pathNotFound(missing.path) }
         let text = PathRenderer(facts: facts).render(targets, style: style)
         let noun = targets.count == 1 ? "path" : "\(targets.count) paths"
         return LaunchPlan(action: ref.id, summary: "Copy \(noun) (\(style.rawValue))", steps: [.copyToPasteboard(text)])
     }
 
-    /// The folder an action works in. When there is none because a named path does not exist, the
-    /// error names that path.
+    /// The folder an action works in.
     private func workingDirectory(for context: HereContext) throws -> URL {
-        if let directory = context.workingDirectory(facts: facts) { return directory }
-        if let missing = context.firstMissingPath(facts: facts) { throw PlanError.pathNotFound(missing.path) }
-        throw PlanError.noTarget
+        guard let directory = context.workingDirectory(facts: facts) else { throw PlanError.noTarget }
+        return directory
     }
 
     // MARK: Open with an app
@@ -109,6 +109,14 @@ public struct Planner: Sendable {
     public func resolveDefault(role: AppDescriptor.Role, configured: String?) throws -> AppDescriptor {
         if let configured {
             guard let app = config.app(id: configured) else { throw PlanError.unknownApp(configured) }
+            // The config can redefine a built-in id with another role; a terminal that is now an editor (or
+            // the reverse) is not what the setting asked for, and `rh actions` already says so.
+            if role == .terminal, app.role != .terminal {
+                throw PlanError.unsupported("\(app.name) is not a terminal. Use open.app.\(app.id) to open files with it.")
+            }
+            if role == .editor, app.role == .terminal {
+                throw PlanError.unsupported("\(app.name) is a terminal, not an editor. Use open.terminal@\(app.id) to open a folder in it.")
+            }
             return app
         }
         let order = role == .terminal ? Self.terminalOrder : Self.editorOrder
@@ -167,7 +175,7 @@ public struct Planner: Sendable {
 
     /// Selected files become `@` mentions in the prompt box; nothing is sent.
     private func mentionPrefill(context: HereContext, directory: URL) -> String {
-        let files = context.items.filter { facts.isDirectory($0) != true }
+        let files = context.items.filter { facts.isDirectory($0) == false }
         guard !files.isEmpty else { return "" }
         return PathRenderer(facts: facts).render(files, style: .aiMention, relativeTo: directory) + " "
     }

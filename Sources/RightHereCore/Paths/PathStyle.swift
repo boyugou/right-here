@@ -68,9 +68,7 @@ public struct PathRenderer: Sendable {
             if let base { return mention(PathMath.relativePath(from: base, to: url) ?? url.path) }
             return mention(projectPath(url))
         case .markdownLink:
-            let target = projectPath(url)
-            let wrapped = target.contains(where: \.isWhitespace) ? "<\(target)>" : target
-            return "[\(url.lastPathComponent)](\(wrapped))"
+            return "[\(Self.markdownText(url.lastPathComponent))](\(Self.markdownDestination(projectPath(url))))"
         }
     }
 
@@ -86,8 +84,27 @@ public struct PathRenderer: Sendable {
         return PathMath.relativePath(from: root, to: url) ?? url.path
     }
 
+    /// `@path`, or `@"path"` when it has whitespace; inside the quotes a quote or backslash is escaped, so
+    /// no name can end the mention early and carry on as ordinary prompt text.
     private func mention(_ path: String) -> String {
-        path.contains(where: \.isWhitespace) ? "@\"\(path)\"" : "@" + path
+        guard path.unicodeScalars.contains(where: { $0.properties.isWhitespace }) else { return "@" + path }
+        return "@\"" + path.scalarReplacing(["\\": "\\\\", "\"": "\\\""]) + "\""
+    }
+
+    /// Link text with CommonMark's inline specials escaped, so a name with `]` or `*` stays one plain label.
+    static func markdownText(_ text: String) -> String {
+        var escaped: [Unicode.Scalar: String] = [:]
+        for scalar in "\\`*_[]<>&".unicodeScalars { escaped[scalar] = "\\" + String(scalar) }
+        return text.scalarReplacing(escaped)
+    }
+
+    /// A link destination: bare when it has nothing awkward in it, else inside `<…>` with `<`, `>` and
+    /// backslash escaped. A line break cannot appear in a destination at all, so it is percent-encoded.
+    static func markdownDestination(_ path: String) -> String {
+        let awkward = path.unicodeScalars.contains { "()<>\\".unicodeScalars.contains($0) || $0.properties.isWhitespace || $0.properties.generalCategory == .control }
+        guard awkward else { return path }
+        let escaped = path.scalarReplacing(["\\": "\\\\", "<": "\\<", ">": "\\>", "\n": "%0A", "\r": "%0D"])
+        return "<" + escaped + ">"
     }
 }
 
