@@ -10,4 +10,5 @@ swift build
 swift test
 uv run script/verify_localizations.py
 uv run script/verify_config_schema.py
+uv run script/compile_docs.py --check
 ./script/verify_public_safety.sh

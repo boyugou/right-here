@@ -7,25 +7,28 @@ struct Docs: ParsableCommand {
         abstract: "Print built-in documentation.",
         discussion: """
         Topics: config (every setting), actions (the action id grammar), agent-setup (how an AI agent \
-        should configure Right Here for a person). The text is meant to be read by people and by AI agents.
+        should configure Right Here for a person), troubleshooting (the menu does not appear, a click does \
+        nothing, permission prompts). The text is meant to be read by people and by AI agents.
         """
     )
 
-    @Argument(help: "config, actions or agent-setup. Without a topic, the topics are listed.")
+    @Argument(help: "config, actions, agent-setup or troubleshooting. Without a topic, the topics are listed.")
     var topic: String?
 
     func run() throws {
-        switch topic {
-        case nil:
-            Output.print("Topics:\n  config       every setting in config.toml, with defaults and examples\n  actions      the action id grammar\n  agent-setup  how an AI agent should set up Right Here")
-        case "config"?:
-            Output.print(Documentation.config)
-        case "actions"?:
-            Output.print(Documentation.actions)
-        case "agent-setup"?:
-            Output.print(Documentation.agentSetup)
-        default:
-            throw ValidationError("Unknown topic \"\(topic ?? "")\". Run `rh docs` to list them.")
+        guard let topic else {
+            Output.print("""
+            Topics:
+              config           every setting in config.toml, with defaults and examples
+              actions          the action id grammar
+              agent-setup      how an AI agent should set up Right Here
+              troubleshooting  the menu does not appear, a click does nothing, permission prompts
+            """)
+            return
         }
+        guard let text = Documentation.text(for: topic) else {
+            throw ValidationError("Unknown topic \"\(topic)\". Run `rh docs` to list them.")
+        }
+        Output.print(text)
     }
 }

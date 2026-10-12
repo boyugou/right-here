@@ -27,6 +27,8 @@ macOS 26 or later on Apple silicon, Xcode 26 or later, `xcodegen` (`brew install
 - **Strings people see** go through `Localization/Localizable.xcstrings` in all thirty languages; run
   `script/compile_localizations.py` and `script/verify_localizations.py`.
 - **Platform claims are checked on a real machine** and written down in `docs/DESIGN.md` as verified, sourced or open.
+- `docs/TROUBLESHOOTING.md` is embedded for `rh docs troubleshooting` and the MCP server: after editing it run
+  `script/compile_docs.py` (`verify_all.sh` checks).
 - Commit in small steps; every commit builds and passes the tests. Do not commit emails, machine paths or keys
   (`script/verify_public_safety.sh` checks).
 

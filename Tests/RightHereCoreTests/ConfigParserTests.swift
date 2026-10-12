@@ -493,3 +493,20 @@ struct ConfigSchemaDetailTests {
         #expect((terminal["examples"] as? [String])?.contains("ghostty") == true)
     }
 }
+
+@Suite("Documentation topics")
+struct DocumentationTopicTests {
+    @Test func everyListedTopicHasText() {
+        for topic in Documentation.topics {
+            #expect(Documentation.text(for: topic)?.isEmpty == false, "no text for \(topic)")
+        }
+        #expect(Documentation.text(for: "nope") == nil)
+    }
+
+    @Test func theTroubleshootingGuideMatchesTheFileInTheRepository() throws {
+        let file = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("docs/TROUBLESHOOTING.md")
+        let source = try String(contentsOf: file, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)
+        #expect(Documentation.text(for: "troubleshooting")?.trimmingCharacters(in: .whitespacesAndNewlines) == source)
+    }
+}

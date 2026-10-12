@@ -138,7 +138,7 @@ enum Tools {
         ToolDefinition(
             name: "right_here_docs",
             title: "Read the documentation",
-            description: "Read built-in documentation: config (every setting), actions (the id grammar) or agent-setup (how to configure Right Here for a person).",
+            description: "Read built-in documentation: config (every setting), actions (the id grammar), agent-setup (how to configure Right Here for a person) or troubleshooting (the menu does not appear, a click does nothing, permission prompts).",
             inputSchema: schema(["topic": .object([
                 "type": .string("string"), "enum": .array(Documentation.topics.map(JSONValue.string)),
                 "description": .string("The topic to read.")

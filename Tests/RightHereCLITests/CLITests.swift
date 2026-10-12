@@ -348,6 +348,17 @@ struct CLITests {
         #expect(FileManager.default.fileExists(atPath: folder.appendingPathComponent("untitled 2.txt").path))
     }
 
+    @Test func theTroubleshootingGuideIsServedByTheCommandLine() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let listing = try rh.run(["docs"]).standardOutput
+        #expect(listing.contains("troubleshooting"))
+        let guide = try rh.run(["docs", "troubleshooting"])
+        #expect(guide.status == 0)
+        #expect(guide.standardOutput.contains("rh doctor"))
+        #expect(guide.standardOutput.contains("tccutil reset AppleEvents"))
+        #expect(try rh.run(["docs", "nonsense"]).status != 0)
+    }
+
     @Test func probeLaunchRefusesAnUnknownTerminal() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let result = try rh.run(["probe", "launch", "no-such-terminal"])

@@ -68,14 +68,14 @@ public enum Documentation {
 
     public static let config = ConfigSchema.markdown()
 
-    public static let topics = ["config", "actions", "agent-setup"]
+    public static let topics = ["config", "actions", "agent-setup", "troubleshooting"]
 
     public static func text(for topic: String) -> String? {
         switch topic {
         case "config": return config
         case "actions": return actions
         case "agent-setup": return agentSetup
-        default: return nil
+        default: return guides[topic]
         }
     }
 }
