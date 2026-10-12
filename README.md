@@ -115,7 +115,8 @@ AppleScript source, and the quoting code is tested by round-tripping awkward nam
 `bash` and `zsh`. A terminal app that is handed a file would run it, so every terminal action validates
 that its working directory is a folder. The Finder extension stays sandboxed; what it cannot do is done by
 `rh` through a script only you can install. Configuration is never read from the folder being acted on.
-See [`docs/DESIGN.md`](docs/DESIGN.md), section 9.
+Right Here makes no network connections and collects nothing: there is no network code, and the sandboxed
+extension has no network entitlement. See [`docs/DESIGN.md`](docs/DESIGN.md), section 9.
 
 ## Languages
 
