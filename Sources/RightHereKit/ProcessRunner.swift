@@ -33,6 +33,15 @@ public struct LiveProcessRunner: ProcessRunner {
 
     public init() {}
 
+    /// After a timeout: SIGKILL for a process that is still running, and for its process group when it leads
+    /// one (it does, for what `Process` starts), so background children of a startup file die with it.
+    static func killLeftovers(of process: Process) {
+        let pid = process.processIdentifier
+        guard pid > 1 else { return }
+        if process.isRunning { kill(pid, SIGKILL) }
+        if pid != getpgrp(), getpgid(pid) == pid || !process.isRunning { killpg(pid, SIGKILL) }
+    }
+
     public func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: step.executable)
@@ -55,7 +64,12 @@ public struct LiveProcessRunner: ProcessRunner {
         let watchdog = timeout.map { limit in
             Task.detached {
                 try? await Task.sleep(for: limit)
-                if !Task.isCancelled, process.isRunning { process.terminate() }
+                guard !Task.isCancelled, process.isRunning else { return }
+                process.terminate()
+                // An interactive login shell ignores SIGTERM, so a startup file that never returns would hold
+                // the caller forever: give it a moment, then kill it and whatever it left in its group.
+                try? await Task.sleep(for: .seconds(1))
+                Self.killLeftovers(of: process)
             }
         }
         defer { watchdog?.cancel() }
@@ -63,13 +77,20 @@ public struct LiveProcessRunner: ProcessRunner {
             process.terminationHandler = { continuation.resume(returning: $0.terminationStatus) }
             do {
                 try process.run()
-                if let text = step.standardInput {
-                    input.fileHandleForWriting.write(Data(text.utf8))
-                    try? input.fileHandleForWriting.close()
-                }
             } catch {
                 launchFailure.error = error
                 continuation.resume(returning: -1)
+                return
+            }
+            if let text = step.standardInput {
+                // Written off the cooperative pool, and without SIGPIPE: a process that exits before it reads
+                // its input must not take this one down with it.
+                let writer = input.fileHandleForWriting
+                _ = fcntl(writer.fileDescriptor, F_SETNOSIGPIPE, 1)
+                Task.detached {
+                    do { try writer.write(contentsOf: Data(text.utf8)) } catch {}
+                    try? writer.close()
+                }
             }
         }
         if let failure = launchFailure.error {

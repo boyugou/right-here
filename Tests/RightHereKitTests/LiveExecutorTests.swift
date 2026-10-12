@@ -141,6 +141,32 @@ struct LiveProcessRunnerTests {
         #expect(clock.now - started < .seconds(3), "took \(clock.now - started)")
     }
 
+    @Test func aProcessThatIgnoresTerminateIsStillKilledAtTheLimit() async throws {
+        // An interactive login shell ignores SIGTERM, so a rc file that never returns would hold a caller forever.
+        let clock = ContinuousClock()
+        let started = clock.now
+        let result = try await LiveProcessRunner().run(
+            ProcessStep(executable: "/bin/sh", arguments: ["-c", "trap '' TERM; sleep 30"]), timeout: .milliseconds(300))
+        #expect(clock.now - started < .seconds(5), "waited \(clock.now - started) for a process that ignores SIGTERM")
+        #expect(result.status != 0)
+    }
+
+    @Test func theChildrenOfAKilledProcessAreKilledToo() async throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let marker = directory.appendingPathComponent("alive")
+        // A background child that would touch a file after the limit, if it survived.
+        _ = try await LiveProcessRunner().run(
+            ProcessStep(executable: "/bin/sh", arguments: ["-c", "trap '' TERM; (sleep 2; touch '\(marker.path)') & wait"]), timeout: .milliseconds(300))
+        try await Task.sleep(for: .seconds(3))
+        #expect(!FileManager.default.fileExists(atPath: marker.path), "a child of the killed process kept running")
+    }
+
+    @Test func writingInputToAProcessThatAlreadyExitedNeverKillsTheCaller() async throws {
+        for _ in 0..<300 {
+            _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/usr/bin/true", standardInput: String(repeating: "hello ", count: 20_000)))
+        }
+    }
+
     @Test func standardErrorIsCollectedSeparately() async throws {
         let result = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/sh", arguments: ["-c", "echo out; echo err >&2; exit 3"]))
         #expect(result.status == 3)
