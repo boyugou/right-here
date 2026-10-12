@@ -53,6 +53,11 @@ public struct LiveSystemFacts: SystemFacts {
         NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID)
     }
 
+    public func displayName(bundleID: String) -> String? {
+        guard let url = applicationURL(bundleID: bundleID) else { return nil }
+        return FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
+    }
+
     public func isRunning(bundleID: String) -> Bool {
         !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty
     }

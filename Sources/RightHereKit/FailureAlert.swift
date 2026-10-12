@@ -11,20 +11,30 @@ public enum FailureAlert {
     public struct Content: Sendable, Equatable {
         public var title: String
         public var message: String
+        public var okTitle: String
+        public var settingsTitle: String
         /// A Settings page to offer, when the failure is a permission the person can grant.
         public var settingsURL: URL?
     }
 
-    public static func content(for error: any Error, action: String) -> Content {
+    public static func content(for error: any Error, action: String, localizer: Localizer = .english) -> Content {
         if let execution = error as? ExecutionError, case .automationDenied(let application) = execution {
-            let target = application ?? "the app"
+            let target = application ?? localizer.string(.alertTheApp)
             return Content(
-                title: "Right Here needs your permission",
-                message: "macOS blocked Right Here from controlling \(target). Allow it in System Settings › Privacy & Security › Automation, then try again.",
+                title: localizer.string(.alertPermissionTitle),
+                message: localizer.string(.alertPermissionMessage, target),
+                okTitle: localizer.string(.alertOK),
+                settingsTitle: localizer.string(.alertOpenSettings),
                 settingsURL: automationSettingsURL
             )
         }
-        return Content(title: "Right Here could not finish", message: error.localizedDescription + "\n\n(\(action))", settingsURL: nil)
+        return Content(
+            title: localizer.string(.alertFailedTitle),
+            message: error.localizedDescription + "\n\n(\(action))",
+            okTitle: localizer.string(.alertOK),
+            settingsTitle: localizer.string(.alertOpenSettings),
+            settingsURL: nil
+        )
     }
 
     @MainActor
@@ -36,8 +46,8 @@ public enum FailureAlert {
         alert.alertStyle = .warning
         alert.messageText = content.title
         alert.informativeText = content.message
-        alert.addButton(withTitle: "OK")
-        if content.settingsURL != nil { alert.addButton(withTitle: "Open System Settings") }
+        alert.addButton(withTitle: content.okTitle)
+        if content.settingsURL != nil { alert.addButton(withTitle: content.settingsTitle) }
         if alert.runModal() == .alertSecondButtonReturn, let url = content.settingsURL {
             NSWorkspace.shared.open(url)
         }

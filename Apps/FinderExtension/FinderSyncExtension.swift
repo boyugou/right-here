@@ -27,7 +27,7 @@ final class FinderSyncExtension: FIFinderSync {
     // MARK: Toolbar
 
     override var toolbarItemName: String { AppIdentity.productName }
-    override var toolbarItemToolTip: String { "Open here, copy a path, start an agent" }
+    override var toolbarItemToolTip: String { Localizer.system.string(.toolbarTooltip) }
     override var toolbarItemImage: NSImage {
         NSImage(systemSymbolName: "contextualmenu.and.cursorarrow", accessibilityDescription: AppIdentity.productName) ?? NSImage()
     }
@@ -39,7 +39,7 @@ final class FinderSyncExtension: FIFinderSync {
         let kind = Self.kind(menuKind)
         lastKind = kind
         let context = currentContext(kind)
-        let nodes = MenuBuilder(config: currentConfig(), facts: facts).build(for: context)
+        let nodes = MenuBuilder(config: currentConfig(), facts: facts, localizer: .system).build(for: context)
         guard !nodes.isEmpty else { return nil }
 
         var table: [String] = []

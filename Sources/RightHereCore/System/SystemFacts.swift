@@ -16,12 +16,15 @@ public protocol SystemFacts: Sendable {
     /// directory is ignored: a dotfiles repository would otherwise claim every path.
     func gitRoot(containing url: URL) -> URL?
     func applicationURL(bundleID: String) -> URL?
+    /// The name the system shows for an installed app, in the system language.
+    func displayName(bundleID: String) -> String?
     func isRunning(bundleID: String) -> Bool
     func environment(_ key: String) -> String?
 }
 
 extension SystemFacts {
     public var shellFlavor: ShellFlavor { ShellFlavor(loginShellPath: loginShell) }
+    public func displayName(bundleID: String) -> String? { nil }
 }
 
 /// A deterministic stand-in for the machine, used by tests across modules.

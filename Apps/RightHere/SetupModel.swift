@@ -63,6 +63,6 @@ final class SetupModel {
         """
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(prompt, forType: .string)
-        message = "Setup prompt copied. Paste it into your AI assistant."
+        message = Localizer.system.string(.appPromptCopied)
     }
 }

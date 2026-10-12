@@ -40,10 +40,12 @@ struct Run: AsyncParsableCommand {
         let runtime = Runtime()
         runtime.reportConfigProblems()
         let here = try context.makeContext(facts: runtime.facts)
+        // Files created from Finder follow the system language; the command line stays English.
+        let localizer: Localizer = here.origin == .cli ? .english : .system
 
         let plan: LaunchPlan
         do {
-            plan = try runtime.planner.plan(ref, context: here)
+            plan = try Planner(config: runtime.config, facts: runtime.facts, localizer: localizer).plan(ref, context: here)
         } catch {
             try await fail(error)
         }
@@ -68,7 +70,7 @@ struct Run: AsyncParsableCommand {
     private func fail(_ error: any Error) async throws -> Never {
         RunLog.record("\(action): \(error.localizedDescription)")
         if alert {
-            let content = FailureAlert.content(for: error, action: action)
+            let content = FailureAlert.content(for: error, action: action, localizer: .system)
             await MainActor.run { FailureAlert.show(content) }
         }
         throw Output.fail("error: " + error.localizedDescription)

@@ -40,6 +40,9 @@ struct MenuCommand: ParsableCommand {
 
     @OptionGroup var context: ContextOptions
 
+    @Option(help: "Show the menu in this language, for example de or zh-Hans. The Finder menu follows the system language.")
+    var language: String?
+
     @Flag(help: "Print JSON.")
     var json = false
 
@@ -47,7 +50,8 @@ struct MenuCommand: ParsableCommand {
         let runtime = Runtime()
         runtime.reportConfigProblems()
         let here = try context.makeContext(facts: runtime.facts)
-        let menu = MenuBuilder(config: runtime.config, facts: runtime.facts).build(for: here)
+        let localizer = language.map { Localizer(languages: [$0]) } ?? .english
+        let menu = MenuBuilder(config: runtime.config, facts: runtime.facts, localizer: localizer).build(for: here)
         if json {
             try Output.json(menu)
         } else {

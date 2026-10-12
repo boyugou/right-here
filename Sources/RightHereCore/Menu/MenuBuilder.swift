@@ -38,11 +38,13 @@ public struct MenuBuilder: Sendable {
     private let config: Config
     private let registry: ActionRegistry
     private let facts: any SystemFacts
+    private let localizer: Localizer
 
-    public init(config: Config, facts: any SystemFacts) {
+    public init(config: Config, facts: any SystemFacts, localizer: Localizer = .english) {
         self.config = config
         self.facts = facts
-        self.registry = ActionRegistry(config: config, facts: facts)
+        self.localizer = localizer
+        self.registry = ActionRegistry(config: config, facts: facts, localizer: localizer)
     }
 
     public func build(for context: HereContext) -> [MenuNode] {
@@ -77,12 +79,12 @@ public struct MenuBuilder: Sendable {
             var seen = Set<String>()
             return apps.filter { seen.insert($0.id).inserted }.compactMap { app in
                 let info = registry.info(ref(app))
-                return info.available ? MenuNode.action(info, title: app.name) : nil
+                return info.available ? MenuNode.action(info, title: info.shortTitle) : nil
             }
         }
         let children = entries(terminals) { .openTerminal($0.id) } + [.separator] + entries(others) { .openApp($0.id) }
         let tidy = Self.tidy(children)
-        return tidy.isEmpty ? [] : [.submenu(Strings.openWithGroup, icon: .symbol("arrow.up.forward.app"), tidy)]
+        return tidy.isEmpty ? [] : [.submenu(localizer.openWithGroup, icon: .symbol("arrow.up.forward.app"), tidy)]
     }
 
     private func moreAgents() -> [MenuNode] {
@@ -100,7 +102,7 @@ public struct MenuBuilder: Sendable {
             if !nodes.isEmpty { children += nodes + [.separator] }
         }
         let tidy = Self.tidy(children)
-        return tidy.isEmpty ? [] : [.submenu(Strings.moreAgentsGroup, icon: .symbol("ellipsis.circle"), tidy)]
+        return tidy.isEmpty ? [] : [.submenu(localizer.moreAgentsGroup, icon: .symbol("ellipsis.circle"), tidy)]
     }
 
     private func newFile(_ context: HereContext) -> [MenuNode] {
@@ -109,7 +111,7 @@ public struct MenuBuilder: Sendable {
         switch infos.count {
         case 0: return []
         case 1: return [.action(infos[0])]
-        default: return [.submenu(Strings.newFileGroup, icon: .symbol("doc.badge.plus"), infos.map { .action($0, title: $0.shortTitle) })]
+        default: return [.submenu(localizer.newFileGroup, icon: .symbol("doc.badge.plus"), infos.map { .action($0, title: $0.shortTitle) })]
         }
     }
 
@@ -118,7 +120,7 @@ public struct MenuBuilder: Sendable {
         switch infos.count {
         case 0: return []
         case 1: return [.action(infos[0])]
-        default: return [.submenu(Strings.copyPathGroup, icon: .symbol("doc.on.doc"), infos.map { .action($0, title: $0.shortTitle) })]
+        default: return [.submenu(localizer.copyPathGroup, icon: .symbol("doc.on.doc"), infos.map { .action($0, title: $0.shortTitle) })]
         }
     }
 

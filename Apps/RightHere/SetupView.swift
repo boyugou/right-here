@@ -1,8 +1,10 @@
+import RightHereCore
 import RightHereKit
 import SwiftUI
 
 struct SetupView: View {
     let model: SetupModel
+    private let l10n = Localizer.system
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -36,7 +38,7 @@ struct SetupView: View {
                 .frame(width: 52, height: 52)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Right Here").font(.title2.weight(.semibold))
-                Text("Send a folder or selection to your terminals, editors and AI agents.")
+                Text(l10n.string(.appSubtitle))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -45,14 +47,14 @@ struct SetupView: View {
 
     private var actions: some View {
         HStack {
-            Button("Install or Repair") { Task { await model.installOrRepair() } }
+            Button(l10n.string(.appInstallOrRepair)) { Task { await model.installOrRepair() } }
                 .keyboardShortcut(.defaultAction)
                 .disabled(model.isWorking)
-            Button("Open Config") { Task { await model.openConfig() } }
-            Button("Copy Setup Prompt for AI") { model.copySetupPrompt() }
+            Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } }
+            Button(l10n.string(.appCopySetupPrompt)) { model.copySetupPrompt() }
             Spacer()
             if model.checks.contains(where: { $0.id == "finder.extension" && $0.status != .ok }) {
-                Button("Finder Extension Settings") { model.showExtensionSettings() }
+                Button(l10n.string(.appExtensionSettings)) { model.showExtensionSettings() }
             }
         }
     }

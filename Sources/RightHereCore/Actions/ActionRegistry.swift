@@ -17,10 +17,19 @@ public struct ActionInfo: Sendable, Equatable, Codable {
 public struct ActionRegistry: Sendable {
     public let config: Config
     public let facts: any SystemFacts
+    public let localizer: Localizer
 
-    public init(config: Config, facts: any SystemFacts) {
+    public init(config: Config, facts: any SystemFacts, localizer: Localizer = .english) {
         self.config = config
         self.facts = facts
+        self.localizer = localizer
+    }
+
+    /// The name shown for an app: what the system calls it in the person's language when the menu
+    /// is localized, otherwise the catalog name.
+    private func name(of app: AppDescriptor) -> String {
+        guard localizer.resolvedLanguage != "en", let bundleID = app.installedBundleID(facts: facts) else { return app.name }
+        return facts.displayName(bundleID: bundleID) ?? app.name
     }
 
     public func info(_ ref: ActionRef) -> ActionInfo {
@@ -28,8 +37,8 @@ public struct ActionRegistry: Sendable {
         switch ref {
         case .copyPath(let style):
             info.group = "copy-path"
-            info.title = "\(Strings.copyPathGroup): \(Strings.copyPath(style))"
-            info.shortTitle = Strings.copyPath(style)
+            info.title = localizer.copyPathTitle(style)
+            info.shortTitle = localizer.copyPath(style)
             info.icon = .symbol("doc.on.doc")
 
         case .openTerminal(let id):
@@ -41,7 +50,7 @@ public struct ActionRegistry: Sendable {
             if let app = try? resolveDefault(role: .editor, configured: config.editor) {
                 describeApp(&info, app: app)
             } else {
-                unavailable(&info, title: Strings.openIn("Editor"), reason: "No editor is installed.")
+                unavailable(&info, title: localizer.openIn("Editor"), reason: "No editor is installed.")
             }
 
         case .openApp(let id):
@@ -49,7 +58,7 @@ public struct ActionRegistry: Sendable {
             if let app = config.app(id: id) {
                 describeApp(&info, app: app)
             } else {
-                unavailable(&info, title: Strings.openIn(id), reason: "Unknown app \"\(id)\".")
+                unavailable(&info, title: localizer.openIn(id), reason: "Unknown app \"\(id)\".")
             }
 
         case .agent(let id, let variantID, let launcher):
@@ -59,17 +68,17 @@ public struct ActionRegistry: Sendable {
         case .newFile(let id):
             info.group = "new-file"
             if let template = config.newFile.templates.first(where: { $0.id == id }) {
-                info.title = Strings.newFile(template.title)
-                info.shortTitle = template.title
+                info.title = localizer.newFile(template.localizedTitle(localizer))
+                info.shortTitle = template.localizedTitle(localizer)
                 info.icon = .symbol("doc.badge.plus")
             } else {
-                unavailable(&info, title: Strings.newFile(id), reason: "Unknown template \"\(id)\".")
+                unavailable(&info, title: localizer.newFile(id), reason: "Unknown template \"\(id)\".")
             }
 
         case .reveal:
             info.group = "reveal"
-            info.title = Strings.revealInFinder
-            info.shortTitle = Strings.revealInFinder
+            info.title = localizer.revealInFinder
+            info.shortTitle = localizer.revealInFinder
             info.icon = .symbol("magnifyingglass")
 
         case .user:
@@ -88,15 +97,15 @@ public struct ActionRegistry: Sendable {
             app = try? resolveDefault(role: .terminal, configured: config.terminal)
         }
         guard let app else {
-            unavailable(&info, title: Strings.openIn(id ?? "Terminal"), reason: id.map { "Unknown terminal \"\($0)\"." } ?? "No terminal is installed.")
+            unavailable(&info, title: localizer.openIn(id ?? "Terminal"), reason: id.map { "Unknown terminal \"\($0)\"." } ?? "No terminal is installed.")
             return
         }
         describeApp(&info, app: app)
     }
 
     private func describeApp(_ info: inout ActionInfo, app: AppDescriptor) {
-        info.title = Strings.openIn(app.name)
-        info.shortTitle = app.name
+        info.title = localizer.openIn(name(of: app))
+        info.shortTitle = name(of: app)
         if let bundleID = app.installedBundleID(facts: facts) {
             info.icon = .app(bundleID)
         } else {
@@ -107,13 +116,13 @@ public struct ActionRegistry: Sendable {
 
     private func describeAgent(_ info: inout ActionInfo, id: String, variantID: String?, launcher: AgentLauncher?) {
         guard let agent = config.agent(id: id) else {
-            unavailable(&info, title: Strings.agentHere(id), reason: "Unknown agent \"\(id)\".")
+            unavailable(&info, title: localizer.agentHere(id), reason: "Unknown agent \"\(id)\".")
             return
         }
         var variant: AgentDescriptor.Variant?
         if let variantID {
             guard let found = agent.variants.first(where: { $0.id == variantID }) else {
-                unavailable(&info, title: Strings.agentHere(agent.name), reason: "\(agent.name) has no variant \"\(variantID)\".")
+                unavailable(&info, title: localizer.agentHere(agent.name), reason: "\(agent.name) has no variant \"\(variantID)\".")
                 return
             }
             variant = found
@@ -123,24 +132,26 @@ public struct ActionRegistry: Sendable {
         let chosen = launcher ?? config.agents[id]?.launcher ?? .terminal(nil)
         switch chosen {
         case .desktop:
-            info.title = Strings.agentDesktop(agent.name)
+            info.title = localizer.agentDesktop(agent.name)
             info.shortTitle = info.title
             if agent.desktopLink == nil { unavailable(&info, reason: "\(agent.name) has no desktop app link.") }
             else if let bundleID = agent.iconBundleID, facts.applicationURL(bundleID: bundleID) == nil {
                 unavailable(&info, reason: "The \(agent.name) desktop app is not installed.")
             }
         case .terminalLink:
-            info.title = Strings.agentLink(agent.name)
+            info.title = localizer.agentLink(agent.name)
             info.shortTitle = info.title
             if agent.terminalLink == nil { unavailable(&info, reason: "\(agent.name) has no terminal link.") }
         case .terminal(let terminalID):
             let terminal: AppDescriptor?
             if let terminalID { terminal = config.app(id: terminalID) } else { terminal = try? resolveDefault(role: .terminal, configured: config.terminal) }
+            let terminalName = terminal.map(name(of:)) ?? terminalID ?? ""
             if let variant {
-                info.title = terminalID == nil ? Strings.agentVariant(agent.name, variant.title) : Strings.agentVariantIn(agent.name, variant.title, terminal: terminal?.name ?? terminalID ?? "")
-                info.shortTitle = variant.title
+                let variantTitle = variant.localizedTitle(localizer)
+                info.title = terminalID == nil ? localizer.agentVariant(agent.name, variantTitle) : localizer.agentVariantIn(agent.name, variantTitle, terminal: terminalName)
+                info.shortTitle = variantTitle
             } else {
-                info.title = terminalID == nil ? Strings.agentHere(agent.name) : Strings.agentIn(agent.name, terminal: terminal?.name ?? terminalID ?? "")
+                info.title = terminalID == nil ? localizer.agentHere(agent.name) : localizer.agentIn(agent.name, terminal: terminalName)
                 info.shortTitle = info.title
             }
             guard let terminal else {
@@ -167,7 +178,7 @@ public struct ActionRegistry: Sendable {
     // MARK: Defaults
 
     func resolveDefault(role: AppDescriptor.Role, configured: String?) throws -> AppDescriptor {
-        try Planner(config: config, facts: facts).resolveDefault(role: role, configured: configured)
+        try Planner(config: config, facts: facts, localizer: localizer).resolveDefault(role: role, configured: configured)
     }
 
     // MARK: Catalog

@@ -5,15 +5,17 @@ import Foundation
 public struct Planner: Sendable {
     public let config: Config
     public let facts: any SystemFacts
+    public let localizer: Localizer
 
     /// Preference order when no default is configured. Terminal.app is always present, so it comes
     /// last: a terminal the user installed on purpose is a better guess.
     static let terminalOrder = ["ghostty", "cmux", "iterm", "wezterm", "kitty", "alacritty", "warp", "terminal"]
     static let editorOrder = ["vscode", "cursor", "zed", "windsurf", "sublime", "nova", "bbedit", "intellij", "pycharm", "webstorm", "textedit"]
 
-    public init(config: Config = .default, facts: any SystemFacts) {
+    public init(config: Config = .default, facts: any SystemFacts, localizer: Localizer = .english) {
         self.config = config
         self.facts = facts
+        self.localizer = localizer
     }
 
     public func plan(_ ref: ActionRef, context: HereContext) throws -> LaunchPlan {
@@ -177,7 +179,7 @@ public struct Planner: Sendable {
     private func newFile(_ id: String, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         guard let directory = context.workingDirectory(facts: facts) else { throw PlanError.noTarget }
         guard let template = config.newFile.templates.first(where: { $0.id == id }) else { throw PlanError.unknownTemplate(id) }
-        guard let name = NewFileNamer.uniqueName(for: template, in: directory, facts: facts) else { throw PlanError.nameExhausted }
+        guard let name = NewFileNamer.uniqueName(for: template, in: directory, facts: facts, localizer: localizer) else { throw PlanError.nameExhausted }
         let path = directory.appendingPathComponent(name).path
 
         var steps: [Step] = [.createFile(CreateFileStep(path: path, contents: template.contents))]

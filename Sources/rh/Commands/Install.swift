@@ -65,7 +65,7 @@ struct Install: AsyncParsableCommand {
             }
         }
         if everything || services {
-            let specs = ActionRegistry(config: runtime.config, facts: runtime.facts).serviceSpecs(rhPath: rhPath)
+            let specs = ActionRegistry(config: runtime.config, facts: runtime.facts, localizer: .system).serviceSpecs(rhPath: rhPath)
             let written = try installer.installServices(specs)
             _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
             Output.print("Services: \(written.count) installed in \(installer.locations.services.path)")
