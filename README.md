@@ -52,6 +52,9 @@ rh doctor                     # check the setup
 rh doctor --probe-launch      # prove a click can start a command in your terminal (a window opens and closes)
 ```
 
+Shell completions: `rh --generate-completion-script zsh` (or `bash`, `fish`) prints a script; the Homebrew
+formula installs them.
+
 The Finder menu is not shown inside iCloud Drive (including a synced Desktop or Documents folder), a
 limit of Finder extensions. The same actions are installed as **Quick Actions**, which work there and take
 keyboard shortcuts: System Settings, Keyboard, Keyboard Shortcuts, Services, Files and Folders.
