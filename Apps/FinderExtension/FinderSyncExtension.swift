@@ -22,6 +22,17 @@ final class FinderSyncExtension: FIFinderSync {
     override init() {
         super.init()
         FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: "/")]
+        probeIfRequested()
+    }
+
+    /// `rh doctor --probe-extension` leaves a marker in the config folder; the extension then runs
+    /// an automation probe through the runner, the same way a menu action would, so the result
+    /// describes what a click can really do. `rh probe` removes the marker.
+    private func probeIfRequested() {
+        let marker = paths.configDirectory.appendingPathComponent(".probe")
+        guard FileManager.default.fileExists(atPath: marker.path) else { return }
+        log.notice("probe requested; running it through the runner script")
+        runner(["probe", "automation", "--log"], label: "probe.automation")
     }
 
     // MARK: Toolbar
@@ -132,11 +143,15 @@ final class FinderSyncExtension: FIFinderSync {
     }
 
     private func runThroughRunner(_ id: String, _ context: HereContext) {
-        var arguments = [id, "--origin", context.origin.rawValue]
+        var arguments = ["run", "--alert", id, "--origin", context.origin.rawValue]
         if let container = context.container { arguments += ["--container", container.path] }
         arguments.append("--")
         arguments += context.items.map(\.path)
+        runner(arguments, label: id)
+    }
 
+    /// Runs `rh` through the runner script, outside the sandbox.
+    private func runner(_ arguments: [String], label id: String) {
         do {
             let directory = try FileManager.default.url(for: .applicationScriptsDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
             let task = try NSUserUnixTask(url: directory.appendingPathComponent(AppIdentity.runnerScriptName))

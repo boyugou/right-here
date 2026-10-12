@@ -32,12 +32,13 @@ public struct Installer: Sendable {
     }
 
     /// The script a sandboxed Finder extension runs through `NSUserUnixTask`: it runs outside the
-    /// sandbox, with an empty PATH, so it names `rh` by absolute path.
+    /// sandbox, with an empty PATH, so it names `rh` by absolute path. The extension passes the
+    /// subcommand (`run --alert <action> …`).
     public static func runnerScriptText(rhPath: String) -> String {
         """
         #!/bin/zsh -f
         # Installed by `rh install`. The Finder extension runs this outside its sandbox.
-        exec \(ShellQuoting.quote(rhPath)) run --alert "$@"
+        exec \(ShellQuoting.quote(rhPath)) "$@"
 
         """
     }
@@ -67,7 +68,7 @@ public struct Installer: Sendable {
         guard let text = try? String(contentsOf: runnerScript, encoding: .utf8) else { return nil }
         for line in text.split(separator: "\n") where line.hasPrefix("exec ") {
             let rest = line.dropFirst(5)
-            guard let end = rest.range(of: " run ") else { continue }
+            guard let end = rest.range(of: " \"$@\"") else { continue }
             return Self.unquote(String(rest[..<end.lowerBound]))
         }
         return nil

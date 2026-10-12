@@ -8,7 +8,7 @@ struct InstallerTests {
     @Test func runnerScriptHandsOverToRhRunWithTheAbsolutePath() {
         let text = Installer.runnerScriptText(rhPath: "/Applications/Right Here.app/Contents/Helpers/rh")
         #expect(text.hasPrefix("#!/bin/zsh -f\n"))
-        #expect(text.contains("exec '/Applications/Right Here.app/Contents/Helpers/rh' run --alert \"$@\""))
+        #expect(text.contains("exec '/Applications/Right Here.app/Contents/Helpers/rh' \"$@\""))
     }
 
     @Test func installsTheRunnerScriptExecutableUnderTheExtensionsFolder() throws {
@@ -39,7 +39,7 @@ struct InstallerTests {
         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: fake.path)
         let installer = Installer(home: home)
         try installer.installRunnerScript(rhPath: fake.path)
-        let output = try Shell.run(installer.runnerScript.path, args: ["copy-path.absolute", "--origin", "items", "--", "/tmp/a b"])
+        let output = try Shell.run(installer.runnerScript.path, args: ["run", "--alert", "copy-path.absolute", "--origin", "items", "--", "/tmp/a b"])
         #expect(output == "run|--alert|copy-path.absolute|--origin|items|--|/tmp/a b|")
     }
 
