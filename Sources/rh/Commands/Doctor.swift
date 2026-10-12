@@ -15,6 +15,9 @@ struct Doctor: AsyncParsableCommand {
     @Flag(help: "Also test the whole chain a Finder click uses, through the extension. Restarts the extension and may show a permission prompt.")
     var probeExtension = false
 
+    @Flag(help: "Go further: have the extension start a throwaway terminal session that runs a typed command, as an agent launch does. A window opens and closes.")
+    var probeLaunch = false
+
     struct Report: Encodable {
         var ok: Bool
         var checks: [DoctorCheck]
@@ -22,7 +25,7 @@ struct Doctor: AsyncParsableCommand {
 
     func run() async throws {
         let runtime = Runtime()
-        let checks = await RightHereKit.Doctor(paths: runtime.paths, loaded: runtime.loaded).run(probeExtension: probeExtension)
+        let checks = await RightHereKit.Doctor(paths: runtime.paths, loaded: runtime.loaded).run(probeExtension: probeExtension, probeLaunch: probeLaunch)
         let failed = checks.contains { $0.status == .fail }
         if json {
             try Output.json(Report(ok: !failed, checks: checks))

@@ -124,6 +124,13 @@ Verified on this machine (macOS 27.2, 2026-10-11):
   `com.apple.security.automation.apple-events` entitlement; without it tccd logs that a hardened
   process lacking it cannot be prompted. Verified only where Ghostty already allowed the control: a first-ever
   permission prompt on a clean machine has not been seen.
+- An agent launch's typed input runs: `rh doctor --probe-launch` has the extension start a throwaway Ghostty
+  session through the runner, `rh` and the Ghostty adapter. The session's folder is named with spaces,
+  quotes, `$`, a backslash and a backtick; the typed command (`printf … > file; exit`) ran in that folder in the
+  login shell (`/bin/zsh`), so the linefeed after `initial input` does press Return, the working directory
+  is honored and nothing needed quoting. 1.1 s when warm (0.3 s to accept the Apple event); one cold run
+  took 8.6 s, and the shell's own startup is about 1.7 s here. The same command runs in `sh`, `bash` and
+  `zsh` in the unit tests.
 
 Sourced:
 
@@ -146,9 +153,9 @@ Sourced:
 
 Open (to check on a real run, in the order they matter):
 
-- A real Finder click reaching `rh`: the tag dispatch of the menu action and whether `initial input` with a
-  linefeed executes in zsh. The extension and `rh` log each step at notice level (`log show --predicate
-  'subsystem == "com.boyugou.righthere.FinderExtension"'`, and `~/Library/Logs/right-here/rh.log`).
+- A real Finder click reaching `rh`: the tag dispatch of the menu action. Everything after it is verified
+  (above). The extension and `rh` log each step at notice level (`log show --predicate 'subsystem ==
+  "com.boyugou.righthere.FinderExtension"'`, and `~/Library/Logs/right-here/rh.log`).
 - A first-ever Automation prompt on a machine that has never allowed the control.
 - The items, sidebar and toolbar menus (the container menu has been observed).
 - Whether Quick Actions appear on a folder's empty background.
@@ -242,6 +249,7 @@ Thirty languages from `Localization/Localizable.xcstrings`, compiled into Swift 
 ## 14. Status
 
 Working and tested headlessly: the core and CLI, Ghostty and Terminal.app adapters, the app and
-extension, installer, doctor, Services, the MCP server and plugin, localization. Not yet confirmed by
-a real Finder click: the typed agent launch (see section 5, "Open"). Next: notarized packaging and
-adapters for other terminals. See the [roadmap](../ROADMAP.md).
+extension, installer, doctor, Services, the MCP server and plugin, localization. The whole chain after
+a menu click is verified, typed launch included (`rh doctor --probe-launch`); not yet confirmed is the
+click itself (see section 5, "Open"). Next: notarized packaging and adapters for other terminals. See the
+[roadmap](../ROADMAP.md).

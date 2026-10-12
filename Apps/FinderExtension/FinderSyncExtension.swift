@@ -26,13 +26,17 @@ final class FinderSyncExtension: FIFinderSync {
     }
 
     /// `rh doctor --probe-extension` leaves a marker in the config folder; the extension then runs
-    /// an automation probe through the runner, the same way a menu action would, so the result
-    /// describes what a click can really do. `rh probe` removes the marker.
+    /// a probe through the runner, the same way a menu action would, so the result describes what a
+    /// click can really do. The marker's text picks the probe from a fixed list; `rh probe
+    /// --from-extension` removes the marker, which also keeps a second extension process (every
+    /// Open panel hosts one) from running it again.
     private func probeIfRequested() {
         let marker = paths.configDirectory.appendingPathComponent(".probe")
-        guard FileManager.default.fileExists(atPath: marker.path) else { return }
-        log.notice("probe requested; running it through the runner script")
-        runner(["probe", "automation", "--log"], label: "probe.automation")
+        guard let data = FileManager.default.contents(atPath: marker.path) else { return }
+        let kind = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+        let probe = kind == "launch" ? "launch" : "automation"
+        log.notice("probe \(probe, privacy: .public) requested; running it through the runner script")
+        runner(["probe", probe, "--from-extension"], label: "probe.\(probe)")
     }
 
     // MARK: Toolbar

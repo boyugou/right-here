@@ -6,8 +6,20 @@ import RightHereKit
 struct Probe: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Check what this context is allowed to do.",
-        subcommands: [Automation.self]
+        subcommands: [Automation.self, Launch.self]
     )
+
+    /// The Finder extension asks for a probe by leaving `.probe` in the config folder. Several
+    /// extension processes can start at once (Finder and every Open panel) and all see it, so only
+    /// the one whose `unlink` succeeds runs the probe.
+    static func claimMarker(paths: RHPaths) -> Bool {
+        unlink(paths.configDirectory.appendingPathComponent(".probe").path) == 0
+    }
+
+    static func record(_ name: String, _ value: some Encodable) {
+        let json = (try? JSONEncoder().encode(value)).map { String(decoding: $0, as: UTF8.self) } ?? "null"
+        RunLog.record("probe \(name): " + json)
+    }
 
     struct Automation: AsyncParsableCommand {
         static let configuration = CommandConfiguration(
@@ -29,10 +41,12 @@ struct Probe: AsyncParsableCommand {
         @Flag(help: "Record the result in the log, for diagnosis of the Finder extension.")
         var log = false
 
+        @Flag(name: .customLong("from-extension"), help: .hidden)
+        var fromExtension = false
+
         func run() async throws {
             let runtime = Runtime()
-            // The Finder extension starts a probe by leaving this file behind; remove it so it runs once.
-            try? FileManager.default.removeItem(at: runtime.paths.configDirectory.appendingPathComponent(".probe"))
+            if fromExtension, !Probe.claimMarker(paths: runtime.paths) { return }
 
             var targets: [AppDescriptor] = []
             if apps.isEmpty {
@@ -52,10 +66,7 @@ struct Probe: AsyncParsableCommand {
                 }
                 results.append(await probe.check(name: app.name, bundleID: bundleID))
             }
-            if log {
-                let line = (try? JSONEncoder().encode(results)).map { String(decoding: $0, as: UTF8.self) } ?? "[]"
-                RunLog.record("probe automation: " + line)
-            }
+            if log || fromExtension { Probe.record("automation", results) }
             if json {
                 try Output.json(results)
             } else {
@@ -64,6 +75,72 @@ struct Probe: AsyncParsableCommand {
                 }
             }
             if results.contains(where: { $0.outcome == .denied || $0.outcome == .failed }) { throw ExitCode(1) }
+        }
+    }
+
+    struct Launch: AsyncParsableCommand {
+        static let configuration = CommandConfiguration(
+            abstract: "Start a throwaway terminal session that runs a typed command, and check that it ran.",
+            discussion: """
+            Opens a session in a scratch folder (its name has spaces and quotes on purpose), types a \
+            command that writes a file and exits, and waits for the file. That shows the terminal \
+            accepts a typed command, presses Return, starts in the right folder and runs your login \
+            shell, which is what starting an agent needs. The window closes itself and shows briefly.
+
+            The result describes whoever ran this command: from the Finder extension's runner \
+            (`rh doctor --probe-launch`) it describes what a menu click can do.
+            """
+        )
+
+        @Argument(help: "A terminal id from `rh apps`. Default: the default terminal.")
+        var terminal: String?
+
+        @Flag(help: "Print JSON.")
+        var json = false
+
+        @Flag(help: "Record the result in the log, for diagnosis of the Finder extension.")
+        var log = false
+
+        @Flag(name: .customLong("from-extension"), help: .hidden)
+        var fromExtension = false
+
+        func run() async throws {
+            let runtime = Runtime()
+            if fromExtension, !Probe.claimMarker(paths: runtime.paths) { return }
+
+            let result = try await probe(runtime)
+            if log || fromExtension { Probe.record("launch", result) }
+            if json {
+                try Output.json(result)
+            } else {
+                var line = "\(result.application): \(result.outcome.rawValue)"
+                if let seconds = result.seconds { line += String(format: " in %.1f s", seconds) }
+                if let accepted = result.accepted { line += String(format: " (request accepted after %.1f s)", accepted) }
+                if let shell = result.shell { line += ", login shell \(shell)" }
+                if let detail = result.detail { line += " (\(detail))" }
+                Output.print(line)
+            }
+            if result.outcome != .ran { throw ExitCode(1) }
+        }
+
+        private func probe(_ runtime: Runtime) async throws -> LaunchProbe.Result {
+            let app: AppDescriptor
+            if let terminal {
+                guard let found = runtime.config.app(id: terminal), found.role == .terminal else {
+                    throw ValidationError("Unknown terminal \"\(terminal)\". Run `rh apps`.")
+                }
+                app = found
+            } else {
+                do {
+                    app = try runtime.planner.resolveDefault(role: .terminal, configured: runtime.config.terminal)
+                } catch {
+                    return .init(application: "terminal", outcome: .notInstalled, detail: error.localizedDescription)
+                }
+            }
+            guard let bundleID = app.installedBundleID(facts: runtime.facts) else {
+                return .init(application: app.name, outcome: .notInstalled, detail: "\(app.name) is not installed.")
+            }
+            return await LaunchProbe(facts: runtime.facts).run(terminal: app, bundleID: bundleID)
         }
     }
 }

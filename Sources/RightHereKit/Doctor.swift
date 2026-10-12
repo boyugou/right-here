@@ -47,10 +47,13 @@ public struct Doctor: Sendable {
         self.rhPath = rhPath
     }
 
-    /// - Parameter probeExtension: Also ask the Finder extension to try the whole chain a menu click
-    ///   uses, including permission to control the terminal. It restarts the extension and can make
-    ///   macOS show a permission prompt, so it is opt-in.
-    public func run(probeExtension: Bool = false) async -> [DoctorCheck] {
+    /// - Parameters:
+    ///   - probeExtension: Also ask the Finder extension to try the whole chain a menu click uses,
+    ///     including permission to control the terminal. It restarts the extension and can make
+    ///     macOS show a permission prompt, so it is opt-in.
+    ///   - probeLaunch: Go further and have the extension start a throwaway terminal session that
+    ///     runs a typed command, the way an agent launch does. It opens and closes a window.
+    public func run(probeExtension: Bool = false, probeLaunch: Bool = false) async -> [DoctorCheck] {
         var checks: [DoctorCheck] = []
         checks.append(configCheck())
         checks += menuChecks()
@@ -58,12 +61,51 @@ public struct Doctor: Sendable {
         checks.append(claudeLinkCheck())
         checks += integrationChecks()
         checks.append(await extensionCheck())
-        if probeExtension { checks.append(await chainCheck()) }
+        if probeLaunch {
+            checks.append(await launchCheck())
+        } else if probeExtension {
+            checks.append(await chainCheck())
+        }
         return checks
     }
 
+    private func launchCheck() async -> DoctorCheck {
+        let title = "Finder click runs a command in the terminal"
+        guard let result = await ExtensionProbe(paths: paths, facts: facts, runner: runner).runLaunch() else {
+            return DoctorCheck(id: "finder.launch", title: title, status: .fail,
+                               detail: "the Finder extension did not report back",
+                               fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
+        }
+        let name = result.application
+        switch result.outcome {
+        case .ran:
+            var took = result.seconds.map { String(format: " in %.1f s", $0) } ?? ""
+            if let accepted = result.accepted { took += String(format: " (request accepted after %.1f s)", accepted) }
+            let shell = result.shell.map { "; login shell \($0)" } ?? ""
+            return DoctorCheck(id: "finder.launch", title: title, status: .ok, detail: "\(name) ran a typed command in a new session\(took)\(shell)")
+        case .timedOut:
+            return DoctorCheck(id: "finder.launch", title: title, status: .needsUser, detail: result.detail,
+                               fix: "macOS is waiting for you to allow Right Here to control \(name). Click Allow, then run this again.")
+        case .denied:
+            return DoctorCheck(id: "finder.launch", title: title, status: .fail, detail: "macOS refused to let Right Here control \(name)",
+                               fix: "Allow Right Here in System Settings › Privacy & Security › Automation.")
+        case .noReply:
+            return DoctorCheck(id: "finder.launch", title: title, status: .fail, detail: result.detail,
+                               fix: "Check that \(name) starts your shell normally (a slow or interactive startup file can stall it), or choose another terminal with general.terminal.")
+        case .wrongFolder:
+            return DoctorCheck(id: "finder.launch", title: title, status: .fail, detail: result.detail,
+                               fix: "Choose another terminal with general.terminal and report this, with the terminal's name and version.")
+        case .notInstalled, .unsupported:
+            return DoctorCheck(id: "finder.launch", title: title, status: .warn, detail: result.detail,
+                               fix: "Choose a terminal that can run commands with general.terminal (Ghostty or Terminal).")
+        case .failed:
+            return DoctorCheck(id: "finder.launch", title: title, status: .fail, detail: result.detail,
+                               fix: "Run `rh probe launch` in a terminal for details.")
+        }
+    }
+
     private func chainCheck() async -> DoctorCheck {
-        guard let results = await ExtensionProbe(paths: paths, facts: facts, runner: runner).run() else {
+        guard let results = await ExtensionProbe(paths: paths, facts: facts, runner: runner).runAutomation() else {
             return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .fail,
                                detail: "the Finder extension did not report back",
                                fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")

@@ -143,6 +143,29 @@ struct CLITests {
         #expect(!FileManager.default.fileExists(atPath: "/tmp/rh-should-not-run"))
     }
 
+    @Test func probeLaunchRefusesAnUnknownTerminal() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let result = try rh.run(["probe", "launch", "no-such-terminal"])
+        #expect(result.status != 0)
+        #expect(result.standardError.contains("Unknown terminal"))
+    }
+
+    @Test func aProbeRequestedByTheExtensionRunsOnceAndAnythingAfterItDoesNothing() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let marker = rh.configDirectory.appendingPathComponent(".probe")
+        try "launch".write(to: marker, atomically: true, encoding: .utf8)
+        // Warp cannot run commands, so this never opens a window whether or not it is installed.
+        let first = try rh.run(["probe", "launch", "warp", "--from-extension"])
+        #expect(first.status == 1)
+        #expect(!FileManager.default.fileExists(atPath: marker.path))
+        let log = rh.configDirectory.appendingPathComponent("logs/rh.log")
+        let logged = try String(contentsOf: log, encoding: .utf8)
+        #expect(logged.contains("probe launch: "))
+        let second = try rh.run(["probe", "launch", "warp", "--from-extension"])
+        #expect(second.status == 0)
+        #expect(try String(contentsOf: log, encoding: .utf8) == logged)
+    }
+
     @Test func menuJSONIsAnArrayOfNodes() throws {
         let rh = try RH(config: "[menu]\nitems = [\"copy-path\"]\n"); defer { rh.cleanUp() }
         let result = try rh.run(["menu", "--container", "/tmp", "--json"])

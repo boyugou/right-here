@@ -27,6 +27,21 @@ struct ExtensionProbeTests {
         #expect(ExtensionProbe.latestResults(in: log, since: start) == nil)
     }
 
+    @Test func eachKindOfProbeReadsOnlyItsOwnLines() throws {
+        let log = FileManager.default.temporaryDirectory.appendingPathComponent("rh-log-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: log) }
+        let start = ISO8601DateFormatter().date(from: "2026-10-12T00:42:00Z")!
+        try """
+        2026-10-12T00:42:17Z probe automation: [{"application":"Ghostty","bundleID":"a","outcome":"granted"}]
+        2026-10-12T00:42:30Z probe launch: {"application":"Ghostty","outcome":"ran","seconds":1.2,"shell":"/bin/zsh"}
+        """.write(to: log, atomically: true, encoding: .utf8)
+        let launch = try #require(ExtensionProbe.latestReport(.launch, in: log, since: start))
+        let decoded = try JSONDecoder().decode(LaunchProbe.Result.self, from: launch)
+        #expect(decoded.outcome == .ran)
+        #expect(decoded.shell == "/bin/zsh")
+        #expect(ExtensionProbe.latestResults(in: log, since: start)?.map(\.outcome) == [.granted])
+    }
+
     @Test func aMissingLogMeansNoResult() {
         #expect(ExtensionProbe.latestResults(in: URL(fileURLWithPath: "/nonexistent/rh.log"), since: Date()) == nil)
     }

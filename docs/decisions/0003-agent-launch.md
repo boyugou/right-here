@@ -27,7 +27,15 @@ cannot do this only open the folder, and agents are not offered through them.
   flags or pick the terminal.
 - `agent.<agent>@desktop`: the agent's desktop app through its deep link.
 
+## Verified
+
+`rh doctor --probe-launch` runs the whole chain through the Finder extension: a throwaway Ghostty session
+in a folder named with spaces, quotes, `$` and a backtick types a command that writes a file and exits.
+The file appears in that folder, written by the login shell: the linefeed presses Return, the working
+directory is honored, and no quoting was needed. The macOS Automation prompt names the Finder extension
+(the process macOS holds responsible), which is why the extension carries the apple-events entitlement.
+
 ## Not yet verified
 
-The first AppleScript run triggers macOS's Automation prompt; which process it names is checked on a real
-run. A cold start of the terminal may add an empty startup window.
+The first-ever permission prompt on a machine that never allowed the control. A cold start of the
+terminal may add an empty startup window.

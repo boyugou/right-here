@@ -5,6 +5,9 @@
 - Core: actions, planner, config, menu, catalogs, path styles, quoting (with real-shell tests).
 - `rh`: run, actions, menu, agents, apps, config, init, install, uninstall, docs, doctor, finder, mcp.
 - Terminal adapters: Ghostty, Terminal.app. Agent launchers: typed, terminal link, desktop app.
+- `rh doctor --probe-launch`: a throwaway terminal session started through the Finder extension proves a
+  typed command runs, in the right folder, in the login shell.
+- The app icon.
 - The app and the Finder extension; installer; `rh doctor`.
 - Finder Services (Quick Actions) generated from the config.
 - MCP server and the Claude Code plugin (setup, open-here and review-changes skills).
@@ -12,10 +15,9 @@
 
 ## Next
 
-- Confirm the typed agent launch from a real Finder click (the chain up to the Apple event is verified by
-  `rh doctor --probe-extension`), and the first-ever Automation prompt on a clean machine.
+- Confirm a real Finder click reaching `rh` (everything after it, typed launch included, is verified by
+  `rh doctor --probe-launch`), and the first-ever Automation prompt on a clean machine.
 - Notarized DMG, Homebrew cask and formula (`script/package_dmg.sh`).
-- App icon.
 - Adapters for iTerm2, WezTerm, kitty, Alacritty, Warp, cmux (documented, to be checked on real installs);
   possibly a generic config-defined adapter (an argv template with a login-shell wrapper).
 - Native-speaker review of the translations.

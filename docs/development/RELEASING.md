@@ -24,6 +24,6 @@
 
 5. Tag `v<version>`, create a GitHub release with the DMG and its checksum, then update
    `packaging/homebrew/right-here.rb` (version, `sha256`) and `rh.rb` in the tap.
-6. After installing from the DMG on a clean user, run `rh install` and `rh doctor --probe-extension`.
+6. After installing from the DMG on a clean user, run `rh install` and `rh doctor --probe-launch` (a terminal window opens and closes; macOS asks once to allow Right Here to control it).
 
 Releases are arm64 only, macOS 26 and later.
