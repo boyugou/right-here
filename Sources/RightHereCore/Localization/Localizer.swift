@@ -38,7 +38,10 @@ public struct Localizer: Sendable, Equatable {
     }
 
     /// Maps a language tag such as `zh-Hans-US` or `pt-PT` to a language the catalog carries.
-    static func match(_ tag: String) -> String? {
+    /// The languages the catalog carries.
+    public static var supportedLanguages: [String] { Localizations.languages }
+
+    public static func match(_ tag: String) -> String? {
         let parts = tag.replacingOccurrences(of: "_", with: "-").split(separator: "-").map(String.init)
         guard let primary = parts.first?.lowercased() else { return nil }
         let supported = Localizations.languages

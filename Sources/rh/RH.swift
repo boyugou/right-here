@@ -80,10 +80,15 @@ struct ContextOptions: ParsableArguments {
     @Option(help: "The folder being viewed, when acting on its empty background.")
     var container: String?
 
-    @Argument(help: "Files or folders to act on. Without any, the folder given by --container, or the current directory, is used.")
+    @Argument(help: "Files or folders to act on. Without any, the folder given by --container, or the current directory, is used. Put -- before a path that starts with a dash.")
     var paths: [String] = []
 
     func makeContext(facts: any SystemFacts) throws -> HereContext {
+        // An empty argument is most often an unset shell variable (`rh run reveal "$DIR"`); acting on the current
+        // directory instead would be a surprise.
+        if paths.contains(where: \.isEmpty) || container?.isEmpty == true {
+            throw ValidationError("An empty path was given (is a shell variable unset?). Leave the path out to use the current directory.")
+        }
         func resolve(_ path: String) -> URL {
             URL(fileURLWithPath: (path as NSString).expandingTildeInPath, relativeTo: facts.currentDirectory).lexicallyNormalized
         }

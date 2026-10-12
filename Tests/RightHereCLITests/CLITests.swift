@@ -643,6 +643,19 @@ struct CLITests {
         #expect(try rh.run(["actions"]).status == 0)
     }
 
+    @Test("an empty path or an unknown menu language is refused, not guessed", arguments: [
+        (["run", "copy-path.absolute", "--dry-run", ""], "empty path"),
+        (["run", "copy-path.absolute", "--dry-run", "--container", ""], "empty path"),
+        (["menu", "--language", "xx"], "No translation")
+    ])
+    func emptyPathAndUnknownLanguageAreRefused(arguments: [String], message: String) throws {
+        let rh = try RH(config: "")
+        defer { rh.cleanUp() }
+        let result = try rh.run(arguments)
+        #expect(result.status != 0, "status \(result.status)")
+        #expect((result.standardOutput + result.standardError).contains(message))
+    }
+
     @Test func aFailedRunWithJSONPrintsJSONOnStdout() throws {
         let rh = try RH(config: "")
         defer { rh.cleanUp() }
