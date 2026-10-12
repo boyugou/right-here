@@ -25,7 +25,7 @@ struct Install: AsyncParsableCommand {
 
           --scripts   the runner script the Finder extension uses to reach rh
           --cli       a link to rh in ~/.local/bin
-          --services  Finder Services (Quick Actions) for the actions in [services] of the config
+          --services  Finder Services (Quick Actions) from [services] in the config
           --finder    register and switch on the Finder extension of Right Here.app
 
         Nothing here needs administrator rights. Run it again at any time; it repairs what is out of date.

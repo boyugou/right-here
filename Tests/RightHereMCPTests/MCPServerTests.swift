@@ -112,6 +112,23 @@ struct MCPProtocolTests {
         #expect(reply["id"] == .string("x"))
     }
 
+    @Test("a response sent to the server is dropped, not answered with an error", arguments: [
+        #"{"jsonrpc":"2.0","id":2,"result":{}}"#,
+        #"{"jsonrpc":"2.0","id":3,"error":{"code":-32000,"message":"x"}}"#
+    ])
+    func aStrayResponseGetsNoReply(line: String) async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        #expect(await harness.server.handle(line) == nil)
+    }
+
+    @Test func toolsListRefusesACursorItNeverIssued() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let reply = try #require(try await harness.send("tools/list", params: .object(["cursor": .string("abc")])))
+        #expect(reply["error"]?["code"] == .number(-32602))
+        let plain = try #require(try await harness.send("tools/list", params: .object([:])))
+        #expect(plain["result"]?["tools"]?.arrayValue?.isEmpty == false)
+    }
+
     @Test func toolsListDescribesEveryToolWithASchema() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
         let reply = try #require(try await harness.send("tools/list"))
@@ -746,7 +763,10 @@ struct MCPShapeTests {
 
     @Test func aResponseOrAnIdlessObjectGetsNoReply() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
-        #expect(await harness.server.handle(#"{"jsonrpc":"2.0","id":1,"result":{}}"#) != nil, "an object with an id and no method is a malformed request")
+        // A response is not a request (this server sends none, so it is a stray); an id with neither a method nor a
+        // result or error is a malformed request and is answered.
+        #expect(await harness.server.handle(#"{"jsonrpc":"2.0","id":1,"result":{}}"#) == nil)
+        #expect(await harness.server.handle(#"{"jsonrpc":"2.0","id":1}"#) != nil, "an object with an id and nothing else is a malformed request")
         #expect(await harness.server.handle(#"{"jsonrpc":"2.0","result":{}}"#) == nil)
     }
 }

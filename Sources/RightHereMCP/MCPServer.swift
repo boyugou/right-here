@@ -173,7 +173,9 @@ public struct MCPServer: Sendable {
             return Self.errorObject(id: .null, code: -32600, message: "Invalid request: id must be a string or an integer")
         }
         guard let method = message["method"]?.stringValue else {
-            // A response or something unrecognizable: nothing to answer unless it claims to be a request.
+            // A response (this server sends no requests, so one is a stray) or something unrecognizable: nothing to
+            // answer unless it claims to be a request.
+            if message["result"] != nil || message["error"] != nil { return nil }
             guard let id else { return nil }
             return Self.errorObject(id: id, code: -32600, message: "Invalid request")
         }
@@ -185,6 +187,10 @@ public struct MCPServer: Sendable {
         case "ping":
             return Self.responseObject(id: id, result: .object([:]))
         case "tools/list":
+            // The list is never paged, so no cursor was ever handed out and any cursor is one this server did not issue.
+            if let cursor = message["params"]?["cursor"], cursor != .null {
+                return Self.errorObject(id: id, code: -32602, message: "Invalid params: this server issues no cursors")
+            }
             return Self.responseObject(id: id, result: .object(["tools": .array(Tools.definitions.map(\.json))]))
         case "tools/call":
             return await callTool(id: id, params: message["params"])

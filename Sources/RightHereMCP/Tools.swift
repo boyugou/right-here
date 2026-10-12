@@ -91,8 +91,8 @@ enum Tools {
             """,
             inputSchema: schema([
                 "action": string("Action id, for example open.terminal, agent.claude, copy-path.absolute, new-file.md or reveal.", maxLength: 200),
-                "paths": pathList("Absolute paths of the files or folders to act on."),
-                "container": string("Absolute path of a folder to act on when no paths are given.", maxLength: maxPathLength),
+                "paths": pathList("Absolute paths of the files or folders to act on. With neither paths nor container, the folder the MCP server was started in is used."),
+                "container": string("Absolute path of a folder to act on when no paths are given. Without it, the folder the MCP server was started in.", maxLength: maxPathLength),
                 "dry_run": boolean("Return the plan and do nothing.")
             ], required: ["action"]),
             readOnly: false,

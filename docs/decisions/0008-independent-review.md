@@ -164,6 +164,15 @@ Afterwards: `verify_all.sh` builds the app and extension too (CI does not: it wo
 the change could not be tried here), and the app targets build with `SWIFT_STRICT_CONCURRENCY: complete`; the one
 warning it showed (the extension's completion handler capturing `self`) is fixed with a main-thread-only weak box.
 
+## Tenth round (MCP conformance and agent docs, after 98adc5e)
+
+The handshake, schemas, error shapes, batches, ids, size limits and every command in the agent docs held up. Fixed:
+a stray JSON-RPC response sent to the server is dropped instead of answered with an error; `tools/list` refuses a
+cursor (none is ever issued); the `paths`/`container` descriptions say that the server's own folder is used when
+neither is given; `rh install --help` wraps cleanly. Left, as lenient rather than wrong: `initialize` with empty
+params and a request without `"jsonrpc":"2.0"` are served, and `notifications/cancelled` is ignored (calls are short
+and bounded by the 120 s limit).
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.
