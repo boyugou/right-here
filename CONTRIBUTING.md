@@ -32,6 +32,14 @@ macOS 26 or later on Apple silicon, Xcode 26 or later, `xcodegen` (`brew install
 - Commit in small steps; every commit builds and passes the tests. Do not commit emails, machine paths or keys
   (`script/verify_public_safety.sh` checks).
 
+## Reviewing a translation
+
+All thirty translations were written with AI help and are marked `needs_review`. If you read one of the languages:
+open `Localization/Localizable.xcstrings` (and `InfoPlist.xcstrings` for the permission prompt text), fix what reads
+badly (macOS's own wording for that language is the model), change `"state"` to `"translated"` for each entry you
+checked, then run `./script/compile_localizations.py` and `./script/verify_localizations.py`.
+`./script/preview_setup.sh out.png <language>` shows how the setup window reads.
+
 ## Looking at the setup window
 
 `./script/preview_setup.sh out.png [language] [--dark]` renders it to an image without a screen.
