@@ -85,6 +85,8 @@ public enum ConfigParser {
 // MARK: - Diagnostics collection
 
 private final class Sink {
+    /// Agents whose definition was refused with an error of its own; later checks do not complain about them again.
+    var rejectedAgents = Set<String>()
     var items: [ConfigDiagnostic] = []
 
     func error(_ path: [String], _ message: String, suggestion: Hint? = nil) {
@@ -356,7 +358,7 @@ private struct Builder {
         for id in agentChoices {
             if agentIDs.contains(id) {
                 if !config.enabledAgents.contains(id) { config.enabledAgents.append(id) }
-            } else {
+            } else if !sink.rejectedAgents.contains(id) {
                 sink.error(["general", "agents"], "unknown agent \"\(id)\"; known agents: " + agentIDs.joined(separator: ", "),
                            suggestion: Suggestion.didYouMean(id, in: agentIDs))
             }
@@ -445,6 +447,7 @@ private struct Builder {
         if let typed = command, (try? ShellQuoting.validateForTyping(typed)) == nil {
             sink.error(reader.path + ["command"], "the command has a line break or control character, so it cannot be typed into a terminal")
             command = nil
+            sink.rejectedAgents.insert(id)
         }
         let declaredVariants: [AgentDescriptor.Variant] = reader.tableArray("variant").compactMap { variant in
             variant.checkKnownKeys()
@@ -483,7 +486,7 @@ private struct Builder {
             settings.variants = variants
         } else {
             guard let name = reader.string("name"), let command else {
-                sink.error(reader.path, "an agent that is not built in needs name and command")
+                if !sink.rejectedAgents.contains(id) { sink.error(reader.path, "an agent that is not built in needs name and command") }
                 return
             }
             config.customAgents.append(AgentDescriptor(id: id, name: name, command: command, variants: variants))

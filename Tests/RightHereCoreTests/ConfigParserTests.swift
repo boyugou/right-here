@@ -364,6 +364,19 @@ struct ConfigStrictnessTests {
         #expect(listed.diagnostics.isEmpty)
     }
 
+    @Test func oneBadAgentCommandIsOneErrorNotThree() {
+        let result = parse("""
+        [general]
+        agents = ["lazygit"]
+        [agent.lazygit]
+        name = "lazygit"
+        command = "lazygit\\nrm -rf ~"
+        """)
+        let errors = result.diagnostics.filter { $0.severity == .error }
+        #expect(errors.count == 1, Comment(rawValue: "\(errors.map(\.message))"))
+        #expect(errors.first?.path == "agent.lazygit.command")
+    }
+
     @Test func aDuplicateTemplateIdIsAnError() {
         let result = parse("""
         [[new_file.template]]

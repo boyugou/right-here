@@ -45,7 +45,8 @@ public enum ConfigTemplate {
         # items = [\(menu)]
 
         # Where a terminal session starts: "window" (default) or "tab" (a new tab of the front Ghostty window).
-        # terminal_placement = "tab"   (goes under [general] above)
+        # To change it, add this line to the [general] table above (it does not belong under the tables below):
+        #   terminal_placement = "tab"
 
         # Forms offered under "Copy Path".
         # [copy_path]
