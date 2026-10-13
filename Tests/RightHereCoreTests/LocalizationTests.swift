@@ -237,6 +237,19 @@ struct LocalizationDetailTests {
         #expect(!marked.isEmpty, "\(language) has no string that needed a mark")
     }
 
+    @Test("a command that ends in a bracket is followed by a left-to-right mark, or the bracket is drawn mirrored", arguments: LanguageManifest.rightToLeft)
+    func commandsEndingInABracketAreMarked(language: String) {
+        var found = 0
+        for (key, translations) in Localizations.table.sorted(by: { $0.key < $1.key }) {
+            guard let text = translations[language] else { continue }
+            for match in text.matches(of: #/`[^`]*[<>()\[\]{}]`/#) {
+                found += 1
+                #expect(text[match.range.upperBound...].first == "\u{200E}", "\(language) \(key) has a command that ends in a bracket and no mark after it")
+            }
+        }
+        #expect(found > 0, "\(language) has no such command, so this checks nothing")
+    }
+
     @Test("a name that becomes a file name never carries a direction mark", arguments: LanguageManifest.rightToLeft)
     func fileNamesAreClean(language: String) {
         let name = Localizer(languages: [language]).string(.newFileBaseName)

@@ -23,6 +23,10 @@ PLACEHOLDER = re.compile(r"%(?:(\d+)\$)?@")
 # the Shortcuts phrases. A translation keeps each of them as it is.
 PROTECTED = re.compile(r"`[^`]*`|\$\{[A-Za-z]+\}")
 RIGHT_TO_LEFT_MARK = "\u200f"
+LEFT_TO_RIGHT_MARK = "\u200e"
+# A command between backticks that ends in a bracket (`rh ... <folder>`). In a right-to-left sentence the bracket takes the
+# direction of the sentence, so it is drawn mirrored and on the wrong side of the command unless a left-to-right mark follows.
+BRACKET_ENDING_COMMAND = re.compile(r"(`[^`]*[<>()\[\]{}]`)(?!" + LEFT_TO_RIGHT_MARK + ")")
 # Keys whose text becomes a file name: no direction mark, no path separator.
 FILE_NAME_KEYS = {"newFile.baseName"}
 
@@ -130,10 +134,13 @@ def is_only_a_value(english: str) -> bool:
 
 def with_direction_mark(language: Language, key: str, value: str, english: str) -> str:
     """A right-to-left text that would start with Latin text (a name, a command, a placeholder) is laid out left to right
-    unless it starts with a right-to-left mark. Not for a text that becomes a file name, and not for one that is only a
-    value (the mark would end up in the copied path)."""
-    if language.rtl and key not in FILE_NAME_KEYS and not is_only_a_value(english) and starts_left_to_right(value):
-        return RIGHT_TO_LEFT_MARK + value
+    unless it starts with a right-to-left mark, and a command that ends in a bracket needs a left-to-right mark after it.
+    Not for a text that becomes a file name, and not for one that is only a value (the mark would end up in the copied
+    path)."""
+    if language.rtl and key not in FILE_NAME_KEYS and not is_only_a_value(english):
+        if starts_left_to_right(value):
+            value = RIGHT_TO_LEFT_MARK + value
+        value = BRACKET_ENDING_COMMAND.sub(lambda match: match.group(1) + LEFT_TO_RIGHT_MARK, value)
     return value
 
 
@@ -162,4 +169,6 @@ def translation_problems(key: str, language: Language, value: str, english: str,
             problems.append(f"{where}: becomes a file name, so no direction mark, slash or colon: {value!r}")
     elif direction and language.rtl and not is_only_a_value(english) and starts_left_to_right(value):
         problems.append(f"{where}: starts with Latin text and no right-to-left mark: {value!r}")
+    if direction and language.rtl and key not in FILE_NAME_KEYS and BRACKET_ENDING_COMMAND.search(value):
+        problems.append(f"{where}: a command that ends in a bracket needs a left-to-right mark after it: {value!r}")
     return problems

@@ -18050,7 +18050,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "تحقّق من توفّر القرص أو iCloud Drive، أو شغّل `rh config sync push` لإنشاء المجلد، أو اختر مجلدًا آخر باستخدام `rh config sync enable --folder <folder>`."
+            "value": "تحقّق من توفّر القرص أو iCloud Drive، أو شغّل `rh config sync push` لإنشاء المجلد، أو اختر مجلدًا آخر باستخدام `rh config sync enable --folder <folder>`‎."
           }
         },
         "bn": {
@@ -18086,7 +18086,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "بررسی کنید که درایو یا iCloud Drive در دسترس باشد، یا `rh config sync push` را برای ساختن پوشه اجرا کنید، یا با `rh config sync enable --folder <folder>` پوشهٔ دیگری انتخاب کنید."
+            "value": "بررسی کنید که درایو یا iCloud Drive در دسترس باشد، یا `rh config sync push` را برای ساختن پوشه اجرا کنید، یا با `rh config sync enable --folder <folder>`‎ پوشهٔ دیگری انتخاب کنید."
           }
         },
         "fr": {
@@ -18098,7 +18098,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "בדקו שהכונן או iCloud Drive זמינים, או הריצו את `rh config sync push` כדי ליצור את התיקייה, או בחרו תיקייה אחרת עם `rh config sync enable --folder <folder>`."
+            "value": "בדקו שהכונן או iCloud Drive זמינים, או הריצו את `rh config sync push` כדי ליצור את התיקייה, או בחרו תיקייה אחרת עם `rh config sync enable --folder <folder>`‎."
           }
         },
         "hi": {
@@ -18206,7 +18206,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "دیکھیں کہ ڈرائیو یا iCloud Drive دستیاب ہے، یا فولڈر بنانے کے لیے `rh config sync push` چلائیں، یا `rh config sync enable --folder <folder>` کے ساتھ کوئی اور منتخب کریں۔"
+            "value": "دیکھیں کہ ڈرائیو یا iCloud Drive دستیاب ہے، یا فولڈر بنانے کے لیے `rh config sync push` چلائیں، یا `rh config sync enable --folder <folder>`‎ کے ساتھ کوئی اور منتخب کریں۔"
           }
         },
         "vi": {
