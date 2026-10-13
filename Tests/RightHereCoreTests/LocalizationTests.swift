@@ -6,11 +6,37 @@ private func placeholders(_ text: String) -> [String] {
     text.matches(of: #/%(?:\d+\$)?@/#).map { String(text[$0.range]) }.sorted()
 }
 
+/// `Localization/languages.json`, the one list of the shipped languages. The scripts read it too.
+private struct LanguageManifest: Decodable {
+    struct Language: Decodable {
+        var code: String
+        var rtl: Bool?
+    }
+
+    var source: String
+    var languages: [Language]
+
+    static let current: LanguageManifest = {
+        let file = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Localization/languages.json")
+        return try! JSONDecoder().decode(LanguageManifest.self, from: Data(contentsOf: file))
+    }()
+
+    static var rightToLeft: [String] { current.languages.filter { $0.rtl == true }.map(\.code) }
+}
+
 @Suite("Localization catalog")
 struct LocalizationCatalogTests {
-    @Test func thirtyLanguagesAreShipped() {
-        #expect(Localizations.languages.count == 30)
-        #expect(Localizations.languages.first == "en")
+    @Test func theCompiledLanguagesAreTheOnesInTheManifest() {
+        let manifest = LanguageManifest.current
+        #expect(Localizations.languages == manifest.languages.map(\.code))
+        #expect(Localizations.languages.first == manifest.source)
+        #expect(manifest.source == "en")
+    }
+
+    @Test func theMirroringTestsHaveLanguagesToRun() {
+        // The right-to-left tests take their languages from the manifest; with none they would pass by running nothing.
+        #expect(!LanguageManifest.rightToLeft.isEmpty)
     }
 
     @Test func everyKeyIsTranslatedIntoEveryLanguage() {
@@ -156,7 +182,7 @@ struct LocalizationDetailTests {
         #expect(newFile.children.map(\.title) == ["Documento di testo", "Documento Markdown"])
     }
 
-    @Test("right-to-left strings that begin with a Latin name or a placeholder carry a right-to-left mark", arguments: ["ar", "fa", "he", "ur"])
+    @Test("right-to-left strings that begin with a Latin name or a placeholder carry a right-to-left mark", arguments: LanguageManifest.rightToLeft)
     func rightToLeftMarks(language: String) {
         let localizer = Localizer(languages: [language])
         for key in LocalizationKey.allCases where key != .newFileBaseName {
@@ -168,7 +194,7 @@ struct LocalizationDetailTests {
         #expect(!marked.isEmpty, "\(language) has no string that needed a mark")
     }
 
-    @Test("a name that becomes a file name never carries a direction mark", arguments: ["ar", "fa", "he", "ur"])
+    @Test("a name that becomes a file name never carries a direction mark", arguments: LanguageManifest.rightToLeft)
     func fileNamesAreClean(language: String) {
         let name = Localizer(languages: [language]).string(.newFileBaseName)
         #expect(!name.contains("\u{200F}"))
