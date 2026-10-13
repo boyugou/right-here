@@ -121,7 +121,7 @@ MUTANTS = [
     ("an interrupt is not wired to the cleanup", "Sources/RightHereKit/ProbeMarker.swift",
      "            source.resume()\n            return source", "            return source"),
     ("a config cut off inside an open bracket reaches the TOML library as it is", "Sources/RightHereCore/Config/ConfigParser.swift",
-     'root = try TOMLTable(source: text + "\\n")', "root = try TOMLTable(source: text)"),
+     'return try TOMLTable(source: text + "\\n")', "return try TOMLTable(source: text)"),
     ("a huge config file is read and parsed", "Sources/RightHereKit/ConfigStore.swift",
      "as? Int, size > maxConfigBytes {", "as? Int, size > Int.max {"),
     ("a bidirectional control is printed as it is", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
