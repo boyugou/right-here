@@ -49,7 +49,7 @@ public struct PathRenderer: Sendable {
     public func render(_ url: URL, style: PathStyle, relativeTo base: URL? = nil) -> String {
         let url = url.lexicallyNormalized
         let path = facts.onDiskPath(url)
-        let name = path.split(separator: "/", omittingEmptySubsequences: true).last.map(String.init) ?? ""
+        let name = path.split(separator: "/", omittingEmptySubsequences: true).last.map(String.init) ?? "/"
         switch style {
         case .absolute:
             return path

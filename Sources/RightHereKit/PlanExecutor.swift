@@ -68,6 +68,8 @@ public struct LiveExecutor: Sendable {
                 let output = try await perform(step)
                 reports.append(.init(description: step.summary, output: output))
             } catch let error as ExecutionError {
+                // The helpers below do not know their position in the plan.
+                if case .stepFailed(_, let description, let message) = error { throw ExecutionError.stepFailed(index: index, step: description, message: message) }
                 throw error
             } catch {
                 throw ExecutionError.stepFailed(index: index, step: step.summary, message: error.localizedDescription)

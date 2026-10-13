@@ -382,7 +382,38 @@ private struct Builder {
         for agent in config.customAgents where !config.enabledAgents.contains(agent.id) {
             sink.warning(["agent", agent.id], "defined, but not in general.agents, so the menu does not offer it (it still runs as `rh run agent.\(agent.id)`); add \"\(agent.id)\" to general.agents")
         }
+        checkActionTargets(config)
         return config
+    }
+
+    /// An id can be well formed and still name nothing (an agent, terminal, app or template that is not defined);
+    /// such an entry would just be left out of the menu without a word.
+    private func checkActionTargets(_ config: Config) {
+        let agentIDs = (config.customAgents + KnownAgents.all).map(\.id)
+        func check(_ entry: String, in path: [String]) {
+            guard let ref = ActionRef(parsing: entry) else { return }
+            var problem: (what: String, word: String, choices: [String])?
+            switch ref {
+            case .agent(let id, let variant, let launcher):
+                if let agent = config.agent(id: id) {
+                    if let variant, !agent.variants.contains(where: { $0.id == variant }) { problem = ("agent \"\(id)\" has no variant \"\(variant)\"", variant, agent.variants.map(\.id)) }
+                    else if case .terminal(let terminal?) = launcher, config.app(id: terminal)?.role != .terminal { problem = ("no terminal \"\(terminal)\"", terminal, config.allApps.filter { $0.role == .terminal }.map(\.id)) }
+                } else { problem = ("no agent \"\(id)\"", id, agentIDs) }
+            case .openTerminal(let id?):
+                if config.app(id: id)?.role != .terminal { problem = ("no terminal \"\(id)\"", id, config.allApps.filter { $0.role == .terminal }.map(\.id)) }
+            case .openApp(let id):
+                if config.app(id: id) == nil { problem = ("no app \"\(id)\"", id, config.allApps.map(\.id)) }
+            case .newFile(let id):
+                if !config.newFile.templates.contains(where: { $0.id == id }) { problem = ("no new-file template \"\(id)\"", id, config.newFile.templates.map(\.id)) }
+            default: break
+            }
+            guard let problem else { return }
+            let word = problem.word
+            sink.warning(path, "\"\(entry)\" names something that is not defined (\(problem.what)), so it is left out",
+                         suggestion: Suggestion.didYouMean(word, in: problem.choices).map { Hint(text: $0.text, replacement: entry.replacingOccurrences(of: word, with: $0.replacement)) })
+        }
+        for entry in config.menuItems ?? [] where entry != "-" && !MenuBuilder.groups.contains(entry) { check(entry, in: ["menu", "items"]) }
+        for entry in config.serviceItems ?? [] { check(entry, in: ["services", "items"]) }
     }
 
     private var agentSchema: [SchemaNode] {

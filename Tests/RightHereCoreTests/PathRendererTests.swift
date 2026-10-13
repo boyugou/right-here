@@ -16,6 +16,12 @@ struct PathRendererTests {
     private let spaced = URL(fileURLWithPath: "/Users/tester/code/app/My Notes.md")
     private let outside = URL(fileURLWithPath: "/Volumes/Data/x.txt")
 
+    @Test func theNameOfTheRootFolderIsASlashNotNothing() {
+        let root = URL(fileURLWithPath: "/")
+        #expect(PathRenderer(facts: facts()).render(root, style: .name) == "/")
+        #expect(PathRenderer(facts: facts()).render(root, style: .markdownLink) == "[/](/)")
+    }
+
     @Test func absolute() {
         #expect(PathRenderer(facts: facts()).render(nested, style: .absolute) == "/Users/tester/code/app/src/main.swift")
     }

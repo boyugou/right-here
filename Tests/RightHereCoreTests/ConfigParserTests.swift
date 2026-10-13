@@ -679,6 +679,14 @@ struct ConfigListDiagnosticTests {
         }
     }
 
+    @Test func anActionIdThatNamesNothingIsWarnedAbout() {
+        let text = "[menu]\nitems = [\"agent.nosuch\", \"open.terminal@nosuch\", \"new-file.zzz\", \"agent.claude.contiune\", \"agent.cluade\", \"open.terminal\", \"agent.claude.continue\"]\n"
+        let warnings = ConfigParser.parse(text).diagnostics.filter { $0.severity == .warning }
+        #expect(warnings.count == 5, Comment(rawValue: "\(warnings)"))
+        #expect(warnings.contains { $0.message.contains("agent.cluade") && $0.replacement == "agent.claude" })
+        #expect(warnings.contains { $0.message.contains("agent.claude.contiune") && $0.replacement == "agent.claude.continue" })
+    }
+
     @Test func anAgentListedTwiceIsWarnedAboutAndEnabledOnce() {
         let result = ConfigParser.parse("[general]\nagents = [\"claude\", \"claude\", \"codex\"]\n")
         #expect(result.diagnostics.contains { $0.severity == .warning && $0.message.contains("listed twice") })

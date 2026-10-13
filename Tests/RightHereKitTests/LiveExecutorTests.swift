@@ -56,6 +56,14 @@ struct LiveExecutorTests {
         #expect(pasteboard.written.isEmpty)
     }
 
+    @Test func aFailureNamesTheStepThatFailed() async {
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0), ProcessResult(status: 1, standardError: "boom")])
+        let plan = LaunchPlan(action: "t", summary: "t", steps: [.openURL("x://one"), .openURL("x://two")])
+        do { try await executor(runner, RecordingPasteboard()).execute(plan); Issue.record("expected a failure") } catch ExecutionError.stepFailed(let index, _, _) {
+            #expect(index == 1)
+        } catch { Issue.record("unexpected \(error)") }
+    }
+
     @Test func clipboardStep() async throws {
         let pasteboard = RecordingPasteboard()
         try await executor(FakeProcessRunner(), pasteboard).execute(LaunchPlan(action: "t", summary: "t", steps: [.copyToPasteboard("hello\nworld")]))
