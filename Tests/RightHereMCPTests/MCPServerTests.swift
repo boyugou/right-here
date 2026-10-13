@@ -200,6 +200,14 @@ struct MCPToolTests {
         #expect(result["content"]?.arrayValue?.first?["text"]?.stringValue?.contains("not an action id") == true)
     }
 
+    @Test func aMistypedActionIdNamesTheClosestOne() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_run", ["action": .string("copy-path.absolut")])
+        #expect(result["isError"]?.boolValue == true)
+        #expect(result["content"]?.arrayValue?.first?["text"]?.stringValue?.contains("Did you mean \"copy-path.absolute\"?") == true)
+        #expect(harness.runner.recorded.isEmpty)
+    }
+
     @Test func relativePathsAreRefused() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
         let result = try await harness.call("right_here_run", ["action": .string("reveal"), "paths": .array([.string("relative/file")])])
