@@ -1104,6 +1104,26 @@ struct ConfigSyncCLITests {
         #expect(!FileManager.default.fileExists(atPath: try configFile(rh).path))
     }
 
+    @Test func aConfigWithoutPermissionIsAnErrorEverywhereAndNotAMissingFile() throws {
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let file = try configFile(rh)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: file.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: file.path) }
+        try #require(!FileManager.default.isReadableFile(atPath: file.path), "running as a user that ignores permissions")
+        let validate = try rh.run(["config", "validate"])
+        #expect(validate.status == 1 && validate.standardOutput.contains("cannot read \(file.path): Permission denied"), "\(validate.standardOutput)")
+        #expect(!validate.standardOutput.contains("No config file"))
+        let json = try #require(try rh.run(["config", "validate", "--json"]).json as? [String: Any])
+        #expect(json["exists"] as? Bool == true && json["ok"] as? Bool == false, "\(json)")
+        let doctor = try rh.run(["doctor", "--json"])
+        let checks = try #require((doctor.json as? [String: Any])?["checks"] as? [[String: Any]])
+        let config = try #require(checks.first { $0["id"] as? String == "config" })
+        #expect(config["status"] as? String == "fail" && ((config["detail"] as? [String: Any])?["text"] as? String)?.contains("Permission denied") == true, "\(config)")
+        let initialized = try rh.run(["init"])
+        #expect(initialized.standardOutput.contains("already exists but was not read") && initialized.standardOutput.contains("Permission denied"), "\(initialized.standardOutput)")
+        #expect(!initialized.standardOutput.contains("Use --force"), "--force cannot save a file it cannot read: \(initialized.standardOutput)")
+    }
+
     @Test func syncIsListedInHelp() throws {
         let rh = try isolated(); defer { rh.cleanUp() }
         let text = try rh.run(["config", "--help"]).standardOutput

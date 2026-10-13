@@ -53,4 +53,10 @@ A cold-start agent that only had the installed `rh` and its docs found the sharp
   outline, and the problems are listed in the order of the file, a file's own first. The merge of two files builds from
   emitted text, whose lines mean nothing, so each file's problems are located in that file's own text afterwards, the same
   way for one file and for two.
+- A config file that is there and cannot be read (mode 000, a folder in its place) is an error naming the file and the
+  reason (`cannot read <path>: Permission denied`), and it counts as existing: `validate --json` says `"exists": true`, the
+  doctor's config row fails with that text, and `rh init` says the file exists but was not read (it does not offer
+  `--force`, which could not save the old file first). It used to read as a missing file (`No config file ...; defaults
+  apply`) everywhere except in `rh init`. The reading is `BoundedRead`, the one reader the sync folder uses too: a file
+  past the size limit is not read, and a link is followed.
 

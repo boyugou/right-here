@@ -208,3 +208,60 @@ struct ConfigStoreSizeTests {
     }
 }
 
+
+@Suite("ConfigStore: a file that is there and cannot be read")
+struct ConfigStoreUnreadableTests {
+    private func locked(_ file: URL) throws {
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: file.path)
+        try #require(!FileManager.default.isReadableFile(atPath: file.path), "running as a user that ignores permissions")
+    }
+
+    @Test func aConfigWithoutPermissionIsAnErrorThatNamesTheFileAndTheReason() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let paths = RHPaths(environment: ["RH_CONFIG_DIR": directory.path], home: directory)
+        try "[general]\nterminal = \"terminal\"\n".write(to: paths.configFile, atomically: true, encoding: .utf8)
+        try locked(paths.configFile)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: paths.configFile.path) }
+        let loaded = ConfigStore.load(paths: paths)
+        #expect(loaded.fileExists, "a file that is there was said not to exist")
+        let error = try #require(loaded.result.diagnostics.first)
+        #expect(error.severity == .error && error.message == "cannot read \(paths.configFile.path): Permission denied", "\(error)")
+        #expect(loaded.fileProblem == error)
+        #expect(loaded.result.hasErrors && loaded.config == .default)
+        // The doctor says the same, without a line of its own for it.
+        let check = Doctor(paths: paths, loaded: loaded, runner: FakeProcessRunner(), rhPath: nil).configCheck()
+        #expect(check.status == .fail)
+        #expect(check.detail?.english().contains("Permission denied") == true, "\(check.detail?.english() ?? "-")")
+    }
+
+    @Test func anOverlayWithoutPermissionIsNamedAndTheSharedFileStillApplies() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let paths = RHPaths(environment: ["RH_CONFIG_DIR": directory.path], home: directory)
+        try "[general]\nterminal = \"terminal\"\n".write(to: paths.configFile, atomically: true, encoding: .utf8)
+        try "[general]\neditor = \"vscode\"\n".write(to: paths.localConfigFile, atomically: true, encoding: .utf8)
+        try locked(paths.localConfigFile)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: paths.localConfigFile.path) }
+        let loaded = ConfigStore.load(paths: paths)
+        #expect(loaded.localFileExists && loaded.fileExists)
+        #expect(loaded.result.diagnostics.contains { $0.file == "config.local.toml" && $0.message.contains("Permission denied") })
+        #expect(loaded.config.terminal == "terminal" && loaded.config.editor == nil)
+    }
+
+    @Test func aFolderInPlaceOfTheFileIsNotAMissingFile() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let paths = RHPaths(environment: ["RH_CONFIG_DIR": directory.path], home: directory)
+        try FileManager.default.createDirectory(at: paths.configFile, withIntermediateDirectories: true)
+        let loaded = ConfigStore.load(paths: paths)
+        #expect(loaded.fileExists)
+        #expect(loaded.result.diagnostics.first?.message == "cannot read \(paths.configFile.path): it is a folder, not a file")
+    }
+
+    @Test func aMissingFileOrALinkToNothingIsStillMissing() throws {
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let paths = RHPaths(environment: ["RH_CONFIG_DIR": directory.path], home: directory)
+        #expect(!ConfigStore.load(paths: paths).fileExists)
+        try FileManager.default.createSymbolicLink(at: paths.configFile, withDestinationURL: directory.appendingPathComponent("nowhere"))
+        let loaded = ConfigStore.load(paths: paths)
+        #expect(!loaded.fileExists && loaded.result.diagnostics.isEmpty)
+    }
+}

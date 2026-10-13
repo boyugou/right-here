@@ -80,6 +80,8 @@ system language also changes their names, so run it again after that.
 `rh config validate --strict` lists every problem with the file and line it is on and a likely replacement for a typo.
 A syntax error says what is wrong (an array that is not closed is reported at the line where it opened). Warnings are
 worth fixing: an unknown key only warns because the rest of the file still applies, but what it was meant to set is missing.
+A config file that is there but cannot be read (no permission, a folder in its place) is an error that names the file and
+the reason, in `rh config validate`, `rh doctor` and `rh init`; it is never taken for a missing config.
 
 ## `rh config sync pull` will not take the copy
 

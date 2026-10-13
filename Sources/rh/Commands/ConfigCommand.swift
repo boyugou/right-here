@@ -106,7 +106,12 @@ struct Init: AsyncParsableCommand {
         let outcome = try ConfigStore.initialize(paths: runtime.paths, detected: detected, force: force)
         switch outcome {
         case .kept:
-            Output.print("\(runtime.paths.configFile.path) already exists; kept it. Use --force to replace it (the old file is saved first).")
+            if let problem = runtime.loaded.fileProblem {
+                // Not read, so it cannot be saved first either: --force would have nothing to keep.
+                Output.print("\(runtime.paths.configFile.path) already exists but was not read (\(problem.message)); kept it. Fix that, or move the file away and run `rh init` again.")
+            } else {
+                Output.print("\(runtime.paths.configFile.path) already exists; kept it. Use --force to replace it (the old file is saved first).")
+            }
             return
         case .created:
             Output.print("Created \(runtime.paths.configFile.path)")

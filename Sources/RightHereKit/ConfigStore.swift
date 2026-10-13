@@ -57,13 +57,17 @@ public struct LoadedConfig: Sendable, Equatable {
     /// The per-machine overlay, `config.local.toml`; it is optional.
     public var localFile: URL
     public var localFileExists: Bool
+    /// Why `config.toml` is there and was not read (it cannot be read, is too large, is not text), as the error that is also
+    /// among the diagnostics; `nil` when it was read or is not there.
+    public var fileProblem: ConfigDiagnostic?
 
-    public init(result: ConfigLoadResult, fileExists: Bool, file: URL, localFile: URL, localFileExists: Bool) {
+    public init(result: ConfigLoadResult, fileExists: Bool, file: URL, localFile: URL, localFileExists: Bool, fileProblem: ConfigDiagnostic? = nil) {
         self.result = result
         self.fileExists = fileExists
         self.file = file
         self.localFile = localFile
         self.localFileExists = localFileExists
+        self.fileProblem = fileProblem
     }
 
     public var config: Config { result.config }
@@ -75,7 +79,9 @@ public enum ConfigStore {
         let base = read(paths.configFile)
         let local = read(paths.localConfigFile)
         let result = ConfigLayers.load(base: base.source, local: local.source, overlayName: paths.localConfigFile.lastPathComponent)
-        return LoadedConfig(result: result, fileExists: base.exists, file: paths.configFile, localFile: paths.localConfigFile, localFileExists: local.exists)
+        var problem: ConfigDiagnostic?
+        if case .unreadable(let diagnostic) = base.source { problem = diagnostic }
+        return LoadedConfig(result: result, fileExists: base.exists, file: paths.configFile, localFile: paths.localConfigFile, localFileExists: local.exists, fileProblem: problem)
     }
 
     /// What identifies the config as the menu sees it: the modification dates of both files and whether each exists.
@@ -93,20 +99,25 @@ public enum ConfigStore {
         return Stamp(base: modified(paths.configFile), local: modified(paths.localConfigFile))
     }
 
-    /// One file: its text, or the reason it was not read.
+    /// One file: its text, or the reason it was not read. A file that is there and cannot be read is not a missing one: the
+    /// defaults would apply without a word, and `rh init` would say the file exists.
     private static func read(_ file: URL) -> (source: ConfigSource, exists: Bool) {
-        // Through a link: a config kept in a dotfiles repository is a symlink, and the link itself is a few bytes.
-        let target = file.resolvingSymlinksInPath().path
-        if let size = (try? FileManager.default.attributesOfItem(atPath: target))?[.size] as? Int, size > ConfigParser.maxBytes {
+        // Through a link: a config kept in a dotfiles repository is a symlink, and `BoundedRead` follows it.
+        switch BoundedRead.read(file) {
+        case .absent:
+            return (.absent, false)
+        case .tooLarge(let size):
             let diagnostic = ConfigDiagnostic(severity: .error, path: "", message: "The file is \(size / 1024) KB; a config is a few kilobytes, so it was not read. Is this the right file?")
             return (.unreadable(diagnostic), true)
+        case .unreadable(let reason):
+            return (.unreadable(ConfigDiagnostic(severity: .error, path: "", message: "cannot read \(file.path): \(reason)")), true)
+        case .data(let data):
+            guard let text = String(data: data, encoding: .utf8) else {
+                return (.unreadable(ConfigDiagnostic(severity: .error, path: "", message: "The file is not valid UTF-8.")), true)
+            }
+            // Some editors put a byte order mark at the start of a UTF-8 file; TOML does not allow one.
+            return (.text(text.hasPrefix("\u{FEFF}") ? String(text.dropFirst()) : text), true)
         }
-        guard let data = try? Data(contentsOf: file) else { return (.absent, false) }
-        guard let text = String(data: data, encoding: .utf8) else {
-            return (.unreadable(ConfigDiagnostic(severity: .error, path: "", message: "The file is not valid UTF-8.")), true)
-        }
-        // Some editors put a byte order mark at the start of a UTF-8 file; TOML does not allow one.
-        return (.text(text.hasPrefix("\u{FEFF}") ? String(text.dropFirst()) : text), true)
     }
 
     public enum InitializeOutcome: Sendable, Equatable {
