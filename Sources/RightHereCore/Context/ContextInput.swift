@@ -72,7 +72,8 @@ public struct ContextInput: Sendable, Equatable {
             return URL(fileURLWithPath: path)
         case .relative(let directory):
             let expanded = (path as NSString).expandingTildeInPath
-            if hasLinkBeforeDotDot(expanded.hasPrefix("/") ? expanded : directory.path + "/" + expanded) { throw Problem.dotDotAfterLink(path) }
+            // The first scalar, as above: "/" followed by a combining mark is an absolute path to the kernel.
+            if hasLinkBeforeDotDot(expanded.unicodeScalars.first == "/" ? expanded : directory.path + "/" + expanded) { throw Problem.dotDotAfterLink(path) }
             return URL(fileURLWithPath: (path as NSString).expandingTildeInPath, relativeTo: directory).lexicallyNormalized
         }
     }

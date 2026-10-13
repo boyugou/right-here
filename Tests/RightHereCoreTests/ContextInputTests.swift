@@ -53,4 +53,14 @@ struct ContextInputTests {
         #expect(throws: ContextInput.Problem.dotDotAfterLink("/a/link/..")) { try input.makeContext(hasLinkBeforeDotDot: { $0.hasSuffix("link/..") }) }
         #expect((try? input.makeContext()) != nil)
     }
+
+    @Test func aSlashFollowedByAMarkIsStillTheStartOfAnAbsolutePathForTheHazardCheck() throws {
+        // The kernel reads "/" + U+0301 as a slash and a name; a check by Character would call the path relative and
+        // look at the working directory's path instead of the one that will be used.
+        final class Seen: @unchecked Sendable { var paths: [String] = [] }
+        let seen = Seen()
+        let typed = "/\u{301}fx/../y"
+        _ = try ContextInput(paths: [typed], resolution: .relative(to: work)).makeContext(hasLinkBeforeDotDot: { seen.paths.append($0); return false })
+        #expect(seen.paths == [typed], "the hazard check was asked about \(seen.paths)")
+    }
 }

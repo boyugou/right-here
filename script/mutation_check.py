@@ -141,7 +141,7 @@ MUTANTS = [
     ("a NUL in a path is accepted", "Sources/RightHereCore/Context/ContextInput.swift",
      'guard !path.unicodeScalars.contains("\\0") else', "guard true else"),
     ("a .. after a symbolic link is resolved by reading the text", "Sources/RightHereKit/PathHazard.swift",
-     "if isSymbolicLink(prefix.isEmpty ? \"/\" : prefix) { return true }", "if false { return true }"),
+     "if isSymbolicLink(\"/\" + names.joined(separator: \"/\")) { return true }", "if false { return true }"),
     ("a preset prompt with a newline reaches the terminal", "Sources/RightHereCore/Planner/Planner.swift",
      "if let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }",
      "if false, let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }"),
@@ -201,6 +201,11 @@ MUTANTS = [
      "Fence.wrap($0.summary(file: loaded.file))", "$0.summary(file: loaded.file)"),
     ("the MCP doctor prints what it quotes unfenced", "Sources/RightHereMCP/Tools.swift",
      '": " + Fence.wrap($0)', '": " + $0'),
+    ("a path is cut into components by Character where the kernel cuts by scalar", "Sources/RightHereKit/PathHazard.swift",
+     'for component in path.unicodeScalars.split(separator: "/", omittingEmptySubsequences: true) {',
+     'for component in path.split(separator: "/", omittingEmptySubsequences: true).map({ $0.unicodeScalars }) {'),
+    ("a relative path is told from an absolute one by its first Character in the hazard check", "Sources/RightHereCore/Context/ContextInput.swift",
+     'hasLinkBeforeDotDot(expanded.unicodeScalars.first == "/" ? expanded :', 'hasLinkBeforeDotDot(expanded.hasPrefix("/") ? expanded :'),
 ]
 
 
