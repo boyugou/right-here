@@ -60,7 +60,7 @@ struct Run: AsyncParsableCommand {
         do {
             let report = try await LiveExecutor().execute(plan)
             // The plan's summary is left out: it names the typed command, which may carry a key someone put in it.
-            RunLog.record("ok \(action) [\(here.origin.rawValue), \(here.items.count) items]")
+            RunLog.record(RunLog.Entry(actionID: action, origin: here.origin, itemCount: here.items.count))
             if json {
                 try Output.json(RunResult(ok: true, plan: plan, report: report))
             } else {

@@ -22,6 +22,33 @@ struct RunLogTests {
         #expect(text.contains("\\u001b"))
     }
 
+    @Test func anEntryRoundTripsThroughItsLine() throws {
+        let entry = RunLog.Entry(date: Date(timeIntervalSince1970: 1_791_000_000), actionID: "agent.claude.continue@ghostty", origin: .container, itemCount: 3)
+        #expect(entry.format() == "2026-10-03T04:00:00Z ok agent.claude.continue@ghostty [container, 3 items]")
+        #expect(RunLog.Entry(parsing: entry.format()) == entry)
+        let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let target = paths(in: directory)
+        RunLog.record(entry, paths: target)
+        let line = try String(contentsOf: target.logFile, encoding: .utf8).split(separator: "\n").first
+        #expect(line.flatMap { RunLog.Entry(parsing: $0) } == entry)
+    }
+
+    @Test func aLineAnEarlierVersionWroteStillParses() throws {
+        let entry = try #require(RunLog.Entry(parsing: "2026-10-12T05:58:00Z ok new-file.md [toolbar, 0 items]"))
+        #expect(entry.actionID == "new-file.md")
+        #expect(entry.origin == .toolbar)
+        #expect(entry.itemCount == 0)
+        #expect(entry.outcome == .ok)
+        #expect(entry.date == ISO8601DateFormatter().date(from: "2026-10-12T05:58:00Z"))
+    }
+
+    @Test func linesThatAreNotEntriesDoNotParse() {
+        #expect(RunLog.Entry(parsing: "2026-10-12T05:01:00Z agent.claude: Ghostty is not installed.") == nil)
+        #expect(RunLog.Entry(parsing: "2026-10-12T05:01:00Z probe launch: [{\"outcome\":\"ran\"}]") == nil)
+        #expect(RunLog.Entry(parsing: "2026-10-12T05:01:00Z ok agent.claude [elsewhere, 1 items]") == nil)
+        #expect(RunLog.Entry(parsing: "yesterday ok agent.claude [items, 1 items]") == nil)
+    }
+
     @Test func probeLinesStillParseAfterEscaping() throws {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let target = paths(in: directory)
