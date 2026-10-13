@@ -632,7 +632,7 @@ struct ConfigSchemaDetailTests {
     @Test func idsMustLookLikeIds() throws {
         let apps = try #require((schema["properties"] as? [String: Any])?["app"] as? [String: Any])
         let id = try #require(((apps["items"] as? [String: Any])?["properties"] as? [String: Any])?["id"] as? [String: Any])
-        #expect(id["pattern"] as? String == ConfigSchema.identifierPattern)
+        #expect(id["pattern"] as? String == ConfigSchema.appIdentifierPattern)
         let agents = try #require((schema["properties"] as? [String: Any])?["agent"] as? [String: Any])
         #expect((agents["propertyNames"] as? [String: Any])?["pattern"] as? String == ConfigSchema.identifierPattern)
     }
@@ -1044,5 +1044,50 @@ struct ConfigValueDiagnosticTests {
         let result = ConfigParser.parse("[general]\ntermnial = \"x\"\nagnts = []\nedtor = \"x\"\n[menu]\nitemz = []\n")
         #expect(result.diagnostics.map(\.path) == ["general.termnial", "general.agnts", "general.edtor", "menu.itemz"])
         #expect(result.diagnostics.map(\.line) == [2, 3, 4, 6])
+    }
+}
+
+@Suite("Config: app ids that are launcher words")
+struct AppIDLauncherWordTests {
+    @Test("an app cannot have the id of a launcher word, which agent.<agent>@<word> reads as one", arguments: ["link", "desktop", "default"])
+    func reserved(id: String) throws {
+        for role in ["terminal", "editor", "general"] {
+            let result = ConfigParser.parse("[[app]]\nid = \"\(id)\"\nname = \"X\"\nbundle_id = \"a.b\"\nrole = \"\(role)\"\n")
+            let error = try #require(result.diagnostics.first, "accepted as \(role)")
+            #expect(result.diagnostics.count == 1 && error.severity == .error && error.path == "app.1.id" && error.line == 2, "\(result.diagnostics)")
+            #expect(error.message.contains("cannot be an app id") && error.message.contains("agent.<agent>@\(id)"), "\(error.message)")
+            #expect(result.config.apps.isEmpty && result.config.app(id: id) == nil)
+        }
+    }
+
+    @Test func theWordsAreTheOnesTheActionIdGrammarReads() throws {
+        #expect(AgentLauncher.reservedWords == ["link", "desktop", "default"])
+        for word in AgentLauncher.reservedWords {
+            // As a launcher, never as the terminal of that name.
+            switch try #require(ActionRef(parsing: "agent.claude@\(word)")) {
+            case .agent(_, _, .terminal(let terminal)?): #expect(terminal == nil, "\(word) is read as a terminal id")
+            case .agent(_, _, .terminalLink?), .agent(_, _, .desktop?): break
+            default: Issue.record("\(word) is not a launcher word")
+            }
+        }
+        // `terminal` is no launcher word to the action id: `agent.claude@terminal` is the terminal called terminal.
+        #expect(ActionRef(parsing: "agent.claude@terminal") == .agent(id: "claude", variant: nil, launcher: .terminal("terminal")))
+    }
+
+    @Test("close ids are fine", arguments: ["desktops", "links", "defaults", "my-default", "default2", "terminal"])
+    func closeIDs(id: String) {
+        let result = ConfigParser.parse("[[app]]\nid = \"\(id)\"\nname = \"X\"\nbundle_id = \"a.b\"\n")
+        #expect(!result.diagnostics.contains { $0.path == "app.1.id" && $0.message.contains("cannot be an app id") }, "\(result.diagnostics)")
+        #expect(result.config.apps.map(\.id) == [id])
+    }
+
+    @Test("the schema's pattern for an app id and the parser agree", arguments: ["tower", "link", "desktop", "default", "desktops", "a-b", "-a", "A", "", "default-", "x\n", "terminal"])
+    func theAppIDPatternMatchesTheParser(id: String) throws {
+        let regex = try NSRegularExpression(pattern: ConfigSchema.appIdentifierPattern)
+        let whole = NSRange(id.startIndex..., in: id)
+        let matches = regex.firstMatch(in: id, range: whole)?.range == whole
+        let parsed = ConfigParser.parse("[[app]]\nid = \(try JSONValueString.quote(id))\nname = \"X\"\nbundle_id = \"a.b\"\n")
+        let accepted = !parsed.diagnostics.contains { $0.path == "app.1.id" && $0.severity == .error }
+        #expect(matches == accepted, "pattern and parser disagree about \(id.debugDescription)")
     }
 }

@@ -16,6 +16,10 @@ public enum AgentLauncher: Sendable, Equatable, Hashable {
     /// Only in an action id: the default terminal.
     public static let defaultWord = "default"
 
+    /// The words after the `@` of an agent action that are not the id of a terminal, so no app can be called one: `agent.claude@desktop`
+    /// is the desktop app, never a terminal whose id is `desktop`.
+    public static let reservedWords: Set<String> = [linkWord, desktopWord, defaultWord]
+
     /// What `launcher = "…"` accepts in an `[agent.<id>]` table.
     public static let configNames = [terminalWord, linkWord, desktopWord]
 

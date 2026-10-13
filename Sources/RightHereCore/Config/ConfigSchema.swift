@@ -67,6 +67,9 @@ public enum ConfigSchema {
     /// Ids of things the user names (apps, templates, variants, agents); `IDRule` is the rule the parser applies.
     static let identifierPattern = IDRule.pattern
 
+    /// An app's id: an id that is not one of the launcher words of an action id (`agent.<agent>@desktop`), which the parser refuses.
+    static let appIdentifierPattern = "^(?!(" + AgentLauncher.reservedWords.sorted().joined(separator: "|") + ")$)" + IDRule.pattern.dropFirst()
+
     /// A name or title shown to people: no line break or other control character (`ShellQuoting.containsControlCharacter`
     /// is the rule the parser applies).
     static let displayNamePattern = "^[^\\u0000-\\u001f\\u007f-\\u009f\\u2028\\u2029]*$"
@@ -137,8 +140,8 @@ public enum ConfigSchema {
             SchemaNode("app", .tableArray,
                        "Applications to open folders and files with, in addition to the built-in ones. An id of a built-in app replaces it.",
                        required: ["id", "name"], oneOfRequired: ["bundle_id", "bundle_ids"], children: [
-                SchemaNode("id", .string, "Identifier used in `open.app.<id>`; lowercase letters, digits and dashes.",
-                           example: "\"tower\"", pattern: identifierPattern),
+                SchemaNode("id", .string, "Identifier used in `open.app.<id>`; lowercase letters, digits and dashes. Not `link`, `desktop` or `default`: after the `@` of `agent.<agent>@<word>` they name a launcher.",
+                           example: "\"tower\"", pattern: appIdentifierPattern),
                 SchemaNode("name", .string, "Display name, on one line.", example: "\"Tower\"", pattern: displayNamePattern),
                 SchemaNode("bundle_id", .string, "Bundle identifier of the app.", example: "\"com.fournova.Tower3\""),
                 SchemaNode("bundle_ids", .stringArray, "Several bundle identifiers, most preferred first. Use instead of bundle_id."),

@@ -52,6 +52,10 @@ extension ConfigBuilder {
             return nil
         }
         guard isValidID(id, at: reader.path + ["id"]) else { return nil }
+        guard !AgentLauncher.reservedWords.contains(id) else {
+            sink.error(reader.path + ["id"], "\"\(id)\" cannot be an app id: in `agent.<agent>@\(id)` it names a launcher, so an app called that could never be started as a terminal there; use another id")
+            return nil
+        }
         guard isPlainName(name, at: reader.path + ["name"], noun: "name") else { return nil }
         let bundleIDs = reader.stringArray("bundle_ids") ?? reader.string("bundle_id").map { [$0] } ?? []
         guard !bundleIDs.isEmpty else {

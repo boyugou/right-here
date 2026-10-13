@@ -72,4 +72,9 @@ A cold-start agent that only had the installed `rh` and its docs found the sharp
   cannot read" and none of its settings applied, where the file alone applied everything else). Such a value is now carried
   through the merge as it was written (`TOMLValue.untyped`, found by the outline) and written back the same, so the builder
   reports it as it does for the file alone, and everything else in the file applies.
+- `agent.<agent>@<word>` reads `link`, `desktop` and `default` as launchers, never as the id of a terminal, so an `[[app]]`
+  with one of those ids (a terminal above all) could be defined and never started as the terminal of an agent action. Those
+  ids are refused for `[[app]]` with an error naming the launcher meaning (`AgentLauncher.reservedWords`, the same constants
+  the action id grammar reads), and the JSON Schema's app id pattern carries the rule (`^(?!(default|desktop|link)$)...`).
+  `terminal` is not one of them: `agent.claude@terminal` is the terminal called terminal.
 
