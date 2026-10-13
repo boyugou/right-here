@@ -83,7 +83,8 @@ permission prompt text), fix what reads badly (macOS's own wording for that lang
 `./script/verify_localizations.py`. `./script/preview_setup.sh out.png <language>` renders the setup window to an
 image (add `--dark` for dark mode). `--gallery` shows every sentence the doctor can say as a row of the list, to look at
 a language for text that does not fit (a tall image; a doctor sentence the gallery has no row for is named on stderr).
-`--demo` shows a canned, healthy setup that is the same on every Mac and shows nothing of the one that renders it.
+`--demo` shows a canned, healthy setup with a canned Finder menu that is the same on every Mac and shows nothing of the
+one that renders it (but the icons of the menu's apps, which come from the Mac that renders it).
 
 To add a language:
 

@@ -12,6 +12,8 @@ First version, running on macOS 26 and later (Apple silicon).
   from one config; Ghostty and Terminal.app adapters (new window, or a new Ghostty tab); agents typed into your
   own login shell, with Claude Code, Codex, Gemini CLI, opencode, aider and Amp built in and any command addable.
 - A plain-text TOML config with a schema, unknown-key suggestions, `--strict` validation and a JSON Schema.
+- The setup window previews the Finder menu as the extension builds it from your config (the same code, the same
+  icons, submenus that open in place), so you see what you get before the extension is switched on.
 - A setup app, thirty languages for the menu, the app (its list of checks: `rh doctor --json` gives each
   detail and fix as a code, its values and the English text), alerts and the permission prompt (machine-translated,
   awaiting native-speaker review), a Claude Code plugin and `rh docs` for agents.

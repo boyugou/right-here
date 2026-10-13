@@ -60,7 +60,7 @@ repository must not be able to run commands because it was right-clicked).
 | `RightHereKit` | macOS runtime: real system facts, process runner, plan executor, config store, installer, doctor, extension manager, Finder query, failure alerts. |
 | `RightHereMCP` | The MCP server over the same registry. |
 | `rh` | The command-line tool (swift-argument-parser). |
-| `Apps/RightHere` | The app: setup and status window. Dormant otherwise. |
+| `Apps/RightHere` | The app: setup and status window, with a preview of the Finder menu. Dormant otherwise. |
 | `Apps/FinderExtension` | The Finder Sync extension. Builds the menu and hands actions over. |
 
 The key idea is the **launch plan**: planning turns an action, a context, the config and facts about the
@@ -213,6 +213,19 @@ the terminal cannot run commands) are not shown; `rh actions --all` and `rh doct
 
 The extension caches the config by the modification dates of `config.toml` and the optional `config.local.toml` and installed-app lookups for 30 seconds, and
 icons for the life of the process, so a right-click costs milliseconds.
+
+The setup window shows this menu without Finder, so that a person can see what the extension will offer and why an
+entry is missing (the extension needs System Settings and a Finder relaunch before anything shows).
+`MenuPreview.folderMenu` runs `MenuBuilder` on the config and the installed apps as they are when the window opens or
+`rh install` has run, in the system language, with the context the extension makes for a click on a folder's
+background (`HereContext.finder`); `MenuPreview.rows` flattens the tree into the lines the window draws, with a
+submenu opening in place. The app carries the extension's glyph catalog (`Apps/FinderExtension/Assets.xcassets`, a
+source of both targets in `project.yml`), so the icons are the menu's own. The section "Finder menu" is open unless a
+check needs attention (the first-run card and the list of checks keep the focus), until the person opens or closes it
+once; it shows nothing when the config has errors (the extension would still offer what is valid in it, but a menu
+drawn from a broken config says something that is not true, and the doctor's config row says what is wrong). It is the
+menu for a folder: the items a selection of files adds (the agent presets) appear in Finder only. It is the same
+code, not a statement about Finder; `docs/development/MANUAL_CHECKS.md` (5) compares the two in a real window.
 
 ## 8. Config
 

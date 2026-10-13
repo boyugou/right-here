@@ -1,7 +1,7 @@
 # Manual checks
 
 The automated suite, the mutation check and `rh doctor --probe-launch` cover everything that can be verified
-without a screen or a person. These three need a real Finder, real terminals or a native speaker.
+without a screen or a person. These need a real Finder, real terminals or a native speaker.
 
 ## 1. A real Finder click on protected folders
 
@@ -77,3 +77,26 @@ Needs a real Finder and a terminal that can run commands; nothing here is covere
    all name files).
 3. Select a folder and click Review: a failure alert should say to select files.
 4. A file with a space and an apostrophe in its name should arrive as a single mention.
+
+## 5. The menu preview in the setup window
+
+Needs a real Finder and the real app window: the tests and `script/preview_setup.sh` render the view, but they never
+open one, and the preview is the same code as the extension's, not Finder's own word.
+
+1. `rh install`, switch the Finder extension on, and relaunch Finder (hold Option, right-click the Finder icon in the
+   Dock, choose Relaunch). Open Right Here; open "Finder menu" if it is closed.
+2. Right-click the empty background of a folder window. The entries, their order, the separators, the icons (the
+   menu's own glyphs and the apps' icons) and the titles match the window's list. Click a line with a chevron in the
+   window: its entries open in place, indented, and the chevron turns down; open the same submenu in Finder and compare
+   its entries and separators. Clicking an entry in the window does nothing.
+3. Change `[menu] items`, or enable another agent, then choose Install or Repair and relaunch Finder: the window and
+   the Finder menu both follow the config. An app that is not installed is missing from both.
+4. Put a syntax error in the config and choose Install or Repair: the "Finder menu" section is gone and the config row
+   of Details says why; fix the file and it comes back.
+5. In Arabic or Hebrew (System Settings, General, Language & Region; restart the app) the lines mirror: icons on the
+   right, the chevron on the left and pointing left. In dark mode the glyphs are light and an app's icon keeps its
+   colors.
+6. With VoiceOver, a submenu line reads like "Open With, submenu, collapsed, button" and says "expanded" once opened; an
+   entry reads its title only.
+7. The section starts open when everything is set up and closed when a check needs attention (the first-run card, or
+   the list of checks): until you open or close it once, it follows that.

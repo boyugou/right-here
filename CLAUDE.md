@@ -83,7 +83,8 @@ docs/                    DESIGN.md, decisions/, development/
 - To look at the setup window without a screen, render the SwiftUI view to a PNG with `ImageRenderer` from a
   scratch package that links the app's view files: `./script/preview_setup.sh out.png de` (the language is its second
   argument). `--gallery` renders every sentence the doctor can say, to look for text that does not fit; `--demo` renders
-  canned checks that show nothing of this Mac, which is what a screenshot for the website must use.
+  canned checks and a canned Finder menu (`--submenus` opens its submenus) that show nothing of this Mac, which is what
+  a screenshot for the website must use.
 - Before pushing run `./script/verify_all.sh` (build, tests, the app and extension build, catalog, config schema, embedded docs, the docs check
   (commands and links), public-safety check).
 - After changing a protection that `docs/DESIGN.md` section 9 relies on, run `./script/mutation_check.py`: it removes
