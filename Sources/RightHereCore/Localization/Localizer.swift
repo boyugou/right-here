@@ -67,9 +67,18 @@ public struct Localizer: Sendable, Equatable {
         let lowered = parts.map { $0.lowercased() }
 
         if primary == "zh" {
+            // The script says which Chinese is written. macOS names a Simplified Chinese preference with the region of the Mac
+            // (`zh-Hans-HK` on a Hong Kong Mac), so the region only decides when there is no script: zh-TW, zh-HK and zh-MO are
+            // Traditional, any other region (and none) Simplified.
             let traditionalRegions: Set<String> = ["tw", "hk", "mo"]
-            if lowered.contains("hant") || !traditionalRegions.isDisjoint(with: lowered) { return supported.contains("zh-Hant") ? "zh-Hant" : nil }
-            return supported.contains("zh-Hans") ? "zh-Hans" : nil
+            let traditional: Bool
+            if let script = lowered.first(where: { $0 == "hans" || $0 == "hant" }) {
+                traditional = script == "hant"
+            } else {
+                traditional = !traditionalRegions.isDisjoint(with: lowered)
+            }
+            let chinese = traditional ? "zh-Hant" : "zh-Hans"
+            return supported.contains(chinese) ? chinese : nil
         }
         if let exact = supported.first(where: { $0.lowercased() == lowered.prefix(2).joined(separator: "-") }) { return exact }
         return supported.first { $0.lowercased() == primary || $0.lowercased().hasPrefix(primary + "-") }

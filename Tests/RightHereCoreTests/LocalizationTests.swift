@@ -120,10 +120,17 @@ struct LocalizerTests {
         ("zh-Hans-US", "zh-Hans"), ("zh-Hans-CN", "zh-Hans"), ("zh-CN", "zh-Hans"), ("zh-SG", "zh-Hans"),
         ("zh-Hant-TW", "zh-Hant"), ("zh-TW", "zh-Hant"), ("zh-HK", "zh-Hant"), ("zh-Hant", "zh-Hant"),
         ("pt-PT", "pt-BR"), ("pt-BR", "pt-BR"), ("pt", "pt-BR"), ("ja-JP", "ja"), ("ar-SA", "ar"), ("he-IL", "he"),
-        ("zh", "zh-Hans"), ("de_AT", "de")
+        ("zh", "zh-Hans"), ("de_AT", "de"),
+        // What macOS reports for Simplified Chinese on a Hong Kong, Macao or Taiwan Mac: the script wins over the region.
+        ("zh-Hans-HK", "zh-Hans"), ("zh-Hans-MO", "zh-Hans"), ("zh-Hans-TW", "zh-Hans"), ("zh_Hans_HK", "zh-Hans"),
+        // And the reverse: an explicit Traditional script wins over a mainland region.
+        ("zh-Hant-CN", "zh-Hant"), ("zh-Hant-SG", "zh-Hant"), ("zh-Hant-US", "zh-Hant"), ("zh-Hant-HK", "zh-Hant"),
+        // Without a script the region decides.
+        ("zh-MO", "zh-Hant"), ("zh-US", "zh-Hans"), ("zh-yue-HK", "zh-Hant")
     ])
     func resolves(tag: String, expected: String) {
         #expect(Localizer(languages: [tag]).resolvedLanguage == expected)
+        #expect(Localizer.match(tag) == expected)
     }
 
     @Test func anUnsupportedLanguageFallsThroughToTheNextOne() {
