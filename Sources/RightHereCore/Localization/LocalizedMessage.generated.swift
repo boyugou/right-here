@@ -263,42 +263,10 @@ extension LocalizedMessage {
     public static var groupPresets: LocalizedMessage { LocalizedMessage(.groupPresets) }
     /// Path copied.
     public static var intentCopied: LocalizedMessage { LocalizedMessage(.intentCopied) }
-    /// Copies the path of a file or folder to the clipboard.
-    public static var intentCopyPathDescription: LocalizedMessage { LocalizedMessage(.intentCopyPathDescription) }
-    /// Copy Path
-    public static var intentCopyPathTitle: LocalizedMessage { LocalizedMessage(.intentCopyPathTitle) }
     /// Done: %@
     public static func intentDone(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.intentDone, [argument1]) }
     /// Right Here could not do that: %@
     public static func intentFailed(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.intentFailed, [argument1]) }
-    /// Creates a new file from one of your templates in a folder.
-    public static var intentNewFileDescription: LocalizedMessage { LocalizedMessage(.intentNewFileDescription) }
-    /// Create New File
-    public static var intentNewFileTitle: LocalizedMessage { LocalizedMessage(.intentNewFileTitle) }
-    /// Opens a folder in your terminal app.
-    public static var intentOpenTerminalDescription: LocalizedMessage { LocalizedMessage(.intentOpenTerminalDescription) }
-    /// Open in Terminal
-    public static var intentOpenTerminalTitle: LocalizedMessage { LocalizedMessage(.intentOpenTerminalTitle) }
-    /// Agent
-    public static var intentParamAgent: LocalizedMessage { LocalizedMessage(.intentParamAgent) }
-    /// Folder
-    public static var intentParamFolder: LocalizedMessage { LocalizedMessage(.intentParamFolder) }
-    /// File or Folder
-    public static var intentParamItem: LocalizedMessage { LocalizedMessage(.intentParamItem) }
-    /// Path Style
-    public static var intentParamStyle: LocalizedMessage { LocalizedMessage(.intentParamStyle) }
-    /// Template
-    public static var intentParamTemplate: LocalizedMessage { LocalizedMessage(.intentParamTemplate) }
-    /// Starts an AI agent in a folder, in your terminal app.
-    public static var intentStartAgentDescription: LocalizedMessage { LocalizedMessage(.intentStartAgentDescription) }
-    /// Start AI Agent
-    public static var intentStartAgentTitle: LocalizedMessage { LocalizedMessage(.intentStartAgentTitle) }
-    /// AI Agent
-    public static var intentTypeAgent: LocalizedMessage { LocalizedMessage(.intentTypeAgent) }
-    /// Path Style
-    public static var intentTypePathStyle: LocalizedMessage { LocalizedMessage(.intentTypePathStyle) }
-    /// File Template
-    public static var intentTypeTemplate: LocalizedMessage { LocalizedMessage(.intentTypeTemplate) }
     /// %@ in Desktop App
     public static func menuAgentDesktop(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.menuAgentDesktop, [argument1]) }
     /// %@ Here

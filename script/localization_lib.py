@@ -13,9 +13,12 @@ ROOT = Path(__file__).resolve().parent.parent
 LOCALIZATION = ROOT / "Localization"
 MANIFEST = LOCALIZATION / "languages.json"
 SWIFT_DIRECTORY = ROOT / "Sources" / "RightHereCore" / "Localization"
-# The catalogs every language must be complete in: the strings of the code, the permission prompt text and the
-# phrases of the Shortcuts actions.
-CATALOGS = ("Localizable.xcstrings", "InfoPlist.xcstrings", "AppShortcuts.xcstrings")
+# The catalogs every language must be complete in: the strings of the code (compiled into Swift), what the App Intents
+# are called (read by the app by key), the permission prompt text and the phrases of the Shortcuts actions.
+CATALOGS = ("Localizable.xcstrings", "AppIntents.xcstrings", "InfoPlist.xcstrings", "AppShortcuts.xcstrings")
+# The ones a person reads on a screen like any other string of the code, so the placeholder, script and right-to-left
+# rules apply; a Shortcuts phrase is spoken and a permission prompt is system text.
+TEXT_CATALOGS = ("Localizable.xcstrings", "AppIntents.xcstrings")
 
 # %@ and %1$@ are the only placeholders a string may use.
 PLACEHOLDER = re.compile(r"%(?:(\d+)\$)?@")

@@ -46,6 +46,19 @@ struct IntentInvocationTests {
         #expect(IntentCatalog.agents(fromJSON: try JSONEncoder().encode(rows)) == [IntentChoice(id: "claude", name: "Claude Code")])
     }
 
+    @Test func everyIntentKeyOfTheCompiledCatalogIsSaidByTheApp() throws {
+        // What the intents are called (titles, descriptions, parameter names) is read by the system by key from the app's own
+        // catalog, AppIntents.xcstrings. A key like that in the catalog compiled into Swift is a translation no code reads.
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let source = try String(contentsOf: root.appendingPathComponent("Apps/RightHere/Intents.swift"), encoding: .utf8)
+        let intentKeys = LocalizationKey.allCases.filter { $0.rawValue.hasPrefix("intent.") }
+        #expect(intentKeys.count >= 3)
+        for key in intentKeys {
+            let name = key.rawValue.split(separator: ".").enumerated().map { $0.offset == 0 ? String($0.element) : $0.element.prefix(1).uppercased() + $0.element.dropFirst() }.joined()
+            #expect(source.contains(".\(name)"), "\(key.rawValue) is in the compiled catalog but the app never says it through Localizer")
+        }
+    }
+
     @Test func templatesComeFromTheNewFileActions() {
         let json = """
         [{"id":"reveal","title":"Reveal","shortTitle":"Reveal","group":"reveal","available":true},

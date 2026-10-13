@@ -5,7 +5,7 @@
 """Add translations to a String Catalog, checked.
 
     ./script/merge_translations.py translations.json                       into Localizable.xcstrings
-    ./script/merge_translations.py translations.json --catalog InfoPlist.xcstrings
+    ./script/merge_translations.py translations.json --catalog InfoPlist.xcstrings      (also AppIntents.xcstrings, AppShortcuts.xcstrings)
     ./script/merge_translations.py translations.json --replace              also overwrite a translation that exists
 
 translations.json holds the keys to add or to complete. Every language is named by its code, never by position:
@@ -28,7 +28,8 @@ import sys
 from pathlib import Path
 
 from localization_lib import (
-    CATALOGS, languages, read_catalog, read_json, source_language, translation_problems, with_direction_mark, write_catalog,
+    CATALOGS, TEXT_CATALOGS, languages, read_catalog, read_json, source_language, translation_problems, with_direction_mark,
+    write_catalog,
 )
 
 
@@ -61,10 +62,10 @@ def merge(catalog_name: str, requested: dict, replace: bool) -> tuple[dict, list
                 problems.append(f"{key}: {code} is not a translation language in languages.json")
                 continue
             value = value.strip()
-            code_strings = catalog_name == "Localizable.xcstrings"
-            if code_strings:
+            read_on_screen = catalog_name in TEXT_CATALOGS
+            if read_on_screen:
                 value = with_direction_mark(language, key, value, english)
-            problems += translation_problems(key, language, value, english, request.get("keep", []), direction=code_strings)
+            problems += translation_problems(key, language, value, english, request.get("keep", []), direction=read_on_screen)
             existing = entry["localizations"].get(code, {}).get("stringUnit")
             if existing is not None and existing["value"] != value and not replace:
                 problems.append(f"{key} [{code}]: already translated (use --replace to overwrite)")

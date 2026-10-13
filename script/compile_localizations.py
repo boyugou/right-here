@@ -4,10 +4,11 @@
 # ///
 """Compile the String Catalog into Swift.
 
-Localization/Localizable.xcstrings is the source of truth for every user-visible string and Localization/languages.json
+Localization/Localizable.xcstrings is the source of truth for the strings the code says and Localization/languages.json
 for the languages. The command-line tool lives inside the app bundle and cannot load a resource bundle, so the strings
 are compiled into Swift (Sources/RightHereCore/Localization/) and read from there by the menu, the app, the alerts and
-the doctor alike:
+the doctor alike. The catalogs that only the app reads from its bundle by key (AppIntents.xcstrings: what the App Intents
+are called, AppShortcuts.xcstrings, InfoPlist.xcstrings) are not compiled: a key of theirs would be a case no code reads.
 
     Localizations.generated.swift      the languages and the table of every text
     LocalizationKey.generated.swift    one case per catalog key, and how many arguments its text takes

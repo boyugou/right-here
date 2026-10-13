@@ -44,9 +44,13 @@ targets:
       # The permission-prompt text, in every shipped language (one catalog for both targets).
       - path: Localization/InfoPlist.xcstrings
         buildPhase: resources
-      # The titles and parameter names of the App Intents, and the phrases Siri and Spotlight listen for.
-      # Xcode reads both catalogs when it extracts the intents metadata.
+      # What the App Intents say, which the system reads by key from the app bundle: their titles, descriptions and
+      # parameter names (AppIntents), the names of the path styles (Localizable, which is also compiled into Swift for
+      # the rest of the code) and the phrases Siri and Spotlight listen for (AppShortcuts). Xcode reads these catalogs
+      # when it extracts the intents metadata.
       - path: Localization/Localizable.xcstrings
+        buildPhase: resources
+      - path: Localization/AppIntents.xcstrings
         buildPhase: resources
       - path: Localization/AppShortcuts.xcstrings
         buildPhase: resources

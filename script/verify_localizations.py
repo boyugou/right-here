@@ -13,6 +13,10 @@
 - a translation is written in the script of its language, and a right-to-left one that would start with Latin text
   starts with a right-to-left mark instead;
 - the generated Swift is up to date;
+- Localization/AppIntents.xcstrings (what the App Intents are called, read by key from the app bundle) is checked like the
+  strings of the code, and the app's `LocalizedStringResource`s agree with the catalogs: each key is in the catalog of its
+  table with the English text it has as its default, each key of AppIntents.xcstrings is read by the app, and the
+  catalogs the app reads are resources of its target in project.yml;
 - Localization/AppShortcuts.xcstrings (the spoken phrases of the Shortcuts actions) keeps the ${applicationName}
   placeholder;
 - Localization/InfoPlist.xcstrings (the permission-prompt text in the app and the extension) is complete too.
@@ -30,6 +34,9 @@ from localization_lib import (
 
 KEYS_FILE = SWIFT_DIRECTORY / "LocalizationKey.generated.swift"
 MESSAGES_FILE = SWIFT_DIRECTORY / "LocalizedMessage.generated.swift"
+# `LocalizedStringResource("key", defaultValue: "English", table: "Table")`: the app's own way of saying something, read by the
+# system by key (and table) from the app bundle, not compiled into Swift.
+RESOURCE = re.compile(r'LocalizedStringResource\(\s*"([^"]+)"\s*,\s*defaultValue:\s*"((?:[^"\\]|\\.)*)"(?:\s*,\s*table:\s*"([^"]+)")?')
 
 
 def check_manifest(problems: list[str]) -> None:
@@ -73,6 +80,33 @@ def check_texts(strings: dict, problems: list[str]) -> None:
             unit = localizations.get(language.code, {}).get("stringUnit")
             if unit is not None and unit["value"].strip():
                 problems += translation_problems(key, language, unit["value"], english)
+
+
+def check_app_resources(problems: list[str]) -> None:
+    """Each `LocalizedStringResource` in the app names a key of the catalog of its table (Localizable unless it names one),
+    with the catalog's English text as its default; and every key of AppIntents.xcstrings is read by one, since nothing else
+    reads it. A key the app names that is in no catalog would silently be said in English."""
+    read_by_app: dict[str, set[str]] = {}
+    catalogs: dict[str, dict] = {}
+    for path in sorted((ROOT / "Apps").rglob("*.swift")):
+        for key, default, table in RESOURCE.findall(path.read_text(encoding="utf-8")):
+            name = f"{table or 'Localizable'}.xcstrings"
+            where = f"{path.relative_to(ROOT)}: {key}"
+            if name not in CATALOGS:
+                problems.append(f"{where} names the table {table}, which has no catalog in Localization/")
+                continue
+            read_by_app.setdefault(name, set()).add(key)
+            entry = catalogs.setdefault(name, read_catalog(name))["strings"].get(key)
+            if entry is None:
+                problems.append(f"{where} is not in {name}")
+            elif entry["localizations"]["en"]["stringUnit"]["value"] != default.replace('\\"', '"').replace("\\\\", "\\"):
+                problems.append(f"{where} has a default that is not the English text of {name}")
+    for key in sorted(read_catalog("AppIntents.xcstrings")["strings"].keys() - read_by_app.get("AppIntents.xcstrings", set())):
+        problems.append(f"AppIntents.xcstrings {key}: no LocalizedStringResource in the app reads it")
+    project = (ROOT / "project.yml").read_text(encoding="utf-8")
+    for name in sorted(read_by_app):
+        if f"path: Localization/{name}" not in project:
+            problems.append(f"{name} is read by the app but is not a resource of the app target in project.yml")
 
 
 def check_generated_keys(strings: dict, problems: list[str]) -> None:
@@ -131,6 +165,12 @@ def main() -> int:
     check_languages("Localizable.xcstrings", catalog, problems)
     check_texts(strings, problems)
 
+    # What the App Intents are called: written on screen like the strings of the code, but read by the app from its bundle.
+    intents = read_catalog("AppIntents.xcstrings")
+    check_languages("AppIntents.xcstrings", intents, problems)
+    check_texts(intents["strings"], problems)
+    check_app_resources(problems)
+
     info = read_catalog("InfoPlist.xcstrings")
     if "NSAppleEventsUsageDescription" not in info["strings"]:
         problems.append("InfoPlist.xcstrings: NSAppleEventsUsageDescription is missing")
@@ -150,13 +190,14 @@ def main() -> int:
         problems.append(stale.stderr.strip())
 
     unreviewed = sum(
-        1 for entry in strings.values() for unit in (loc["stringUnit"] for loc in entry["localizations"].values())
+        1 for entry in [*strings.values(), *intents["strings"].values()]
+        for unit in (loc["stringUnit"] for loc in entry["localizations"].values())
         if unit["state"] == "needs_review"
     )
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
-    print(f"ok: {len(strings)} strings x {len(languages())} languages ({unreviewed} awaiting native-speaker review)")
+    print(f"ok: {len(strings)} strings (and {len(intents['strings'])} of the App Intents) x {len(languages())} languages ({unreviewed} awaiting native-speaker review)")
     return 0
 
 

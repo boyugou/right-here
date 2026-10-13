@@ -7,6 +7,11 @@ import RightHereKit
 // bundled `rh` with an argument vector (`rh run <action id> --origin cli -- <path>`); the argument building
 // and the validation of ids and paths are in RightHereKit (`IntentCommand`) and have tests. There is no
 // free-text command parameter anywhere: an agent and a template are picked from what `rh` lists.
+//
+// What the intents are called is read by the system by key from this app's bundle: titles, descriptions and parameter
+// names from `AppIntents.xcstrings` (each resource names its table, written out because the build reads these
+// initializers statically for the intents' metadata), the path styles' names from `Localizable.xcstrings`. What a
+// result says goes through `Localizer`, like the rest of the code.
 
 private enum Bundled {
     static var runner: IntentRunner {
@@ -37,10 +42,10 @@ struct IntentFailure: Error, CustomLocalizedStringResourceConvertible {
 }
 
 struct OpenInTerminalIntent: AppIntent {
-    static let title = LocalizedStringResource("intent.openTerminal.title", defaultValue: "Open in Terminal")
-    static let description = IntentDescription(LocalizedStringResource("intent.openTerminal.description", defaultValue: "Opens a folder in your terminal app."))
+    static let title = LocalizedStringResource("intent.openTerminal.title", defaultValue: "Open in Terminal", table: "AppIntents")
+    static let description = IntentDescription(LocalizedStringResource("intent.openTerminal.description", defaultValue: "Opens a folder in your terminal app.", table: "AppIntents"))
 
-    @Parameter(title: LocalizedStringResource("intent.param.folder", defaultValue: "Folder"), supportedContentTypes: [.folder])
+    @Parameter(title: LocalizedStringResource("intent.param.folder", defaultValue: "Folder", table: "AppIntents"), supportedContentTypes: [.folder])
     var folder: IntentFile
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -50,13 +55,13 @@ struct OpenInTerminalIntent: AppIntent {
 }
 
 struct StartAgentIntent: AppIntent {
-    static let title = LocalizedStringResource("intent.startAgent.title", defaultValue: "Start AI Agent")
-    static let description = IntentDescription(LocalizedStringResource("intent.startAgent.description", defaultValue: "Starts an AI agent in a folder, in your terminal app."))
+    static let title = LocalizedStringResource("intent.startAgent.title", defaultValue: "Start AI Agent", table: "AppIntents")
+    static let description = IntentDescription(LocalizedStringResource("intent.startAgent.description", defaultValue: "Starts an AI agent in a folder, in your terminal app.", table: "AppIntents"))
 
-    @Parameter(title: LocalizedStringResource("intent.param.agent", defaultValue: "Agent"))
+    @Parameter(title: LocalizedStringResource("intent.param.agent", defaultValue: "Agent", table: "AppIntents"))
     var agent: AgentEntity
 
-    @Parameter(title: LocalizedStringResource("intent.param.folder", defaultValue: "Folder"), supportedContentTypes: [.folder])
+    @Parameter(title: LocalizedStringResource("intent.param.folder", defaultValue: "Folder", table: "AppIntents"), supportedContentTypes: [.folder])
     var folder: IntentFile
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -66,13 +71,13 @@ struct StartAgentIntent: AppIntent {
 }
 
 struct NewFileIntent: AppIntent {
-    static let title = LocalizedStringResource("intent.newFile.title", defaultValue: "Create New File")
-    static let description = IntentDescription(LocalizedStringResource("intent.newFile.description", defaultValue: "Creates a new file from one of your templates in a folder."))
+    static let title = LocalizedStringResource("intent.newFile.title", defaultValue: "Create New File", table: "AppIntents")
+    static let description = IntentDescription(LocalizedStringResource("intent.newFile.description", defaultValue: "Creates a new file from one of your templates in a folder.", table: "AppIntents"))
 
-    @Parameter(title: LocalizedStringResource("intent.param.template", defaultValue: "Template"))
+    @Parameter(title: LocalizedStringResource("intent.param.template", defaultValue: "Template", table: "AppIntents"))
     var template: TemplateEntity
 
-    @Parameter(title: LocalizedStringResource("intent.param.folder", defaultValue: "Folder"), supportedContentTypes: [.folder])
+    @Parameter(title: LocalizedStringResource("intent.param.folder", defaultValue: "Folder", table: "AppIntents"), supportedContentTypes: [.folder])
     var folder: IntentFile
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -82,13 +87,13 @@ struct NewFileIntent: AppIntent {
 }
 
 struct CopyPathIntent: AppIntent {
-    static let title = LocalizedStringResource("intent.copyPath.title", defaultValue: "Copy Path")
-    static let description = IntentDescription(LocalizedStringResource("intent.copyPath.description", defaultValue: "Copies the path of a file or folder to the clipboard."))
+    static let title = LocalizedStringResource("intent.copyPath.title", defaultValue: "Copy Path", table: "AppIntents")
+    static let description = IntentDescription(LocalizedStringResource("intent.copyPath.description", defaultValue: "Copies the path of a file or folder to the clipboard.", table: "AppIntents"))
 
-    @Parameter(title: LocalizedStringResource("intent.param.item", defaultValue: "File or Folder"))
+    @Parameter(title: LocalizedStringResource("intent.param.item", defaultValue: "File or Folder", table: "AppIntents"))
     var item: IntentFile
 
-    @Parameter(title: LocalizedStringResource("intent.param.style", defaultValue: "Path Style"), default: .absolute)
+    @Parameter(title: LocalizedStringResource("intent.param.style", defaultValue: "Path Style", table: "AppIntents"), default: .absolute)
     var style: PathStyleChoice
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -100,7 +105,7 @@ struct CopyPathIntent: AppIntent {
 // MARK: Entities
 
 struct AgentEntity: AppEntity {
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("intent.type.agent", defaultValue: "AI Agent"))
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("intent.type.agent", defaultValue: "AI Agent", table: "AppIntents"))
     static let defaultQuery = AgentQuery()
 
     var id: String
@@ -124,7 +129,7 @@ struct AgentQuery: EntityQuery {
 }
 
 struct TemplateEntity: AppEntity {
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("intent.type.template", defaultValue: "File Template"))
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("intent.type.template", defaultValue: "File Template", table: "AppIntents"))
     static let defaultQuery = TemplateQuery()
 
     var id: String
@@ -160,7 +165,7 @@ enum PathStyleChoice: String, AppEnum {
     case aiMention = "ai-mention"
     case markdownLink = "markdown-link"
 
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("intent.type.pathStyle", defaultValue: "Path Style"))
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("intent.type.pathStyle", defaultValue: "Path Style", table: "AppIntents"))
     static let caseDisplayRepresentations: [PathStyleChoice: DisplayRepresentation] = [
         .absolute: DisplayRepresentation(title: LocalizedStringResource("copyPath.absolute", defaultValue: "Full Path")),
         .tilde: DisplayRepresentation(title: LocalizedStringResource("copyPath.tilde", defaultValue: "Path from Home (~)")),
@@ -197,25 +202,25 @@ struct RightHereShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: OpenInTerminalIntent(),
             phrases: ["Open in terminal with \(.applicationName)"],
-            shortTitle: LocalizedStringResource("intent.openTerminal.title", defaultValue: "Open in Terminal"),
+            shortTitle: LocalizedStringResource("intent.openTerminal.title", defaultValue: "Open in Terminal", table: "AppIntents"),
             systemImageName: "terminal"
         )
         AppShortcut(
             intent: StartAgentIntent(),
             phrases: ["Start an agent with \(.applicationName)"],
-            shortTitle: LocalizedStringResource("intent.startAgent.title", defaultValue: "Start AI Agent"),
+            shortTitle: LocalizedStringResource("intent.startAgent.title", defaultValue: "Start AI Agent", table: "AppIntents"),
             systemImageName: "sparkles"
         )
         AppShortcut(
             intent: NewFileIntent(),
             phrases: ["Create a new file with \(.applicationName)"],
-            shortTitle: LocalizedStringResource("intent.newFile.title", defaultValue: "Create New File"),
+            shortTitle: LocalizedStringResource("intent.newFile.title", defaultValue: "Create New File", table: "AppIntents"),
             systemImageName: "doc.badge.plus"
         )
         AppShortcut(
             intent: CopyPathIntent(),
             phrases: ["Copy a path with \(.applicationName)"],
-            shortTitle: LocalizedStringResource("intent.copyPath.title", defaultValue: "Copy Path"),
+            shortTitle: LocalizedStringResource("intent.copyPath.title", defaultValue: "Copy Path", table: "AppIntents"),
             systemImageName: "doc.on.clipboard"
         )
     }
