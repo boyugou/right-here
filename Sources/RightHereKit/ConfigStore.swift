@@ -75,10 +75,15 @@ public struct LoadedConfig: Sendable, Equatable {
 
 public enum ConfigStore {
     /// Reads the config file. A missing file is not an error: the defaults apply. A file over `ConfigParser.maxBytes` is refused.
-    public static func load(paths: RHPaths) -> LoadedConfig {
+    /// With `validating`, the shared file is also checked on its own, as other Macs read it (`ConfigLayers.validate`): what
+    /// `rh config validate` shows. The Finder menu and `rh run` read the config without it.
+    public static func load(paths: RHPaths, validating: Bool = false) -> LoadedConfig {
         let base = read(paths.configFile)
         let local = read(paths.localConfigFile)
-        let result = ConfigLayers.load(base: base.source, local: local.source, overlayName: paths.localConfigFile.lastPathComponent)
+        let name = paths.localConfigFile.lastPathComponent
+        let result = validating
+            ? ConfigLayers.validate(base: base.source, local: local.source, overlayName: name)
+            : ConfigLayers.load(base: base.source, local: local.source, overlayName: name)
         var problem: ConfigDiagnostic?
         if case .unreadable(let diagnostic) = base.source { problem = diagnostic }
         return LoadedConfig(result: result, fileExists: base.exists, file: paths.configFile, localFile: paths.localConfigFile, localFileExists: local.exists, fileProblem: problem)

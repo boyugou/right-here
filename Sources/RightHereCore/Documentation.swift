@@ -106,7 +106,10 @@ public enum Documentation {
         [general]
         terminal = "terminal"
 
-    A problem in either file is reported with its own file name (`rh config validate`, `rh doctor`).
+    A problem in either file is reported with its own file name (`rh config validate`, `rh doctor`). `rh config validate`
+    also reads `config.toml` on its own, as other Macs do, and reports an error that the overlay hides on this Mac (the
+    overlay sets the same key); `rh config sync push` refuses that file for the same error. A key named like a credential
+    in `config.toml` is a warning there too, because `push` refuses it.
     Per-machine differences need no overlay when they are only missing software: an app or agent that is not
     installed is skipped by the menu; use `disabled` for what is installed but should not be offered.
 

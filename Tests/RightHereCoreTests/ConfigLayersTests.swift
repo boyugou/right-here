@@ -446,3 +446,76 @@ struct ConfigLayersDiagnosticTests {
         #expect(result.config.terminal == "ghostty")
     }
 }
+
+@Suite("ConfigLayers: validating the shared file on its own")
+struct ConfigLayersValidateTests {
+    private let shared = "[general]\nagents = [\"claude\"]\n[copy_path]\nstyles = [\"absolute\", \"relative\"]\n"
+    private let overlay = "[copy_path]\nstyles = [\"tilde\"]\n"
+
+    @Test func anErrorTheOverlayHidesIsReportedForTheSharedFile() throws {
+        // As it applies on this Mac there is nothing wrong, and that is what the menu and `rh run` load.
+        let applied = ConfigLayers.load(base: .text(shared), local: .text(overlay))
+        #expect(applied.diagnostics.isEmpty && applied.config.copyPathStyles == [.tilde])
+        // Other Macs read config.toml alone, which is what `validate` shows too.
+        let result = ConfigLayers.validate(base: .text(shared), local: .text(overlay))
+        let error = try #require(result.diagnostics.first)
+        #expect(result.diagnostics.count == 1 && result.hasErrors)
+        #expect(error.severity == .error && error.file == nil && error.path == "copy_path.styles" && error.line == 4, "\(error)")
+        #expect(error.message.hasPrefix("unknown style \"relative\"; known styles: absolute, tilde"), "\(error.message)")
+        #expect(error.message.hasSuffix("; config.local.toml hides it on this Mac, but other Macs read this file as it is"), "\(error.message)")
+        #expect(error.summary(file: URL(fileURLWithPath: "/x/config.toml")).hasPrefix("error: config.toml:4 [copy_path.styles]: unknown style"))
+        #expect(result.config == applied.config, "validating changes what applies on this Mac")
+    }
+
+    @Test func aProblemThatIsNotHiddenIsReportedOnce() {
+        // The overlay does not touch the key, so the merged build and the shared file alone find the same thing.
+        let result = ConfigLayers.validate(base: .text(shared), local: .text("[general]\neditor = \"vscode\"\n"))
+        #expect(result.diagnostics.filter { $0.path == "copy_path.styles" }.count == 1, "\(result.diagnostics)")
+        #expect(!result.diagnostics.contains { $0.message.contains("hides it") })
+    }
+
+    @Test func withoutAnOverlayValidateSaysWhatLoadSays() {
+        #expect(ConfigLayers.validate(base: .text(shared), local: .absent) == ConfigLayers.load(base: .text(shared), local: .absent))
+        #expect(ConfigLayers.validate(base: .absent, local: .text(overlay)) == ConfigLayers.load(base: .absent, local: .text(overlay)))
+    }
+
+    @Test("what `push` would refuse is what `validate` reports", arguments: [
+        ("[copy_path]\nstyles = [\"relative\"]\n", "[copy_path]\nstyles = [\"tilde\"]\n"),
+        ("[general]\nterminal = \"warp-like\"\n", "[[app]]\nid = \"warp-like\"\nname = \"W\"\nbundle_id = \"a.b\"\nrole = \"terminal\"\n"),
+        ("[[app]]\nid = \"x\"\nname = \"X\"\n", "[[app]]\nid = \"x\"\nname = \"X\"\nbundle_id = \"a.b\"\n"),
+        ("[[new_file.template]]\nid = \"t\"\ntitle = \"T\"\nextension = \"a/b\"\n", "disabled = [\"t\"]\n"),
+        ("[general]\nterminal = ghostty\n", "[general]\nterminal = \"terminal\"\n"),
+        ("[agent.q]\ncommand = \"q\"\n", "[agent.q]\nname = \"Q\"\n"),
+    ])
+    func validateAgreesWithPush(shared: String, overlay: String) throws {
+        // `push` parses config.toml alone and refuses on its first error (`SyncValidation.check`).
+        let pushed = SyncValidation.check(Data(shared.utf8)).first { if case .invalid = $0 { true } else { false } }
+        let refusal = try #require(pushed, "the shared file is fine on its own: \(shared)")
+        let result = ConfigLayers.validate(base: .text(shared), local: .text(overlay))
+        let errors = result.diagnostics.filter { $0.severity == .error && $0.file == nil }
+        for alone in ConfigParser.parse(shared).diagnostics where alone.severity == .error {
+            #expect(errors.contains { $0.path == alone.path && $0.message.hasPrefix(alone.message) }, "`validate` does not report \(alone.message)")
+        }
+        if case .invalid(let reason) = refusal { #expect(reason.contains(errors.first?.message.prefix(30) ?? "\u{0}"), "push says \(reason), validate says \(errors.map(\.message))") }
+        #expect(result.hasErrors)
+    }
+
+    @Test func aKeyNamedLikeACredentialInTheSharedFileIsWarnedAboutAsPushRefusesIt() throws {
+        let text = "[general]\nagents = [\"mine\"]\n[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n"
+        let result = ConfigLayers.validate(base: .text(text), local: .absent)
+        let warning = try #require(result.diagnostics.first { $0.path == "agent.mine.api_key" })
+        #expect(warning.severity == .warning && warning.line == 6 && result.diagnostics.count == 1, "the unknown-key warning and this one are one: \(result.diagnostics)")
+        #expect(warning.message.hasPrefix("unknown key; named like a credential: `rh config sync` refuses a config with such a key name"), "\(warning.message)")
+        // `load` does not look: the menu has no use for it.
+        #expect(ConfigLayers.load(base: .text(text), local: .absent).diagnostics.first?.message == "unknown key")
+        // Under a known key there is no unknown-key warning to fold it into, and it stands alone.
+        let standalone = ConfigLayers.validate(base: .text("[agent.claude]\ncommand = \"claude\"\n[agent.claude.secrets]\nx = 1\n"), local: .absent)
+        #expect(standalone.diagnostics.contains { $0.path == "agent.claude.secrets" && $0.message.contains("credential") })
+        // The overlay is never synced, so a key like that there is nobody's business but the person's.
+        let local = ConfigLayers.validate(base: .text("[general]\nterminal = \"terminal\"\n"), local: .text("password = 1\n"))
+        #expect(!local.diagnostics.contains { $0.message.contains("credential") }, "\(local.diagnostics)")
+        // And what `push` says of the same file names the same key.
+        let problems = SyncValidation.check(Data(text.utf8))
+        #expect(problems.contains(.secretKeys(["agent.mine.api_key"])))
+    }
+}

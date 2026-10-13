@@ -63,19 +63,21 @@ struct ConfigCommand: ParsableCommand {
 
         func run() throws {
             let runtime = Runtime()
-            let result = runtime.loaded.result
-            let report = Report(file: runtime.paths.configFile.path, exists: runtime.loaded.fileExists,
-                                localFile: runtime.paths.localConfigFile.path, localExists: runtime.loaded.localFileExists, ok: !result.hasErrors,
+            // Each file is checked on its own as well: what the overlay hides on this Mac is what other Macs read.
+            let loaded = ConfigStore.load(paths: runtime.paths, validating: true)
+            let result = loaded.result
+            let report = Report(file: runtime.paths.configFile.path, exists: loaded.fileExists,
+                                localFile: runtime.paths.localConfigFile.path, localExists: loaded.localFileExists, ok: !result.hasErrors,
                                 clean: result.diagnostics.isEmpty, diagnostics: result.diagnostics, notes: result.notes)
             if json {
                 try Output.json(report)
-            } else if !runtime.loaded.fileExists && !runtime.loaded.localFileExists {
+            } else if !loaded.fileExists && !loaded.localFileExists {
                 Output.print("No config file at \(report.file); defaults apply. Run `rh init` to create one.")
             } else {
                 if result.diagnostics.isEmpty {
-                    Output.print("ok: \(report.file)" + (runtime.loaded.localFileExists ? " and \(report.localFile)" : ""))
+                    Output.print("ok: \(report.file)" + (loaded.localFileExists ? " and \(report.localFile)" : ""))
                 }
-                for diagnostic in result.diagnostics + result.notes { Output.print(diagnostic.summary(file: runtime.loaded.file)) }
+                for diagnostic in result.diagnostics + result.notes { Output.print(diagnostic.summary(file: loaded.file)) }
             }
             if result.hasErrors || (strict && !result.diagnostics.isEmpty) { throw ExitCode(1) }
         }

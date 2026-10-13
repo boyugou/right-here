@@ -1158,6 +1158,32 @@ struct ConfigSyncCLITests {
         #expect(!menu.standardOutput.contains("security-review"))
     }
 
+    @Test func anErrorTheOverlayMasksIsReportedByValidateAndRefusedByPush() throws {
+        // The usability test's case: the shared file has an unknown style, the overlay replaces the list. As it applies here
+        // all is well; other Macs read the shared file.
+        let rh = try isolated(config: "[copy_path]\nstyles = [\"absolute\", \"relative\"]\n"); defer { rh.cleanUp() }
+        let overlay = try configFile(rh).deletingLastPathComponent().appendingPathComponent("config.local.toml")
+        try "[copy_path]\nstyles = [\"tilde\"]\n".write(to: overlay, atomically: true, encoding: .utf8)
+        let validate = try rh.run(["config", "validate"])
+        #expect(validate.status == 1, "validate said ok: \(validate.standardOutput)")
+        #expect(validate.standardOutput.hasPrefix("error: config.toml:2 [copy_path.styles]: unknown style \"relative\""), "\(validate.standardOutput)")
+        #expect(validate.standardOutput.contains("config.local.toml hides it on this Mac"), "\(validate.standardOutput)")
+        // `menu` and `run` load the config as it applies here, and say nothing.
+        #expect(try rh.run(["menu", "--container", rh.configDirectory.path]).standardError.isEmpty)
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        let push = try rh.run(["config", "sync", "push"])
+        #expect(push.status == 1 && push.standardError.contains("unknown style \"relative\""), "\(push.standardError)")
+    }
+
+    @Test func aKeyNamedLikeACredentialIsAWarningInValidateAsPushRefusesIt() throws {
+        let rh = try RH(config: "[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n[general]\nagents = [\"mine\"]\n"); defer { rh.cleanUp() }
+        let result = try rh.run(["config", "validate"])
+        #expect(result.status == 0 && result.standardOutput.contains("config.toml:4 [agent.mine.api_key]: unknown key; named like a credential"), "\(result.standardOutput)")
+        #expect(try rh.run(["config", "validate", "--strict"]).status == 1)
+    }
+
     @Test func syncIsListedInHelp() throws {
         let rh = try isolated(); defer { rh.cleanUp() }
         let text = try rh.run(["config", "--help"]).standardOutput

@@ -99,6 +99,42 @@ public enum ConfigLayers {
         return result
     }
 
+    /// `load`, and what only a look at the shared file on its own finds. `rh config validate` uses this and the Finder menu does
+    /// not (it needs the config, not a second reading of it on every right-click).
+    ///
+    /// - The shared file is what other Macs read, with none of this Mac's overlay. An error that the overlay masks here (it sets
+    ///   the same key itself, replaces the entry, disables what the error is about) is real there, and `rh config sync push`
+    ///   refuses the file for it: it parses `config.toml` alone, which is what is done here, so the two agree by construction.
+    /// - A key named like a credential in the shared file is what `push` refuses, as a warning here.
+    public static func validate(base: ConfigSource, local: ConfigSource, overlayName: String = overlayFileName) -> ConfigLoadResult {
+        var result = load(base: base, local: local, overlayName: overlayName)
+        guard case .text(let baseText) = base else { return result }
+        var extra: [ConfigDiagnostic] = []
+        if case .text = local {
+            for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {
+                guard !result.diagnostics.contains(where: { $0.file == nil && $0.path == error.path && $0.message == error.message }) else { continue }
+                extra.append(ConfigDiagnostic(severity: .error, path: error.path,
+                                              message: error.message + "; \(overlayName.withControlCharactersEscaped) hides it on this Mac, but other Macs read this file as it is",
+                                              line: error.line, suggestion: error.suggestion, replacement: error.replacement))
+            }
+        }
+        if let tree = ConfigParser.readTree(baseText).tree {
+            for path in SyncValidation.secretKeys(in: tree) {
+                // The unknown-key warning for the same key says it as well, and is not repeated.
+                let note = "named like a credential: `rh config sync` refuses a config with such a key name (token, secret, password, api_key); keep credentials in the environment or the keychain"
+                if let index = result.diagnostics.firstIndex(where: { $0.file == nil && $0.path == path && $0.message == "unknown key" }) {
+                    result.diagnostics[index].message += "; " + note.withControlCharactersEscaped
+                } else {
+                    extra.append(ConfigDiagnostic(severity: .warning, path: path, message: "key " + note))
+                }
+            }
+        }
+        guard !extra.isEmpty else { return result }
+        let others = result.diagnostics.filter { $0.file != nil }
+        result.diagnostics = ConfigParser.locate(result.diagnostics.filter { $0.file == nil } + extra, in: baseText) + others
+        return result
+    }
+
     /// Names the file a diagnostic belongs to and puts its position in terms of that file: entry 3 of the merged
     /// `[[app]]` list may be entry 1 of the overlay.
     private static func attribute(_ diagnostic: ConfigDiagnostic, to merged: ConfigMerge.Result, overlayName: String) -> ConfigDiagnostic {
