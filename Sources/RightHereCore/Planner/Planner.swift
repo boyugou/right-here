@@ -26,7 +26,7 @@ public struct Planner: Sendable {
         // reported as one rather than quietly replaced by the folder around it (`open.terminal proj
         // proj-typo` would otherwise open `proj`'s parent), and text that is not a path never reaches the
         // clipboard, a terminal or another agent's prompt box.
-        if case .user = ref {} else if let missing = context.firstMissingPath(facts: facts) { throw PlanError.pathNotFound(missing.path) }
+        if let missing = context.firstMissingPath(facts: facts) { throw PlanError.pathNotFound(missing.path) }
         switch ref {
         case .copyPath(let style):
             return try copyPath(style, ref: ref, context: context)
@@ -47,8 +47,6 @@ public struct Planner: Sendable {
             let paths = context.pathTargets.map(\.path)
             guard !paths.isEmpty else { throw PlanError.noTarget }
             return LaunchPlan(action: ref.id, summary: "Reveal in Finder", steps: [.reveal(paths)])
-        case .user(let id):
-            throw PlanError.unknownAction("user.\(id)")
         }
     }
 

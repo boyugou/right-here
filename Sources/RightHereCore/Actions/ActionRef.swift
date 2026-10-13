@@ -44,7 +44,6 @@ public enum AgentLauncher: Sendable, Equatable, Hashable {
 ///     preset.<id>[@<terminal>]       preset.review   preset.tests@ghostty
 ///     new-file.<template>            new-file.md
 ///     reveal
-///     user.<id>                      an action defined in the config
 public enum ActionRef: Sendable, Equatable, Hashable {
     case copyPath(PathStyle)
     case openTerminal(String?)
@@ -56,7 +55,6 @@ public enum ActionRef: Sendable, Equatable, Hashable {
     /// A prompt preset of the config, typed into a terminal with its agent; `nil` is the agent's own terminal choice.
     case preset(id: String, terminal: String?)
     case reveal
-    case user(String)
 
     public init?(parsing text: String) {
         let (body, suffix) = Self.split(text)
@@ -88,9 +86,6 @@ public enum ActionRef: Sendable, Equatable, Hashable {
         case ("reveal", 1):
             guard suffix == nil else { return nil }
             self = .reveal
-        case ("user", 2):
-            guard suffix == nil else { return nil }
-            self = .user(parts[1])
         default:
             return nil
         }
@@ -121,8 +116,6 @@ public enum ActionRef: Sendable, Equatable, Hashable {
             return "new-file.\(template)"
         case .reveal:
             return "reveal"
-        case .user(let id):
-            return "user.\(id)"
         }
     }
 

@@ -102,6 +102,16 @@ struct ConfigParserTests {
         #expect(warning.suggestion == "did you mean \"general\"?")
     }
 
+    @Test func anIdForACustomActionIsNeitherAMenuEntryNorAService() throws {
+        // `user.<id>` was reserved for actions defined in the config; there are none, so it is not an id at all.
+        let result = ConfigParser.parse("[menu]\nitems = [\"user.build\", \"reveal\"]\n[services]\nitems = [\"user.build\", \"reveal\"]\n")
+        #expect(result.diagnostics.map(\.path) == ["menu.items", "services.items"])
+        #expect(result.diagnostics.map(\.severity) == [.warning, .warning])
+        #expect(result.diagnostics[0].message == "\"user.build\" is neither a menu group nor an action id")
+        #expect(result.diagnostics[1].message.hasPrefix("\"user.build\" is not an action id"))
+        #expect(result.config.serviceItems == ["reveal"])
+    }
+
     @Test func wrongTypeIsAnError() throws {
         let result = ConfigParser.parse("[general]\nterminal = 3\n")
         let error = try #require(result.diagnostics.first)

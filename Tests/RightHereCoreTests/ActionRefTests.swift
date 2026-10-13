@@ -9,7 +9,7 @@ struct ActionRefTests {
         "open.terminal", "open.terminal@ghostty", "open.editor", "open.app.zed",
         "agent.claude", "agent.claude.continue", "agent.claude@ghostty", "agent.claude.continue@ghostty",
         "agent.codex@desktop", "agent.claude@link", "agent.claude@default", "agent.claude@terminal",
-        "new-file.md", "reveal", "user.build-all"
+        "new-file.md", "reveal"
     ])
     func roundTrip(id: String) throws {
         let ref = try #require(ActionRef(parsing: id))
@@ -34,7 +34,9 @@ struct ActionRefTests {
         "", "copy-path", "copy-path.nope", "copy-path.absolute@x", "open", "open.terminal@", "open.terminal@Bad",
         "open.editor@x", "open.app", "open.app.zed.extra", "agent", "agent.", "agent.claude.a.b",
         "agent.claude@", "new-file", "new-file.md@x", "reveal.x", "user", "Copy-Path.absolute",
-        "copy-path.absolute ", "agent.claude/../x", "agent.-claude", "open.terminal@ghostty@x"
+        "copy-path.absolute ", "agent.claude/../x", "agent.-claude", "open.terminal@ghostty@x",
+        // Once reserved for actions defined in the config, which do not exist.
+        "user.build-all", "user.x@ghostty"
     ])
     func rejects(id: String) {
         #expect(ActionRef(parsing: id) == nil)

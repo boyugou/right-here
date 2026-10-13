@@ -259,6 +259,13 @@ struct PlannerTests {
         #expect(registry.closestID(to: "zzzzzzzzzzzz") == nil)
     }
 
+    @Test func aWordThatLooksLikeACustomActionIsNotAnActionId() throws {
+        let registry = ActionRegistry(config: Config.default, facts: machine())
+        let error = try #require(throws: UnknownActionID.self) { try registry.resolve("user.build-all") }
+        #expect(error.message(next: "List them.") == "\"user.build-all\" is not an action id. List them.")
+        #expect(registry.catalog().allSatisfy { !$0.id.hasPrefix("user.") })
+    }
+
     @Test func resolveReadsAnIdOrNamesTheClosestOne() throws {
         let registry = ActionRegistry(config: Config.default, facts: machine())
         #expect(try registry.resolve("copy-path.absolute") == .copyPath(.absolute))

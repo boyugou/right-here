@@ -37,7 +37,7 @@ MUTANTS = [
     ("missing paths are never reported", "Sources/RightHereCore/Context/HereContext.swift",
      "items.first(where: { facts.itemState($0) == .missing })", "items.first(where: { facts.itemState($0) == .unreadable })"),
     ("planner does not refuse a missing path", "Sources/RightHereCore/Planner/Planner.swift",
-     "else if let missing = context.firstMissingPath(facts: facts) { throw PlanError.pathNotFound(missing.path) }", "else if false { }"),
+     "if let missing = context.firstMissingPath(facts: facts) { throw PlanError.pathNotFound(missing.path) }", "if false { }"),
     ("Terminal.app accepts a backslash", "Sources/RightHereCore/Terminals/AppleTerminalAdapter.swift",
      'if directory.unicodeScalars.contains("\\\\") {', "if false {"),
     ("Terminal.app quotes for the login shell again", "Sources/RightHereCore/Terminals/AppleTerminalAdapter.swift",

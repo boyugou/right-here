@@ -85,9 +85,6 @@ public struct ActionRegistry: Sendable {
             info.title = localizer.revealInFinder
             info.shortTitle = localizer.revealInFinder
             info.icon = .symbol("magnifyingglass")
-
-        case .user:
-            unavailable(&info, title: ref.id, reason: "Custom actions are not available yet.")
         }
         return info
     }
