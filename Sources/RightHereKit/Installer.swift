@@ -138,12 +138,11 @@ public struct Installer: Sendable {
     /// What `rh` the runner script currently points at, if the script is installed.
     public func installedRunnerTarget() -> String? {
         guard let text = try? String(contentsOf: runnerScript, encoding: .utf8) else { return nil }
-        for line in text.split(separator: "\n") where line.hasPrefix("exec ") {
-            let rest = line.dropFirst(5)
-            guard let end = rest.range(of: " \"$@\"") else { continue }
-            return Self.unquote(String(rest[..<end.lowerBound]))
-        }
-        return nil
+        // The quoted path may itself hold a newline or ` "$@"`, so the word runs from `exec ` to the last ` "$@"`.
+        guard let start = text.range(of: "\nexec ") else { return nil }
+        let rest = text[start.upperBound...]
+        guard let end = rest.range(of: " \"$@\"", options: .backwards) else { return nil }
+        return Self.unquote(String(rest[..<end.lowerBound]))
     }
 
     /// Undoes `ShellQuoting.quote` for one word. On scalars: a quote followed by a combining mark is one `Character`, and

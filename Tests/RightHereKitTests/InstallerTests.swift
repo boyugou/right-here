@@ -22,7 +22,7 @@ struct InstallerTests {
         #expect(installer.installedRunnerTarget() == "/opt/homebrew/bin/rh")
     }
 
-    @Test("the runner target survives quoting round trips", arguments: ["/usr/local/bin/rh", "/Users/me/My Tools/rh", "/Users/o'brien/bin/rh"])
+    @Test("the runner target survives quoting round trips", arguments: ["/usr/local/bin/rh", "/Users/me/My Tools/rh", "/Users/o'brien/bin/rh", "/a \"$@\"/rh", "/line\nbreak/rh"])
     func targetRoundTrip(path: String) throws {
         let home = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: home) }

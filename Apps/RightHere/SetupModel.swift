@@ -70,9 +70,18 @@ final class SetupModel {
     func openConfig() async {
         do {
             if !FileManager.default.fileExists(atPath: paths.configFile.path) {
-                _ = try await LiveProcessRunner().run(ProcessStep(executable: helper.path, arguments: ["init"]), timeout: .seconds(30))
+                let created = try await LiveProcessRunner().run(ProcessStep(executable: helper.path, arguments: ["init"]), timeout: .seconds(30))
+                if created.status != 0 {
+                    let text = created.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
+                    message = text.isEmpty ? "rh init exited with status \(created.status)" : text
+                    return
+                }
             }
-            _ = try await LiveProcessRunner().run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", paths.configFile.path]))
+            let opened = try await LiveProcessRunner().run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", paths.configFile.path]))
+            if opened.status != 0 {
+                let text = opened.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
+                message = text.isEmpty ? "open exited with status \(opened.status)" : text
+            }
         } catch {
             message = error.localizedDescription
         }

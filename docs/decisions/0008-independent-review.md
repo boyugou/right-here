@@ -195,6 +195,14 @@ No defect in release scripts, Homebrew files, CI, the plugin or 17 checked docum
 an empty config are accepted. Two small findings, fixed: the roadmap still said eight review rounds, and a duplicate
 entry in `general.agents` was dropped without a word (it warns now, like `copy_path.styles`).
 
+## Thirteenth round (setup window and Finder extension; after 468bbdc)
+
+Two low findings, fixed. The setup window's Open Config discarded the exit status of `rh init` and `open`, so a
+read-only config folder showed nothing; it shows the error now. The doctor's reading of the runner script cut the
+path at the first ` "$@"` and split on newlines, so an `rh` path holding either came back wrong or missing; it
+reads from `exec ` to the last ` "$@"` now (round-trip test with both paths). The extension's menu build, config
+cache, completion handlers and accessibility had no defect.
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.
