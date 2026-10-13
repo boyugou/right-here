@@ -86,19 +86,25 @@ setup window renders the same messages with `Localizer.render` in the system lan
 `rh doctor --json` carries each message as `{"code": "doctor.services.differ", "args": ["3", "1", "0"], "text": "..."}`:
 a program acts on the code and the values, a person or an AI agent reads the text.
 
-What is translated: what a person meets on a first run and afterwards, that is the config file (missing, with errors or
-warnings, an overlay, a symlink), the default terminal and editor (the app a click opens, none installed, the configured
-one not installed), agents (found, missing, cannot start), the Claude Code link, the runner script (missing, stale, pointing nowhere), the Services (missing, stale), the `rh` link, the Finder
-extension (not registered, switched off, registered twice, ok), the last action and every config sync row. Thirty
-languages each, checked like every other string.
+What is translated: what a person meets on a first run and afterwards, that is the config file (missing, warnings, an
+overlay, a symlink), the default terminal and editor (the app a click opens, none installed, the configured one not
+installed), agents (found, missing), the Claude Code link, the runner script (missing, stale, pointing nowhere), the
+Services (missing, stale), the `rh` link, the Finder extension (not registered, switched off, registered twice, ok), the
+last action and every config sync row. The fix line under a config with errors and under an agent that cannot start is
+translated too. Thirty languages each, checked like every other string.
 
 What stays English in every language, on purpose: the two probes, `finder.chain` and `finder.launch`, which say what the
 Finder extension reported and which a person runs from a terminal; and text that comes from outside the catalog and is
-shown as it is through `doctor.verbatim` (the parser's description of a config problem, why an agent cannot start, which
-is the planner's sentence, and a bare path). They are the parser's, the planner's or the machine's words, not Right
-Here's, and translating them would need the same split in those layers. The two reasons the default terminal or editor
-row can give (nothing of the role is installed, the configured app is not) are the exception: the catalog has them word for
-word as the planner says them (`PlanError`), which a test holds, so `rh run`, `rh actions` and the window say one sentence.
+shown as it is through `doctor.verbatim`: the parser's description of the first error of a config and the planner's
+reason an agent cannot start (each sits above its translated fix line), a bare path, and the config lines the
+launch-settings row quotes. Two small things inside translated sentences are not translated either: the menu a click
+came from in the last-action sentence (`container`, an id of Right Here) and its relative time, which is formatted when the
+doctor runs, in the locale of that process. The parser's and the planner's sentences are not Right Here's own words, and
+translating them would need the same split in those layers. The two reasons the default terminal or editor row can give
+(nothing of the role is installed, the configured app is not) are the exception: the catalog has them word for word as the
+planner says them (`PlanError`), which a test holds, so `rh run`, `rh actions` and the window say one sentence. A config
+that names an unknown app, or a terminal as the editor, is refused when it is read and the default is used instead, so no
+"unknown app" sentence exists in the catalog.
 
 A path or a command quoted in a right-to-left sentence is a left-to-right value, and the sentence around it reorders it:
 rendering the Arabic window showed `~/.config/...` and `/Applications/...` with their leading characters at the wrong end.

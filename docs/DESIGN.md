@@ -313,8 +313,9 @@ product there. The name is a working name; the identifiers derive from `AppIdent
 Thirty languages from `Localization/Localizable.xcstrings`, compiled into Swift (see
 [0006](decisions/0006-localization.md)). The initial translations are AI-generated and marked
 `needs_review`. The doctor returns a code and values for every sentence it says: the setup window writes them in the
-system language, `rh doctor` and the MCP tool print their English, and `rh doctor --json` has both. The probes and text
-quoted from the config stay English in every language.
+system language, `rh doctor` and the MCP tool print their English, and `rh doctor --json` has both. The probes, the
+parser's and the planner's own sentences (a config error, why an agent cannot start) and text quoted from the config stay
+English in every language.
 
 The text of the macOS Automation prompt (`NSAppleEventsUsageDescription`, which Apple's hardened-runtime guidance
 asks for next to the apple-events entitlement, and App Review checks) is in `Localization/InfoPlist.xcstrings`.

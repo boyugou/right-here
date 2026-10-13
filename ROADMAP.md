@@ -18,8 +18,8 @@
   protection in a throwaway clone and expects a test to fail.
 - Thirty languages for the menu, the app (the setup window's check rows included: the doctor returns a code and
   values for each sentence, and the window writes them in the system language), alerts and the permission-prompt
-  text (machine-translated, awaiting native-speaker review). Only the two probes and text quoted from the config
-  stay English.
+  text (machine-translated, awaiting native-speaker review). Only the two probes, the parser's and the planner's own
+  sentences (the first error of a config, why an agent cannot start) and text quoted from the config stay English.
 - A strict, self-describing config: unique ids, no silent shadowing, `--strict`, replacements in
   diagnostics, a JSON Schema with required keys and patterns, a backup on `rh init --force`.
 
