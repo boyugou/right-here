@@ -417,6 +417,15 @@ struct PresetMenuTests {
         #expect(presetsSubmenu(in: menu(config, selection(["a"]), files: ["a"])) != nil)
     }
 
+    @Test func buildingTheMenuNeverLooksAtTheSelectedFiles() {
+        // None of these paths exists for the fake file system, so `isDirectory` knows nothing about them: the menu
+        // is decided by how many items there are, and the planner (in rh) tells files from folders.
+        let config = Config(enabledAgents: ["claude"])
+        #expect(presetsSubmenu(in: menu(config, selection(["ghost.txt"]))) != nil)
+        let many = (0...AgentPreset.defaultMaxFiles).map { "ghost\($0).txt" }
+        #expect(presetsSubmenu(in: menu(config, selection(many))) == nil, "more items than max_files")
+    }
+
     @Test func aPresetOfAnAgentThatIsNotEnabledIsNotOffered() {
         var config = Config(enabledAgents: ["claude"])
         config.presets = [AgentPreset(id: "p", title: "P", agent: "codex", prompt: "{files}")]

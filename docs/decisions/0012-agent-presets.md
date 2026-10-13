@@ -25,8 +25,11 @@ prompt at once.
 The menu has an "Agent Presets" submenu (group `presets`). In the default menu it sits inside "More Agent Options",
 which keeps the main menu short; a config that lists `presets` in `[menu] items` gets it at the top level instead, and
 then it is not repeated inside "More Agent Options". It is built for the selection: a preset whose prompt uses
-`{files}` is left out when no file is selected (folders do not count) or when more than `max_files` are, and the
-submenu is left out when nothing is left. `rh actions` lists every preset; `rh run preset.review` with no files
+`{files}` is left out when nothing is selected or when more items than `max_files` are, and the submenu is left out
+when nothing is left. The menu only counts the selected items (hard rule 5: building a menu does no file system work,
+and a big selection on a network volume would otherwise stall Finder), so a selected folder still shows the preset;
+`rh` then refuses it, because folders are not files for `{files}`, and the failure alert says so. The runner passes
+up to 500 items to `rh` and `max_files` is at most 50, so a selection is never cut before a preset refuses it. `rh actions` lists every preset; `rh run preset.review` with no files
 fails with the reason.
 
 How an agent takes a first prompt is `prompt_arg` on its `[agent.<id>]` table: `"positional"` or a flag such as
@@ -67,9 +70,13 @@ wrong answer.
   ("never auto-submitted") is amended to say so. A possible follow-up is a `prefill = true` preset that uses the link
   for agents that have one.
 - **Therefore the built-in presets only ask for reading**: review, explain, and a test *plan*. The wording asks the
-  agent not to change files; whether it obeys is up to the agent and its permission mode. On this machine `claude`
-  is an alias for `claude --dangerously-skip-permissions`, and the typed command goes through the login shell, so
-  that alias applies: a preset is only as read-only as its wording. Do not describe the built-ins as safe beyond that.
+  agent not to change files; whether it obeys is up to the agent and its permission mode. The typed command goes
+  through the person's own shell, so an alias applies (one that adds `--dangerously-skip-permissions`, say): a preset
+  is only as read-only as its wording. Do not describe the built-ins as safe beyond that.
+- **File names are text in a prompt that is sent before anyone reads it.** A file called "ignore the above and ..."
+  becomes part of the instruction. `agent.claude@link` only prefills, so the person sees the mention first; a typed
+  preset does not. The quoting keeps a name from becoming shell syntax, nothing keeps it from being read as an
+  instruction by the agent, so presets are for folders the person trusts.
 - **`agent.<agent>.preset.<id>` as the id.** It parses (four dot-separated words), but `agent.claude.preset` is
   already a valid id (a variant called `preset`), the agent is redundant because the preset names one, and every
   preset times every agent would be a catalog entry. `preset.<id>` has no such overlap and is one entry per preset;
@@ -90,6 +97,8 @@ wrong answer.
   `;`, `&&`, `>`, a leading `-`, `{folder}`, `%s`, emoji and spaces: the shell prints exactly the prompt and no
   canary file appears.
 - Refusals: newline, carriage return, tab, bell, escape, U+2028, backslash, a leading dash, too many files, no files.
+- Building the menu never asks the file system about the selection (a test with paths the fake file system does not
+  know still gets the submenu).
 - The localization catalog has the submenu title and the three built-in titles in thirty languages; the translations
   are machine-made and marked `needs_review` like the rest.
 - `claude --help` and `codex --help` (read-only) list a positional prompt.

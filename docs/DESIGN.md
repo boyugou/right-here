@@ -244,8 +244,9 @@ applies. The app never rewrites the file, so comments and ordering stay the pers
    prompt (a template plus file names) is typed as one single-quoted word, and the expanded text is refused when it
    has a control character, a backslash (fish and the other shells read it differently inside quotes), a leading
    dash (the agent would read an option) or more files than `max_files`; see
-   [0012](decisions/0012-agent-presets.md). Presets are sent when the agent starts; they are read-only only in
-   their wording.
+   [0012](decisions/0012-agent-presets.md). Presets are sent when the agent starts, and a file name becomes part
+   of the instruction the agent reads, so they are for folders the person trusts; the built-ins are read-only only
+   in their wording.
 3. The sandbox stays on for the extension. What it cannot do is done by `rh` through the runner script,
    which only the user can install and which passes on only `run` and `probe`: a compromised extension
    cannot call `rh install`, `rh uninstall` or `rh init --force`.

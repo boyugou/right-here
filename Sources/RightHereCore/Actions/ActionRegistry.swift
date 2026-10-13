@@ -91,14 +91,15 @@ public struct ActionRegistry: Sendable {
         return info
     }
 
-    /// `info` for an action about to be offered on a selection: a preset also needs a folder to run in and, when its
-    /// prompt names files, some files (and no more than its `max_files`).
+    /// `info` for an action about to be offered in a menu: a preset also needs something to run on and, when its prompt
+    /// names files, a selection of the right size. This counts the selected items and never looks at them (building a
+    /// menu does no file system work); whether they are files and not folders is left to the planner in `rh`.
     public func info(_ ref: ActionRef, context: HereContext) -> ActionInfo {
         var info = info(ref)
         guard info.available, case .preset(let id, _) = ref, let preset = config.preset(id: id) else { return info }
-        if context.workingDirectory(facts: facts) == nil {
+        if context.items.isEmpty, context.container == nil, context.origin != .cli {
             unavailable(&info, reason: "There is no folder to run in.")
-        } else if let refusal = Planner(config: config, facts: facts, localizer: localizer).presetContextRefusal(preset, context: context) {
+        } else if let refusal = preset.refusal(forFileCount: context.items.count) {
             unavailable(&info, reason: refusal)
         }
         return info

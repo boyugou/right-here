@@ -236,11 +236,7 @@ public struct Planner: Sendable {
     /// Why a preset cannot run on this selection, or `nil`. Context only: whether the agent can take a prompt is
     /// decided separately.
     func presetContextRefusal(_ preset: AgentPreset, context: HereContext) -> String? {
-        guard preset.needsFiles else { return nil }
-        let files = presetFiles(in: context)
-        if files.isEmpty { return "\"\(preset.title)\" works on selected files; select one or more files (folders do not count)." }
-        if files.count > preset.maxFiles { return "\(files.count) files are selected and \"\(preset.title)\" takes at most \(preset.maxFiles) (max_files)." }
-        return nil
+        preset.refusal(forFileCount: preset.needsFiles ? presetFiles(in: context).count : 0)
     }
 
     /// Why a preset's agent cannot be given its prompt, or `nil`.

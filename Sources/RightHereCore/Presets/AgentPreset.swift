@@ -61,6 +61,15 @@ public struct AgentPreset: Sendable, Equatable, Identifiable {
         PresetTemplate.segments(of: prompt).contains(.files)
     }
 
+    /// Why a selection of `count` files does not suit this preset, or `nil`. The count alone, so the menu can decide
+    /// without looking at the files.
+    public func refusal(forFileCount count: Int) -> String? {
+        guard needsFiles else { return nil }
+        if count == 0 { return "\"\(title)\" works on selected files; select one or more files (folders do not count)." }
+        if count > maxFiles { return "\(count) files are selected and \"\(title)\" takes at most \(maxFiles) (max_files)." }
+        return nil
+    }
+
     public static let builtIn: [AgentPreset] = [
         AgentPreset(
             id: "review", title: "Review",
