@@ -28,8 +28,8 @@ if command -v rh >/dev/null 2>&1; then
   start "$(command -v rh)"
 fi
 
-for candidate in "$HOME/.local/bin/rh" "/opt/homebrew/bin/rh" "/usr/local/bin/rh" \
-  "/Applications/Right Here.app/Contents/Helpers/rh" "$HOME/Applications/Right Here.app/Contents/Helpers/rh"; do
+for candidate in "${HOME:-}/.local/bin/rh" "/opt/homebrew/bin/rh" "/usr/local/bin/rh" \
+  "/Applications/Right Here.app/Contents/Helpers/rh" "${HOME:-}/Applications/Right Here.app/Contents/Helpers/rh"; do
   if [[ -x "$candidate" ]]; then
     start "$candidate"
   fi

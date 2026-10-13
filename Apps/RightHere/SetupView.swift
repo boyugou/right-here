@@ -56,7 +56,14 @@ struct SetupView: View {
                     .foregroundStyle(model.needsAttention ? Color.orange : Color.green)
                     // The sentence beside it says the same; VoiceOver would read the symbol's name first.
                     .accessibilityHidden(true)
-                Text(l10n.string(model.needsAttention ? .appNeedsAttention : .appAllSet)).font(.body.weight(.medium))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(l10n.string(model.needsAttention ? .appNeedsAttention : .appAllSet)).font(.body.weight(.medium))
+                    // Which checks, so the banner is not a puzzle with the answer further down.
+                    let open = model.checks.filter { $0.status != .ok }.map(\.title)
+                    if !open.isEmpty {
+                        Text(open.formatted(.list(type: .and, width: .narrow))).font(.callout).foregroundStyle(.secondary)
+                    }
+                }
             }
             Spacer(minLength: 0)
         }
@@ -116,7 +123,7 @@ private struct CheckRow: View {
                     Text(Self.styled(detail)).font(.callout).foregroundStyle(.secondary).lineLimit(2).textSelection(.enabled)
                 }
                 if let fix = check.fix {
-                    Text(Self.styled(fix)).font(.callout).foregroundStyle(color).lineLimit(3)
+                    Text(Self.styled(fix)).font(.callout).foregroundStyle(.primary).lineLimit(3)
                 }
             }
             Spacer(minLength: 0)
@@ -141,12 +148,19 @@ private struct CheckRow: View {
     /// code instead of with the backticks.
     static func styled(_ text: String) -> AttributedString {
         var result = AttributedString()
-        for (index, part) in text.split(separator: "`", omittingEmptySubsequences: false).enumerated() {
+        for (index, part) in abbreviatingHome(text).split(separator: "`", omittingEmptySubsequences: false).enumerated() {
             var piece = AttributedString(String(part))
             if index % 2 == 1 { piece.font = .system(.callout, design: .monospaced) }
             result += piece
         }
         return result
+    }
+
+    /// Paths read as `~/...`: shorter, and a screenshot of the window does not show the account name.
+    static func abbreviatingHome(_ text: String) -> String {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        guard home.count > 1 else { return text }
+        return text.replacingOccurrences(of: home + "/", with: "~/")
     }
 
     private var symbol: String {
