@@ -16,6 +16,7 @@
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
 - [`development/RELEASING.md`](development/RELEASING.md): signing, notarizing and publishing a release.
 - [`development/MANUAL_CHECKS.md`](development/MANUAL_CHECKS.md): the checks that need a real Finder, real terminals or a native speaker.
+- [`development/WEBSITE.md`](development/WEBSITE.md): the `gh-pages` branch, its checks and how to publish it.
 - [`development/UPSTREAM_REPORTS.md`](development/UPSTREAM_REPORTS.md): known upstream issues found in dependencies (not yet filed).
 - [`../ROADMAP.md`](../ROADMAP.md): what works and what is next.
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md): how to build, test and contribute.
