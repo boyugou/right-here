@@ -55,12 +55,10 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
 
 /// Keeps the config in step with a plain folder (an iCloud Drive folder, Dropbox, a git checkout, a USB stick) by
 /// copying the file, not by linking it: the Finder extension is sandboxed and cannot read through a symlink out of
-/// its allowed folder, and a placeholder iCloud has not downloaded looks like a missing file through a link.
+/// its allowed folder, and a file iCloud has not downloaded looks like a missing file through a link.
 /// Both sides keep an ordinary file. Nothing is deleted; every write goes through `AtomicFile`.
 public struct ConfigSync: Sendable {
     public static let remoteFileName = "config.toml"
-    /// What iCloud Drive leaves in place of a file it has not downloaded.
-    public static let evictedStubName = ".config.toml.icloud"
     public static let defaultFolderComponents = ["Library", "Mobile Documents", "com~apple~CloudDocs", "Right Here"]
 
     public let paths: RHPaths
@@ -154,7 +152,6 @@ public struct ConfigSync: Sendable {
             return Inspection(folder: folder, folderReachable: false, localData: localData, remoteData: nil, remote: .missing, conflicts: [])
         }
         let file = folder.appendingPathComponent(Self.remoteFileName)
-        let stub = folder.appendingPathComponent(Self.evictedStubName)
         var remote = SyncRemote.missing
         var remoteData: Data?
         let fileThere = manager.fileExists(atPath: file.path)
@@ -163,7 +160,7 @@ public struct ConfigSync: Sendable {
         if fileThere, !notDownloaded, let data = try? Data(contentsOf: file) {
             remoteData = data
             remote = .present(hash: Self.hash(data))
-        } else if fileThere || manager.fileExists(atPath: stub.path) || notDownloaded {
+        } else if fileThere || notDownloaded {
             remote = .evicted
         }
         let names = (try? manager.contentsOfDirectory(atPath: folder.path)) ?? []

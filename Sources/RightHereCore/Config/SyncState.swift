@@ -10,7 +10,7 @@ public enum SyncStatus: String, Sendable, Codable, CaseIterable {
     /// Both changed, or they differ and nothing says which is newer (no sync happened yet).
     case diverged
     case remoteMissing = "remote-missing"
-    /// The copy is a placeholder iCloud has not downloaded (an `.config.toml.icloud` stub), or cannot be read.
+    /// The copy is a file iCloud has not downloaded, or one that cannot be read.
     case remoteEvicted = "remote-evicted"
 }
 

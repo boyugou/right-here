@@ -341,25 +341,20 @@ struct ConfigSyncSafetyTests {
         }
     }
 
-    @Test func anEvictedStubIsNeitherMissingNorOverwritten() throws {
-        let f = try Fixture(); defer { f.cleanUp() }
-        try f.write(one, to: f.local)
-        try f.sync.enable(folder: f.remote.path)
-        try f.write("stub", to: f.remote.appendingPathComponent(".config.toml.icloud"))
+    @Test func aCopyThatCannotBeReadIsEvictedNeitherMissingNorOverwritten() throws {
+        // The stand-in for a file iCloud has not downloaded: it is there, and its content is not readable.
+        let f = try prepared(one); defer { f.cleanUp() }
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: f.remoteFile.path)
+        try #require(!FileManager.default.isReadableFile(atPath: f.remoteFile.path), "running as a user that ignores permissions")
+        try f.write(two, to: f.local)
         #expect(try f.sync.status().status == .remoteEvicted)
         #expect(throws: ConfigSyncError.refused(.remoteEvicted, folder: f.remote.path)) { try f.sync.push() }
         #expect(throws: ConfigSyncError.refused(.remoteEvicted, folder: f.remote.path)) { try f.sync.push(force: true) }
         #expect(throws: ConfigSyncError.refused(.remoteEvicted, folder: f.remote.path)) { try f.sync.pull(force: true) }
-        #expect(!FileManager.default.fileExists(atPath: f.remoteFile.path))
-        #expect(try f.read(f.local) == one)
-    }
-
-    @Test func aFileThatCannotBeReadCountsAsEvicted() throws {
-        let f = try prepared(one); defer { f.cleanUp() }
-        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: f.remoteFile.path)
-        try #require(!FileManager.default.isReadableFile(atPath: f.remoteFile.path), "running as a user that ignores permissions")
-        #expect(try f.sync.status().status == .remoteEvicted)
-        #expect(throws: ConfigSyncError.refused(.remoteEvicted, folder: f.remote.path)) { try f.sync.push(force: true) }
+        #expect(try f.read(f.local) == two)
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: f.remoteFile.path)
+        #expect(try f.read(f.remoteFile) == one, "the copy that could not be read was written over")
+        #expect(f.names(in: f.remote) == ["config.toml"])
     }
 
     @Test func aCopyThatChangedIsNotAnOverwriteOfThePullSource() throws {
@@ -505,8 +500,10 @@ struct ConfigSyncDoctorTests {
     @Test func anEvictedCopyIsAWarningWithAFix() throws {
         let f = try Fixture(); defer { f.cleanUp() }
         try f.write(one, to: f.local)
+        try f.write(one, to: f.remoteFile)
         try f.sync.enable(folder: f.remote.path)
-        try f.write("stub", to: f.remote.appendingPathComponent(".config.toml.icloud"))
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: f.remoteFile.path)
+        try #require(!FileManager.default.isReadableFile(atPath: f.remoteFile.path), "running as a user that ignores permissions")
         let remote = f.sync.doctorChecks().first { $0.id == "sync.remote" }
         #expect(remote?.status == .warn)
         #expect(remote?.detail?.contains("not downloaded") == true)

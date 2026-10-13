@@ -98,10 +98,10 @@ the folder's copy, and the content at the last sync.
   key names containing token, secret, password or api_key (compared in lowercase, dashes as underscores; names only,
   not values). Refusing at the door is cheaper than scrubbing a secret out of a synced folder afterwards.
 - `pull` also refuses a config that would add or change what Right Here starts, unless `--allow-commands` (see Trust).
-- **Evicted wins over missing, and is never overwritten, not even with `--force`**: with a placeholder present the
-  real `config.toml` may hold newer content than this Mac knows. The check also treats a file whose iCloud status is
-  `notDownloaded` or that cannot be read as evicted, and asks that status before reading, because reading would
-  block on the network.
+- **Evicted wins over missing, and is never overwritten, not even with `--force`**: a `config.toml` that is there but
+  whose iCloud status is `notDownloaded`, or that cannot be read, may hold newer content than this Mac knows. The
+  status is asked before reading, because reading would block on the network. (The `.config.toml.icloud` placeholder
+  of earlier systems is not looked for: the floor is macOS 26.)
 - Writes are a temporary file in the destination's folder (rename is atomic only within a volume), `fsync`, then
   `rename`. A failed or interrupted write removes its own temporary file and leaves the old file. Nothing else is
   deleted; `disable` removes only `sync.toml`, the state file.
@@ -176,16 +176,16 @@ names only: with such a folder config, `rh config sync pull` exited 0 with "Pull
 
 Verified by tests in temporary directories (no real home, no iCloud, no Finder): the merge rules and their
 diagnostics, the equivalence of the merge path and the plain path, every sync status and decision, push, pull and the
-refusals, atomicity under an injected interruption, the evicted stub and an unreadable file, conflict copies, secret
+refusals, atomicity under an injected interruption, a copy that cannot be read (the stand-in for an undownloaded
+file), conflict copies, secret
 keys, oversize, a symlinked config, the CLI end to end with an isolated home, the doctor checks, and the launch-command
 gate with a hostile folder config (a built-in terminal redefined to run `/bin/sh -c`): refused with and without
 `--force`, nothing written, taken with `--allow-commands`.
 
 Not verified, because it needs the real iCloud Drive (which this work was not allowed to touch):
 
-- what macOS 26 puts in place of an evicted file in `com~apple~CloudDocs` (the `.config.toml.icloud` stub of earlier
-  systems, or a dataless file at the same name); the code handles both, but only the stub and the unreadable file are
-  exercised;
+- what macOS 26 puts in place of an evicted file in `com~apple~CloudDocs` (a dataless file at the same name is assumed,
+  and only an unreadable file is exercised);
 - that `ubiquitousItemDownloadingStatus` reports `notDownloaded` for such a file;
 - the time iCloud takes to deliver a push to another Mac, and that it leaves `config 2.toml` on a concurrent write.
   The doctor looks for that name, since it is the form Finder uses, but this is not observed.
