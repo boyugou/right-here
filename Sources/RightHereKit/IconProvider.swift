@@ -5,6 +5,18 @@ import RightHereCore
 /// Turns a menu `Icon` into an image, remembering the result: loading an application icon is slow
 /// enough to make a menu feel sluggish when repeated on every right-click.
 public final class IconProvider: @unchecked Sendable {
+    /// The dedicated template icons (Apps/FinderExtension/Assets.xcassets, drawn by script/generate_menu_icons.swift),
+    /// keyed by the SF Symbol name an `Icon` carries. A symbol without an entry is drawn from the system set.
+    public static let dedicatedGlyphs: [String: String] = [
+        "doc.badge.plus": "rh-new-file",
+        "doc.on.doc": "rh-copy-path",
+        "ellipsis.circle": "rh-more-agents",
+        "magnifyingglass": "rh-reveal",
+        "terminal": "rh-terminal",
+        "chevron.left.forwardslash.chevron.right": "rh-editor",
+        "arrow.up.forward.app": "rh-open-with",
+    ]
+
     private let facts: any SystemFacts
     private let lock = NSLock()
     private var cache: [String: NSImage] = [:]
@@ -30,6 +42,12 @@ public final class IconProvider: @unchecked Sendable {
             image.size = NSSize(width: side, height: side)
             return image
         case .symbol:
+            // Only the Finder extension's bundle carries the catalog; anywhere else this falls through to the system symbol.
+            if let glyph = Self.dedicatedGlyphs[icon.value], let image = NSImage(named: NSImage.Name(glyph))?.copy() as? NSImage {
+                image.size = NSSize(width: side, height: side)
+                image.isTemplate = true
+                return image
+            }
             let configuration = NSImage.SymbolConfiguration(pointSize: side - 3, weight: .regular)
             let image = NSImage(systemSymbolName: icon.value, accessibilityDescription: nil)?.withSymbolConfiguration(configuration)
             image?.isTemplate = true
