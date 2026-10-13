@@ -91,7 +91,7 @@ api_key) is an error in `config.toml`: `push` refuses it, and a synced config mu
 A config file that is there but cannot be read (no permission, a folder in its place) is an error that names the file and
 the reason, in `rh config validate`, `rh doctor` and `rh init`; it is never taken for a missing config.
 
-## `rh config sync pull` will not take the copy
+## `rh config sync` will not pull or push
 
 The message says why, and nothing was changed. The usual reasons:
 
