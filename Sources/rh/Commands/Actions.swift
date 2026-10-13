@@ -73,7 +73,7 @@ struct MenuCommand: ParsableCommand {
             if explain { try Output.json(explanation) } else { try Output.json(explanation.menu) }
         } else {
             Output.print(Self.describe(here) + ":")
-            Output.print(Self.render(explanation.menu, indent: 0))
+            if !explanation.menu.isEmpty { Output.print(Self.render(explanation.menu, indent: 0)) }
             if explain {
                 Output.print(Self.render(explanation.notes))
             } else if explanation.menu.isEmpty {
