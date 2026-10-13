@@ -16,6 +16,7 @@
   - [0011 A first-run card in the setup window](decisions/0011-first-run-card.md)
   - [0012 Agent prompt presets](decisions/0012-agent-presets.md)
   - [0013 Config sync: an overlay file and a copy-based sync folder](decisions/0013-config-sync.md)
+  - [0014 An agent launch is resolved once](decisions/0014-agent-launch-resolution.md)
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
 - [`development/RELEASING.md`](development/RELEASING.md): signing, notarizing and publishing a release.

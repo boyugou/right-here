@@ -58,10 +58,15 @@ installing in more detail.
 For a terminal that can be driven from its command line, no code is needed: define an `[[app]]` with
 `role = "terminal"`, `open_args` and `run_args` in the config (see `rh docs config` and
 [`docs/development/MANUAL_CHECKS.md`](docs/development/MANUAL_CHECKS.md)), and check it with `rh config validate`
-and `rh run ... --dry-run`. For a built-in adapter, add a descriptor in `Sources/RightHereCore/Catalog/AppDescriptor.swift`
-and an adapter beside `GhosttyAdapter` in `Sources/RightHereCore/Terminals/`. The adapter must validate that the
-working directory is a folder, pass paths as arguments (never as script text), and come with tests in
-`TerminalAdapterTests`. Say in the pull request which terminal version you checked it against.
+and `rh run ... --dry-run`. For a built-in terminal, add one row to `KnownApps.terminals` in
+`Sources/RightHereCore/Catalog/AppDescriptor.swift`: its `driver` says how it is started (`.openFolder` hands it the
+folder, `.template(TerminalLaunch(open:run:))` starts it from an argument vector, as `[[app]]` does in the config) and
+its `defaultRank` where it stands when the first installed terminal is picked (leave it out and it is never picked that
+way). A terminal that needs code of its own, such as a scripting dictionary, also gets a `Driver` case and an adapter
+beside `GhosttyAdapter` in `Sources/RightHereCore/Terminals/`, which `TerminalAdapters.adapter(for:)` maps the driver
+to. The adapter must validate that the working directory is a folder, pass paths as arguments (never as script text),
+and come with tests in `TerminalAdapterTests`. Say in the pull request which terminal version you checked it against.
+An editor is one row in `KnownApps.editors` (a `defaultRank` makes it a candidate for the default editor).
 
 ## Adding an agent
 
