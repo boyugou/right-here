@@ -10,6 +10,10 @@ atomic claim and expiry, and so on. The script applies the change to a throwaway
 test suite, and expects a test to fail. A mutant the tests do not notice is a hole in the tests; a mutant whose
 pattern no longer matches the code, or that does not compile, needs its entry updated (the code moved).
 
+The test that fails is named in the output. A test whose result depends on how busy the machine is (LOAD_SENSITIVE)
+fails on a loaded one whatever the code says, so a mutant that only it notices is run once more and, if that
+fails the same way, reported as inconclusive instead of killed.
+
 Slow the first time (the clone builds from scratch), then about 15 seconds a mutant. Run it after touching
 quoting, planning, the MCP server, the process runner or the Finder probe.
 
@@ -240,6 +244,34 @@ MUTANTS = [
 ]
 
 
+# Tests whose result depends on how busy the machine is (they leave a margin of a second or two for a process to be
+# stopped), so on a loaded one they fail whatever the code does.
+LOAD_SENSITIVE = {"theChildrenOfAKilledProcessAreKilledToo"}
+
+
+def failed_tests(output: str) -> set[str]:
+    """The tests a run reports as failed. Swift Testing prints `✘ Test name() failed`, `✘ Test "display name" ... failed`
+    and, for one case of a parameterized test, `✘ Test case ... to "display name" failed`."""
+    names: set[str] = set()
+    for match in re.finditer(r'✘ Test (?:case .*? to "([^"]+)"|(\w+)\(\)|"([^"]+)")', output):
+        names.add(next(group for group in match.groups() if group))
+    return names
+
+
+def run_tests(clone: pathlib.Path) -> tuple[str, bool]:
+    """`swift test` in the clone: what it printed, and whether it had to be killed for hanging."""
+    # Its own session, so that on a hang the test host and every rh it started are stopped together.
+    process = subprocess.Popen(["swift", "test"], cwd=clone, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                               text=True, start_new_session=True)
+    try:
+        output, _ = process.communicate(timeout=900)
+        return output, False
+    except subprocess.TimeoutExpired:
+        os.killpg(process.pid, signal.SIGKILL)
+        output, _ = process.communicate()
+        return output, True
+
+
 def main() -> int:
     arguments = sys.argv[1:]
     if arguments == ["--list"]:
@@ -263,24 +295,26 @@ def main() -> int:
                 continue
             path.write_text(original.replace(old, new, 1), encoding="utf-8")
             started = time.time()
-            hung = False
-            # Its own session, so that on a hang the test host and every rh it started are stopped together.
-            process = subprocess.Popen(["swift", "test"], cwd=clone, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                       text=True, start_new_session=True)
             try:
-                output, _ = process.communicate(timeout=900)
-            except subprocess.TimeoutExpired:
-                hung = True
-                os.killpg(process.pid, signal.SIGKILL)
-                output, _ = process.communicate()
+                # A run in which only a load-sensitive test failed says nothing, so it is tried once more.
+                for _ in range(2):
+                    output, hung = run_tests(clone)
+                    if hung or failed_tests(output) - LOAD_SENSITIVE or "\u2718 Test" not in output:
+                        break
             finally:
                 path.write_text(original, encoding="utf-8")
+            killers = sorted(failed_tests(output) - LOAD_SENSITIVE)
             if hung:
                 status = "HUNG"
                 problems.append(f"[{index}] the tests hung instead of failing for: {name} ({file})")
-            elif "\u2718 Test" in output or "unexpected signal code" in output:
+            elif killers:
+                status = f"killed by {killers[0]}" + (f" and {len(killers) - 1} more" if len(killers) > 1 else "")
+            elif "unexpected signal code" in output:
                 # A test host that dies by a signal (SIGPIPE, SIGBUS) is as good as a failed test.
-                status = "killed"
+                status = "killed (the test host died)"
+            elif "\u2718 Test" in output:
+                status = "INCONCLUSIVE"
+                problems.append(f"[{index}] only a load-sensitive test failed for: {name} ({file}); run it again when the machine is quieter")
             elif re.search(r"^error: |\.swift:\d+:\d+: error:", output, re.M):
                 # A passing test run prints "error:" too (in the names of cases about error messages), so only a
                 # compiler diagnostic or SwiftPM's own "error: " line counts.
