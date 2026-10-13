@@ -110,6 +110,15 @@ public struct ConfigSync: Sendable {
         /// This machine's config is there but cannot be read as TOML (a syntax error, too large, not text, no permission), so
         /// `rh` runs with the defaults and `pendingCommands` is the folder's custom settings against those.
         public var localRunsWithDefaults: Bool
+        /// The folder is not there and neither is its parent, which `push` does not make; `nil` when the folder is there, or
+        /// when its parent is.
+        public var missingParent: MissingParent?
+    }
+
+    /// The sync folder's parent is missing: `makeParent` is the folder the person can create first (`mkdir -p`), when it is
+    /// theirs to create, and `nil` where it is not (iCloud Drive is switched on, a drive is mounted).
+    public struct MissingParent: Sendable, Equatable {
+        public var makeParent: String?
     }
 
     public enum PullOutcome: Sendable, Equatable {
@@ -264,6 +273,14 @@ public struct ConfigSync: Sendable {
         case .unreadable(let reason): localProblems = [.unreadable(reason: reason)]
         case .absent: break
         }
+        var missingParent: MissingParent?
+        if !inspection.folderReachable {
+            var isDirectory: ObjCBool = false
+            let parent = inspection.folder.deletingLastPathComponent()
+            if !(FileManager.default.fileExists(atPath: parent.path, isDirectory: &isDirectory) && isDirectory.boolValue) {
+                missingParent = MissingParent(makeParent: parentToMake(for: inspection.folder))
+            }
+        }
         var runsWithDefaults = false
         switch inspection.local {
         case .data(let data):
@@ -274,7 +291,8 @@ public struct ConfigSync: Sendable {
         return Report(status: SyncState.status(snapshot), folder: inspection.folder, remoteFile: inspection.folder.appendingPathComponent(Self.remoteFileName),
                       localFile: paths.configFile, folderReachable: inspection.folderReachable, conflictCopies: inspection.conflicts,
                       localHash: local, remoteHash: remoteHash, lastSynced: settings.lastSynced, pendingCommands: pending,
-                      remote: inspection.remote, localProblems: localProblems, remoteProblems: remoteProblems, localRunsWithDefaults: runsWithDefaults)
+                      remote: inspection.remote, localProblems: localProblems, remoteProblems: remoteProblems, localRunsWithDefaults: runsWithDefaults,
+                      missingParent: missingParent)
     }
 
     // MARK: Commands

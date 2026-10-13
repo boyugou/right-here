@@ -1090,6 +1090,8 @@ struct ConfigSyncCLITests {
         #expect(!enable.standardOutput.contains("mine --yes"), "the copy was parsed: \(enable.standardOutput)")
         let json = try #require(try rh.run(["config", "sync", "status", "--json"]).json as? [String: Any])
         #expect(json["remoteSHA256"] == nil && (json["pendingLaunchCommands"] as? [String])?.isEmpty == true, "\(json)")
+        #expect((json["remoteProblems"] as? [String])?.count == 1 && (json["remoteProblems"] as? [String])?.first?.contains("the limit is 1024 KB") == true, "\(json)")
+        #expect((json["localProblems"] as? [String])?.isEmpty == true, "\(json)")
         for arguments in [["pull", "--force", "--allow-commands"], ["push", "--force"]] {
             let refused = try rh.run(["config", "sync"] + arguments)
             #expect(refused.status == 1 && refused.standardError.contains("is never replaced"), "\(arguments): \(refused.standardError)")
@@ -1201,11 +1203,13 @@ struct ConfigSyncCLITests {
     @Test func pushSaysItCreatesOnlyTheLastFolderAndHowToMakeTheParent() throws {
         let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
         let home = try #require(rh.home).path
-        #expect(try rh.run(["config", "sync", "enable", "--folder", "~/Sync/rh"]).status == 0)
+        let enable = try rh.run(["config", "sync", "enable", "--folder", "~/Sync/rh"])
+        #expect(enable.status == 0 && enable.standardOutput.contains("Next: make the parent folder first, `mkdir -p \(home)/Sync`") && !enable.standardOutput.contains("Next: `rh config sync push`"), "\(enable.standardOutput)")
         let push = try rh.run(["config", "sync", "push"])
         #expect(push.status == 1, "\(push.standardError)")
         #expect(push.standardError.contains("creates the last folder of the path only") && push.standardError.contains("`mkdir -p \(home)/Sync`"), "\(push.standardError)")
         try FileManager.default.createDirectory(atPath: home + "/Sync", withIntermediateDirectories: true)
+        #expect(try rh.run(["config", "sync", "status"]).standardOutput.contains("Next: `rh config sync push`."))
         #expect(try rh.run(["config", "sync", "push"]).standardOutput.hasPrefix("Created \(home)/Sync/rh and pushed"))
         for command in [["config", "sync", "enable", "--help"], ["config", "sync", "push", "--help"], ["config", "sync", "--help"]] {
             let help = try rh.run(command).standardOutput.replacingOccurrences(of: "\n", with: " ").replacingOccurrences(of: "  ", with: " ")
@@ -1258,6 +1262,18 @@ struct ConfigSyncCLITests {
         #expect(status.contains("remote-ahead") && status.contains("The folder's copy would be refused by `pull`"), "\(status)")
         #expect(!status.contains("Next: `rh config sync pull`") && status.contains("Next: fix the folder's copy first"), "\(status)")
         #expect(try rh.run(["config", "sync", "pull"]).status == 1)
+
+        // A config that cannot be read is never written over, `--force` included, so `pull --force` is not the advice either.
+        try good.write(to: local, atomically: true, encoding: .utf8)
+        try "[general]\nterminal = \"terminal\"\n".write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: local.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: local.path) }
+        try #require(!FileManager.default.isReadableFile(atPath: local.path), "running as a user that ignores permissions")
+        status = try rh.run(["config", "sync", "status"]).standardOutput
+        #expect(status.contains("This machine's config would be refused by `push`: the file cannot be read (Permission denied)"), "\(status)")
+        #expect(status.contains("Next: this machine's config was not read") && !status.contains("--force"), "\(status)")
+        let forced = try rh.run(["config", "sync", "pull", "--force"])
+        #expect(forced.status == 1 && forced.standardError.contains("can neither compare it"), "\(forced.standardError)")
     }
 
     @Test func showPrintsEveryFileThatMakesUpTheConfigUnderAHeaderAndPathListsThem() throws {

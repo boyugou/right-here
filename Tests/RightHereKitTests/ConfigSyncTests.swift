@@ -956,6 +956,20 @@ struct ConfigSyncFolderTests {
         #expect(try f.read(target.appendingPathComponent("config.toml")) == one)
     }
 
+    @Test func theReportSaysThePushCannotMakeTheFolderBeforeAnyoneTriesIt() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        let parent = f.paths.home.appendingPathComponent("Sync").path
+        #expect(try f.sync.enable(folder: "~/Sync/rh").missingParent == .init(makeParent: parent))
+        #expect(try f.sync.status().missingParent == .init(makeParent: parent))
+        // Outside the home folder there is no `mkdir` to suggest; a folder that is there, or whose parent is, has no problem.
+        #expect(try f.sync.enable(folder: f.root.appendingPathComponent("no/such/rh").path).missingParent == .init(makeParent: nil))
+        #expect(try f.sync.enable(folder: f.root.appendingPathComponent("new-folder").path).missingParent == nil, "its parent is there: push makes it")
+        #expect(try f.sync.enable(folder: f.remote.path).missingParent == nil)
+        try FileManager.default.createDirectory(at: URL(fileURLWithPath: parent), withIntermediateDirectories: true)
+        #expect(try f.sync.enable(folder: "~/Sync/rh").missingParent == nil)
+    }
+
     @Test func noMakeParentIsOfferedOutsideTheHomeFolderOrInICloudDrivesOwnTree() throws {
         let f = try Fixture(); defer { f.cleanUp() }
         try f.write(one, to: f.local)

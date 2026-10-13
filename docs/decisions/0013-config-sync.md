@@ -165,7 +165,10 @@ the folder's copy, and the content at the last sync.
   advises neither of them then: "Next: fix this machine's config first". A local config that cannot be read as TOML runs
   with the defaults, so the folder's own programs are all new to a pull and the list stays (the gate is not relaxed); its
   heading says why ("cannot be read as it is, so Right Here runs with its defaults") and not that the copy "adds" what
-  this Mac itself pushed before the file broke.
+  this Mac itself pushed before the file broke. A folder whose parent is missing is said before anyone pushes
+  (`Report.missingParent`: "make the parent folder first, `mkdir -p ...`"), a config that was not read at all (too
+  large, no permission) is never written over, so `pull --force` is not the advice for it, and `status --json` lists the
+  same problems as `localProblems` and `remoteProblems`.
 - Hashes are over the raw bytes, so a byte order mark or a line-ending change counts as a change.
 - The doctor gains checks only while sync is on: folder reachable, copy downloaded, copy valid, how the two compare,
   Finder-style conflict copies (`config 2.toml`) next to the copy, and one row about launch commands (see Trust).

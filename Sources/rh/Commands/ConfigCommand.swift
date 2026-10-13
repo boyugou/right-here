@@ -62,7 +62,11 @@ struct ConfigCommand: ParsableCommand {
             discussion: """
             Exits with status 1 when there are errors. Warnings (unknown keys, unknown menu entries, an app that \
             replaces a built-in one) do not fail the check by default, because the rest of the file still applies; \
-            but they are nearly always mistakes, so use --strict to fail on them too.
+            but they are nearly always mistakes, so use --strict to fail on them too. Each problem names its file and \
+            line. A note (`note:`) says what the config did on purpose, such as leaving out a shared preset whose \
+            agent this Mac disables; it never fails the check. With a config.local.toml, config.toml is also checked \
+            on its own, because other Macs read it that way: an error the overlay hides on this Mac still counts, and \
+            so does a key named like a credential, which `rh config sync push` refuses.
             """
         )
 

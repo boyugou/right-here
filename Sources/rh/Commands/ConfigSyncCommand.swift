@@ -68,6 +68,9 @@ struct ConfigSyncCommand: ParsableCommand {
             var conflictCopies: [String]
             /// What the folder's copy would add or change among what this machine starts (one line each).
             var pendingLaunchCommands: [String]
+            /// What `push` would refuse in this machine's config, and what `pull` would refuse in the folder's copy (a sentence each).
+            var localProblems: [String]
+            var remoteProblems: [String]
         }
 
         func run() throws {
@@ -78,7 +81,8 @@ struct ConfigSyncCommand: ParsableCommand {
                     try Output.json(Report(status: report.status.rawValue, folder: report.folder.path, folderReachable: report.folderReachable,
                                            localFile: report.localFile.path, remoteFile: report.remoteFile.path, localSHA256: report.localHash,
                                            remoteSHA256: report.remoteHash, lastSyncedSHA256: report.lastSynced, conflictCopies: report.conflictCopies,
-                                           pendingLaunchCommands: report.pendingCommands.map(\.line)))
+                                           pendingLaunchCommands: report.pendingCommands.map(\.line),
+                                           localProblems: report.localProblems.map(\.message), remoteProblems: report.remoteProblems.map(\.message)))
                     return
                 }
                 Output.print("Sync folder: \(report.folder.path)" + (report.folderReachable ? "" : " (not reachable)"))
@@ -136,18 +140,36 @@ struct ConfigSyncCommand: ParsableCommand {
                 + (report.pendingCommands.count > ConfigSyncError.listedChanges ? ["  and \(report.pendingCommands.count - ConfigSyncError.listedChanges) more"] : [])
         }
 
+        /// `push` makes the last folder of the path and not its parents: what to do first when the parent is not there.
+        static func parentAdvice(_ missing: ConfigSync.MissingParent) -> String {
+            if let parent = missing.makeParent {
+                return "Next: make the parent folder first, `mkdir -p \(ShellQuoting.quote(parent, for: .posix))` (`push` creates only the last folder of the path), then `rh config sync push`."
+            }
+            return "Next: the folder's parent is missing (is iCloud Drive on, or the drive mounted?): switch it on, or choose another folder with `rh config sync enable --folder <folder>`; `push` creates only the last folder of the path."
+        }
+
         static func nextStep(_ report: ConfigSync.Report) -> String {
             let approval = report.pendingCommands.isEmpty ? "" : " --allow-commands"
             // What `push` and `pull` would refuse is not advised: it is said above, and the way out is to fix it first.
             let canPush = report.localProblems.isEmpty, canPull = report.remoteProblems.isEmpty
+            // A local config that was not read (too large, no permission) is never written over, `--force` included.
+            let localNotRead = report.localProblems.contains {
+                switch $0 {
+                case .tooLarge, .unreadable: true
+                default: false
+                }
+            }
             switch report.status {
             case .inSync: return "Nothing to do."
             case .localAhead, .remoteMissing:
-                return canPush ? "Next: `rh config sync push`." : "Next: fix this machine's config first (`rh config validate` says what is wrong); `push` refuses it."
+                guard canPush else { return "Next: fix this machine's config first (`rh config validate` says what is wrong); `push` refuses it." }
+                if let missing = report.missingParent { return parentAdvice(missing) }
+                return "Next: `rh config sync push`."
             case .remoteAhead:
                 guard canPull else { return "Next: fix the folder's copy first, on the Mac that wrote it or by hand; `pull` refuses it." }
                 return report.pendingCommands.isEmpty ? "Next: `rh config sync pull`." : "Next: read what the folder's copy would start, and if it is yours, `rh config sync pull\(approval)`."
             case .diverged:
+                if localNotRead && canPull { return "Next: this machine's config was not read (see above), so it can be neither compared nor replaced: fix its permissions or move it aside, then `rh config sync pull\(approval)`." }
                 switch (canPull, canPush) {
                 case (true, true): return "Next: compare the two files, then `rh config sync pull --force\(approval)` (take the folder's) or `rh config sync push --force` (keep this one); the replaced file is saved first."
                 case (true, false): return "Next: `push` would refuse this machine's config, so either fix it (`rh config validate`), or take the folder's with `rh config sync pull --force\(approval)`; the replaced file is saved first."
