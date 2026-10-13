@@ -152,8 +152,7 @@ struct Agents: AsyncParsableCommand {
             return
         }
         for row in rows {
-            let state = row.enabled ? "enabled" : (row.foundInShell == true ? "found, not enabled" : "not found")
-            Output.print("\(row.id.padding(toLength: 12, withPad: " ", startingAt: 0))\(row.name.padding(toLength: 16, withPad: " ", startingAt: 0))\(state)")
+            Output.print("\(row.id.padding(toLength: 12, withPad: " ", startingAt: 0))\(row.name.padding(toLength: 16, withPad: " ", startingAt: 0))\(row.stateText)")
         }
     }
 }

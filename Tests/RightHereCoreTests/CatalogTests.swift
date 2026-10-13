@@ -35,6 +35,21 @@ struct CatalogTests {
         #expect(asked.map(\.id) == config.agentRows().map(\.id), "the same rows in the same order, asked or not")
     }
 
+    @Test func aRowWordsItsStateForRhAgentsAndAnEnabledAgentThatIsNotFoundSaysSo() {
+        // The menu cannot look for a command (that takes a shell), so an enabled agent whose command is missing is still listed.
+        var config = Config(enabledAgents: ["claude", "codex"])
+        config.agents["codex"] = .init(command: "no-such-command-anywhere")
+        let rows = config.agentRows(found: ["claude"])
+        func state(_ id: String) -> String? { rows.first { $0.id == id }?.stateText }
+        #expect(state("claude") == "enabled")
+        #expect(state("codex") == "enabled, not found")
+        #expect(state("gemini") == "not found")
+        #expect(config.agentRows(found: ["gemini"]).first { $0.id == "gemini" }?.stateText == "found, not enabled")
+        #expect(config.agentRows().first { $0.id == "codex" }?.stateText == "enabled", "nobody asked the shell, so nothing is claimed")
+        // The words are for the command line; the JSON has the two facts.
+        #expect(!String(decoding: (try? JSONEncoder().encode(rows.first)) ?? Data(), as: UTF8.self).contains("stateText"))
+    }
+
     @Test func aRowReadsBackAsItWasWritten() throws {
         let config = Config(enabledAgents: ["claude"])
         for rows in [config.agentRows(), config.agentRows(found: ["claude", "codex"])] {

@@ -297,6 +297,18 @@ struct CLITests {
         #expect(agents.first { $0["id"] as? String == "claude" }?["promptArgument"] as? String == "positional")
     }
 
+    @Test func rhAgentsSaysAnEnabledAgentThatItsShellDoesNotFindIsNotFound() throws {
+        // `rh docs sync` said an agent that is not installed is skipped by the menu; it is not, so the list has to say which is which.
+        let rh = try RH(config: "[general]\nagents = [\"ghostly\"]\n[agent.ghostly]\nname = \"Ghostly\"\ncommand = \"rh-test-no-such-command\"\n"); defer { rh.cleanUp() }
+        let line = try #require(try rh.run(["agents"]).standardOutput.split(separator: "\n").first { $0.hasPrefix("ghostly") })
+        #expect(line.hasSuffix("enabled, not found"), "\(line)")
+        let menu = try rh.run(["menu", "--container", rh.configDirectory.path]).standardOutput
+        #expect(menu.contains("Ghostly Here"), "the menu cannot look, so it lists the agent anyway")
+        let sync = try rh.run(["docs", "sync"]).standardOutput.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        #expect(!sync.contains("an app or agent that is not installed is skipped"), "the agent half of that sentence was wrong")
+        #expect(sync.contains("`enabled, not found`"))
+    }
+
     @Test func theAgentsTheIntentsOfferAreReadFromWhatRhAgentsPrints() throws {
         let rh = try RH(config: "[general]\nagents = [\"claude\"]\n"); defer { rh.cleanUp() }
         let result = try rh.run(["agents", "--json"])
