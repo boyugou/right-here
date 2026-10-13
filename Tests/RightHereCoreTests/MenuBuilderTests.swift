@@ -44,6 +44,12 @@ struct MenuBuilderTests {
         #expect(titles(copy.children) == ["Full Path", "Path from Home (~)", "Path from Git Root", "File Name", "Shell-Escaped Path", "@ Mention for AI"])
     }
 
+    @Test func newFileEntriesCarryTheIconOfTheirKindOfFile() throws {
+        let menu = MenuBuilder(config: .default, facts: machine()).build(for: background)
+        let newFile = try #require(menu.first { $0.title == "New File" })
+        #expect(newFile.children.map(\.icon) == [.fileType("txt"), .fileType("md")])
+    }
+
     @Test func theMoreMenuDoesNotRepeatTheTerminalTheAgentEntryAlreadyUses() throws {
         // iTerm is the preferred default for opening a folder but cannot be typed into yet, so "Claude Code Here" runs in
         // Terminal; "Claude Code in Terminal" would be the same action twice.

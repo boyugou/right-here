@@ -7,6 +7,8 @@ public struct Icon: Sendable, Equatable, Codable {
         case app
         /// An SF Symbol.
         case symbol
+        /// The system icon of a kind of file, identified by file name extension (`md`, `txt`).
+        case fileType
     }
 
     public var kind: Kind
@@ -14,4 +16,5 @@ public struct Icon: Sendable, Equatable, Codable {
 
     public static func app(_ bundleID: String) -> Icon { Icon(kind: .app, value: bundleID) }
     public static func symbol(_ name: String) -> Icon { Icon(kind: .symbol, value: name) }
+    public static func fileType(_ fileExtension: String) -> Icon { Icon(kind: .fileType, value: fileExtension) }
 }

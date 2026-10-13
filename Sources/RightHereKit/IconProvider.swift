@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import RightHereCore
 import Synchronization
+import UniformTypeIdentifiers
 
 /// Turns a menu `Icon` into an image, remembering the result: loading an application icon is slow
 /// enough to make a menu feel sluggish when repeated on every right-click.
@@ -40,6 +41,11 @@ public final class IconProvider: Sendable {
             guard let url = facts.applicationURL(bundleID: icon.value) else { return nil }
             let image = NSWorkspace.shared.icon(forFile: url.path)
             image.size = NSSize(width: side, height: side)
+            return image
+        case .fileType:
+            guard let type = UTType(filenameExtension: icon.value) else { return nil }
+            let image = NSWorkspace.shared.icon(for: type).copy() as? NSImage
+            image?.size = NSSize(width: side, height: side)
             return image
         case .symbol:
             // Only the Finder extension's bundle carries the catalog; anywhere else this falls through to the system symbol.

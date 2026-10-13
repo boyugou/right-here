@@ -36,4 +36,13 @@ struct IconProviderTests {
         #expect(image != nil)
         #expect(image?.isTemplate == true)
     }
+
+    @Test func aNewFileEntryGetsTheSystemIconOfItsKindOfFile() throws {
+        let provider = IconProvider(facts: FakeSystemFacts())
+        let text = try #require(provider.image(for: .fileType("txt")))
+        let markdown = try #require(provider.image(for: .fileType("md")))
+        #expect(text.size == NSSize(width: 16, height: 16) && markdown.size == NSSize(width: 16, height: 16))
+        // A file name extension that names no type has no icon, and the menu simply shows none.
+        #expect(provider.image(for: .fileType("")) == nil)
+    }
 }

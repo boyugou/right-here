@@ -75,7 +75,8 @@ public struct ActionRegistry: Sendable {
             if let template = config.newFile.templates.first(where: { $0.id == id }) {
                 info.title = template.localizedNewTitle(localizer)
                 info.shortTitle = template.localizedTitle(localizer)
-                info.icon = .symbol("doc.badge.plus")
+                // The icon of the kind of file it makes: a Markdown document and a text document are told apart at a glance.
+                info.icon = template.fileExtension.isEmpty ? .symbol("doc.badge.plus") : .fileType(template.fileExtension)
             } else {
                 unavailable(&info, title: localizer.newFile(id), reason: "Unknown template \"\(id)\".")
             }
