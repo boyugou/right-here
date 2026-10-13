@@ -80,7 +80,7 @@ enum TOMLValue: Equatable {
 
 /// Writes a `TOMLValue` table as TOML text. Keys are always quoted and sorted, so the output does not depend on
 /// the order the tree was built in; arrays of tables keep their order, which the builder's indices rely on.
-enum TOMLEmitter {
+public enum TOMLEmitter {
     static func emit(_ root: [String: TOMLValue]) -> String {
         var out = ""
         emit(table: root, path: [], into: &out)
@@ -129,7 +129,7 @@ enum TOMLEmitter {
         }
     }
 
-    static func quote(_ text: String) -> String {
+    public static func quote(_ text: String) -> String {
         var result = "\""
         for scalar in text.unicodeScalars {
             switch scalar {
