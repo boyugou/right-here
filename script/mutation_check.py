@@ -140,6 +140,8 @@ MUTANTS = [
      "context.items.prefix(maxItems)", "context.items"),
     ("a NUL in a path is accepted", "Sources/RightHereCore/Context/ContextInput.swift",
      'guard !path.unicodeScalars.contains("\\0") else', "guard true else"),
+    ("a .. after a symbolic link is resolved by reading the text", "Sources/RightHereKit/PathHazard.swift",
+     "if isSymbolicLink(prefix.isEmpty ? \"/\" : prefix) { return true }", "if false { return true }"),
 ]
 
 

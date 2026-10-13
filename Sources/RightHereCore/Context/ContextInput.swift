@@ -23,6 +23,8 @@ public struct ContextInput: Sendable, Equatable {
         case emptyPath
         case notAbsolute
         case containsNUL
+        /// `link/..` means the folder around the link's target to the kernel, but the folder around the link to a lexical reading.
+        case dotDotAfterLink(String)
         case unknownOrigin(String)
     }
 
@@ -38,9 +40,11 @@ public struct ContextInput: Sendable, Equatable {
         self.resolution = resolution
     }
 
-    public func makeContext() throws -> HereContext {
-        let items = try paths.map(resolve)
-        let folder = try container.map(resolve)
+    /// - Parameter hasLinkBeforeDotDot: Asked about each path as written (home and working directory applied, `..` still
+    ///   in it); true refuses it. It needs the file system, so the surfaces pass `PathHazard.linkBeforeDotDot`.
+    public func makeContext(hasLinkBeforeDotDot: (String) -> Bool = { _ in false }) throws -> HereContext {
+        let items = try paths.map { try resolve($0, hasLinkBeforeDotDot) }
+        let folder = try container.map { try resolve($0, hasLinkBeforeDotDot) }
         let chosen: HereContext.Origin
         if let origin {
             guard let parsed = HereContext.Origin(rawValue: origin) else { throw Problem.unknownOrigin(origin) }
@@ -51,7 +55,7 @@ public struct ContextInput: Sendable, Equatable {
         return HereContext(origin: chosen, items: items, container: folder)
     }
 
-    private func resolve(_ path: String) throws -> URL {
+    private func resolve(_ path: String, _ hasLinkBeforeDotDot: (String) -> Bool) throws -> URL {
         switch resolution {
         case .absoluteOnly:
             // The first scalar, not the first Character: "/" followed by a combining mark is one Character that is not "/".
@@ -64,8 +68,11 @@ public struct ContextInput: Sendable, Equatable {
         guard !path.unicodeScalars.contains("\0") else { throw Problem.containsNUL }
         switch resolution {
         case .absoluteOnly:
+            if hasLinkBeforeDotDot(path) { throw Problem.dotDotAfterLink(path) }
             return URL(fileURLWithPath: path)
         case .relative(let directory):
+            let expanded = (path as NSString).expandingTildeInPath
+            if hasLinkBeforeDotDot(expanded.hasPrefix("/") ? expanded : directory.path + "/" + expanded) { throw Problem.dotDotAfterLink(path) }
             return URL(fileURLWithPath: (path as NSString).expandingTildeInPath, relativeTo: directory).lexicallyNormalized
         }
     }

@@ -175,7 +175,9 @@ enum Tools {
             resolution: .absoluteOnly
         )
         do {
-            return try input.makeContext()
+            return try input.makeContext(hasLinkBeforeDotDot: PathHazard.linkBeforeDotDot)
+        } catch ContextInput.Problem.dotDotAfterLink(let path) {
+            throw ToolError("\"\(path)\" has `..` after a symbolic link, which the file system reads differently from the text. Give the folder's real path instead.")
         } catch ContextInput.Problem.containsNUL {
             throw ToolError("A path cannot contain a NUL character.")
         } catch {

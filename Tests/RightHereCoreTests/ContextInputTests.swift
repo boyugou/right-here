@@ -47,4 +47,10 @@ struct ContextInputTests {
             #expect(throws: ContextInput.Problem.containsNUL) { try ContextInput(paths: [], container: "/a\0b", resolution: resolution).makeContext() }
         }
     }
+
+    @Test func aPathTheFileSystemReadsDifferentlyFromItsTextIsRefused() {
+        let input = ContextInput(paths: ["/a/link/.."], resolution: .absoluteOnly)
+        #expect(throws: ContextInput.Problem.dotDotAfterLink("/a/link/..")) { try input.makeContext(hasLinkBeforeDotDot: { $0.hasSuffix("link/..") }) }
+        #expect((try? input.makeContext()) != nil)
+    }
 }

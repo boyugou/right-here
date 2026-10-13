@@ -87,7 +87,9 @@ struct ContextOptions: ParsableArguments {
     func makeContext(facts: any SystemFacts) throws -> HereContext {
         let input = ContextInput(origin: origin, paths: paths, container: container, resolution: .relative(to: facts.currentDirectory))
         do {
-            return try input.makeContext()
+            return try input.makeContext(hasLinkBeforeDotDot: PathHazard.linkBeforeDotDot)
+        } catch ContextInput.Problem.dotDotAfterLink(let path) {
+            throw ValidationError("\"\(path)\" has `..` after a symbolic link, which the file system reads differently from the text. Give the folder's real path instead.")
         } catch ContextInput.Problem.emptyPath {
             // An empty argument is most often an unset shell variable (`rh run reveal "$DIR"`); acting on the current
             // directory instead would be a surprise.
