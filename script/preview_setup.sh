@@ -5,6 +5,7 @@
 #   ./script/preview_setup.sh out.png              English, light
 #   ./script/preview_setup.sh out.png de           German
 #   ./script/preview_setup.sh out.png en --dark    dark mode
+#   ./script/preview_setup.sh out.png en --onboarding   the first-run card, as when the Finder extension is off
 #
 # It builds a throwaway package under .build/preview that links the app's own view files and the
 # package libraries, then renders SetupView with ImageRenderer. The checks it shows are the real ones
@@ -13,12 +14,19 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--dark]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--dark] [--onboarding]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="${2:-en}"
-DARK="${3:-}"
+DARK=""
+ONBOARDING=""
+for flag in "${@:3}"; do
+  [[ "$flag" == "--dark" ]] && DARK="--dark"
+  [[ "$flag" == "--onboarding" ]] && ONBOARDING="--onboarding"
+done
 PREVIEW="$ROOT/.build/preview"
+# SwiftPM names a path dependency after its folder, which is not "right-here" in a worktree or a renamed clone.
+PKG="$(basename "$ROOT")"
 
 mkdir -p "$PREVIEW/Sources/preview"
 cat > "$PREVIEW/Package.swift" <<PACKAGE
@@ -31,9 +39,9 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "preview",
-            dependencies: [.product(name: "RightHereCore", package: "right-here"), .product(name: "RightHereKit", package: "right-here")],
+            dependencies: [.product(name: "RightHereCore", package: "$PKG"), .product(name: "RightHereKit", package: "$PKG")],
             path: "Sources/preview",
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            swiftSettings: [.swiftLanguageMode(.v5), .define("PREVIEW")]
         )
     ]
 )
@@ -48,6 +56,7 @@ import SwiftUI
 func render(dark: Bool, to path: String) async {
     let model = SetupModel()
     await model.refresh()
+    if CommandLine.arguments.contains("--onboarding") { model.simulateExtensionOff() }
     // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.
     let language = Locale.preferredLanguages.first ?? "en"
     let rightToLeft = Locale.Language(identifier: language).characterDirection == .rightToLeft
@@ -79,8 +88,4 @@ SWIFT
 cd "$PREVIEW"
 swift build 2>&1 | grep -E "error|warning: unre" || true
 BIN="$(swift build --show-bin-path)/preview"
-if [[ "$DARK" == "--dark" ]]; then
-  "$BIN" "$OUT" --dark -AppleLanguages "($LANGUAGE)"
-else
-  "$BIN" "$OUT" -AppleLanguages "($LANGUAGE)"
-fi
+"$BIN" "$OUT" $DARK $ONBOARDING -AppleLanguages "($LANGUAGE)"
