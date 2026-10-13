@@ -32,7 +32,7 @@ public struct MenuNode: Sendable, Equatable, Codable {
 
 /// Builds the menu for a context from the config. Pure: the result depends only on the inputs.
 public struct MenuBuilder: Sendable {
-    public static let defaultItems = ["open-terminal", "open-editor", "agents", "agents-more", "-", "new-file", "copy-path"]
+    public static let defaultItems = ["open-terminal", "open-editor", "open-with", "agents", "agents-more", "-", "new-file", "copy-path"]
     public static let groups: Set<String> = ["open-terminal", "open-editor", "open-with", "agents", "agents-more", "new-file", "copy-path"]
 
     private let config: Config
@@ -49,12 +49,17 @@ public struct MenuBuilder: Sendable {
 
     public func build(for context: HereContext) -> [MenuNode] {
         var nodes: [MenuNode] = []
-        for entry in config.menuItems ?? Self.defaultItems {
+        let entries = config.menuItems ?? Self.defaultItems
+        // "Open With" leaves out what the menu already offers on its own line.
+        var listedAbove = Set<String>()
+        if entries.contains("open-terminal"), let terminal = try? registry.resolveDefault(role: .terminal, configured: config.terminal) { listedAbove.insert(terminal.id) }
+        if entries.contains("open-editor"), let editor = try? registry.resolveDefault(role: .editor, configured: config.editor) { listedAbove.insert(editor.id) }
+        for entry in entries {
             switch entry {
             case "-": nodes.append(.separator)
             case "open-terminal": nodes += single(.openTerminal(nil))
             case "open-editor": nodes += single(.openEditor)
-            case "open-with": nodes += openWith()
+            case "open-with": nodes += openWith(excluding: listedAbove)
             case "agents": nodes += config.enabledAgents.flatMap { single(.agent(id: $0, variant: nil, launcher: nil)) }
             case "agents-more": nodes += moreAgents()
             case "new-file": nodes += newFile(context)
@@ -72,9 +77,9 @@ public struct MenuBuilder: Sendable {
         return info.available ? [.action(info)] : []
     }
 
-    private func openWith() -> [MenuNode] {
-        let terminals = config.allApps.filter { $0.role == .terminal }
-        let others = config.allApps.filter { $0.role != .terminal }
+    private func openWith(excluding listedAbove: Set<String>) -> [MenuNode] {
+        let terminals = config.allApps.filter { $0.role == .terminal && !listedAbove.contains($0.id) }
+        let others = config.allApps.filter { $0.role != .terminal && !listedAbove.contains($0.id) }
         func entries(_ apps: [AppDescriptor], _ ref: (AppDescriptor) -> ActionRef) -> [MenuNode] {
             var seen = Set<String>()
             return apps.filter { seen.insert($0.id).inserted }.compactMap { app in

@@ -17,9 +17,15 @@ private func titles(_ nodes: [MenuNode]) -> [String] {
 
 @Suite("MenuBuilder")
 struct MenuBuilderTests {
-    @Test func defaultMenuHasTerminalEditorNewFileAndCopyPath() {
+    @Test func defaultMenuHasTerminalEditorOpenWithNewFileAndCopyPath() {
         let menu = MenuBuilder(config: .default, facts: machine()).build(for: background)
-        #expect(titles(menu) == ["Open in Ghostty", "Open in Visual Studio Code", "-", "New File", "Copy Path"])
+        #expect(titles(menu) == ["Open in Ghostty", "Open in Visual Studio Code", "Open With", "-", "New File", "Copy Path"])
+    }
+
+    @Test func openWithLeavesOutWhatTheMenuAlreadyOffers() throws {
+        let menu = MenuBuilder(config: .default, facts: machine()).build(for: background)
+        let submenu = try #require(menu.first { $0.title == "Open With" })
+        #expect(titles(submenu.children) == ["Terminal", "-", "Zed"])
     }
 
     @Test func entriesCarryTheirAppIconAndActionId() throws {
@@ -41,7 +47,7 @@ struct MenuBuilderTests {
     @Test func enabledAgentsAppearWithTheirVariantsInTheMoreMenu() throws {
         let config = Config(enabledAgents: ["claude", "codex"])
         let menu = MenuBuilder(config: config, facts: machine()).build(for: background)
-        #expect(titles(menu).prefix(4) == ["Open in Ghostty", "Open in Visual Studio Code", "Claude Code Here", "Codex Here"])
+        #expect(titles(menu).prefix(5) == ["Open in Ghostty", "Open in Visual Studio Code", "Open With", "Claude Code Here", "Codex Here"])
         let more = try #require(menu.first { $0.title == "More Agent Options" })
         let ids = more.children.compactMap(\.actionID)
         #expect(ids.contains("agent.claude.continue"))

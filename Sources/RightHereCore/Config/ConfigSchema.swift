@@ -95,7 +95,7 @@ public enum ConfigSchema {
                            + "open-with (a submenu of every other installed terminal and editor), agents (one entry per enabled agent), "
                            + "agents-more (a submenu of each agent's variants, deep links and other terminals), "
                            + "new-file (the templates), copy-path (the styles).",
-                           default: "[\"open-terminal\", \"open-editor\", \"agents\", \"agents-more\", \"-\", \"new-file\", \"copy-path\"]",
+                           default: "[\"open-terminal\", \"open-editor\", \"open-with\", \"agents\", \"agents-more\", \"-\", \"new-file\", \"copy-path\"]",
                            suggested: Array(MenuBuilder.groups).sorted() + ["-"])
             ]),
             SchemaNode("services", .table, "Finder Services (Quick Actions), written by `rh install --services`.", children: [
