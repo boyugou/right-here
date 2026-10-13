@@ -103,6 +103,12 @@ struct DoctorMessageTests {
         #expect(LocalizedMessage.doctorTerminalNone.english() == PlanError.noDefaultApp(.terminal).errorDescription)
         #expect(LocalizedMessage.doctorEditorNone.english() == PlanError.noDefaultApp(.editor).errorDescription)
         #expect(LocalizedMessage.doctorAppNotInstalled("Ghostty").english() == PlanError.appNotInstalled("Ghostty").errorDescription)
+        // And for a default that another app replaces: the doctor, `rh menu --explain` and the plan's note say it in one sentence.
+        if let iterm = KnownApps.app(id: "iterm"), let ghostty = KnownApps.app(id: "ghostty") {
+            #expect(LocalizedMessage.doctorAppFallback("iTerm", "Ghostty").english() == DefaultApps.Substitution(wanted: iterm, used: ghostty).sentence)
+        } else {
+            Issue.record("iTerm and Ghostty are built-in apps")
+        }
     }
 
     @Test func aProbeKeepsItsEnglishText() {

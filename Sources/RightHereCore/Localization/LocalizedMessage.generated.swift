@@ -137,6 +137,8 @@ extension LocalizedMessage {
     public static func doctorAgentOk(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentOk, [argument1, argument2]) }
     /// none enabled
     public static var doctorAgentsNone: LocalizedMessage { LocalizedMessage(.doctorAgentsNone) }
+    /// %1$@ is not installed; %2$@ is used instead.
+    public static func doctorAppFallback(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorAppFallback, [argument1, argument2]) }
     /// %@ is not installed.
     public static func doctorAppNotInstalled(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorAppNotInstalled, [argument1]) }
     /// handler not installed (only needed for launcher = "link")
@@ -181,6 +183,8 @@ extension LocalizedMessage {
     public static var doctorFixConfigWarnings: LocalizedMessage { LocalizedMessage(.doctorFixConfigWarnings) }
     /// Install an editor or set general.editor.
     public static var doctorFixEditor: LocalizedMessage { LocalizedMessage(.doctorFixEditor) }
+    /// Install it, or change general.editor (remove the setting to use the first installed editor).
+    public static var doctorFixEditorFallback: LocalizedMessage { LocalizedMessage(.doctorFixEditorFallback) }
     /// Run `rh install --finder` to remove the stale copies.
     public static var doctorFixExtensionClean: LocalizedMessage { LocalizedMessage(.doctorFixExtensionClean) }
     /// Run `rh install --finder`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder.
@@ -215,6 +219,8 @@ extension LocalizedMessage {
     public static var doctorFixSyncReenable: LocalizedMessage { LocalizedMessage(.doctorFixSyncReenable) }
     /// Install a terminal or set general.terminal.
     public static var doctorFixTerminal: LocalizedMessage { LocalizedMessage(.doctorFixTerminal) }
+    /// Install it, or change general.terminal (remove the setting to use the first installed terminal).
+    public static var doctorFixTerminalFallback: LocalizedMessage { LocalizedMessage(.doctorFixTerminalFallback) }
     /// not installed; the Finder menu cannot run actions
     public static var doctorRunnerMissing: LocalizedMessage { LocalizedMessage(.doctorRunnerMissing) }
     /// runs %@

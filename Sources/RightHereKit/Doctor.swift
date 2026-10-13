@@ -139,13 +139,21 @@ public struct Doctor: Sendable {
 
     private func menuChecks() -> [DoctorCheck] {
         let registry = ActionRegistry(config: loaded.config, facts: facts)
-        let terminal = registry.info(.openTerminal(nil))
-        let editor = registry.info(.openEditor)
+        let defaults = DefaultApps(config: loaded.config, facts: facts)
+        // A default the config chose that is not installed is a warning when another app takes its place, and a problem when
+        // none does (`missing` says how serious that is for the role).
+        func check(_ id: CheckID, _ action: ActionInfo, role: AppDescriptor.Role, configured: String?, missing: DoctorCheck.Status,
+                   fix: LocalizedMessage, fallbackFix: LocalizedMessage) -> DoctorCheck {
+            if action.available, let found = defaults.substitution(role: role) {
+                return DoctorCheck(id, status: .warn, detail: .doctorAppFallback(found.wanted.name, found.used.name), fix: fallbackFix)
+            }
+            return DoctorCheck(id, status: action.available ? .ok : missing, detail: appDetail(action, role: role, configured: configured), fix: action.available ? nil : fix)
+        }
         return [
-            DoctorCheck(.terminalDefault, status: terminal.available ? .ok : .fail, detail: appDetail(terminal, role: .terminal, configured: loaded.config.terminal),
-                        fix: terminal.available ? nil : .doctorFixTerminal),
-            DoctorCheck(.editorDefault, status: editor.available ? .ok : .warn, detail: appDetail(editor, role: .editor, configured: loaded.config.editor),
-                        fix: editor.available ? nil : .doctorFixEditor)
+            check(.terminalDefault, registry.info(.openTerminal(nil)), role: .terminal, configured: loaded.config.terminal, missing: .fail,
+                  fix: .doctorFixTerminal, fallbackFix: .doctorFixTerminalFallback),
+            check(.editorDefault, registry.info(.openEditor), role: .editor, configured: loaded.config.editor, missing: .warn,
+                  fix: .doctorFixEditor, fallbackFix: .doctorFixEditorFallback)
         ]
     }
 

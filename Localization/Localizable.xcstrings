@@ -12649,6 +12649,192 @@
         }
       }
     },
+    "doctor.app.fallback": {
+      "comment": "Detail line of the check \"Default terminal\" or \"Default editor\" in the setup window's Details list: the app the config chooses is not installed on this Mac, so another app of the same kind is used. %1$@ is the app the config chooses (for example iTerm), %2$@ the app used instead (for example Ghostty). A sentence with a final period.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ غير مثبَّت؛ يُستخدم %2$@ بدلًا منه."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ইনস্টল করা নেই; তার বদলে %2$@ ব্যবহার করা হয়।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ist nicht installiert; stattdessen wird %2$@ verwendet."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το %1$@ δεν είναι εγκατεστημένο· χρησιμοποιείται το %2$@ στη θέση του."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ is not installed; %2$@ is used instead."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "La app %1$@ no está instalada; se usa %2$@ en su lugar."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ نصب نشده است؛ به‌جای آن از %2$@ استفاده می‌شود."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "L’application %1$@ n’est pas installée ; l’application %2$@ est utilisée à la place."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ לא מותקן; במקומו נעשה שימוש ב-%2$@."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ इंस्टॉल नहीं है; उसकी जगह %2$@ इस्तेमाल होता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ tidak terpasang; %2$@ digunakan sebagai gantinya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "L’app %1$@ non è installata; viene usata invece l’app %2$@."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ はインストールされていないため、代わりに %2$@ が使われます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 앱이 설치되어 있지 않아 대신 %2$@ 앱을 사용합니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ इन्स्टॉल नाही; त्याऐवजी %2$@ वापरला जातो."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ tidak dipasang; %2$@ digunakan sebagai gantinya."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ is niet geïnstalleerd; %2$@ wordt in plaats daarvan gebruikt."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aplikacja %1$@ nie jest zainstalowana; zamiast niej używana jest aplikacja %2$@."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "O app %1$@ não está instalado; em vez dele, é usado o app %2$@."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aplicația %1$@ nu este instalată; în locul ei este folosită aplicația %2$@."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Приложение %1$@ не установлено; вместо него используется приложение %2$@."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ நிறுவப்படவில்லை; அதற்குப் பதிலாக %2$@ பயன்படுத்தப்படுகிறது."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ఇన్‌స్టాల్ చేయబడలేదు; బదులుగా %2$@ ఉపయోగించబడుతుంది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ยังไม่ได้ติดตั้ง %1$@ จึงใช้ %2$@ แทน."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ yüklü değil; bunun yerine %2$@ kullanılıyor."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Застосунок %1$@ не встановлено; натомість використовується %2$@."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ انسٹال نہیں ہے؛ اس کی جگہ %2$@ استعمال ہوتا ہے۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ chưa được cài đặt; thay vào đó đang dùng %2$@."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 未安装；改用 %2$@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 未安裝；改用 %2$@。"
+          }
+        }
+      }
+    },
     "doctor.app.notInstalled": {
       "comment": "Detail line of the check \"Default terminal\" or \"Default editor\" in the setup window's Details list: the app the config chooses is not installed on this Mac. %@ is the name of the app, for example Ghostty. A sentence with a final period.",
       "extractionState": "manual",
@@ -16741,6 +16927,192 @@
         }
       }
     },
+    "doctor.fix.editorFallback": {
+      "comment": "Fix line under the check \"Default editor\" in the setup window's Details list: what the person should do. A sentence. \"it\" is the editor the config chooses, which is not installed. general.editor is a config setting: keep it exactly.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ثبّته، أو غيّر general.editor (أزل الإعداد لاستخدام أول محرر مثبَّت)."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "এটি ইনস্টল করুন, অথবা general.editor পরিবর্তন করুন (ইনস্টল করা প্রথম এডিটরটি ব্যবহার করতে সেটিংটি সরিয়ে দিন)।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Installieren Sie ihn, oder ändern Sie general.editor (entfernen Sie die Einstellung, um den ersten installierten Editor zu verwenden)."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Εγκαταστήστε τον επεξεργαστή, ή αλλάξτε το general.editor (αφαιρέστε τη ρύθμιση για να χρησιμοποιηθεί ο πρώτος εγκατεστημένος επεξεργαστής)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install it, or change general.editor (remove the setting to use the first installed editor)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Instálelo, o cambie general.editor (quite el ajuste para usar el primer editor instalado)."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "آن را نصب کنید، یا general.editor را تغییر دهید (برای استفاده از اولین ویرایشگر نصب‌شده، این تنظیم را حذف کنید)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Installez-le, ou modifiez general.editor (retirez ce réglage pour utiliser le premier éditeur installé)."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "התקינו אותו, או שנו את general.editor (הסירו את ההגדרה כדי להשתמש בעורך הראשון המותקן)."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "इसे इंस्टॉल करें, या general.editor बदलें (पहला इंस्टॉल किया गया एडिटर इस्तेमाल करने के लिए सेटिंग हटाएँ)।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Instal editor tersebut, atau ubah general.editor (hapus pengaturan agar menggunakan editor pertama yang terpasang)."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Installalo, oppure cambia general.editor (rimuovi l’impostazione per usare il primo editor installato)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "そのエディタをインストールするか、general.editor を変更してください（設定を削除すると、インストール済みの最初のエディタを使用します）。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "그 편집기를 설치하거나 general.editor를 변경하세요 (설정을 제거하면 설치된 첫 번째 편집기를 사용합니다)."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ते इन्स्टॉल करा, किंवा general.editor बदला (सेटिंग काढून टाका, म्हणजे इन्स्टॉल असलेला पहिला एडिटर वापरला जाईल)."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pasang editor itu, atau tukar general.editor (alih keluar tetapan untuk menggunakan editor pertama yang dipasang)."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Installeer hem, of wijzig general.editor (verwijder de instelling om de eerste geïnstalleerde editor te gebruiken)."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Zainstaluj go albo zmień general.editor (usuń to ustawienie, aby użyć pierwszego zainstalowanego edytora)."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Instale-o, ou altere general.editor (remova esse ajuste para usar o primeiro editor instalado)."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Instalați-l sau modificați general.editor (eliminați setarea pentru a folosi primul editor instalat)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Установите его или измените general.editor (удалите эту настройку, чтобы использовать первый установленный редактор)."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "அதை நிறுவவும், அல்லது general.editor ஐ மாற்றவும் (முதலில் நிறுவப்பட்ட எடிட்டரைப் பயன்படுத்த அமைப்பை நீக்கவும்)."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "దాన్ని ఇన్‌స్టాల్ చేయండి, లేదా general.editor ను మార్చండి (మొదటి ఇన్‌స్టాల్ చేయబడిన ఎడిటర్‌ను ఉపయోగించడానికి సెట్టింగ్‌ను తీసివేయండి)."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ติดตั้งโปรแกรมแก้ไขนั้น หรือเปลี่ยนค่า general.editor (ลบการตั้งค่านี้เพื่อใช้โปรแกรมแก้ไขตัวแรกที่ติดตั้งอยู่)."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yükleyin veya general.editor ayarını değiştirin (ilk yüklü düzenleyiciyi kullanmak için ayarı kaldırın)."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Встановіть його або змініть general.editor (щоб використовувати перший встановлений редактор, видаліть цей параметр)."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اسے انسٹال کریں، یا general.editor تبدیل کریں (پہلا انسٹال شدہ ایڈیٹر استعمال کرنے کے لیے یہ سیٹنگ ہٹا دیں)۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cài đặt nó, hoặc thay đổi general.editor (xóa cài đặt này để dùng trình soạn thảo đầu tiên đã cài đặt)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "安装它，或更改 general.editor（移除该设置，即可使用第一个已安装的编辑器）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "安裝它，或變更 general.editor（移除該設定，即可使用第一個已安裝的編輯器）。"
+          }
+        }
+      }
+    },
     "doctor.fix.extensionClean": {
       "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence.",
       "extractionState": "manual",
@@ -19899,6 +20271,192 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "安裝終端機，或設定 general.terminal。"
+          }
+        }
+      }
+    },
+    "doctor.fix.terminalFallback": {
+      "comment": "Fix line under the check \"Default terminal\" in the setup window's Details list: what the person should do. A sentence. \"it\" is the terminal the config chooses, which is not installed. general.terminal is a config setting: keep it exactly.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ثبّتها، أو غيّر general.terminal (أزل الإعداد لاستخدام أول طرفية مثبَّتة)."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "এটি ইনস্টল করুন, অথবা general.terminal পরিবর্তন করুন (ইনস্টল করা প্রথম টার্মিনালটি ব্যবহার করতে সেটিংটি সরিয়ে দিন)।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Installieren Sie es, oder ändern Sie general.terminal (entfernen Sie die Einstellung, um das erste installierte Terminal zu verwenden)."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Εγκαταστήστε το τερματικό, ή αλλάξτε το general.terminal (αφαιρέστε τη ρύθμιση για να χρησιμοποιηθεί το πρώτο εγκατεστημένο τερματικό)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install it, or change general.terminal (remove the setting to use the first installed terminal)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Instálela, o cambie general.terminal (quite el ajuste para usar la primera terminal instalada)."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "آن را نصب کنید، یا general.terminal را تغییر دهید (برای استفاده از اولین ترمینال نصب‌شده، این تنظیم را حذف کنید)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Installez-le, ou modifiez general.terminal (retirez ce réglage pour utiliser le premier terminal installé)."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "התקינו אותו, או שנו את general.terminal (הסירו את ההגדרה כדי להשתמש במסוף הראשון המותקן)."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "इसे इंस्टॉल करें, या general.terminal बदलें (पहला इंस्टॉल किया गया टर्मिनल इस्तेमाल करने के लिए सेटिंग हटाएँ)।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Instal terminal tersebut, atau ubah general.terminal (hapus pengaturan agar menggunakan terminal pertama yang terpasang)."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Installalo, oppure cambia general.terminal (rimuovi l’impostazione per usare il primo terminale installato)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "そのターミナルをインストールするか、general.terminal を変更してください（設定を削除すると、インストール済みの最初のターミナルを使用します）。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "그 터미널을 설치하거나 general.terminal을 변경하세요 (설정을 제거하면 설치된 첫 번째 터미널을 사용합니다)."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ते इन्स्टॉल करा, किंवा general.terminal बदला (सेटिंग काढून टाका, म्हणजे इन्स्टॉल असलेला पहिला टर्मिनल वापरला जाईल)."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pasang terminal itu, atau tukar general.terminal (alih keluar tetapan untuk menggunakan terminal pertama yang dipasang)."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Installeer hem, of wijzig general.terminal (verwijder de instelling om de eerste geïnstalleerde terminal te gebruiken)."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Zainstaluj go albo zmień general.terminal (usuń to ustawienie, aby użyć pierwszego zainstalowanego terminala)."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Instale-o, ou altere general.terminal (remova esse ajuste para usar o primeiro terminal instalado)."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Instalați-l sau modificați general.terminal (eliminați setarea pentru a folosi primul terminal instalat)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Установите его или измените general.terminal (удалите эту настройку, чтобы использовать первый установленный терминал)."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "அதை நிறுவவும், அல்லது general.terminal ஐ மாற்றவும் (முதலில் நிறுவப்பட்ட டெர்மினலைப் பயன்படுத்த அமைப்பை நீக்கவும்)."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "దాన్ని ఇన్‌స్టాల్ చేయండి, లేదా general.terminal ను మార్చండి (మొదటి ఇన్‌స్టాల్ చేయబడిన టెర్మినల్‌ను ఉపయోగించడానికి సెట్టింగ్‌ను తీసివేయండి)."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ติดตั้งเทอร์มินัลนั้น หรือเปลี่ยนค่า general.terminal (ลบการตั้งค่านี้เพื่อใช้เทอร์มินัลตัวแรกที่ติดตั้งอยู่)."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yükleyin veya general.terminal ayarını değiştirin (ilk yüklü terminali kullanmak için ayarı kaldırın)."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Встановіть його або змініть general.terminal (щоб використовувати перший встановлений термінал, видаліть цей параметр)."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اسے انسٹال کریں، یا general.terminal تبدیل کریں (پہلا انسٹال شدہ ٹرمینل استعمال کرنے کے لیے یہ سیٹنگ ہٹا دیں)۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cài đặt nó, hoặc thay đổi general.terminal (xóa cài đặt này để dùng terminal đầu tiên đã cài đặt)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "安装它，或更改 general.terminal（移除该设置，即可使用第一个已安装的终端）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "安裝它，或變更 general.terminal（移除該設定，即可使用第一個已安裝的終端機）。"
           }
         }
       }

@@ -210,7 +210,9 @@ layout is: open in terminal, open in editor, one entry per enabled agent, a "Mor
 are needed for a prompt that names them, so a selection of only folders has none),
 a separator, New File, Copy Path. `[menu] items` reorders or
 replaces it with group names or any action id. Entries that cannot run here (the app is not installed,
-the terminal cannot run commands) are not shown; `rh actions --all` and `rh doctor` say why.
+the terminal cannot run commands) are not shown; `rh actions --all` and `rh doctor` say why. A default terminal or editor
+the config sets that is not installed gives way to the first installed one (a config shared between Macs), and the doctor
+says which app is used instead.
 
 The plain agent entry starts the agent the way its `launcher` says (typed into the default terminal or the terminal the
 agent names; its desktop app; its terminal link). "More Agent Options" offers the other ways and never the same one twice:

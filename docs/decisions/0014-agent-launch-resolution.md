@@ -13,8 +13,14 @@ terminal link, or a terminal with its adapter) or an `Unavailable` that carries 
 
 - The planner builds the plan from the route. `ActionRegistry` describes the action from the same answer, so a
   menu entry is offered exactly when `rh run` can plan it, and `rh actions` and `rh run` use the same words.
-- `DefaultApps` picks the default terminal and editor (the configured one as it is, else the first installed in the
-  order of the catalog's `defaultRank`) for the planner, the registry, the menu and `rh probe`.
+- `DefaultApps` picks the default terminal and editor (the configured one when it is installed, else the first installed
+  in the order of the catalog's `defaultRank`; for an agent, the first one that can run a command) for the planner, the
+  registry, the menu and `rh probe`. A configured default that is not installed counts as none: a config shared between
+  Macs names an app only one of them has, and the menu used to lose "Open in <Terminal>" and every "<Agent> Here" entry
+  on the other one without a word. `DefaultApps.substitution` says which app took its place (the doctor row is a warning
+  that names both, `rh menu --explain` lists it, and the plan carries a note). Only the default falls back: an action that
+  names an app (`open.terminal@iterm`, an agent's own `terminal`) keeps saying that app is not installed. When nothing of
+  the role is installed the configured app is returned as it is, so the action says it is missing.
 - A terminal adapter owns the sentence for "cannot run commands" (`commandRefusal`); the resolution reports it and
   `steps` still throws it.
 - How a terminal is started (`driver`: Ghostty, Terminal.app, hand it the folder, or an argument vector from

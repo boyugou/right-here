@@ -166,6 +166,21 @@ struct DoctorScenarioTests {
         #expect(said(checks, "editor.default") == Said(status: .ok, detail: "Open in Visual Studio Code", fix: nil))
     }
 
+    @Test func aDefaultAppThatIsNotInstalledWhileAnotherIsSaysWhichOneIsUsedInstead() async throws {
+        // A config shared between Macs: it names iTerm and Zed, this Mac has Ghostty and Visual Studio Code. The menu works, so it is
+        // a warning, and it names both.
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.answers = [ProcessResult(status: 0)]
+        scene.applications = ["com.mitchellh.ghostty": ghostty, "com.microsoft.VSCode": vscode]
+        try scene.writeConfig("[general]\nterminal = \"iterm\"\neditor = \"zed\"\n")
+        let checks = await scene.run()
+        #expect(said(checks, "terminal.default") == Said(status: .warn, detail: "iTerm is not installed; Ghostty is used instead.",
+                                                         fix: "Install it, or change general.terminal (remove the setting to use the first installed terminal)."))
+        #expect(said(checks, "editor.default") == Said(status: .warn, detail: "Zed is not installed; Visual Studio Code is used instead.",
+                                                       fix: "Install it, or change general.editor (remove the setting to use the first installed editor)."))
+        #expect(checks.first { $0.id == .terminalDefault }?.detail == .doctorAppFallback("iTerm", "Ghostty"))
+    }
+
     @Test("the runner script says whether it runs this rh", arguments: [
         (true, "/opt/other/bin/rh", DoctorCheck.Status.warn, "points at {target}, not at this rh"),
         (false, "/opt/rh/bin/rh", .fail, "points at {target}, which does not exist")

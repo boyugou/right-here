@@ -70,9 +70,15 @@ struct AgentLaunchResolutionTests {
         let why = try #require(unavailable(try resolve(launcher: .terminal("iterm"), installed: [terminalApp])))
         #expect(why == .terminalNotInstalled("iTerm"))
         #expect(why.text == "iTerm is not installed.")
-        // The configured default is used as it is, so an agent does not quietly go to another terminal.
+    }
+
+    @Test func aConfiguredDefaultThatIsNotInstalledGivesWayToTheFirstTerminalThatCanRunACommand() throws {
+        // A config shared between Macs names iTerm; this one has Terminal. The default counts as none (the doctor, `rh menu --explain`
+        // and the plan say that another terminal is used); naming iTerm for the agent, as above, does not fall back.
         let configured = try resolve(config: Config(terminal: "iterm"), installed: [terminalApp])
-        #expect(unavailable(configured) == .terminalNotInstalled("iTerm"))
+        #expect(unavailable(configured) == nil)
+        guard case .success(.terminal(let app, _, _)) = configured.route else { Issue.record("no terminal route: \(configured.route)"); return }
+        #expect(app.id == "terminal")
     }
 
     @Test func aTerminalThatCannotRunCommandsSaysSoInTheAdaptersWords() throws {

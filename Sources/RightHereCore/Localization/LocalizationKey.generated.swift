@@ -71,6 +71,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case doctorAgentNotFound = "doctor.agent.notFound"
     case doctorAgentOk = "doctor.agent.ok"
     case doctorAgentsNone = "doctor.agents.none"
+    case doctorAppFallback = "doctor.app.fallback"
     case doctorAppNotInstalled = "doctor.app.notInstalled"
     case doctorClaudeLinkMissing = "doctor.claudeLink.missing"
     case doctorClaudeLinkOk = "doctor.claudeLink.ok"
@@ -93,6 +94,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case doctorFixConfigInit = "doctor.fix.configInit"
     case doctorFixConfigWarnings = "doctor.fix.configWarnings"
     case doctorFixEditor = "doctor.fix.editor"
+    case doctorFixEditorFallback = "doctor.fix.editorFallback"
     case doctorFixExtensionClean = "doctor.fix.extensionClean"
     case doctorFixExtensionEnable = "doctor.fix.extensionEnable"
     case doctorFixExtensionInstall = "doctor.fix.extensionInstall"
@@ -110,6 +112,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case doctorFixSyncPushShort = "doctor.fix.syncPushShort"
     case doctorFixSyncReenable = "doctor.fix.syncReenable"
     case doctorFixTerminal = "doctor.fix.terminal"
+    case doctorFixTerminalFallback = "doctor.fix.terminalFallback"
     case doctorRunnerMissing = "doctor.runner.missing"
     case doctorRunnerOk = "doctor.runner.ok"
     case doctorRunnerStale = "doctor.runner.stale"
@@ -165,7 +168,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     public var arity: Int {
         switch self {
         case .alertPermissionMessage, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAppNotInstalled, .doctorCliMissing, .doctorCliNotOnPath, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorFixAgentRemove, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
-        case .appStepLabel, .doctorAgentOk, .doctorExtensionMultiple, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
+        case .appStepLabel, .doctorAgentOk, .doctorAppFallback, .doctorExtensionMultiple, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
         case .doctorActivityRecent, .doctorServicesDiffer, .menuAgentVariantIn: 3
         default: 0
         }

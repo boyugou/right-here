@@ -33,7 +33,8 @@ public struct Planner: Sendable {
         case .openTerminal(let id):
             return try openTerminal(id, ref: ref, context: context)
         case .openEditor:
-            return try openApp(try defaults.resolve(role: .editor, configured: config.editor), ref: ref, context: context)
+            let editor = try defaults.resolve(role: .editor, configured: config.editor)
+            return try openApp(editor, ref: ref, context: context, notices: fallbackNotice(role: .editor, used: editor))
         case .openApp(let id):
             guard let app = config.app(id: id) else { throw PlanError.unknownApp(id) }
             return try openApp(app, ref: ref, context: context)
@@ -90,7 +91,7 @@ public struct Planner: Sendable {
 
     // MARK: Open with an app
 
-    private func openApp(_ app: AppDescriptor, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
+    private func openApp(_ app: AppDescriptor, ref: ActionRef, context: HereContext, notices: [String] = []) throws -> LaunchPlan {
         guard let bundleID = app.installedBundleID(facts: facts) else { throw PlanError.appNotInstalled(app.name) }
         let targets: [URL]
         if app.role == .terminal {
@@ -103,7 +104,8 @@ public struct Planner: Sendable {
         return LaunchPlan(
             action: ref.id,
             summary: "Open \(targets.count == 1 ? targets[0].lastPathComponent : "\(targets.count) items") in \(app.name)",
-            steps: [.open(OpenStep(bundleID: bundleID, targets: targets.map(\.path)))]
+            steps: [.open(OpenStep(bundleID: bundleID, targets: targets.map(\.path)))],
+            notices: notices
         )
     }
 
@@ -114,7 +116,14 @@ public struct Planner: Sendable {
         let (app, bundleID) = try resolveTerminal(id)
         let steps = try TerminalAdapters.adapter(for: app)
             .steps(for: TerminalSession(directory: directory, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
-        return LaunchPlan(action: ref.id, summary: "Open \(directory.lastPathComponent) in \(app.name)", steps: steps, notices: folderNotice(for: context, directory: directory))
+        let fallback = id == nil ? fallbackNotice(role: .terminal, used: app) : []
+        return LaunchPlan(action: ref.id, summary: "Open \(directory.lastPathComponent) in \(app.name)", steps: steps, notices: folderNotice(for: context, directory: directory) + fallback)
+    }
+
+    /// Said when the default the config chose is not installed and `used` stands in for it.
+    private func fallbackNotice(role: AppDescriptor.Role, typing: Bool = false, used: AppDescriptor) -> [String] {
+        guard let found = defaults.substitution(role: role, typing: typing), found.used.id == used.id else { return [] }
+        return [found.sentence]
     }
 
     private func resolveTerminal(_ id: String?) throws -> (AppDescriptor, String) {
@@ -148,7 +157,8 @@ public struct Planner: Sendable {
 
         case .terminal(let app, let bundleID, let adapter):
             let typed = ([agent.command] + (variant?.arguments ?? [])).joined(separator: " ")
-            return try typeCommand(typed, summary: typed, in: app, bundleID: bundleID, adapter: adapter, directory: directory, ref: ref, context: context)
+            let fallback = resolution.launcher == .terminal(nil) ? fallbackNotice(role: .terminal, typing: true, used: app) : []
+            return try typeCommand(typed, summary: typed, in: app, bundleID: bundleID, adapter: adapter, directory: directory, ref: ref, context: context, notices: fallback)
         }
     }
 
@@ -210,7 +220,7 @@ public struct Planner: Sendable {
         words.append(ShellQuoting.quote(prompt, for: .posix))
         let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: true, explicit: terminal.map { .terminal($0) }, config: config, facts: facts)
         guard case .terminal(let app, let bundleID, let adapter) = try route(of: resolution) else { throw PlanError.unsupported("A preset is typed into a terminal.") }
-        var notices: [String] = []
+        var notices = resolution.launcher == .terminal(nil) ? fallbackNotice(role: .terminal, typing: true, used: app) : []
         if context.items.contains(where: { facts.isDirectory($0) == true }), preset.needsFiles {
             notices.append("Folders in the selection are not named in the prompt; only files are.")
         }
