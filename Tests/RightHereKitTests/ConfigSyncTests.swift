@@ -295,6 +295,32 @@ struct ConfigSyncSafetyTests {
         #expect(!FileManager.default.fileExists(atPath: pulling.local.path))
     }
 
+    @Test func aRefusalNeverPrintsTheTextOfTheFileRaw() throws {
+        // A key name is whatever the file's author typed; here it is an OSC 52 sequence (set the clipboard) and a bell.
+        let hostile = "[general]\nagents = [\"claude\"]\n\"token\\u001b]52;c;ZWNobyBwd25lZA==\\u0007\" = \"x\"\n"
+        let f = try prepared(hostile, local: nil); defer { f.cleanUp() }
+        do { try f.sync.pull(force: true); Issue.record("pulled") } catch let error as ConfigSyncError {
+            let text = error.description
+            #expect(text.contains(#"token\u001b]52;c;ZWNobyBwd25lZA==\u0007"#), "\(text)")
+            #expect(!text.unicodeScalars.contains { $0.properties.generalCategory == .control && $0 != "\n" }, "a control character reached the message: \(text.debugDescription)")
+        }
+        // The doctor's detail for the same file.
+        let remote = f.sync.doctorChecks().first { $0.id == "sync.remote" }
+        #expect(remote?.status == .fail)
+        #expect(remote?.detail?.unicodeScalars.contains { $0.properties.generalCategory == .control } == false)
+    }
+
+    @Test func aRefusalEndsWithOnePeriod() throws {
+        let secret = try prepared("[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n", local: nil); defer { secret.cleanUp() }
+        let syntax = try prepared("[general\n", local: nil); defer { syntax.cleanUp() }
+        for f in [secret, syntax] {
+            do { try f.sync.pull(force: true); Issue.record("pulled") } catch let error as ConfigSyncError {
+                #expect(!error.description.contains(".."), "\(error.description)")
+                #expect(error.description.hasSuffix("Nothing was changed."))
+            }
+        }
+    }
+
     @Test func anEvictedStubIsNeitherMissingNorOverwritten() throws {
         let f = try Fixture(); defer { f.cleanUp() }
         try f.write(one, to: f.local)

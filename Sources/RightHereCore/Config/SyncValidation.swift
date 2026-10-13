@@ -16,12 +16,13 @@ public enum SyncValidation {
         /// Dotted paths of the keys.
         case secretKeys([String])
 
+        /// No final period: a message ends a sentence of its own in the places that join several (`Refusing ...; ... Nothing was changed.`).
         public var message: String {
             switch self {
             case .tooLarge(let bytes): "the file is \(bytes / 1024) KB; a config is a few kilobytes (the limit is \(maxBytes / 1024) KB)"
             case .notUTF8: "the file is not valid UTF-8"
-            case .invalid(let reason): "the config is not valid: \(reason). Run `rh config validate`."
-            case .secretKeys(let keys): "the config has key names that suggest a secret (\(keys.joined(separator: ", "))); a synced config must not hold credentials. Keep them in the environment or the keychain."
+            case .invalid(let reason): "the config is not valid: \(reason.hasSuffix(".") ? String(reason.dropLast()) : reason). Run `rh config validate`"
+            case .secretKeys(let keys): "the config has key names that suggest a secret (\(keys.joined(separator: ", "))); a synced config must not hold credentials. Keep them in the environment or the keychain"
             }
         }
     }
@@ -47,7 +48,8 @@ public enum SyncValidation {
         for key in table.keys.sorted() {
             let here = path + [key]
             let normalized = key.lowercased().replacingOccurrences(of: "-", with: "_")
-            if secretWords.contains(where: normalized.contains) { found.append(here.joined(separator: ".")) }
+            // The names are printed (a refusal lists them), and a key is whatever the file's author typed.
+            if secretWords.contains(where: normalized.contains) { found.append(here.joined(separator: ".").withControlCharactersEscaped) }
             if let value = table[key] { found += secretKeys(in: value, path: here) }
         }
         return found

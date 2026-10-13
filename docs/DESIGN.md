@@ -263,7 +263,9 @@ variants, `disabled` to remove ids), and `rh config sync` copies `config.toml` t
    paths are copied to the clipboard. Tool calls run eight at a time, up to 256 (and 16 MB of requests) are held waiting
    for a turn, a call past that is answered with a server-busy error at once, `ping` and the other quick requests are
    never held up, and a request line is capped at 2 MB.
-   Names in logs and plan output have control characters escaped, and the log is private and capped.
+   Names in logs and plan output have control characters escaped, and the log is private and capped. So does what a
+   config problem quotes from the config (a key, a value, an id): `ConfigDiagnostic` stores its text escaped, since a
+   config can arrive from the sync folder and an escape sequence in a key name must not act on a terminal.
 7. A config is more than settings: terminal templates (`open_args`, `run_args`), agent commands, variant arguments and
    first-prompt flags decide which program a click starts. The sync folder can be written by things this Mac does not
    control (another machine, a sync service, a shared drive), so a config that arrives through it is untrusted input.
@@ -284,7 +286,8 @@ An independent review and a cold-start usability test shaped several of these; s
 - Agents can start agents: `rh run agent.codex --container <dir>`.
 - `rh mcp` is an MCP server over the same registry (eight tools, including what is selected in Finder),
   and `plugins/right-here` is a Claude Code plugin that starts it and adds skills for setup, opening
-  things, and showing the files an agent changed in Finder. File names in tool output are fenced as data.
+  things, and showing the files an agent changed in Finder. File names, and what the doctor and the config check quote
+  from the config, are fenced as data in tool output.
 
 ## 11. Distribution
 

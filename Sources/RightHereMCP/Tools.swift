@@ -240,8 +240,11 @@ enum Tools {
     private static func doctor(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         let loaded = server.loadConfig()
         let checks = await Doctor(facts: server.facts, paths: server.paths, loaded: loaded, runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), rhPath: server.rhPath).run()
+        // What a check quotes (a config problem, a command, a path) is text somebody else may have written; the agent
+        // reading this must be able to tell it from the tool's own words. Only an agent's check is titled by the config.
         let lines = checks.map { check in
-            "[\(check.status.rawValue)] \(check.title)" + (check.detail.map { ": \($0)" } ?? "") + (check.fix.map { "\n    fix: \($0)" } ?? "")
+            "[\(check.status.rawValue)] " + (check.id.hasPrefix("agent.") ? Fence.wrap(check.title) : check.title)
+                + (check.detail.map { ": " + Fence.wrap($0) } ?? "") + (check.fix.map { "\n    fix: " + Fence.wrap($0) } ?? "")
         }
         return ToolOutput(text: lines.joined(separator: "\n"), structured: .object(["checks": try JSONValue(encoding: checks)]))
     }
@@ -256,7 +259,8 @@ enum Tools {
         var lines = [loaded.fileExists
                      ? (loaded.result.hasErrors ? "The config has errors." : (loaded.result.diagnostics.isEmpty ? "The config is valid." : "The config is valid, but has warnings; they are usually typos, so fix them."))
                      : "There is no config file yet; defaults apply. Run `rh init`."]
-        lines += loaded.result.diagnostics.map { $0.summary(file: loaded.file) }
+        // Each problem quotes the config, which is data to the agent reading this (see `Fence`).
+        lines += loaded.result.diagnostics.map { Fence.wrap($0.summary(file: loaded.file)) }
         return ToolOutput(text: lines.joined(separator: "\n"), structured: structured)
     }
 

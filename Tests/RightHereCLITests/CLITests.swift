@@ -932,6 +932,44 @@ struct ConfigSyncCLITests {
         #expect(try rh.run(["config", "sync", "pull", "--help"]).standardOutput.contains("--allow-commands"))
     }
 
+    @Test func textFromTheConfigIsNeverPrintedRaw() throws {
+        // Keys and values a config can carry: terminal escape sequences, a bell, a C1 control, a right-to-left override.
+        let hostile = """
+        "k\\u001b]0;pwned\\u0007" = 1
+        [general]
+        terminal = "x\\u001b[2J\\u202Egnp"
+        [menu]
+        items = ["agent.\\u009b31m"]
+        """
+        func acts(_ text: String) -> Bool {
+            text.unicodeScalars.contains { $0 != "\n" && ($0.properties.generalCategory == .control || $0 == "\u{202E}") }
+        }
+        let rh = try isolated(config: hostile); defer { rh.cleanUp() }
+        let validate = try rh.run(["config", "validate"])
+        let json = try rh.run(["config", "validate", "--json"])
+        // `run` and `menu` report config problems on standard error before they do anything.
+        let run = try rh.run(["run", "--dry-run", "copy-path.name", rh.configDirectory.path])
+        let menu = try rh.run(["menu", "--container", rh.configDirectory.path])
+        for (name, text) in [("validate", validate.standardOutput), ("validate --json", json.standardOutput), ("run", run.standardError + run.standardOutput), ("menu", menu.standardError)] {
+            #expect(!acts(text), "\(name) printed a character a terminal acts on: \(text.debugDescription)")
+            #expect(text.contains("\\u001b") || text.contains("\\\\u001b"), "\(name) did not show the escaped key: \(text.debugDescription)")
+        }
+    }
+
+    @Test func aHostileKeyInTheFolderConfigIsNeverPrintedRawByPull() throws {
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        _ = try rh.run(["config", "sync", "push"])
+        try "[general]\nterminal = \"terminal\"\n\"token\\u001b]52;c;ZWNobyBwd25lZA==\\u0007\" = \"x\"\n".write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        let result = try rh.run(["config", "sync", "pull"])
+        #expect(result.status == 1)
+        #expect(!result.standardError.unicodeScalars.contains { $0 != "\n" && $0.properties.generalCategory == .control }, "\(result.standardError.debugDescription)")
+        #expect(result.standardError.contains(#"token\u001b]52"#), "\(result.standardError)")
+        #expect(!result.standardError.contains(".."), "\(result.standardError)")
+    }
+
     @Test func enablingOnAMachineWithoutAConfigSaysWhatTheFolderWouldStart() throws {
         let rh = try isolated(); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("synced")

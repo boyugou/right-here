@@ -97,8 +97,14 @@ struct ConfigMerge {
                 origins.append(origin)
             }
         }
-        arrayOrigins[path.joined(separator: ".")] = origins
+        arrayOrigins[Self.dotted(path)] = origins
         return .array(items)
+    }
+
+    /// A path as `ConfigDiagnostic` spells it, which is how origins are looked up: a diagnostic stores its path with
+    /// control characters escaped, so a key that has one has to be filed under the same spelling.
+    private static func dotted(_ path: [String]) -> String {
+        path.map(\.withControlCharactersEscaped).joined(separator: ".")
     }
 
     private static func id(of entry: TOMLValue) -> String? {
@@ -107,9 +113,9 @@ struct ConfigMerge {
     }
 
     private mutating func record(_ value: TOMLValue, layer: Layer, path: [String]) {
-        keyOrigins[path.joined(separator: ".")] = layer
+        keyOrigins[Self.dotted(path)] = layer
         if let items = value.arrayValue, value.isTableArray {
-            arrayOrigins[path.joined(separator: ".")] = items.indices.map { Origin(layer: layer, index: $0 + 1) }
+            arrayOrigins[Self.dotted(path)] = items.indices.map { Origin(layer: layer, index: $0 + 1) }
         }
         if let table = value.tableValue {
             for (key, child) in table { record(child, layer: layer, path: path + [key]) }
@@ -170,7 +176,7 @@ struct ConfigMerge {
     }
 
     private mutating func filterEntries(_ root: inout [String: TOMLValue], at path: [String], disabled: Set<String>) {
-        let key = path.joined(separator: ".")
+        let key = Self.dotted(path)
         let origins = arrayOrigins[key]
         var keptOrigins: [Origin] = []
         Self.update(&root, at: path) { value in

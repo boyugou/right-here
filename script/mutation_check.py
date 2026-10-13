@@ -188,7 +188,19 @@ MUTANTS = [
     ("a changed launch command counts as one this Mac already has", "Sources/RightHereCore/Config/LaunchCommands.swift",
      "before[entry.place] == entry.value ? nil : Change(", "before[entry.place] != nil ? nil : Change("),
     ("a launch command is printed with its control characters", "Sources/RightHereCore/Config/LaunchCommands.swift",
-     '.withControlCharactersEscaped + "\\""', '+ "\\""'),
+     '.withControlCharactersEscaped + "\\""', ' + "\\""'),
+    ("a control character in config text reaches the terminal", "Sources/RightHereCore/Config/ConfigDiagnostic.swift",
+     "self.message = message.withControlCharactersEscaped", "self.message = message"),
+    ("a control character in a config key reaches the terminal", "Sources/RightHereCore/Config/ConfigDiagnostic.swift",
+     "self.path = path.withControlCharactersEscaped", "self.path = path"),
+    ("a secret-looking key is listed with its control characters", "Sources/RightHereCore/Config/SyncValidation.swift",
+     'found.append(here.joined(separator: ".").withControlCharactersEscaped)', 'found.append(here.joined(separator: "."))'),
+    ("a problem in an overlay key is filed under another spelling than the diagnostic's", "Sources/RightHereCore/Config/ConfigMerge.swift",
+     "keyOrigins[Self.dotted(path)] = layer", 'keyOrigins[path.joined(separator: ".")] = layer'),
+    ("the MCP config check prints what it quotes from the config unfenced", "Sources/RightHereMCP/Tools.swift",
+     "Fence.wrap($0.summary(file: loaded.file))", "$0.summary(file: loaded.file)"),
+    ("the MCP doctor prints what it quotes unfenced", "Sources/RightHereMCP/Tools.swift",
+     '": " + Fence.wrap($0)', '": " + $0'),
 ]
 
 
