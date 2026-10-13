@@ -898,8 +898,13 @@ struct ConfigSyncCLITests {
         return rh
     }
 
+    /// Where `rh config path` says the config is. Tests remove it, and change its mode, so it must really be a path: an `rh`
+    /// that crashed prints nothing, and an empty path is the current folder, which is the package (a test removed the
+    /// whole clone under a mutation that made `rh` crash, and another left it without permissions).
     private func configFile(_ rh: RH) throws -> URL {
-        URL(fileURLWithPath: try rh.run(["config", "path"]).standardOutput.trimmingCharacters(in: .whitespacesAndNewlines))
+        let path = try rh.run(["config", "path"]).standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+        try #require(path.hasPrefix("/") && path.hasSuffix("/config.toml"), "rh config path printed \(path.debugDescription)")
+        return URL(fileURLWithPath: path)
     }
 
     @Test func theDefaultFolderIsResolvedThroughTheTrialHome() throws {
