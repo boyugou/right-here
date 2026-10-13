@@ -222,6 +222,8 @@ MUTANTS = [
      "Set(droppedPresets.map(\\.id)).subtracting(AgentPreset.builtIn.map(\\.id))", "Set(droppedPresets.map(\\.id))"),
     ("an overlay preset replaces every shared preset", "Sources/RightHereCore/Config/ConfigMerge.swift",
      'static let idKeyedArrays: Set<String> = ["app", "template", "variant", "preset"]', 'static let idKeyedArrays: Set<String> = ["app", "template", "variant"]'),
+    ("a duplicate in the overlay silently replaces the earlier one when the shared file has entries", "Sources/RightHereCore/Config/ConfigMerge.swift",
+     ", replaced.insert(position).inserted {", " {"),
 ]
 
 

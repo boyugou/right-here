@@ -78,6 +78,39 @@ struct ConfigLayersMergeTests {
         #expect(result.config.newFile.templates[0].fileExtension == "md")
     }
 
+    @Test func duplicateIDsInTheOverlayAreTreatedTheSameWithOrWithoutASharedList() {
+        let overlay = """
+        [[app]]
+        id = "foo"
+        name = "First"
+        bundle_id = "a.first"
+        [[app]]
+        id = "foo"
+        name = "Second"
+        bundle_id = "a.second"
+        """
+        let shared = "[[app]]\nid = \"bar\"\nname = \"Bar\"\nbundle_id = \"a.bar\"\n"
+        let withoutAList = layered("version = 1\n", overlay)
+        let withAList = layered(shared, overlay)
+        // The first definition is used and the second is reported, in both cases, at its place in the overlay.
+        #expect(withoutAList.config.apps.map(\.name) == ["First"])
+        #expect(withAList.config.apps.map(\.name) == ["Bar", "First"])
+        for result in [withoutAList, withAList] {
+            let duplicates = result.diagnostics.filter { $0.message.contains("duplicate app id") }
+            #expect(duplicates.count == 1, "\(result.diagnostics.map(\.message))")
+            #expect(duplicates.first?.path == "app.2.id" && duplicates.first?.file == "config.local.toml", "\(duplicates)")
+        }
+    }
+
+    @Test func aSharedEntryIsReplacedOnceAndALaterDuplicateInTheOverlayIsAppended() {
+        let shared = "[[new_file.template]]\nid = \"note\"\ntitle = \"Shared\"\nextension = \"txt\"\n"
+        let overlay = "[[new_file.template]]\nid = \"note\"\ntitle = \"One\"\nextension = \"txt\"\n[[new_file.template]]\nid = \"note\"\ntitle = \"Two\"\nextension = \"md\"\n"
+        let result = layered(shared, overlay)
+        #expect(result.config.newFile.templates.map(\.title) == ["One"], "the first of the overlay's duplicates wins, as when nothing is shared")
+        let duplicate = result.diagnostics.first { $0.message.contains("duplicate template id") }
+        #expect(duplicate?.path == "new_file.template.2.id" && duplicate?.file == "config.local.toml", "\(result.diagnostics)")
+    }
+
     @Test func presetsMergeByIDAndAnOverlayPresetDoesNotWipeTheSharedOnes() {
         let base = """
         [general]

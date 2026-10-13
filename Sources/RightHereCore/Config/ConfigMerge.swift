@@ -5,7 +5,9 @@ import Foundation
 /// - Tables merge key by key: a scalar or a list the overlay sets replaces the base value as a whole
 ///   (`menu.items`, `general.agents` and every other list are never merged element by element).
 /// - Entries with an `id` (`[[app]]`, `[[preset]]`, `[[new_file.template]]`, `[[agent.<id>.variant]]`) merge by id: the
-///   overlay entry replaces the base entry of that id in place, and an entry with a new id is appended.
+///   overlay entry replaces the base entry of that id in place, and an entry with a new id is appended. An overlay
+///   entry never replaces an earlier entry of the overlay: a second entry with an id is a duplicate, appended so that it
+///   is reported (the first definition is used) whether or not the base has entries of that kind.
 /// - `[agent.<id>]` is a table like the others, so an overlay can change one key of an agent the base defines
 ///   (its `command`) and the base's variants stay.
 /// - `disabled = ["id", ...]` in the overlay removes those ids from the merged result: app, template and agent
@@ -98,9 +100,12 @@ struct ConfigMerge {
               inherited.allSatisfy({ $0.tableValue != nil }), overlay.allSatisfy({ $0.tableValue != nil }) else { return nil }
         var items = inherited
         var origins = inherited.indices.map { Origin(layer: .base, index: $0 + 1) }
+        // A shared entry is replaced at most once. The overlay's own duplicates are appended, not merged into each other,
+        // so they are reported the way they are when the shared file has no entry of that kind (the first is used).
+        var replaced = Set<Int>()
         for (offset, entry) in overlay.enumerated() {
             let origin = Origin(layer: .local, index: offset + 1)
-            if let id = Self.id(of: entry), let position = items.firstIndex(where: { Self.id(of: $0) == id }) {
+            if let id = Self.id(of: entry), let position = inherited.indices.first(where: { Self.id(of: items[$0]) == id }), replaced.insert(position).inserted {
                 items[position] = entry
                 origins[position] = origin
             } else {
