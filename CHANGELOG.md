@@ -41,5 +41,13 @@ First version, running on macOS 26 and later (Apple silicon).
   nothing that `push` or `pull` would refuse; a shared preset left out because its agent is disabled on this Mac is a note.
 - Terminals without a built-in adapter can be defined in the config (`open_args`, `run_args`); copied paths use
   the spelling the file system stores.
+- The menu says what it leaves out: `rh menu --explain` lists, with the reason, the entries the config asks for that are
+  not there (an app that is not installed, no file selected for the presets, an agent the overlay disabled) and the
+  defaults another app replaced; `rh doctor` and `rh config validate` say when a config leaves the menu empty for a
+  folder. A default terminal or editor that is not installed (a config shared between Macs) gives way to the first
+  installed one, and the doctor names both; an agent that is set to start in its desktop app or by its link keeps a
+  typed launch in the default terminal under More Agent Options; Agent Presets are not offered for a selection of only
+  folders; a new file is never handed to the system's default app when no editor is installed; each element of a
+  variant's `arguments` is typed as one quoted argument.
 - Verified: the whole chain after a menu click on a real Mac; real-shell round trips of quoting; a notarized,
   stapled DMG. Not yet verified: a real Finder click (see `docs/DESIGN.md`, section 5, Open).

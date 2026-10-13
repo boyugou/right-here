@@ -174,7 +174,7 @@ public struct Doctor: Sendable {
         let folder = HereContext(origin: .container, container: facts.homeDirectory)
         let explained = MenuBuilder(config: loaded.config, facts: facts).explain(for: folder)
         guard explained.menu.isEmpty else { return [] }
-        return [DoctorCheck(.finderMenu, status: .warn, detail: .doctorMenuEmpty, notes: explained.leftOut.map { .doctorVerbatim($0.line) }, fix: .doctorFixMenuEmpty)]
+        return [DoctorCheck(.finderMenu, status: .warn, detail: .doctorMenuEmpty, notes: explained.leftOut.map { .doctorVerbatim($0.line.withControlCharactersEscaped) }, fix: .doctorFixMenuEmpty)]
     }
 
     /// What a default app check says: the app a click opens, or why there is none. The two reasons a person can meet

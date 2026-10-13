@@ -47,7 +47,7 @@ Login Items & Extensions, Finder. Notarized downloads and a Homebrew cask are on
 
 ```sh
 rh init                       # create ~/.config/right-here/config.toml from what is installed
-rh menu                       # preview the Finder menu
+rh menu                       # preview the Finder menu (--explain adds what it leaves out, and why)
 rh actions                    # every action available here (--all adds the ones that are not, and why)
 rh run agent.claude           # start Claude Code in the current folder, in your terminal
 rh run copy-path.git-relative src/main.swift
