@@ -189,6 +189,12 @@ file bypassed it (the ninth round had made symlinked configs supported); it stat
 gives kilobytes. The localization script check treated the ordinal and micro signs (º ª µ) as another script. Not
 fixable by that check: a neighbour swap between languages that share a script (ru/uk, ar/fa/ur, hi/mr, ja/zh).
 
+## Twelfth round (packaging, plugin, docs against behavior, odd configs; after 665dac2)
+
+No defect in release scripts, Homebrew files, CI, the plugin or 17 checked documentation claims; CRLF, BOM, tabs and
+an empty config are accepted. Two small findings, fixed: the roadmap still said eight review rounds, and a duplicate
+entry in `general.agents` was dropped without a word (it warns now, like `copy_path.styles`).
+
 ## Left as they are, on purpose
 
 - The MCP launcher script prefers `rh` on PATH before known install locations: PATH is the person's.

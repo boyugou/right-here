@@ -13,7 +13,7 @@
 - Finder Services (Quick Actions) generated from the config; the doctor notices when they drift from it.
 - A notarized, stapled DMG builds with `script/package_dmg.sh` (Apple accepted it; Gatekeeper accepts it).
 - MCP server and the Claude Code plugin (setup, open-here and review-changes skills).
-- Independent reviews in eight rounds (see `docs/decisions/0008-independent-review.md`), every finding fixed
+- Independent reviews in twelve rounds (see `docs/decisions/0008-independent-review.md`), every finding fixed
   with a test that fails on the old code, and a mutation check (`script/mutation_check.py`) that removes each
   protection in a throwaway clone and expects a test to fail.
 - Thirty languages for the menu, the app, alerts and the permission-prompt text (machine-translated,

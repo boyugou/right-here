@@ -368,7 +368,11 @@ private struct Builder {
         let agentIDs = (config.customAgents + KnownAgents.all).map(\.id)
         for id in agentChoices {
             if agentIDs.contains(id) {
-                if !config.enabledAgents.contains(id) { config.enabledAgents.append(id) }
+                if config.enabledAgents.contains(id) {
+                    sink.warning(["general", "agents"], "\"\(id)\" is listed twice; the second is ignored")
+                } else {
+                    config.enabledAgents.append(id)
+                }
             } else if !sink.rejectedAgents.contains(id) {
                 sink.error(["general", "agents"], "unknown agent \"\(id)\"; known agents: " + agentIDs.joined(separator: ", "),
                            suggestion: Suggestion.didYouMean(id, in: agentIDs))

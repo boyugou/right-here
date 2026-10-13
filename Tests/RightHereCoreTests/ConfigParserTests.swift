@@ -679,6 +679,12 @@ struct ConfigListDiagnosticTests {
         }
     }
 
+    @Test func anAgentListedTwiceIsWarnedAboutAndEnabledOnce() {
+        let result = ConfigParser.parse("[general]\nagents = [\"claude\", \"claude\", \"codex\"]\n")
+        #expect(result.diagnostics.contains { $0.severity == .warning && $0.message.contains("listed twice") })
+        #expect(result.config.enabledAgents == ["claude", "codex"])
+    }
+
     @Test func aStyleListedTwiceIsWarnedAboutAndKeptOnce() {
         let result = ConfigParser.parse("[copy_path]\nstyles = [\"name\", \"absolute\", \"name\"]\n")
         #expect(result.diagnostics.contains { $0.severity == .warning && $0.message.contains("listed twice") })
