@@ -182,13 +182,12 @@ public struct Doctor: Sendable {
                                 fix: "Add agents to general.agents, for example agents = [\"claude\"].")]
         }
         let registry = ActionRegistry(config: config, facts: facts)
-        func firstWord(_ command: String) -> String { command.split(separator: " ").first.map(String.init) ?? command }
-        let commands = config.enabledAgents.compactMap { config.agent(id: $0).map { firstWord($0.command) } }
+        let commands = config.enabledAgents.compactMap { config.agent(id: $0)?.executable }
         let found = await Detector(facts: facts, runner: runner).commandsFound(commands)
         var checks: [DoctorCheck] = []
         for id in config.enabledAgents {
             guard let agent = config.agent(id: id) else { continue }
-            let command = firstWord(agent.command)
+            let command = agent.executable
             let action = registry.info(.agent(id: id, variant: nil, launcher: nil))
             if !found.contains(command) {
                 checks.append(DoctorCheck(id: "agent.\(id)", title: agent.name, status: .warn,

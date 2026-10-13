@@ -259,7 +259,7 @@ enum Tools {
             .object(["id": .string(app.id), "name": .string(app.name), "role": .string(app.role.rawValue),
                      "installed": .bool(app.installedBundleID(facts: server.facts) != nil)])
         }
-        let agents = (config.customAgents + KnownAgents.all).compactMap { config.agent(id: $0.id) }.map { agent -> JSONValue in
+        let agents = config.allAgents.map { agent -> JSONValue in
             .object(["id": .string(agent.id), "name": .string(agent.name), "command": .string(agent.command),
                      "enabled": .bool(config.enabledAgents.contains(agent.id)),
                      "variants": .array(agent.variants.map { .string($0.id) })])

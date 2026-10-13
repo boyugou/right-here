@@ -110,13 +110,13 @@ struct Agents: AsyncParsableCommand {
 
     func run() async throws {
         let runtime = Runtime()
-        let all = (runtime.config.customAgents + KnownAgents.all).compactMap { runtime.config.agent(id: $0.id) }
-        let found = await Detector(facts: runtime.facts).commandsFound(all.map { $0.command.split(separator: " ").first.map(String.init) ?? $0.command })
+        let all = runtime.config.allAgents
+        let found = await Detector(facts: runtime.facts).commandsFound(all.map(\.executable))
         let rows = all.map { agent in
             Row(
                 id: agent.id, name: agent.name, command: agent.command,
                 enabled: runtime.config.enabledAgents.contains(agent.id),
-                foundInShell: found.contains(agent.command.split(separator: " ").first.map(String.init) ?? agent.command),
+                foundInShell: found.contains(agent.executable),
                 variants: agent.variants.map(\.id), terminalLink: agent.terminalLink != nil, desktopLink: agent.desktopLink != nil
             )
         }
