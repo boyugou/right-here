@@ -165,18 +165,22 @@ enum Tools {
     // MARK: Handlers
 
     private static func context(from arguments: JSONValue, facts: any SystemFacts) throws -> HereContext {
-        func absolute(_ value: JSONValue) throws -> URL {
-            // The first scalar, not the first Character: "/" followed by a combining mark is one Character that is not "/".
-            guard let path = value.stringValue, path.unicodeScalars.first == "/" else { throw ToolError("Paths must be absolute strings.") }
-            // No real path holds a NUL, and the system calls that check a path stop reading at one, so what is
-            // checked would differ from what is later handed to an app.
-            guard !path.unicodeScalars.contains("\0") else { throw ToolError("A path cannot contain a NUL character.") }
-            return URL(fileURLWithPath: path)
+        func text(_ value: JSONValue) throws -> String {
+            guard let path = value.stringValue else { throw ToolError("Paths must be absolute strings.") }
+            return path
         }
-        let items = try (arguments["paths"]?.arrayValue ?? []).map(absolute)
-        let container = try arguments["container"].map(absolute)
-        let origin: HereContext.Origin = items.isEmpty ? (container == nil ? .cli : .container) : .items
-        return HereContext(origin: origin, items: items, container: container)
+        let input = ContextInput(
+            paths: try (arguments["paths"]?.arrayValue ?? []).map(text),
+            container: try arguments["container"].map(text),
+            resolution: .absoluteOnly
+        )
+        do {
+            return try input.makeContext()
+        } catch ContextInput.Problem.containsNUL {
+            throw ToolError("A path cannot contain a NUL character.")
+        } catch {
+            throw ToolError("Paths must be absolute strings.")
+        }
     }
 
     private static func run(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
