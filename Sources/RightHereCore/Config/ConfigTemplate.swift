@@ -67,6 +67,13 @@ public enum ConfigTemplate {
         # launcher = "terminal"
         # command = "claude"
 
+        # Prompt presets (Agent Presets in the menu: review, explain, tests are built in). The prompt is typed as the
+        # agent's first argument, so the agent starts on it at once. {files} = the selected files as @-mentions.
+        # [[preset]]
+        # id = "lint"
+        # title = "Check Style"
+        # prompt = "Check {files} for style problems. Do not modify any files."
+
         """
     }
 }
