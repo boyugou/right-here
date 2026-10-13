@@ -135,6 +135,12 @@ struct AgentLaunchAgreementTests {
                         if case .unsupported(let text)? = refusal, text != info.unavailableReason {
                             disagreements.append("\(machine.name) / \(configName) / \(ref.id): the planner says \"\(text)\", the registry \"\(info.unavailableReason ?? "nothing")\"")
                         }
+                    case .openTerminal, .openEditor, .openApp:
+                        // The terminal named by `open.terminal@editor`, an app that is not there, a default that cannot be chosen:
+                        // each is decided in one place and worded once.
+                        if let refusal, refusal.message != info.unavailableReason {
+                            disagreements.append("\(machine.name) / \(configName) / \(ref.id): the planner says \"\(refusal.message)\", the registry \"\(info.unavailableReason ?? "nothing")\"")
+                        }
                     default: break
                     }
                 }

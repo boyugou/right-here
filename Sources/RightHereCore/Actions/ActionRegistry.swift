@@ -130,24 +130,10 @@ public struct ActionRegistry: Sendable {
     }
 
     private func describeApp(_ info: inout ActionInfo, terminal id: String?) {
-        let app: AppDescriptor
-        if let id {
-            guard let found = config.app(id: id) else {
-                unavailable(&info, title: localizer.openIn(id), reason: PlanError.unknownTerminal(id).message)
-                return
-            }
-            app = found
-        } else {
-            switch defaultApp(.terminal, configured: config.terminal) {
-            case .success(let found): app = found
-            case .failure(let error):
-                unavailable(&info, title: localizer.openIn("Terminal"), reason: error.message)
-                return
-            }
-        }
-        describeApp(&info, app: app)
-        if info.available, app.role != .terminal {
-            unavailable(&info, reason: PlanError.notATerminal(app).message)
+        do throws(PlanError) {
+            describeApp(&info, app: try defaults.terminal(id: id))
+        } catch {
+            unavailable(&info, title: localizer.openIn(id ?? "Terminal"), reason: error.message)
         }
     }
 

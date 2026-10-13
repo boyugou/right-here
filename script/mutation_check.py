@@ -251,6 +251,9 @@ MUTANTS = [
      "&& $0.firstMatch(of: configProblem) == nil }", "}"),
     ("the preset prompt limit counts Characters, not bytes", "Sources/RightHereCore/Presets/AgentPreset.swift",
      "if prompt.utf8.count > AgentPreset.maxPromptBytes {", "if prompt.count > AgentPreset.maxPromptBytes {"),
+    ("an editor named as a terminal is opened as one", "Sources/RightHereCore/Planner/DefaultApps.swift",
+     "guard let app = config.terminalApp(id: id) else { throw PlanError.unknownTerminal(id) }",
+     "guard let app = config.app(id: id) else { throw PlanError.unknownTerminal(id) }"),
 ]
 
 

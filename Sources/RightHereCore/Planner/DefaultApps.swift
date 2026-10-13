@@ -29,6 +29,16 @@ public struct DefaultApps: Sendable {
         return app
     }
 
+    /// The terminal an action opens when it names one (`open.terminal@ghostty`) or none: the one named, which has to be a
+    /// terminal (an id that names an editor is as unknown as one that names nothing), else the default as `resolve` has it.
+    /// The planner and the registry both ask here, so a menu offers what `rh run` can do and says why it cannot in the same
+    /// words. Whether the app is installed is left to the caller.
+    public func terminal(id: String?) throws(PlanError) -> AppDescriptor {
+        guard let id else { return try resolve(role: .terminal, configured: config.terminal) }
+        guard let app = config.terminalApp(id: id) else { throw PlanError.unknownTerminal(id) }
+        return app
+    }
+
     /// The terminal an agent is typed into when none is named: the configured default as it is, else the first
     /// installed one that can run a command. A folder-only terminal (iTerm, kitty and the like) is a fine place to
     /// open a folder but would make every agent entry fail while Terminal.app sits next to it.

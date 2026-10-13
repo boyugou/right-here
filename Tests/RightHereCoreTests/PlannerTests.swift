@@ -340,7 +340,11 @@ struct PlannerTests {
         let registry = ActionRegistry(config: .default, facts: machine(installed: ["com.microsoft.VSCode", "com.apple.Terminal"]))
         let info = registry.info(.openTerminal("vscode"))
         #expect(!info.available)
-        #expect(info.unavailableReason?.contains("not a terminal") == true)
+        // An editor is as unknown a terminal as a word that names nothing, in the planner's words and the registry's alike.
+        #expect(info.unavailableReason == PlanError.unknownTerminal("vscode").message)
+        #expect(throws: PlanError.unknownTerminal("vscode")) {
+            try Planner(facts: machine(installed: ["com.microsoft.VSCode", "com.apple.Terminal"])).plan(.openTerminal("vscode"), context: folder("/Users/tester/code/app"))
+        }
         #expect(registry.info(.openTerminal("terminal")).available)
         let agent = registry.info(.agent(id: "claude", variant: nil, launcher: .terminal("vscode")))
         #expect(!agent.available)

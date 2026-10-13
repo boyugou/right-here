@@ -118,13 +118,7 @@ public struct Planner: Sendable {
     }
 
     private func resolveTerminal(_ id: String?) throws -> (AppDescriptor, String) {
-        let app: AppDescriptor
-        if let id {
-            guard let found = config.terminalApp(id: id) else { throw PlanError.unknownTerminal(id) }
-            app = found
-        } else {
-            app = try defaults.resolve(role: .terminal, configured: config.terminal)
-        }
+        let app = try defaults.terminal(id: id)
         guard let bundleID = app.installedBundleID(facts: facts) else { throw PlanError.appNotInstalled(app.name) }
         return (app, bundleID)
     }
