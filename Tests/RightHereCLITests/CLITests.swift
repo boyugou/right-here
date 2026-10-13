@@ -871,6 +871,21 @@ struct ConfigSyncCLITests {
         #expect(try rh.run(["config", "sync", "status"]).status == 1)
     }
 
+    @Test func aDeletedConfigIsRestoredByAPlainPullAndTheAdviceSaysSo() throws {
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        #expect(try rh.run(["config", "sync", "push"]).status == 0)
+        let local = try configFile(rh)
+        try FileManager.default.removeItem(at: local)
+        let status = try rh.run(["config", "sync", "status"])
+        #expect(status.standardOutput.contains("remote-ahead") && status.standardOutput.contains("`rh config sync pull`"), "\(status.standardOutput)")
+        #expect(!status.standardOutput.contains("`rh config sync push`"), "advice to push a file that is not there: \(status.standardOutput)")
+        #expect(try rh.run(["config", "sync", "pull"]).status == 0)
+        #expect(try String(contentsOf: local, encoding: .utf8) == "[general]\nterminal = \"terminal\"\n")
+    }
+
     @Test func pullRefusesALocalEditUnlessForced() throws {
         let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("synced")

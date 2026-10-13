@@ -88,6 +88,9 @@ the folder's copy, and the content at the last sync.
 
 - Statuses: `in-sync`, `local-ahead`, `remote-ahead`, `diverged` (both changed, or they differ and no sync has
   happened), `remote-missing`, `remote-evicted`.
+- A missing local config is `remote-ahead`, whatever was synced before: it has nothing to send and nothing to lose,
+  and `pull` restores it without `--force`. (A deleted file used to read as a local change, which advised a push that
+  could not happen and refused the pull that fixes it.)
 - `pull` refuses when the local config changed since the last sync; `push` refuses when the folder's copy did; `--force`
   overrides, after saving the replaced file as `config.toml.bak-<date>` (next to the config for a pull, in the folder
   for a push). A backup is made only when something that may hold unique content is replaced.

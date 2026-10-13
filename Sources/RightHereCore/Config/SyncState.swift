@@ -61,10 +61,12 @@ public enum SyncState {
         case .present(let hash): remote = hash
         }
         if snapshot.local == remote { return .inSync }
+        // A machine with no config file has nothing to lose and nothing to send, whatever was synced before: a deleted
+        // file read as a local change would advise a push that cannot happen and refuse the pull that restores it.
+        if snapshot.local == nil { return .remoteAhead }
         guard let last = snapshot.lastSynced else {
-            // Never synced: a folder that has a config when this machine has none is something to pull; two different
-            // files are a conflict only a person can settle.
-            return snapshot.local == nil ? .remoteAhead : .diverged
+            // Never synced: two different files are a conflict only a person can settle.
+            return .diverged
         }
         switch (snapshot.local != last, remote != last) {
         case (false, true): return .remoteAhead

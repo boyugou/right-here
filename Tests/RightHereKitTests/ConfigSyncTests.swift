@@ -223,6 +223,26 @@ struct ConfigSyncTransferTests {
         #expect(try f.read(f.local) == three)
     }
 
+    @Test func aDeletedLocalConfigIsRestoredByAPlainPull() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.sync.enable(folder: f.remote.path)
+        try f.sync.push()
+        try FileManager.default.removeItem(at: f.local)
+        // It used to read as "local ahead": status advised a push, push said to pull, and pull refused to overwrite the change.
+        #expect(try f.sync.status().status == .remoteAhead)
+        #expect(throws: ConfigSyncError.noLocalConfig(f.local.path)) { try f.sync.push() }
+        #expect(try f.sync.pull() == .pulled(backup: nil))
+        #expect(try f.read(f.local) == one)
+        #expect(try f.sync.status().status == .inSync)
+        // The same when the folder's copy changed while the file was gone.
+        try FileManager.default.removeItem(at: f.local)
+        try f.write(two, to: f.remoteFile)
+        #expect(try f.sync.status().status == .remoteAhead)
+        #expect(try f.sync.pull() == .pulled(backup: nil))
+        #expect(try f.read(f.local) == two)
+    }
+
     @Test func pullFromAMissingCopyExplains() throws {
         let f = try Fixture(); defer { f.cleanUp() }
         try f.write(one, to: f.local)

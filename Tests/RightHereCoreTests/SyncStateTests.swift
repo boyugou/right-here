@@ -31,8 +31,11 @@ struct SyncStateTests {
 
     @Test func noLocalFileAndAFolderCopyMeansPull() {
         #expect(status(nil, .present(hash: "c"), last: nil) == .remoteAhead)
-        // A local file removed after a sync counts as a local change.
-        #expect(status(nil, .present(hash: "c"), last: "c") == .localAhead)
+        // A local file removed after a sync is not a change to send: there is nothing to send, and pulling restores it
+        // without --force, whether or not the folder's copy changed since.
+        #expect(status(nil, .present(hash: "c"), last: "c") == .remoteAhead)
+        #expect(status(nil, .present(hash: "d"), last: "c") == .remoteAhead)
+        #expect(SyncState.pull(status(nil, .present(hash: "c"), last: "c"), force: false) == .proceed)
     }
 
     @Test func missingAndEvictedWinOverTheHashes() {

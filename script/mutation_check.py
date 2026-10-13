@@ -224,6 +224,8 @@ MUTANTS = [
      'static let idKeyedArrays: Set<String> = ["app", "template", "variant", "preset"]', 'static let idKeyedArrays: Set<String> = ["app", "template", "variant"]'),
     ("a duplicate in the overlay silently replaces the earlier one when the shared file has entries", "Sources/RightHereCore/Config/ConfigMerge.swift",
      ", replaced.insert(position).inserted {", " {"),
+    ("a deleted local config reads as a local change", "Sources/RightHereCore/Config/SyncState.swift",
+     "if snapshot.local == nil { return .remoteAhead }", "if false { return .remoteAhead }"),
 ]
 
 
