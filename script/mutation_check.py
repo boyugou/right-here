@@ -248,7 +248,7 @@ MUTANTS = [
 
 # Tests whose result depends on how busy the machine is (they leave a margin of a second or two for a process to be
 # stopped), so on a loaded one they fail whatever the code does.
-LOAD_SENSITIVE = {"theChildrenOfAKilledProcessAreKilledToo"}
+LOAD_SENSITIVE: set[str] = set()
 
 
 def failed_tests(output: str) -> set[str]:
