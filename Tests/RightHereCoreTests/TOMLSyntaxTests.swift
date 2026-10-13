@@ -228,3 +228,68 @@ struct TOMLOutlineTests {
         check(.table(tree), path: [])
     }
 }
+
+@Suite("TOMLOutline: random text")
+struct TOMLOutlineFuzzTests {
+    /// Deterministic, so a failing text can be replayed from its seed.
+    private struct SplitMix64: RandomNumberGenerator {
+        var state: UInt64
+        mutating func next() -> UInt64 {
+            state &+= 0x9E37_79B9_7F4A_7C15
+            var z = state
+            z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+            z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
+            return z ^ (z >> 31)
+        }
+    }
+
+    @Test func noTextOfTheCharactersThatMatterMakesTheOutlineTrapOrPointOutsideTheFile() {
+        let pieces = ["[", "]", "[[", "]]", "{", "}", "=", ",", ".", "\"", "'", "\"\"\"", "'''", "#", "\n", "\r\n", " ", "\t", "a", "b-c", "1", "\\", "\\\"", "é", "💥", "=\n", "a = ", "[a]\n", "[[a]]\n", "x = [", "y = {", "\"k\" = ", "'''\n"]
+        var random = SplitMix64(state: 7)
+        for _ in 0..<20_000 {
+            let text = (0..<Int(random.next() % 40)).map { _ in pieces[Int(random.next() % UInt64(pieces.count))] }.joined()
+            let outline = TOMLOutline(text)
+            for line in outline.lines.values { #expect(line >= 1 && line <= max(1, outline.lineCount + 1), "\(text.debugDescription)") }
+            if let problem = outline.problem { #expect(problem.line >= 1 && problem.line <= outline.lineCount, "\(text.debugDescription): \(problem)") }
+            _ = outline.line(of: "a.b")
+            _ = outline.rawValue(of: "a")
+            _ = outline.clamped(0)
+        }
+    }
+
+    @Test func aRandomConfigTheLibraryReadsHasNoProblemAndEveryKeyHasALine() throws {
+        var checked = 0
+        for text in randomConfigTexts(seed: 31, count: 600) {
+            guard ConfigParser.canBeRead(text), let tree = ConfigParser.readTree(text).tree else { continue }
+            let outline = TOMLOutline(text)
+            #expect(outline.problem == nil, "\(text.debugDescription): \(outline.problem.map(\.message) ?? "")")
+            func check(_ value: TOMLValue, path: [String]) {
+                switch value {
+                case .table(let nested): for (key, child) in nested { check(child, path: path + [key]) }
+                case .array(let items) where value.isTableArray: for (index, item) in items.enumerated() { check(item, path: path + [String(index + 1)]) }
+                default:
+                    let spelled = path.map(\.withControlCharactersEscaped).joined(separator: ".")
+                    #expect(outline.line(of: spelled) != nil, "no line for \(spelled) in \(text.debugDescription)")
+                }
+            }
+            check(.table(tree), path: [])
+            checked += 1
+        }
+        #expect(checked > 100, "only \(checked) of the random configs could be read; the corpus tests nothing")
+    }
+
+    @Test func theDiagnosticsOfARandomConfigAreInsideTheFileAndInOrder() {
+        for text in randomConfigTexts(seed: 77, count: 600) {
+            let lines = max(1, text.split(separator: "\n", omittingEmptySubsequences: false).count)
+            let result = ConfigParser.parse(text)
+            var previous = 0
+            for diagnostic in result.diagnostics {
+                if let line = diagnostic.line {
+                    #expect(line >= 1 && line <= lines, "line \(line) of \(lines) for \(diagnostic.message) in \(text.debugDescription)")
+                    #expect(line >= previous, "\(diagnostic.message) is out of order in \(text.debugDescription)")
+                    previous = line
+                }
+            }
+        }
+    }
+}
