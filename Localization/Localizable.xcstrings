@@ -8,7 +8,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "إظهار في فايندر"
+            "value": "إظهار في Finder"
           }
         },
         "bn": {
@@ -440,7 +440,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "OKE"
+            "value": "OK"
           }
         },
         "it": {
@@ -656,7 +656,7 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Buka Seting Sistem"
+            "value": "Buka Tetapan Sistem"
           }
         },
         "nl": {
@@ -674,7 +674,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abrir Ajustes"
+            "value": "Abrir Ajustes do Sistema"
           }
         },
         "ro": {
@@ -842,7 +842,7 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS menghalang Right Here daripada mengawal %@. Benarkan dalam Seting Sistem › Privasi & Keselamatan › Automasi, kemudian cuba lagi."
+            "value": "macOS menghalang Right Here daripada mengawal %@. Benarkan dalam Tetapan Sistem › Privasi & Keselamatan › Automasi, kemudian cuba lagi."
           }
         },
         "nl": {
@@ -860,7 +860,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "O macOS impediu o Right Here de controlar %@. Permita em Ajustes › Privacidade e Segurança › Automação e tente novamente."
+            "value": "O macOS impediu o Right Here de controlar %@. Permita em Ajustes do Sistema › Privacidade e Segurança › Automação e tente novamente."
           }
         },
         "ro": {
@@ -920,7 +920,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS 阻止了 Right Here 控制%@。请在“系统设置” › “隐私与安全” › “自动化”中允许，然后重试。"
+            "value": "macOS 阻止了 Right Here 控制%@。请在“系统设置” › “隐私与安全性” › “自动化”中允许，然后重试。"
           }
         },
         "zh-Hant": {
@@ -944,7 +944,7 @@
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here-এর আপনার অনুমতি দরকার"
+            "value": "Right Here-কে আপনার অনুমতি দরকার"
           }
         },
         "de": {
@@ -2690,7 +2690,7 @@
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder 확장"
+            "value": "Finder 확장 프로그램"
           }
         },
         "mr": {
@@ -4100,7 +4100,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "إعدادات ملحق فايندر"
+            "value": "إعدادات امتداد Finder"
           }
         },
         "bn": {
@@ -4676,7 +4676,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Άνοιγμα διαμόρφωσης"
+            "value": "Άνοιγμα ρυθμίσεων"
           }
         },
         "en": {
@@ -5042,7 +5042,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Erfordert Ihre Aktion"
+            "value": "Erfordert deine Aktion"
           }
         },
         "el": {
@@ -5144,7 +5144,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Necesită acțiunea ta"
+            "value": "Necesită acțiunea dvs."
           }
         },
         "ru": {

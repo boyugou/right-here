@@ -11,6 +11,7 @@
   - [0006 localization](decisions/0006-localization.md)
   - [0007 App Store edition](decisions/0007-app-store-edition.md)
   - [0008 independent review](decisions/0008-independent-review.md)
+  - [0009 Termius is not a built-in terminal](decisions/0009-termius.md)
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
 - [`development/RELEASING.md`](development/RELEASING.md): signing, notarizing and publishing a release.

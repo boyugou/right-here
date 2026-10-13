@@ -45,7 +45,7 @@ Researched against macOS 26 as of October 2026; each needs a short decision reco
 1. **App Intents** (Shortcuts and Spotlight actions) that run `rh run <id>` with the folder as argv: a second entry
    point that does not depend on the Finder extension (Apple has not announced a Finder Sync deprecation, but
    developer forums report it failing to load on some macOS 26 machines).
-2. **Recent and pinned folders**: `rh recents`, `rh pin`, a private state file, offered as intent entities.
+2. **Recent and pinned folders**: a recents command, a pin command, a private state file, offered as intent entities.
 3. **Agent prompt presets that carry the selection** (`[[preset]]` with `{files}` as `@` mentions), typed safely and
    prefilled, never auto-submitted by default.
 4. **Project-local overrides** (`.right-here.toml` at the git root) behind an explicit trust step pinned to the file
@@ -54,7 +54,7 @@ Researched against macOS 26 as of October 2026; each needs a short decision reco
 5. A three-step **first-run setup** that waits for the Finder extension to turn green.
 6. **Quick Actions as a primary path** in the setup window and doctor, with suggested keyboard shortcuts.
 7. **Menu personalization** in the setup app, writing an include file so the hand-written config is never rewritten.
-8. **Config sync**: a per-machine `config.local.toml` overlay and `rh config sync` copying through a folder the person
+8. **Config sync**: a per-machine `config.local.toml` overlay and a sync command copying through a folder the person
    chooses (iCloud Drive or any other); no symlink (the extension cannot read through one), no CloudKit.
 9. Git-aware actions (agent in a new worktree), split-pane placement for Ghostty, an activity tab in the app.
 
