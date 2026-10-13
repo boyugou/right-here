@@ -40,9 +40,6 @@ public enum NestingDepth {
         // 200 segments killed `rh`. A chain is segments joined by dots; any other punctuation ends it, so the
         // single dot of a float never builds one.
         var chain = 0
-        func hasPrefix(_ quote: UInt8, at position: Int) -> Bool {
-            position + 2 < bytes.count && bytes[position] == quote && bytes[position + 1] == quote && bytes[position + 2] == quote
-        }
         while index < bytes.count {
             let byte = bytes[index]
             switch byte {
@@ -50,24 +47,7 @@ public enum NestingDepth {
                 while index < bytes.count && bytes[index] != UInt8(ascii: "\n") { index += 1 }
                 continue
             case UInt8(ascii: "\""), UInt8(ascii: "'"):
-                let multiline = hasPrefix(byte, at: index)
-                index += multiline ? 3 : 1
-                while index < bytes.count {
-                    if byte == UInt8(ascii: "\""), bytes[index] == UInt8(ascii: "\\") { index += 2; continue }
-                    if multiline {
-                        if hasPrefix(byte, at: index) {
-                            index += 3
-                            // TOML lets up to two more quotes sit just before the closing three: `"""a""""` is `a"`.
-                            var extra = 0
-                            while extra < 2, index < bytes.count, bytes[index] == byte { index += 1; extra += 1 }
-                            break
-                        }
-                    } else if bytes[index] == byte || bytes[index] == UInt8(ascii: "\n") {
-                        index += 1
-                        break
-                    }
-                    index += 1
-                }
+                index = TOMLScan.skipString(bytes, at: index).end
                 continue
             case UInt8(ascii: "["), UInt8(ascii: "{"):
                 chain = 0

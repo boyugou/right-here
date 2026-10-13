@@ -382,7 +382,9 @@ struct ConfigLayersDiagnosticTests {
         let result = layered(baseConfig, "[general]\ntermnial = \"x\"\n")
         let unknown = result.diagnostics.first { $0.message == "unknown key" }
         #expect(unknown?.file == "config.local.toml")
-        #expect(unknown?.summary(file: URL(fileURLWithPath: "/x/config.toml")).hasPrefix("warning: config.local.toml [general.termnial]") == true)
+        // The line is the one in config.local.toml, where the key is.
+        #expect(unknown?.line == 2)
+        #expect(unknown?.summary(file: URL(fileURLWithPath: "/x/config.toml")).hasPrefix("warning: config.local.toml:2 [general.termnial]") == true)
     }
 
     @Test func aProblemInTheBaseKeepsTheBaseName() {
@@ -390,7 +392,9 @@ struct ConfigLayersDiagnosticTests {
         let problem = result.diagnostics.first { $0.path == "copy_path.styles" }
         #expect(problem != nil)
         #expect(problem?.file == nil)
-        #expect(problem?.summary(file: URL(fileURLWithPath: "/x/config.toml")).hasPrefix("error: config.toml [copy_path.styles]") == true)
+        // baseConfig is 39 lines, then `[copy_path]` is line 40 and the key line 41: the shared file's line, not the merged text's.
+        #expect(problem?.line == 41)
+        #expect(problem?.summary(file: URL(fileURLWithPath: "/x/config.toml")).hasPrefix("error: config.toml:41 [copy_path.styles]") == true)
     }
 
     @Test func entryPositionsAreThoseOfTheirOwnFile() {

@@ -60,7 +60,8 @@ public enum ConfigLayers {
             baseDiagnostics += read.diagnostics
             if let tree = read.tree { baseTree = tree; baseUsable = true }
         }
-        let localRead = ConfigParser.readTree(localText)
+        // An overlay that cannot be read is left out, and the shared file still applies.
+        let localRead = ConfigParser.readTree(localText, consequence: ConfigParser.fileLeftOut)
         localDiagnostics += tagged(localRead.diagnostics)
         guard let localTree = localRead.tree else {
             // An overlay that cannot be read is left out; the shared file still applies.
@@ -70,7 +71,8 @@ public enum ConfigLayers {
         }
 
         let merged = ConfigMerge.merge(base: baseTree, local: localTree)
-        var result = ConfigParser.parse(TOMLEmitter.emit(merged.root))
+        // What the builder says about the merged text has no lines worth keeping: they count the emitted text, not a file.
+        var result = ConfigParser.parseUnlocated(TOMLEmitter.emit(merged.root))
         result.diagnostics = result.diagnostics.map { attribute($0, to: merged, overlayName: overlayName) }
         if baseTree["disabled"] != nil {
             baseDiagnostics.append(ConfigDiagnostic(severity: .warning, path: "disabled", message: disabledInSharedFileMessage(overlayName: overlayName)))
@@ -85,7 +87,10 @@ public enum ConfigLayers {
         // removed (they are found through `KnownApps`, which a config cannot edit).
         result.config.newFile.templates.removeAll { merged.disabled.contains($0.id) }
         result.config.disabledApps = Set(merged.disabled.filter { KnownApps.app(id: $0) != nil })
-        result.diagnostics = baseDiagnostics + result.diagnostics + localDiagnostics
+        // Each problem is put at its line in the file it belongs to, the shared file's first.
+        let all = baseDiagnostics + result.diagnostics + localDiagnostics
+        result.diagnostics = ConfigParser.locate(all.filter { $0.file == nil }, in: baseText ?? "")
+            + ConfigParser.locate(all.filter { $0.file != nil }, in: localText)
         return result
     }
 

@@ -14,7 +14,7 @@ People and agents edit the text; `rh config validate` checks it.
   editor, which is a parser project of its own; no surface in version 1 needs to write the file.
 - TOML allows comments and literal strings, which matter for shell-ish values, and it is widely used for tool configuration.
 - A pure-Swift library (TOMLDecoder, MIT, full TOML 1.1) parses it; no hand-written parser.
-- Errors carry a dotted path, a line for syntax errors and a suggestion (`did you mean "terminal"?`),
+- Errors carry a dotted path, the file and line they are on, and a suggestion (`did you mean "terminal"?`),
   which is what an agent needs to fix a file by itself.
 
 ## Consequences
@@ -38,3 +38,19 @@ A cold-start agent that only had the installed `rh` and its docs found the sharp
   values, so the two describe the same file.
 - `rh init --force` saves the old file as `config.toml.bak-<date>` before replacing it.
 - `rh docs config` names every way the file is located (`RH_CONFIG`, `RH_CONFIG_DIR`, `XDG_CONFIG_HOME`).
+
+## Where a problem is, and what a syntax error says (round 16)
+
+- A syntax error names the line the trouble is on, in the words of this project and not the TOML library's. The library
+  reports where it gave up, and for an array that was never closed that is the end of the file or the next statement
+  ("Internal error", a line past the last one: line 8 of a six-line file). `TOMLOutline` is a light scan of the text (it
+  tells strings and comments from structure, reads no values and accepts nothing the library refuses) that finds the
+  array, inline table or table header that was left open and the line it opened on; `TOMLSyntax` maps the library's
+  other sentences to ours. `TOMLError`'s reason is not public, so the library's sentence is what is matched, and a test
+  per sentence feeds the library a text that makes it say so: a new version that rephrases one fails there. A line is
+  never past the end of the file (the library counts the line break `readTable` adds).
+- Every other problem (an unknown key, a wrong type, an unknown id) is put at the line of its key or table by the same
+  outline, and the problems are listed in the order of the file, a file's own first. The merge of two files builds from
+  emitted text, whose lines mean nothing, so each file's problems are located in that file's own text afterwards, the same
+  way for one file and for two.
+

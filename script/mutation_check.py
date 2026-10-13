@@ -113,7 +113,7 @@ MUTANTS = [
      'if environment["RH_NO_UI"] != nil, let program = Self.screenProgram(of: step), program.isEmpty {'),
     ("RH_NO_UI is fooled by /usr/bin/env or a different spelling of the path", "Sources/RightHereKit/ProcessRunner.swift",
      "if screenPrograms.contains(executable) { return executable }", "if screenPrograms.contains(step.executable) { return step.executable } else if true { return nil }"),
-    ("extra quotes before a closing triple quote hide what follows", "Sources/RightHereCore/Quoting/NestingDepth.swift",
+    ("extra quotes before a closing triple quote hide what follows", "Sources/RightHereCore/Quoting/TOMLScan.swift",
      "while extra < 2, index < bytes.count", "while extra < 0, index < bytes.count"),
     ("a long dotted TOML key reaches the decoder", "Sources/RightHereCore/Quoting/NestingDepth.swift",
      "if chain > limit { return true }", "if chain > limit * 1_000_000 { return true }"),

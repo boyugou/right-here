@@ -146,6 +146,19 @@ struct CLITests {
         #expect(diagnostics.first?["line"] as? Int != nil)
     }
 
+    @Test func anArrayThatIsNeverClosedIsReportedAtTheLineWhereItOpened() throws {
+        // The usability test's file: six lines, the sixth opens an array and never closes it. The TOML library says
+        // "Internal error" and gives a line past the end of the file.
+        let text = "version = 1\n\n[general]\nterminal = \"ghostty\"\neditor = \"vscode\"\nagents = [\"claude\", \"codex\"\n"
+        let rh = try RH(config: text); defer { rh.cleanUp() }
+        let result = try rh.run(["config", "validate"])
+        #expect(result.status == 1)
+        #expect(result.standardOutput.hasPrefix("error: config.toml:6: TOML syntax error: array not closed: missing `]`."), "\(result.standardOutput)")
+        #expect(!result.standardOutput.contains("Internal error"))
+        let diagnostics = try #require((try rh.run(["config", "validate", "--json"]).json as? [String: Any])?["diagnostics"] as? [[String: Any]])
+        #expect(diagnostics.first?["line"] as? Int == 6)
+    }
+
     @Test func theSchemaIsValidJSON() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let schema = try #require(try rh.run(["config", "schema"]).json as? [String: Any])

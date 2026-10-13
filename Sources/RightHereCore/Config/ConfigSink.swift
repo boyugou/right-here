@@ -15,13 +15,7 @@ final class ConfigSink {
                                       suggestion: suggestion?.text, replacement: suggestion?.replacement))
     }
 
-    func syntaxError(_ description: String) {
-        var message = description
-        var line: Int?
-        if let match = description.firstMatch(of: #/^\(Line (\d+)\) /#) {
-            line = Int(match.1)
-            message = String(description[match.range.upperBound...])
-        }
+    func syntaxError(_ message: String, line: Int? = nil) {
         items.append(ConfigDiagnostic(severity: .error, path: "", message: "TOML syntax error: " + message, line: line))
     }
 }
