@@ -91,14 +91,23 @@ public struct ActionRegistry: Sendable {
     }
 
     /// `info` for an action about to be offered in a menu: a preset also needs something to run on and, when its prompt
-    /// names files, a selection of the right size. This counts the selected items and never looks at them (building a
-    /// menu does no file system work); whether they are files and not folders is left to the planner in `rh`.
+    /// names files, a selection of the right size that is not only folders.
+    ///
+    /// The size is counted without looking at the items. Whether they are folders is asked only when the count already
+    /// fits, so at most `max_files` (50 at the most) items are looked at, and only until one is not known to be a folder.
+    /// This is the one place a menu asks the file system about the selection: a menu that offers a preset on a selected
+    /// folder offers what `rh` then refuses. An item that cannot be told (a path the system will not let us look at, a
+    /// link that points nowhere) keeps the preset in the menu: it is hidden only when every item is known to be a folder,
+    /// and `rh` says why when it cannot run.
     public func info(_ ref: ActionRef, context: HereContext) -> ActionInfo {
         var info = info(ref)
         guard info.available, case .preset(let id, _) = ref, let preset = config.preset(id: id) else { return info }
         if context.items.isEmpty, context.container == nil, context.origin != .cli {
             unavailable(&info, reason: "There is no folder to run in.")
         } else if let refusal = preset.refusal(forFileCount: context.items.count) {
+            unavailable(&info, reason: refusal)
+        } else if !context.items.isEmpty, let refusal = preset.refusal(forFileCount: 0), context.items.allSatisfy({ facts.isDirectory($0) == true }) {
+            // The refusal for no file at all is the planner's own sentence, and it is nil for a prompt that names no files.
             unavailable(&info, reason: refusal)
         }
         return info

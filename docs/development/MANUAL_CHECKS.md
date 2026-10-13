@@ -75,7 +75,7 @@ Needs a real Finder and a terminal that can run commands; nothing here is covere
    start the agent with the prompt already sent, naming both files as `@` mentions.
 2. Right-click the empty background of a folder window: the Agent Presets submenu should be missing (the built-ins
    all name files).
-3. Select a folder and click Review: a failure alert should say to select files.
+3. Select a folder (and a second one): the Agent Presets submenu should be missing, since a preset that names files has nothing to name. This is the one place the menu asks the file system about the selection, from the sandboxed extension, and it was not seen there: if the submenu still shows for a folder, the extension could not tell it is a folder; clicking Review then fails with an alert that says to select files. Record which in the decision record. A folder and a file together keep the submenu.
 4. A file with a space and an apostrophe in its name should arrive as a single mention.
 
 ## 5. The menu preview in the setup window

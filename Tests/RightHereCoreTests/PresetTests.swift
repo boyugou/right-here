@@ -19,6 +19,35 @@ private func selection(_ names: [String]) -> HereContext {
 
 private let folderContext = HereContext(origin: .container, container: URL(fileURLWithPath: appFolder))
 
+/// A machine that counts how often it is asked whether an item is a folder, so a test can say how much a menu looks at.
+private final class CountingFacts: SystemFacts, @unchecked Sendable {
+    private let base: FakeSystemFacts
+    private let lock = NSLock()
+    private var questions = 0
+
+    init(_ base: FakeSystemFacts) { self.base = base }
+
+    var directoryQuestions: Int { lock.withLock { questions } }
+    func reset() { lock.withLock { questions = 0 } }
+
+    var homeDirectory: URL { base.homeDirectory }
+    var currentDirectory: URL { base.currentDirectory }
+    var loginShell: String { base.loginShell }
+    func isDirectory(_ url: URL) -> Bool? {
+        lock.withLock { questions += 1 }
+        return base.isDirectory(url)
+    }
+    func fileExists(_ url: URL) -> Bool { base.fileExists(url) }
+    func itemState(_ url: URL) -> ItemState { base.itemState(url) }
+    func gitRoot(containing url: URL) -> URL? { base.gitRoot(containing: url) }
+    func applicationURL(bundleID: String) -> URL? { base.applicationURL(bundleID: bundleID) }
+    func displayName(bundleID: String) -> String? { base.displayName(bundleID: bundleID) }
+    func bundleVersion(bundleID: String) -> String? { base.bundleVersion(bundleID: bundleID) }
+    func isRunning(bundleID: String) -> Bool { base.isRunning(bundleID: bundleID) }
+    func environment(_ key: String) -> String? { base.environment(key) }
+    func onDiskPath(_ url: URL) -> String { base.onDiskPath(url) }
+}
+
 /// A config whose `claude` types `printf '%s\0' ...`, so a real shell prints each word it was given, NUL-terminated.
 private func printingConfig(presets: [AgentPreset], promptArgument: PromptArgument? = nil) -> Config {
     Config(
@@ -467,13 +496,65 @@ struct PresetMenuTests {
         #expect(presetsSubmenu(in: menu(config, selection(["a"]), files: ["a"])) != nil)
     }
 
-    @Test func buildingTheMenuNeverLooksAtTheSelectedFiles() {
-        // None of these paths exists for the fake file system, so `isDirectory` knows nothing about them: the menu
-        // is decided by how many items there are, and the planner (in rh) tells files from folders.
+    @Test func anItemThatCannotBeToldDoesNotHideThePresets() {
+        // None of these paths exists for the fake file system, so `isDirectory` knows nothing about them (as for a path the
+        // system will not let the extension look at). The menu is hidden only for what it knows to be a folder; `rh` says why
+        // when it cannot run.
         let config = Config(enabledAgents: ["claude"])
         #expect(presetsSubmenu(in: menu(config, selection(["ghost.txt"]))) != nil)
+        #expect(presetsSubmenu(in: menu(config, selection(["ghost.txt", "src"]))) != nil)
+    }
+
+    @Test func aMenuLooksAtNoItemWhenThereAreMoreItemsThanMaxFiles() {
+        let counting = CountingFacts(machine())
+        let config = Config(enabledAgents: ["claude"])
         let many = (0...AgentPreset.defaultMaxFiles).map { "ghost\($0).txt" }
-        #expect(presetsSubmenu(in: menu(config, selection(many))) == nil, "more items than max_files")
+        #expect(presetsSubmenu(in: MenuBuilder(config: config, facts: counting).build(for: selection(many))) == nil, "more items than max_files")
+        #expect(counting.directoryQuestions == 0, "the count alone decides: no file system work for a big selection")
+    }
+
+    @Test func aMenuStopsLookingAtTheFirstItemThatIsNotAFolder() {
+        let counting = CountingFacts(machine(files: ["a.txt", "b.txt", "c.txt"], extraDirectories: ["\(appFolder)/src"]))
+        let registry = ActionRegistry(config: Config(enabledAgents: ["claude"]), facts: counting)
+        let review = ActionRef.preset(id: "review", terminal: nil)
+        #expect(registry.info(review, context: selection(["a.txt", "b.txt", "c.txt"])).available)
+        #expect(counting.directoryQuestions == 1)
+        counting.reset()
+        #expect(registry.info(review, context: selection(["src", "src", "b.txt", "c.txt"])).available)
+        #expect(counting.directoryQuestions == 3, "the folders, then the first file")
+    }
+
+    // MARK: A selected folder
+
+    @Test func aSelectedFolderHasNoPresetsThatNeedFilesAndTheMenuSaysTheSameAsRun() {
+        let facts = machine(extraDirectories: ["\(appFolder)/src", "\(appFolder)/lib"])
+        let config = Config(enabledAgents: ["claude"])
+        for names in [["src"], ["src", "lib"]] {
+            #expect(presetsSubmenu(in: MenuBuilder(config: config, facts: facts).build(for: selection(names))) == nil, "\(names)")
+            let ref = ActionRef.preset(id: "review", terminal: nil)
+            let info = ActionRegistry(config: config, facts: facts).info(ref, context: selection(names))
+            #expect(!info.available)
+            // What `rh run` refuses with, in the same words.
+            #expect(throws: PlanError.unsupported(info.unavailableReason ?? "")) { try Planner(config: config, facts: facts).plan(ref, context: selection(names)) }
+        }
+    }
+
+    @Test func aMixedSelectionKeepsThePresetsAndAPresetThatNamesNoFilesIsOfferedForAFolder() throws {
+        let facts = machine(files: ["a.txt"], extraDirectories: ["\(appFolder)/src"])
+        let config = Config(enabledAgents: ["claude"])
+        let mixed = try #require(presetsSubmenu(in: MenuBuilder(config: config, facts: facts).build(for: selection(["src", "a.txt"]))))
+        #expect(titles(mixed.children) == ["Review", "Explain", "Write Tests"])
+        var summary = config
+        summary.presets = [AgentPreset(id: "summary", title: "Summarize", prompt: "Summarize {folder}")]
+        let folder = try #require(presetsSubmenu(in: MenuBuilder(config: summary, facts: facts).build(for: selection(["src"]))))
+        #expect(titles(folder.children) == ["Summarize"])
+    }
+
+    @Test func anExplicitPresetEntryIsHiddenForAFolderToo() {
+        var config = Config(enabledAgents: ["claude"])
+        config.menuItems = ["preset.review", "presets"]
+        let nodes = MenuBuilder(config: config, facts: machine(extraDirectories: ["\(appFolder)/src"])).build(for: selection(["src"]))
+        #expect(nodes.isEmpty, "\(nodes.flatMap(\.actionIDs))")
     }
 
     @Test func aPresetOfAnAgentThatIsNotEnabledIsNotOffered() {

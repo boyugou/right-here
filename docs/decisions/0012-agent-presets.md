@@ -25,12 +25,18 @@ prompt at once.
 The menu has an "Agent Presets" submenu (group `presets`). In the default menu it sits inside "More Agent Options",
 which keeps the main menu short; a config that lists `presets` in `[menu] items` gets it at the top level instead, and
 then it is not repeated inside "More Agent Options". It is built for the selection: a preset whose prompt uses
-`{files}` is left out when nothing is selected or when more items than `max_files` are, and the submenu is left out
-when nothing is left. The menu only counts the selected items (hard rule 5: building a menu does no file system work,
-and a big selection on a network volume would otherwise stall Finder), so a selected folder still shows the preset;
-`rh` then refuses it, because folders are not files for `{files}`, and the failure alert says so. The runner passes
-up to 500 items to `rh` and `max_files` is at most 50, so a selection is never cut before a preset refuses it. `rh actions` lists every preset; `rh run preset.review` with no files
-fails with the reason.
+`{files}` is left out when nothing is selected, when more items than `max_files` are, or when every selected item is a
+folder, and the submenu is left out when nothing is left. The size is counted without looking at the items. Only when
+the count fits (so at most `max_files` items, 50 at the most) does the menu ask the file system whether they are
+folders, and it stops at the first item that is not known to be one. That is the one place where building a menu looks
+at the file system, which hard rule 5 otherwise forbids because a big selection on a network volume would stall Finder;
+the count first, and the stop at the first file, are what keep it bounded. It used to be only the count, so a selected
+folder still showed the preset and `rh` then refused it ("folders are not files for `{files}`"). An item that cannot be
+told (a path the system will not let the extension look at, a link that points nowhere) keeps the preset in the menu:
+it is hidden only when every item is known to be a folder, and `rh` says why when it cannot run. A mixed selection
+keeps it, with the planner's note that folders are not named in the prompt. The runner passes up to 500 items to `rh`
+and `max_files` is at most 50, so a selection is never cut before a preset refuses it. `rh actions` lists every preset;
+`rh run preset.review` with no files fails with the reason.
 
 How an agent takes a first prompt is `prompt_arg` on its `[agent.<id>]` table: `"positional"` or a flag such as
 `"--prompt"`, typed as its own word before the prompt. Claude Code and Codex are built in as positional (both
@@ -98,8 +104,9 @@ wrong answer.
   `;`, `&&`, `>`, a leading `-`, `{folder}`, `%s`, emoji and spaces: the shell prints exactly the prompt and no
   canary file appears.
 - Refusals: newline, carriage return, tab, bell, escape, U+2028, backslash, a leading dash, too many files, no files.
-- Building the menu never asks the file system about the selection (a test with paths the fake file system does not
-  know still gets the submenu).
+- Building the menu asks the file system about the selected items only when there are at most `max_files` of them,
+  and stops at the first one that is not a folder (a test counts the questions: none for a big selection, one for a
+  selection of files); a path the fake file system does not know still gets the submenu.
 - The localization catalog has the submenu title and the three built-in titles in thirty languages; the translations
   are machine-made and marked `needs_review` like the rest.
 - `claude --help` and `codex --help` (read-only) list a positional prompt.
@@ -111,3 +118,6 @@ wrong answer.
 - What Gemini CLI, opencode, aider and Amp do with a first argument (hence no built-in `prompt_arg` for them).
 - The nested submenu in the real Finder menu (the extension builds menus recursively and "More Agent Options" is
   already a submenu, so a second level is expected to work).
+- That the sandboxed extension can tell a selected folder from a file. If a metadata read outside its container is
+  refused, `isDirectory` answers nothing, the submenu stays for a folder and `rh` refuses it as before; nothing is
+  lost but the fix. `docs/development/MANUAL_CHECKS.md`, section 4.

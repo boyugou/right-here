@@ -206,7 +206,8 @@ first argument ([0012](decisions/0012-agent-presets.md)).
 
 `MenuBuilder` turns the config and a context (selected items, or a folder) into a menu tree. The default
 layout is: open in terminal, open in editor, one entry per enabled agent, a "More Agent Options" submenu
-(variants, alternative launchers and the "Agent Presets" submenu, which only lists presets that fit the selection),
+(variants, alternative launchers and the "Agent Presets" submenu, which only lists presets that fit the selection: files
+are needed for a prompt that names them, so a selection of only folders has none),
 a separator, New File, Copy Path. `[menu] items` reorders or
 replaces it with group names or any action id. Entries that cannot run here (the app is not installed,
 the terminal cannot run commands) are not shown; `rh actions --all` and `rh doctor` say why.
