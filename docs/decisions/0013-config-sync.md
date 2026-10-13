@@ -205,8 +205,11 @@ Not verified, because it needs the real iCloud Drive (which this work was not al
   access, and for which process (the terminal running `rh doctor`, Right Here.app, or an MCP host); the doctor reads
   that folder only while sync is on.
 
-The four sync doctor checks share one catalog key for their title in the setup window ("Config sync", thirty
-languages, machine-translated like the rest of the catalog); their detail and fix lines stay in English, as the
-other checks' do. The `sync.commands` row has the same English title, but the setup window's table of titles does not
-list its id yet, so it shows that English text in every language. The tests use symlinks only as temporary-directory fixtures (a dotfiles-style config link), as the
-config store's own symlink test does; the feature itself never creates one.
+The sync doctor checks say their detail and fix lines through the catalog like every other check (ADR 0006, "The
+doctor says its checks as messages"), so the setup window shows them in the system language. The folder, the copy,
+the state and the conflict copies have titles of their own; the `sync.commands` row shares the title "Config sync"
+with the state row. Its detail lists the first three settings as they are written in the config, which the window
+shows as they are in every language, and a second line says how many more there are.
+
+The tests use symlinks only as temporary-directory fixtures (a dotfiles-style config link), as the config store's own
+symlink test does; the feature itself never creates one.

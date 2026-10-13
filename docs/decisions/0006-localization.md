@@ -71,6 +71,45 @@ better than `argument1`, and the doctor needs a value it can hand over before th
 cannot be), and a variadic `string(key, args...)` (what there was: untyped, and a wrong count made `String(format:)`
 read memory that is not there).
 
+## The doctor says its checks as messages
+
+`rh doctor`, the MCP tool `right_here_doctor` and the setup window show the same checks, and they used to share
+sentences that were English text built in code, so the window could translate the titles only. A check is now a `CheckID`
+(an enum: one case for each fixed check and one for each enabled agent), a status, and what it says: `detail`, `notes`
+(more lines under it, such as the per-machine overlay the config is merged with) and `fix`, each a `LocalizedMessage`.
+Apart from the two probes (below), nothing in the doctor writes an English sentence: the English wording is the catalog's
+English text and `LocalizedMessage.english()` is the one place it is read, for the command line and the MCP server (one renderer,
+`DoctorCheck.englishLines`; the MCP server passes a function that fences what a check quotes from the config). The
+setup window renders the same messages with `Localizer.render` in the system language and titles each row from
+`CheckID.titleKey`; an agent's row is titled with the agent's own name.
+
+`rh doctor --json` carries each message as `{"code": "doctor.services.differ", "args": ["3", "1", "0"], "text": "..."}`:
+a program acts on the code and the values, a person or an AI agent reads the text.
+
+What is translated: what a person meets on a first run and afterwards, that is the config file (missing, with errors or
+warnings, an overlay, a symlink), the default terminal and editor, agents (found, missing, cannot start), the Claude Code
+link, the runner script (missing, stale, pointing nowhere), the Services (missing, stale), the `rh` link, the Finder
+extension (not registered, switched off, registered twice, ok), the last action and every config sync row. Thirty
+languages each, checked like every other string.
+
+What stays English in every language, on purpose: the two probes, `finder.chain` and `finder.launch`, which say what the
+Finder extension reported and which a person runs from a terminal; and text that comes from outside the catalog and is
+shown as it is through `doctor.verbatim` (the parser's description of a config problem, the reason an action cannot run,
+which is the planner's sentence, and a bare path or app name). They are the parser's, the planner's or the machine's
+words, not Right Here's, and translating them would need the same split in those layers.
+
+A path or a command quoted in a right-to-left sentence is a left-to-right value, and the sentence around it reorders it:
+rendering the Arabic window showed `~/.config/...` and `/Applications/...` with their leading characters at the wrong end.
+The window therefore renders doctor lines with `render(_:isolatingValues: true)`, which puts each value of a
+right-to-left language in a Unicode isolate (U+2068 ... U+2069); a text that is only its value is left as it is. It is an
+option, off by default, because the menu, the alerts and the names of Services and files go through the same function
+and must not carry invisible marks.
+
+Alternatives: the doctor takes a `Localizer` and returns strings (every consumer must choose a language, the JSON has
+no codes, and the English the tests pin would depend on the language); leaving the sentences English and translating
+the titles only (what there was: a window half in one language and half in another). A test holds every doctor sentence
+of the catalog to be said somewhere in the doctor, so a sentence that is dead, or one whose use was lost, is found.
+
 ## Adding a string or a language
 
 A string: add the entry (English text, a comment for the translator) and its translations, compile, verify.

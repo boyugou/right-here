@@ -81,7 +81,9 @@ especially welcome. Open `Localization/Localizable.xcstrings` (and `Localization
 permission prompt text), fix what reads badly (macOS's own wording for that language is the model), change
 `"state"` to `"translated"` for each entry you checked, then run `./script/compile_localizations.py` and
 `./script/verify_localizations.py`. `./script/preview_setup.sh out.png <language>` renders the setup window to an
-image (add `--dark` for dark mode).
+image (add `--dark` for dark mode). `--gallery` shows every sentence the doctor can say as a row of the list, to look at
+a language for text that does not fit (a tall image; a doctor sentence the gallery has no row for is named on stderr).
+`--demo` shows a canned, healthy setup that is the same on every Mac and shows nothing of the one that renders it.
 
 To add a language:
 
@@ -102,4 +104,7 @@ comment and a `{language code: text}` dictionary, the same way as above), then r
 That generates the `LocalizationKey` case and a typed `LocalizedMessage` constructor, so there is no Swift to write by
 hand: use `localizer.string(.groupCopyPath)` for a text without values and `localizer.render(.menuOpenIn(name))` for one with
 values. A text with several values numbers its placeholders (`%1$@ in %2$@`). The command line and MCP output stay
-English.
+English. A sentence the doctor says is a catalog entry named `doctor.<check>.<state>` (a detail line) or
+`doctor.fix.<what>` (a fix line); the doctor builds it as `DoctorCheck(.services, status: .warn, detail:
+.doctorServicesDiffer(a, b, c), fix: .doctorFixInstallServices)`, and the command line, the MCP server and the setup
+window all print that one message, the first two in English.

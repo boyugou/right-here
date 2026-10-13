@@ -16,8 +16,10 @@
 - Hardened through repeated independent reviews and a mutation check (`docs/decisions/0008-independent-review.md`):
   every finding is fixed with a test that fails on the old code, and `script/mutation_check.py` removes each
   protection in a throwaway clone and expects a test to fail.
-- Thirty languages for the menu, the app, alerts and the permission-prompt text (machine-translated,
-  awaiting native-speaker review).
+- Thirty languages for the menu, the app (the setup window's check rows included: the doctor returns a code and
+  values for each sentence, and the window writes them in the system language), alerts and the permission-prompt
+  text (machine-translated, awaiting native-speaker review). Only the two probes and text quoted from the config
+  stay English.
 - A strict, self-describing config: unique ids, no silent shadowing, `--strict`, replacements in
   diagnostics, a JSON Schema with required keys and patterns, a backup on `rh init --force`.
 
@@ -34,8 +36,6 @@ The items that need a person with a real Finder and terminals are listed with th
   terminals (not yet tested with these terminals); a config-defined launcher (`open_args`, `run_args`) exists
   for the meantime.
 - Native-speaker review of the translations.
-- The setup window's check rows: the titles are translated; the detail and fix lines come from the doctor and are
-  English in every language. Translating them needs the doctor to return keys and arguments, not sentences.
 - A menu-only App Store build (scope and risks in the design notes).
 
 ## Ideas, ranked
