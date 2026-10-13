@@ -92,8 +92,8 @@ public struct LaunchProbe: Sendable {
     /// Runs the probe in `app`, which must be installed under `bundleID`.
     public func run(terminal app: AppDescriptor, bundleID: String, placement: TerminalPlacement = .newWindow, timeout: Duration = .seconds(15)) async -> Result {
         let adapter = TerminalAdapters.adapter(for: app)
-        guard adapter.supportsCommands else {
-            return Result(application: app.name, outcome: .unsupported, detail: "\(app.name) cannot run a command yet.")
+        if let refusal = adapter.commandRefusal {
+            return Result(application: app.name, outcome: .unsupported, detail: refusal)
         }
         let folder = folder(typesTheFolder: adapter.typesTheFolder)
         let root = folder.deletingLastPathComponent()
