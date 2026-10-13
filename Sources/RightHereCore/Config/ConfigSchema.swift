@@ -64,9 +64,8 @@ public struct SchemaNode: Sendable, Equatable {
 public enum ConfigSchema {
     public static let version = 1
 
-    /// Ids of things the user names (apps, templates, variants, agents).
-    /// Matches `ConfigParser.isIdentifier`: no leading dash (it would read as an option on a command line).
-    static let identifierPattern = "^[a-z0-9][a-z0-9-]*$"
+    /// Ids of things the user names (apps, templates, variants, agents); `IDRule` is the rule the parser applies.
+    static let identifierPattern = IDRule.pattern
 
     public static var root: [SchemaNode] {
         let terminalIDs = KnownApps.terminals.map(\.id)

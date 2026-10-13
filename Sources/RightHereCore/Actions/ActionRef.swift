@@ -110,12 +110,7 @@ public enum ActionRef: Sendable, Equatable, Hashable {
     }
 
     private static func isWord(_ part: String) -> Bool {
-        guard let first = part.utf8.first, isLowercaseAlphanumeric(first) else { return false }
-        return part.utf8.allSatisfy { isLowercaseAlphanumeric($0) || $0 == UInt8(ascii: "-") }
-    }
-
-    private static func isLowercaseAlphanumeric(_ byte: UInt8) -> Bool {
-        (byte >= UInt8(ascii: "a") && byte <= UInt8(ascii: "z")) || (byte >= UInt8(ascii: "0") && byte <= UInt8(ascii: "9"))
+        IDRule.isValid(part)
     }
 
     /// `@ghostty` selects a terminal; no suffix means the default terminal.

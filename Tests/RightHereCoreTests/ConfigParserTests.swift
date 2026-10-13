@@ -631,7 +631,7 @@ struct ConfigSchemaDetailTests {
         let regex = try NSRegularExpression(pattern: ConfigSchema.identifierPattern)
         let whole = NSRange(id.startIndex..., in: id)
         let matches = regex.firstMatch(in: id, range: whole)?.range == whole
-        #expect(matches == ConfigParser.isIdentifier(id), "pattern and parser disagree about \(id.debugDescription)")
+        #expect(matches == IDRule.isValid(id), "pattern and parser disagree about \(id.debugDescription)")
     }
 
     @Test("the schema's extension pattern and the parser's extension rule agree",

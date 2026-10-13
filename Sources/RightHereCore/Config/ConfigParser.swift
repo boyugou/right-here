@@ -2,13 +2,6 @@ import Foundation
 import TOMLDecoder
 
 public enum ConfigParser {
-    /// Lowercase letters, digits and dashes, not starting with a dash (it would read as an option on a command
-    /// line). `ConfigSchema.identifierPattern` says the same in the JSON Schema, and a test holds them together.
-    static func isIdentifier(_ text: String) -> Bool {
-        guard let first = text.utf8.first, first != UInt8(ascii: "-") else { return false }
-        return text.utf8.allSatisfy { ($0 >= 97 && $0 <= 122) || ($0 >= 48 && $0 <= 57) || $0 == UInt8(ascii: "-") }
-    }
-
     /// Parses config text. A file with a syntax error yields the default config plus the error;
     /// semantic problems are reported while everything valid is still applied.
     /// The deepest nesting of arrays and inline tables a config may have; real ones nest a few levels.

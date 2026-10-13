@@ -47,6 +47,15 @@ struct ConfigBuilder {
         return general
     }
 
+    /// Reports an id that breaks `IDRule`; `noun` is how the message names the ids it is about.
+    func isValidID(_ id: String, at path: [String], noun: String = "ids") -> Bool {
+        guard IDRule.isValid(id) else {
+            sink.error(path, "\(noun) use lowercase letters, digits and dashes")
+            return false
+        }
+        return true
+    }
+
     func allAppIDs(_ config: Config) -> [String] {
         (config.apps + KnownApps.all).map(\.id)
     }

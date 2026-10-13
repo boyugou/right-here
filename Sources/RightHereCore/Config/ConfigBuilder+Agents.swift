@@ -5,10 +5,7 @@ extension ConfigBuilder {
     func readAgents(_ root: ConfigReader, into config: inout Config) {
         guard let agents = root.subtable("agent") else { return }
         for id in agents.table.keys.sorted() {
-            guard ConfigParser.isIdentifier(id) else {
-                sink.error(["agent", id], "agent ids use lowercase letters, digits and dashes")
-                continue
-            }
+            guard isValidID(id, at: ["agent", id], noun: "agent ids") else { continue }
             guard let reader = agents.subtable(id) else { continue }
             agent(id: id, reader: ConfigReader(table: reader.table, path: reader.path, schema: agentSchema, sink: sink), into: &config)
         }
@@ -57,10 +54,7 @@ extension ConfigBuilder {
                 sink.error(variant.path, "a variant needs id and title")
                 return nil
             }
-            guard ConfigParser.isIdentifier(variantID) else {
-                sink.error(variant.path + ["id"], "ids use lowercase letters, digits and dashes")
-                return nil
-            }
+            guard isValidID(variantID, at: variant.path + ["id"]) else { return nil }
             return AgentDescriptor.Variant(id: variantID, title: title, arguments: variant.stringArray("arguments") ?? [])
         }
 

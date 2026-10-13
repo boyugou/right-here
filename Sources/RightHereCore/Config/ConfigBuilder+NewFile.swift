@@ -44,10 +44,7 @@ extension ConfigBuilder {
             sink.error(reader.path, "a template needs id, title and extension")
             return nil
         }
-        guard ConfigParser.isIdentifier(id) else {
-            sink.error(reader.path + ["id"], "ids use lowercase letters, digits and dashes")
-            return nil
-        }
+        guard isValidID(id, at: reader.path + ["id"]) else { return nil }
         if ext.containsAnyScalar(of: [".", "/", "\0"]) || ext.isEmpty {
             sink.error(reader.path + ["extension"], "write the extension without a dot or slash, and not empty")
             return nil

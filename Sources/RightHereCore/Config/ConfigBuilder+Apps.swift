@@ -58,10 +58,7 @@ extension ConfigBuilder {
             sink.error(reader.path, "an app needs id and name")
             return nil
         }
-        guard ConfigParser.isIdentifier(id) else {
-            sink.error(reader.path + ["id"], "ids use lowercase letters, digits and dashes")
-            return nil
-        }
+        guard isValidID(id, at: reader.path + ["id"]) else { return nil }
         let bundleIDs = reader.stringArray("bundle_ids") ?? reader.string("bundle_id").map { [$0] } ?? []
         guard !bundleIDs.isEmpty else {
             sink.error(reader.path, "an app needs bundle_id or bundle_ids")
