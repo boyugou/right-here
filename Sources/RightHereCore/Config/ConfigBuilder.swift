@@ -47,6 +47,24 @@ struct ConfigBuilder {
         return general
     }
 
+    /// Reads each table with `read` and keeps the first definition of every id; a later one is an error.
+    /// `accepted` runs right after a definition is kept, so its diagnostics stay in file order.
+    func readUnique<Value>(
+        _ readers: [ConfigReader], kind: String, id: (Value) -> String,
+        read: (ConfigReader) -> Value?, accepted: (Value, ConfigReader) -> Void = { _, _ in }
+    ) -> [Value] {
+        var seen = Set<String>()
+        return readers.compactMap { reader in
+            guard let value = read(reader) else { return nil }
+            guard seen.insert(id(value)).inserted else {
+                sink.error(reader.path + ["id"], "duplicate \(kind) id \"\(id(value))\"; the first definition is used")
+                return nil
+            }
+            accepted(value, reader)
+            return value
+        }
+    }
+
     /// Reports an id that breaks `IDRule`; `noun` is how the message names the ids it is about.
     func isValidID(_ id: String, at path: [String], noun: String = "ids") -> Bool {
         guard IDRule.isValid(id) else {

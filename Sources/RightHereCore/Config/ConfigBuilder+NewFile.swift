@@ -8,15 +8,7 @@ extension ConfigBuilder {
         if let then = newFile.checkAllowed(newFile.string("then"), key: "then", allowed: Config.AfterNewFile.allCases.map(\.rawValue)) {
             config.newFile.then = Config.AfterNewFile(rawValue: then) ?? .reveal
         }
-        var seenTemplates = Set<String>()
-        let templates = newFile.tableArray("template").compactMap { reader -> NewFileTemplate? in
-            guard let template = template(reader) else { return nil }
-            guard seenTemplates.insert(template.id).inserted else {
-                sink.error(reader.path + ["id"], "duplicate template id \"\(template.id)\"; the first definition is used")
-                return nil
-            }
-            return template
-        }
+        let templates = readUnique(newFile.tableArray("template"), kind: "template", id: \.id, read: template)
         if !templates.isEmpty { config.newFile.templates = templates }
     }
 

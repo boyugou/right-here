@@ -3,17 +3,10 @@ import Foundation
 /// `[[app]]` entries and the default terminal and editor, which are checked against the apps as they will be.
 extension ConfigBuilder {
     func readApps(_ root: ConfigReader, into config: inout Config) {
-        var seenApps = Set<String>()
-        config.apps = root.tableArray("app").compactMap { reader -> AppDescriptor? in
-            guard let app = app(reader) else { return nil }
-            guard seenApps.insert(app.id).inserted else {
-                sink.error(reader.path + ["id"], "duplicate app id \"\(app.id)\"; the first definition is used")
-                return nil
-            }
+        config.apps = readUnique(root.tableArray("app"), kind: "app", id: \.id, read: app) { app, reader in
             if KnownApps.app(id: app.id) != nil {
                 sink.warning(reader.path + ["id"], "replaces the built-in app \"\(app.id)\"; use another id to add one beside it")
             }
-            return app
         }
     }
 
