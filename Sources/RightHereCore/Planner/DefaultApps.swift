@@ -50,6 +50,11 @@ public struct DefaultApps: Sendable {
         return try resolve(role: .terminal, configured: nil)
     }
 
+    /// The apps of a role that have a rank, best first.
+    static func ranked(_ apps: [AppDescriptor], role: AppDescriptor.Role) -> [AppDescriptor] {
+        apps.filter { $0.role == role }.compactMap { app in app.defaultRank.map { (app: app, rank: $0) } }.sorted { $0.rank < $1.rank }.map(\.app)
+    }
+
     /// The apps of a role in the order they are tried: the built-in ones in the preference order, then the config's own.
     private func candidates(for role: AppDescriptor.Role) -> [AppDescriptor] {
         let order = role == .terminal ? Self.terminalOrder : Self.editorOrder

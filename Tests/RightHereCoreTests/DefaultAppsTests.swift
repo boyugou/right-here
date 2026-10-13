@@ -23,6 +23,11 @@ struct DefaultAppsTests {
         #expect(try DefaultApps(config: .default, facts: machine).resolve(role: .terminal, configured: "warp").id == "warp")
     }
 
+    @Test func theRanksOnTheCatalogRowsGiveTheOrderTheDefaultsHaveAlwaysBeenPickedIn() {
+        #expect(DefaultApps.ranked(KnownApps.all, role: .terminal).map(\.id) == DefaultApps.terminalOrder)
+        #expect(DefaultApps.ranked(KnownApps.all, role: .editor).map(\.id) == DefaultApps.editorOrder)
+    }
+
     @Test func theTerminalForACommandSkipsOnesThatCannotRunOne() throws {
         // iTerm and cmux open folders only, and a Ghostty older than 1.3 cannot be scripted; Terminal can.
         for machine in [facts(installed: ["com.googlecode.iterm2", "com.apple.Terminal"]),

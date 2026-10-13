@@ -64,33 +64,36 @@ public struct AppDescriptor: Sendable, Equatable, Identifiable {
 public enum KnownApps {
     public static let all: [AppDescriptor] = terminals + editors
 
+    /// `defaultRank` is where an app stands when no default is configured and the first installed one of its role is
+    /// picked. Terminal.app is always there, so it comes last: a terminal someone installed on purpose is a better guess.
+    /// An app without a rank is never picked that way.
     public static let terminals: [AppDescriptor] = [
-        AppDescriptor(id: "ghostty", name: "Ghostty", bundleIDs: ["com.mitchellh.ghostty"], role: .terminal, driver: .ghostty),
-        AppDescriptor(id: "terminal", name: "Terminal", bundleIDs: ["com.apple.Terminal"], role: .terminal, driver: .appleScriptTerminal),
-        AppDescriptor(id: "iterm", name: "iTerm", bundleIDs: ["com.googlecode.iterm2"], role: .terminal),
-        AppDescriptor(id: "wezterm", name: "WezTerm", bundleIDs: ["com.github.wez.wezterm"], role: .terminal),
-        AppDescriptor(id: "kitty", name: "kitty", bundleIDs: ["net.kovidgoyal.kitty"], role: .terminal),
-        AppDescriptor(id: "alacritty", name: "Alacritty", bundleIDs: ["org.alacritty"], role: .terminal),
-        AppDescriptor(id: "warp", name: "Warp", bundleIDs: ["dev.warp.Warp-Stable"], role: .terminal),
-        AppDescriptor(id: "cmux", name: "cmux", bundleIDs: ["com.cmuxterm.app"], role: .terminal)
+        AppDescriptor(id: "ghostty", name: "Ghostty", bundleIDs: ["com.mitchellh.ghostty"], role: .terminal, driver: .ghostty, defaultRank: 0),
+        AppDescriptor(id: "terminal", name: "Terminal", bundleIDs: ["com.apple.Terminal"], role: .terminal, driver: .appleScriptTerminal, defaultRank: 7),
+        AppDescriptor(id: "iterm", name: "iTerm", bundleIDs: ["com.googlecode.iterm2"], role: .terminal, defaultRank: 2),
+        AppDescriptor(id: "wezterm", name: "WezTerm", bundleIDs: ["com.github.wez.wezterm"], role: .terminal, defaultRank: 3),
+        AppDescriptor(id: "kitty", name: "kitty", bundleIDs: ["net.kovidgoyal.kitty"], role: .terminal, defaultRank: 4),
+        AppDescriptor(id: "alacritty", name: "Alacritty", bundleIDs: ["org.alacritty"], role: .terminal, defaultRank: 5),
+        AppDescriptor(id: "warp", name: "Warp", bundleIDs: ["dev.warp.Warp-Stable"], role: .terminal, defaultRank: 6),
+        AppDescriptor(id: "cmux", name: "cmux", bundleIDs: ["com.cmuxterm.app"], role: .terminal, defaultRank: 1)
     ]
 
     public static let editors: [AppDescriptor] = [
         AppDescriptor(id: "vscode", name: "Visual Studio Code",
-                      bundleIDs: ["com.microsoft.VSCode", "com.microsoft.VSCodeInsiders"], role: .editor),
-        AppDescriptor(id: "cursor", name: "Cursor", bundleIDs: ["com.todesktop.230313mzl4w4u92"], role: .editor),
-        AppDescriptor(id: "windsurf", name: "Windsurf", bundleIDs: ["com.exafunction.windsurf"], role: .editor),
-        AppDescriptor(id: "zed", name: "Zed", bundleIDs: ["dev.zed.Zed", "dev.zed.Zed-Preview"], role: .editor),
+                      bundleIDs: ["com.microsoft.VSCode", "com.microsoft.VSCodeInsiders"], role: .editor, defaultRank: 0),
+        AppDescriptor(id: "cursor", name: "Cursor", bundleIDs: ["com.todesktop.230313mzl4w4u92"], role: .editor, defaultRank: 1),
+        AppDescriptor(id: "windsurf", name: "Windsurf", bundleIDs: ["com.exafunction.windsurf"], role: .editor, defaultRank: 3),
+        AppDescriptor(id: "zed", name: "Zed", bundleIDs: ["dev.zed.Zed", "dev.zed.Zed-Preview"], role: .editor, defaultRank: 2),
         AppDescriptor(id: "xcode", name: "Xcode", bundleIDs: ["com.apple.dt.Xcode"], role: .editor),
-        AppDescriptor(id: "sublime", name: "Sublime Text", bundleIDs: ["com.sublimetext.4", "com.sublimetext.3"], role: .editor),
-        AppDescriptor(id: "nova", name: "Nova", bundleIDs: ["com.panic.Nova"], role: .editor),
-        AppDescriptor(id: "bbedit", name: "BBEdit", bundleIDs: ["com.barebones.bbedit"], role: .editor),
+        AppDescriptor(id: "sublime", name: "Sublime Text", bundleIDs: ["com.sublimetext.4", "com.sublimetext.3"], role: .editor, defaultRank: 4),
+        AppDescriptor(id: "nova", name: "Nova", bundleIDs: ["com.panic.Nova"], role: .editor, defaultRank: 5),
+        AppDescriptor(id: "bbedit", name: "BBEdit", bundleIDs: ["com.barebones.bbedit"], role: .editor, defaultRank: 6),
         AppDescriptor(id: "typora", name: "Typora", bundleIDs: ["abnerworks.Typora"], role: .editor),
         AppDescriptor(id: "obsidian", name: "Obsidian", bundleIDs: ["md.obsidian"], role: .editor),
-        AppDescriptor(id: "textedit", name: "TextEdit", bundleIDs: ["com.apple.TextEdit"], role: .editor),
-        AppDescriptor(id: "intellij", name: "IntelliJ IDEA", bundleIDs: ["com.jetbrains.intellij", "com.jetbrains.intellij.ce"], role: .editor),
-        AppDescriptor(id: "pycharm", name: "PyCharm", bundleIDs: ["com.jetbrains.pycharm", "com.jetbrains.pycharm.ce"], role: .editor),
-        AppDescriptor(id: "webstorm", name: "WebStorm", bundleIDs: ["com.jetbrains.WebStorm"], role: .editor),
+        AppDescriptor(id: "textedit", name: "TextEdit", bundleIDs: ["com.apple.TextEdit"], role: .editor, defaultRank: 10),
+        AppDescriptor(id: "intellij", name: "IntelliJ IDEA", bundleIDs: ["com.jetbrains.intellij", "com.jetbrains.intellij.ce"], role: .editor, defaultRank: 7),
+        AppDescriptor(id: "pycharm", name: "PyCharm", bundleIDs: ["com.jetbrains.pycharm", "com.jetbrains.pycharm.ce"], role: .editor, defaultRank: 8),
+        AppDescriptor(id: "webstorm", name: "WebStorm", bundleIDs: ["com.jetbrains.WebStorm"], role: .editor, defaultRank: 9),
         AppDescriptor(id: "android-studio", name: "Android Studio", bundleIDs: ["com.google.android.studio"], role: .editor)
     ]
 
