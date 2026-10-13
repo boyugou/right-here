@@ -15,6 +15,10 @@ Right-click a folder, a file or the empty background of a Finder window:
   command is typed into your own login shell, so nvm, your PATH and your aliases apply, and the shell stays
   open when the agent exits. More options sit one level down: continue the last session, resume one, the
   agent's own terminal link, its desktop app.
+  Claude Code and Codex each exist as a command-line tool and as a desktop app. "Claude Code Here" and
+  "Codex Here" type the command into a terminal; "in Desktop App" opens the desktop app on the folder. To make
+  the desktop app an agent's main entry, set `launcher = "desktop"` under `[agent.claude]` (or `codex`) in the
+  config; `rh docs config` lists the launchers (a terminal id, `default`, `link` or `desktop`).
 - **New file**: an empty text or Markdown file (or your own templates), then reveal it or open it.
 - **Copy Path**: absolute, `~`-relative, relative to the git root, file name, shell-escaped, or an `@path`
   mention to paste into an agent's prompt.
