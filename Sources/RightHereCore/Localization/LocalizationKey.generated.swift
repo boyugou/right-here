@@ -23,6 +23,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appCheckRunner = "app.checkRunner"
     case appCheckServices = "app.checkServices"
     case appCheckSync = "app.checkSync"
+    case appCheckSyncCommands = "app.checkSyncCommands"
     case appCheckSyncConflict = "app.checkSyncConflict"
     case appCheckSyncFolder = "app.checkSyncFolder"
     case appCheckSyncRemote = "app.checkSyncRemote"

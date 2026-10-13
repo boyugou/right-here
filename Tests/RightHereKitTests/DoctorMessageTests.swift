@@ -39,12 +39,24 @@ struct DoctorMessageTests {
         }
     }
 
+    @Test func noTwoChecksShareATitle() {
+        // The setup window's banner lists the title of every row that is not ok, so two rows with one title read as one repeated
+        // ("Config sync and Config sync" for a state warning and a pending-commands warning).
+        var owner: [LocalizationKey: CheckID] = [:]
+        for id in everyCheckID {
+            guard let key = id.titleKey else { continue }
+            if let other = owner[key] { Issue.record("\(id.rawValue) and \(other.rawValue) share the title \"\(Localizer.english.string(key))\"") }
+            owner[key] = id
+        }
+    }
+
     @Test func aTitleIsWrittenInTheLanguageOfTheLocalizer() {
         let config = DoctorCheck(.config, status: .ok)
         #expect(config.title == "Config file")
         #expect(config.title(in: Localizer(languages: ["de"])) == "Konfigurationsdatei")
         #expect(DoctorCheck(.syncFolder, status: .ok).title == "Config sync folder")
         #expect(DoctorCheck(.syncConflict, status: .ok).title == "Config sync conflict copies")
+        #expect(DoctorCheck(.syncState, status: .ok).title == "Config sync" && DoctorCheck(.syncCommands, status: .ok).title == "Config sync commands")
     }
 
     @Test func aCheckIsPrintedAsOneLineThenItsNotesThenItsFix() {

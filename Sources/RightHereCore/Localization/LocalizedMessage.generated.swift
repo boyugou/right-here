@@ -41,6 +41,8 @@ extension LocalizedMessage {
     public static var appCheckServices: LocalizedMessage { LocalizedMessage(.appCheckServices) }
     /// Config sync
     public static var appCheckSync: LocalizedMessage { LocalizedMessage(.appCheckSync) }
+    /// Config sync commands
+    public static var appCheckSyncCommands: LocalizedMessage { LocalizedMessage(.appCheckSyncCommands) }
     /// Config sync conflict copies
     public static var appCheckSyncConflict: LocalizedMessage { LocalizedMessage(.appCheckSyncConflict) }
     /// Config sync folder

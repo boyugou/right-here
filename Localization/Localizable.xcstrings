@@ -3721,6 +3721,192 @@
         }
       }
     },
+    "app.checkSyncCommands": {
+      "comment": "Title of one check row in the setup window; it appears only when config sync is on. The programs that a config starts (a custom terminal or an agent command), which the config in the sync folder may add or change.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "أوامر مزامنة الإعدادات"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "কনফিগ সিঙ্কের কমান্ড"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Befehle der Konfigurationssynchronisierung"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Εντολές συγχρονισμού ρυθμίσεων"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Config sync commands"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Comandos de la sincronización de la configuración"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فرمان‌های همگام‌سازی پیکربندی"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Commandes de la synchronisation de la configuration"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "פקודות סנכרון תצורה"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "कॉन्फ़िग सिंक कमांड"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Perintah sinkronisasi konfigurasi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Comandi della sincronizzazione della configurazione"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "設定の同期のコマンド"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "설정 동기화 명령"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "कॉन्फिग सिंक कमांड"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Arahan segerak konfigurasi"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Opdrachten van configuratiesynchronisatie"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Polecenia synchronizacji konfiguracji"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Comandos da sincronização da configuração"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Comenzi ale sincronizării configurației"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Команды синхронизации конфигурации"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கட்டமைப்பு ஒத்திசைவு கட்டளைகள்"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "కాన్ఫిగ్ సింక్ ఆదేశాలు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "คำสั่งของการซิงก์การกำหนดค่า"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yapılandırma eşitleme komutları"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Команди синхронізації конфігурації"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "کنفیگ سنک کمانڈز"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Lệnh đồng bộ cấu hình"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "配置同步命令"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "設定同步指令"
+          }
+        }
+      }
+    },
     "app.checkSyncConflict": {
       "comment": "Title of one check row in the setup window; it appears only when config sync is on. Duplicate copies of the config file that a sync service made when two machines wrote it at once.",
       "extractionState": "manual",

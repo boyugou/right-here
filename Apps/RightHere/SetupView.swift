@@ -260,7 +260,7 @@ private struct CheckRow: View {
                     line(note, .secondary).textSelection(.enabled)
                 }
                 if let fix = check.fix {
-                    line(fix, .primary)
+                    line(fix, .primary).textSelection(.enabled)
                 }
             }
             Spacer(minLength: 0)

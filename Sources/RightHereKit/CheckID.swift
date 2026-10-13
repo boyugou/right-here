@@ -69,7 +69,8 @@ public enum CheckID: Hashable, Sendable {
         case .finderLaunch: .appCheckLaunch
         case .syncFolder: .appCheckSyncFolder
         case .syncRemote: .appCheckSyncRemote
-        case .syncState, .syncCommands: .appCheckSync
+        case .syncState: .appCheckSync
+        case .syncCommands: .appCheckSyncCommands
         case .syncConflict: .appCheckSyncConflict
         }
     }
