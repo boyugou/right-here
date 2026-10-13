@@ -26,6 +26,13 @@ public enum PlanError: Error, Equatable, Sendable {
     case nameExhausted
 }
 
+extension PlanError {
+    /// An app that is no terminal was named where a terminal is needed.
+    static func notATerminal(_ app: AppDescriptor) -> PlanError {
+        .unsupported("\(app.name) is not a terminal. Use open.app.\(app.id) to open files with it.")
+    }
+}
+
 extension PlanError: LocalizedError {
     /// Messages name paths, which are whatever somebody called them, so control characters are shown as escapes.
     public var errorDescription: String? {

@@ -17,9 +17,7 @@ public struct DefaultApps: Sendable {
             guard let app = config.app(id: configured) else { throw PlanError.unknownApp(configured) }
             // The config can redefine a built-in id with another role; a terminal that is now an editor (or
             // the reverse) is not what the setting asked for, and `rh actions` already says so.
-            if role == .terminal, app.role != .terminal {
-                throw PlanError.unsupported("\(app.name) is not a terminal. Use open.app.\(app.id) to open files with it.")
-            }
+            if role == .terminal, app.role != .terminal { throw PlanError.notATerminal(app) }
             if role == .editor, app.role == .terminal {
                 throw PlanError.unsupported("\(app.name) is a terminal, not an editor. Use open.terminal@\(app.id) to open a folder in it.")
             }

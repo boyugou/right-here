@@ -59,7 +59,7 @@ public struct ActionRegistry: Sendable {
             if let app = config.app(id: id) {
                 describeApp(&info, app: app)
             } else {
-                unavailable(&info, title: localizer.openIn(id), reason: "Unknown app \"\(id)\".")
+                unavailable(&info, title: localizer.openIn(id), reason: PlanError.unknownApp(id).message)
             }
 
         case .agent(let id, let variantID, let launcher):
@@ -142,7 +142,7 @@ public struct ActionRegistry: Sendable {
         }
         describeApp(&info, app: app)
         if info.available, app.role != .terminal {
-            unavailable(&info, reason: "\(app.name) is not a terminal. Use open.app.\(app.id) to open files with it.")
+            unavailable(&info, reason: PlanError.notATerminal(app).message)
         }
     }
 
@@ -153,7 +153,7 @@ public struct ActionRegistry: Sendable {
             info.icon = .app(bundleID)
         } else {
             info.available = false
-            info.unavailableReason = "\(app.name) is not installed."
+            info.unavailableReason = PlanError.appNotInstalled(app.name).message
         }
     }
 
