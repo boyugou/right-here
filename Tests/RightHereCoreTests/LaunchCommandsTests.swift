@@ -69,6 +69,23 @@ struct LaunchCommandsTests {
         #expect(found.contains(#"[[agent.claude.variant]] fast arguments = ["--model", "haiku"]"#), "\(found)")
     }
 
+    @Test func aTerminalTheConfigListsAsAnotherKindOfAppIsListed() {
+        // `[[app]]` under a built-in id replaces the built-in, role included: without a role it is a general app, and the
+        // planner hands a general app the selected files. A terminal handed a file runs it.
+        let relabeled = "[[app]]\nid = \"terminal\"\nname = \"Terminal\"\nbundle_id = \"com.apple.Terminal\"\n"
+        #expect(lines(relabeled) == [#"[[app]] terminal role (a terminal handed a file runs it) = "general""#])
+        #expect(lines(relabeled + "role = \"editor\"\n") == [#"[[app]] terminal role (a terminal handed a file runs it) = "editor""#])
+        // The same with another id for a terminal's bundle identifier (Ghostty's), or a terminal the config defines itself.
+        let alias = "[[app]]\nid = \"my-shell\"\nname = \"M\"\nbundle_id = \"com.mitchellh.ghostty\"\nrole = \"editor\"\n"
+        #expect(lines(alias) == [#"[[app]] my-shell role (a terminal handed a file runs it) = "editor""#])
+        let own = "[[app]]\nid = \"mine\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"terminal\"\n[[app]]\nid = \"mine-too\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"general\"\n"
+        #expect(lines(own) == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#])
+        // A terminal that stays one, an editor with a bundle identifier of its own, and what the other config already has are not listed.
+        #expect(lines("[[app]]\nid = \"terminal\"\nname = \"Terminal\"\nbundle_id = \"com.apple.Terminal\"\nrole = \"terminal\"\n").isEmpty)
+        #expect(lines("[[app]]\nid = \"mine\"\nname = \"M\"\nbundle_id = \"com.example.editor\"\nrole = \"editor\"\n").isEmpty)
+        #expect(lines(relabeled, over: relabeled).isEmpty)
+    }
+
     @Test func theDefaultTerminalCountsOnlyWhenItStartsThroughATemplate() {
         #expect(lines("[general]\nterminal = \"terminal\"\n").isEmpty)
         let template = "[[app]]\nid = \"mine\"\nname = \"Mine\"\nbundle_id = \"com.example.mine\"\nrole = \"terminal\"\nrun_args = [\"/bin/echo\", \"{dir}\", \"{command}\"]\n"

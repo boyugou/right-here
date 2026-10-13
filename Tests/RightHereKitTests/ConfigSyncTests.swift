@@ -644,6 +644,16 @@ struct ConfigSyncTrustTests {
         #expect(try f.sync.pull() == .pulled(backup: nil))
     }
 
+    @Test func aTerminalTheFolderConfigListsAsAnotherKindOfAppIsAskedAbout() throws {
+        // Terminal.app redefined with no role is a general app, which gets files handed to it; a terminal runs them.
+        let relabeled = "[[app]]\nid = \"terminal\"\nname = \"Terminal\"\nbundle_id = \"com.apple.Terminal\"\n"
+        let f = try machine(folder: relabeled); defer { f.cleanUp() }
+        let changes = try #require(refusal { try f.sync.pull() })
+        #expect(changes.map(\.line) == [#"[[app]] terminal role (a terminal handed a file runs it) = "general""#])
+        #expect(try f.read(f.local) == one)
+        #expect(try f.sync.pull(allowCommands: true) == .pulled(backup: nil))
+    }
+
     @Test func aChangedCommandIsAskedAboutAndSaysWhatItWas() throws {
         let f = try machine(local: withCommands, folder: withCommands.replacingOccurrences(of: "/bin/sh", with: "/bin/zsh")); defer { f.cleanUp() }
         let changes = try #require(refusal { try f.sync.pull() })

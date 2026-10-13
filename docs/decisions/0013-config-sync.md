@@ -134,8 +134,13 @@ names only: with such a folder config, `rh config sync pull` exited 0 with "Pull
 - Compared, as each config reads when parsed alone (the overlay is left out: `pull` replaces `config.toml` only): the
   `open_args`, `run_args` and bundle identifiers of every `[[app]]` that has a template (`{app}` resolves through the
   bundle identifiers); for every agent as it will run, built-in or not, its `command`, `prompt_arg` (a flag is typed
-  before the prompt) and each variant's `arguments`; and `general.terminal` when that terminal starts through a
-  template. A built-in app or agent the config does not touch is the same on both sides and never listed.
+  before the prompt) and each variant's `arguments`; `general.terminal` when that terminal starts through a template;
+  and the role of an `[[app]]` that carries the bundle identifier of a terminal but is not one. (Hard rule 3: a
+  terminal is only ever handed a folder, since handed a file it runs it. What says an app is a terminal is its `role`,
+  and an `[[app]]` under a built-in id replaces the built-in, role included, so `[[app]] id = "terminal"` without a
+  role is a `general` app, which the planner hands the selected files. Whether Terminal then runs a given file depends
+  on the file and was not tested.) A built-in app or agent the config does not touch is the same on both sides and
+  never listed.
 - Listed: places the current config lacks, and places whose value differs (with the old value). Not listed: what the
   current config has and the incoming one lacks (a removal starts nothing). With no local config, everything custom
   counts as new, so a first pull of a config that only picks built-in apps and agents needs no flag, and one with a
@@ -167,7 +172,10 @@ names only: with such a folder config, `rh config sync pull` exited 0 with "Pull
 - Preset prompts (`[[preset]]`): text typed to an agent as one quoted word. They can tell an agent to do something, but
   the agent's own permission prompts stand between that and a command, and DESIGN section 9, item 2 already says
   presets are for folders the person trusts.
-- A built-in app redefined without templates: it is opened by bundle identifier and never handed code.
+- Which installed app opens a file or a folder (`open_with`, the bundle identifiers of an `[[app]]`, `general.editor`):
+  the config chooses among apps already on this Mac, and a terminal redefined without templates keeps the driver Right
+  Here has for that id; neither gets new code from the config. The one such choice that matters most, a terminal listed
+  as another kind of app, is guarded (above). An app that is not a known terminal but runs what it is handed is not.
 - Edits made to the local config by hand or by another tool (a dotfiles repository): SECURITY.md puts write access to
   the person's own config out of scope. Only the sync folder is a boundary, because other things write to it.
 - What runs after `--allow-commands`: that is the person's decision, made with the list in front of them.

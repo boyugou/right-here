@@ -1,12 +1,14 @@
 import Foundation
 
 /// What a config can make Right Here start: the argument vectors of its terminal templates, the command, first-prompt
-/// flag and variant arguments of each agent, and the default terminal when that terminal starts through a template.
+/// flag and variant arguments of each agent, the default terminal when that terminal starts through a template, and a
+/// terminal app that the config lists as another kind of app.
 ///
 /// A config that arrives from the sync folder is compared with the one it would replace through this, because a
 /// folder that other machines, a sync service or a shared drive can write must not be able to make a click run a
-/// program the person never saw (docs/decisions/0013-config-sync.md, "Trust"). Everything else a config sets (menu
-/// order, titles, which app opens a file) cannot start a new program.
+/// program the person never saw (docs/decisions/0013-config-sync.md, "Trust"). It also lists a terminal that the
+/// config gives another role, which makes files be handed to it. Everything else a config sets is a choice among
+/// things Right Here already does or among apps already installed here (the ADR says what that leaves unguarded).
 public struct LaunchCommands: Sendable, Equatable {
     /// One setting that decides what is started.
     public struct Entry: Sendable, Equatable {
@@ -42,6 +44,12 @@ public struct LaunchCommands: Sendable, Equatable {
             if let run = launch.run { found.append(Entry(place: "[[app]] \(app.id) run_args", value: Self.list(run))) }
             // `{app}` in a template resolves through the bundle identifiers, so they decide which program runs.
             found.append(Entry(place: "[[app]] \(app.id) bundle_ids", value: Self.list(app.bundleIDs)))
+        }
+        // A terminal is only ever handed a folder, because handed a file it runs it, and what says an app is a terminal is
+        // its role. An `[[app]]` that carries a terminal's bundle identifier with another role makes Right Here hand it files.
+        let terminalBundles = Set(KnownApps.terminals.flatMap(\.bundleIDs) + config.apps.filter { $0.role == .terminal }.flatMap(\.bundleIDs))
+        for app in config.apps where app.role != .terminal && !terminalBundles.isDisjoint(with: app.bundleIDs) {
+            found.append(Entry(place: "[[app]] \(app.id) role (a terminal handed a file runs it)", value: Self.quoted(app.role.rawValue)))
         }
         // The agents as they will run: a built-in one the config does not touch says the same on both sides of a
         // comparison and never shows up.
