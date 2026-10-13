@@ -3163,6 +3163,192 @@
         }
       }
     },
+    "app.checkMenu": {
+      "comment": "Title of one check row in the setup window; it appears only when the config leaves the Finder menu empty. The menu that opens when you right-click in Finder.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "قائمة Finder"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder মেনু"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder-Menü"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Μενού του Finder"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder menu"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menú del Finder"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "منوی Finder"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu du Finder"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "תפריט Finder"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder मेनू"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu Finder"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu del Finder"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder のメニュー"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder 메뉴"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder मेनू"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu Finder"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder-menu"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu Findera"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu do Finder"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Meniu Finder"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Меню Finder"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder மெனு"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder మెనూ"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เมนูของ Finder"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder menüsü"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Меню Finder"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Finder مینو"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Trình đơn Finder"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "访达菜单"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder 選單"
+          }
+        }
+      }
+    },
     "app.checkRunner": {
       "comment": "Title of one check row in the setup window.",
       "extractionState": "manual",
@@ -18601,6 +18787,192 @@
         }
       }
     },
+    "doctor.fix.menuEmpty": {
+      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence. Keep the command in backticks exactly.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "شغّل `rh menu --explain` لمعرفة سبب استبعاد كل عنصر."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh menu --explain` চালান, প্রতিটি আইটেম কেন বাদ পড়ছে তা দেখতে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Führen Sie `rh menu --explain` aus, um zu sehen, warum jeder Eintrag weggelassen wird."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Εκτελέστε `rh menu --explain` για να δείτε γιατί παραλείπεται κάθε στοιχείο."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run `rh menu --explain` to see why each entry is left out."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ejecute `rh menu --explain` para ver por qué se omite cada elemento."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏`rh menu --explain` را اجرا کنید تا ببینید چرا هر گزینه حذف شده است."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Exécutez `rh menu --explain` pour voir pourquoi chaque commande est exclue."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "הריצו את `rh menu --explain` כדי לראות מדוע כל פריט אינו מוצג."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh menu --explain` चलाएँ और देखें कि हर आइटम क्यों छोड़ा गया है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Jalankan `rh menu --explain` untuk melihat alasan setiap item dikecualikan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Esegui `rh menu --explain` per vedere perché ogni voce viene esclusa."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh menu --explain` を実行して、各項目が除外された理由を確認してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh menu --explain` 명령을 실행하여 각 항목이 빠진 이유를 확인하세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh menu --explain` चालवा, म्हणजे प्रत्येक आयटम का वगळला गेला आहे ते दिसेल."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Jalankan `rh menu --explain` untuk melihat sebab setiap item tidak disertakan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Voer `rh menu --explain` uit om te zien waarom elk item is weggelaten."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Uruchom `rh menu --explain`, aby zobaczyć, dlaczego każda pozycja została pominięta."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Execute `rh menu --explain` para ver por que cada item ficou de fora."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Rulați `rh menu --explain` pentru a vedea de ce a fost omis fiecare element."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Выполните `rh menu --explain`, чтобы увидеть, почему каждый пункт пропущен."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ஒவ்வொரு உள்ளீடும் ஏன் விடுபட்டது என்பதைப் பார்க்க, `rh menu --explain` ஐ இயக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ప్రతి ఎంట్రీ ఎందుకు మినహాయించబడిందో చూడటానికి, `rh menu --explain` రన్ చేయండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เรียกใช้ `rh menu --explain` เพื่อดูว่าเหตุใดแต่ละรายการจึงถูกตัดออก."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Her öğenin neden dışarıda bırakıldığını görmek için `rh menu --explain` komutunu çalıştırın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Виконайте `rh menu --explain`, щоб дізнатися, чому кожен пункт пропущено."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏`rh menu --explain` چلائیں تاکہ معلوم ہو سکے کہ ہر آئٹم کیوں چھوڑا گیا۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Chạy `rh menu --explain` để xem vì sao mỗi mục bị loại bỏ."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "运行 `rh menu --explain`，查看每个项目被排除的原因。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "執行 `rh menu --explain`，查看每個項目被排除的原因。"
+          }
+        }
+      }
+    },
     "doctor.fix.syncCommands": {
       "comment": "Fix line under a check in the setup window's Details list: what the person should do. Sentences. About the config sync feature: \"them\" are the launch settings listed above; the folder's copy is the config in the sync folder. Keep the commands in backticks exactly.",
       "extractionState": "manual",
@@ -20829,6 +21201,192 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "安裝它，或變更 general.terminal（移除該設定，即可使用第一個已安裝的終端機）。"
+          }
+        }
+      }
+    },
+    "doctor.menu.empty": {
+      "comment": "Detail line of a check in the setup window's Details list; it follows the check's title (\"Finder menu\"), so it is a fragment with no final period. With the config as it is, a right-click on a folder in Finder would offer nothing: no entry is left to show.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فارغة لمجلد: لا يتبقى أي عنصر بهذا الإعداد"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ফোল্ডারের জন্য খালি: এই কনফিগে কোনো আইটেম বাকি থাকে না"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "leer für einen Ordner: mit dieser Konfiguration bleibt kein Eintrag übrig"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "άδειο για φάκελο: με αυτή τη ρύθμιση δεν μένει κανένα στοιχείο"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "empty for a folder: no entry is left with this config"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "vacío para una carpeta: con esta configuración no queda ningún elemento"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "برای یک پوشه خالی است: با این پیکربندی هیچ گزینه‌ای باقی نمی‌ماند"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "vide pour un dossier : avec cette configuration, aucune commande ne reste"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ריק עבור תיקייה: עם התצורה הזו לא נשאר אף פריט"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फ़ोल्डर के लिए खाली: इस कॉन्फ़िग के साथ कोई आइटम नहीं बचता"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "kosong untuk folder: tidak ada item yang tersisa dengan konfigurasi ini"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "vuoto per una cartella: con questa configurazione non resta nessuna voce"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "フォルダでは空：この設定では項目が一つも残りません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "폴더에서는 비어 있음: 이 설정에서 남은 항목 없음"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फोल्डरसाठी रिकामे: या कॉन्फिगमध्ये कोणताही आयटम उरत नाही"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "kosong untuk folder: tiada item tinggal dengan konfigurasi ini"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "leeg voor een map: met deze configuratie blijft geen enkel item over"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "puste dla folderu: przy tej konfiguracji nie pozostaje żadna pozycja"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "vazio em uma pasta: com esta configuração, não sobra nenhum item"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "gol pentru un dosar: cu această configurație nu rămâne niciun element"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "пусто для папки: с этой конфигурацией не остаётся ни одного пункта"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கோப்புறைக்கு காலியாக: இந்த உள்ளமைவில் எந்த உள்ளீடும் எஞ்சியிருக்காது"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఫోల్డర్‌కు ఖాళీ: ఈ కాన్ఫిగరేషన్‌తో ఏ ఎంట్రీ మిగలదు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ว่างเปล่าสำหรับโฟลเดอร์: ไม่เหลือรายการใดเมื่อใช้การกำหนดค่านี้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "klasör için boş: bu yapılandırmayla hiçbir öğe kalmıyor"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "для папки порожньо: з цією конфігурацією не залишається жодного пункту"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فولڈر کے لیے خالی: اس کنفیگ کے ساتھ کوئی آئٹم باقی نہیں رہتا"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "trống đối với thư mục: cấu hình này không để lại mục nào"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "对文件夹为空：此配置下没有留下任何项目"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "對資料夾為空：此設定下沒有留下任何項目"
           }
         }
       }

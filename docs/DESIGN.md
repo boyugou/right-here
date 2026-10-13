@@ -214,6 +214,12 @@ the terminal cannot run commands) are not shown; `rh actions --all` and `rh doct
 the config sets that is not installed gives way to the first installed one (a config shared between Macs), and the doctor
 says which app is used instead.
 
+`MenuBuilder.explain` builds the same menu and, on the way, collects what the config asks for and the menu leaves out or
+changes, with the planner's own sentence as the reason (`rh menu --explain`; `rh doctor` and `rh config validate` use the
+same answer to say that a config leaves the menu empty for a folder, which nothing in its text would show). It reports the
+default terminal and editor, the agents, the presets, New File, Copy Path and every entry the config names, and not every
+uninstalled app of "Open With". The extension calls `build`, which collects nothing.
+
 The plain agent entry starts the agent the way its `launcher` says (typed into the default terminal or the terminal the
 agent names; its desktop app; its terminal link). "More Agent Options" offers the other ways and never the same one twice:
 with `launcher = "desktop"` it leaves the desktop app out and lists the typed launch in the default terminal, under that

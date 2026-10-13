@@ -216,6 +216,109 @@ struct MoreAgentOptionsTests {
     }
 }
 
+/// `explain` is the menu plus what it leaves out and changes, built by the same code, so what it says cannot disagree with the menu.
+@Suite("MenuBuilder: explain")
+struct MenuExplainTests {
+    private let folder = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/code"))
+
+    private func facts(_ installed: [String], directories: Set<String> = ["/Users/tester/code"], versions: [String: String] = [:]) -> FakeSystemFacts {
+        FakeSystemFacts(directories: directories, applications: Dictionary(uniqueKeysWithValues: installed.map { ($0, URL(fileURLWithPath: "/Applications/\($0).app")) }), bundleVersions: versions)
+    }
+
+    private func explain(_ toml: String, _ machine: FakeSystemFacts, _ context: HereContext? = nil) -> MenuExplanation {
+        MenuBuilder(config: ConfigParser.parse(toml).config, facts: machine).explain(for: context ?? folder)
+    }
+
+    @Test func theMenuItExplainsIsTheMenuBuildMakes() {
+        let machine = facts(["com.mitchellh.ghostty", "com.apple.Terminal", "com.microsoft.VSCode"], versions: ["com.mitchellh.ghostty": "1.3.1"])
+        let several = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/a"), URL(fileURLWithPath: "/Users/tester/code/b")])
+        for toml in ["", "[general]\nagents = [\"claude\", \"codex\"]\n", "[general]\nterminal = \"iterm\"\neditor = \"zed\"\nagents = [\"claude\"]\n",
+                     "[menu]\nitems = [\"agents-more\", \"presets\", \"nonsense\", \"open.app.zed\"]\n[general]\nagents = [\"claude\"]\n"] {
+            let config = ConfigParser.parse(toml).config
+            let builder = MenuBuilder(config: config, facts: machine)
+            for context in [folder, several] { #expect(builder.explain(for: context).menu == builder.build(for: context), "\(toml)") }
+        }
+    }
+
+    @Test func anAppThatIsNotInstalledAndAnEmptyAgentListAreSaidWithTheirReasons() {
+        let explained = explain("", facts(["com.apple.Terminal"]))
+        #expect(explained.leftOut.map(\.line) == [
+            "Open in Editor: No editor is installed.",
+            "Open With: no other terminal or editor is installed.",
+            "Agents: none is enabled; general.agents lists none."
+        ], "\(explained.leftOut.map(\.line))")
+        #expect(explained.changed.isEmpty)
+        #expect(explained.emptyMenuSummary == nil, "New File and Copy Path are there")
+    }
+
+    @Test func aDefaultThatAnotherAppReplacedIsSaidAsAChange() {
+        let machine = facts(["com.mitchellh.ghostty", "com.microsoft.VSCode"], versions: ["com.mitchellh.ghostty": "1.3.1"])
+        let explained = explain("[general]\nterminal = \"iterm\"\neditor = \"zed\"\nagents = [\"claude\"]\n", machine)
+        #expect(explained.changed.map(\.line) == [
+            "Open in Ghostty: iTerm is not installed; Ghostty is used instead.",
+            "Open in Visual Studio Code: Zed is not installed; Visual Studio Code is used instead."
+        ], "\(explained.changed.map(\.line))")
+        #expect(explained.menu.first?.title == "Open in Ghostty")
+        // The agents are typed into the same replacement, and the same sentence is not said twice.
+        #expect(explain("[general]\nterminal = \"iterm\"\nagents = [\"claude\"]\n", machine).changed.count == 1)
+    }
+
+    @Test func aTerminalThatCannotRunACommandIsTheAgentsFallbackAndSaysSoOnItsOwn() {
+        // kitty opens a folder; Terminal has to take the agents.
+        let machine = facts(["net.kovidgoyal.kitty", "com.apple.Terminal"])
+        let explained = explain("[general]\nterminal = \"iterm\"\nagents = [\"claude\"]\n", machine)
+        #expect(explained.changed.map(\.line) == [
+            "Open in kitty: iTerm is not installed; kitty is used instead.",
+            "Agents: iTerm is not installed; Terminal is used instead."
+        ], "\(explained.changed.map(\.line))")
+    }
+
+    @Test func presetsOnAFolderAreLeftOutWithTheSentenceRunSays() {
+        let machine = facts(["com.mitchellh.ghostty"], versions: ["com.mitchellh.ghostty": "1.3.1"])
+        let toml = "[general]\nagents = [\"claude\"]\n"
+        for context in [folder, HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code")])] {
+            let explained = explain(toml, FakeSystemFacts(directories: ["/Users/tester/code"], applications: machine.applications, bundleVersions: machine.bundleVersions), context)
+            #expect(explained.leftOut.contains { $0.entry == "Agent Presets" && $0.reason.contains("select one or more files") }, "\(explained.leftOut.map(\.line))")
+        }
+    }
+
+    @Test func severalSelectedItemsAndAnEmptyCopyPathAreSaid() {
+        let machine = facts(["com.apple.Terminal"])
+        let several = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/a"), URL(fileURLWithPath: "/Users/tester/code/b")])
+        #expect(explain("", machine, several).leftOut.contains { $0.entry == "New File" && $0.reason.contains("several items are selected") })
+        let none = explain("[copy_path]\nstyles = []\n", machine)
+        #expect(none.leftOut.contains { $0.line == "Copy Path: copy_path.styles lists no style." })
+    }
+
+    @Test func anEntryTheConfigNamesIsSaidWhetherItIsUnknownOrNotInstalled() {
+        let explained = explain("[menu]\nitems = [\"open.app.zed\", \"nonsense\", \"copy-path\"]\n", facts(["com.apple.Terminal"]))
+        #expect(explained.leftOut.map(\.line) == ["Open in Zed: Zed is not installed.", "nonsense: it is not a menu group or an action id."], "\(explained.leftOut.map(\.line))")
+    }
+
+    @Test func whatThePerMachineOverlayDisabledIsToldApartFromWhatWasNeverThere() {
+        // `Config` keeps the apps the overlay removed; the agents are the ones the shared file enables and the merged config does not.
+        let machine = facts(["com.apple.Terminal", "dev.zed.Zed"])
+        var merged = Config(enabledAgents: ["codex"], menuItems: ["agents", "open.app.zed"])
+        merged.disabledApps = ["zed"]
+        let shared = Config(enabledAgents: ["claude", "codex"])
+        let explained = MenuBuilder(config: merged, facts: machine).explain(for: folder, sharedConfig: shared, overlayName: "config.local.toml")
+        #expect(explained.leftOut.map(\.line).contains("Claude Code Here: the agent is disabled on this Mac by config.local.toml."), "\(explained.leftOut.map(\.line))")
+        #expect(explained.leftOut.map(\.line).contains("Open in Zed: Zed is disabled on this Mac by config.local.toml."), "\(explained.leftOut.map(\.line))")
+        // Without the shared file's agents nothing is guessed.
+        #expect(!MenuBuilder(config: merged, facts: machine).explain(for: folder).leftOut.contains { $0.reason.contains("disabled on this Mac") && $0.entry.contains("Claude") })
+    }
+
+    @Test func aMenuThatIsEmptyForAFolderSaysWhy() {
+        let machine = facts(["com.apple.Terminal"])
+        let toml = "[general]\nagents = []\n[copy_path]\nstyles = []\n[menu]\nitems = [\"agents\", \"presets\", \"agents-more\", \"copy-path\"]\n"
+        let explained = explain(toml, machine)
+        #expect(explained.menu.isEmpty)
+        #expect(explained.emptyMenuSummary == "the Finder menu would be empty for a folder: Agents: none is enabled; general.agents lists none; Copy Path: copy_path.styles lists no style")
+        let listless = explain("[menu]\nitems = []\n", machine)
+        #expect(listless.menu.isEmpty && listless.leftOut.map(\.line) == ["Menu: menu.items lists no entry."])
+    }
+}
+
 @Suite("ActionRegistry")
 struct ActionRegistryTests {
     @Test func catalogHasUniqueIds() {

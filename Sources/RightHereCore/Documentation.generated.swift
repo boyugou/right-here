@@ -20,6 +20,14 @@ throwaway terminal window.
   app): `rh install --finder` removes the stale copies. macOS drops an extension that is registered twice.
 - It worked until a macOS update: `rh install --finder` registers it again.
 
+## An entry I expect is missing from the menu
+
+`rh menu --container <folder> --explain` prints the menu and then what it leaves out or changes, each with its reason:
+an app that is not installed, "select one or more files" for the Agent Presets (a selected folder is not a file),
+an agent your per-machine overlay disabled, a default terminal or editor that is not installed on this Mac (the first
+installed one is used instead, so "Open in Terminal" still shows, under another name). `rh doctor` has a "Finder menu"
+row, and `rh config validate` a warning, when the config leaves the menu empty for a folder.
+
 ## I click an item and nothing happens
 
 - `rh doctor` has a line "Last action started from Finder". If it says "none yet" after you clicked, the click did

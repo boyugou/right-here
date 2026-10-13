@@ -95,7 +95,7 @@ struct ConfigCommand: ParsableCommand {
             let runtime = Runtime()
             // Each file is checked on its own as well: what the overlay hides on this Mac is what other Macs read.
             let loaded = ConfigStore.load(paths: runtime.paths, validating: true)
-            let result = loaded.result
+            let result = loaded.resultWithMenuCheck(facts: runtime.facts)
             let report = Report(file: runtime.paths.configFile.path, exists: loaded.fileExists,
                                 localFile: runtime.paths.localConfigFile.path, localExists: loaded.localFileExists, ok: !result.hasErrors,
                                 clean: result.diagnostics.isEmpty, diagnostics: result.diagnostics, notes: result.notes)

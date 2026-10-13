@@ -35,6 +35,8 @@ extension LocalizedMessage {
     public static var appCheckLastAction: LocalizedMessage { LocalizedMessage(.appCheckLastAction) }
     /// Finder click runs a command in the terminal
     public static var appCheckLaunch: LocalizedMessage { LocalizedMessage(.appCheckLaunch) }
+    /// Finder menu
+    public static var appCheckMenu: LocalizedMessage { LocalizedMessage(.appCheckMenu) }
     /// Finder runner script
     public static var appCheckRunner: LocalizedMessage { LocalizedMessage(.appCheckRunner) }
     /// Finder Services
@@ -201,6 +203,8 @@ extension LocalizedMessage {
     public static var doctorFixInstallScripts: LocalizedMessage { LocalizedMessage(.doctorFixInstallScripts) }
     /// Run `rh install --services`.
     public static var doctorFixInstallServices: LocalizedMessage { LocalizedMessage(.doctorFixInstallServices) }
+    /// Run `rh menu --explain` to see why each entry is left out.
+    public static var doctorFixMenuEmpty: LocalizedMessage { LocalizedMessage(.doctorFixMenuEmpty) }
     /// Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy.
     public static var doctorFixSyncCommands: LocalizedMessage { LocalizedMessage(.doctorFixSyncCommands) }
     /// Compare them (`rh config sync status`), then `rh config sync pull --force` to take the folder's or `push --force` to keep this one; the replaced file is saved first.
@@ -225,6 +229,8 @@ extension LocalizedMessage {
     public static var doctorFixTerminal: LocalizedMessage { LocalizedMessage(.doctorFixTerminal) }
     /// Install it, or change general.terminal (remove the setting to use the first installed terminal).
     public static var doctorFixTerminalFallback: LocalizedMessage { LocalizedMessage(.doctorFixTerminalFallback) }
+    /// empty for a folder: no entry is left with this config
+    public static var doctorMenuEmpty: LocalizedMessage { LocalizedMessage(.doctorMenuEmpty) }
     /// not installed; the Finder menu cannot run actions
     public static var doctorRunnerMissing: LocalizedMessage { LocalizedMessage(.doctorRunnerMissing) }
     /// runs %@

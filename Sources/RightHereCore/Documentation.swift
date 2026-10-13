@@ -54,7 +54,8 @@ public enum Documentation {
        only a warning because the rest of the file still applies, but it is almost always a typo, and
        whatever it was meant to set is then silently missing. The `replacement` field of a diagnostic
        is the likely fix. `--strict` exits with status 1 until the file is clean.
-    5. Run `rh menu --container <a folder>` to preview the menu and confirm it matches the request.
+    5. Run `rh menu --container <a folder>` to preview the menu and confirm it matches the request. Add `--explain` to see
+       what it leaves out or changes and why (an app that is not installed, an agent the overlay disabled).
     6. To test an action without side effects, use `rh run <action> --dry-run --json`.
     7. The Finder menu reads the config each time it opens, so menu edits take effect at once. Quick
        Actions (Services) are files written by `rh install --services`: run it after changing

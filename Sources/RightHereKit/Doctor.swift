@@ -45,6 +45,7 @@ public struct Doctor: Sendable {
         checks += ConfigSync(paths: paths).doctorChecks()
         checks += menuChecks()
         checks += await agentChecks()
+        checks += menuEmptyCheck()
         checks.append(claudeLinkCheck())
         checks += integrationChecks()
         checks.append(await Self.extensionCheck(runner: runner))
@@ -165,6 +166,15 @@ public struct Doctor: Sendable {
             check(.editorDefault, registry.info(.openEditor), role: .editor, configured: loaded.config.editor, missing: .warn,
                   fix: .doctorFixEditor, fallbackFix: .doctorFixEditorFallback)
         ]
+    }
+
+    /// A row only when the config leaves the menu empty for a folder, with the reasons: nothing in the files of such a config is
+    /// wrong, and the menu does not appear. A healthy setup stays quiet.
+    private func menuEmptyCheck() -> [DoctorCheck] {
+        let folder = HereContext(origin: .container, container: facts.homeDirectory)
+        let explained = MenuBuilder(config: loaded.config, facts: facts).explain(for: folder)
+        guard explained.menu.isEmpty else { return [] }
+        return [DoctorCheck(.finderMenu, status: .warn, detail: .doctorMenuEmpty, notes: explained.leftOut.map { .doctorVerbatim($0.line) }, fix: .doctorFixMenuEmpty)]
     }
 
     /// What a default app check says: the app a click opens, or why there is none. The two reasons a person can meet

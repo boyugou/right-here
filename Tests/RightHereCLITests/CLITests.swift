@@ -418,6 +418,66 @@ struct CLITests {
         #expect(lines[at + 1] == "       fix: Run `rh init`.")
     }
 
+    // The apps below use a made-up bundle id, so what is installed on the Mac that runs the tests does not change the answers.
+    private static let ghostEditor = "[[app]]\nid = \"ghost\"\nname = \"Ghost\"\nbundle_id = \"com.example.not-installed\"\nrole = \"editor\"\n"
+
+    @Test func menuExplainSaysWhatTheMenuLeavesOutAndTheMenuItselfIsUnchanged() throws {
+        let rh = try RH(config: "[general]\nagents = []\n[menu]\nitems = [\"open.app.ghost\", \"agents\", \"copy-path\"]\n" + Self.ghostEditor); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.path
+        let plain = try rh.run(["menu", "--container", folder])
+        #expect(plain.status == 0 && !plain.standardOutput.contains("Left out"), "--explain is the only thing that adds the block")
+        let explained = try rh.run(["menu", "--container", folder, "--explain"])
+        #expect(explained.status == 0, "\(explained.standardError)")
+        #expect(explained.standardOutput.hasPrefix(plain.standardOutput.trimmingCharacters(in: .newlines)), "the menu comes first, as it is")
+        let text = explained.standardOutput
+        #expect(text.contains("\nLeft out of this menu:\n  Open in Ghost: Ghost is not installed.\n  Agents: none is enabled; general.agents lists none."), "\(text)")
+        // JSON keeps its old shape (an array of entries) unless --explain asks for the notes.
+        #expect(try rh.run(["menu", "--container", folder, "--json"]).json is [Any])
+        let json = try #require(try rh.run(["menu", "--container", folder, "--explain", "--json"]).json as? [String: Any])
+        #expect(json["menu"] is [Any])
+        let notes = try #require(json["notes"] as? [[String: Any]])
+        #expect(notes.contains { $0["kind"] as? String == "leftOut" && $0["entry"] as? String == "Open in Ghost" })
+    }
+
+    @Test func anEmptyMenuIsSaidWithAHintAndExplainedWithItsReasons() throws {
+        let rh = try RH(config: "[general]\nagents = []\n[copy_path]\nstyles = []\n[menu]\nitems = [\"agents\", \"presets\", \"agents-more\", \"copy-path\"]\n"); defer { rh.cleanUp() }
+        let plain = try rh.run(["menu", "--container", rh.configDirectory.path])
+        #expect(plain.standardOutput.contains("(empty: `rh menu --explain` says why each entry is left out)"), "\(plain.standardOutput)")
+        let explained = try rh.run(["menu", "--container", rh.configDirectory.path, "--explain"]).standardOutput
+        #expect(explained.contains("  Agents: none is enabled; general.agents lists none.") && explained.contains("  Copy Path: copy_path.styles lists no style."), "\(explained)")
+        // And the config check says the same, as a warning that `--strict` turns into a failure.
+        let validate = try rh.run(["config", "validate"])
+        #expect(validate.status == 0)
+        #expect(validate.standardOutput.contains("warning: config.toml [menu]: the Finder menu would be empty for a folder: Agents: none is enabled; general.agents lists none; Copy Path: copy_path.styles lists no style"), "\(validate.standardOutput)")
+        #expect(try rh.run(["config", "validate", "--strict"]).status == 1)
+        let json = try #require(try rh.run(["config", "validate", "--json"]).json as? [String: Any])
+        #expect((json["diagnostics"] as? [[String: Any]])?.contains { $0["path"] as? String == "menu" } == true)
+        // The doctor has a row for it; a healthy config has none and validates clean.
+        let doctor = try #require(try rh.run(["doctor", "--json"]).json as? [String: Any])
+        let row = try #require((doctor["checks"] as? [[String: Any]])?.first { $0["id"] as? String == "finder.menu" })
+        #expect(row["status"] as? String == "warn")
+        let healthy = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { healthy.cleanUp() }
+        #expect(try healthy.run(["config", "validate", "--strict"]).status == 0)
+    }
+
+    @Test func aFolderMenuNeedsAFolderGivenAsContainer() throws {
+        // `rh menu --origin container <folder>` printed "Menu for the folder ?": the path is a selection, not the folder.
+        let rh = try RH(); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.path
+        let asPath = try rh.run(["menu", "--origin", "container", folder])
+        #expect(asPath.status != 0 && asPath.standardError.contains("needs --container <folder>"), "\(asPath.standardError)")
+        #expect(!asPath.standardOutput.contains("Menu for the folder ?"))
+        let none = try rh.run(["menu", "--origin", "container"])
+        #expect(none.status != 0 && none.standardError.contains("needs --container <folder>"), "\(none.standardError)")
+        #expect(try rh.run(["menu", "--origin", "container", "--container", folder]).status == 0)
+        // `--container` is the folder being viewed: a file there is refused, and the way to preview a selection is named.
+        let file = rh.configDirectory.appendingPathComponent("a-file.txt")
+        try "x".write(to: file, atomically: true, encoding: .utf8)
+        let asFile = try rh.run(["menu", "--container", file.path])
+        #expect(asFile.status != 0 && asFile.standardError.contains("is a file") && asFile.standardError.contains("as a path"), "\(asFile.standardError)")
+        #expect(try rh.run(["menu", "--", file.path]).status == 0)
+    }
+
     @Test func underATrialHomeTheDoctorSaysSoOnStandardErrorAndItsJSONStaysADocument() throws {
         // `rh doctor` mixes this home's files (config, log, runner script) with the system-wide extension registration, which a
         // reader of the rows cannot tell apart unless the report says that RH_HOME is active.

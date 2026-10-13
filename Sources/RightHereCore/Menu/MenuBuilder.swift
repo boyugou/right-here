@@ -50,8 +50,28 @@ public struct MenuBuilder: Sendable {
     }
 
     public func build(for context: HereContext) -> [MenuNode] {
+        assemble(for: context, collector: nil)
+    }
+
+    /// The menu together with what it leaves out and what it changes, as the config asks for them: the default terminal and
+    /// editor, the agents, the presets, New File, Copy Path and every entry the config names. It does not list each uninstalled
+    /// app of "Open With" or each terminal of "More Agent Options". The menu is the one `build` makes: it is built here, by
+    /// the same code, with the notes collected on the way.
+    ///
+    /// - Parameters:
+    ///   - sharedConfig: The config as the shared file alone makes it, when a per-machine overlay is merged over it. `Config`
+    ///     does not record which agents the overlay disabled, so they are found as those enabled there and not here.
+    ///   - overlayName: The overlay's file name, for the sentence that says so.
+    public func explain(for context: HereContext, sharedConfig: Config? = nil, overlayName: String = ConfigLayers.overlayFileName) -> MenuExplanation {
+        let collector = MenuNoteCollector(shared: sharedConfig, overlayName: overlayName)
+        let menu = assemble(for: context, collector: collector)
+        return MenuExplanation(menu: menu, notes: collector.notes)
+    }
+
+    private func assemble(for context: HereContext, collector: MenuNoteCollector?) -> [MenuNode] {
         var nodes: [MenuNode] = []
         let entries = config.menuItems ?? Self.defaultItems
+        if entries.isEmpty { collector?.leftOut("Menu", "menu.items lists no entry.") }
         // "Open With" leaves out what the menu already offers on its own line.
         var listedAbove = Set<String>()
         if entries.contains("open-terminal"), let terminal = try? defaults.resolve(role: .terminal, configured: config.terminal) { listedAbove.insert(terminal.id) }
@@ -59,23 +79,25 @@ public struct MenuBuilder: Sendable {
         for entry in entries {
             switch entry {
             case "-": nodes.append(.separator)
-            case "open-terminal": nodes += single(.openTerminal(nil))
-            case "open-editor": nodes += single(.openEditor)
-            case "open-with": nodes += openWith(excluding: listedAbove)
-            case "agents": nodes += config.enabledAgents.flatMap { single(.agent(id: $0, variant: nil, launcher: nil)) }
+            case "open-terminal": nodes += defaultApp(.openTerminal(nil), role: .terminal, collector)
+            case "open-editor": nodes += defaultApp(.openEditor, role: .editor, collector)
+            case "open-with": nodes += openWith(excluding: listedAbove, collector)
+            case "agents": nodes += agents(collector)
             case "agents-more":
                 // The plain "<Agent> Here" entry is there when `agents` is in the menu, or the agent is named by its own id.
-                nodes += moreAgents(context, withPresets: !entries.contains("presets"), hasPlainEntry: { entries.contains("agents") || entries.contains("agent.\($0)") })
-            case "presets": nodes += presets(context)
-            case "new-file": nodes += newFile(context)
-            case "copy-path": nodes += copyPath()
+                nodes += moreAgents(context, withPresets: !entries.contains("presets"), collector, hasPlainEntry: { entries.contains("agents") || entries.contains("agent.\($0)") })
+            case "presets": nodes += presets(context, collector)
+            case "new-file": nodes += newFile(context, collector)
+            case "copy-path": nodes += copyPath(collector)
             default:
                 // An action named by its id follows the same rules as the groups do for this selection (a preset needs
                 // files of the right number), so it is described in the context.
-                nodes += ActionRef(parsing: entry).map { ref -> [MenuNode] in
-                    let info = registry.info(ref, context: context)
-                    return info.available ? [.action(info)] : []
-                } ?? []
+                guard let ref = ActionRef(parsing: entry) else {
+                    collector?.leftOut(entry.withControlCharactersEscaped, "it is not a menu group or an action id.")
+                    continue
+                }
+                let info = registry.info(ref, context: context)
+                if info.available { nodes.append(.action(info)) } else { leftOut(info, ref, collector) }
             }
         }
         return Self.tidy(nodes)
@@ -83,12 +105,50 @@ public struct MenuBuilder: Sendable {
 
     // MARK: Groups
 
-    private func single(_ ref: ActionRef) -> [MenuNode] {
+    private func single(_ ref: ActionRef, _ collector: MenuNoteCollector? = nil) -> [MenuNode] {
         let info = registry.info(ref)
-        return info.available ? [.action(info)] : []
+        if info.available { return [.action(info)] }
+        leftOut(info, ref, collector)
+        return []
     }
 
-    private func openWith(excluding listedAbove: Set<String>) -> [MenuNode] {
+    /// Notes an action the menu is missing and why. An app the per-machine overlay removed is told apart from one that was
+    /// never known.
+    private func leftOut(_ info: ActionInfo, _ ref: ActionRef, _ collector: MenuNoteCollector?) {
+        guard let collector else { return }
+        let appID: String?
+        switch ref {
+        case .openApp(let id): appID = id
+        case .openTerminal(let id?): appID = id
+        default: appID = nil
+        }
+        if let appID, config.disabledApps.contains(appID) {
+            let name = KnownApps.app(id: appID)?.name ?? appID
+            collector.leftOut(localizer.openIn(name), "\(name) is disabled on this Mac by \(collector.overlayName).")
+        } else {
+            collector.leftOut(info.title, info.unavailableReason)
+        }
+    }
+
+    /// The entry for the default terminal or editor, and a note when the app the config chose is not the one used.
+    private func defaultApp(_ ref: ActionRef, role: AppDescriptor.Role, _ collector: MenuNoteCollector?) -> [MenuNode] {
+        let nodes = single(ref, collector)
+        if let collector, let node = nodes.first, let found = defaults.substitution(role: role) { collector.changed(node.title, found.sentence) }
+        return nodes
+    }
+
+    private func agents(_ collector: MenuNoteCollector?) -> [MenuNode] {
+        if let collector {
+            if config.enabledAgents.isEmpty, collector.shared?.enabledAgents.isEmpty ?? true { collector.leftOut("Agents", "none is enabled; general.agents lists none.") }
+            for id in collector.shared?.enabledAgents ?? [] where !config.enabledAgents.contains(id) {
+                collector.leftOut(localizer.agentHere(config.agent(id: id)?.name ?? id), "the agent is disabled on this Mac by \(collector.overlayName).")
+            }
+            if !config.enabledAgents.isEmpty, let found = defaults.substitution(role: .terminal, typing: true) { collector.changed("Agents", found.sentence) }
+        }
+        return config.enabledAgents.flatMap { single(.agent(id: $0, variant: nil, launcher: nil), collector) }
+    }
+
+    private func openWith(excluding listedAbove: Set<String>, _ collector: MenuNoteCollector?) -> [MenuNode] {
         let terminals = config.allApps.filter { $0.role == .terminal && !listedAbove.contains($0.id) }
         let others = config.allApps.filter { $0.role != .terminal && !listedAbove.contains($0.id) }
         func entries(_ apps: [AppDescriptor], _ ref: (AppDescriptor) -> ActionRef) -> [MenuNode] {
@@ -100,20 +160,24 @@ public struct MenuBuilder: Sendable {
         }
         let children = entries(terminals) { .openTerminal($0.id) } + [.separator] + entries(others) { .openApp($0.id) }
         let tidy = Self.tidy(children)
+        if tidy.isEmpty { collector?.leftOut(localizer.openWithGroup, "no other terminal or editor is installed.") }
         return tidy.isEmpty ? [] : [.submenu(localizer.openWithGroup, icon: .symbol("arrow.up.forward.app"), tidy)]
     }
 
     /// The "Agent Presets" submenu: the presets whose agent is enabled and that fit this selection. A preset that
     /// needs files is left out of a folder's menu, and the whole submenu when nothing is left.
-    private func presets(_ context: HereContext) -> [MenuNode] {
+    private func presets(_ context: HereContext, _ collector: MenuNoteCollector?) -> [MenuNode] {
+        var firstRefusal: String?
         let infos = config.presets.compactMap { preset -> (agent: String, info: ActionInfo)? in
             guard let agent = config.agent(for: preset), config.enabledAgents.contains(agent.id) else { return nil }
             let info = registry.info(.preset(id: preset.id, terminal: nil), context: context)
+            if !info.available, firstRefusal == nil { firstRefusal = info.unavailableReason }
             return info.available ? (agent.id, info) : nil
         }
         // With several agents in play the agent's name is part of the title; with one it is just noise.
         let oneAgent = Set(infos.map(\.agent)).count <= 1
         let children = infos.map { MenuNode.action($0.info, title: oneAgent ? $0.info.shortTitle : $0.info.title) }
+        if children.isEmpty, let firstRefusal { collector?.leftOut(localizer.presetsGroup, firstRefusal) }
         return children.isEmpty ? [] : [.submenu(localizer.presetsGroup, icon: .symbol("text.bubble"), children)]
     }
 
@@ -121,7 +185,7 @@ public struct MenuBuilder: Sendable {
     /// follows the agent's launcher (its desktop app, its terminal link, or a terminal that is the default or the one the
     /// agent names), so that launcher is the one left out here, and the typed launch in the default terminal is offered when
     /// the plain entry is not it.
-    private func moreAgents(_ context: HereContext, withPresets: Bool, hasPlainEntry: (String) -> Bool) -> [MenuNode] {
+    private func moreAgents(_ context: HereContext, withPresets: Bool, _ collector: MenuNoteCollector?, hasPlainEntry: (String) -> Bool) -> [MenuNode] {
         var children: [MenuNode] = []
         let defaultTerminal = try? defaults.commandTerminal()
         for id in config.enabledAgents {
@@ -138,28 +202,35 @@ public struct MenuBuilder: Sendable {
             for terminal in config.allApps where terminal.role == .terminal && terminal.id != plainTerminal {
                 refs.append(.agent(id: id, variant: nil, launcher: .terminal(terminal.id)))
             }
-            let nodes = refs.flatMap(single)
+            let nodes = refs.flatMap { single($0) }
             if !nodes.isEmpty { children += nodes + [.separator] }
         }
-        if withPresets { children += presets(context) }
+        if withPresets { children += presets(context, collector) }
         let tidy = Self.tidy(children)
         return tidy.isEmpty ? [] : [.submenu(localizer.moreAgentsGroup, icon: .symbol("ellipsis.circle"), tidy)]
     }
 
-    private func newFile(_ context: HereContext) -> [MenuNode] {
-        guard context.items.count <= 1 else { return [] }
+    private func newFile(_ context: HereContext, _ collector: MenuNoteCollector?) -> [MenuNode] {
+        guard context.items.count <= 1 else {
+            collector?.leftOut(localizer.newFileGroup, "several items are selected; a new file goes next to one item, or into a folder.")
+            return []
+        }
         let infos = config.newFile.templates.map { registry.info(.newFile($0.id)) }.filter(\.available)
         switch infos.count {
-        case 0: return []
+        case 0:
+            collector?.leftOut(localizer.newFileGroup, "no template is defined (new_file.template).")
+            return []
         case 1: return [.action(infos[0])]
         default: return [.submenu(localizer.newFileGroup, icon: .symbol("doc.badge.plus"), infos.map { .action($0, title: $0.shortTitle) })]
         }
     }
 
-    private func copyPath() -> [MenuNode] {
+    private func copyPath(_ collector: MenuNoteCollector?) -> [MenuNode] {
         let infos = config.copyPathStyles.map { registry.info(.copyPath($0)) }
         switch infos.count {
-        case 0: return []
+        case 0:
+            collector?.leftOut(localizer.copyPathGroup, "copy_path.styles lists no style.")
+            return []
         case 1: return [.action(infos[0])]
         default: return [.submenu(localizer.copyPathGroup, icon: .symbol("doc.on.doc"), infos.map { .action($0, title: $0.shortTitle) })]
         }

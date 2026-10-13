@@ -73,6 +73,22 @@ public struct LoadedConfig: Sendable, Equatable {
     public var config: Config { result.config }
 }
 
+extension LoadedConfig {
+    /// The result of reading the config, with what only a built menu can say added: a config that is valid and leaves the Finder
+    /// menu empty for a folder (`agents = []` with a menu of groups, no copy-path style, nothing installed) has nothing wrong
+    /// in its text, yet the menu does not appear. That is a warning, with the reasons. The extension's own code path does not
+    /// run this; `rh config validate` does, with the real facts.
+    public func resultWithMenuCheck(facts: any SystemFacts) -> ConfigLoadResult {
+        var checked = result
+        let folder = HereContext(origin: .container, container: facts.homeDirectory)
+        let explained = MenuBuilder(config: config, facts: facts).explain(for: folder)
+        if let summary = explained.emptyMenuSummary {
+            checked.diagnostics.append(ConfigDiagnostic(severity: .warning, path: "menu", message: summary + " (`rh menu --explain` lists each entry)"))
+        }
+        return checked
+    }
+}
+
 public enum ConfigStore {
     /// Reads the config file. A missing file is not an error: the defaults apply. A file over `ConfigParser.maxBytes` is refused.
     /// With `validating`, the shared file is also checked on its own, as other Macs read it (`ConfigLayers.validate`): what
@@ -104,6 +120,12 @@ public enum ConfigStore {
         case .text(let text): return .text(text)
         case .unreadable(let diagnostic): return .problem(diagnostic.message)
         }
+    }
+
+    /// The config as the shared file alone makes it, without the per-machine overlay: what another Mac that reads only that file
+    /// gets. `rh menu --explain` compares it with the merged config to say what the overlay disabled.
+    public static func sharedConfig(paths: RHPaths) -> Config {
+        ConfigLayers.load(base: read(paths.configFile).source, local: .absent, overlayName: paths.localConfigFile.lastPathComponent).config
     }
 
     /// What identifies the config as the menu sees it: the modification dates of both files and whether each exists.

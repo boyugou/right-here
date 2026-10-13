@@ -9,6 +9,7 @@ public enum CheckID: Hashable, Sendable {
     case agents
     case agent(String)
     case claudeLink
+    case finderMenu
     case finderRunner
     case services
     case cliLink
@@ -31,6 +32,7 @@ public enum CheckID: Hashable, Sendable {
         case .agents: "agents"
         case .agent(let id): "agent." + id
         case .claudeLink: "claude.link"
+        case .finderMenu: "finder.menu"
         case .finderRunner: "finder.runner"
         case .services: "services"
         case .cliLink: "cli.link"
@@ -60,6 +62,7 @@ public enum CheckID: Hashable, Sendable {
         case .agents: .appCheckAgents
         case .agent: nil
         case .claudeLink: .appCheckClaudeLink
+        case .finderMenu: .appCheckMenu
         case .finderRunner: .appCheckRunner
         case .services: .appCheckServices
         case .cliLink: .appCheckCLI

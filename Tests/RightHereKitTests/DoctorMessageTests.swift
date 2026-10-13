@@ -5,7 +5,7 @@ import RightHereCore
 
 /// Every check the doctor can make, an agent's included.
 private let everyCheckID: [CheckID] = [
-    .config, .terminalDefault, .editorDefault, .agents, .agent("claude"), .claudeLink, .finderRunner, .services, .cliLink,
+    .config, .terminalDefault, .editorDefault, .agents, .agent("claude"), .finderMenu, .claudeLink, .finderRunner, .services, .cliLink,
     .finderExtension, .finderActivity, .finderChain, .finderLaunch, .syncFolder, .syncRemote, .syncState, .syncCommands, .syncConflict
 ]
 
@@ -13,7 +13,7 @@ private let everyCheckID: [CheckID] = [
 struct DoctorMessageTests {
     @Test func theIdsOfTheChecksAreWhatTheJSONHasAlwaysCalledThem() {
         #expect(everyCheckID.map(\.rawValue) == [
-            "config", "terminal.default", "editor.default", "agents", "agent.claude", "claude.link", "finder.runner", "services",
+            "config", "terminal.default", "editor.default", "agents", "agent.claude", "finder.menu", "claude.link", "finder.runner", "services",
             "cli.link", "finder.extension", "finder.activity", "finder.chain", "finder.launch", "sync.folder", "sync.remote",
             "sync.state", "sync.commands", "sync.conflict"
         ])
@@ -57,6 +57,7 @@ struct DoctorMessageTests {
         #expect(DoctorCheck(.syncFolder, status: .ok).title == "Config sync folder")
         #expect(DoctorCheck(.syncConflict, status: .ok).title == "Config sync conflict copies")
         #expect(DoctorCheck(.syncState, status: .ok).title == "Config sync" && DoctorCheck(.syncCommands, status: .ok).title == "Config sync commands")
+        #expect(DoctorCheck(.finderMenu, status: .ok).title == "Finder menu")
     }
 
     @Test func aCheckIsPrintedAsOneLineThenItsNotesThenItsFix() {

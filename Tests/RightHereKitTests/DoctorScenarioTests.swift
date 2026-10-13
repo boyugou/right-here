@@ -182,6 +182,24 @@ struct DoctorScenarioTests {
         #expect(checks.first { $0.id == .terminalDefault }?.detail == .doctorAppFallback("iTerm", "Ghostty"))
     }
 
+    @Test func aConfigThatLeavesTheMenuEmptyForAFolderSaysWhyAndHowToSeeEveryEntry() async throws {
+        // Nothing in the file is wrong, and the Finder menu does not appear: `agents = []` with a menu of groups, no copy-path style.
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.answers = [ProcessResult(status: 0)]
+        try scene.writeConfig("[general]\nagents = []\n[copy_path]\nstyles = []\n[menu]\nitems = [\"agents\", \"presets\", \"agents-more\", \"copy-path\"]\n")
+        let checks = await scene.run()
+        let menu = try #require(checks.first { $0.id == .finderMenu })
+        #expect(menu.status == .warn && menu.title == "Finder menu")
+        #expect(menu.detail?.english() == "empty for a folder: no entry is left with this config")
+        #expect(menu.notes.map { $0.english() } == ["Agents: none is enabled; general.agents lists none.", "Copy Path: copy_path.styles lists no style."])
+        #expect(menu.fix?.english() == "Run `rh menu --explain` to see why each entry is left out.")
+        // Where the config is fine the row is not there at all: a healthy setup stays quiet.
+        var quiet = try Scene(); defer { quiet.cleanUp() }
+        quiet.answers = [ProcessResult(status: 0)]
+        try quiet.writeConfig("[general]\nterminal = \"ghostty\"\n")
+        #expect(!(await quiet.run()).contains { $0.id == .finderMenu })
+    }
+
     @Test("the runner script says whether it runs this rh", arguments: [
         (true, "/opt/other/bin/rh", DoctorCheck.Status.warn, "points at {target}, not at this rh"),
         (false, "/opt/rh/bin/rh", .fail, "points at {target}, which does not exist")

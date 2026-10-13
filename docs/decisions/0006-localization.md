@@ -121,7 +121,7 @@ your PATH" had `~/.local/bin` in its text and the window drew it `local/bin./~` 
 (review round 16), and `launcher = "link"` had its closing quote at the wrong end. These are values of the message
 (`doctorFixCliPath("~/.local/bin")`, `doctorFixAgentLauncher("launcher = \"link\"", "\"desktop\"")`), and
 `verify_localizations.py` and `merge_translations.py` refuse such a literal in a right-to-left translation of a text the
-window shows (the lint found all seventeen of them in the old catalog, and none of the new one). A test lays every text
+window shows (the lint finds twenty such words in sixteen translations of the old catalog, and none in the new one). A test lays every text
 out with CoreText, as the window does, and finds a path that is still drawn out of order.
 
 Alternatives: the doctor takes a `Localizer` and returns strings (every consumer must choose a language, the JSON has
