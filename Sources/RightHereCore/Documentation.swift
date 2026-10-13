@@ -124,7 +124,8 @@ public enum Documentation {
         rh config sync disable                    forget the folder; both copies stay
 
     The state (the folder and a hash of what was last synced) is in `sync.toml` next to the config.
-    A second Mac runs `rh config sync enable` and `rh config sync pull`.
+    A second Mac runs `rh config sync enable` and `rh config sync pull` (with `--allow-commands` when the config has
+    programs of its own: see the rules below).
 
     Rules, all enforced:
     - `pull` refuses when this Mac's config changed since the last sync, and `push` refuses when the folder's copy
