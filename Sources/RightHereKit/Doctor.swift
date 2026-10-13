@@ -56,6 +56,7 @@ public struct Doctor: Sendable {
     public func run(probeExtension: Bool = false, probeLaunch: Bool = false, launchPlacement: TerminalPlacement? = nil) async -> [DoctorCheck] {
         var checks: [DoctorCheck] = []
         checks.append(configCheck())
+        checks += ConfigSync(paths: paths).doctorChecks()
         checks += menuChecks()
         checks += await agentChecks()
         checks.append(claudeLinkCheck())
