@@ -500,11 +500,12 @@ struct ConfigLayersValidateTests {
         #expect(result.hasErrors)
     }
 
-    @Test func aKeyNamedLikeACredentialInTheSharedFileIsWarnedAboutAsPushRefusesIt() throws {
+    @Test func aKeyNamedLikeACredentialInTheSharedFileIsAnErrorAsPushRefusesIt() throws {
         let text = "[general]\nagents = [\"mine\"]\n[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n"
         let result = ConfigLayers.validate(base: .text(text), local: .absent)
         let warning = try #require(result.diagnostics.first { $0.path == "agent.mine.api_key" })
-        #expect(warning.severity == .warning && warning.line == 6 && result.diagnostics.count == 1, "the unknown-key warning and this one are one: \(result.diagnostics)")
+        #expect(warning.severity == .error && warning.line == 6 && result.diagnostics.count == 1, "the unknown-key warning and this one are one: \(result.diagnostics)")
+        #expect(result.hasErrors, "validate must fail for what push refuses")
         #expect(warning.message.hasPrefix("unknown key; named like a credential: `rh config sync` refuses a config with such a key name"), "\(warning.message)")
         // `load` does not look: the menu has no use for it.
         #expect(ConfigLayers.load(base: .text(text), local: .absent).diagnostics.first?.message == "unknown key")

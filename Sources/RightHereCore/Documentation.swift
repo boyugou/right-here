@@ -109,7 +109,7 @@ public enum Documentation {
     A problem in either file is reported with its own file name (`rh config validate`, `rh doctor`). `rh config validate`
     also reads `config.toml` on its own, as other Macs do, and reports an error that the overlay hides on this Mac (the
     overlay sets the same key); `rh config sync push` refuses that file for the same error. A key named like a credential
-    in `config.toml` is a warning there too, because `push` refuses it.
+    in `config.toml` is an error there too, because `push` refuses it.
     `rh config show` prints both files, each under a header line that names it (`config.toml`, then `config.local.toml`
     when it exists), and `rh config path --all` lists their paths; there is no merged text, and `rh menu` shows what
     the two make of the menu.

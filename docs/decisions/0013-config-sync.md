@@ -81,9 +81,10 @@ file is what other Macs read, and an error that the overlay masks here (it sets 
 disables what the error is about) is real there. It is reported naming `config.toml`, with a line saying that the overlay
 hides it on this Mac, as an error. That parse is exactly the one `push` runs (`SyncValidation.check`), so a file `push`
 refuses for an invalid config is one `validate` fails for, by construction; before, `validate` said "ok" and `push`
-refused with advice that sent the person back to `validate`. A key named like a credential in the shared file is a warning
-in `validate` (it folds into the unknown-key warning for the same key), because `push` refuses it; the overlay is never
-synced, so its keys are not looked at.
+refused with advice that sent the person back to `validate`. A key named like a credential in the shared file is an error
+in `validate` (it takes over the unknown-key warning for the same key), because `push` refuses it and the two must agree;
+a key like that does nothing in a config, so nothing that works is refused. The overlay is never synced, so its keys are
+not looked at.
 
 Diagnostics are traced back after the build: each carries `file` (`config.local.toml` or nil for the main file), and a
 path such as `app.3.id` is rewritten to the entry's position in its own file (the merged list's third app may be the

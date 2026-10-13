@@ -1177,11 +1177,16 @@ struct ConfigSyncCLITests {
         #expect(push.status == 1 && push.standardError.contains("unknown style \"relative\""), "\(push.standardError)")
     }
 
-    @Test func aKeyNamedLikeACredentialIsAWarningInValidateAsPushRefusesIt() throws {
-        let rh = try RH(config: "[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n[general]\nagents = [\"mine\"]\n"); defer { rh.cleanUp() }
+    @Test func aKeyNamedLikeACredentialIsAnErrorInValidateAsPushRefusesIt() throws {
+        let rh = try isolated(config: "[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n[general]\nagents = [\"mine\"]\n"); defer { rh.cleanUp() }
         let result = try rh.run(["config", "validate"])
-        #expect(result.status == 0 && result.standardOutput.contains("config.toml:4 [agent.mine.api_key]: unknown key; named like a credential"), "\(result.standardOutput)")
-        #expect(try rh.run(["config", "validate", "--strict"]).status == 1)
+        #expect(result.status == 1 && result.standardOutput.hasPrefix("error: config.toml:4 [agent.mine.api_key]: unknown key; named like a credential"), "\(result.standardOutput)")
+        // push refuses the same file for the same key.
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        let push = try rh.run(["config", "sync", "push", "--force"])
+        #expect(push.status == 1 && push.standardError.contains("agent.mine.api_key"), "\(push.standardError)")
     }
 
     @Test func anEmptyFolderIsRefusedAndNothingIsEnabled() throws {

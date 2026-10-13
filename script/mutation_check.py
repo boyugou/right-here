@@ -263,7 +263,7 @@ MUTANTS = [
     ("a local config that cannot be read counts as a missing one", "Sources/RightHereKit/ConfigSync.swift",
      "case .tooLarge, .unreadable: snapshotLocal = .unknown", "case .tooLarge, .unreadable: snapshotLocal = .missing"),
     ("a name or title from the config may hold a control character", "Sources/RightHereCore/Config/ConfigBuilder.swift",
-     "guard ShellQuoting.containsControlCharacter(text) else { return true }", "guard true else { return true }"),
+     "guard ShellQuoting.containsControlCharacter(text) else { return true }", "guard false else { return true }"),
     ("validate does not read the shared file on its own, so an error the overlay hides is passed", "Sources/RightHereCore/Config/ConfigLayers.swift",
      "        if case .text = local {\n            for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {",
      "        if false {\n            for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {"),

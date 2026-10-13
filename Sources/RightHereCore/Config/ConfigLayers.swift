@@ -105,7 +105,7 @@ public enum ConfigLayers {
     /// - The shared file is what other Macs read, with none of this Mac's overlay. An error that the overlay masks here (it sets
     ///   the same key itself, replaces the entry, disables what the error is about) is real there, and `rh config sync push`
     ///   refuses the file for it: it parses `config.toml` alone, which is what is done here, so the two agree by construction.
-    /// - A key named like a credential in the shared file is what `push` refuses, as a warning here.
+    /// - A key named like a credential in the shared file is what `push` refuses, so it is an error here too.
     public static func validate(base: ConfigSource, local: ConfigSource, overlayName: String = overlayFileName) -> ConfigLoadResult {
         var result = load(base: base, local: local, overlayName: overlayName)
         guard case .text(let baseText) = base else { return result }
@@ -124,8 +124,9 @@ public enum ConfigLayers {
                 let note = "named like a credential: `rh config sync` refuses a config with such a key name (token, secret, password, api_key); keep credentials in the environment or the keychain"
                 if let index = result.diagnostics.firstIndex(where: { $0.file == nil && $0.path == path && $0.message == "unknown key" }) {
                     result.diagnostics[index].message += "; " + note.withControlCharactersEscaped
+                    result.diagnostics[index].severity = .error
                 } else {
-                    extra.append(ConfigDiagnostic(severity: .warning, path: path, message: "key " + note))
+                    extra.append(ConfigDiagnostic(severity: .error, path: path, message: "key " + note))
                 }
             }
         }
