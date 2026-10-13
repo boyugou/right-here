@@ -233,13 +233,21 @@ struct LiveProcessRunnerTests {
 
     @Test func theChildrenOfAKilledProcessAreKilledToo() async throws {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
-        let marker = directory.appendingPathComponent("alive")
-        // A background child that would touch a file after the limit, if it survived.
+        let pidFile = directory.appendingPathComponent("child.pid")
+        // The shell ignores SIGTERM and so does its background child, so only the hard kill of the whole group can end it.
         _ = try await LiveProcessRunner().run(
-            ProcessStep(executable: "/bin/sh", arguments: ["-c", "trap '' TERM; (sleep 5; touch '\(marker.path)') & wait"]), timeout: .milliseconds(300))
-        // The hard kill comes one second after the limit; the margin to the child's write has to survive a loaded machine.
-        try await Task.sleep(for: .seconds(6))
-        #expect(!FileManager.default.fileExists(atPath: marker.path), "a child of the killed process kept running")
+            ProcessStep(executable: "/bin/sh", arguments: ["-c", "trap '' TERM; sleep 60 & echo $! > '\(pidFile.path)'; wait"]), timeout: .seconds(2))
+        // Judged by the child's own death, not by a clock: the group is killed right after the shell, and the test only
+        // waits for the system to deliver it, however loaded the machine is.
+        let text = try String(contentsOf: pidFile, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)
+        let pid = try #require(pid_t(text), "the shell did not record its child")
+        var alive = true
+        for _ in 0..<100 where alive {
+            alive = kill(pid, 0) == 0
+            if alive { try await Task.sleep(for: .milliseconds(100)) }
+        }
+        #expect(!alive, "a child of the killed process kept running")
+        if alive { kill(pid, SIGKILL) }
     }
 
     @Test func writingInputToAProcessThatAlreadyExitedNeverKillsTheCaller() async throws {
