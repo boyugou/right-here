@@ -212,6 +212,11 @@ a separator, New File, Copy Path. `[menu] items` reorders or
 replaces it with group names or any action id. Entries that cannot run here (the app is not installed,
 the terminal cannot run commands) are not shown; `rh actions --all` and `rh doctor` say why.
 
+The plain agent entry starts the agent the way its `launcher` says (typed into the default terminal or the terminal the
+agent names; its desktop app; its terminal link). "More Agent Options" offers the other ways and never the same one twice:
+with `launcher = "desktop"` it leaves the desktop app out and lists the typed launch in the default terminal, under that
+terminal's name. When `agents` is not among the entries there is no plain entry, and nothing is left out.
+
 The extension caches the config by the modification dates of `config.toml` and the optional `config.local.toml` and installed-app lookups for 30 seconds, and
 icons for the life of the process, so a right-click costs milliseconds.
 

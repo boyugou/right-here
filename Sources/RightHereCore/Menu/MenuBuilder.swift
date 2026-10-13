@@ -63,7 +63,9 @@ public struct MenuBuilder: Sendable {
             case "open-editor": nodes += single(.openEditor)
             case "open-with": nodes += openWith(excluding: listedAbove)
             case "agents": nodes += config.enabledAgents.flatMap { single(.agent(id: $0, variant: nil, launcher: nil)) }
-            case "agents-more": nodes += moreAgents(context, withPresets: !entries.contains("presets"))
+            case "agents-more":
+                // The plain "<Agent> Here" entry is there when `agents` is in the menu, or the agent is named by its own id.
+                nodes += moreAgents(context, withPresets: !entries.contains("presets"), hasPlainEntry: { entries.contains("agents") || entries.contains("agent.\($0)") })
             case "presets": nodes += presets(context)
             case "new-file": nodes += newFile(context)
             case "copy-path": nodes += copyPath()
@@ -115,17 +117,25 @@ public struct MenuBuilder: Sendable {
         return children.isEmpty ? [] : [.submenu(localizer.presetsGroup, icon: .symbol("text.bubble"), children)]
     }
 
-    private func moreAgents(_ context: HereContext, withPresets: Bool) -> [MenuNode] {
+    /// What the plain "<Agent> Here" entry does not do: the agent's variants, and its other ways to start. The plain entry
+    /// follows the agent's launcher (its desktop app, its terminal link, or a terminal that is the default or the one the
+    /// agent names), so that launcher is the one left out here, and the typed launch in the default terminal is offered when
+    /// the plain entry is not it.
+    private func moreAgents(_ context: HereContext, withPresets: Bool, hasPlainEntry: (String) -> Bool) -> [MenuNode] {
         var children: [MenuNode] = []
-        // The entry that opens the agent in its default terminal is the plain one, which types into the terminal that can
-        // run commands; the "in <terminal>" entries are the others.
         let defaultTerminal = try? defaults.commandTerminal()
         for id in config.enabledAgents {
             guard let agent = config.agent(id: id) else { continue }
+            let plain = hasPlainEntry(id) ? config.launcher(forAgent: id, explicit: nil, hasVariant: false).launcher : nil
+            let plainTerminal: String?
+            switch plain {
+            case .terminal(let named)?: plainTerminal = named ?? defaultTerminal?.id
+            default: plainTerminal = nil
+            }
             var refs: [ActionRef] = agent.variants.map { .agent(id: id, variant: $0.id, launcher: nil) }
-            if agent.desktopLink != nil { refs.append(.agent(id: id, variant: nil, launcher: .desktop)) }
-            if agent.terminalLink != nil { refs.append(.agent(id: id, variant: nil, launcher: .terminalLink)) }
-            for terminal in config.allApps where terminal.role == .terminal && terminal.id != defaultTerminal?.id {
+            if agent.desktopLink != nil, plain != .desktop { refs.append(.agent(id: id, variant: nil, launcher: .desktop)) }
+            if agent.terminalLink != nil, plain != .terminalLink { refs.append(.agent(id: id, variant: nil, launcher: .terminalLink)) }
+            for terminal in config.allApps where terminal.role == .terminal && terminal.id != plainTerminal {
                 refs.append(.agent(id: id, variant: nil, launcher: .terminal(terminal.id)))
             }
             let nodes = refs.flatMap(single)

@@ -124,6 +124,98 @@ struct MenuBuilderTests {
     }
 }
 
+private func flatten(_ nodes: [MenuNode]) -> [MenuNode] {
+    nodes.flatMap { [$0] + flatten($0.children) }
+}
+
+/// "More Agent Options" lists what the plain "<Agent> Here" entry does not: that entry is whatever the agent's launcher
+/// says, so the submenu leaves out that launcher and offers the rest.
+@Suite("MenuBuilder: More Agent Options")
+struct MoreAgentOptionsTests {
+    private let facts = FakeSystemFacts(
+        directories: ["/Users/tester/code"],
+        applications: [
+            "com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app"),
+            "com.apple.Terminal": URL(fileURLWithPath: "/Applications/Terminal.app"),
+            "com.anthropic.claudefordesktop": URL(fileURLWithPath: "/Applications/Claude.app")
+        ],
+        bundleVersions: ["com.mitchellh.ghostty": "1.3.1"]
+    )
+
+    private func menu(_ toml: String) -> (menu: [MenuNode], config: Config) {
+        let config = ConfigParser.parse(toml).config
+        return (MenuBuilder(config: config, facts: facts).build(for: background), config)
+    }
+
+    private func claude(_ launcher: String) -> String { "[general]\nagents = [\"claude\"]\n[agent.claude]\n\(launcher)\n" }
+
+    /// The terminal a plan types the bare command `claude` into, if it does.
+    private func typedInto(_ id: String, config: Config) -> String? {
+        guard let ref = ActionRef(parsing: id), let plan = try? Planner(config: config, facts: facts).plan(ref, context: background) else { return nil }
+        for step in plan.steps {
+            guard case .appleScript(let script) = step else { continue }
+            // Ghostty is given the folder and the typed text apart; Terminal is given one line that starts with `cd <folder> &&`.
+            if script.arguments.count > 1, script.arguments[1] == "claude" { return script.controls }
+            if script.arguments.count == 1, script.arguments[0].hasSuffix(" && claude") { return script.controls }
+        }
+        return nil
+    }
+
+    private func more(_ nodes: [MenuNode]) -> [MenuNode] {
+        nodes.first { $0.title == "More Agent Options" }?.children ?? []
+    }
+
+    @Test("a launcher that is the plain entry is not offered a second time", arguments: ["launcher = \"desktop\"", "launcher = \"link\""])
+    func theLauncherOfThePlainEntryIsNotRepeated(launcher: String) {
+        let built = menu(claude(launcher))
+        let entries = flatten(built.menu).filter { $0.actionID?.hasPrefix("agent.claude") == true }
+        let titles = entries.map(\.title)
+        #expect(Set(titles).count == titles.count, "the same title more than once: \(entries.map { "\($0.title) (\($0.actionID ?? ""))" })")
+        let plain = launcher.contains("desktop") ? "agent.claude@desktop" : "agent.claude@link"
+        #expect(!more(built.menu).compactMap(\.actionID).contains(plain), "the plain entry already is \(plain)")
+    }
+
+    @Test("an agent that starts in its desktop app or by its link can still be started in the default terminal, from the menu",
+          arguments: ["launcher = \"desktop\"", "launcher = \"link\""])
+    func theTypedLaunchInTheDefaultTerminalIsOffered(launcher: String) {
+        let built = menu(claude(launcher))
+        let ids = more(built.menu).compactMap(\.actionID)
+        #expect(ids.contains("agent.claude@ghostty"), "\(ids)")
+        let typed = flatten(built.menu).compactMap(\.actionID).filter { typedInto($0, config: built.config) != nil }
+        #expect(typed.contains("agent.claude@ghostty") && !typed.contains("agent.claude"), "the entries that type `claude` into a terminal: \(typed)")
+        #expect(typedInto("agent.claude@ghostty", config: built.config) == "Ghostty")
+        #expect(flatten(built.menu).first { $0.actionID == "agent.claude@ghostty" }?.title == "Claude Code in Ghostty")
+    }
+
+    @Test func anAgentWithATerminalOfItsOwnIsNotOfferedThatTerminalAgain() {
+        // "Claude Code Here" types into Terminal here, so "Claude Code in Terminal" would be the same action twice, and Ghostty,
+        // the default terminal the plain entry does not use, has to be there.
+        let built = menu(claude("terminal = \"terminal\""))
+        #expect(typedInto("agent.claude", config: built.config) == "Terminal")
+        let ids = more(built.menu).compactMap(\.actionID)
+        #expect(!ids.contains("agent.claude@terminal"), "\(ids)")
+        #expect(ids.contains("agent.claude@ghostty"), "\(ids)")
+    }
+
+    @Test func theDefaultLauncherIsCoveredByThePlainEntryAndNotRepeated() {
+        let built = menu("[general]\nagents = [\"claude\"]\n")
+        let ids = more(built.menu).compactMap(\.actionID)
+        #expect(!ids.contains("agent.claude@ghostty") && ids.contains("agent.claude@terminal"), "\(ids)")
+        #expect(typedInto("agent.claude", config: built.config) == "Ghostty")
+    }
+
+    @Test func withoutThePlainEntriesTheSubmenuLeavesNothingOut() {
+        // `agents` is not among the entries, so nothing in the menu starts the agent the plain way.
+        let built = menu("[general]\nagents = [\"claude\"]\n[menu]\nitems = [\"agents-more\"]\n")
+        let ids = more(built.menu).compactMap(\.actionID)
+        #expect(ids.contains("agent.claude@ghostty") && ids.contains("agent.claude@terminal") && ids.contains("agent.claude@link"), "\(ids)")
+        // An agent named by its own id is the plain entry for that agent only.
+        let named = menu("[general]\nagents = [\"claude\", \"codex\"]\n[menu]\nitems = [\"agent.claude\", \"agents-more\"]\n")
+        let namedIDs = more(named.menu).compactMap(\.actionID)
+        #expect(!namedIDs.contains("agent.claude@ghostty") && namedIDs.contains("agent.codex@ghostty"), "\(namedIDs)")
+    }
+}
+
 @Suite("ActionRegistry")
 struct ActionRegistryTests {
     @Test func catalogHasUniqueIds() {
