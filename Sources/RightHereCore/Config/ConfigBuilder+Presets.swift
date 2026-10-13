@@ -14,6 +14,15 @@ extension ConfigBuilder {
         config.presets = presets
     }
 
+    /// Whether `menu.items` lists this preset by its id (`preset.<id>`, or with a terminal): the menu then offers it whether or
+    /// not its agent is in `general.agents`, which only the "presets" group goes by.
+    private func menuNames(preset id: String, in config: Config) -> Bool {
+        (config.menuItems ?? []).contains { entry in
+            if case .preset(let named, _)? = ActionRef(parsing: entry) { return named == id }
+            return false
+        }
+    }
+
     private func preset(_ reader: ConfigReader, config: Config) -> AgentPreset? {
         reader.checkKnownKeys()
         guard let id = reader.string("id"), let title = reader.string("title"), let prompt = reader.string("prompt") else {
@@ -38,7 +47,7 @@ extension ConfigBuilder {
             let agentIDs = (config.customAgents + KnownAgents.all).map(\.id)
             if agentIDs.contains(named) {
                 agent = named
-                if !config.enabledAgents.contains(named) {
+                if !config.enabledAgents.contains(named) && !menuNames(preset: id, in: config) {
                     sink.warning(reader.path + ["agent"], "agent \"\(named)\" is not in general.agents, so the menu does not offer this preset (it still runs as `rh run preset.\(id)`); add \"\(named)\" to general.agents")
                 }
                 if config.agent(id: named)?.promptArgument == nil {

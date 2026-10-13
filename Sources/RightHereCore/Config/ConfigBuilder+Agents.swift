@@ -26,10 +26,36 @@ extension ConfigBuilder {
                            suggestion: Suggestion.didYouMean(id, in: agentIDs))
             }
         }
-        // An agent the config defines is not in the menu until general.agents lists it, and nothing else says so.
-        for agent in config.customAgents where !config.enabledAgents.contains(agent.id) {
+        // An agent the config defines is not in the menu until general.agents lists it, or `menu.items` names it, and nothing
+        // else says so.
+        for agent in config.customAgents where !config.enabledAgents.contains(agent.id) && !menuNames(agent: agent.id, in: config) {
             sink.warning(["agent", agent.id], "defined, but not in general.agents, so the menu does not offer it (it still runs as `rh run agent.\(agent.id)`); add \"\(agent.id)\" to general.agents")
         }
+    }
+
+    /// Whether an entry of `menu.items` is an action of this agent (`agent.<id>`, with a variant or a launcher): the menu offers
+    /// what it names, whether or not `general.agents` lists the agent.
+    func menuNames(agent id: String, in config: Config) -> Bool {
+        (config.menuItems ?? []).contains { entry in
+            if case .agent(let named, _, _)? = ActionRef(parsing: entry) { return named == id }
+            return false
+        }
+    }
+
+    /// `launcher = "link"` and `"desktop"` need a deep link the agent has, which only some built-in agents do; an agent the
+    /// config defines never does. The planner refuses such an action and the menu leaves it out, with nothing said until `rh run`.
+    private func checkLauncher(_ name: String?, ofAgent id: String, at path: [String]) {
+        let kind: String
+        let has: (AgentDescriptor) -> Bool
+        switch name {
+        case AgentLauncher.linkWord?: (kind, has) = ("terminal link", { $0.terminalLink != nil })
+        case AgentLauncher.desktopWord?: (kind, has) = ("desktop app link", { $0.desktopLink != nil })
+        default: return
+        }
+        if let known = KnownAgents.agent(id: id), has(known) { return }
+        let owner = KnownAgents.agent(id: id)?.name ?? "an agent that is not built in"
+        let having = KnownAgents.all.filter(has).map(\.name).joined(separator: " and ")
+        sink.warning(path, "launcher = \"\(name ?? "")\": \(owner) has no \(kind) (only \(having) \(having.contains(" and ") ? "have" : "has") one), so its menu entry is left out and `rh run agent.\(id)` refuses; use \"terminal\"")
     }
 
     private var agentSchema: [SchemaNode] {
@@ -70,6 +96,7 @@ extension ConfigBuilder {
 
         var settings = Config.AgentSettings()
         let launcherName = reader.checkAllowed(reader.string("launcher"), key: "launcher", allowed: AgentLauncher.configNames)
+        checkLauncher(launcherName, ofAgent: id, at: reader.path + ["launcher"])
         let terminal = checkedTerminal(reader.string("terminal"), path: reader.path + ["terminal"], customApps: config.apps)
         settings.launcher = AgentLauncher.fromConfig(name: launcherName, terminal: terminal)
         if let word = reader.string("prompt_arg") {

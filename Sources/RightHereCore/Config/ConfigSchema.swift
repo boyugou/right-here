@@ -157,7 +157,7 @@ public enum ConfigSchema {
                 SchemaNode("command", .string, "What is typed into the shell to start the agent, including any flags.",
                            example: "\"claude --model opus\""),
                 SchemaNode("launcher", .string,
-                           "How the agent starts: terminal types the command into a terminal, link uses the agent's own terminal deep link, desktop opens its desktop app.",
+                           "How the agent starts: terminal types the command into a terminal, link uses the agent's own terminal deep link, desktop opens its desktop app. link and desktop need an agent that has one (built in: Claude Code has both, Codex has the desktop app); an agent you define has neither, and `rh config validate` warns when one is asked for.",
                            default: "\"terminal\"", allowed: AgentLauncher.configNames),
                 SchemaNode("terminal", .string, "Terminal for launcher = \"terminal\". Omit it to use general.terminal.", suggested: terminalIDs),
                 SchemaNode("prompt_arg", .string,

@@ -45,6 +45,9 @@ arguments = ["--dangerously-skip-permissions"]
 [agent.mine]
 name = "My Agent"
 command = "myagent --fast"
+launcher = "terminal"
+
+[agent.codex]
 launcher = "desktop"
 """
 
@@ -75,7 +78,8 @@ struct ConfigParserTests {
 
         let mine = try #require(config.agent(id: "mine"))
         #expect(mine.name == "My Agent")
-        #expect(config.agents["mine"]?.launcher == .desktop)
+        #expect(config.agents["mine"]?.launcher == .terminal(nil))
+        #expect(config.agents["codex"]?.launcher == .desktop)
     }
 
     @Test func syntaxErrorReportsTheLineAndFallsBackToDefaults() throws {
@@ -864,5 +868,53 @@ struct DisplayNameTests {
         #expect(ConfigSchema.root.first { $0.key == "preset" }?.child("title")?.pattern == ConfigSchema.displayNamePattern)
         #expect(ConfigSchema.root.first { $0.key == "new_file" }?.child("template")?.child("title")?.pattern == ConfigSchema.displayNamePattern)
         #expect(ConfigSchema.root.first { $0.key == "agent" }?.child("variant")?.child("title")?.pattern == ConfigSchema.displayNamePattern)
+    }
+}
+
+@Suite("Config: launchers an agent cannot use, and the menu naming what general.agents does not list")
+struct AgentLauncherDiagnosticTests {
+    private func warnings(_ text: String) -> [ConfigDiagnostic] { ConfigParser.parse(text).diagnostics.filter { $0.severity == .warning } }
+
+    @Test("a custom agent cannot start through a link or the desktop app, and validate says so", arguments: [("link", "terminal link"), ("desktop", "desktop app link")])
+    func aCustomAgentHasNoLink(launcher: String, kind: String) throws {
+        let found = warnings("[general]\nagents = [\"a2\"]\n[agent.a2]\nname = \"A2\"\ncommand = \"a2\"\nlauncher = \"\(launcher)\"\n")
+        let warning = try #require(found.first { $0.path == "agent.a2.launcher" }, "\(found)")
+        #expect(warning.message.contains("an agent that is not built in has no \(kind)") && warning.message.contains("rh run agent.a2"), "\(warning.message)")
+        #expect(found.count == 1)
+    }
+
+    @Test func aBuiltInAgentWithoutThatLinkGetsTheSameWarningAndOneWithItDoesNot() throws {
+        func warning(_ text: String) -> ConfigDiagnostic? { warnings(text).first { $0.path.hasSuffix("launcher") } }
+        #expect(warning("[agent.claude]\nlauncher = \"link\"\n") == nil)
+        #expect(warning("[agent.claude]\nlauncher = \"desktop\"\n") == nil)
+        #expect(warning("[agent.codex]\nlauncher = \"desktop\"\n") == nil)
+        #expect(warning("[agent.codex]\nlauncher = \"terminal\"\n") == nil)
+        let codex = try #require(warning("[agent.codex]\nlauncher = \"link\"\n"))
+        #expect(codex.message.contains("Codex has no terminal link (only Claude Code has one)"), "\(codex.message)")
+        let gemini = try #require(warning("[agent.gemini]\nlauncher = \"desktop\"\n"))
+        #expect(gemini.message.contains("Gemini CLI has no desktop app link (only Claude Code and Codex have one)"), "\(gemini.message)")
+    }
+
+    @Test("an agent that menu.items names is offered, so it is not said to be hidden", arguments: ["agent.lazygit", "agent.lazygit.fast", "agent.lazygit@ghostty"])
+    func aMenuEntryOffersAnAgentTheListDoesNot(entry: String) {
+        let text = "[menu]\nitems = [\"\(entry)\", \"agents\"]\n[agent.lazygit]\nname = \"lazygit\"\ncommand = \"lazygit\"\n[[agent.lazygit.variant]]\nid = \"fast\"\ntitle = \"Fast\"\n"
+        #expect(!warnings(text).contains { $0.path == "agent.lazygit" }, "\(warnings(text))")
+    }
+
+    @Test func theWarningStaysWhenNothingOffersTheAgent() {
+        let agent = "[agent.lazygit]\nname = \"lazygit\"\ncommand = \"lazygit\"\n"
+        #expect(warnings(agent).contains { $0.path == "agent.lazygit" && $0.message.contains("not in general.agents") })
+        // Groups name no agent: `agents` lists the enabled ones.
+        #expect(warnings("[menu]\nitems = [\"agents\", \"agents-more\"]\n" + agent).contains { $0.path == "agent.lazygit" })
+        // Another agent's entry offers that agent, not this one.
+        #expect(warnings("[menu]\nitems = [\"agent.claude\"]\n" + agent).contains { $0.path == "agent.lazygit" })
+    }
+
+    @Test func aPresetThatMenuItemsListsIsOfferedWhateverItsAgent() {
+        let preset = "[general]\nagents = [\"claude\"]\n[[preset]]\nid = \"mine\"\ntitle = \"Mine\"\nagent = \"codex\"\nprompt = \"Look at {files}\"\n"
+        #expect(warnings(preset).contains { $0.path == "preset.1.agent" && $0.message.contains("not in general.agents") })
+        #expect(warnings("[menu]\nitems = [\"presets\"]\n" + preset).contains { $0.path == "preset.1.agent" && $0.message.contains("not in general.agents") }, "the group offers only the presets of enabled agents")
+        #expect(!warnings("[menu]\nitems = [\"preset.mine\"]\n" + preset).contains { $0.message.contains("not in general.agents") })
+        #expect(!warnings("[menu]\nitems = [\"preset.mine@terminal\"]\n" + preset).contains { $0.message.contains("not in general.agents") })
     }
 }

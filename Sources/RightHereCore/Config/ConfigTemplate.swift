@@ -62,7 +62,8 @@ public enum ConfigTemplate {
         # extension = "md"
         # open_with = "typora"
 
-        # An agent can start another way: launcher = "terminal" (default), "link" or "desktop".
+        # An agent can start another way: launcher = "terminal" (default), "link" or "desktop" (the last two only for
+        # built-in agents that have a deep link or a desktop app: Claude Code, Codex).
         # [agent.claude]
         # launcher = "terminal"
         # command = "claude"
