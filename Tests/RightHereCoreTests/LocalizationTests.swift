@@ -49,6 +49,31 @@ private func scrambledPaths(in text: String) -> [String] {
     return scrambled
 }
 
+/// The commands between backticks in `text` that are not drawn in one piece, left to right. The window shows a command as code
+/// and drops the backticks, so each span is looked for in the text without them.
+private func scrambledCommands(in text: String) -> [String] {
+    var visible = ""
+    var spans: [Range<Int>] = []
+    var opened: Int?
+    for character in text {
+        if character == "`" {
+            if let start = opened { spans.append(start..<visible.utf16.count); opened = nil } else { opened = visible.utf16.count }
+        } else {
+            visible.append(character)
+        }
+    }
+    var position: [Int: Int] = [:]
+    for (drawn, offset) in visualOrder(visible).enumerated() { position[offset] = drawn }
+    let units = Array(visible.utf16)
+    var scrambled: [String] = []
+    for span in spans where span.count > 1 {
+        let drawn = span.compactMap { position[$0] }
+        guard drawn.count == span.count else { continue }
+        if !zip(drawn, drawn.dropFirst()).allSatisfy({ $1 == $0 + 1 }) { scrambled.append(String(decoding: units[span], as: UTF16.self)) }
+    }
+    return scrambled
+}
+
 /// `Localization/languages.json`, the one list of the shipped languages. The scripts read it too.
 private struct LanguageManifest: Decodable {
     struct Language: Decodable {
@@ -312,6 +337,32 @@ struct LocalizationDetailTests {
             checked += 1
         }
         #expect(checked > 100)
+    }
+
+    @Test("a command between backticks is drawn left to right in one piece in a right-to-left sentence", arguments: LanguageManifest.rightToLeft)
+    func commandsInRightToLeftSentencesAreNotScrambled(language: String) {
+        // The commands are text of the translation, not values, so no isolate reaches them; what keeps one whole is that it starts and
+        // ends with a letter or a character that goes with it (a command that ends in a bracket carries a left-to-right mark).
+        let localizer = Localizer(languages: [language])
+        var commands = 0
+        for key in LocalizationKey.allCases where key != .newFileBaseName {
+            let text = localizer.render(filled(key), isolatingValues: true)
+            commands += text.filter { $0 == "`" }.count / 2
+            for command in scrambledCommands(in: text) {
+                Issue.record("\(language) \(key.rawValue): the command \"\(command)\" is not drawn in one piece, left to right: \(text)")
+            }
+        }
+        #expect(commands > 20, "\(language) has too few commands for this to check anything")
+    }
+
+    @Test func theLayoutChecksSeeAScrambledPathAndCommandAndAcceptTheFixedOnes() {
+        // Controls for the two checks above: without them a helper that finds nothing would pass every language.
+        let sentence = "أضف %@ إلى PATH في ملف إعدادات الصدفة لديك."
+        #expect(scrambledPaths(in: sentence.replacingOccurrences(of: "%@", with: "~/.local/bin")) == ["~/.local/bin"])
+        #expect(scrambledPaths(in: sentence.replacingOccurrences(of: "%@", with: "\u{2068}~/.local/bin\u{2069}")).isEmpty)
+        // A command that ends in a bracket has its bracket drawn on the wrong side unless a left-to-right mark follows it.
+        #expect(!scrambledCommands(in: "شغّل `rh config sync enable --folder <folder>` ثم أعد المحاولة").isEmpty)
+        #expect(scrambledCommands(in: "شغّل `rh config sync enable --folder <folder>`\u{200E} ثم أعد المحاولة").isEmpty)
     }
 
     @Test("a value that is a path is drawn in one piece in a right-to-left sentence", arguments: LanguageManifest.rightToLeft)

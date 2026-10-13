@@ -171,7 +171,7 @@ func demo() -> [DoctorCheck] {
         DoctorCheck(.finderRunner, status: .ok, detail: .doctorRunnerOk("\(appContents)/Helpers/rh")),
         DoctorCheck(.services, status: .ok, detail: .doctorServicesOk("14")),
         DoctorCheck(.cliLink, status: .ok, detail: .doctorVerbatim("~/.local/bin/rh")),
-        DoctorCheck(.finderExtension, status: .ok, detail: .doctorVerbatim("\(appContents)/PlugIns/FinderExtension.appex")),
+        DoctorCheck(.finderExtension, status: .ok, detail: .doctorExtensionEnabled("\(appContents)/PlugIns/FinderExtension.appex")),
         DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityRecent("agent.claude", "container", ago(300)))
     ])
 }
@@ -191,13 +191,14 @@ func gallery() -> [DoctorCheck] {
         DoctorCheck(.config, status: .warn, detail: .doctorConfigMissing(config), notes: [.doctorConfigOverlay("~/.config/right-here/config.local.toml"), .doctorConfigSymlink("config.toml")], fix: .doctorFixConfigInit),
         DoctorCheck(.terminalDefault, status: .fail, detail: .doctorTerminalNone, fix: .doctorFixTerminal),
         DoctorCheck(.editorDefault, status: .ok, detail: .menuOpenIn("Visual Studio Code")),
-        DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd),
-        DoctorCheck(.claudeLink, status: .warn, detail: .doctorClaudeLinkMissing, fix: .doctorFixClaudeLink),
+        DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd(#"agents = ["claude"]"#)),
+        DoctorCheck(.finderMenu, status: .warn, detail: .doctorMenuEmpty, notes: [.doctorVerbatim("Agents: none is enabled; general.agents lists none."), .doctorVerbatim("Copy Path: copy_path.styles lists no style.")], fix: .doctorFixMenuEmpty),
+        DoctorCheck(.claudeLink, status: .warn, detail: .doctorClaudeLinkMissing(#"launcher = "link""#), fix: .doctorFixClaudeLink),
         DoctorCheck(.finderRunner, status: .warn, detail: .doctorRunnerStale(target), fix: .doctorFixInstallScripts),
         DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer("12", "3", "1"), fix: .doctorFixInstallServices),
-        DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath("~/.local/bin/rh"), fix: .doctorFixCliPath),
+        DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath("~/.local/bin/rh"), fix: .doctorFixCliPath("~/.local/bin")),
         // Ok, so that the window shows the list of checks and not the first-run card (a row that is not ok would show the card).
-        DoctorCheck(.finderExtension, status: .ok, detail: .doctorVerbatim("\(appContents)/PlugIns/FinderExtension.appex")),
+        DoctorCheck(.finderExtension, status: .ok, detail: .doctorExtensionEnabled("\(appContents)/PlugIns/FinderExtension.appex")),
         DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityRecent("agent.claude", "container", ago(300))),
         DoctorCheck(.syncFolder, status: .warn, detail: .doctorSyncFolderUnreachable(folder), fix: .doctorFixSyncFolder),
         DoctorCheck(.syncRemote, status: .warn, detail: .doctorSyncRemoteEvicted, fix: .doctorFixSyncDownload),
@@ -214,7 +215,9 @@ func gallery() -> [DoctorCheck] {
         (.warn, .doctorEditorNone, .doctorFixEditor),
         (.fail, .doctorAppNotInstalled("Ghostty"), .doctorFixTerminal),
         (.warn, .doctorAgentNotFound("claude"), .doctorFixAgentRemove("claude")),
-        (.warn, .doctorVerbatim("Ghostty cannot run commands yet."), .doctorFixAgentLauncher),
+        (.warn, .doctorVerbatim("Ghostty cannot run commands yet."), .doctorFixAgentLauncher(#"launcher = "link""#, #""desktop""#)),
+        (.warn, .doctorAppFallback("iTerm", "Ghostty"), .doctorFixTerminalFallback),
+        (.warn, .doctorAppFallback("Zed", "Visual Studio Code"), .doctorFixEditorFallback),
         (.ok, .doctorAgentOk("claude", "Claude Code in Last-Used Terminal"), nil),
         (.ok, .doctorClaudeLinkOk, nil),
         (.ok, .doctorRunnerOk(target), nil),

@@ -20,7 +20,8 @@ translations.json holds the keys to add or to complete. Every language is named 
     }
 
 A translation is checked the way verify_localizations.py checks the catalog (placeholders, commands in backticks,
-the script of the language), and a right-to-left one that would start with Latin text gets the right-to-left mark.
+the script of the language, and in a right-to-left one no literal path or quoted setting, which has to be a value), and a
+right-to-left one that would start with Latin text gets the right-to-left mark.
 New translations are marked needs_review. Nothing is written unless every translation passes.
 """
 import argparse

@@ -470,6 +470,11 @@ struct CLITests {
         #expect(row["status"] as? String == "warn")
         let healthy = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { healthy.cleanUp() }
         #expect(try healthy.run(["config", "validate", "--strict"]).status == 0)
+        // An empty list of entries is a warning of the parser's already; the menu check does not say it a second time.
+        let listless = try RH(config: "[menu]\nitems = []\n"); defer { listless.cleanUp() }
+        let listlessJSON = try #require(try listless.run(["config", "validate", "--json"]).json as? [String: Any])
+        let messages = (listlessJSON["diagnostics"] as? [[String: Any]])?.compactMap { $0["message"] as? String } ?? []
+        #expect(messages.filter { $0.contains("Finder menu") }.count == 1, "\(messages)")
     }
 
     @Test func aFolderMenuNeedsAFolderGivenAsContainer() throws {

@@ -122,7 +122,13 @@ your PATH" had `~/.local/bin` in its text and the window drew it `local/bin./~` 
 (`doctorFixCliPath("~/.local/bin")`, `doctorFixAgentLauncher("launcher = \"link\"", "\"desktop\"")`), and
 `verify_localizations.py` and `merge_translations.py` refuse such a literal in a right-to-left translation of a text the
 window shows (the lint finds twenty such words in sixteen translations of the old catalog, and none in the new one). A test lays every text
-out with CoreText, as the window does, and finds a path that is still drawn out of order.
+out with CoreText, as the window does, and finds a path that is still drawn out of order, and a second one does the same
+for every command between backticks (none was out of order, so commands needed no treatment beyond the mark for a
+bracket). Checked once in the renders of `script/preview_setup.sh --gallery` (the window's own SwiftUI text, drawn by
+`ImageRenderer`) in Arabic, Persian, Hebrew and Urdu, with the picture read back by on-device text recognition: the value
+`~/.local/bin` reads `~/.local/bin`, `launcher = "link"` and `agents = ["claude"]` come out whole, and the same path
+written into the sentence reads `local/bin./~`. That is the renderer, not a real window; the real one is in
+`docs/development/MANUAL_CHECKS.md`, section 3.
 
 Alternatives: the doctor takes a `Localizer` and returns strings (every consumer must choose a language, the JSON has
 no codes, and the English the tests pin would depend on the language); leaving the sentences English and translating

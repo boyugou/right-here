@@ -80,6 +80,8 @@ extension LoadedConfig {
     /// run this; `rh config validate` does, with the real facts.
     public func resultWithMenuCheck(facts: any SystemFacts) -> ConfigLoadResult {
         var checked = result
+        // `items = []` is already a warning of its own, from the parser: one is enough.
+        guard config.menuItems?.isEmpty != true else { return checked }
         let folder = HereContext(origin: .container, container: facts.homeDirectory)
         let explained = MenuBuilder(config: config, facts: facts).explain(for: folder)
         if let summary = explained.emptyMenuSummary {
