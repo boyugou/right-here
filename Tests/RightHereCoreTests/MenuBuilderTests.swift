@@ -44,6 +44,17 @@ struct MenuBuilderTests {
         #expect(titles(copy.children) == ["Full Path", "Path from Home (~)", "Path from Git Root", "File Name", "Shell-Escaped Path", "@ Mention for AI"])
     }
 
+    @Test func theMoreMenuDoesNotRepeatTheTerminalTheAgentEntryAlreadyUses() throws {
+        // iTerm is the preferred default for opening a folder but cannot be typed into yet, so "Claude Code Here" runs in
+        // Terminal; "Claude Code in Terminal" would be the same action twice.
+        let facts = machine(installed: ["com.googlecode.iterm2", "com.apple.Terminal"])
+        let menu = MenuBuilder(config: Config(enabledAgents: ["claude"]), facts: facts).build(for: background)
+        let plain = try #require(menu.first { $0.title == "Claude Code Here" })
+        #expect(plain.actionID == "agent.claude")
+        let more = try #require(menu.first { $0.title == "More Agent Options" })
+        #expect(!more.children.compactMap(\.actionID).contains("agent.claude@terminal"))
+    }
+
     @Test func enabledAgentsAppearWithTheirVariantsInTheMoreMenu() throws {
         let config = Config(enabledAgents: ["claude", "codex"])
         let menu = MenuBuilder(config: config, facts: machine()).build(for: background)

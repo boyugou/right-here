@@ -195,6 +195,7 @@ public struct Planner: Sendable {
     /// for anything that would press a key or read as an option.
     private func runPreset(id: String, terminal: String?, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         guard let preset = config.preset(id: id) else { throw PlanError.unknownPreset(id, choices: config.presets.map(\.id)) }
+        if let refusal = AgentPreset.launcherRefusal(terminal) { throw PlanError.unsupported(refusal) }
         if let refusal = config.presetAgentRefusal(preset) { throw PlanError.unsupported(refusal) }
         guard let agent = config.agent(for: preset), let promptArgument = agent.promptArgument else { throw PlanError.unsupported("No agent is enabled.") }
         let directory = try workingDirectory(for: context)

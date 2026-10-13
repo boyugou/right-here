@@ -72,6 +72,13 @@ public struct AgentPreset: Sendable, Equatable, Identifiable {
         return nil
     }
 
+    /// Why a launcher word that only an agent entry understands cannot follow `preset.<id>@`, or `nil`. A preset is
+    /// always typed into a terminal; the agent's own deep link and its desktop app do not take a prompt this way.
+    public static func launcherRefusal(_ terminal: String?) -> String? {
+        guard let terminal, terminal == AgentLauncher.linkWord || terminal == AgentLauncher.desktopWord else { return nil }
+        return "A preset is typed into a terminal, so @\(terminal) does not apply. Name a terminal from `rh apps` (preset.<id>@<terminal>) or leave the suffix out."
+    }
+
     public static let builtIn: [AgentPreset] = [
         AgentPreset(
             id: "review", title: "Review",

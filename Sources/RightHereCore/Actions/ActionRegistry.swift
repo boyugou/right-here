@@ -113,6 +113,10 @@ public struct ActionRegistry: Sendable {
         let presetTitle = preset.localizedTitle(localizer)
         info.title = presetTitle
         info.shortTitle = presetTitle
+        if let refusal = AgentPreset.launcherRefusal(terminalID) {
+            unavailable(&info, reason: refusal)
+            return
+        }
         if let refusal = config.presetAgentRefusal(preset) {
             unavailable(&info, reason: refusal)
             return

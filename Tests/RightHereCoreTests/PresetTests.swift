@@ -393,6 +393,36 @@ struct PresetMenuTests {
         MenuBuilder(config: config, facts: machine(files: files)).build(for: context)
     }
 
+    @Test func anExplicitPresetEntryFollowsTheSameSelectionRulesAsThePresetsGroup() {
+        var config = Config(enabledAgents: ["claude"])
+        config.menuItems = ["preset.review", "presets"]
+        // No file selected: neither the entry nor the group is offered.
+        #expect(menu(config, folderContext).isEmpty)
+        // A file selected: both are.
+        #expect(menu(config, selection(["a.txt"]), files: ["a.txt"]).map(\.title).contains("Review") || menu(config, selection(["a.txt"]), files: ["a.txt"]).flatMap(\.actionIDs).contains("preset.review"))
+        // More files than max_files: not offered, as in the group.
+        var many = config
+        many.presets = [AgentPreset(id: "review", title: "Review", prompt: "Review {files}.", maxFiles: 2)]
+        let names = ["a", "b", "c"].map { "\($0).txt" }
+        #expect(menu(many, selection(names), files: names).flatMap(\.actionIDs).isEmpty)
+    }
+
+    @Test func aPresetOnTheDefaultTerminalIsTheSamePresetAsOneWithoutASuffix() {
+        #expect(ActionRef(parsing: "preset.review@default") == .preset(id: "review", terminal: nil))
+        #expect(ActionRef(parsing: "preset.review@default")?.id == "preset.review")
+    }
+
+    @Test(arguments: ["link", "desktop"])
+    func aPresetCannotUseAnAgentOnlyLauncherAndSaysWhy(word: String) throws {
+        let config = Config(enabledAgents: ["claude"], presets: [AgentPreset(id: "review", title: "Review", prompt: "Review {files}.")])
+        let facts = machine(files: ["a.txt"])
+        let ref = try #require(ActionRef(parsing: "preset.review@\(word)"))
+        let error = #expect(throws: PlanError.self) { try Planner(config: config, facts: facts).plan(ref, context: selection(["a.txt"])) }
+        #expect(error?.message.contains("typed into a terminal") == true, Comment(rawValue: "\(String(describing: error?.message))"))
+        let info = ActionRegistry(config: config, facts: facts).info(ref)
+        #expect(!info.available && info.unavailableReason?.contains("typed into a terminal") == true)
+    }
+
     private func presetsSubmenu(in nodes: [MenuNode]) -> MenuNode? {
         for node in nodes {
             if node.kind == .submenu, node.title == "Agent Presets" { return node }

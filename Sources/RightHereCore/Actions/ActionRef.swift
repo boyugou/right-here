@@ -79,7 +79,8 @@ public enum ActionRef: Sendable, Equatable, Hashable {
             self = .agent(id: parts[1], variant: parts.count == 3 ? parts[2] : nil, launcher: launcher)
         case ("preset", 2):
             guard case .valid(let terminal) = Self.terminalSuffix(suffix) else { return nil }
-            self = .preset(id: parts[1], terminal: terminal)
+            // "default" is the agent's own terminal choice, the same as no suffix, as it is for agent launchers.
+            self = .preset(id: parts[1], terminal: terminal == AgentLauncher.defaultWord ? nil : terminal)
         case ("new-file", 2):
             guard suffix == nil else { return nil }
             self = .newFile(parts[1])

@@ -67,7 +67,13 @@ public struct MenuBuilder: Sendable {
             case "presets": nodes += presets(context)
             case "new-file": nodes += newFile(context)
             case "copy-path": nodes += copyPath()
-            default: nodes += ActionRef(parsing: entry).map(single) ?? []
+            default:
+                // An action named by its id follows the same rules as the groups do for this selection (a preset needs
+                // files of the right number), so it is described in the context.
+                nodes += ActionRef(parsing: entry).map { ref -> [MenuNode] in
+                    let info = registry.info(ref, context: context)
+                    return info.available ? [.action(info)] : []
+                } ?? []
             }
         }
         return Self.tidy(nodes)
@@ -111,7 +117,9 @@ public struct MenuBuilder: Sendable {
 
     private func moreAgents(_ context: HereContext, withPresets: Bool) -> [MenuNode] {
         var children: [MenuNode] = []
-        let defaultTerminal = try? defaults.resolve(role: .terminal, configured: config.terminal)
+        // The entry that opens the agent in its default terminal is the plain one, which types into the terminal that can
+        // run commands; the "in <terminal>" entries are the others.
+        let defaultTerminal = try? defaults.commandTerminal()
         for id in config.enabledAgents {
             guard let agent = config.agent(id: id) else { continue }
             var refs: [ActionRef] = agent.variants.map { .agent(id: id, variant: $0.id, launcher: nil) }
