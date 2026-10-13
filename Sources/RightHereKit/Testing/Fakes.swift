@@ -30,17 +30,16 @@ public final class FakeProcessRunner: ProcessRunner, Sendable {
     }
 }
 
-public final class RecordingPasteboard: PasteboardWriting, @unchecked Sendable {
-    private let lock = NSLock()
-    private var texts: [String] = []
+public final class RecordingPasteboard: PasteboardWriting, Sendable {
+    private let texts = Mutex<[String]>([])
 
     public init() {}
 
     public var written: [String] {
-        lock.withLock { texts }
+        texts.withLock { $0 }
     }
 
     public func write(_ text: String) {
-        lock.withLock { texts.append(text) }
+        texts.withLock { $0.append(text) }
     }
 }
