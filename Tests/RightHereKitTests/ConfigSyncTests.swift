@@ -431,4 +431,163 @@ struct ConfigSyncDoctorTests {
         try f.write("folder = 3\n", to: f.paths.syncStateFile)
         #expect(f.sync.doctorChecks().first?.id == "sync.state")
     }
+
+    @Test func launchCommandsAreOneRowAndOnlyWhenThereAreSome() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(withCommands, to: f.local)
+        try f.write(withCommands, to: f.remoteFile)
+        try f.sync.enable(folder: f.remote.path)
+        let row = try #require(f.sync.doctorChecks().filter { $0.id == "sync.commands" }.first)
+        #expect(row.status == .ok)
+        #expect(row.detail?.contains("/usr/bin/id") == true && row.detail?.contains("/bin/sh") == true)
+        // Without any, no row (the healthy-folder test above has none).
+        try f.write(one, to: f.local)
+        try f.write(one, to: f.remoteFile)
+        #expect(f.sync.doctorChecks().filter { $0.id == "sync.commands" }.isEmpty)
+    }
+
+    @Test func aFolderCopyThatWouldAddCommandsIsAWarningBeforeAnyPull() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.sync.enable(folder: f.remote.path)
+        try f.sync.push()
+        try f.write(withCommands, to: f.remoteFile)
+        let rows = f.sync.doctorChecks().filter { $0.id == "sync.commands" }
+        #expect(rows.count == 1)
+        #expect(rows.first?.status == .warn)
+        #expect(rows.first?.fix?.contains("--allow-commands") == true)
+    }
+}
+
+private let withCommands = """
+[general]
+terminal = "terminal"
+
+[[app]]
+id = "terminal"
+name = "Terminal"
+bundle_id = "com.apple.Terminal"
+role = "terminal"
+open_args = ["/usr/bin/id", "-un", "{dir}"]
+run_args = ["/bin/sh", "-c", "{command}"]
+"""
+
+@Suite("ConfigSync: the folder is not trusted with programs")
+struct ConfigSyncTrustTests {
+    /// A synced config, a machine that has pulled it, and then a change in the folder.
+    private func machine(local: String = one, folder: String = one) throws -> Fixture {
+        let f = try Fixture()
+        try f.write(local, to: f.local)
+        try f.sync.enable(folder: f.remote.path)
+        try f.sync.push()
+        try f.write(folder, to: f.remoteFile)
+        return f
+    }
+
+    private func refusal(_ body: () throws -> Void) -> [LaunchCommands.Change]? {
+        do { try body() } catch ConfigSyncError.commandsNeedApproval(let changes) { return changes } catch { Issue.record("a different error: \(error)") }
+        return nil
+    }
+
+    @Test func aFolderConfigThatRedefinesTheTerminalWithItsOwnProgramsIsRefused() throws {
+        let f = try machine(folder: withCommands); defer { f.cleanUp() }
+        let lastSynced = f.sync.settings()?.lastSynced
+        let changes = try #require(refusal { try f.sync.pull() })
+        let lines = changes.map(\.line)
+        #expect(lines.contains(#"[[app]] terminal open_args = ["/usr/bin/id", "-un", "{dir}"]"#), "\(lines)")
+        #expect(lines.contains(#"[[app]] terminal run_args = ["/bin/sh", "-c", "{command}"]"#), "\(lines)")
+        // Nothing moved: not the config, not the record of what was synced, no saved copy.
+        #expect(try f.read(f.local) == one)
+        #expect(f.sync.settings()?.lastSynced == lastSynced)
+        #expect(f.names(in: f.paths.configDirectory) == ["config.toml", "sync.toml"])
+    }
+
+    @Test func theRefusalSaysWhatToDoAndNamesWhatItFound() throws {
+        let f = try machine(folder: withCommands); defer { f.cleanUp() }
+        let changes = try #require(refusal { try f.sync.pull() })
+        let text = ConfigSyncError.commandsNeedApproval(changes).description
+        #expect(text.contains("--allow-commands") && text.contains("Nothing was changed"))
+        #expect(text.contains("/bin/sh") && text.contains("run_args"))
+    }
+
+    @Test func forceDoesNotApproveCommands() throws {
+        let f = try machine(folder: withCommands); defer { f.cleanUp() }
+        try f.write(two, to: f.local)
+        #expect(throws: ConfigSyncError.refused(.localChanged, folder: f.remote.path)) { try f.sync.pull() }
+        #expect(refusal { try f.sync.pull(force: true) } != nil)
+        #expect(try f.read(f.local) == two)
+        #expect(f.names(in: f.paths.configDirectory) == ["config.toml", "sync.toml"], "a forced pull that is refused must not leave a saved copy either")
+    }
+
+    @Test func allowCommandsTakesTheCopy() throws {
+        let f = try machine(folder: withCommands); defer { f.cleanUp() }
+        #expect(try f.sync.pull(allowCommands: true) == .pulled(backup: nil))
+        #expect(try f.read(f.local) == withCommands)
+        #expect(try f.sync.status().status == .inSync)
+    }
+
+    @Test func allowingCommandsDoesNotLiftTheOtherRefusals() throws {
+        let f = try machine(folder: withCommands); defer { f.cleanUp() }
+        try f.write(two, to: f.local)
+        #expect(throws: ConfigSyncError.refused(.localChanged, folder: f.remote.path)) { try f.sync.pull(allowCommands: true) }
+        #expect(try f.read(f.local) == two)
+        let saved = try f.sync.pull(force: true, allowCommands: true)
+        guard case .pulled(let backup?) = saved else { Issue.record("expected the replaced file to be saved"); return }
+        #expect(try f.read(backup) == two)
+    }
+
+    @Test func aCommandThisMachineAlreadyHasIsNotAskedAboutAgain() throws {
+        let f = try machine(local: withCommands, folder: withCommands + "\n[menu]\nitems = [\"open.terminal\"]\n"); defer { f.cleanUp() }
+        #expect(try f.sync.pull() == .pulled(backup: nil))
+    }
+
+    @Test func aChangedCommandIsAskedAboutAndSaysWhatItWas() throws {
+        let f = try machine(local: withCommands, folder: withCommands.replacingOccurrences(of: "/bin/sh", with: "/bin/zsh")); defer { f.cleanUp() }
+        let changes = try #require(refusal { try f.sync.pull() })
+        #expect(changes.map(\.line) == [#"[[app]] terminal run_args = ["/bin/zsh", "-c", "{command}"] (was ["/bin/sh", "-c", "{command}"])"#])
+    }
+
+    @Test func removingCommandsNeedsNoApproval() throws {
+        let f = try machine(local: withCommands, folder: one); defer { f.cleanUp() }
+        #expect(try f.sync.pull() == .pulled(backup: nil))
+        #expect(try f.read(f.local) == one)
+    }
+
+    @Test func anAgentCommandIsAskedAboutToo() throws {
+        let agent = "[general]\nagents = [\"claude\"]\n[agent.claude]\ncommand = \"claude --dangerously-skip-permissions\"\n"
+        let f = try machine(folder: agent); defer { f.cleanUp() }
+        let changes = try #require(refusal { try f.sync.pull() })
+        #expect(changes.map(\.line) == [#"[agent.claude] command = "claude --dangerously-skip-permissions" (was "claude")"#])
+    }
+
+    @Test func aFirstPullOnAMachineWithoutAConfigAsksOnlyAboutWhatIsCustom() throws {
+        // The usual second Mac: nothing local yet. A config that only picks built-in apps and agents pulls without a flag.
+        let plain = try Fixture(); defer { plain.cleanUp() }
+        try plain.write("[general]\nterminal = \"ghostty\"\neditor = \"vscode\"\nagents = [\"claude\", \"codex\"]\n", to: plain.remoteFile)
+        try plain.sync.enable(folder: plain.remote.path)
+        #expect(try plain.sync.pull() == .pulled(backup: nil))
+        // One with a program of its own asks, even though there is nothing to overwrite.
+        let custom = try Fixture(); defer { custom.cleanUp() }
+        try custom.write(withCommands, to: custom.remoteFile)
+        try custom.sync.enable(folder: custom.remote.path)
+        #expect(refusal { try custom.sync.pull() } != nil)
+        #expect(!FileManager.default.fileExists(atPath: custom.local.path))
+    }
+
+    @Test func statusAndEnableSayWhatAPullWouldAsk() throws {
+        let f = try machine(folder: withCommands); defer { f.cleanUp() }
+        let report = try f.sync.status()
+        #expect(report.status == .remoteAhead)
+        #expect(report.pendingCommands.count == 4)
+        // `enable` on a machine that has nothing yet reports the same.
+        let fresh = try Fixture(); defer { fresh.cleanUp() }
+        try fresh.write(withCommands, to: fresh.remoteFile)
+        #expect(try fresh.sync.enable(folder: fresh.remote.path).pendingCommands.count == 4)
+    }
+
+    @Test func aConfigThatIsNotValidIsRefusedBeforeCommandsAreWeighed() throws {
+        let f = try machine(folder: withCommands + "\n[agent.x]\napi_key = \"k\"\n"); defer { f.cleanUp() }
+        #expect(throws: ConfigSyncError.self) { try f.sync.pull(allowCommands: true) }
+        #expect(try f.read(f.local) == one)
+    }
 }

@@ -113,7 +113,8 @@ public enum Documentation {
         rh config sync enable                     choose the folder (default: iCloud Drive, folder "Right Here")
         rh config sync enable --folder ~/Sync/rh  any folder works: Dropbox, a git checkout, a network share
         rh config sync push                       send this Mac's config to the folder (creates the folder)
-        rh config sync pull                       take the folder's config
+        rh config sync pull                       take the folder's config (refused, with a list, if it adds programs)
+        rh config sync pull --allow-commands      take it although it adds or changes terminal templates or agent commands
         rh config sync status                     in-sync, local-ahead, remote-ahead, diverged, remote-missing or remote-evicted
         rh config sync disable                    forget the folder; both copies stay
 
@@ -125,6 +126,13 @@ public enum Documentation {
       did, unless `--force`. A forced replacement saves the old file as `config.toml.bak-<date>` first.
     - Both refuse a config that does not validate, is over 1 MiB, or has key names that look like secrets
       (token, secret, password, api_key). Keep credentials in the environment or the keychain.
+    - A config carries programs, and the folder can be written by other Macs, a sync service or a shared drive, so
+      `pull` also refuses, and lists them, when the folder's copy would add or change something Right Here starts: a
+      terminal template (`open_args`, `run_args`), an agent's `command`, a variant's `arguments` or its `prompt_arg`, or
+      a default terminal that starts through a template. Read the list; if it is yours, run
+      `rh config sync pull --allow-commands` (a separate flag from `--force`; they combine). `status` and `enable`
+      show the same list, `rh doctor` has a row for it, and a first pull on a new Mac asks only about programs of your
+      own, never about the built-in apps and agents.
     - A copy iCloud has not downloaded (`remote-evicted`) is never read as missing and never overwritten.
     - Writes are atomic (a temporary file beside the destination, then a rename), and nothing is deleted.
     - `rh doctor` adds checks while sync is on: the folder is reachable, the copy is downloaded and valid, how the

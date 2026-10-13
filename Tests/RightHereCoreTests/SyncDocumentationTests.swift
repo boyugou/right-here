@@ -5,7 +5,8 @@ import Testing
 struct SyncDocumentationTests {
     @Test func theSyncTopicExistsAndCoversTheParts() throws {
         let text = try #require(Documentation.text(for: "sync"))
-        for part in ["Keep your config in sync", "config.local.toml", "disabled", "symlink", "sandbox", "Dropbox", "rh config sync push", "remote-evicted", "api_key"] {
+        for part in ["Keep your config in sync", "config.local.toml", "disabled", "symlink", "sandbox", "Dropbox", "rh config sync push", "remote-evicted", "api_key",
+                     "--allow-commands", "open_args", "command"] {
             #expect(text.contains(part), "the sync guide does not mention \(part)")
         }
         #expect(Documentation.topics.contains("sync"))

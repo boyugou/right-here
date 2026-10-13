@@ -253,7 +253,8 @@ variants, `disabled` to remove ids), and `rh config sync` copies `config.toml` t
 3. The sandbox stays on for the extension. What it cannot do is done by `rh` through the runner script,
    which only the user can install and which passes on only `run` and `probe`: a compromised extension
    cannot call `rh install`, `rh uninstall` or `rh init --force`.
-4. Configuration is never loaded from the folder being acted on.
+4. Configuration is never loaded from the folder being acted on. The one other place a config comes from is the sync
+   folder, which item 7 guards.
 5. `rh` itself is not privileged and needs no administrator rights anywhere.
 6. Tool arguments from an AI agent are validated against the declared schema before anything runs, and the number
    and length of paths are capped. What a call would open or create is added up from its plan (a document, a
@@ -263,6 +264,13 @@ variants, `disabled` to remove ids), and `rh config sync` copies `config.toml` t
    for a turn, a call past that is answered with a server-busy error at once, `ping` and the other quick requests are
    never held up, and a request line is capped at 2 MB.
    Names in logs and plan output have control characters escaped, and the log is private and capped.
+7. A config is more than settings: terminal templates (`open_args`, `run_args`), agent commands, variant arguments and
+   first-prompt flags decide which program a click starts. The sync folder can be written by things this Mac does not
+   control (another machine, a sync service, a shared drive), so a config that arrives through it is untrusted input.
+   `rh config sync pull` compares it with the config it replaces and refuses, listing what it would add or change,
+   unless `--allow-commands` is passed; that flag is separate from `--force`, and a refusal writes nothing. `status`
+   and `enable` show the same list, and every value in it is printed with control characters escaped. Preset prompts
+   are text for an agent, not commands, and stay under item 2. See [0013](decisions/0013-config-sync.md), "Trust".
 
 An independent review and a cold-start usability test shaped several of these; see
 [0008](decisions/0008-independent-review.md). The Mac App Store question is in [0007](decisions/0007-app-store-edition.md).

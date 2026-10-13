@@ -13,8 +13,10 @@ struct ConfigSyncCommand: ParsableCommand {
         `enable` remembers the folder (by default an iCloud Drive folder called Right Here), `push` sends this \
         machine's config there, `pull` takes the copy from there, `status` compares them. Nothing is ever \
         deleted, writes are atomic, and a config that does not validate, is over 1 MiB or has key names that \
-        look like secrets (token, secret, password, api_key) is refused. Machine-specific settings belong in \
-        config.local.toml, which is never synced; see `rh docs sync`.
+        look like secrets (token, secret, password, api_key) is refused. The folder is not trusted with programs: \
+        a pull that would add or change a terminal template or an agent command is refused, with the list, unless \
+        you pass --allow-commands. Machine-specific settings belong in config.local.toml, which is never synced; \
+        see `rh docs sync`.
         """,
         subcommands: [Enable.self, Status.self, Pull.self, Push.self, Disable.self]
     )
@@ -40,6 +42,7 @@ struct ConfigSyncCommand: ParsableCommand {
                 let report = try ConfigSync(paths: runtime.paths).enable(folder: folder)
                 Output.print("Sync folder: \(report.folder.path)")
                 Output.print(Status.describe(report))
+                for line in Status.pendingCommands(report) { Output.print(line) }
                 Output.print(Status.nextStep(report))
             }
         }
@@ -61,6 +64,8 @@ struct ConfigSyncCommand: ParsableCommand {
             var remoteSHA256: String?
             var lastSyncedSHA256: String?
             var conflictCopies: [String]
+            /// What the folder's copy would add or change among what this machine starts (one line each).
+            var pendingLaunchCommands: [String]
         }
 
         func run() throws {
@@ -70,7 +75,8 @@ struct ConfigSyncCommand: ParsableCommand {
                 if json {
                     try Output.json(Report(status: report.status.rawValue, folder: report.folder.path, folderReachable: report.folderReachable,
                                            localFile: report.localFile.path, remoteFile: report.remoteFile.path, localSHA256: report.localHash,
-                                           remoteSHA256: report.remoteHash, lastSyncedSHA256: report.lastSynced, conflictCopies: report.conflictCopies))
+                                           remoteSHA256: report.remoteHash, lastSyncedSHA256: report.lastSynced, conflictCopies: report.conflictCopies,
+                                           pendingLaunchCommands: report.pendingCommands.map(\.line)))
                     return
                 }
                 Output.print("Sync folder: \(report.folder.path)" + (report.folderReachable ? "" : " (not reachable)"))
@@ -78,6 +84,7 @@ struct ConfigSyncCommand: ParsableCommand {
                 for copy in report.conflictCopies {
                     Output.print("Conflict copy: \(copy) (two machines wrote at once; compare it with config.toml and remove it by hand)")
                 }
+                for line in Self.pendingCommands(report) { Output.print(line) }
                 Output.print(Self.nextStep(report))
             }
         }
@@ -94,12 +101,22 @@ struct ConfigSyncCommand: ParsableCommand {
             return "Status: \(report.status.rawValue): \(words[report.status] ?? "")"
         }
 
+        /// What the folder's copy would start that this machine's config does not, one line each, or nothing.
+        static func pendingCommands(_ report: ConfigSync.Report) -> [String] {
+            guard !report.pendingCommands.isEmpty else { return [] }
+            return ["The folder's copy adds or changes what Right Here starts (a pull is refused unless you pass --allow-commands):"]
+                + report.pendingCommands.prefix(ConfigSyncError.listedChanges).map { "  " + $0.line }
+                + (report.pendingCommands.count > ConfigSyncError.listedChanges ? ["  and \(report.pendingCommands.count - ConfigSyncError.listedChanges) more"] : [])
+        }
+
         static func nextStep(_ report: ConfigSync.Report) -> String {
+            let approval = report.pendingCommands.isEmpty ? "" : " --allow-commands"
             switch report.status {
             case .inSync: return "Nothing to do."
             case .localAhead, .remoteMissing: return "Next: `rh config sync push`."
-            case .remoteAhead: return "Next: `rh config sync pull`."
-            case .diverged: return "Next: compare the two files, then `rh config sync pull --force` (take the folder's) or `rh config sync push --force` (keep this one); the replaced file is saved first."
+            case .remoteAhead:
+                return report.pendingCommands.isEmpty ? "Next: `rh config sync pull`." : "Next: read what the folder's copy would start, and if it is yours, `rh config sync pull\(approval)`."
+            case .diverged: return "Next: compare the two files, then `rh config sync pull --force\(approval)` (take the folder's) or `rh config sync push --force` (keep this one); the replaced file is saved first."
             case .remoteEvicted: return "Next: open the folder in Finder, let config.toml download, then run `rh config sync status` again."
             }
         }
@@ -108,16 +125,25 @@ struct ConfigSyncCommand: ParsableCommand {
     struct Pull: ParsableCommand {
         static let configuration = CommandConfiguration(
             abstract: "Replace this machine's config with the copy in the sync folder.",
-            discussion: "Refuses when this machine's config changed since the last sync, unless --force; then the old file is saved as config.toml.bak-<date>."
+            discussion: """
+            Refuses when this machine's config changed since the last sync, unless --force; then the old file is saved as \
+            config.toml.bak-<date>. Refuses, listing them, when the copy would add or change a terminal template \
+            (open_args, run_args) or an agent command that this machine's config does not already have, unless \
+            --allow-commands: a synced folder can be written by other machines and services, so what it makes a click \
+            run is yours to read first.
+            """
         )
 
         @Flag(help: "Replace a locally changed config (the old one is saved first).")
         var force = false
 
+        @Flag(help: "Accept the terminal templates and agent commands the copy adds or changes (a pull that would is refused, with the list, without this).")
+        var allowCommands = false
+
         func run() throws {
             let runtime = Runtime()
             try ConfigSyncCommand.run {
-                switch try ConfigSync(paths: runtime.paths).pull(force: force) {
+                switch try ConfigSync(paths: runtime.paths).pull(force: force, allowCommands: allowCommands) {
                 case .alreadyInSync: Output.print("Already in sync.")
                 case .pulled(let backup):
                     Output.print("Pulled the config into \(runtime.paths.configFile.path).")

@@ -890,6 +890,59 @@ struct ConfigSyncCLITests {
         #expect(saved.count == 1)
     }
 
+    @Test func aPullThatWouldAddProgramsIsRefusedUntilTheyAreAllowed() throws {
+        let original = "[general]\nterminal = \"terminal\"\n"
+        let rh = try isolated(config: original); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        #expect(try rh.run(["config", "sync", "push"]).status == 0)
+        // What someone with write access to the folder can leave there: the built-in terminal, redefined to run a program.
+        let planted = """
+        [general]
+        terminal = "terminal"
+        [[app]]
+        id = "terminal"
+        name = "Terminal"
+        bundle_id = "com.apple.Terminal"
+        role = "terminal"
+        open_args = ["/usr/bin/id", "-un", "{dir}"]
+        run_args = ["/bin/sh", "-c", "{command}"]
+        """
+        try planted.write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        let local = try configFile(rh)
+        let status = try rh.run(["config", "sync", "status"])
+        #expect(status.standardOutput.contains("/usr/bin/id") && status.standardOutput.contains("--allow-commands"), "\(status.standardOutput)")
+        let pending = (try rh.run(["config", "sync", "status", "--json"]).json as? [String: Any])?["pendingLaunchCommands"] as? [String]
+        #expect(pending?.contains { $0.contains("run_args") && $0.contains("/bin/sh") } == true, "\(String(describing: pending))")
+
+        let refused = try rh.run(["config", "sync", "pull"])
+        #expect(refused.status == 1)
+        #expect(refused.standardError.contains("--allow-commands") && refused.standardError.contains("/usr/bin/id"), "\(refused.standardError)")
+        #expect(try String(contentsOf: local, encoding: .utf8) == original)
+        // --force is about this Mac's own edits, not about programs.
+        try "[general]\nterminal = \"ghostty\"\n".write(to: local, atomically: true, encoding: .utf8)
+        let forced = try rh.run(["config", "sync", "pull", "--force"])
+        #expect(forced.status == 1 && forced.standardError.contains("--allow-commands"), "\(forced.standardError)")
+        #expect(try String(contentsOf: local, encoding: .utf8) == "[general]\nterminal = \"ghostty\"\n")
+
+        let allowed = try rh.run(["config", "sync", "pull", "--force", "--allow-commands"])
+        #expect(allowed.status == 0, "\(allowed.standardError)")
+        #expect(try String(contentsOf: local, encoding: .utf8) == planted)
+        #expect(try rh.run(["config", "sync", "pull", "--help"]).standardOutput.contains("--allow-commands"))
+    }
+
+    @Test func enablingOnAMachineWithoutAConfigSaysWhatTheFolderWouldStart() throws {
+        let rh = try isolated(); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try "[agent.mine]\nname = \"Mine\"\ncommand = \"mine --yes\"\n".write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        let result = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        #expect(result.status == 0)
+        #expect(result.standardOutput.contains("mine --yes") && result.standardOutput.contains("--allow-commands"), "\(result.standardOutput)")
+        #expect(!FileManager.default.fileExists(atPath: try configFile(rh).path))
+    }
+
     @Test func aConfigWithASecretLookingKeyIsNotPushed() throws {
         let rh = try isolated(config: "[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n"); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("synced")

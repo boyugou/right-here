@@ -181,6 +181,14 @@ MUTANTS = [
      "let destination = paths.configFile.resolvingSymlinksInPath()", "let destination = paths.configFile"),
     ("the Finder extension's facts do not forward the on-disk spelling", "Sources/RightHereKit/CachingSystemFacts.swift",
      "public func onDiskPath(_ url: URL) -> String { base.onDiskPath(url) }", "public func onDiskPath(_ url: URL) -> String { url.path }"),
+    ("pull accepts launch commands without --allow-commands", "Sources/RightHereKit/ConfigSync.swift",
+     "if !current.pendingCommands.isEmpty, !allowCommands { throw", "if false, !current.pendingCommands.isEmpty, !allowCommands { throw"),
+    ("--force approves launch commands", "Sources/RightHereKit/ConfigSync.swift",
+     "if !current.pendingCommands.isEmpty, !allowCommands { throw", "if !current.pendingCommands.isEmpty, !allowCommands, !force { throw"),
+    ("a changed launch command counts as one this Mac already has", "Sources/RightHereCore/Config/LaunchCommands.swift",
+     "before[entry.place] == entry.value ? nil : Change(", "before[entry.place] != nil ? nil : Change("),
+    ("a launch command is printed with its control characters", "Sources/RightHereCore/Config/LaunchCommands.swift",
+     '.withControlCharactersEscaped + "\\""', '+ "\\""'),
 ]
 
 

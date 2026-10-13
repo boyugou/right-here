@@ -8,8 +8,13 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
     case noLocalConfig(String)
     case refused(SyncRefusal, folder: String)
     case invalid([SyncValidation.Problem], file: String)
+    /// The copy in the folder would add or change something Right Here starts, and the caller did not say it is theirs.
+    case commandsNeedApproval([LaunchCommands.Change])
     case folderUnreachable(String)
     case writeFailed(String)
+
+    /// How many changed settings a message lists before saying "and N more".
+    public static let listedChanges = 12
 
     public var description: String {
         switch self {
@@ -29,6 +34,11 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
             "The copy in \(folder) is not on this Mac yet (iCloud keeps it online only, or the file cannot be read). Open the folder in Finder, click the cloud icon beside config.toml, wait for the download, then try again. Nothing was changed."
         case .invalid(let problems, let file):
             "Refusing \(file): " + problems.map(\.message).joined(separator: "; ") + ". Nothing was changed."
+        case .commandsNeedApproval(let changes):
+            "Not pulling: the copy in the sync folder would add or change what Right Here starts on this Mac, and a folder that other machines or a sync service can write is not trusted with that:\n"
+                + changes.prefix(Self.listedChanges).map { "  " + $0.line }.joined(separator: "\n")
+                + (changes.count > Self.listedChanges ? "\n  and \(changes.count - Self.listedChanges) more" : "")
+                + "\nRead them. If they are yours, run `rh config sync pull --allow-commands` (with --force as well when this Mac's config changed). Nothing was changed."
         case .folderUnreachable(let folder):
             "The sync folder \(folder) does not exist and cannot be created (its parent folder is missing). Is iCloud Drive on, or the drive mounted? Choose another with `rh config sync enable --folder <folder>`."
         case .writeFailed(let reason):
@@ -72,6 +82,8 @@ public struct ConfigSync: Sendable {
         public var localHash: String?
         public var remoteHash: String?
         public var lastSynced: String?
+        /// What the folder's copy would add to, or change in, what this machine's config starts (`LaunchCommands`).
+        public var pendingCommands: [LaunchCommands.Change]
     }
 
     public enum PullOutcome: Sendable, Equatable {
@@ -158,9 +170,14 @@ public struct ConfigSync: Sendable {
         let snapshot = SyncSnapshot(local: local, remote: inspection.remote, lastSynced: settings.lastSynced)
         var remoteHash: String?
         if case .present(let hash) = inspection.remote { remoteHash = hash }
+        var pending: [LaunchCommands.Change] = []
+        if let remoteData = inspection.remoteData {
+            let known = inspection.localData.map(LaunchCommands.init(configData:)) ?? LaunchCommands(.default)
+            pending = LaunchCommands(configData: remoteData).additions(to: known)
+        }
         return Report(status: SyncState.status(snapshot), folder: inspection.folder, remoteFile: inspection.folder.appendingPathComponent(Self.remoteFileName),
                       localFile: paths.configFile, folderReachable: inspection.folderReachable, conflictCopies: inspection.conflicts,
-                      localHash: local, remoteHash: remoteHash, lastSynced: settings.lastSynced)
+                      localHash: local, remoteHash: remoteHash, lastSynced: settings.lastSynced, pendingCommands: pending)
     }
 
     // MARK: Commands
@@ -193,7 +210,7 @@ public struct ConfigSync: Sendable {
     }
 
     @discardableResult
-    public func pull(force: Bool = false, now: Date = Date()) throws -> PullOutcome {
+    public func pull(force: Bool = false, allowCommands: Bool = false, now: Date = Date()) throws -> PullOutcome {
         guard var settings = settings() else { throw ConfigSyncError.notEnabled }
         let inspection = inspect(folder: URL(fileURLWithPath: settings.folder, isDirectory: true))
         let current = report(inspection, settings: settings)
@@ -207,6 +224,9 @@ public struct ConfigSync: Sendable {
         guard let data = inspection.remoteData, let hash = current.remoteHash else { throw ConfigSyncError.refused(.remoteMissing, folder: settings.folder) }
         let problems = SyncValidation.check(data)
         if !problems.isEmpty { throw ConfigSyncError.invalid(problems, file: current.remoteFile.path) }
+        // A config carries commands, and the folder is written by things this Mac does not control: what it would start
+        // that this Mac's config does not is never taken without the caller saying so (`force` is about something else).
+        if !current.pendingCommands.isEmpty, !allowCommands { throw ConfigSyncError.commandsNeedApproval(current.pendingCommands) }
 
         // Through a link: a config kept in a dotfiles repository is a symlink, and replacing the link would end that.
         let destination = paths.configFile.resolvingSymlinksInPath()
@@ -317,6 +337,7 @@ public struct ConfigSync: Sendable {
                 }
             }
         }
+        if let row = commandsCheck(report, localData: inspection.localData) { checks.append(row) }
         switch report.status {
         case .inSync:
             checks.append(DoctorCheck(id: "sync.state", title: "Config sync", status: .ok, detail: "in sync"))
@@ -336,5 +357,23 @@ public struct ConfigSync: Sendable {
                                       fix: "Two machines wrote config.toml at once. Compare the copies, keep the right content in config.toml, and delete the others by hand."))
         }
         return checks
+    }
+
+    /// What starts programs, as one row: the folder's copy adding something (a pull will ask), or else what this Mac's
+    /// config already starts that Right Here does not start by itself. Nothing when there is none of either.
+    private func commandsCheck(_ report: Report, localData: Data?) -> DoctorCheck? {
+        func summary(_ changes: [LaunchCommands.Change]) -> String {
+            let shown = changes.prefix(3).map(\.line).joined(separator: "; ")
+            return changes.count > 3 ? "\(shown); and \(changes.count - 3) more" : shown
+        }
+        if !report.pendingCommands.isEmpty {
+            return DoctorCheck(id: "sync.commands", title: "Config sync", status: .warn,
+                               detail: "the folder's copy would add or change \(report.pendingCommands.count) launch setting(s): " + summary(report.pendingCommands),
+                               fix: "Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy.")
+        }
+        let custom = localData.map { LaunchCommands(configData: $0).custom } ?? []
+        guard !custom.isEmpty else { return nil }
+        return DoctorCheck(id: "sync.commands", title: "Config sync", status: .ok,
+                           detail: "this config starts programs of its own through \(custom.count) setting(s): " + summary(custom))
     }
 }
