@@ -52,6 +52,7 @@ extension ConfigBuilder {
             return nil
         }
         guard isValidID(id, at: reader.path + ["id"]) else { return nil }
+        guard isPlainName(name, at: reader.path + ["name"], noun: "name") else { return nil }
         let bundleIDs = reader.stringArray("bundle_ids") ?? reader.string("bundle_id").map { [$0] } ?? []
         guard !bundleIDs.isEmpty else {
             sink.error(reader.path, "an app needs bundle_id or bundle_ids")

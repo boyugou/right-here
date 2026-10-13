@@ -76,6 +76,11 @@ INVALID = {
     "a template extension with a dot": '[[new_file.template]]\nid = "x"\ntitle = "X"\nextension = ".md"\n',
     "an empty template extension": '[[new_file.template]]\nid = "x"\ntitle = "X"\nextension = ""\n',
     "an unknown launcher": '[agent.claude]\nlauncher = "magic"\n',
+    "an app name with an escape character": '[[app]]\nid = "x"\nname = "a\\u001b]0;pwned\\u0007"\nbundle_id = "a.b"\n',
+    "an agent name with a line break": '[agent.x]\nname = "two\\nlines"\ncommand = "x"\n',
+    "a template title with a C1 control": '[[new_file.template]]\nid = "x"\ntitle = "a\\u009bb"\nextension = "txt"\n',
+    "a variant title with a bell": '[agent.claude]\n[[agent.claude.variant]]\nid = "x"\ntitle = "a\\u0007"\n',
+    "a preset title with a line separator": '[[preset]]\nid = "x"\ntitle = "a\\u2028b"\nprompt = "Look at {files}"\n',
 }
 
 # config.local.toml, the per-machine overlay, is read by the same schema; `disabled` is only meaningful there.

@@ -795,3 +795,74 @@ struct TemplateNameLengthTests {
     }
 }
 
+
+@Suite("Config: names and titles shown to people")
+struct DisplayNameTests {
+    /// What a terminal acts on, as TOML escapes: an escape sequence that sets the clipboard, a C1 control, a line break, a
+    /// line separator, a bell.
+    static let hostile = ["Evil\\u001b]52;c;aGk=\\u0007", "x\\u009b31m", "two\\nlines", "a\\u2028b", "bell\\u0007", "a\\u007fb"]
+
+    private func errors(_ result: ConfigLoadResult) -> [ConfigDiagnostic] { result.diagnostics.filter { $0.severity == .error } }
+
+    @Test("an app's name with a control character is an error, and the app is left out", arguments: hostile)
+    func appName(name: String) {
+        let result = ConfigParser.parse("[[app]]\nid = \"evil\"\nname = \"\(name)\"\nbundle_id = \"a.b\"\n")
+        #expect(errors(result).map(\.path) == ["app.1.name"], "\(result.diagnostics)")
+        #expect(errors(result).first?.message == "the name has a line break or control character")
+        #expect(result.config.apps.isEmpty)
+    }
+
+    @Test("a custom agent's name with a control character is one error, and the agent is left out", arguments: hostile)
+    func agentName(name: String) {
+        let result = ConfigParser.parse("[general]\nagents = [\"evil\"]\n[agent.evil]\nname = \"\(name)\"\ncommand = \"evil\"\n")
+        #expect(errors(result).map(\.path) == ["agent.evil.name"], "no second complaint about the agent the config just lost: \(result.diagnostics)")
+        #expect(result.config.agent(id: "evil") == nil)
+        #expect(result.config.enabledAgents.isEmpty)
+    }
+
+    @Test("a new-file template's title with a control character is an error, and the template is left out", arguments: hostile)
+    func templateTitle(title: String) {
+        let result = ConfigParser.parse("[[new_file.template]]\nid = \"evil\"\ntitle = \"\(title)\"\nextension = \"txt\"\n")
+        #expect(errors(result).map(\.path) == ["new_file.template.1.title"], "\(result.diagnostics)")
+        #expect(result.config.newFile.templates == NewFileTemplate.builtIn)
+    }
+
+    @Test("an agent variant's title with a control character is an error, and the variant is left out", arguments: hostile)
+    func variantTitle(title: String) {
+        let result = ConfigParser.parse("[agent.claude]\n[[agent.claude.variant]]\nid = \"evil\"\ntitle = \"\(title)\"\narguments = [\"--x\"]\n")
+        #expect(errors(result).map(\.path) == ["agent.claude.variant.1.title"], "\(result.diagnostics)")
+        #expect(result.config.agent(id: "claude")?.variants.map(\.id) == ["continue", "resume"])
+    }
+
+    @Test("a preset's title with a control character is an error, and the preset is left out", arguments: hostile)
+    func presetTitle(title: String) {
+        let result = ConfigParser.parse("[[preset]]\nid = \"evil\"\ntitle = \"\(title)\"\nprompt = \"Look at {files}\"\n")
+        #expect(errors(result).map(\.path) == ["preset.1.title"], "\(result.diagnostics)")
+        #expect(result.config.preset(id: "evil") == nil)
+    }
+
+    @Test func ordinaryNamesInAnyScriptAreAccepted() {
+        // Right-to-left marks are part of names in Arabic and Hebrew; they are not what this refuses.
+        for name in ["Tower", "Éditeur de texte", "日本語のエディタ", "محرر\u{200F} النصوص", "Name with  two spaces", ""] {
+            let result = ConfigParser.parse("[[app]]\nid = \"fine\"\nname = \"\(name)\"\nbundle_id = \"a.b\"\n")
+            #expect(!result.hasErrors && result.config.apps.map(\.name) == [name], "\(name.debugDescription): \(result.diagnostics)")
+        }
+    }
+
+    @Test("the schema's pattern for a name and the parser's rule agree", arguments: ["Tower", "", "é", "a\n", "a\u{1b}", "a\u{85}", "a\u{9b}", "a\u{2028}", "a\u{2029}", "a\u{7f}", "a\u{200F}b", "a\tb"])
+    func theNamePatternMatchesTheParser(name: String) throws {
+        let node = try #require(ConfigSchema.root.first { $0.key == "app" }?.child("name"))
+        let regex = try NSRegularExpression(pattern: try #require(node.pattern))
+        let whole = NSRange(name.startIndex..., in: name)
+        let matches = regex.firstMatch(in: name, range: whole)?.range == whole
+        let parsed = ConfigParser.parse("[[app]]\nid = \"t\"\nname = \(try JSONValueString.quote(name))\nbundle_id = \"a.b\"\n")
+        #expect(matches == !parsed.hasErrors, "pattern and parser disagree about \(name.debugDescription)")
+        // Every title and name in the schema carries the same pattern.
+        for (table, key) in [("app", "name"), ("agent", "name")] {
+            #expect(ConfigSchema.root.first { $0.key == table }?.child(key)?.pattern == ConfigSchema.displayNamePattern)
+        }
+        #expect(ConfigSchema.root.first { $0.key == "preset" }?.child("title")?.pattern == ConfigSchema.displayNamePattern)
+        #expect(ConfigSchema.root.first { $0.key == "new_file" }?.child("template")?.child("title")?.pattern == ConfigSchema.displayNamePattern)
+        #expect(ConfigSchema.root.first { $0.key == "agent" }?.child("variant")?.child("title")?.pattern == ConfigSchema.displayNamePattern)
+    }
+}

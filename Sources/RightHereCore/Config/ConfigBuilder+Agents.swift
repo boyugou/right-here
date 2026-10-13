@@ -55,6 +55,7 @@ extension ConfigBuilder {
                 return nil
             }
             guard isValidID(variantID, at: variant.path + ["id"]) else { return nil }
+            guard isPlainName(title, at: variant.path + ["title"], noun: "title") else { return nil }
             return AgentDescriptor.Variant(id: variantID, title: title, arguments: variant.stringArray("arguments") ?? [])
         }
 
@@ -83,6 +84,10 @@ extension ConfigBuilder {
         } else {
             guard let name = reader.string("name"), let command else {
                 if !sink.rejectedAgents.contains(id) { sink.error(reader.path, "an agent that is not built in needs name and command") }
+                return
+            }
+            guard isPlainName(name, at: reader.path + ["name"], noun: "name") else {
+                sink.rejectedAgents.insert(id)
                 return
             }
             config.customAgents.append(AgentDescriptor(id: id, name: name, command: command, variants: variants))

@@ -278,7 +278,10 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    never held up, and a request line is capped at 2 MB.
    Names in logs and plan output have control characters escaped, and the log is private and capped. So does what a
    config problem quotes from the config (a key, a value, an id): `ConfigDiagnostic` stores its text escaped, since a
-   config can arrive from the sync folder and an escape sequence in a key name must not act on a terminal.
+   config can arrive from the sync folder and an escape sequence in a key name must not act on a terminal. The names
+   and titles a config gives to apps, agents, templates, variants and presets are refused when they hold a control
+   character (an error, the entry is left out), so such text reaches no terminal through `rh actions`, `rh menu` or
+   `rh apps` either.
 7. A config is more than settings: terminal templates (`open_args`, `run_args`), agent commands, variant arguments and
    first-prompt flags decide which program a click starts, and a terminal listed as another kind of app is handed
    files, which it runs (item 0). The sync folder can be written by things this Mac does not

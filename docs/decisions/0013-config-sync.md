@@ -94,7 +94,9 @@ the folder's copy, and the content at the last sync.
 - `pull` refuses when the local config changed since the last sync; `push` refuses when the folder's copy did; `--force`
   overrides, after saving the replaced file as `config.toml.bak-<date>` (next to the config for a pull, in the folder
   for a push). A backup is made only when something that may hold unique content is replaced.
-- Both validate the source with the parser first and refuse an invalid config, a file over 1 MiB, invalid UTF-8, and
+- Both validate the source with the parser first and refuse an invalid config (an app, agent, template, variant or
+  preset name or title with a control character is an error: such text would reach terminals through `rh actions`,
+  `rh menu` and `rh apps`), a file over 1 MiB, invalid UTF-8, and
   key names containing token, secret, password or api_key (compared in lowercase, dashes as underscores; names only,
   not values). Refusing at the door is cheaper than scrubbing a secret out of a synced folder afterwards.
 - `pull` also refuses a config that would add or change what Right Here starts, unless `--allow-commands` (see Trust).

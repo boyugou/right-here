@@ -67,6 +67,10 @@ public enum ConfigSchema {
     /// Ids of things the user names (apps, templates, variants, agents); `IDRule` is the rule the parser applies.
     static let identifierPattern = IDRule.pattern
 
+    /// A name or title shown to people: no line break or other control character (`ShellQuoting.containsControlCharacter`
+    /// is the rule the parser applies).
+    static let displayNamePattern = "^[^\\u0000-\\u001f\\u007f-\\u009f\\u2028\\u2029]*$"
+
     public static var root: [SchemaNode] {
         let terminalIDs = KnownApps.terminals.map(\.id)
         let editorIDs = KnownApps.editors.map(\.id)
@@ -120,8 +124,8 @@ public enum ConfigSchema {
                     SchemaNode("id", .string, "Identifier used in the action id `new-file.<id>`; lowercase letters, digits and dashes.",
                                example: "\"md\"", pattern: identifierPattern),
                     SchemaNode("title", .string,
-                               "Name of the document type. The menu shows it as is inside the New File submenu, and as \"New <title>\" when it stands alone.",
-                               example: "\"Markdown Document\""),
+                               "Name of the document type, on one line. The menu shows it as is inside the New File submenu, and as \"New <title>\" when it stands alone.",
+                               example: "\"Markdown Document\"", pattern: displayNamePattern),
                     SchemaNode("base_name", .string, "File name without extension; numbered on collision.", default: "\"untitled\""),
                     SchemaNode("extension", .string, "File extension without the dot or a slash.", example: "\"md\"", pattern: "^[^./\\u0000]+$"),
                     SchemaNode("contents", .string, "Initial contents.", default: "\"\""),
@@ -135,7 +139,7 @@ public enum ConfigSchema {
                        required: ["id", "name"], oneOfRequired: ["bundle_id", "bundle_ids"], children: [
                 SchemaNode("id", .string, "Identifier used in `open.app.<id>`; lowercase letters, digits and dashes.",
                            example: "\"tower\"", pattern: identifierPattern),
-                SchemaNode("name", .string, "Display name.", example: "\"Tower\""),
+                SchemaNode("name", .string, "Display name, on one line.", example: "\"Tower\"", pattern: displayNamePattern),
                 SchemaNode("bundle_id", .string, "Bundle identifier of the app.", example: "\"com.fournova.Tower3\""),
                 SchemaNode("bundle_ids", .stringArray, "Several bundle identifiers, most preferred first. Use instead of bundle_id."),
                 SchemaNode("role", .string, "terminal: opens a folder; editor and general: open the selection.",
@@ -149,7 +153,7 @@ public enum ConfigSchema {
             ]),
             SchemaNode("agent", .tableMap, "AI agents, one table per agent: `[agent.claude]`. Built-in agents are listed by `rh agents`. Any command you want typed into a terminal in the folder works the same way, for example `[agent.lazygit]` with `name = \"lazygit\"` and `command = \"lazygit\"`.",
                        pattern: identifierPattern, children: [
-                SchemaNode("name", .string, "Display name. Required for an agent that is not built in."),
+                SchemaNode("name", .string, "Display name, on one line. Required for an agent that is not built in.", pattern: displayNamePattern),
                 SchemaNode("command", .string, "What is typed into the shell to start the agent, including any flags.",
                            example: "\"claude --model opus\""),
                 SchemaNode("launcher", .string,
@@ -162,7 +166,7 @@ public enum ConfigSchema {
                 SchemaNode("variant", .tableArray, "Extra start options shown in the agent's submenu.", required: ["id", "title"], children: [
                     SchemaNode("id", .string, "Identifier used in `agent.<agent>.<id>`; lowercase letters, digits and dashes.",
                                example: "\"opus\"", pattern: identifierPattern),
-                    SchemaNode("title", .string, "Menu title.", example: "\"Use Opus\""),
+                    SchemaNode("title", .string, "Menu title, on one line.", example: "\"Use Opus\"", pattern: displayNamePattern),
                     SchemaNode("arguments", .stringArray, "Arguments appended to the command.", example: "[\"--model\", \"opus\"]")
                 ])
             ]),
@@ -171,7 +175,7 @@ public enum ConfigSchema {
                        required: ["id", "title", "prompt"], children: [
                 SchemaNode("id", .string, "Identifier used in the action id `preset.<id>`; lowercase letters, digits and dashes.",
                            example: "\"review\"", pattern: identifierPattern),
-                SchemaNode("title", .string, "Menu title inside the Agent Presets submenu.", example: "\"Review\""),
+                SchemaNode("title", .string, "Menu title inside the Agent Presets submenu, on one line.", example: "\"Review\"", pattern: displayNamePattern),
                 SchemaNode("agent", .string,
                            "Agent that runs it: a built-in agent or one defined under `[agent.<id>]`, which must take a first prompt (see agent.prompt_arg). Omit it to use the first agent in general.agents.",
                            example: "\"claude\"", suggested: KnownAgents.all.map(\.id)),

@@ -37,6 +37,7 @@ extension ConfigBuilder {
             return nil
         }
         guard isValidID(id, at: reader.path + ["id"]) else { return nil }
+        guard isPlainName(title, at: reader.path + ["title"], noun: "title") else { return nil }
         if ext.containsAnyScalar(of: [".", "/", "\0"]) || ext.isEmpty {
             sink.error(reader.path + ["extension"], "write the extension without a dot or slash, and not empty")
             return nil

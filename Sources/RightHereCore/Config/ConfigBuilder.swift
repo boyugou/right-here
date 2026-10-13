@@ -79,6 +79,15 @@ struct ConfigBuilder {
         return true
     }
 
+    /// A name or title the config sets is shown in menus and printed by `rh`. One with a line break or another control
+    /// character (an escape sequence that clears a screen or sets the clipboard, say) is refused, as a preset's title
+    /// always was: the config can arrive from the sync folder, and what it names things must not act on a terminal.
+    func isPlainName(_ text: String, at path: [String], noun: String) -> Bool {
+        guard ShellQuoting.containsControlCharacter(text) else { return true }
+        sink.error(path, "the \(noun) has a line break or control character")
+        return false
+    }
+
     func allAppIDs(_ config: Config) -> [String] {
         (config.apps + KnownApps.all).map(\.id)
     }

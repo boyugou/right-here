@@ -260,6 +260,8 @@ MUTANTS = [
      "guard data.count <= ConfigParser.maxBytes, var text = String(data: data, encoding: .utf8) else", "guard var text = String(data: data, encoding: .utf8) else"),
     ("a local config that cannot be read counts as a missing one", "Sources/RightHereKit/ConfigSync.swift",
      "case .tooLarge, .unreadable: snapshotLocal = .unknown", "case .tooLarge, .unreadable: snapshotLocal = .missing"),
+    ("a name or title from the config may hold a control character", "Sources/RightHereCore/Config/ConfigBuilder.swift",
+     "guard ShellQuoting.containsControlCharacter(text) else { return true }", "guard true else { return true }"),
 ]
 
 

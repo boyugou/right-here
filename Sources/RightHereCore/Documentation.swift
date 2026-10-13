@@ -131,8 +131,9 @@ public enum Documentation {
     Rules, all enforced:
     - `pull` refuses when this Mac's config changed since the last sync, and `push` refuses when the folder's copy
       did, unless `--force`. A forced replacement saves the old file as `config.toml.bak-<date>` first.
-    - Both refuse a config that does not validate, is over 1 MiB, or has key names that look like secrets
-      (token, secret, password, api_key). Keep credentials in the environment or the keychain.
+    - Both refuse a config that does not validate (a name or title with a control character in it does not), is over
+      1 MiB, or has key names that look like secrets (token, secret, password, api_key). Keep credentials in the
+      environment or the keychain.
     - A config carries programs, and the folder can be written by other Macs, a sync service or a shared drive, so
       `pull` also refuses, and lists them, when the folder's copy would add or change something Right Here starts: a
       terminal template (`open_args`, `run_args`), an agent's `command`, a variant's `arguments` or its `prompt_arg`,

@@ -31,10 +31,7 @@ extension ConfigBuilder {
                        suggestion: Suggestion.didYouMean(word, in: PresetTemplate.placeholders).map { Hint(text: $0.text, replacement: "{\($0.replacement)}") })
             valid = false
         }
-        if ShellQuoting.containsControlCharacter(title) {
-            sink.error(reader.path + ["title"], "the title has a line break or control character")
-            valid = false
-        }
+        if !isPlainName(title, at: reader.path + ["title"], noun: "title") { valid = false }
 
         var agent: String?
         if let named = reader.string("agent") {

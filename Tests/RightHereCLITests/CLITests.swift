@@ -1070,6 +1070,27 @@ struct ConfigSyncCLITests {
         #expect(try String(contentsOf: try configFile(rh), encoding: .utf8) == "[general]\nterminal = \"terminal\"\n")
     }
 
+    @Test func aNameWithAnEscapeSequenceIsAnErrorForValidateAndStopsAPull() throws {
+        // What a config from the sync folder can carry in an app's name: an OSC 52 clipboard write and a bell.
+        let hostile = "[[app]]\nid = \"evil\"\nname = \"Evil\\u001b]52;c;aGk=\\u0007\"\nbundle_id = \"com.apple.TextEdit\"\nrole = \"editor\"\n"
+        let rh = try isolated(config: hostile); defer { rh.cleanUp() }
+        let validate = try rh.run(["config", "validate"])
+        #expect(validate.status == 1, "\(validate.standardOutput)")
+        #expect(validate.standardOutput.contains("app.1.name") && validate.standardOutput.contains("control character"), "\(validate.standardOutput)")
+        #expect(!validate.standardOutput.unicodeScalars.contains { $0 == "\u{1B}" || $0 == "\u{07}" }, "\(validate.standardOutput.debugDescription)")
+        let json = try #require(try rh.run(["config", "validate", "--json"]).json as? [String: Any])
+        #expect(json["ok"] as? Bool == false && !((json["diagnostics"] as? [[String: Any]]) ?? []).isEmpty)
+        // The same config in the sync folder is refused by `pull`, with or without the flags.
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try hostile.write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        try FileManager.default.removeItem(at: try configFile(rh))
+        _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        let pull = try rh.run(["config", "sync", "pull", "--force", "--allow-commands"])
+        #expect(pull.status == 1 && pull.standardError.contains("control character"), "\(pull.standardError)")
+        #expect(!FileManager.default.fileExists(atPath: try configFile(rh).path))
+    }
+
     @Test func syncIsListedInHelp() throws {
         let rh = try isolated(); defer { rh.cleanUp() }
         let text = try rh.run(["config", "--help"]).standardOutput
