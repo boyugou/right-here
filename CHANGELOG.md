@@ -32,7 +32,7 @@ First version, running on macOS 26 and later (Apple silicon).
   says what it is (`expected a string, found an integer`), a choice lists the valid values, a key in the wrong table says
   where it belongs, and a display name that is typed for an id (`Visual Studio Code`) finds it. With a `config.local.toml`,
   `rh config validate` also reads `config.toml` on its own, because other Macs do: an error the overlay hides on this Mac
-  is still reported (and refused by `push`). `rh config show` prints each file that makes up the config under a header
+  is still reported (and refused by `push`), and so is a key named like a credential, which `push` refuses. `rh config show` prints each file that makes up the config under a header
   naming it, and `rh config path --all` lists them. A config that cannot be read is an error naming the reason, names and
   titles with control characters are refused, and a launcher an agent cannot use is a warning.
 - The sync folder is not trusted with time or memory either: a file in it (or this Mac's config) past 1 MiB is never read,
