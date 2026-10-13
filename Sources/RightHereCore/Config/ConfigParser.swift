@@ -9,22 +9,39 @@ public enum ConfigParser {
 
     public static func parse(_ text: String) -> ConfigLoadResult {
         let sink = ConfigSink()
-        // The TOML library recurses once per level and a deep enough file overflowed the stack and killed `rh`.
-        if NestingDepth.tomlExceeds(text, limit: maxNesting) {
-            sink.syntaxError("arrays or tables nested more than \(maxNesting) levels deep")
-            return ConfigLoadResult(config: .default, diagnostics: sink.items)
-        }
-        let root: TOMLTable
-        do {
-            // A text that ends right after an empty quoted key inside an open bracket (`[""`, `[ ''`, `[[""`) makes the
-            // library trap on reading past the end of its input, which killed every `rh` command and the Finder
-            // menu. A final line break is harmless to a valid file and turns those into the ordinary syntax error.
-            root = try TOMLTable(source: text + "\n")
-        } catch {
-            sink.syntaxError((error.description.hasSuffix(".") ? String(error.description.dropLast()) : error.description) + ". Usual causes: text without \"quotes\", a missing = or ], the same [table] twice. Defaults apply until it is fixed.")
+        guard let root = readTable(text, sink: sink) else {
             return ConfigLoadResult(config: .default, diagnostics: sink.items)
         }
         let config = ConfigBuilder(sink: sink).build(ConfigReader(table: root, path: [], schema: ConfigSchema.root, sink: sink))
         return ConfigLoadResult(config: config, diagnostics: sink.items)
+    }
+
+    /// The text as a table, or `nil` with the reason in the sink.
+    static func readTable(_ text: String, sink: ConfigSink) -> TOMLTable? {
+        // The TOML library recurses once per level and a deep enough file overflowed the stack and killed `rh`.
+        if NestingDepth.tomlExceeds(text, limit: maxNesting) {
+            sink.syntaxError("arrays or tables nested more than \(maxNesting) levels deep")
+            return nil
+        }
+        do {
+            // A text that ends right after an empty quoted key inside an open bracket (`[""`, `[ ''`, `[[""`) makes the
+            // library trap on reading past the end of its input, which killed every `rh` command and the Finder
+            // menu. A final line break is harmless to a valid file and turns those into the ordinary syntax error.
+            return try TOMLTable(source: text + "\n")
+        } catch {
+            sink.syntaxError((error.description.hasSuffix(".") ? String(error.description.dropLast()) : error.description) + ". Usual causes: text without \"quotes\", a missing = or ], the same [table] twice. Defaults apply until it is fixed.")
+            return nil
+        }
+    }
+
+    /// The text as plain values, for merging; or the problem that stops it from being read.
+    static func readTree(_ text: String) -> (tree: [String: TOMLValue]?, diagnostics: [ConfigDiagnostic]) {
+        let sink = ConfigSink()
+        guard let table = readTable(text, sink: sink) else { return (nil, sink.items) }
+        guard let tree = TOMLValue.read(table) else {
+            sink.error([], "contains a value of a kind this build cannot read")
+            return (nil, sink.items)
+        }
+        return (tree, sink.items)
     }
 }

@@ -19,6 +19,12 @@ private func pick<T>(_ items: [T], _ random: inout SplitMix64) -> T { items[Int(
 /// Random TOML documents: mostly well-formed pieces of the real schema, with wrong types, odd keys and
 /// out-of-place tables, so the semantic checks run; now and then a line of garbage for the syntax errors.
 /// Keys never repeat inside a table and plain tables never repeat, since TOML forbids both.
+/// `count` random documents from one seed, for the tests of the config layers.
+func randomConfigTexts(seed: UInt64, count: Int) -> [String] {
+    var random = SplitMix64(state: seed)
+    return (0..<count).map { _ in randomConfigText(&random) }
+}
+
 private func randomConfigText(_ random: inout SplitMix64) -> String {
     let tables = ["[general]", "[menu]", "[services]", "[copy_path]", "[new_file]", "[agent.claude]", "[agent.codex]", "[agent.mine]",
                   "[agent.\"Bad Id\"]", "[nope]", "[agent]"]

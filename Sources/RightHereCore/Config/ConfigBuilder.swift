@@ -13,6 +13,10 @@ struct ConfigBuilder {
             sink.error(["version"], "unsupported config version \(version); this build reads version \(ConfigSchema.version)")
         }
 
+        if root.table.contains(key: "disabled") {
+            sink.warning(["disabled"], "only meaningful in config.local.toml, where it removes ids from the shared config; it does nothing here")
+        }
+
         let general = readGeneral(root, into: &config)
         readMenu(root, into: &config)
         readServices(root, into: &config)

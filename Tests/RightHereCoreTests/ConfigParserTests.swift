@@ -224,7 +224,7 @@ struct ConfigSchemaTests {
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
         let decoded = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         let properties = try #require(decoded["properties"] as? [String: Any])
-        #expect(Set(properties.keys) == ["version", "general", "menu", "services", "copy_path", "new_file", "app", "agent"])
+        #expect(Set(properties.keys) == ["version", "disabled", "general", "menu", "services", "copy_path", "new_file", "app", "agent"])
         #expect(decoded["$schema"] as? String == "http://json-schema.org/draft-07/schema#")
     }
 

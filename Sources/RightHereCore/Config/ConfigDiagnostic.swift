@@ -16,19 +16,22 @@ public struct ConfigDiagnostic: Sendable, Equatable, Codable {
     public var suggestion: String?
     /// The text to put in place of the wrong key or value, when there is a likely candidate.
     public var replacement: String?
+    /// The file name when the problem is in the per-machine overlay (`config.local.toml`); `nil` means the main config.
+    public var file: String?
 
-    public init(severity: Severity, path: String, message: String, line: Int? = nil, suggestion: String? = nil, replacement: String? = nil) {
+    public init(severity: Severity, path: String, message: String, line: Int? = nil, suggestion: String? = nil, replacement: String? = nil, file: String? = nil) {
         self.severity = severity
         self.path = path
         self.message = message
         self.line = line
         self.suggestion = suggestion
         self.replacement = replacement
+        self.file = file
     }
 
     /// One line for a terminal or a log: `error: config.toml:3 [agent.claude.launcher]: message (suggestion)`.
     public func summary(file: URL) -> String {
-        var text = "\(severity.rawValue): \(file.lastPathComponent)"
+        var text = "\(severity.rawValue): \(self.file ?? file.lastPathComponent)"
         if let line { text += ":\(line)" }
         if !path.isEmpty { text += " [\(path)]" }
         text += ": \(message)"
