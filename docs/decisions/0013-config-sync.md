@@ -110,7 +110,10 @@ the folder's copy, and the content at the last sync.
   that file's content (before, the write replaced the link and the backup was a second link). The folder is written by
   things this Mac does not control, so the link may only lead to a file inside the folder: one that leaves it, or
   points nowhere, is refused (nothing is written, no backup is made), because a push through a planted link would
-  overwrite any file the person can write.
+  overwrite any file the person can write. (Measured on macOS 26: `URL.resolvingSymlinksInPath` follows a chain of links
+  to the existing file at its end, including links with relative targets and `..`, and returns a link that points
+  nowhere unchanged, which is how "points nowhere" is told; a link to a file that does not exist yet inside the folder
+  is refused as well.)
 - `enable` records the folder and creates nothing (it never creates the iCloud folder); the first `push` creates the
   last path component when its parent exists, and explains when it does not.
 - Hashes are over the raw bytes, so a byte order mark or a line-ending change counts as a change.

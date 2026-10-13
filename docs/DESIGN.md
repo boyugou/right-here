@@ -220,8 +220,8 @@ TOML, parsed by a pure-Swift library (TOMLDecoder) and checked against a schema 
 of `rh docs config` and of the JSON Schema printed by `rh config schema`. Unknown keys are warnings with a
 "did you mean" suggestion; wrong types and unknown references are errors; everything valid still
 applies. The app never rewrites the file, so comments and ordering stay the person's. See
-[0004](decisions/0004-config.md). An optional `config.local.toml` is merged over it (by id for apps, templates and
-variants, `disabled` to remove ids), and `rh config sync` copies `config.toml` to and from a plain folder; see
+[0004](decisions/0004-config.md). An optional `config.local.toml` is merged over it (by id for apps, presets, templates
+and variants, `disabled` to remove ids), and `rh config sync` copies `config.toml` to and from a plain folder; see
 [0013](decisions/0013-config-sync.md).
 
 ## 9. Security
