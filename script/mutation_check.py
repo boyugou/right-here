@@ -140,6 +140,23 @@ MUTANTS = [
      "context.items.prefix(maxItems)", "context.items"),
     ("a NUL in a path is accepted", "Sources/RightHereCore/Context/ContextInput.swift",
      'guard !path.unicodeScalars.contains("\\0") else', "guard true else"),
+    ("a preset prompt with a newline reaches the terminal", "Sources/RightHereCore/Planner/Planner.swift",
+     "if let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }",
+     "if false, let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }"),
+    ("a preset prompt is not checked for control characters", "Sources/RightHereCore/Presets/AgentPreset.swift",
+     "if ShellQuoting.containsControlCharacter(prompt) {", "if false {"),
+    ("a preset prompt is typed unquoted", "Sources/RightHereCore/Planner/Planner.swift",
+     "words.append(ShellQuoting.quote(prompt, for: .posix))", "words.append(prompt)"),
+    ("a preset prompt may start with a dash", "Sources/RightHereCore/Presets/AgentPreset.swift",
+     'if prompt.unicodeScalars.first == "-" {', "if false {"),
+    ("a preset prompt may hold a backslash", "Sources/RightHereCore/Presets/AgentPreset.swift",
+     'if prompt.unicodeScalars.contains("\\\\") {', "if false {"),
+    ("a preset takes any number of files", "Sources/RightHereCore/Planner/Planner.swift",
+     "if files.count > preset.maxFiles {", "if false {"),
+    ("a selected folder is named as a file in a preset", "Sources/RightHereCore/Planner/Planner.swift",
+     "context.items.filter { facts.isDirectory($0) == false }", "context.items"),
+    ("the config accepts a preset prompt that cannot be typed", "Sources/RightHereCore/Config/ConfigBuilder+Presets.swift",
+     "if let refusal = PresetTemplate.typingRefusal(prompt) {", "if false, let refusal = PresetTemplate.typingRefusal(prompt) {"),
 ]
 
 

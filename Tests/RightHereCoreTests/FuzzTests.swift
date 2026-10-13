@@ -22,12 +22,12 @@ private func pick<T>(_ items: [T], _ random: inout SplitMix64) -> T { items[Int(
 private func randomConfigText(_ random: inout SplitMix64) -> String {
     let tables = ["[general]", "[menu]", "[services]", "[copy_path]", "[new_file]", "[agent.claude]", "[agent.codex]", "[agent.mine]",
                   "[agent.\"Bad Id\"]", "[nope]", "[agent]"]
-    let arrayTables = ["[[new_file.template]]", "[[app]]", "[[agent.claude.variant]]", "[[agent.mine.variant]]"]
+    let arrayTables = ["[[new_file.template]]", "[[app]]", "[[agent.claude.variant]]", "[[agent.mine.variant]]", "[[preset]]", "[[preset]]"]
     let keys = ["terminal", "editor", "agents", "terminal_placement", "items", "styles", "then", "id", "title", "extension", "base_name",
-                "contents", "open_with", "name", "bundle_id", "bundle_ids", "role", "command", "launcher", "arguments", "a.b", "\"quoted key\"", "\"日本語\"", "unknown"]
+                "contents", "open_with", "prompt", "agent", "max_files", "prompt_arg", "name", "bundle_id", "bundle_ids", "role", "command", "launcher", "arguments", "a.b", "\"quoted key\"", "\"日本語\"", "unknown"]
     let values = ["\"ghostty\"", "\"tab\"", "\"window\"", "\"open\"", "\"claude\"", "\"mine\"", "\"x\"", "1", "-3", "2.5", "true", "false", "[]", "[1, 2]", "[\"a\", \"b\"]", "[[\"x\"]]",
                   "{ a = 1 }", "\"\"", "\"multi\\nline\"", "\'\'\'raw\nstring\'\'\'", "1979-05-27T07:32:00Z", "\"\\u0000\"", "\"a/b\"", "\"../x\"", "\"💥\"",
-                  "[\"claude\", \"codex\", \"nope\"]", "\"terminal\"", "\"typora\"", "\"md\"", "\"X Y\"", "\"com.a.b\"", "\"link\"", "\"desktop\"", "[\"open-terminal\", \"-\", \"agents\"]"]
+                  "[\"claude\", \"codex\", \"nope\"]", "\"terminal\"", "\"typora\"", "\"md\"", "\"X Y\"", "\"com.a.b\"", "\"link\"", "\"desktop\"", "[\"open-terminal\", \"-\", \"agents\"]", "\"Review {files} in {folder}\"", "\"{nope} {name}\"", "\"-x\"", "\"positional\"", "\"--prompt\"", "20", "99"]
 
     func chunk(header: String) -> [String] {
         var available = keys
@@ -84,7 +84,7 @@ struct ActionRefFuzzTests {
     @Test("an id that parses writes back as the same id", arguments: Array(1...6))
     func roundTrip(seed: Int) {
         var random = SplitMix64(state: UInt64(seed) &+ 100)
-        let words = ["copy-path", "open", "terminal", "editor", "app", "agent", "claude", "new-file", "reveal", "user", "md", "continue", "ghostty",
+        let words = ["copy-path", "open", "terminal", "editor", "app", "agent", "claude", "new-file", "reveal", "user", "md", "continue", "ghostty", "preset", "review",
                      "default", "link", "desktop", "absolute", "git-relative", "", "A", "a b", "é", "a_b", "-", "1"]
         let separators = [".", "@", ".", ".", "@@", ".@", ""]
         for _ in 0..<600 {
