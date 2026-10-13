@@ -200,7 +200,8 @@ private struct CheckRow: View {
             "config": .appCheckConfig, "terminal.default": .appCheckTerminal, "editor.default": .appCheckEditor,
             "agents": .appCheckAgents, "claude.link": .appCheckClaudeLink, "finder.runner": .appCheckRunner,
             "services": .appCheckServices, "cli.link": .appCheckCLI, "finder.extension": .appCheckExtension,
-            "finder.activity": .appCheckLastAction, "finder.chain": .appCheckChain, "finder.launch": .appCheckLaunch
+            "finder.activity": .appCheckLastAction, "finder.chain": .appCheckChain, "finder.launch": .appCheckLaunch,
+            "sync.folder": .appCheckSync, "sync.remote": .appCheckSync, "sync.state": .appCheckSync, "sync.conflict": .appCheckSync
         ]
         return keys[check.id].map { Localizer.system.string($0) } ?? check.title
     }

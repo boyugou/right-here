@@ -110,5 +110,11 @@ Not verified, because it needs the real iCloud Drive (which this work was not al
 - the time iCloud takes to deliver a push to another Mac, and that it leaves `config 2.toml` on a concurrent write.
   The doctor looks for that name, since it is the form Finder uses, but this is not observed.
 
-Doctor check titles for sync (`sync.folder`, `sync.remote`, `sync.state`, `sync.conflict`) are English in the setup
-window, which falls back to the check's own title for ids it has no catalog key for; they appear only when sync is on.
+- whether reading `~/Library/Mobile Documents/com~apple~CloudDocs` makes macOS ask for Files & Folders (iCloud Drive)
+  access, and for which process (the terminal running `rh doctor`, Right Here.app, or an MCP host); the doctor reads
+  that folder only while sync is on.
+
+The four sync doctor checks share one catalog key for their title in the setup window ("Config sync", thirty
+languages, machine-translated like the rest of the catalog); their detail and fix lines stay in English, as the
+other checks' do. The tests use symlinks only as temporary-directory fixtures (a dotfiles-style config link), as the
+config store's own symlink test does; the feature itself never creates one.
