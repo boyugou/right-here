@@ -232,6 +232,10 @@ names only: with such a folder config, `rh config sync pull` exited 0 with "Pull
   the config chooses among apps already on this Mac, and a terminal redefined without templates keeps the driver Right
   Here has for that id; neither gets new code from the config. The one such choice that matters most, a terminal listed
   as another kind of app, is guarded (above). An app that is not a known terminal but runs what it is handed is not.
+  A file New File creates is never opened with no app named: the template chooses the file's extension and contents, so
+  `open <file>` would hand them to whatever the system opens that extension with. With no installed editor the plan
+  creates the file and selects it in Finder, with a note (a test with a `.terminal` template holds it, and so does a
+  mutant of `script/mutation_check.py`).
 - Edits made to the local config by hand or by another tool (a dotfiles repository): SECURITY.md puts write access to
   the person's own config out of scope. Only the sync folder is a boundary, because other things write to it.
 - What runs after `--allow-commands`: that is the person's decision, made with the list in front of them.

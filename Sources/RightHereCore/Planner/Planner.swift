@@ -253,17 +253,33 @@ public struct Planner: Sendable {
         let path = directory.appendingPathComponent(name).path
 
         var steps: [Step] = [.createFile(CreateFileStep(path: path, contents: template.contents))]
+        var notices: [String] = []
         switch config.newFile.then {
         case .reveal:
             steps.append(.reveal([path]))
         case .open:
-            // Never a terminal: handed a file, it would run it.
-            let chosen = template.openWith.flatMap(config.app(id:)).flatMap { $0.role != .terminal && $0.installedBundleID(facts: facts) != nil ? $0 : nil }
-            let editor = chosen ?? (try? defaults.resolve(role: .editor, configured: config.editor))
-            steps.append(.open(OpenStep(bundleID: editor?.installedBundleID(facts: facts), targets: [path])))
+            if let bundleID = newFileApp(for: template) {
+                steps.append(.open(OpenStep(bundleID: bundleID, targets: [path])))
+            } else {
+                // An open with no app named hands the file to whatever the system opens that kind of file with, and the config
+                // chose the extension and the contents: show the file instead.
+                steps.append(.reveal([path]))
+                notices.append("No editor is installed, so the new file is selected in Finder and not opened.")
+            }
         case .nothing:
             break
         }
-        return LaunchPlan(action: ref.id, summary: "Create \(name)", steps: steps)
+        return LaunchPlan(action: ref.id, summary: "Create \(name)", steps: steps, notices: notices)
+    }
+
+    /// The installed app that opens a new file: the template's own, else the default editor. Never a terminal (handed a
+    /// file, it would run it) and never an app that is not installed, so a file is never opened with no app named.
+    private func newFileApp(for template: NewFileTemplate) -> String? {
+        func installedBundleID(_ app: AppDescriptor) -> String? {
+            app.role == .terminal ? nil : app.installedBundleID(facts: facts)
+        }
+        if let app = template.openWith.flatMap(config.app(id:)), let bundleID = installedBundleID(app) { return bundleID }
+        guard let editor = try? defaults.resolve(role: .editor, configured: config.editor) else { return nil }
+        return installedBundleID(editor)
     }
 }

@@ -69,6 +69,40 @@ struct PlannerTests {
         #expect(open.bundleID == "com.microsoft.VSCode", "it falls back to the default editor")
     }
 
+    @Test("a new file is never opened with no app named: it is shown in Finder, with a note", arguments: [
+        // Nothing that opens a text file is installed; only terminals are, and a terminal is never handed a file.
+        [], ["com.mitchellh.ghostty", "com.apple.Terminal"]
+    ])
+    func aNewFileIsNeverOpenedWithNoAppNamed(installed: [String]) throws {
+        // `then = "open"` with no editor to open it: the plan was `open <file>` with no `-b`, which hands a file whose extension
+        // and contents the config chose to whatever the system opens that extension with (for `.terminal`, Terminal runs it).
+        var config = Config()
+        config.newFile.then = .open
+        config.newFile.templates = [NewFileTemplate(id: "note", title: "Note", fileExtension: "terminal", contents: "<plist version=\"1.0\"/>")]
+        let path = "/Users/tester/code/app/untitled.terminal"
+        for configured in [config, withEditor("zed", in: config), withEditor("ed", in: config, defining: AppDescriptor(id: "ed", name: "Ed", bundleIDs: ["com.example.not-installed"], role: .editor))] {
+            let plan = try Planner(config: configured, facts: machine(installed: installed)).plan(.newFile("note"), context: folder("/Users/tester/code/app"))
+            #expect(plan.steps == [.createFile(CreateFileStep(path: path, contents: "<plist version=\"1.0\"/>")), .reveal([path])], "\(plan.steps)")
+            #expect(plan.notices == ["No editor is installed, so the new file is selected in Finder and not opened."])
+            for case .open(let open) in plan.steps { #expect(open.bundleID != nil, "an open step names no app: \(plan.steps)") }
+        }
+    }
+
+    private func withEditor(_ id: String, in config: Config, defining app: AppDescriptor? = nil) -> Config {
+        var config = config
+        config.editor = id
+        if let app { config.apps = [app] }
+        return config
+    }
+
+    @Test func aNewFileOpensInAnInstalledEditorWithoutANote() throws {
+        var config = Config()
+        config.newFile.then = .open
+        let plan = try Planner(config: config, facts: machine()).plan(.newFile("md"), context: folder("/Users/tester/code/app"))
+        #expect(plan.notices.isEmpty)
+        #expect(plan.steps.last == .open(OpenStep(bundleID: "com.microsoft.VSCode", targets: ["/Users/tester/code/app/untitled.md"])))
+    }
+
     @Test func aTemplateFallsBackToTheEditorWhenItsAppIsNotInstalled() throws {
         var config = Config()
         config.newFile.then = .open
