@@ -82,7 +82,7 @@ MUTANTS = [
      "return Self.shellQuotedForAnyShell(path)", "return ShellQuoting.quote(path, for: facts.shellFlavor)"),
     ("a terminal may open a new file", "Sources/RightHereCore/Planner/Planner.swift",
      "$0.role != .terminal && $0.installedBundleID(facts: facts) != nil", "$0.installedBundleID(facts: facts) != nil"),
-    ("open_with may name a terminal in the config", "Sources/RightHereCore/Config/ConfigParser.swift",
+    ("open_with may name a terminal in the config", "Sources/RightHereCore/Config/ConfigBuilder+NewFile.swift",
      "if found.role == .terminal {", "if false {"),
     ("a link that points nowhere opens the folder around it", "Sources/RightHereCore/Context/HereContext.swift",
      "// Neither gives a folder, and the folder around it is not what was asked for.\n        case nil: return nil",
