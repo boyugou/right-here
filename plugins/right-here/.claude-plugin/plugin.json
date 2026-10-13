@@ -3,7 +3,7 @@
   "displayName": "Right Here",
   "description": "Set up Right Here, open a folder or Finder selection in a terminal, editor or agent, and show the files you changed in Finder. Connects Claude Code to the rh command-line tool.",
   "author": {
-    "name": "Right Here",
+    "name": "boyugou",
     "url": "https://github.com/boyugou/right-here"
   },
   "homepage": "https://github.com/boyugou/right-here",

@@ -14,7 +14,11 @@
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
 - [`development/RELEASING.md`](development/RELEASING.md): signing, notarizing and publishing a release.
-- [`development/MANUAL_CHECKS.md`](development/MANUAL_CHECKS.md): the checks that need a person at the machine.
-- [`development/UPSTREAM_REPORTS.md`](development/UPSTREAM_REPORTS.md): drafted reports about problems found in dependencies.
+- [`development/MANUAL_CHECKS.md`](development/MANUAL_CHECKS.md): the checks that need a real Finder, real terminals or a native speaker.
+- [`development/UPSTREAM_REPORTS.md`](development/UPSTREAM_REPORTS.md): known upstream issues found in dependencies (not yet filed).
 - [`../ROADMAP.md`](../ROADMAP.md): what works and what is next.
-- [`../CLAUDE.md`](../CLAUDE.md): operating manual for agents working in this repository.
+- [`../CONTRIBUTING.md`](../CONTRIBUTING.md): how to build, test and contribute.
+- [`../SECURITY.md`](../SECURITY.md): reporting a vulnerability, and what is in scope.
+- [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md): community standards.
+- [`../CLAUDE.md`](../CLAUDE.md): instructions for coding agents working in this repository.
+- [`appstore/`](appstore/): App Store privacy statement and listing metadata (drafts).

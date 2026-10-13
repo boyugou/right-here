@@ -126,7 +126,8 @@ extension has no network entitlement. See [`docs/DESIGN.md`](docs/DESIGN.md), se
 ## Languages
 
 The menu, the app and alerts follow the system language, in thirty languages. The translations were
-written with AI help and are marked for review by native speakers; the command line stays English.
+machine-generated, are marked for native-speaker review, are under Apache-2.0, and corrections are welcome
+(see [`CONTRIBUTING.md`](CONTRIBUTING.md)); the command line stays English.
 
 ## Requirements and status
 

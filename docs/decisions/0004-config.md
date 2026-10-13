@@ -12,7 +12,7 @@ People and agents edit the text; `rh config validate` checks it.
 
 - Comments and ordering belong to the person. A UI that rewrites the file needs a format-preserving
   editor, which is a parser project of its own; no surface in version 1 needs to write the file.
-- TOML allows comments and literal strings, which matter for shell-ish values, and the owner already uses it.
+- TOML allows comments and literal strings, which matter for shell-ish values, and it is widely used for tool configuration.
 - A pure-Swift library (TOMLDecoder, MIT, full TOML 1.1) parses it; no hand-written parser.
 - Errors carry a dotted path, a line for syntax errors and a suggestion (`did you mean "terminal"?`),
   which is what an agent needs to fix a file by itself.

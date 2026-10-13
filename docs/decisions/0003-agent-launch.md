@@ -11,9 +11,9 @@ cannot do this only open the folder, and agents are not offered through them.
 
 ## Why
 
-- GUI apps start with a minimal PATH. On the owner's machine `claude` and `codex` come from nvm, which is
+- GUI apps start with a minimal PATH. With a common setup, `claude` and `codex` come from nvm, which is
   initialized in `.zshrc`: `zsh -lc` does not find them, `zsh -lic` does. Typed text gets that setup for
-  free, honors shell aliases (the owner aliases `claude` with extra flags) and leaves the shell open when
+  free, honors shell aliases (a person may alias `claude` with extra flags) and leaves the shell open when
   the agent exits.
 - Commands passed through a terminal's `command` or `-e` are exec'd without any of that.
 - Quoting layers are the usual source of injection. Here the AppleScript is constant and the directory
@@ -37,5 +37,5 @@ directory is honored, and no quoting was needed. The macOS Automation prompt nam
 
 ## Not yet verified
 
-The first-ever permission prompt on a machine that never allowed the control. A cold start of the
+The first-ever permission prompt on a system that never allowed the control. A cold start of the
 terminal may add an empty startup window.

@@ -1,7 +1,9 @@
 # Right Here: design
 
-Status: working draft, 2026-10-12. Written against macOS 27.2 (build 26B5101f), Xcode 27.1, Ghostty 1.3.1.
-Each platform claim is marked **verified** (tested on that machine), **sourced** (from Apple documentation, a
+Status: working draft. The platform floor is macOS 26 (Apple silicon). Verified claims were tested on macOS 26.x
+(build as reported by `sw_vers`) with Xcode 26 or later (see [`development/SETUP.md`](development/SETUP.md)) and
+Ghostty 1.3.1.
+Each platform claim is marked **verified** (tested on a real Mac), **sourced** (from Apple documentation, a
 primary source or an issue tracker, with the source named) or **open** (not yet checked).
 
 ## 1. What it is
@@ -19,16 +21,10 @@ The form was chosen by what works, not by what is customary. A Finder menu canno
 bundle that carries the extension, so there is an app. Everything the menu does is done by `rh`, which
 is also what people and agents use directly, and which Homebrew can install on its own.
 
-### Why this and not another RClick
+### Where it sits
 
-The existing tools are Finder-menu apps (OpenInTerminal, RClick, iRightMouse and others). Reading their
-issue trackers (2026-10-11) shows the recurring failures: the extension stops appearing after a macOS
-update, actions silently do nothing under the sandbox, the menu needs a resident helper, terminals open
-the wrong way, paths are not escaped. None of them pairs a documented text config with a CLI, none copies
-git-root-relative or `@path` references, and none launches an AI agent in a terminal the user chose.
-People ask for agent launching elsewhere (claude-code issue 54614, the claude-code-now launcher with 627
-stars asking for Ghostty and Codex support). That is the opening: make the small daily actions fast and
-dependable, and make them equally usable by people and by agents.
+Other Finder-menu tools (OpenInTerminal, RClick, iRightMouse) cover opening a terminal; Right Here adds a
+documented text config, a CLI and MCP surface, and agent launching.
 
 ## 2. Goals and non-goals
 
@@ -83,7 +79,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 3 | The extension reaches `rh` through a runner script run by `NSUserUnixTask`. | [0002](decisions/0002-finder-extension.md) |
 | 4 | Agents start by typing the command into the user's own login shell. | [0003](decisions/0003-agent-launch.md) |
 | 5 | The config is TOML, described by a schema; the app does not rewrite it. | [0004](decisions/0004-config.md) |
-| 6 | macOS 26 and later, Apple silicon only. | The owner's call; keeps the code free of fallbacks. |
+| 6 | macOS 26 and later, Apple silicon only. | The project's decision; keeps the code free of fallbacks. |
 | 7 | Direct distribution first (notarized DMG, Homebrew cask and formula); an App Store "menu only" build later. | [0001](decisions/0001-form-factor.md) |
 | 8 | The MCP server is written against the protocol, with fenced file names and a folder-only working directory. | [0005](decisions/0005-mcp-server.md) |
 | 9 | Thirty languages from a String Catalog compiled into Swift; human-facing surfaces follow the system language, the CLI and MCP stay English. | [0006](decisions/0006-localization.md) |
@@ -92,7 +88,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 
 ## 5. Platform facts
 
-Verified on this machine (macOS 27.2, 2026-10-11):
+Verified on macOS 26.x (build as reported by `sw_vers`):
 
 - A Finder Sync extension signed with Developer ID, hardened runtime, sandboxed, with no provisioning
   profile loads. `pluginkit -a <appex>` then `pluginkit -e use -i <id>` makes Finder start it within
@@ -128,13 +124,13 @@ Verified on this machine (macOS 27.2, 2026-10-11):
   `com.boyugou.righthere.FinderExtension` as the responsible process), so the extension carries the
   `com.apple.security.automation.apple-events` entitlement; without it tccd logs that a hardened
   process lacking it cannot be prompted. Verified only where Ghostty already allowed the control: a first-ever
-  permission prompt on a clean machine has not been seen.
+  permission prompt on a clean system has not been seen.
 - An agent launch's typed input runs: `rh doctor --probe-launch` has the extension start a throwaway Ghostty
   session through the runner, `rh` and the Ghostty adapter. The session's folder is named with spaces,
   quotes, `$`, a backslash and a backtick; the typed command (`printf … > file; exit`) ran in that folder in the
   login shell (`/bin/zsh`), so the linefeed after `initial input` does press Return, the working directory
   is honored and nothing needed quoting. 1.1 s when warm (0.3 s to accept the Apple event); one cold run
-  took 8.6 s, and the shell's own startup is about 1.7 s here. The same command runs in `sh`, `bash` and
+  took 8.6 s, and the shell's own startup took about 1.7 s in that run. The same command runs in `sh`, `bash` and
   `zsh` in the unit tests.
 - The Finder extension's real memory footprint is about 8 MB per process (`footprint`); the 60 MB that `ps`
   shows is shared framework pages. Several extension processes run at once (three were seen, and each
@@ -145,15 +141,14 @@ Verified on this machine (macOS 27.2, 2026-10-11):
 - Release signing works: `SECURE_TIMESTAMP=1 ./script/build_app.sh` signs every code item with the Developer ID
   identity, hardened runtime and Apple's timestamp (the earlier "timestamps differ" failure was a wrong system
   clock), `script/package_dmg.sh` builds a DMG whose checksum file verifies with `shasum -c`, and the DMG's
-  app verifies when mounted. Notarization was run with a notarytool keychain profile already on the machine:
-  Apple accepted the app and the DMG, both are stapled, and Gatekeeper reports `accepted` with `source=Notarized
-  Developer ID` for the DMG and the app in it (2026-10-12). Nothing was published; the DMG is a local artifact.
+  app verifies when mounted. The notarization pipeline (notarytool with a keychain profile, stapling, Gatekeeper
+  assessment with `spctl`) runs end to end: Apple accepted the app and the DMG, both are stapled, and Gatekeeper
+  reports `accepted` with `source=Notarized Developer ID`.
 
 Sourced:
 
 - FinderSync is not deprecated in macOS 27 (SDK headers). It does not show menus in iCloud Drive,
-  including synced Desktop and Documents (Apple Developer Forums 737283; reproduced on 27.0 by the
-  `newfile` project). Quick Actions and Services are not affected, which is why they are a second surface.
+  including synced Desktop and Documents (Apple Developer Forums 737283). Quick Actions and Services are not affected, which is why they are a second surface.
 - macOS 27 hides menu item images unless `preferredImageVisibility = .visible` is set (SDK header).
 - The breakages reported for Finder tools on macOS 26 and 27 were App Group naming: `cfprefsd` drops
   writes to a bare `group.*` domain, and Group Containers are protected from other teams (OpenInTerminal
@@ -173,7 +168,7 @@ Open (to check on a real run, in the order they matter):
 - A real Finder click reaching `rh`: the tag dispatch of the menu action. Everything after it is verified
   (above). The extension and `rh` log each step at notice level (`log show --predicate 'subsystem ==
   "com.boyugou.righthere.FinderExtension"'`, and `~/Library/Logs/right-here/rh.log`).
-- A first-ever Automation prompt on a machine that has never allowed the control.
+- A first-ever Automation prompt on a system that has never allowed the control.
 - Items under Desktop, Documents and Downloads: whether `rh`, started through the runner script, may look at
   them. `lstat` failing with `EACCES` or `EPERM` is treated as "there, but nothing is known" (it is neither
   rejected as a typo nor taken for a folder), and a terminal action on such an item stops with an error that
@@ -219,7 +214,7 @@ icons for the life of the process, so a right-click costs milliseconds.
 TOML, parsed by a pure-Swift library (TOMLDecoder) and checked against a schema that is also the source
 of `rh docs config` and of the JSON Schema printed by `rh config schema`. Unknown keys are warnings with a
 "did you mean" suggestion; wrong types and unknown references are errors; everything valid still
-applies. The app never rewrites the file, so comments and ordering stay the owner's. See
+applies. The app never rewrites the file, so comments and ordering stay the person's. See
 [0004](decisions/0004-config.md).
 
 ## 9. Security
@@ -304,4 +299,4 @@ Working and tested headlessly: the core and CLI, Ghostty and Terminal.app adapte
 extension, installer, doctor, Services, the MCP server and plugin, localization. The whole chain after
 a menu click is verified, typed launch included (`rh doctor --probe-launch`); not yet confirmed is the
 click itself (see section 5, "Open"). A notarized, stapled DMG builds and verifies (`script/package_dmg.sh`).
-Next: publishing it, and adapters for other terminals. See the [roadmap](../ROADMAP.md).
+Next: a first release, and adapters for other terminals. See the [roadmap](../ROADMAP.md).

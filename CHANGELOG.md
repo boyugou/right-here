@@ -13,9 +13,9 @@ First version, running on macOS 26 and later (Apple silicon).
   own login shell, with Claude Code, Codex, Gemini CLI, opencode, aider and Amp built in and any command addable.
 - A plain-text TOML config with a schema, unknown-key suggestions, `--strict` validation and a JSON Schema.
 - A setup app, thirty languages for the menu, the app, alerts and the permission prompt (machine-translated,
-  awaiting native review), a Claude Code plugin and `rh docs` for agents.
-- Hardened through eight independent review rounds (`docs/decisions/0008-independent-review.md`) and a mutation
-  check that removes each protection and expects a test to fail: shell quoting that holds against combining
+  awaiting native-speaker review), a Claude Code plugin and `rh docs` for agents.
+- Hardened through repeated independent reviews and a mutation check (`docs/decisions/0008-independent-review.md`)
+  that removes each protection and expects a test to fail: shell quoting that holds against combining
   marks, one place that refuses any path that does not exist, bounded and budgeted MCP calls, a process runner
   that stops a login shell for good, an atomic claim for the probe request, parsers that refuse nesting deep
   enough to overflow the stack, and installs that keep the old Services and link when they fail halfway.

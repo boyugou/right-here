@@ -1,7 +1,7 @@
-# Checks that need a person at the machine
+# Manual checks
 
 The automated suite, the mutation check and `rh doctor --probe-launch` cover everything that can be verified
-without a screen or a person. These four cannot, and they are the open items before a public release.
+without a screen or a person. These three need a real Finder, real terminals or a native speaker.
 
 ## 1. A real Finder click on protected folders
 
@@ -20,7 +20,7 @@ record the result in a decision record.
 
 ## 2. Terminals without a built-in adapter
 
-Right Here has only tested these through fakes. Each snippet below is a starting point written from the
+These terminals are not yet tested with Right Here beyond fakes. Each snippet below is a starting point written from the
 terminal's documented command line, not a verified one. Add it to the config, then:
 
 ```sh
@@ -56,9 +56,3 @@ change so the docs can carry a verified entry.
 The thirty languages in `Localization/Localizable.xcstrings` were machine-translated. A native speaker should read
 the menu titles and the alert texts of the setup window (`rh menu --language <tag>` prints the menu; the app's
 window follows the system language). Right-to-left languages (ar, he, fa, ur) deserve a look in the real menu.
-
-## 4. Making the repository public
-
-The repository is private. Before changing that: read `docs/development/RELEASING.md`, decide on the release
-channel (notarized DMG from the existing Developer ID, a Homebrew cask, or both), and confirm the
-public-safety check passes on the full history (`script/verify_all.sh`).

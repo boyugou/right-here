@@ -4,8 +4,7 @@ Date: 2026-10-11. Status: accepted.
 
 ## Decision
 
-`Localization/Localizable.xcstrings` is the source of truth: 43 strings in the thirty languages of the
-owner's other product (English plus Arabic, Bengali, German, Greek, Spanish, Persian, French, Hebrew,
+`Localization/Localizable.xcstrings` is the source of truth: 43 strings in thirty languages (English, Arabic, Bengali, German, Greek, Spanish, Persian, French, Hebrew,
 Hindi, Indonesian, Italian, Japanese, Korean, Marathi, Malay, Dutch, Polish, Brazilian Portuguese,
 Romanian, Russian, Tamil, Telugu, Thai, Turkish, Ukrainian, Urdu, Vietnamese, Simplified and
 Traditional Chinese). `script/compile_localizations.py` turns it into
@@ -27,7 +26,7 @@ format that translation tools (Xcode, Weblate) understand.
 ## Status of the translations
 
 The initial translations were produced by an AI and every one is marked `needs_review`. They are
-usable, short UI strings, but they need native-speaker review before a public release. Adding a string
+usable, short UI strings, but they are awaiting native-speaker review. Adding a string
 means adding a `LocalizationKey`, an English entry and all thirty translations; the verifier rejects a
 partial language.
 

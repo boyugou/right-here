@@ -26,9 +26,9 @@ docs/                    DESIGN.md, decisions/, development/
 
 ## Hard rules
 
-1. **No GPL code.** The project is Apache-2.0. Never copy or paraphrase code
-   from GPL projects (RClick, cmux and others). Read their docs and issues for
-   the problem domain only; write the implementation from scratch.
+1. **No code from GPL-licensed projects.** The project is Apache-2.0. Never copy or
+   paraphrase it. Read other projects' docs and issues for the problem domain
+   only; write the implementation from scratch.
 2. **Never interpolate user-derived text into a shell command or an AppleScript
    source.** Paths and file names are data. Pass them as argv entries, as
    AppleScript `on run argv` arguments, or through the single vetted quoting
@@ -67,10 +67,10 @@ docs/                    DESIGN.md, decisions/, development/
   closes). An Apple event or UI-scripting call from your shell would make macOS grant your host app standing
   control of their terminals. Tests never open windows: CLI tests use a terminal that cannot run commands, and
   everything else uses fake runners. The CLI harness also sets `RH_NO_UI=1`, under which `rh` shows no alert and never starts `open` or
-  `osascript` (a failing `--alert` run once left modal dialogs on the screen), and puts a watchdog on every `rh` it starts.
-- A claim about what the file system or the OS guarantees is measured before anything is built on it: eight
-  concurrent `unlink`s of one path mostly all succeeded on APFS, so "whoever unlinks wins" was wrong, while
-  `rename` and `O_EXCL` held in thousands of rounds (`ProbeMarker`).
+  `osascript`, so no test can put a dialog or window on screen, and puts a watchdog on every `rh` it starts.
+- A claim about what the file system or the OS guarantees is measured before anything is built on it. Never use
+  `unlink` as an exclusive claim (concurrent unlinks of one path can all succeed on APFS); claim with `rename` or
+  `O_EXCL` (`ProbeMarker`).
 - Tests that run the real `rh` give it an empty home for the login shell (the person's startup files must not
   run) and a config that does not open or reveal anything; every fix gets a test that fails against the old code.
 - To look at the setup window without a screen, render the SwiftUI view to a PNG with `ImageRenderer` from a

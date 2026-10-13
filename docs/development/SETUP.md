@@ -1,6 +1,6 @@
 # Building, installing, testing
 
-Requirements: macOS 26 or later on Apple silicon, Xcode 26 or later (27 works), `xcodegen`
+Requirements: macOS 26 or later on Apple silicon, Xcode 26 or later, `xcodegen`
 (`brew install xcodegen`).
 
 ```sh
