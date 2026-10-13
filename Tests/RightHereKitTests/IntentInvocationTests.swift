@@ -59,4 +59,45 @@ struct IntentInvocationTests {
         let slow = ProcessResult(status: 15, terminatedAfter: .seconds(60))
         #expect(throws: IntentRunner.Failure.self) { try IntentRunner.interpret(slow) }
     }
+
+    /// What `rh run` writes when the config has problems and the action then fails: the problems first, the reason last.
+    private static let withConfigProblems = """
+    warning: config.toml [general.termnial]: unknown key (did you mean "terminal"?)
+    error: config.toml [general.terminal]: unknown terminal "nope"; known terminals: ghostty, terminal. The first installed terminal is used instead.
+    error: config.local.toml:3 [agent.mine.command]: the command has a line break or control character, so it cannot be typed into a terminal
+    error: no terminal is installed
+
+    """
+
+    @Test func aFailureShowsOnlyTheLineThatSaysWhy() async throws {
+        #expect(throws: IntentRunner.Failure(text: "error: no terminal is installed")) {
+            try IntentRunner.interpret(ProcessResult(status: 1, standardError: Self.withConfigProblems))
+        }
+        // Through the whole path an intent takes.
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 1, standardError: Self.withConfigProblems)])
+        await #expect(throws: IntentRunner.Failure(text: "error: no terminal is installed")) {
+            try await IntentRunner(helper: "/Applications/Right Here.app/Contents/Helpers/rh", runner: runner).perform(.openTerminal(folder: "/Users/tester/code"))
+        }
+    }
+
+    @Test func theArgumentParsersOwnFormComesLastToo() {
+        let stderr = """
+        error: config.toml [general.terminal]: unknown terminal "nope"
+        Error: "/a/link/.." has `..` after a symbolic link, which the file system reads differently from the text.
+        Usage: rh run <action> [--origin <origin>] [--container <container>] [<paths> ...]
+          See 'rh run --help' for more information.
+        """
+        #expect(IntentRunner.failureReason(standardError: stderr) == "Error: \"/a/link/..\" has `..` after a symbolic link, which the file system reads differently from the text.")
+    }
+
+    @Test func nothingButConfigProblemsIsNoAnswerAndNoneOfItIsShown() {
+        let stderr = "warning: config.toml [general.termnial]: unknown key\nerror: config.toml:2 [agent.mine.command]: the command is empty\n"
+        #expect(IntentRunner.failureReason(standardError: stderr) == nil)
+        #expect(throws: IntentRunner.Failure(text: "rh exited with status 1.")) { try IntentRunner.interpret(ProcessResult(status: 1, standardError: stderr)) }
+        #expect(throws: IntentRunner.Failure(text: "rh exited with status 2.")) { try IntentRunner.interpret(ProcessResult(status: 2)) }
+    }
+
+    @Test func aReasonThatMerelyNamesATomlFileIsStillTheReason() {
+        #expect(IntentRunner.failureReason(standardError: "error: /Users/me/notes.toml is not a folder\n") == "error: /Users/me/notes.toml is not a folder")
+    }
 }

@@ -14,7 +14,10 @@ Siri and Spotlight phrases.
 - There is no free-text parameter. The folder or item is a file parameter; the agent and the template are entities
   picked from `rh agents --json` (enabled or found in the shell) and `rh actions --json` (the config's templates);
   the path style is an enum with one case per `PathStyle` (an exhaustive switch breaks the build when one is added).
-- The result is a short dialog (`Done: <rh's summary>`); a failure throws rh's own error text.
+- The result is a short dialog (`Done: <rh's summary>`); a failure throws the line in which rh says why it stopped (its
+  last `error:` or `Error:` line), not all of its standard error: before that rh reports each problem in the config,
+  which quotes the person's file. With no such line the text is only "rh exited with status N", so nothing of the
+  config is ever shown as the answer.
 - The titles, parameter names and phrases live in the String Catalog (`Localizable.xcstrings`, and
   `AppShortcuts.xcstrings` for the spoken phrases), in all thirty languages; both are resources of the app target.
 

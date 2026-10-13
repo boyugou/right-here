@@ -121,12 +121,21 @@ public struct IntentRunner: Sendable {
             throw Failure(text: "rh did not finish within \(limit.components.seconds) seconds and was stopped.")
         }
         let out = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
-        let err = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
         guard result.status == 0 else {
-            let text = err.isEmpty ? out : err
-            throw Failure(text: text.isEmpty ? "rh exited with status \(result.status)." : text)
+            throw Failure(text: failureReason(standardError: result.standardError) ?? "rh exited with status \(result.status).")
         }
         let line = out.split(separator: "\n").last.map(String.init) ?? ""
         return line.hasPrefix("ok: ") ? String(line.dropFirst(4)) : line
+    }
+
+    /// The line in which `rh` says why it stopped. Before that it reports the problems it found in the config, one line
+    /// each (`warning: config.toml [general.termnial]: ...`), which quote the person's own file and have nothing to
+    /// do with what an intent asked for; the reason comes last, as `error: ...` or, from the argument parser, `Error: ...`.
+    /// `nil` when there is none, so that nothing of the config is ever shown as an answer.
+    static func failureReason(standardError: String) -> String? {
+        let configProblem = #/^(?:error|warning): \S+?\.toml(?::\d+)?(?: \[[^\]]*\])?: /#
+        return standardError.split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .last { ($0.hasPrefix("error: ") || $0.hasPrefix("Error: ")) && $0.firstMatch(of: configProblem) == nil }
     }
 }

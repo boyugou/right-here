@@ -230,6 +230,8 @@ MUTANTS = [
      'guard target.path.hasPrefix(inside.hasSuffix("/") ? inside : inside + "/") else {', "guard true else {"),
     ("push replaces a link in the sync folder with a regular file", "Sources/RightHereKit/ConfigSync.swift",
      "let destination = try remoteWriteTarget(in: folder)", "let destination = folder.appendingPathComponent(Self.remoteFileName)"),
+    ("an intent's failure text includes the config problems rh reported", "Sources/RightHereKit/IntentInvocation.swift",
+     "&& $0.firstMatch(of: configProblem) == nil }", "}"),
 ]
 
 
