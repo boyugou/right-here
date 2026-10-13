@@ -242,6 +242,33 @@ struct CLITests {
         #expect(agent.standardOutput.contains("arguments: \"cd /tmp && codex\""))
     }
 
+    @Test func aPresetDryRunShowsTheQuotedPromptAndAHostileNameIsRefused() throws {
+        let rh = try RH(config: "[general]\nterminal = \"terminal\"\nagents = [\"claude\"]\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("work")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let plain = folder.appendingPathComponent("it's here.txt")
+        let hostile = folder.appendingPathComponent("two\nlines.txt")
+        for file in [plain, hostile] { try "x".write(to: file, atomically: true, encoding: .utf8) }
+
+        let ok = try rh.run(["run", "preset.review", "--dry-run", plain.path])
+        #expect(ok.status == 0, Comment(rawValue: ok.standardError))
+        // The dry run shows the argument with its quotes escaped, as a debug string would.
+        #expect(ok.standardOutput.contains(#"claude 'Review @\"it'\''s here.txt\" for bugs"#), Comment(rawValue: ok.standardOutput))
+
+        let refused = try rh.run(["run", "preset.review", "--dry-run", hostile.path])
+        #expect(refused.status != 0)
+        #expect(refused.standardError.contains("cannot be typed into a terminal"), Comment(rawValue: refused.standardError))
+        #expect(!refused.standardOutput.contains("claude '"))
+
+        let noFiles = try rh.run(["run", "preset.review", "--dry-run", "--container", folder.path])
+        #expect(noFiles.status != 0 && noFiles.standardError.contains("select one or more files"), Comment(rawValue: noFiles.standardError))
+
+        let actions = try rh.run(["actions"]).standardOutput
+        #expect(actions.contains("preset.review") && actions.contains("preset.tests"))
+        let agents = try #require(try rh.run(["agents", "--json"]).json as? [[String: Any]])
+        #expect(agents.first { $0["id"] as? String == "claude" }?["promptArgument"] as? String == "positional")
+    }
+
     @Test("what a menu click sends is accepted by the real rh, for every kind of Finder menu", arguments: [
         FinderMenuKind.items, .container, .sidebar, .toolbar
     ])

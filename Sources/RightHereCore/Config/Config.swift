@@ -27,11 +27,14 @@ public struct Config: Sendable, Equatable {
         public var command: String?
         /// Variants added to the built-in ones.
         public var variants: [AgentDescriptor.Variant]
+        /// Replaces how the command takes a first prompt (see `AgentPreset`).
+        public var promptArgument: PromptArgument?
 
-        public init(launcher: AgentLauncher? = nil, command: String? = nil, variants: [AgentDescriptor.Variant] = []) {
+        public init(launcher: AgentLauncher? = nil, command: String? = nil, variants: [AgentDescriptor.Variant] = [], promptArgument: PromptArgument? = nil) {
             self.launcher = launcher
             self.command = command
             self.variants = variants
+            self.promptArgument = promptArgument
         }
     }
 
@@ -56,6 +59,8 @@ public struct Config: Sendable, Equatable {
     public var apps: [AppDescriptor]
     /// Custom agents added by the user.
     public var customAgents: [AgentDescriptor]
+    /// Prompt presets: the built-in ones, with those the config redefines replaced in place, then the config's own.
+    public var presets: [AgentPreset]
 
     public init(
         terminal: String? = nil,
@@ -68,7 +73,8 @@ public struct Config: Sendable, Equatable {
         serviceItems: [String]? = nil,
         agents: [String: AgentSettings] = [:],
         apps: [AppDescriptor] = [],
-        customAgents: [AgentDescriptor] = []
+        customAgents: [AgentDescriptor] = [],
+        presets: [AgentPreset] = AgentPreset.builtIn
     ) {
         self.terminal = terminal
         self.editor = editor
@@ -81,6 +87,7 @@ public struct Config: Sendable, Equatable {
         self.agents = agents
         self.apps = apps
         self.customAgents = customAgents
+        self.presets = presets
     }
 
     public static let `default` = Config()
@@ -121,7 +128,17 @@ public struct Config: Sendable, Equatable {
         if let settings = agents[id] {
             if let command = settings.command { agent.command = command }
             agent.variants += settings.variants
+            if let promptArgument = settings.promptArgument { agent.promptArgument = promptArgument }
         }
         return agent
+    }
+
+    public func preset(id: String) -> AgentPreset? {
+        presets.first { $0.id == id }
+    }
+
+    /// The agent a preset runs with: the one it names, else the first one in `general.agents`.
+    public func agent(for preset: AgentPreset) -> AgentDescriptor? {
+        (preset.agent ?? enabledAgents.first).flatMap { agent(id: $0) }
     }
 }

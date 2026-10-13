@@ -21,6 +21,12 @@ struct RunnerArgumentsTests {
         ])
     }
 
+    @Test func theRunnerNeverCutsASelectionThatAPresetCouldTake() {
+        // A preset refuses more files than its max_files instead of naming fewer than were selected, which only holds
+        // if the runner passes at least that many on to rh.
+        #expect(RunnerArguments.maxItems >= AgentPreset.maxFilesLimit)
+    }
+
     @Test func aHugeSelectionStaysWithinWhatTheSystemCanStart() {
         let items = (0..<20_000).map { URL(fileURLWithPath: "/Users/me/a-fairly-long-folder-name/with/some/depth/file number \($0).txt") }
         let arguments = RunnerArguments.run(actionID: "open.terminal", context: HereContext(origin: .items, items: items))

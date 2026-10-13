@@ -23,6 +23,7 @@ struct ConfigBuilder {
         resolveTerminalAndEditor(general, into: &config)
         readAgents(root, into: &config)
         enableAgents(general.agents, into: &config)
+        readPresets(root, into: &config)
         checkActionTargets(config)
         return config
     }

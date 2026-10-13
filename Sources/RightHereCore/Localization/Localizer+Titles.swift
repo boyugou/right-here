@@ -15,6 +15,7 @@ extension Localizer {
     var copyPathGroup: String { string(.groupCopyPath) }
     var openWithGroup: String { string(.groupOpenWith) }
     var moreAgentsGroup: String { string(.groupMoreAgents) }
+    var presetsGroup: String { string(.groupPresets) }
     var revealInFinder: String { string(.actionReveal) }
 
     func copyPath(_ style: PathStyle) -> String {

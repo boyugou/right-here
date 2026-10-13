@@ -64,6 +64,9 @@ extension ConfigBuilder {
                 if config.app(id: id)?.role != .terminal { problem = ("no terminal \"\(id)\"", id, config.allApps.filter { $0.role == .terminal }.map(\.id)) }
             case .openApp(let id):
                 if config.app(id: id) == nil { problem = ("no app \"\(id)\"", id, config.allApps.map(\.id)) }
+            case .preset(let id, let terminal):
+                if config.preset(id: id) == nil { problem = ("no preset \"\(id)\"", id, config.presets.map(\.id)) }
+                else if let terminal, config.app(id: terminal)?.role != .terminal { problem = ("no terminal \"\(terminal)\"", terminal, config.allApps.filter { $0.role == .terminal }.map(\.id)) }
             case .newFile(let id):
                 if !config.newFile.templates.contains(where: { $0.id == id }) { problem = ("no new-file template \"\(id)\"", id, config.newFile.templates.map(\.id)) }
             default: break

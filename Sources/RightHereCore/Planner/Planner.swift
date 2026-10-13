@@ -42,6 +42,8 @@ public struct Planner: Sendable {
             return try openApp(app, ref: ref, context: context)
         case .agent(let id, let variant, let launcher):
             return try launchAgent(id: id, variant: variant, launcher: launcher, ref: ref, context: context)
+        case .preset(let id, let terminal):
+            return try runPreset(id: id, terminal: terminal, ref: ref, context: context)
         case .newFile(let id):
             return try newFile(id, ref: ref, context: context)
         case .reveal:
@@ -205,18 +207,76 @@ public struct Planner: Sendable {
 
         case .terminal(let terminalID):
             let typed = ([agent.command] + (variant?.arguments ?? [])).joined(separator: " ")
-            do { try ShellQuoting.validateForTyping(typed) } catch { throw PlanError.unsafeText(typed) }
-            do { try ShellQuoting.validateForTyping(directory.path) } catch { throw PlanError.unsafeText(directory.path) }
-            let (app, bundleID) = try resolveTerminal(terminalID, forCommand: true)
-            let steps = try TerminalAdapters.adapter(for: app)
-                .steps(for: TerminalSession(directory: directory, typedInput: typed, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
-            return LaunchPlan(
-                action: ref.id,
-                summary: "Run \(typed) in \(directory.lastPathComponent) with \(app.name)",
-                steps: steps,
-                notices: folderNotice(for: context, directory: directory)
-            )
+            return try typeCommand(typed, summary: typed, terminalID: terminalID, directory: directory, ref: ref, context: context)
         }
+    }
+
+    /// Types a command into a new shell of a terminal that can run commands, in `directory`.
+    private func typeCommand(_ typed: String, summary: String, terminalID: String?, directory: URL, ref: ActionRef, context: HereContext, notices: [String] = []) throws -> LaunchPlan {
+        do { try ShellQuoting.validateForTyping(typed) } catch { throw PlanError.unsafeText(typed) }
+        do { try ShellQuoting.validateForTyping(directory.path) } catch { throw PlanError.unsafeText(directory.path) }
+        let (app, bundleID) = try resolveTerminal(terminalID, forCommand: true)
+        let steps = try TerminalAdapters.adapter(for: app)
+            .steps(for: TerminalSession(directory: directory, typedInput: typed, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
+        return LaunchPlan(
+            action: ref.id,
+            summary: "Run \(summary) in \(directory.lastPathComponent) with \(app.name)",
+            steps: steps,
+            notices: folderNotice(for: context, directory: directory) + notices
+        )
+    }
+
+    // MARK: Presets
+
+    /// The files a preset names: the selected items that are not folders, which is what `{files}` stands for.
+    func presetFiles(in context: HereContext) -> [URL] {
+        context.items.filter { facts.isDirectory($0) == false }
+    }
+
+    /// Why a preset cannot run on this selection, or `nil`. Context only: whether the agent can take a prompt is
+    /// decided separately.
+    func presetContextRefusal(_ preset: AgentPreset, context: HereContext) -> String? {
+        preset.refusal(forFileCount: preset.needsFiles ? presetFiles(in: context).count : 0)
+    }
+
+    /// Why a preset's agent cannot be given its prompt, or `nil`.
+    func presetAgentRefusal(_ preset: AgentPreset) -> String? {
+        guard let agent = config.agent(for: preset) else {
+            return preset.agent.map { "Unknown agent \"\($0)\"." } ?? "No agent is enabled; list one in general.agents, or name an agent in the preset."
+        }
+        if agent.promptArgument == nil { return "\(agent.name) is not known to take a first prompt. Set prompt_arg in [agent.\(agent.id)] (\"positional\" or a flag such as \"--prompt\")." }
+        return nil
+    }
+
+    /// `<agent command> [flag] '<prompt>'`: the prompt is one word, quoted by `ShellQuoting` after it has been checked
+    /// for anything that would press a key or read as an option.
+    private func runPreset(id: String, terminal: String?, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
+        guard let preset = config.preset(id: id) else { throw PlanError.unknownPreset(id, choices: config.presets.map(\.id)) }
+        if let refusal = presetAgentRefusal(preset) { throw PlanError.unsupported(refusal) }
+        guard let agent = config.agent(for: preset), let promptArgument = agent.promptArgument else { throw PlanError.unsupported("No agent is enabled.") }
+        let directory = try workingDirectory(for: context)
+        if let refusal = presetContextRefusal(preset, context: context) { throw PlanError.unsupported(refusal) }
+
+        let renderer = PathRenderer(facts: facts)
+        let files = presetFiles(in: context)
+        let prompt = PresetTemplate.expand(
+            preset.prompt,
+            files: files.map { renderer.render($0, style: .aiMention, relativeTo: directory) }.joined(separator: " "),
+            folder: renderer.render(directory, style: .name),
+            name: renderer.render(context.items.first ?? directory, style: .name)
+        )
+        if let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }
+
+        var words = [agent.command]
+        if case .flag(let flag) = promptArgument { words.append(ShellQuoting.quote(flag, for: .posix)) }
+        words.append(ShellQuoting.quote(prompt, for: .posix))
+        let resolved = config.launcher(forAgent: agent.id, explicit: terminal.map { .terminal($0) }, hasVariant: true)
+        guard case .terminal(let terminalID) = resolved.launcher else { throw PlanError.unsupported("A preset is typed into a terminal.") }
+        var notices: [String] = []
+        if context.items.contains(where: { facts.isDirectory($0) == true }), preset.needsFiles {
+            notices.append("Folders in the selection are not named in the prompt; only files are.")
+        }
+        return try typeCommand(words.joined(separator: " "), summary: "\(agent.command) with preset \(id)", terminalID: terminalID, directory: directory, ref: ref, context: context, notices: notices)
     }
 
     /// Selected files become `@` mentions in the prompt box; nothing is sent.

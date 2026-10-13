@@ -17,6 +17,9 @@ public enum Documentation {
                                        launcher: a terminal id, "default" (the default terminal),
                                        "link" (the agent's own terminal deep link, reuses its
                                        last terminal) or "desktop" (its desktop app)
+        preset.<id>[@<terminal>]       send a prompt preset, with the selected files as @-mentions, to its
+                                       agent in a terminal (config `[[preset]]`; built in: review, explain, tests).
+                                       The agent starts working on the prompt at once.
         new-file.<template>            create an empty file next to the selection or in the folder
         reveal                         select the items in Finder
 
@@ -25,6 +28,7 @@ public enum Documentation {
         rh run copy-path.git-relative src/main.swift
         rh run agent.claude.continue@ghostty ~/code/project
         rh run agent.codex@desktop ~/code/project
+        rh run preset.review src/main.swift src/util.swift
         rh run new-file.md --container ~/notes
 
     Add --dry-run to see the plan without running it, and --json for machine-readable output.

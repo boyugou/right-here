@@ -56,3 +56,15 @@ change so the docs can carry a verified entry.
 The thirty languages in `Localization/Localizable.xcstrings` were machine-translated. A native speaker should read
 the menu titles and the alert texts of the setup window (`rh menu --language <tag>` prints the menu; the app's
 window follows the system language). Right-to-left languages (ar, he, fa, ur) deserve a look in the real menu.
+
+## 4. Agent prompt presets (0012)
+
+Needs a real Finder and a terminal that can run commands; nothing here is covered by the tests, which only plan.
+
+1. Select two files in a project folder, right-click, open More Agent Options, then Agent Presets. The nested
+   submenu should show Review, Explain and Write Tests, and clicking Review should open a terminal in the folder and
+   start the agent with the prompt already sent, naming both files as `@` mentions.
+2. Right-click the empty background of a folder window: the Agent Presets submenu should be missing (the built-ins
+   all name files).
+3. Select a folder and click Review: a failure alert should say to select files.
+4. A file with a space and an apostrophe in its name should arrive as a single mention.

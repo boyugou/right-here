@@ -85,6 +85,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 9 | Thirty languages from a String Catalog compiled into Swift; human-facing surfaces follow the system language, the CLI and MCP stay English. | [0006](decisions/0006-localization.md) |
 | 10 | A Mac App Store edition, if any, is a reduced menu-only app, built only after a one-day sandbox spike. | [0007](decisions/0007-app-store-edition.md) |
 | 11 | Independent review and a cold-start usability test follow large changes; findings are reproduced first and each fix has a test that fails without it. | [0008](decisions/0008-independent-review.md) |
+| 12 | Prompt presets (`[[preset]]`, `preset.<id>`) type the agent command with a quoted, validated prompt; they are sent when the agent starts, not left in the prompt box. | [0012](decisions/0012-agent-presets.md) |
 
 ## 5. Platform facts
 
@@ -191,18 +192,21 @@ copy-path.<style>            absolute, tilde, git-relative, name, parent, shell-
                              file-url, ai-mention, markdown-link
 open.terminal[@<terminal>]   open.editor   open.app.<app>
 agent.<agent>[.<variant>][@<launcher>]
-new-file.<template>          reveal
+preset.<id>[@<terminal>]     new-file.<template>          reveal
 ```
 
 `rh actions` lists what is available on the machine, with reasons for what is not. `rh docs actions` prints
 the grammar. Agents come with variants (`agent.claude.continue`, `agent.codex.last`) and launchers: a
-terminal id, `default`, `link` (the agent's own deep link) or `desktop` (its desktop app).
+terminal id, `default`, `link` (the agent's own deep link) or `desktop` (its desktop app). A preset
+(`preset.review`, config `[[preset]]`) sends a prompt template filled in from the selection to its agent as the
+first argument ([0012](decisions/0012-agent-presets.md)).
 
 ## 7. Menu
 
 `MenuBuilder` turns the config and a context (selected items, or a folder) into a menu tree. The default
 layout is: open in terminal, open in editor, one entry per enabled agent, a "More Agent Options" submenu
-(variants and alternative launchers), a separator, New File, Copy Path. `[menu] items` reorders or
+(variants, alternative launchers and the "Agent Presets" submenu, which only lists presets that fit the selection),
+a separator, New File, Copy Path. `[menu] items` reorders or
 replaces it with group names or any action id. Entries that cannot run here (the app is not installed,
 the terminal cannot run commands) are not shown; `rh actions --all` and `rh doctor` say why.
 
@@ -236,7 +240,13 @@ applies. The app never rewrites the file, so comments and ordering stay the pers
    fail, so nothing runs).
    Paths are cut at slash scalars, as the kernel cuts them, so a combining mark cannot hide a `..`.
 2. Text typed into a terminal is read as keystrokes, so a path with a line break or any control character
-   is refused for typed launches. Deep links percent-encode everything but unreserved characters.
+   is refused for typed launches. Deep links percent-encode everything but unreserved characters. A preset's
+   prompt (a template plus file names) is typed as one single-quoted word, and the expanded text is refused when it
+   has a control character, a backslash (fish and the other shells read it differently inside quotes), a leading
+   dash (the agent would read an option) or more files than `max_files`; see
+   [0012](decisions/0012-agent-presets.md). Presets are sent when the agent starts, and a file name becomes part
+   of the instruction the agent reads, so they are for folders the person trusts; the built-ins are read-only only
+   in their wording.
 3. The sandbox stays on for the extension. What it cannot do is done by `rh` through the runner script,
    which only the user can install and which passes on only `run` and `probe`: a compromised extension
    cannot call `rh install`, `rh uninstall` or `rh init --force`.

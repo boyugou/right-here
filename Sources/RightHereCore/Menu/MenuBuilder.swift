@@ -33,7 +33,7 @@ public struct MenuNode: Sendable, Equatable, Codable {
 /// Builds the menu for a context from the config. Pure: the result depends only on the inputs.
 public struct MenuBuilder: Sendable {
     public static let defaultItems = ["open-terminal", "open-editor", "open-with", "agents", "agents-more", "-", "new-file", "copy-path"]
-    public static let groups: Set<String> = ["open-terminal", "open-editor", "open-with", "agents", "agents-more", "new-file", "copy-path"]
+    public static let groups: Set<String> = ["open-terminal", "open-editor", "open-with", "agents", "agents-more", "new-file", "copy-path", "presets"]
 
     private let config: Config
     private let registry: ActionRegistry
@@ -61,7 +61,8 @@ public struct MenuBuilder: Sendable {
             case "open-editor": nodes += single(.openEditor)
             case "open-with": nodes += openWith(excluding: listedAbove)
             case "agents": nodes += config.enabledAgents.flatMap { single(.agent(id: $0, variant: nil, launcher: nil)) }
-            case "agents-more": nodes += moreAgents()
+            case "agents-more": nodes += moreAgents(context, withPresets: !entries.contains("presets"))
+            case "presets": nodes += presets(context)
             case "new-file": nodes += newFile(context)
             case "copy-path": nodes += copyPath()
             default: nodes += ActionRef(parsing: entry).map(single) ?? []
@@ -92,7 +93,21 @@ public struct MenuBuilder: Sendable {
         return tidy.isEmpty ? [] : [.submenu(localizer.openWithGroup, icon: .symbol("arrow.up.forward.app"), tidy)]
     }
 
-    private func moreAgents() -> [MenuNode] {
+    /// The "Agent Presets" submenu: the presets whose agent is enabled and that fit this selection. A preset that
+    /// needs files is left out of a folder's menu, and the whole submenu when nothing is left.
+    private func presets(_ context: HereContext) -> [MenuNode] {
+        let infos = config.presets.compactMap { preset -> (agent: String, info: ActionInfo)? in
+            guard let agent = config.agent(for: preset), config.enabledAgents.contains(agent.id) else { return nil }
+            let info = registry.info(.preset(id: preset.id, terminal: nil), context: context)
+            return info.available ? (agent.id, info) : nil
+        }
+        // With several agents in play the agent's name is part of the title; with one it is just noise.
+        let oneAgent = Set(infos.map(\.agent)).count <= 1
+        let children = infos.map { MenuNode.action($0.info, title: oneAgent ? $0.info.shortTitle : $0.info.title) }
+        return children.isEmpty ? [] : [.submenu(localizer.presetsGroup, icon: .symbol("text.bubble"), children)]
+    }
+
+    private func moreAgents(_ context: HereContext, withPresets: Bool) -> [MenuNode] {
         var children: [MenuNode] = []
         let defaultTerminal = try? registry.resolveDefault(role: .terminal, configured: config.terminal)
         for id in config.enabledAgents {
@@ -106,6 +121,7 @@ public struct MenuBuilder: Sendable {
             let nodes = refs.flatMap(single)
             if !nodes.isEmpty { children += nodes + [.separator] }
         }
+        if withPresets { children += presets(context) }
         let tidy = Self.tidy(children)
         return tidy.isEmpty ? [] : [.submenu(localizer.moreAgentsGroup, icon: .symbol("ellipsis.circle"), tidy)]
     }

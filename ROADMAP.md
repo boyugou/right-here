@@ -46,8 +46,10 @@ Researched against macOS 26 as of October 2026; each needs a short decision reco
    point that does not depend on the Finder extension (Apple has not announced a Finder Sync deprecation, but
    developer forums report it failing to load on some macOS 26 machines).
 2. **Recent and pinned folders**: a recents command, a pin command, a private state file, offered as intent entities.
-3. **Agent prompt presets that carry the selection** (`[[preset]]` with `{files}` as `@` mentions), typed safely and
-   prefilled, never auto-submitted by default.
+3. **Agent prompt presets that carry the selection** (`[[preset]]` with `{files}` as `@` mentions), typed safely.
+   Built, see [0012](docs/decisions/0012-agent-presets.md). Not as first written: a typed preset is sent when the agent
+   starts, because `claude` and `codex` take the prompt as an argument and there is no honest "prefill, do not send"
+   through the typing path (only Claude's own link does that). A `prefill` option on top of that link is open.
 4. **Project-local overrides** (`.right-here.toml` at the git root) behind an explicit trust step pinned to the file
    content, as direnv does. Reverses the rule that config is never read from the acted-on folder, so it needs its own
    record and mutation entries first.

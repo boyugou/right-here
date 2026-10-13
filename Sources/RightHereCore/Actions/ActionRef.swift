@@ -41,6 +41,7 @@ public enum AgentLauncher: Sendable, Equatable, Hashable {
 ///                                    agent.claude   agent.claude.continue@ghostty   agent.codex@desktop
 ///                                    launcher: a terminal id, "default" (the default terminal),
 ///                                    "link" or "desktop"
+///     preset.<id>[@<terminal>]       preset.review   preset.tests@ghostty
 ///     new-file.<template>            new-file.md
 ///     reveal
 ///     user.<id>                      an action defined in the config
@@ -52,6 +53,8 @@ public enum ActionRef: Sendable, Equatable, Hashable {
     /// A `nil` launcher means the one configured for the agent.
     case agent(id: String, variant: String?, launcher: AgentLauncher?)
     case newFile(String)
+    /// A prompt preset of the config, typed into a terminal with its agent; `nil` is the agent's own terminal choice.
+    case preset(id: String, terminal: String?)
     case reveal
     case user(String)
 
@@ -76,6 +79,9 @@ public enum ActionRef: Sendable, Equatable, Hashable {
         case ("agent", 2), ("agent", 3):
             guard case .valid(let launcher) = Self.launcherSuffix(suffix) else { return nil }
             self = .agent(id: parts[1], variant: parts.count == 3 ? parts[2] : nil, launcher: launcher)
+        case ("preset", 2):
+            guard case .valid(let terminal) = Self.terminalSuffix(suffix) else { return nil }
+            self = .preset(id: parts[1], terminal: terminal)
         case ("new-file", 2):
             guard suffix == nil else { return nil }
             self = .newFile(parts[1])
@@ -109,6 +115,8 @@ public enum ActionRef: Sendable, Equatable, Hashable {
             case .desktop?: suffix = "@" + AgentLauncher.desktopWord
             }
             return "agent.\(agent)" + (variant.map { ".\($0)" } ?? "") + suffix
+        case .preset(let id, let terminal):
+            return "preset.\(id)" + (terminal.map { "@\($0)" } ?? "")
         case .newFile(let template):
             return "new-file.\(template)"
         case .reveal:
