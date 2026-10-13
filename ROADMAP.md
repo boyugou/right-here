@@ -34,8 +34,8 @@ The items that need a person at the machine are listed with their steps in
   has them (none is installed on the development machine); a config-defined launcher (`open_args`, `run_args`)
   exists for the meantime.
 - Native-speaker review of the translations.
-- The setup window's check rows (titles, details, fixes) come from the doctor and are English in every language; the
-  window around them is translated. Translating them needs the doctor to return keys and arguments, not sentences.
+- The setup window's check rows: the titles are translated; the detail and fix lines come from the doctor and are
+  English in every language. Translating them needs the doctor to return keys and arguments, not sentences.
 - A menu-only App Store build (scope and risks in the design notes).
 
 ## Open

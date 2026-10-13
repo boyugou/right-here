@@ -59,7 +59,7 @@ struct SetupView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(l10n.string(model.needsAttention ? .appNeedsAttention : .appAllSet)).font(.body.weight(.medium))
                     // Which checks, so the banner is not a puzzle with the answer further down.
-                    let open = model.checks.filter { $0.status != .ok }.map(\.title)
+                    let open = model.checks.filter { $0.status != .ok }.map(CheckRow.localizedTitle(of:))
                     if !open.isEmpty {
                         Text(open.formatted(.list(type: .and, width: .narrow))).font(.callout).foregroundStyle(.secondary)
                     }
@@ -118,7 +118,7 @@ private struct CheckRow: View {
                 .frame(width: 20)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
-                Text(check.title).font(.body.weight(.medium))
+                Text(Self.localizedTitle(of: check)).font(.body.weight(.medium))
                 if let detail = check.detail {
                     Text(Self.styled(detail)).font(.callout).foregroundStyle(.secondary).lineLimit(2).textSelection(.enabled)
                 }
@@ -133,6 +133,18 @@ private struct CheckRow: View {
         // One stop for VoiceOver per check (title, detail and fix read together) instead of three.
         .accessibilityElement(children: .combine)
         .accessibilityValue(Localizer.system.string(statusKey))
+    }
+
+    /// The doctor's titles are English (the command line is); the checks with a fixed title are translated here.
+    /// Agent checks carry the agent's own name, and the detail and fix lines stay as the doctor wrote them.
+    static func localizedTitle(of check: DoctorCheck) -> String {
+        let keys: [String: LocalizationKey] = [
+            "config": .appCheckConfig, "terminal.default": .appCheckTerminal, "editor.default": .appCheckEditor,
+            "agents": .appCheckAgents, "claude.link": .appCheckClaudeLink, "finder.runner": .appCheckRunner,
+            "services": .appCheckServices, "cli.link": .appCheckCLI, "finder.extension": .appCheckExtension,
+            "finder.activity": .appCheckLastAction, "finder.chain": .appCheckChain, "finder.launch": .appCheckLaunch
+        ]
+        return keys[check.id].map { Localizer.system.string($0) } ?? check.title
     }
 
     private var statusKey: LocalizationKey {
