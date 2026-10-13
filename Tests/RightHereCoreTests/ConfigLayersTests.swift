@@ -295,16 +295,22 @@ struct ConfigLayersDisabledTests {
     prompt = "Look at {files}"
     """
 
-    @Test func aPresetWhoseAgentIsDisabledIsDroppedWithAWarningNotAnError() {
+    @Test func aPresetWhoseAgentIsDisabledIsDroppedWithANoteNotAWarning() {
         let result = layered(Self.presetOfADisabledAgent, "disabled = [\"myagent\"]\n")
         #expect(!result.hasErrors, "\(result.diagnostics.map { "\($0.severity) \($0.path): \($0.message)" })")
         #expect(!result.config.presets.contains { $0.id == "mine" })
-        let warning = result.diagnostics.first { $0.message.contains("\"mine\"") }
-        #expect(warning?.severity == .warning)
-        #expect(warning?.file == "config.local.toml", "the overlay's `disabled` is what the person would edit")
-        #expect(warning?.message.contains("\"myagent\"") == true)
+        // Expected, and nothing can silence it (naming the preset in `disabled` changes nothing), so it must not be a warning:
+        // it would fail `validate --strict` for ever and be printed by every `rh menu`.
+        #expect(result.diagnostics.isEmpty, "\(result.diagnostics)")
+        let note = result.notes.first { $0.message.contains("\"mine\"") }
+        #expect(result.notes.count == 1 && note?.severity == .note)
+        #expect(note?.file == "config.local.toml", "the overlay's `disabled` is what the person would edit")
+        #expect(note?.line == 1 && note?.path == "disabled")
+        #expect(note?.message.contains("\"myagent\"") == true)
+        #expect(note?.summary(file: URL(fileURLWithPath: "/x/config.toml")).hasPrefix("note: config.local.toml:1 [disabled]: the preset \"mine\" is not offered on this machine") == true)
         // Without the overlay the preset is there and nothing is dropped.
         #expect(layered(Self.presetOfADisabledAgent, nil).config.presets.contains { $0.id == "mine" })
+        #expect(layered(Self.presetOfADisabledAgent, nil).notes.isEmpty)
     }
 
     @Test func aBuiltInAgentThatIsDisabledDropsItsPresetsToo() {

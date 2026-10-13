@@ -4,6 +4,8 @@ public struct ConfigDiagnostic: Sendable, Equatable, Codable {
     public enum Severity: String, Sendable, Codable {
         case error
         case warning
+        /// Something to know that needs no action: it never fails `--strict`, and it is only in `ConfigLoadResult.notes`.
+        case note
     }
 
     public var severity: Severity
@@ -45,11 +47,16 @@ public struct ConfigDiagnostic: Sendable, Equatable, Codable {
 
 public struct ConfigLoadResult: Sendable, Equatable {
     public var config: Config
+    /// Errors and warnings: what is wrong, and what `--strict` fails on.
     public var diagnostics: [ConfigDiagnostic]
+    /// What the config's own settings did that is no mistake and cannot be silenced (a preset left out because its agent is
+    /// disabled on this machine). Kept apart from `diagnostics`, which every consumer counts as problems.
+    public var notes: [ConfigDiagnostic]
 
-    public init(config: Config, diagnostics: [ConfigDiagnostic]) {
+    public init(config: Config, diagnostics: [ConfigDiagnostic], notes: [ConfigDiagnostic] = []) {
         self.config = config
         self.diagnostics = diagnostics
+        self.notes = notes
     }
 
     public var hasErrors: Bool { diagnostics.contains { $0.severity == .error } }

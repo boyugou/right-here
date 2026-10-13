@@ -80,8 +80,12 @@ public enum ConfigLayers {
         if merged.disabledProblem {
             localDiagnostics.append(ConfigDiagnostic(severity: .error, path: "disabled", message: "expected an array of strings", file: overlayName))
         }
+        // `disabled` is what the person wrote; a shared preset that needs a disabled agent is left out because of it, which is
+        // expected. A warning could not be silenced (naming the preset in `disabled` changes nothing) and would fail --strict
+        // for ever, so it is a note.
+        var notes: [ConfigDiagnostic] = []
         for preset in merged.droppedPresets {
-            localDiagnostics.append(ConfigDiagnostic(severity: .warning, path: "disabled", message: "the preset \"\(preset.id)\" is not offered on this machine: its agent \"\(preset.agent)\" is disabled", file: overlayName))
+            notes.append(ConfigDiagnostic(severity: .note, path: "disabled", message: "the preset \"\(preset.id)\" is not offered on this machine: its agent \"\(preset.agent)\" is disabled", file: overlayName))
         }
         // The catalogs that are not in the file: built-in templates are removed from the list, built-in apps are marked
         // removed (they are found through `KnownApps`, which a config cannot edit).
@@ -91,6 +95,7 @@ public enum ConfigLayers {
         let all = baseDiagnostics + result.diagnostics + localDiagnostics
         result.diagnostics = ConfigParser.locate(all.filter { $0.file == nil }, in: baseText ?? "")
             + ConfigParser.locate(all.filter { $0.file != nil }, in: localText)
+        result.notes = ConfigParser.locate(notes, in: localText)
         return result
     }
 

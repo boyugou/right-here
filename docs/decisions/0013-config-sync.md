@@ -42,9 +42,14 @@ Rules (`ConfigMerge`, pure, in `RightHereCore`):
     and could only be left out of the menu; that left the default terminal unchanged and no warning, which is not what
     "disabled" says.) A built-in agent is only taken out of `general.agents` and every list that names it: agents are
     offered by that list, and the registry keeps listing every defined agent.
-  - **A preset whose `agent` is disabled is dropped, with a warning** on the overlay's `disabled` (it cannot run here,
+  - **A preset whose `agent` is disabled is dropped, with a note** on the overlay's `disabled` (it cannot run here,
     and keeping it would be an error about something removed on purpose), together with the menu and Services entries
     that name it. If it replaced a built-in preset (`review`), the built-in one is back, and entries naming it stay.
+    It was a warning first, which could not be silenced (naming the preset in `disabled` changes nothing), failed
+    `validate --strict` for ever and was printed by every `rh menu`. A note is `ConfigLoadResult.notes`, kept apart from
+    `diagnostics` (the doctor, the MCP check, `clean` and the stderr report of `run` and `menu` all count that list as
+    problems): `rh config validate` prints it as `note: ...` after the problems and in `notes` of its JSON, and it does not
+    fail `--strict`.
 
 ### Why the merge works on TOML values, not on parsed `Config` values
 

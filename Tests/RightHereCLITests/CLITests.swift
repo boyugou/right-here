@@ -1139,6 +1139,25 @@ struct ConfigSyncCLITests {
         #expect(!initialized.standardOutput.contains("Use --force"), "--force cannot save a file it cannot read: \(initialized.standardOutput)")
     }
 
+    @Test func aPresetLeftOutBecauseItsAgentIsDisabledHereIsANoteThatStrictAndMenuIgnore() throws {
+        let shared = "[general]\nagents = [\"claude\", \"codex\"]\n[[preset]]\nid = \"security-review\"\ntitle = \"Security review\"\nagent = \"codex\"\nprompt = \"Review {files} for security problems.\"\n"
+        let rh = try isolated(config: shared); defer { rh.cleanUp() }
+        let overlay = try configFile(rh).deletingLastPathComponent().appendingPathComponent("config.local.toml")
+        try "disabled = [\"codex\"]\n".write(to: overlay, atomically: true, encoding: .utf8)
+        let strict = try rh.run(["config", "validate", "--strict"])
+        #expect(strict.status == 0, "a note failed --strict: \(strict.standardOutput)")
+        let lines = strict.standardOutput.split(separator: "\n").map(String.init)
+        #expect(lines.count == 2 && lines[0].hasPrefix("ok: ") && lines[1].hasPrefix("note: config.local.toml:1 [disabled]: the preset \"security-review\" is not offered on this machine"), "\(lines)")
+        let json = try #require(try rh.run(["config", "validate", "--json"]).json as? [String: Any])
+        #expect(json["clean"] as? Bool == true && json["ok"] as? Bool == true && (json["diagnostics"] as? [Any])?.isEmpty == true, "\(json)")
+        let notes = try #require(json["notes"] as? [[String: Any]])
+        #expect(notes.count == 1 && notes.first?["severity"] as? String == "note" && notes.first?["file"] as? String == "config.local.toml", "\(notes)")
+        // `rh menu` reports config problems on standard error every time; a note is no problem.
+        let menu = try rh.run(["menu", "--container", rh.configDirectory.path])
+        #expect(menu.standardError.isEmpty, "\(menu.standardError)")
+        #expect(!menu.standardOutput.contains("security-review"))
+    }
+
     @Test func syncIsListedInHelp() throws {
         let rh = try isolated(); defer { rh.cleanUp() }
         let text = try rh.run(["config", "--help"]).standardOutput
