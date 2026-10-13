@@ -63,7 +63,7 @@ def merge(catalog_name: str, requested: dict, replace: bool) -> tuple[dict, list
             value = value.strip()
             code_strings = catalog_name == "Localizable.xcstrings"
             if code_strings:
-                value = with_direction_mark(language, key, value)
+                value = with_direction_mark(language, key, value, english)
             problems += translation_problems(key, language, value, english, request.get("keep", []), direction=code_strings)
             existing = entry["localizations"].get(code, {}).get("stringUnit")
             if existing is not None and existing["value"] != value and not replace:

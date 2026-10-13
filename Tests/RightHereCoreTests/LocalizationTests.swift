@@ -227,7 +227,8 @@ struct LocalizationDetailTests {
     func rightToLeftMarks(language: String) {
         let localizer = Localizer(languages: [language])
         func rendered(_ key: LocalizationKey) -> String { localizer.render(filled(key)) }
-        for key in LocalizationKey.allCases where key != .newFileBaseName {
+        // A text that is only its value (a path) is shown as it is, and a mark would end up in the copied path.
+        for key in LocalizationKey.allCases where key != .newFileBaseName && Localizations.table[key.rawValue]?["en"] != "%@" {
             let text = rendered(key)
             guard let first = text.drop(while: { $0 == " " }).first else { continue }
             if first.isASCII && first.isLetter { Issue.record("\(language) \(key.rawValue) starts with a Latin letter and no mark: \(text)") }

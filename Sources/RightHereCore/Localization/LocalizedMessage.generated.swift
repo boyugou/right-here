@@ -41,6 +41,12 @@ extension LocalizedMessage {
     public static var appCheckServices: LocalizedMessage { LocalizedMessage(.appCheckServices) }
     /// Config sync
     public static var appCheckSync: LocalizedMessage { LocalizedMessage(.appCheckSync) }
+    /// Config sync conflict copies
+    public static var appCheckSyncConflict: LocalizedMessage { LocalizedMessage(.appCheckSyncConflict) }
+    /// Config sync folder
+    public static var appCheckSyncFolder: LocalizedMessage { LocalizedMessage(.appCheckSyncFolder) }
+    /// Synced config
+    public static var appCheckSyncRemote: LocalizedMessage { LocalizedMessage(.appCheckSyncRemote) }
     /// Default terminal
     public static var appCheckTerminal: LocalizedMessage { LocalizedMessage(.appCheckTerminal) }
     /// Copy Setup Prompt for AI
@@ -113,6 +119,132 @@ extension LocalizedMessage {
     public static var copyPathTilde: LocalizedMessage { LocalizedMessage(.copyPathTilde) }
     /// Copy Path: %@
     public static func copyPathTitleFormat(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.copyPathTitleFormat, [argument1]) }
+    /// none yet; right-click a folder in Finder and choose an action, then run `rh doctor` again
+    public static var doctorActivityNone: LocalizedMessage { LocalizedMessage(.doctorActivityNone) }
+    /// %1$@ from the %2$@ menu, %3$@
+    public static func doctorActivityRecent(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorActivityRecent, [argument1, argument2, argument3]) }
+    /// `%@` is not found in your login shell
+    public static func doctorAgentNotFound(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentNotFound, [argument1]) }
+    /// `%1$@` found; starts with %2$@
+    public static func doctorAgentOk(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentOk, [argument1, argument2]) }
+    /// none enabled
+    public static var doctorAgentsNone: LocalizedMessage { LocalizedMessage(.doctorAgentsNone) }
+    /// handler not installed (only needed for launcher = "link")
+    public static var doctorClaudeLinkMissing: LocalizedMessage { LocalizedMessage(.doctorClaudeLinkMissing) }
+    /// handler installed
+    public static var doctorClaudeLinkOk: LocalizedMessage { LocalizedMessage(.doctorClaudeLinkOk) }
+    /// no link at %@
+    public static func doctorCliMissing(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorCliMissing, [argument1]) }
+    /// linked at %@, but that folder is not on PATH
+    public static func doctorCliNotOnPath(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorCliNotOnPath, [argument1]) }
+    /// none at %@; defaults apply
+    public static func doctorConfigMissing(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorConfigMissing, [argument1]) }
+    /// merged with the per-machine overlay %@
+    public static func doctorConfigOverlay(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorConfigOverlay, [argument1]) }
+    /// %@ is a symlink, which the Finder extension's sandbox may not be able to follow
+    public static func doctorConfigSymlink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorConfigSymlink, [argument1]) }
+    /// %@ warning(s); run `rh config validate`
+    public static func doctorConfigWarnings(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorConfigWarnings, [argument1]) }
+    /// registered but switched off
+    public static var doctorExtensionDisabled: LocalizedMessage { LocalizedMessage(.doctorExtensionDisabled) }
+    /// enabled, but registered from %1$@ locations: %2$@
+    public static func doctorExtensionMultiple(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorExtensionMultiple, [argument1, argument2]) }
+    /// not registered; Finder shows no Right Here menu
+    public static var doctorExtensionNotRegistered: LocalizedMessage { LocalizedMessage(.doctorExtensionNotRegistered) }
+    /// Choose another terminal with general.terminal, or set launcher = "link" or "desktop".
+    public static var doctorFixAgentLauncher: LocalizedMessage { LocalizedMessage(.doctorFixAgentLauncher) }
+    /// Install it, or remove "%@" from general.agents.
+    public static func doctorFixAgentRemove(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixAgentRemove, [argument1]) }
+    /// Add agents to general.agents, for example agents = ["claude"].
+    public static var doctorFixAgentsAdd: LocalizedMessage { LocalizedMessage(.doctorFixAgentsAdd) }
+    /// Start `claude` once and send a prompt; Claude Code registers the handler.
+    public static var doctorFixClaudeLink: LocalizedMessage { LocalizedMessage(.doctorFixClaudeLink) }
+    /// Add ~/.local/bin to PATH in your shell profile.
+    public static var doctorFixCliPath: LocalizedMessage { LocalizedMessage(.doctorFixCliPath) }
+    /// Run `rh config validate` and fix the errors.
+    public static var doctorFixConfigErrors: LocalizedMessage { LocalizedMessage(.doctorFixConfigErrors) }
+    /// Run `rh init`.
+    public static var doctorFixConfigInit: LocalizedMessage { LocalizedMessage(.doctorFixConfigInit) }
+    /// Run `rh config validate`; warnings are usually typos, and what they were meant to set is missing.
+    public static var doctorFixConfigWarnings: LocalizedMessage { LocalizedMessage(.doctorFixConfigWarnings) }
+    /// Install an editor or set general.editor.
+    public static var doctorFixEditor: LocalizedMessage { LocalizedMessage(.doctorFixEditor) }
+    /// Run `rh install --finder` to remove the stale copies.
+    public static var doctorFixExtensionClean: LocalizedMessage { LocalizedMessage(.doctorFixExtensionClean) }
+    /// Run `rh install --finder`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder.
+    public static var doctorFixExtensionEnable: LocalizedMessage { LocalizedMessage(.doctorFixExtensionEnable) }
+    /// Install Right Here.app, then run `rh install --finder`.
+    public static var doctorFixExtensionInstall: LocalizedMessage { LocalizedMessage(.doctorFixExtensionInstall) }
+    /// Run `rh install --cli`.
+    public static var doctorFixInstallCLI: LocalizedMessage { LocalizedMessage(.doctorFixInstallCLI) }
+    /// Run `rh install --scripts`.
+    public static var doctorFixInstallScripts: LocalizedMessage { LocalizedMessage(.doctorFixInstallScripts) }
+    /// Run `rh install --services`.
+    public static var doctorFixInstallServices: LocalizedMessage { LocalizedMessage(.doctorFixInstallServices) }
+    /// Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy.
+    public static var doctorFixSyncCommands: LocalizedMessage { LocalizedMessage(.doctorFixSyncCommands) }
+    /// Compare them (`rh config sync status`), then `rh config sync pull --force` to take the folder's or `push --force` to keep this one; the replaced file is saved first.
+    public static var doctorFixSyncCompare: LocalizedMessage { LocalizedMessage(.doctorFixSyncCompare) }
+    /// Two machines wrote config.toml at once. Compare the copies, keep the right content in config.toml, and delete the others by hand.
+    public static var doctorFixSyncConflict: LocalizedMessage { LocalizedMessage(.doctorFixSyncConflict) }
+    /// Open the folder in Finder, let the download finish, then run `rh config sync status`.
+    public static var doctorFixSyncDownload: LocalizedMessage { LocalizedMessage(.doctorFixSyncDownload) }
+    /// Fix the file in the folder, or run `rh config sync push --force` from a machine with a good config.
+    public static var doctorFixSyncFixRemote: LocalizedMessage { LocalizedMessage(.doctorFixSyncFixRemote) }
+    /// Check that the drive or iCloud Drive is available, or run `rh config sync push` to create the folder, or choose another with `rh config sync enable --folder <folder>`.
+    public static var doctorFixSyncFolder: LocalizedMessage { LocalizedMessage(.doctorFixSyncFolder) }
+    /// Run `rh config sync pull`.
+    public static var doctorFixSyncPull: LocalizedMessage { LocalizedMessage(.doctorFixSyncPull) }
+    /// Run `rh config sync push` to put this machine's config there.
+    public static var doctorFixSyncPush: LocalizedMessage { LocalizedMessage(.doctorFixSyncPush) }
+    /// Run `rh config sync push`.
+    public static var doctorFixSyncPushShort: LocalizedMessage { LocalizedMessage(.doctorFixSyncPushShort) }
+    /// Run `rh config sync enable` again, or `rh config sync disable`.
+    public static var doctorFixSyncReenable: LocalizedMessage { LocalizedMessage(.doctorFixSyncReenable) }
+    /// Install a terminal or set general.terminal.
+    public static var doctorFixTerminal: LocalizedMessage { LocalizedMessage(.doctorFixTerminal) }
+    /// not installed; the Finder menu cannot run actions
+    public static var doctorRunnerMissing: LocalizedMessage { LocalizedMessage(.doctorRunnerMissing) }
+    /// runs %@
+    public static func doctorRunnerOk(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorRunnerOk, [argument1]) }
+    /// points at %@, not at this rh
+    public static func doctorRunnerStale(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorRunnerStale, [argument1]) }
+    /// points at %@, which does not exist
+    public static func doctorRunnerTargetMissing(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorRunnerTargetMissing, [argument1]) }
+    /// %1$@ installed, but they differ from the config (%2$@ missing, %3$@ stale)
+    public static func doctorServicesDiffer(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorServicesDiffer, [argument1, argument2, argument3]) }
+    /// none installed; Quick Actions and keyboard shortcuts are not available
+    public static var doctorServicesNone: LocalizedMessage { LocalizedMessage(.doctorServicesNone) }
+    /// %@ installed
+    public static func doctorServicesOk(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorServicesOk, [argument1]) }
+    /// and %@ more
+    public static func doctorSyncCommandsMore(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorSyncCommandsMore, [argument1]) }
+    /// this config starts programs of its own through %1$@ setting(s): %2$@
+    public static func doctorSyncCommandsOwn(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorSyncCommandsOwn, [argument1, argument2]) }
+    /// the folder's copy would add or change %1$@ launch setting(s): %2$@
+    public static func doctorSyncCommandsPending(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorSyncCommandsPending, [argument1, argument2]) }
+    /// %1$@ in %2$@
+    public static func doctorSyncConflict(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorSyncConflict, [argument1, argument2]) }
+    /// this machine and the folder both changed since the last sync
+    public static var doctorSyncDiverged: LocalizedMessage { LocalizedMessage(.doctorSyncDiverged) }
+    /// %@ is not reachable
+    public static func doctorSyncFolderUnreachable(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorSyncFolderUnreachable, [argument1]) }
+    /// in sync
+    public static var doctorSyncInSync: LocalizedMessage { LocalizedMessage(.doctorSyncInSync) }
+    /// this machine's config is ahead of the folder
+    public static var doctorSyncLocalAhead: LocalizedMessage { LocalizedMessage(.doctorSyncLocalAhead) }
+    /// the folder has a newer config than this machine
+    public static var doctorSyncRemoteAhead: LocalizedMessage { LocalizedMessage(.doctorSyncRemoteAhead) }
+    /// config.toml in the folder is not downloaded yet (or cannot be read)
+    public static var doctorSyncRemoteEvicted: LocalizedMessage { LocalizedMessage(.doctorSyncRemoteEvicted) }
+    /// no config.toml in the folder yet
+    public static var doctorSyncRemoteMissing: LocalizedMessage { LocalizedMessage(.doctorSyncRemoteMissing) }
+    /// config.toml in the folder validates
+    public static var doctorSyncRemoteValid: LocalizedMessage { LocalizedMessage(.doctorSyncRemoteValid) }
+    /// %@ cannot be read
+    public static func doctorSyncStateUnreadable(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorSyncStateUnreadable, [argument1]) }
+    /// %@
+    public static func doctorVerbatim(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorVerbatim, [argument1]) }
     /// Copy Path
     public static var groupCopyPath: LocalizedMessage { LocalizedMessage(.groupCopyPath) }
     /// More Agent Options

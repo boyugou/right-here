@@ -123,10 +123,16 @@ def starts_left_to_right(value: str) -> bool:
     return False
 
 
-def with_direction_mark(language: Language, key: str, value: str) -> str:
+def is_only_a_value(english: str) -> bool:
+    """A text that is nothing but its value (`%@`): a path, a message from elsewhere. It is shown as it is, in every language."""
+    return PLACEHOLDER.fullmatch(english) is not None
+
+
+def with_direction_mark(language: Language, key: str, value: str, english: str) -> str:
     """A right-to-left text that would start with Latin text (a name, a command, a placeholder) is laid out left to right
-    unless it starts with a right-to-left mark. Not for a text that becomes a file name."""
-    if language.rtl and key not in FILE_NAME_KEYS and starts_left_to_right(value):
+    unless it starts with a right-to-left mark. Not for a text that becomes a file name, and not for one that is only a
+    value (the mark would end up in the copied path)."""
+    if language.rtl and key not in FILE_NAME_KEYS and not is_only_a_value(english) and starts_left_to_right(value):
         return RIGHT_TO_LEFT_MARK + value
     return value
 
@@ -149,9 +155,11 @@ def translation_problems(key: str, language: Language, value: str, english: str,
             problems.append(f"{where}: {token!r} is missing: {value!r}")
     if wrong_script(language.script, value, english):
         problems.append(f"{where}: not written in the script of {language.code}: {value!r}")
-    if key in FILE_NAME_KEYS:
+    if is_only_a_value(english) and value != english:
+        problems.append(f"{where}: the text is only its value and is shown as it is, so it stays {english!r}: {value!r}")
+    elif key in FILE_NAME_KEYS:
         if RIGHT_TO_LEFT_MARK in value or "/" in value or ":" in value:
             problems.append(f"{where}: becomes a file name, so no direction mark, slash or colon: {value!r}")
-    elif direction and language.rtl and starts_left_to_right(value):
+    elif direction and language.rtl and not is_only_a_value(english) and starts_left_to_right(value):
         problems.append(f"{where}: starts with Latin text and no right-to-left mark: {value!r}")
     return problems
