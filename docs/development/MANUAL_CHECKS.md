@@ -57,6 +57,15 @@ The thirty languages in `Localization/Localizable.xcstrings` were machine-transl
 the menu titles and the alert texts of the setup window (`rh menu --language <tag>` prints the menu; the app's
 window follows the system language). Right-to-left languages (ar, he, fa, ur) deserve a look in the real menu.
 
+The window's list of checks writes every sentence of the doctor in the system language.
+`./script/preview_setup.sh out.png <code> --gallery` renders each of them in a language to a tall picture; it found text
+that did not fit and, in right-to-left languages, paths and commands that the sentence around them reordered (a value is
+put in a Unicode isolate now, and a command that ends in a bracket carries a left-to-right mark). That is `ImageRenderer`,
+not a real window. In the real one, in Arabic or Hebrew, with a state that has a path in it (a config that does not exist
+yet is enough), look at the order of the path, and select a command in a fix line, paste it into a terminal and see that no
+invisible character came with it. The relative time of the last action ("5 minutes ago") is formatted when the doctor
+runs, in the locale of the process.
+
 ## 4. Agent prompt presets (0012)
 
 Needs a real Finder and a terminal that can run commands; nothing here is covered by the tests, which only plan.
