@@ -51,13 +51,15 @@ public struct Doctor: Sendable {
         Self.launchCheck(for: await ExtensionProbe(paths: paths, facts: facts, runner: runner).runLaunch(placement: placement))
     }
 
-    /// What the launch probe reported, as a check. `nil` means the extension never reported back.
+    /// What the launch probe reported, as a check. `nil` means the extension never reported back. A probe says what the
+    /// Finder extension and the terminal reported, in English in every language (`doctor.verbatim`).
     static func launchCheck(for result: LaunchProbe.Result?) -> DoctorCheck {
-        let title = "Finder click runs a command in the terminal"
+        func check(_ status: DoctorCheck.Status, _ detail: String?, fix: String? = nil) -> DoctorCheck {
+            DoctorCheck(.finderLaunch, status: status, detail: detail.map(LocalizedMessage.doctorVerbatim), fix: fix.map(LocalizedMessage.doctorVerbatim))
+        }
         guard let result else {
-            return DoctorCheck(id: "finder.launch", title: title, status: .fail,
-                               detail: "the Finder extension did not report back",
-                               fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
+            return check(.fail, "the Finder extension did not report back",
+                         fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
         }
         let name = result.application
         switch result.outcome {
@@ -65,25 +67,20 @@ public struct Doctor: Sendable {
             var took = result.seconds.map { String(format: " in %.1f s", $0) } ?? ""
             if let accepted = result.accepted { took += String(format: " (request accepted after %.1f s)", accepted) }
             let shell = result.shell.map { "; login shell \($0)" } ?? ""
-            return DoctorCheck(id: "finder.launch", title: title, status: .ok, detail: "\(name) ran a typed command in a new session\(took)\(shell)")
+            return check(.ok, "\(name) ran a typed command in a new session\(took)\(shell)")
         case .timedOut:
-            return DoctorCheck(id: "finder.launch", title: title, status: .needsUser, detail: result.detail,
-                               fix: "macOS is waiting for you to allow Right Here to control \(name). Click Allow, then run this again.")
+            return check(.needsUser, result.detail, fix: "macOS is waiting for you to allow Right Here to control \(name). Click Allow, then run this again.")
         case .denied:
-            return DoctorCheck(id: "finder.launch", title: title, status: .fail, detail: "macOS refused to let Right Here control \(name)",
-                               fix: "Allow Right Here in System Settings › Privacy & Security › Automation.")
+            return check(.fail, "macOS refused to let Right Here control \(name)", fix: "Allow Right Here in System Settings › Privacy & Security › Automation.")
         case .noReply:
-            return DoctorCheck(id: "finder.launch", title: title, status: .fail, detail: result.detail,
-                               fix: "Check that \(name) starts your shell normally (a slow or interactive startup file can stall it), or choose another terminal with general.terminal.")
+            return check(.fail, result.detail,
+                         fix: "Check that \(name) starts your shell normally (a slow or interactive startup file can stall it), or choose another terminal with general.terminal.")
         case .wrongFolder:
-            return DoctorCheck(id: "finder.launch", title: title, status: .fail, detail: result.detail,
-                               fix: "Choose another terminal with general.terminal and report this, with the terminal's name and version.")
+            return check(.fail, result.detail, fix: "Choose another terminal with general.terminal and report this, with the terminal's name and version.")
         case .notInstalled, .unsupported:
-            return DoctorCheck(id: "finder.launch", title: title, status: .warn, detail: result.detail,
-                               fix: "Choose a terminal that can run commands with general.terminal (\(KnownApps.commandTerminalPhrase)).")
+            return check(.warn, result.detail, fix: "Choose a terminal that can run commands with general.terminal (\(KnownApps.commandTerminalPhrase)).")
         case .failed:
-            return DoctorCheck(id: "finder.launch", title: title, status: .fail, detail: result.detail,
-                               fix: "Run `rh probe launch` in a terminal for details.")
+            return check(.fail, result.detail, fix: "Run `rh probe launch` in a terminal for details.")
         }
     }
 
@@ -93,22 +90,21 @@ public struct Doctor: Sendable {
 
     /// What the automation probe reported, as a check. `nil` means the extension never reported back.
     static func chainCheck(for results: [AutomationProbe.Result]?) -> DoctorCheck {
+        func check(_ status: DoctorCheck.Status, _ detail: String, fix: String? = nil) -> DoctorCheck {
+            DoctorCheck(.finderChain, status: status, detail: .doctorVerbatim(detail), fix: fix.map(LocalizedMessage.doctorVerbatim))
+        }
         guard let results else {
-            return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .fail,
-                               detail: "the Finder extension did not report back",
-                               fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
+            return check(.fail, "the Finder extension did not report back", fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
         }
         let worst = results.first { $0.outcome != .granted && $0.outcome != .notRunning } ?? results.first
         let summary = results.map { "\($0.application): \($0.outcome.rawValue)" }.joined(separator: ", ")
         switch worst?.outcome {
         case .granted?, .notRunning?:
-            return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .ok, detail: summary)
+            return check(.ok, summary)
         case .timedOut?:
-            return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .needsUser, detail: summary,
-                               fix: "macOS is waiting for you to allow Right Here to control the terminal. Click Allow, then run this again.")
+            return check(.needsUser, summary, fix: "macOS is waiting for you to allow Right Here to control the terminal. Click Allow, then run this again.")
         default:
-            return DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .fail, detail: summary,
-                               fix: "Allow Right Here in System Settings › Privacy & Security › Automation.")
+            return check(.fail, summary, fix: "Allow Right Here in System Settings › Privacy & Security › Automation.")
         }
     }
 
@@ -146,16 +142,32 @@ public struct Doctor: Sendable {
         let terminal = registry.info(.openTerminal(nil))
         let editor = registry.info(.openEditor)
         return [
-            DoctorCheck(.terminalDefault, status: terminal.available ? .ok : .fail, detail: Self.appDetail(terminal),
+            DoctorCheck(.terminalDefault, status: terminal.available ? .ok : .fail, detail: appDetail(terminal, role: .terminal, configured: loaded.config.terminal),
                         fix: terminal.available ? nil : .doctorFixTerminal),
-            DoctorCheck(.editorDefault, status: editor.available ? .ok : .warn, detail: Self.appDetail(editor),
+            DoctorCheck(.editorDefault, status: editor.available ? .ok : .warn, detail: appDetail(editor, role: .editor, configured: loaded.config.editor),
                         fix: editor.available ? nil : .doctorFixEditor)
         ]
     }
 
-    /// What a default app check says: the app a click opens, or why there is none.
-    private static func appDetail(_ app: ActionInfo) -> LocalizedMessage? {
-        app.available ? .menuOpenIn(app.shortTitle) : app.unavailableReason.map(LocalizedMessage.doctorVerbatim)
+    /// What a default app check says: the app a click opens, or why there is none. The two reasons a person can meet
+    /// (nothing of the role is installed, the configured app is not) are catalog messages, found by asking `DefaultApps`
+    /// again, which is what the registry asked; their English is the planner's sentence word for word, which a test holds.
+    /// A config that names an unknown app, or a terminal as an editor, is refused when it is read and the default is used
+    /// instead, so no other reason arises; if one ever does, it is the registry's English, shown as it is.
+    private func appDetail(_ app: ActionInfo, role: AppDescriptor.Role, configured: String?) -> LocalizedMessage? {
+        if app.available { return .menuOpenIn(app.shortTitle) }
+        guard let reason = app.unavailableReason else { return nil }
+        do throws(PlanError) {
+            let found = try DefaultApps(config: loaded.config, facts: facts).resolve(role: role, configured: configured)
+            if found.installedBundleID(facts: facts) == nil { return .doctorAppNotInstalled(found.name) }
+        } catch {
+            switch error {
+            case .noDefaultApp(.terminal): return .doctorTerminalNone
+            case .noDefaultApp(.editor): return .doctorEditorNone
+            default: break
+            }
+        }
+        return .doctorVerbatim(reason)
     }
 
     private func agentChecks() async -> [DoctorCheck] {

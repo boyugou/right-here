@@ -67,6 +67,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case doctorAgentNotFound = "doctor.agent.notFound"
     case doctorAgentOk = "doctor.agent.ok"
     case doctorAgentsNone = "doctor.agents.none"
+    case doctorAppNotInstalled = "doctor.app.notInstalled"
     case doctorClaudeLinkMissing = "doctor.claudeLink.missing"
     case doctorClaudeLinkOk = "doctor.claudeLink.ok"
     case doctorCliMissing = "doctor.cli.missing"
@@ -75,6 +76,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case doctorConfigOverlay = "doctor.config.overlay"
     case doctorConfigSymlink = "doctor.config.symlink"
     case doctorConfigWarnings = "doctor.config.warnings"
+    case doctorEditorNone = "doctor.editor.none"
     case doctorExtensionDisabled = "doctor.extension.disabled"
     case doctorExtensionMultiple = "doctor.extension.multiple"
     case doctorExtensionNotRegistered = "doctor.extension.notRegistered"
@@ -124,6 +126,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case doctorSyncRemoteMissing = "doctor.sync.remoteMissing"
     case doctorSyncRemoteValid = "doctor.sync.remoteValid"
     case doctorSyncStateUnreadable = "doctor.sync.stateUnreadable"
+    case doctorTerminalNone = "doctor.terminal.none"
     case doctorVerbatim = "doctor.verbatim"
     case groupCopyPath = "group.copyPath"
     case groupMoreAgents = "group.moreAgents"
@@ -173,7 +176,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     /// How many arguments the English text takes: its `%@` placeholders, or the highest `%n$@`.
     public var arity: Int {
         switch self {
-        case .alertPermissionMessage, .copyPathTitleFormat, .doctorAgentNotFound, .doctorCliMissing, .doctorCliNotOnPath, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorFixAgentRemove, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
+        case .alertPermissionMessage, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAppNotInstalled, .doctorCliMissing, .doctorCliNotOnPath, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorFixAgentRemove, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
         case .appStepLabel, .doctorAgentOk, .doctorExtensionMultiple, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
         case .doctorActivityRecent, .doctorServicesDiffer, .menuAgentVariantIn: 3
         default: 0

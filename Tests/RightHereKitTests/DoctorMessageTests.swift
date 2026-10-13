@@ -98,12 +98,23 @@ struct DoctorMessageTests {
         #expect(Set(json.keys) == ["id", "title", "status"])
     }
 
+    @Test func theCatalogsWordsForAMissingAppAreTheSentencesThePlannerSays() {
+        // `rh run` and `rh actions` say the planner's sentence; the window says the catalog's. They must be one sentence.
+        #expect(LocalizedMessage.doctorTerminalNone.english() == PlanError.noDefaultApp(.terminal).errorDescription)
+        #expect(LocalizedMessage.doctorEditorNone.english() == PlanError.noDefaultApp(.editor).errorDescription)
+        #expect(LocalizedMessage.doctorAppNotInstalled("Ghostty").english() == PlanError.appNotInstalled("Ghostty").errorDescription)
+    }
+
     @Test func aProbeKeepsItsEnglishText() {
-        let probe = DoctorCheck(id: "finder.launch", title: "Finder click runs a command in the terminal", status: .fail, detail: "Ghostty refused", fix: "Try again.")
-        #expect(probe.id == .finderLaunch)
+        let probe = DoctorCheck(.finderLaunch, status: .fail, detail: .doctorVerbatim("Ghostty refused"), fix: .doctorVerbatim("Try again."))
+        #expect(probe.title == "Finder click runs a command in the terminal")
         #expect(probe.englishLines() == ["[fail] Finder click runs a command in the terminal: Ghostty refused", "       fix: Try again."])
-        #expect(probe.detail?.key == .doctorVerbatim)
-        #expect(DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .ok).id == .finderChain)
+        #expect(DoctorCheck(.finderChain, status: .ok).title == "Finder click to terminal")
+        // What the extension reported is shown as it is in every language.
+        let reported = Doctor.launchCheck(for: nil)
+        #expect(reported.id == .finderLaunch)
+        #expect(reported.detail?.key == .doctorVerbatim && reported.fix?.key == .doctorVerbatim)
+        #expect(Doctor.chainCheck(for: nil).detail?.key == .doctorVerbatim)
     }
 
     @Test func textThatIsNotOursIsShownAsItIsInEveryLanguage() {

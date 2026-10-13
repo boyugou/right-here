@@ -34,18 +34,6 @@ public struct DoctorCheck: Sendable, Equatable, Encodable {
         self.fix = fix
     }
 
-    /// A check whose words are not in the catalog and stay English in every language: the two probes, `finder.chain` and
-    /// `finder.launch`, which say what the Finder extension reported.
-    public init(id: String, title: String, status: Status, detail: String? = nil, fix: String? = nil) {
-        let check: CheckID
-        switch id {
-        case CheckID.finderChain.rawValue: check = .finderChain
-        case CheckID.finderLaunch.rawValue: check = .finderLaunch
-        default: preconditionFailure("\(id) is not a probe: its words belong in the catalog")
-        }
-        self.init(check, title: title, status: status, detail: detail.map(LocalizedMessage.doctorVerbatim), fix: fix.map(LocalizedMessage.doctorVerbatim))
-    }
-
     /// The title in a language, which is the agent's own name for an agent's check.
     public func title(in localizer: Localizer) -> String {
         id.titleKey.map { localizer.string($0) } ?? title

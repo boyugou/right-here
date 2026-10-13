@@ -114,7 +114,7 @@ func gallery() -> [DoctorCheck] {
     ].joined(separator: "; ")
     var rows: [DoctorCheck] = [
         DoctorCheck(.config, status: .warn, detail: .doctorConfigMissing(config), notes: [.doctorConfigOverlay("~/.config/right-here/config.local.toml"), .doctorConfigSymlink("config.toml")], fix: .doctorFixConfigInit),
-        DoctorCheck(.terminalDefault, status: .fail, detail: .doctorVerbatim("No terminal is installed."), fix: .doctorFixTerminal),
+        DoctorCheck(.terminalDefault, status: .fail, detail: .doctorTerminalNone, fix: .doctorFixTerminal),
         DoctorCheck(.editorDefault, status: .ok, detail: .menuOpenIn("Visual Studio Code")),
         DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd),
         DoctorCheck(.claudeLink, status: .warn, detail: .doctorClaudeLinkMissing, fix: .doctorFixClaudeLink),
@@ -129,14 +129,15 @@ func gallery() -> [DoctorCheck] {
         DoctorCheck(.syncCommands, status: .warn, detail: .doctorSyncCommandsPending("5", changes), notes: [.doctorSyncCommandsMore("2")], fix: .doctorFixSyncCommands),
         DoctorCheck(.syncState, status: .warn, detail: .doctorSyncDiverged, fix: .doctorFixSyncCompare),
         DoctorCheck(.syncConflict, status: .warn, detail: .doctorSyncConflict("config 2.toml, config 3.toml", folder), fix: .doctorFixSyncConflict),
-        DoctorCheck(id: "finder.chain", title: "Finder click to terminal", status: .needsUser, detail: "Ghostty: timed out, Terminal: granted", fix: "macOS is waiting for you to allow Right Here to control the terminal. Click Allow, then run this again."),
-        DoctorCheck(id: "finder.launch", title: "Finder click runs a command in the terminal", status: .ok, detail: "Ghostty ran a typed command in a new session in 1.1 s (request accepted after 0.3 s); login shell /bin/zsh")
+        DoctorCheck(.finderChain, status: .needsUser, detail: .doctorVerbatim("Ghostty: timed out, Terminal: granted"), fix: .doctorVerbatim("macOS is waiting for you to allow Right Here to control the terminal. Click Allow, then run this again.")),
+        DoctorCheck(.finderLaunch, status: .ok, detail: .doctorVerbatim("Ghostty ran a typed command in a new session in 1.1 s (request accepted after 0.3 s); login shell /bin/zsh"))
     ]
     let more: [(DoctorCheck.Status, LocalizedMessage, LocalizedMessage?)] = [
         (.fail, .doctorVerbatim("error: config.toml:1: expected ] to close the table"), .doctorFixConfigErrors),
         (.warn, .doctorConfigWarnings("12"), .doctorFixConfigWarnings),
         (.ok, .menuOpenIn("Ghostty"), nil),
-        (.warn, .doctorVerbatim("No editor is installed."), .doctorFixEditor),
+        (.warn, .doctorEditorNone, .doctorFixEditor),
+        (.fail, .doctorAppNotInstalled("Ghostty"), .doctorFixTerminal),
         (.warn, .doctorAgentNotFound("claude"), .doctorFixAgentRemove("claude")),
         (.warn, .doctorVerbatim("Ghostty cannot run commands yet."), .doctorFixAgentLauncher),
         (.ok, .doctorAgentOk("claude", "Claude Code in Last-Used Terminal"), nil),

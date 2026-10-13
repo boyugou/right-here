@@ -87,16 +87,18 @@ setup window renders the same messages with `Localizer.render` in the system lan
 a program acts on the code and the values, a person or an AI agent reads the text.
 
 What is translated: what a person meets on a first run and afterwards, that is the config file (missing, with errors or
-warnings, an overlay, a symlink), the default terminal and editor, agents (found, missing, cannot start), the Claude Code
-link, the runner script (missing, stale, pointing nowhere), the Services (missing, stale), the `rh` link, the Finder
+warnings, an overlay, a symlink), the default terminal and editor (the app a click opens, none installed, the configured
+one not installed), agents (found, missing, cannot start), the Claude Code link, the runner script (missing, stale, pointing nowhere), the Services (missing, stale), the `rh` link, the Finder
 extension (not registered, switched off, registered twice, ok), the last action and every config sync row. Thirty
 languages each, checked like every other string.
 
 What stays English in every language, on purpose: the two probes, `finder.chain` and `finder.launch`, which say what the
 Finder extension reported and which a person runs from a terminal; and text that comes from outside the catalog and is
-shown as it is through `doctor.verbatim` (the parser's description of a config problem, the reason an action cannot run,
-which is the planner's sentence, and a bare path or app name). They are the parser's, the planner's or the machine's
-words, not Right Here's, and translating them would need the same split in those layers.
+shown as it is through `doctor.verbatim` (the parser's description of a config problem, why an agent cannot start, which
+is the planner's sentence, and a bare path). They are the parser's, the planner's or the machine's words, not Right
+Here's, and translating them would need the same split in those layers. The two reasons the default terminal or editor
+row can give (nothing of the role is installed, the configured app is not) are the exception: the catalog has them word for
+word as the planner says them (`PlanError`), which a test holds, so `rh run`, `rh actions` and the window say one sentence.
 
 A path or a command quoted in a right-to-left sentence is a left-to-right value, and the sentence around it reorders it:
 rendering the Arabic window showed `~/.config/...` and `/Applications/...` with their leading characters at the wrong end.

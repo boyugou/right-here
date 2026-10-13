@@ -129,6 +129,8 @@ extension LocalizedMessage {
     public static func doctorAgentOk(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentOk, [argument1, argument2]) }
     /// none enabled
     public static var doctorAgentsNone: LocalizedMessage { LocalizedMessage(.doctorAgentsNone) }
+    /// %@ is not installed.
+    public static func doctorAppNotInstalled(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorAppNotInstalled, [argument1]) }
     /// handler not installed (only needed for launcher = "link")
     public static var doctorClaudeLinkMissing: LocalizedMessage { LocalizedMessage(.doctorClaudeLinkMissing) }
     /// handler installed
@@ -145,6 +147,8 @@ extension LocalizedMessage {
     public static func doctorConfigSymlink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorConfigSymlink, [argument1]) }
     /// %@ warning(s); run `rh config validate`
     public static func doctorConfigWarnings(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorConfigWarnings, [argument1]) }
+    /// No editor is installed.
+    public static var doctorEditorNone: LocalizedMessage { LocalizedMessage(.doctorEditorNone) }
     /// registered but switched off
     public static var doctorExtensionDisabled: LocalizedMessage { LocalizedMessage(.doctorExtensionDisabled) }
     /// enabled, but registered from %1$@ locations: %2$@
@@ -243,6 +247,8 @@ extension LocalizedMessage {
     public static var doctorSyncRemoteValid: LocalizedMessage { LocalizedMessage(.doctorSyncRemoteValid) }
     /// %@ cannot be read
     public static func doctorSyncStateUnreadable(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorSyncStateUnreadable, [argument1]) }
+    /// No terminal is installed.
+    public static var doctorTerminalNone: LocalizedMessage { LocalizedMessage(.doctorTerminalNone) }
     /// %@
     public static func doctorVerbatim(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorVerbatim, [argument1]) }
     /// Copy Path

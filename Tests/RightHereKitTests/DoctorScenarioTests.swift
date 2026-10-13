@@ -141,6 +141,31 @@ struct DoctorScenarioTests {
         #expect(agent?.fix == "Choose another terminal with general.terminal, or set launcher = \"link\" or \"desktop\".")
     }
 
+    @Test func aDefaultAppThatIsNotInstalledSaysSoAndWhichOne() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.answers = [ProcessResult(status: 0)]
+        try scene.writeConfig("[general]\nterminal = \"ghostty\"\neditor = \"vscode\"\n")
+        let checks = await scene.run()
+        #expect(said(checks, "terminal.default") == Said(status: .fail, detail: "Ghostty is not installed.", fix: "Install a terminal or set general.terminal."))
+        #expect(said(checks, "editor.default") == Said(status: .warn, detail: "Visual Studio Code is not installed.", fix: "Install an editor or set general.editor."))
+        // These are the catalog's sentences, which the setup window writes in the system language.
+        #expect(checks.first { $0.id == .terminalDefault }?.detail == .doctorAppNotInstalled("Ghostty"))
+        #expect(checks.first { $0.id == .editorDefault }?.detail == .doctorAppNotInstalled("Visual Studio Code"))
+    }
+
+    @Test func aDefaultAppTheConfigGetsWrongFallsBackToTheFirstInstalledOne() async throws {
+        // An unknown terminal and a terminal named as the editor are errors of the config check, and the setting is
+        // dropped: the rows say what is used instead, never an unknown app.
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.answers = [ProcessResult(status: 0)]
+        scene.applications = ["com.mitchellh.ghostty": ghostty, "com.microsoft.VSCode": vscode]
+        try scene.writeConfig("[general]\nterminal = \"ghosty\"\neditor = \"ghostty\"\n")
+        let checks = await scene.run()
+        #expect(said(checks, "config")?.status == .fail)
+        #expect(said(checks, "terminal.default") == Said(status: .ok, detail: "Open in Ghostty", fix: nil))
+        #expect(said(checks, "editor.default") == Said(status: .ok, detail: "Open in Visual Studio Code", fix: nil))
+    }
+
     @Test("the runner script says whether it runs this rh", arguments: [
         (true, "/opt/other/bin/rh", DoctorCheck.Status.warn, "points at {target}, not at this rh"),
         (false, "/opt/rh/bin/rh", .fail, "points at {target}, which does not exist")
