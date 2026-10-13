@@ -71,6 +71,11 @@ extension ConfigBuilder {
         let launcherName = reader.checkAllowed(reader.string("launcher"), key: "launcher", allowed: AgentLauncher.configNames)
         let terminal = checkedTerminal(reader.string("terminal"), path: reader.path + ["terminal"], customApps: config.apps)
         settings.launcher = AgentLauncher.fromConfig(name: launcherName, terminal: terminal)
+        if let word = reader.string("prompt_arg") {
+            if let argument = PromptArgument(configValue: word) { settings.promptArgument = argument } else {
+                sink.error(reader.path + ["prompt_arg"], "\"\(word)\" is not \"positional\" or a flag such as \"--prompt\"")
+            }
+        }
 
         if KnownAgents.agent(id: id) != nil {
             settings.command = command

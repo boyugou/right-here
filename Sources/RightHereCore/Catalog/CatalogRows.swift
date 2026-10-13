@@ -19,6 +19,8 @@ public struct AgentRow: Sendable, Equatable, Encodable {
     public var variants: [String]
     public var terminalLink: Bool
     public var desktopLink: Bool
+    /// How the command takes a first prompt (`positional` or a flag); `nil` when it is not known, which keeps presets away.
+    public var promptArgument: String?
 }
 
 extension Config {
@@ -34,7 +36,8 @@ extension Config {
             AgentRow(
                 id: agent.id, name: agent.name, command: agent.command,
                 enabled: enabledAgents.contains(agent.id),
-                variants: agent.variants.map(\.id), terminalLink: agent.terminalLink != nil, desktopLink: agent.desktopLink != nil
+                variants: agent.variants.map(\.id), terminalLink: agent.terminalLink != nil, desktopLink: agent.desktopLink != nil,
+                promptArgument: agent.promptArgument?.configValue
             )
         }
     }

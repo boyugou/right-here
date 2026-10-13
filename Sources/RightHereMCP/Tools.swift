@@ -90,7 +90,7 @@ enum Tools {
             the budget is refused, and then the person should be asked rather than the call retried.
             """,
             inputSchema: schema([
-                "action": string("Action id, for example open.terminal, agent.claude, copy-path.absolute, new-file.md or reveal.", maxLength: 200),
+                "action": string("Action id, for example open.terminal, agent.claude, copy-path.absolute, preset.review, new-file.md or reveal.", maxLength: 200),
                 "paths": pathList("Absolute paths of the files or folders to act on. With neither paths nor container, the folder the MCP server was started in is used."),
                 "container": string("Absolute path of a folder to act on when no paths are given. Without it, the folder the MCP server was started in.", maxLength: maxPathLength),
                 "dry_run": boolean("Return the plan and do nothing.")
@@ -265,7 +265,8 @@ enum Tools {
         }
         let agents = config.agentRows.map { agent -> JSONValue in
             .object(["id": .string(agent.id), "name": .string(agent.name), "command": .string(agent.command),
-                     "enabled": .bool(agent.enabled), "variants": .array(agent.variants.map { .string($0) })])
+                     "enabled": .bool(agent.enabled), "variants": .array(agent.variants.map { .string($0) }),
+                     "prompt_arg": agent.promptArgument.map { .string($0) } ?? .null])
         }
         let structured = JSONValue.object(["apps": .array(apps), "agents": .array(agents)])
         return ToolOutput(text: structured.pretty(), structured: structured)

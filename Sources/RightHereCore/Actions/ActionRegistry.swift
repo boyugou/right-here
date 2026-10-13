@@ -65,6 +65,10 @@ public struct ActionRegistry: Sendable {
             info.group = "agent"
             describeAgent(&info, id: id, variantID: variantID, launcher: launcher)
 
+        case .preset(let id, let terminal):
+            info.group = "preset"
+            describePreset(&info, id: id, terminal: terminal)
+
         case .newFile(let id):
             info.group = "new-file"
             if let template = config.newFile.templates.first(where: { $0.id == id }) {
@@ -87,7 +91,52 @@ public struct ActionRegistry: Sendable {
         return info
     }
 
+    /// `info` for an action about to be offered on a selection: a preset also needs a folder to run in and, when its
+    /// prompt names files, some files (and no more than its `max_files`).
+    public func info(_ ref: ActionRef, context: HereContext) -> ActionInfo {
+        var info = info(ref)
+        guard info.available, case .preset(let id, _) = ref, let preset = config.preset(id: id) else { return info }
+        if context.workingDirectory(facts: facts) == nil {
+            unavailable(&info, reason: "There is no folder to run in.")
+        } else if let refusal = Planner(config: config, facts: facts, localizer: localizer).presetContextRefusal(preset, context: context) {
+            unavailable(&info, reason: refusal)
+        }
+        return info
+    }
+
     // MARK: Descriptions
+
+    private func describePreset(_ info: inout ActionInfo, id: String, terminal terminalID: String?) {
+        guard let preset = config.preset(id: id) else {
+            unavailable(&info, title: id, reason: "Unknown preset \"\(id)\".")
+            return
+        }
+        let presetTitle = preset.localizedTitle(localizer)
+        info.title = presetTitle
+        info.shortTitle = presetTitle
+        let planner = Planner(config: config, facts: facts, localizer: localizer)
+        if let refusal = planner.presetAgentRefusal(preset) {
+            unavailable(&info, reason: refusal)
+            return
+        }
+        guard let agent = config.agent(for: preset) else { return }
+        info.title = localizer.agentVariant(agent.name, presetTitle)
+        info.icon = agent.iconBundleID.flatMap { facts.applicationURL(bundleID: $0) != nil ? Icon.app($0) : nil } ?? .symbol("terminal")
+        let resolved = config.launcher(forAgent: agent.id, explicit: terminalID.map { .terminal($0) }, hasVariant: true)
+        guard case .terminal(let chosen) = resolved.launcher else { return }
+        if let blocker = commandTerminalBlocker(chosen) { unavailable(&info, reason: blocker) }
+    }
+
+    /// Why a command cannot be typed into the terminal (the named one, or the default for commands), or `nil`.
+    private func commandTerminalBlocker(_ terminalID: String?) -> String? {
+        let terminal: AppDescriptor?
+        if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? Planner(config: config, facts: facts, localizer: localizer).resolveCommandTerminal() }
+        guard let terminal else { return terminalID.map { "Unknown terminal \"\($0)\"." } ?? "No terminal is installed." }
+        guard let bundleID = terminal.installedBundleID(facts: facts) else { return "\(terminal.name) is not installed." }
+        let adapter = TerminalAdapters.adapter(for: terminal)
+        if !adapter.supportsCommands { return "\(terminal.name) cannot run commands yet." }
+        return adapter.commandBlocker(bundleID: bundleID, facts: facts)
+    }
 
     private func describeApp(_ info: inout ActionInfo, terminal id: String?) {
         let app: AppDescriptor?
@@ -224,6 +273,7 @@ public struct ActionRegistry: Sendable {
             if agent.desktopLink != nil { refs.append(.agent(id: agent.id, variant: nil, launcher: .desktop)) }
             if agent.terminalLink != nil { refs.append(.agent(id: agent.id, variant: nil, launcher: .terminalLink)) }
         }
+        refs += config.presets.map { .preset(id: $0.id, terminal: nil) }
         refs += config.newFile.templates.map { .newFile($0.id) }
         refs.append(.reveal)
 

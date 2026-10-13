@@ -48,6 +48,8 @@ public struct AgentDescriptor: Sendable, Equatable, Identifiable {
     public var desktopLink: Link?
     /// File an agent reads project instructions from, for documentation only.
     public var instructionFile: String?
+    /// How the command takes a first prompt, for presets; `nil` when that is not known (and presets are not offered).
+    public var promptArgument: PromptArgument?
 
     /// The program the command starts: its first word, which is what is looked up in the login shell's PATH.
     public var executable: String {
@@ -62,7 +64,8 @@ public struct AgentDescriptor: Sendable, Equatable, Identifiable {
         iconBundleID: String? = nil,
         terminalLink: Link? = nil,
         desktopLink: Link? = nil,
-        instructionFile: String? = nil
+        instructionFile: String? = nil,
+        promptArgument: PromptArgument? = nil
     ) {
         self.id = id
         self.name = name
@@ -72,6 +75,7 @@ public struct AgentDescriptor: Sendable, Equatable, Identifiable {
         self.terminalLink = terminalLink
         self.desktopLink = desktopLink
         self.instructionFile = instructionFile
+        self.promptArgument = promptArgument
     }
 }
 
@@ -89,7 +93,8 @@ public enum KnownAgents {
         iconBundleID: "com.anthropic.claudefordesktop",
         terminalLink: .init(template: "claude-cli://open?cwd={dir}", promptParameter: "q"),
         desktopLink: .init(template: "claude://code/new?folder={dir}"),
-        instructionFile: "CLAUDE.md"
+        instructionFile: "CLAUDE.md",
+        promptArgument: .positional
     )
 
     public static let codex = AgentDescriptor(
@@ -102,7 +107,8 @@ public enum KnownAgents {
         ],
         iconBundleID: "com.openai.codex",
         desktopLink: .init(template: "codex://threads/new?path={dir}"),
-        instructionFile: "AGENTS.md"
+        instructionFile: "AGENTS.md",
+        promptArgument: .positional
     )
 
     public static let gemini = AgentDescriptor(

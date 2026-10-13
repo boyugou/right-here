@@ -106,6 +106,7 @@ struct Agents: AsyncParsableCommand {
         var variants: [String]
         var terminalLink: Bool
         var desktopLink: Bool
+        var promptArgument: String?
     }
 
     func run() async throws {
@@ -115,7 +116,8 @@ struct Agents: AsyncParsableCommand {
         let rows = zip(all, runtime.config.agentRows).map { agent, row in
             Row(
                 id: row.id, name: row.name, command: row.command, enabled: row.enabled, foundInShell: found.contains(agent.executable),
-                variants: row.variants, terminalLink: row.terminalLink, desktopLink: row.desktopLink
+                variants: row.variants, terminalLink: row.terminalLink, desktopLink: row.desktopLink,
+                promptArgument: row.promptArgument
             )
         }
         if json {

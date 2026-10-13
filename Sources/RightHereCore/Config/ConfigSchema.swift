@@ -93,7 +93,8 @@ public enum ConfigSchema {
                            + "open-terminal (open in the default terminal), open-editor (open in the default editor), "
                            + "open-with (a submenu of every other installed terminal and editor), agents (one entry per enabled agent), "
                            + "agents-more (a submenu of each agent's variants, deep links and other terminals), "
-                           + "new-file (the templates), copy-path (the styles).",
+                           + "new-file (the templates), copy-path (the styles), "
+                           + "presets (a submenu of the prompt presets; without it in the list they are a submenu of agents-more).",
                            default: "[\"open-terminal\", \"open-editor\", \"open-with\", \"agents\", \"agents-more\", \"-\", \"new-file\", \"copy-path\"]",
                            suggested: Array(MenuBuilder.groups).sorted() + ["-"])
             ]),
@@ -152,12 +153,31 @@ public enum ConfigSchema {
                            "How the agent starts: terminal types the command into a terminal, link uses the agent's own terminal deep link, desktop opens its desktop app.",
                            default: "\"terminal\"", allowed: AgentLauncher.configNames),
                 SchemaNode("terminal", .string, "Terminal for launcher = \"terminal\". Omit it to use general.terminal.", suggested: terminalIDs),
+                SchemaNode("prompt_arg", .string,
+                           "How the command takes a first prompt, which prompt presets (`[[preset]]`) need: \"positional\" for `tool \"prompt\"`, or the flag that carries it, such as \"--prompt\". Claude Code and Codex are built in as positional; presets are not offered for an agent that is not known to take a prompt.",
+                           example: "\"positional\" or \"--prompt\"", pattern: PromptArgument.pattern),
                 SchemaNode("variant", .tableArray, "Extra start options shown in the agent's submenu.", required: ["id", "title"], children: [
                     SchemaNode("id", .string, "Identifier used in `agent.<agent>.<id>`; lowercase letters, digits and dashes.",
                                example: "\"opus\"", pattern: identifierPattern),
                     SchemaNode("title", .string, "Menu title.", example: "\"Use Opus\""),
                     SchemaNode("arguments", .stringArray, "Arguments appended to the command.", example: "[\"--model\", \"opus\"]")
                 ])
+            ]),
+            SchemaNode("preset", .tableArray,
+                       "Prompt presets: a prompt sent to an agent together with the selected files, from the \"Agent Presets\" submenu or `rh run preset.<id>`. The prompt is typed into a terminal as the agent's first argument, so the agent starts working on it at once (it is not left in the prompt box; for that use `agent.claude@link`). Defining a preset under the id of a built-in one (review, explain, tests) replaces it. Built-in prompts only ask the agent not to change files; whether it obeys is up to the agent and its permission settings.",
+                       required: ["id", "title", "prompt"], children: [
+                SchemaNode("id", .string, "Identifier used in the action id `preset.<id>`; lowercase letters, digits and dashes.",
+                           example: "\"review\"", pattern: identifierPattern),
+                SchemaNode("title", .string, "Menu title inside the Agent Presets submenu.", example: "\"Review\""),
+                SchemaNode("agent", .string,
+                           "Agent that runs it: a built-in agent or one defined under `[agent.<id>]`, which must take a first prompt (see agent.prompt_arg). Omit it to use the first agent in general.agents.",
+                           example: "\"claude\"", suggested: KnownAgents.all.map(\.id)),
+                SchemaNode("prompt", .string,
+                           "The prompt, on one line. `{files}` is the selected files as @-mentions relative to the folder, separated by spaces (a preset that uses it needs files selected); `{folder}` is the folder's name; `{name}` is the name of the first selected item (the folder's name when nothing is selected). It may not hold a line break or other control character, a backslash, or start with a dash.",
+                           example: "\"Review {files} for bugs. Do not modify any files.\""),
+                SchemaNode("max_files", .integer,
+                           "Most files one run may name (1 to 50); more is refused, never cut short.",
+                           default: String(AgentPreset.defaultMaxFiles))
             ])
         ]
     }
