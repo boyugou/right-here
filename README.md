@@ -105,9 +105,10 @@ A terminal without a built-in adapter (WezTerm, kitty, Alacritty, ...) can start
 placeholders (see `rh docs config`). Right Here has not tried those terminals, so check with `rh run agent.claude@<id> --dry-run`
 and then for real.
 
-`rh docs config` lists every key with defaults, `rh config validate` checks the file (unknown keys come
-with a "did you mean"; `--strict` also fails on warnings), `rh config schema` prints a JSON Schema for your
-editor. `rh init --force` saves your old file before replacing it.
+`rh docs config` lists every key with defaults, `rh config validate` checks the file (each problem names its file and
+line; unknown keys come with a "did you mean"; `--strict` also fails on warnings), `rh config show` prints the files that
+make up the config, `rh config schema` prints a JSON Schema for your editor. `rh init --force` saves your old file
+before replacing it.
 
 To use one config on several Macs, `rh config sync enable` keeps a copy in a folder (iCloud Drive by default,
 or any folder), and a `config.local.toml` next to the config holds what differs per machine (`rh docs sync`). The

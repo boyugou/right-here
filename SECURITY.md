@@ -11,8 +11,9 @@ Supported versions: the latest release.
 Please report a vulnerability privately, through GitHub's "Report a vulnerability" button on the repository's
 Security tab, rather than in a public issue. Include the macOS version, the command or Finder action, and the
 file name or config that triggers it. A file name that makes a copied path run a command, an action that opens
-or runs the wrong thing, an MCP call that does more than its arguments say, or a `rh config sync pull` that takes
-a terminal template or an agent command from the sync folder without `--allow-commands` are all in scope.
+or runs the wrong thing, an MCP call that does more than its arguments say, a `rh config sync pull` that takes
+a terminal template or an agent command from the sync folder without `--allow-commands`, and a file in the sync folder
+that makes `rh` read or parse more than a config can be (it is never read past 1 MiB) are all in scope.
 
 ## What is not a vulnerability
 

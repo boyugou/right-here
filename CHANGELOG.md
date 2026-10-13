@@ -27,6 +27,18 @@ First version, running on macOS 26 and later (Apple silicon).
   Drive, with refusals for local or remote changes, secrets and invalid files, atomic writes and doctor checks. The
   folder is not trusted with programs: a pull that would add or change a terminal template or an agent command is
   refused, with the list, unless `--allow-commands`.
+- Config problems name the file and the line they are on, in the order of the file, and say what is wrong: a syntax
+  error says what it is (an array that is not closed is reported at the line where it opened), a value of the wrong kind
+  says what it is (`expected a string, found an integer`), a choice lists the valid values, a key in the wrong table says
+  where it belongs, and a display name that is typed for an id (`Visual Studio Code`) finds it. With a `config.local.toml`,
+  `rh config validate` also reads `config.toml` on its own, because other Macs do: an error the overlay hides on this Mac
+  is still reported (and refused by `push`). `rh config show` prints each file that makes up the config under a header
+  naming it, and `rh config path --all` lists them. A config that cannot be read is an error naming the reason, names and
+  titles with control characters are refused, and a launcher an agent cannot use is a warning.
+- The sync folder is not trusted with time or memory either: a file in it (or this Mac's config) past 1 MiB is never read,
+  and `status` says so; an unreadable local config is no longer taken for a missing one that a plain `pull` replaces; an
+  empty `--folder` is refused; `push` says it creates only the last folder and how to make the parent; `status` advises
+  nothing that `push` or `pull` would refuse; a shared preset left out because its agent is disabled on this Mac is a note.
 - Terminals without a built-in adapter can be defined in the config (`open_args`, `run_args`); copied paths use
   the spelling the file system stores.
 - Verified: the whole chain after a menu click on a real Mac; real-shell round trips of quoting; a notarized,
