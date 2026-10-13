@@ -1184,6 +1184,77 @@ struct ConfigSyncCLITests {
         #expect(try rh.run(["config", "validate", "--strict"]).status == 1)
     }
 
+    @Test func anEmptyFolderIsRefusedAndNothingIsEnabled() throws {
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        // What `--folder "$UNSET_VARIABLE"` passes. It used to make the current folder the sync folder.
+        let result = try rh.run(["config", "sync", "enable", "--folder", ""])
+        #expect(result.status == 1 && result.standardError.contains("The folder is empty (is a shell variable unset?)"), "\(result.standardError)")
+        #expect(try rh.run(["config", "sync", "status"]).status == 1, "sync was enabled")
+        #expect(!FileManager.default.fileExists(atPath: try configFile(rh).deletingLastPathComponent().appendingPathComponent("sync.toml").path))
+    }
+
+    @Test func pushSaysItCreatesOnlyTheLastFolderAndHowToMakeTheParent() throws {
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let home = try #require(rh.home).path
+        #expect(try rh.run(["config", "sync", "enable", "--folder", "~/Sync/rh"]).status == 0)
+        let push = try rh.run(["config", "sync", "push"])
+        #expect(push.status == 1, "\(push.standardError)")
+        #expect(push.standardError.contains("creates the last folder of the path only") && push.standardError.contains("`mkdir -p \(home)/Sync`"), "\(push.standardError)")
+        try FileManager.default.createDirectory(atPath: home + "/Sync", withIntermediateDirectories: true)
+        #expect(try rh.run(["config", "sync", "push"]).standardOutput.hasPrefix("Created \(home)/Sync/rh and pushed"))
+        for command in [["config", "sync", "enable", "--help"], ["config", "sync", "push", "--help"], ["config", "sync", "--help"]] {
+            let help = try rh.run(command).standardOutput.replacingOccurrences(of: "\n", with: " ").replacingOccurrences(of: "  ", with: " ")
+            #expect(help.contains("last folder of the"), "\(command.joined(separator: " ")): \(help)")
+        }
+    }
+
+    @Test func aFolderPrintsAsItWasTyped() throws {
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        // The same folder spelled with its /private prefix: it used to come back as /var/... or /tmp/....
+        let real = try #require(realpath(folder.path, nil).map { String(cString: $0) })
+        try #require(real.hasPrefix("/private/"), "the temporary folder is not under /private here: \(real)")
+        let enable = try rh.run(["config", "sync", "enable", "--folder", real])
+        #expect(enable.standardOutput.hasPrefix("Sync folder: \(real)\n"), "\(enable.standardOutput)")
+        #expect(try rh.run(["config", "sync", "status"]).standardOutput.hasPrefix("Sync folder: \(real)\n"))
+        #expect(try rh.run(["config", "sync", "push"]).standardOutput.contains("to \(real)/config.toml."))
+    }
+
+    @Test func statusAdvisesNothingThatPushOrPullWouldRefuse() throws {
+        let good = "[general]\nagents = [\"mine\"]\n[agent.mine]\nname = \"Mine\"\ncommand = \"mine --yes\"\n"
+        let rh = try isolated(config: good); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        #expect(try rh.run(["config", "sync", "push"]).status == 0)
+        let local = try configFile(rh)
+
+        // A syntax error: push would refuse, and Right Here runs with its defaults, so the folder's own command is new to it.
+        try ("[general\n" + good).write(to: local, atomically: true, encoding: .utf8)
+        var status = try rh.run(["config", "sync", "status"]).standardOutput
+        #expect(status.contains("This machine's config would be refused by `push`: the config is not valid: error: config.toml:1: TOML syntax error: table header not closed"), "\(status)")
+        #expect(!status.contains("Next: `rh config sync push`"), "advice to push what push refuses: \(status)")
+        #expect(status.contains("Next: fix this machine's config first"), "\(status)")
+        #expect(status.contains("cannot be read as it is, so Right Here runs with its defaults") && !status.contains("adds or changes what Right Here starts"), "\(status)")
+        #expect(status.contains("[agent.mine] command = \"mine --yes\""), "the gate's list is unchanged: \(status)")
+
+        // A key named like a credential: refused by push, and the config itself reads fine.
+        try (good + "api_key = \"x\"\n").write(to: local, atomically: true, encoding: .utf8)
+        status = try rh.run(["config", "sync", "status"]).standardOutput
+        #expect(status.contains("would be refused by `push`") && status.contains("agent.mine.api_key"), "\(status)")
+        #expect(!status.contains("Next: `rh config sync push`") && status.contains("Next: fix this machine's config first"), "\(status)")
+        #expect(!status.contains("runs with its defaults"), "\(status)")
+
+        // The folder's copy is the broken one and this Mac has not changed: pull would refuse it.
+        try good.write(to: local, atomically: true, encoding: .utf8)
+        try "[general\n".write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        status = try rh.run(["config", "sync", "status"]).standardOutput
+        #expect(status.contains("remote-ahead") && status.contains("The folder's copy would be refused by `pull`"), "\(status)")
+        #expect(!status.contains("Next: `rh config sync pull`") && status.contains("Next: fix the folder's copy first"), "\(status)")
+        #expect(try rh.run(["config", "sync", "pull"]).status == 1)
+    }
+
     @Test func syncIsListedInHelp() throws {
         let rh = try isolated(); defer { rh.cleanUp() }
         let text = try rh.run(["config", "--help"]).standardOutput

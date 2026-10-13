@@ -130,7 +130,7 @@ struct ConfigSyncTransferTests {
         try f.write(one, to: f.local)
         let target = f.root.appendingPathComponent("no/such/parent/Right Here")
         try f.sync.enable(folder: target.path)
-        #expect(throws: ConfigSyncError.folderUnreachable(target.path)) { try f.sync.push() }
+        #expect(throws: ConfigSyncError.folderUnreachable(target.path, makeParent: nil)) { try f.sync.push() }
         #expect(!FileManager.default.fileExists(atPath: f.root.appendingPathComponent("no").path))
     }
 
@@ -918,5 +918,107 @@ struct ConfigSyncOversizeTests {
         try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: f.local.path)
         #expect(try f.read(f.local) == one, "the file this Mac could not read was written over")
         #expect(f.names(in: f.paths.configDirectory) == ["config.toml", "sync.toml"])
+    }
+}
+
+@Suite("ConfigSync: the folder, as it is typed and as it is made")
+struct ConfigSyncFolderTests {
+    @Test("an empty folder is refused, whatever it is made of", arguments: ["", " ", "\t", "  \n"])
+    func aBlankFolderIsRefused(text: String) throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        // `--folder "$UNSET_VARIABLE"` is the empty string, which was taken for the current folder.
+        #expect(throws: ConfigSyncError.self) { try f.sync.enable(folder: text) }
+        #expect(f.sync.settings() == nil)
+        #expect(f.names(in: f.paths.configDirectory) == ["config.toml"])
+        do { try f.sync.enable(folder: text); Issue.record("enabled") } catch let error as ConfigSyncError {
+            #expect(error.description.contains("The folder is empty (is a shell variable unset?)"), "\(error.description)")
+        }
+    }
+
+    @Test func aFolderUnderTheHomeFolderIsOfferedAMakeParent() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        let home = f.paths.home
+        let target = home.appendingPathComponent("Sync/rh")
+        try f.sync.enable(folder: "~/Sync/rh")
+        let parent = home.appendingPathComponent("Sync").path
+        do { try f.sync.push(); Issue.record("pushed") } catch let error as ConfigSyncError {
+            #expect(error == .folderUnreachable(target.path, makeParent: parent), "\(error)")
+            let text = error.description
+            #expect(text.contains("creates the last folder of the path only"), "\(text)")
+            #expect(text.contains("`mkdir -p \(ShellQuoting.quote(parent, for: .posix))`"), "\(text)")
+        }
+        #expect(!FileManager.default.fileExists(atPath: parent), "push made the parent")
+        // Once the parent is there, the push makes the last folder.
+        try FileManager.default.createDirectory(at: URL(fileURLWithPath: parent), withIntermediateDirectories: true)
+        #expect(try f.sync.push() == .pushed(backup: nil, createdFolder: true))
+        #expect(try f.read(target.appendingPathComponent("config.toml")) == one)
+    }
+
+    @Test func noMakeParentIsOfferedOutsideTheHomeFolderOrInICloudDrivesOwnTree() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        let outside = f.root.appendingPathComponent("elsewhere/rh")
+        try f.sync.enable(folder: outside.path)
+        do { try f.sync.push(); Issue.record("pushed") } catch let error as ConfigSyncError {
+            #expect(error == .folderUnreachable(outside.path, makeParent: nil))
+            #expect(!error.description.contains("mkdir") && error.description.contains("Is iCloud Drive on, or the drive mounted?"), "\(error.description)")
+        }
+        // iCloud Drive's folder is switched on in System Settings, not made by hand.
+        try f.sync.enable(folder: nil)
+        do { try f.sync.push(); Issue.record("pushed") } catch let error as ConfigSyncError {
+            #expect(error == .folderUnreachable(f.sync.defaultFolder.path, makeParent: nil), "\(error)")
+        }
+    }
+
+    @Test("a folder prints as it was typed", arguments: [
+        ("/private/tmp/rh-sync/x", "/private/tmp/rh-sync/x"), ("/private/var/folders/a/../b", "/private/var/folders/b"), ("/tmp/rh-sync//x/./y/", "/tmp/rh-sync/x/y"),
+        ("/a/b/../../c", "/c"), ("/..", "/"),
+    ])
+    func noPrivatePrefixIsRewritten(typed: String, printed: String) throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        #expect(f.sync.resolve(folder: typed).path == printed)
+        let home = f.paths.home.path
+        #expect(f.sync.resolve(folder: "~").path == home)
+        #expect(f.sync.resolve(folder: "~/a/../b/").path == home + "/b")
+        let relative = f.sync.resolve(folder: "some/where/../else").path
+        #expect(relative == FileManager.default.currentDirectoryPath + "/some/else", "\(relative)")
+    }
+
+    @Test func aFolderThatExistsKeepsItsPrivatePrefixInTheReport() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        // `resolvingSymlinksInPath` takes `/private` off again, so the real path is asked of the system.
+        let real = try #require(realpath(f.remote.path, nil).map { String(cString: $0) })
+        try #require(real.hasPrefix("/private/"), "the temporary folder is not under /private here: \(real)")
+        try f.write(one, to: f.local)
+        let report = try f.sync.enable(folder: real)
+        #expect(report.folder.path == real, "typed \(real), reported \(report.folder.path)")
+        #expect(f.sync.settings()?.folder == real)
+        #expect(try f.sync.status().folder.path == real)
+    }
+}
+
+@Suite("ConfigSync: what status reports about a config that would be refused")
+struct ConfigSyncProblemTests {
+    private func withCommand(_ general: String = "") -> String {
+        "[general]\n" + general + "agents = [\"mine\"]\n[agent.mine]\nname = \"Mine\"\ncommand = \"mine --yes\"\n"
+    }
+
+    @Test func aLocalConfigWithASyntaxErrorRunsWithTheDefaults() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write("[general\n" + withCommand(), to: f.local)
+        try f.write(withCommand(), to: f.remoteFile)
+        let report = try f.sync.enable(folder: f.remote.path)
+        #expect(report.localRunsWithDefaults)
+        // The gate is unchanged: against the defaults the folder's agent command is new, and a pull asks.
+        #expect(report.pendingCommands.map(\.line) == ["[agent.mine] command = \"mine --yes\""], "\(report.pendingCommands)")
+        #expect(throws: ConfigSyncError.self) { try f.sync.pull(force: true) }
+        // A config that reads, with a semantic error, runs as it says; and one that does not exist or is fine is not "defaults".
+        try f.write(withCommand("terminal = \"nope\"\n"), to: f.local)
+        let semantic = try f.sync.status()
+        #expect(!semantic.localRunsWithDefaults && semantic.pendingCommands.isEmpty)
+        try FileManager.default.removeItem(at: f.local)
+        #expect(!(try f.sync.status().localRunsWithDefaults))
     }
 }

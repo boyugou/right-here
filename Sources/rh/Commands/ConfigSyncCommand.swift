@@ -11,7 +11,8 @@ struct ConfigSyncCommand: ParsableCommand {
         discussion: """
         The config is copied, not linked: the Finder extension cannot read through a symlink out of its folder. \
         `enable` remembers the folder (by default an iCloud Drive folder called Right Here), `push` sends this \
-        machine's config there, `pull` takes the copy from there, `status` compares them. Nothing is ever \
+        machine's config there (creating the last folder of the path, not its parents), `pull` takes the copy from there, \
+        `status` compares them. Nothing is ever \
         deleted, writes are atomic, and a config that does not validate, is over 1 MiB or has key names that \
         look like secrets (token, secret, password, api_key) is refused. The folder is not trusted with programs: \
         a pull that would add or change a terminal template or an agent command is refused, with the list, unless \
@@ -30,10 +31,10 @@ struct ConfigSyncCommand: ParsableCommand {
     struct Enable: ParsableCommand {
         static let configuration = CommandConfiguration(
             abstract: "Choose the folder to keep the config in. Copies nothing.",
-            discussion: "Without --folder, ~/Library/Mobile Documents/com~apple~CloudDocs/Right Here is used. Any folder works. The folder is created by the first `push`, not here."
+            discussion: "Without --folder, ~/Library/Mobile Documents/com~apple~CloudDocs/Right Here is used. Any folder works. Nothing is created here: the first `push` creates the last folder of the path if its parent exists, and not the parents (make them with `mkdir -p`)."
         )
 
-        @Option(help: "The folder to keep the copy in. A leading ~ is your home folder.")
+        @Option(help: "The folder to keep the copy in; it may not be empty. A leading ~ is your home folder. Its last component is created by the first `push`, its parents are not.")
         var folder: String?
 
         func run() throws {
@@ -125,19 +126,34 @@ struct ConfigSyncCommand: ParsableCommand {
         /// What the folder's copy would start that this machine's config does not, one line each, or nothing.
         static func pendingCommands(_ report: ConfigSync.Report) -> [String] {
             guard !report.pendingCommands.isEmpty else { return [] }
-            return ["The folder's copy adds or changes what Right Here starts (a pull is refused unless you pass --allow-commands):"]
+            // A config that cannot be read runs as the defaults, and a pull is weighed against that: what the folder's copy has
+            // of its own is all new to it, including what this Mac itself pushed before the file was broken.
+            let heading = report.localRunsWithDefaults
+                ? "This machine's config cannot be read as it is, so Right Here runs with its defaults, and a pull is weighed against those: everything of its own in the folder's copy counts as new (a pull is refused unless you pass --allow-commands):"
+                : "The folder's copy adds or changes what Right Here starts (a pull is refused unless you pass --allow-commands):"
+            return [heading]
                 + report.pendingCommands.prefix(ConfigSyncError.listedChanges).map { "  " + $0.line }
                 + (report.pendingCommands.count > ConfigSyncError.listedChanges ? ["  and \(report.pendingCommands.count - ConfigSyncError.listedChanges) more"] : [])
         }
 
         static func nextStep(_ report: ConfigSync.Report) -> String {
             let approval = report.pendingCommands.isEmpty ? "" : " --allow-commands"
+            // What `push` and `pull` would refuse is not advised: it is said above, and the way out is to fix it first.
+            let canPush = report.localProblems.isEmpty, canPull = report.remoteProblems.isEmpty
             switch report.status {
             case .inSync: return "Nothing to do."
-            case .localAhead, .remoteMissing: return "Next: `rh config sync push`."
+            case .localAhead, .remoteMissing:
+                return canPush ? "Next: `rh config sync push`." : "Next: fix this machine's config first (`rh config validate` says what is wrong); `push` refuses it."
             case .remoteAhead:
+                guard canPull else { return "Next: fix the folder's copy first, on the Mac that wrote it or by hand; `pull` refuses it." }
                 return report.pendingCommands.isEmpty ? "Next: `rh config sync pull`." : "Next: read what the folder's copy would start, and if it is yours, `rh config sync pull\(approval)`."
-            case .diverged: return "Next: compare the two files, then `rh config sync pull --force\(approval)` (take the folder's) or `rh config sync push --force` (keep this one); the replaced file is saved first."
+            case .diverged:
+                switch (canPull, canPush) {
+                case (true, true): return "Next: compare the two files, then `rh config sync pull --force\(approval)` (take the folder's) or `rh config sync push --force` (keep this one); the replaced file is saved first."
+                case (true, false): return "Next: `push` would refuse this machine's config, so either fix it (`rh config validate`), or take the folder's with `rh config sync pull --force\(approval)`; the replaced file is saved first."
+                case (false, true): return "Next: `pull` would refuse the folder's copy, so either fix it, or replace it with this machine's config with `rh config sync push --force`; the replaced copy is saved first."
+                case (false, false): return "Next: fix this machine's config (`rh config validate`) or the folder's copy; both would be refused."
+                }
             case .remoteEvicted:
                 if remoteTooLarge(report) != nil { return "Next: is this the right folder? Move config.toml out of it, then run `rh config sync push`." }
                 return "Next: open the folder in Finder, let config.toml download, then run `rh config sync status` again."
@@ -179,7 +195,7 @@ struct ConfigSyncCommand: ParsableCommand {
     struct Push: ParsableCommand {
         static let configuration = CommandConfiguration(
             abstract: "Copy this machine's config to the sync folder.",
-            discussion: "Refuses when the folder's copy changed since the last sync, unless --force; then the old copy is saved next to it as config.toml.bak-<date>."
+            discussion: "Creates the last folder of the sync folder's path when it is missing and its parent is there (not the parents). Refuses when the folder's copy changed since the last sync, unless --force; then the old copy is saved next to it as config.toml.bak-<date>."
         )
 
         @Flag(help: "Replace a copy in the folder that changed since the last sync (it is saved first).")

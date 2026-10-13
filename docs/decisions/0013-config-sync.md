@@ -147,7 +147,19 @@ the folder's copy, and the content at the last sync.
   nowhere unchanged, which is how "points nowhere" is told; a link to a file that does not exist yet inside the folder
   is refused as well.)
 - `enable` records the folder and creates nothing (it never creates the iCloud folder); the first `push` creates the
-  last path component when its parent exists, and explains when it does not.
+  last path component when its parent exists, and explains when it does not: for a folder under the person's home
+  folder (iCloud Drive's own tree excepted: switching that on is not something to do by hand) the message says
+  `mkdir -p <parent>`. The help and the docs say "the last folder of the path", where they used to say "creates the
+  folder", which a fresh Mac's documented example (`--folder ~/Sync/rh`) contradicted. An empty `--folder` (an unset
+  shell variable) is refused in `enable` itself: it used to mean the current folder, and `push` then wrote
+  `config.toml` there.
+- The folder prints as it was typed, `..` and `.` taken out by text. `standardizedFileURL` also takes `/private` off
+  `/private/tmp` and `/private/var` for a path that exists, so `status` named another path than the one given.
+- `status` says what `push` and `pull` would refuse (`Report.localProblems` and `remoteProblems`, the checks they run) and
+  advises neither of them then: "Next: fix this machine's config first". A local config that cannot be read as TOML runs
+  with the defaults, so the folder's own programs are all new to a pull and the list stays (the gate is not relaxed); its
+  heading says why ("cannot be read as it is, so Right Here runs with its defaults") and not that the copy "adds" what
+  this Mac itself pushed before the file broke.
 - Hashes are over the raw bytes, so a byte order mark or a line-ending change counts as a change.
 - The doctor gains checks only while sync is on: folder reachable, copy downloaded, copy valid, how the two compare,
   Finder-style conflict copies (`config 2.toml`) next to the copy, and one row about launch commands (see Trust).

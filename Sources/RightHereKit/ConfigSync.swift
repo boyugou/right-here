@@ -12,7 +12,8 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
     case commandsNeedApproval([LaunchCommands.Change])
     /// `config.toml` in the folder is a link that `push` will not write through: to a file outside the folder, or to nothing (`target` is `nil`).
     case remoteLink(String, target: String?)
-    case folderUnreachable(String)
+    /// `makeParent` is the folder to create first when the person can (it is under their home folder).
+    case folderUnreachable(String, makeParent: String?)
     case writeFailed(String)
     /// The copy in the folder is over the size limit of a config: it is not read, and never written over.
     case remoteTooLarge(file: String, bytes: Int)
@@ -50,8 +51,11 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
             "Not pushing: \(file) is a symbolic link to \(target), which is outside the sync folder. A push writes through a link, and a folder that other machines or a sync service can write could point it at any file you can write. Replace the link with a regular file, or point it at a file inside the folder, then push again. Nothing was changed."
         case .remoteLink(let file, nil):
             "Not pushing: \(file) is a symbolic link that points nowhere. Remove it, then push again. Nothing was changed."
-        case .folderUnreachable(let folder):
-            "The sync folder \(folder) does not exist and cannot be created (its parent folder is missing). Is iCloud Drive on, or the drive mounted? Choose another with `rh config sync enable --folder <folder>`."
+        case .folderUnreachable(let folder, let makeParent):
+            "The sync folder \(folder) does not exist and cannot be created: `rh config sync push` creates the last folder of the path only, and its parent folder is missing. "
+                + (makeParent.map { "Create the parent first: `mkdir -p \(ShellQuoting.quote($0, for: .posix))`, then push again. Or choose another folder" }
+                    ?? "Is iCloud Drive on, or the drive mounted? Or choose another folder")
+                + " with `rh config sync enable --folder <folder>`."
         case .writeFailed(let reason):
             "Could not write: \(reason). The existing file was left as it was."
         case .remoteTooLarge(let file, let bytes):
@@ -103,6 +107,9 @@ public struct ConfigSync: Sendable {
         /// taken (`pull` refuses it). Empty when there is nothing, or no such file.
         public var localProblems: [SyncValidation.Problem]
         public var remoteProblems: [SyncValidation.Problem]
+        /// This machine's config is there but cannot be read as TOML (a syntax error, too large, not text, no permission), so
+        /// `rh` runs with the defaults and `pendingCommands` is the folder's custom settings against those.
+        public var localRunsWithDefaults: Bool
     }
 
     public enum PullOutcome: Sendable, Equatable {
@@ -137,10 +144,36 @@ public struct ConfigSync: Sendable {
     }
 
     /// A folder as typed: `~` is the home the paths were built from, and a relative path is taken from the current folder.
+    /// Only `.`, `..` and doubled slashes are taken out, by text: the path prints as it was given. `standardizedFileURL` also
+    /// rewrote `/private/tmp` to `/tmp` for a folder that exists, so `status` named another path than the one typed.
     func resolve(folder text: String) -> URL {
-        if text == "~" { return paths.home }
-        if text.hasPrefix("~/") { return paths.home.appendingPathComponent(String(text.dropFirst(2)), isDirectory: true).standardizedFileURL }
-        return URL(fileURLWithPath: text, isDirectory: true).standardizedFileURL
+        let absolute: String
+        if text == "~" { absolute = paths.home.path }
+        else if text.hasPrefix("~/") { absolute = paths.home.path + "/" + text.dropFirst(2) }
+        else if text.hasPrefix("/") { absolute = text }
+        else { absolute = FileManager.default.currentDirectoryPath + "/" + text }
+        return URL(fileURLWithPath: Self.lexicallyNormalized(absolute), isDirectory: true)
+    }
+
+    static func lexicallyNormalized(_ path: String) -> String {
+        var parts: [Substring] = []
+        for part in path.split(separator: "/", omittingEmptySubsequences: true) {
+            if part == "." { continue }
+            if part == ".." { _ = parts.popLast(); continue }
+            parts.append(part)
+        }
+        return "/" + parts.joined(separator: "/")
+    }
+
+    /// The folder `push` could not create `folder` in, when the person can make it with `mkdir -p`: it is under their home
+    /// folder, and not in iCloud Drive's own tree, which is theirs to switch on and not to make by hand.
+    private func parentToMake(for folder: URL) -> String? {
+        let parent = folder.deletingLastPathComponent().path
+        let home = paths.home.path.hasSuffix("/") ? paths.home.path : paths.home.path + "/"
+        guard (parent + "/").hasPrefix(home) else { return nil }
+        let mobileDocuments = home + "Library/Mobile Documents"
+        guard parent != mobileDocuments, !parent.hasPrefix(mobileDocuments + "/") else { return nil }
+        return parent
     }
 
     // MARK: Inspection
@@ -231,10 +264,17 @@ public struct ConfigSync: Sendable {
         case .unreadable(let reason): localProblems = [.unreadable(reason: reason)]
         case .absent: break
         }
+        var runsWithDefaults = false
+        switch inspection.local {
+        case .data(let data):
+            if let text = String(data: data, encoding: .utf8) { runsWithDefaults = !ConfigParser.canBeRead(text.hasPrefix("\u{FEFF}") ? String(text.dropFirst()) : text) } else { runsWithDefaults = true }
+        case .tooLarge, .unreadable: runsWithDefaults = true
+        case .absent: break
+        }
         return Report(status: SyncState.status(snapshot), folder: inspection.folder, remoteFile: inspection.folder.appendingPathComponent(Self.remoteFileName),
                       localFile: paths.configFile, folderReachable: inspection.folderReachable, conflictCopies: inspection.conflicts,
                       localHash: local, remoteHash: remoteHash, lastSynced: settings.lastSynced, pendingCommands: pending,
-                      remote: inspection.remote, localProblems: localProblems, remoteProblems: remoteProblems)
+                      remote: inspection.remote, localProblems: localProblems, remoteProblems: remoteProblems, localRunsWithDefaults: runsWithDefaults)
     }
 
     // MARK: Commands
@@ -242,6 +282,10 @@ public struct ConfigSync: Sendable {
     /// Remembers the folder. Nothing is copied and the folder is not created: `push` does that.
     @discardableResult
     public func enable(folder text: String?) throws -> Report {
+        // `--folder "$UNSET"` is an empty string, which would have meant the current folder.
+        if let text, text.allSatisfy(\.isWhitespace) {
+            throw ConfigSyncError.badFolder("The folder is empty (is a shell variable unset?). Give a folder, or leave --folder out to use the iCloud Drive folder.")
+        }
         let folder = text.map(resolve(folder:)) ?? defaultFolder
         func same(_ a: URL, _ b: URL) -> Bool { a.resolvingSymlinksInPath().standardizedFileURL.path == b.resolvingSymlinksInPath().standardizedFileURL.path }
         if same(folder, paths.configDirectory) {
@@ -337,7 +381,7 @@ public struct ConfigSync: Sendable {
                 try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false)
                 createdFolder = true
             } catch {
-                throw ConfigSyncError.folderUnreachable(folder.path)
+                throw ConfigSyncError.folderUnreachable(folder.path, makeParent: parentToMake(for: folder))
             }
         }
         let destination = try remoteWriteTarget(in: folder)

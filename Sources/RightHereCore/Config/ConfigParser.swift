@@ -51,6 +51,11 @@ public enum ConfigParser {
         }.map(\.element)
     }
 
+    /// Whether the text is TOML at all: a text with a syntax error is not read, and the config built from it is the defaults.
+    public static func canBeRead(_ text: String) -> Bool {
+        readTable(text, sink: ConfigSink()) != nil
+    }
+
     /// The text as a table, or `nil` with the reason in the sink.
     static func readTable(_ text: String, sink: ConfigSink, consequence: String = defaultsApply) -> TOMLTable? {
         // The TOML library recurses once per level and a deep enough file overflowed the stack and killed `rh`.
