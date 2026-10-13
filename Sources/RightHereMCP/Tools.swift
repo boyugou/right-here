@@ -260,14 +260,12 @@ enum Tools {
 
     private static func catalog(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         let config = server.loadConfig().config
-        let apps = config.allApps.map { app -> JSONValue in
-            .object(["id": .string(app.id), "name": .string(app.name), "role": .string(app.role.rawValue),
-                     "installed": .bool(app.installedBundleID(facts: server.facts) != nil)])
+        let apps = config.appRows(facts: server.facts).map { app -> JSONValue in
+            .object(["id": .string(app.id), "name": .string(app.name), "role": .string(app.role), "installed": .bool(app.installed)])
         }
-        let agents = config.allAgents.map { agent -> JSONValue in
+        let agents = config.agentRows.map { agent -> JSONValue in
             .object(["id": .string(agent.id), "name": .string(agent.name), "command": .string(agent.command),
-                     "enabled": .bool(config.enabledAgents.contains(agent.id)),
-                     "variants": .array(agent.variants.map { .string($0.id) })])
+                     "enabled": .bool(agent.enabled), "variants": .array(agent.variants.map { .string($0) })])
         }
         let structured = JSONValue.object(["apps": .array(apps), "agents": .array(agents)])
         return ToolOutput(text: structured.pretty(), structured: structured)

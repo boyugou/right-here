@@ -112,12 +112,10 @@ struct Agents: AsyncParsableCommand {
         let runtime = Runtime()
         let all = runtime.config.allAgents
         let found = await Detector(facts: runtime.facts).commandsFound(all.map(\.executable))
-        let rows = all.map { agent in
+        let rows = zip(all, runtime.config.agentRows).map { agent, row in
             Row(
-                id: agent.id, name: agent.name, command: agent.command,
-                enabled: runtime.config.enabledAgents.contains(agent.id),
-                foundInShell: found.contains(agent.executable),
-                variants: agent.variants.map(\.id), terminalLink: agent.terminalLink != nil, desktopLink: agent.desktopLink != nil
+                id: row.id, name: row.name, command: row.command, enabled: row.enabled, foundInShell: found.contains(agent.executable),
+                variants: row.variants, terminalLink: row.terminalLink, desktopLink: row.desktopLink
             )
         }
         if json {
@@ -137,21 +135,9 @@ struct Apps: ParsableCommand {
     @Flag(help: "Print JSON.")
     var json = false
 
-    struct Row: Encodable {
-        var id: String
-        var name: String
-        var role: String
-        var installed: Bool
-        var bundleID: String?
-    }
-
     func run() throws {
         let runtime = Runtime()
-        let apps = runtime.config.allApps
-        let rows = apps.map { app -> Row in
-            let bundleID = app.installedBundleID(facts: runtime.facts)
-            return Row(id: app.id, name: app.name, role: app.role.rawValue, installed: bundleID != nil, bundleID: bundleID)
-        }
+        let rows = runtime.config.appRows(facts: runtime.facts)
         if json {
             try Output.json(rows)
             return
