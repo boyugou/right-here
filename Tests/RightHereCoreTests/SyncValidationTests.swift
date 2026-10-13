@@ -26,7 +26,7 @@ struct SyncValidationTests {
     }
 
     @Test func tooLargeIsRefusedBeforeParsing() {
-        let big = Data(("# " + String(repeating: "x", count: SyncValidation.maxBytes)).utf8)
+        let big = Data(("# " + String(repeating: "x", count: ConfigParser.maxBytes)).utf8)
         #expect(SyncValidation.check(big) == [.tooLarge(bytes: big.count)])
     }
 

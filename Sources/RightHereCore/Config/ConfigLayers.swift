@@ -13,7 +13,20 @@ public enum ConfigSource: Sendable, Equatable {
 /// an overlay entry naming an app that only the shared file defines) sees the settings as they will apply. Each
 /// diagnostic is then traced back to the file and the position in that file it came from.
 public enum ConfigLayers {
-    public static let overlayFileName = "config.local.toml"
+    /// The overlay of the default config file, `config.toml`.
+    public static let overlayFileName = overlayName(forConfigFile: "config.toml")
+
+    /// The overlay's name for a config file: `config.local.toml` for `config.toml`, `<name>.local.<extension>` for any other
+    /// (`toml` when it has none). The one place that says it.
+    public static func overlayName(forConfigFile name: String) -> String {
+        let file = name as NSString
+        return file.deletingPathExtension + ".local." + (file.pathExtension.isEmpty ? "toml" : file.pathExtension)
+    }
+
+    /// What is said when `disabled` is in the shared file, where it does nothing: the overlay is the only place it works.
+    static func disabledInSharedFileMessage(overlayName: String = overlayFileName) -> String {
+        "only meaningful in \(overlayName), where it removes ids from the shared config; it does nothing here"
+    }
 
     public static func load(base: ConfigSource, local: ConfigSource, overlayName: String = overlayFileName) -> ConfigLoadResult {
         var baseDiagnostics: [ConfigDiagnostic] = []
@@ -60,7 +73,7 @@ public enum ConfigLayers {
         var result = ConfigParser.parse(TOMLEmitter.emit(merged.root))
         result.diagnostics = result.diagnostics.map { attribute($0, to: merged, overlayName: overlayName) }
         if baseTree["disabled"] != nil {
-            baseDiagnostics.append(ConfigDiagnostic(severity: .warning, path: "disabled", message: "only meaningful in \(overlayName), where it removes ids from the shared config; it does nothing here"))
+            baseDiagnostics.append(ConfigDiagnostic(severity: .warning, path: "disabled", message: disabledInSharedFileMessage(overlayName: overlayName)))
         }
         if merged.disabledProblem {
             localDiagnostics.append(ConfigDiagnostic(severity: .error, path: "disabled", message: "expected an array of strings", file: overlayName))

@@ -7,6 +7,11 @@ public enum ConfigParser {
     /// The deepest nesting of arrays and inline tables a config may have; real ones nest a few levels.
     static let maxNesting = 64
 
+    /// The most a config file may hold. A config is a few kilobytes; the menu is built from it on every right-click, so a
+    /// file far past that (a wrong path, a log pasted over it) is refused instead of read: parsing 60 MB took four
+    /// seconds. The config store, the overlay and the sync folder's copy all keep to it.
+    public static let maxBytes = 1_048_576
+
     public static func parse(_ text: String) -> ConfigLoadResult {
         let sink = ConfigSink()
         guard let root = readTable(text, sink: sink) else {

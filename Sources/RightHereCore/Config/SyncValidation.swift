@@ -3,8 +3,6 @@ import Foundation
 /// What a config must satisfy before it is copied to or from a sync folder: a file that is read, trusted and
 /// copied between machines has to be one the parser accepts, of a sane size, and free of anything that looks like a secret.
 public enum SyncValidation {
-    public static let maxBytes = 1_048_576
-
     /// Key names that suggest a credential, compared in lowercase with dashes read as underscores.
     public static let secretWords = ["token", "secret", "password", "api_key"]
 
@@ -19,7 +17,7 @@ public enum SyncValidation {
         /// No final period: a message ends a sentence of its own in the places that join several (`Refusing ...; ... Nothing was changed.`).
         public var message: String {
             switch self {
-            case .tooLarge(let bytes): "the file is \(bytes / 1024) KB; a config is a few kilobytes (the limit is \(maxBytes / 1024) KB)"
+            case .tooLarge(let bytes): "the file is \(bytes / 1024) KB; a config is a few kilobytes (the limit is \(ConfigParser.maxBytes / 1024) KB)"
             case .notUTF8: "the file is not valid UTF-8"
             case .invalid(let reason): "the config is not valid: \(reason.hasSuffix(".") ? String(reason.dropLast()) : reason). Run `rh config validate`"
             case .secretKeys(let keys): "the config has key names that suggest a secret (\(keys.joined(separator: ", "))); a synced config must not hold credentials. Keep them in the environment or the keychain"
@@ -28,7 +26,7 @@ public enum SyncValidation {
     }
 
     public static func check(_ data: Data) -> [Problem] {
-        if data.count > maxBytes { return [.tooLarge(bytes: data.count)] }
+        if data.count > ConfigParser.maxBytes { return [.tooLarge(bytes: data.count)] }
         guard var text = String(data: data, encoding: .utf8) else { return [.notUTF8] }
         if text.hasPrefix("\u{FEFF}") { text.removeFirst() }
         var problems: [Problem] = []

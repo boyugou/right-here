@@ -46,7 +46,7 @@ struct ConfigOverlayStoreTests {
     @Test func anOversizedOverlayIsRefusedAndNamed() throws {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         try "[general]\nterminal = \"terminal\"\n".write(to: directory.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
-        try ("# " + String(repeating: "x", count: ConfigStore.maxConfigBytes + 10) + "\n").write(to: directory.appendingPathComponent("config.local.toml"), atomically: true, encoding: .utf8)
+        try ("# " + String(repeating: "x", count: ConfigParser.maxBytes + 10) + "\n").write(to: directory.appendingPathComponent("config.local.toml"), atomically: true, encoding: .utf8)
         let loaded = ConfigStore.load(paths: paths(in: directory))
         #expect(loaded.result.diagnostics.contains { $0.file == "config.local.toml" && $0.message.contains("a few kilobytes") })
         #expect(loaded.config.terminal == "terminal")

@@ -5,10 +5,9 @@ import RightHereCore
 public struct RHPaths: Sendable, Equatable {
     public var configDirectory: URL
     public var configFile: URL
-    /// The per-machine overlay next to the config file: `config.local.toml` (`<name>.local.toml` for another file name).
+    /// The per-machine overlay next to the config file; `ConfigLayers.overlayName(forConfigFile:)` names it.
     public var localConfigFile: URL {
-        let name = configFile.deletingPathExtension().lastPathComponent + ".local." + (configFile.pathExtension.isEmpty ? "toml" : configFile.pathExtension)
-        return configFile.deletingLastPathComponent().appendingPathComponent(name)
+        configFile.deletingLastPathComponent().appendingPathComponent(ConfigLayers.overlayName(forConfigFile: configFile.lastPathComponent))
     }
     /// What `rh config sync` remembers: the folder and the content last synced.
     public var syncStateFile: URL { configDirectory.appendingPathComponent("sync.toml") }
@@ -59,11 +58,11 @@ public struct LoadedConfig: Sendable, Equatable {
     public var localFile: URL
     public var localFileExists: Bool
 
-    public init(result: ConfigLoadResult, fileExists: Bool, file: URL, localFile: URL? = nil, localFileExists: Bool = false) {
+    public init(result: ConfigLoadResult, fileExists: Bool, file: URL, localFile: URL, localFileExists: Bool) {
         self.result = result
         self.fileExists = fileExists
         self.file = file
-        self.localFile = localFile ?? file.deletingLastPathComponent().appendingPathComponent("config.local.toml")
+        self.localFile = localFile
         self.localFileExists = localFileExists
     }
 
@@ -71,11 +70,7 @@ public struct LoadedConfig: Sendable, Equatable {
 }
 
 public enum ConfigStore {
-    /// Reads the config file. A missing file is not an error: the defaults apply.
-    /// A config is a few kilobytes. The menu is built from it on every right-click, so a file far past that (a wrong
-    /// path, a log pasted over it) is refused instead of read: parsing 60 MB took four seconds.
-    public static let maxConfigBytes = 1_048_576
-
+    /// Reads the config file. A missing file is not an error: the defaults apply. A file over `ConfigParser.maxBytes` is refused.
     public static func load(paths: RHPaths) -> LoadedConfig {
         let base = read(paths.configFile)
         let local = read(paths.localConfigFile)
@@ -102,7 +97,7 @@ public enum ConfigStore {
     private static func read(_ file: URL) -> (source: ConfigSource, exists: Bool) {
         // Through a link: a config kept in a dotfiles repository is a symlink, and the link itself is a few bytes.
         let target = file.resolvingSymlinksInPath().path
-        if let size = (try? FileManager.default.attributesOfItem(atPath: target))?[.size] as? Int, size > maxConfigBytes {
+        if let size = (try? FileManager.default.attributesOfItem(atPath: target))?[.size] as? Int, size > ConfigParser.maxBytes {
             let diagnostic = ConfigDiagnostic(severity: .error, path: "", message: "The file is \(size / 1024) KB; a config is a few kilobytes, so it was not read. Is this the right file?")
             return (.unreadable(diagnostic), true)
         }

@@ -191,6 +191,22 @@ struct ConfigLayersMergeTests {
     }
 }
 
+@Suite("ConfigLayers: the overlay's name")
+struct ConfigLayersOverlayNameTests {
+    @Test("a config file's overlay", arguments: [
+        ("config.toml", "config.local.toml"), ("foo.toml", "foo.local.toml"), ("rh.conf", "rh.local.conf"), ("noextension", "noextension.local.toml"),
+        ("my.config.toml", "my.config.local.toml")
+    ])
+    func overlayName(config: String, overlay: String) {
+        #expect(ConfigLayers.overlayName(forConfigFile: config) == overlay)
+    }
+
+    @Test func theDefaultOverlayIsTheOneOfTheDefaultConfigFile() {
+        #expect(ConfigLayers.overlayFileName == "config.local.toml")
+        #expect(ConfigLayers.overlayFileName == ConfigLayers.overlayName(forConfigFile: "config.toml"))
+    }
+}
+
 @Suite("ConfigLayers: disabled")
 struct ConfigLayersDisabledTests {
     @Test func removesAppsTemplatesAndAgentDefinitions() {

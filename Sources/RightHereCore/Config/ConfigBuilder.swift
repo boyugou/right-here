@@ -14,7 +14,7 @@ struct ConfigBuilder {
         }
 
         if root.table.contains(key: "disabled") {
-            sink.warning(["disabled"], "only meaningful in config.local.toml, where it removes ids from the shared config; it does nothing here")
+            sink.warning(["disabled"], ConfigLayers.disabledInSharedFileMessage())
         }
 
         let general = readGeneral(root, into: &config)

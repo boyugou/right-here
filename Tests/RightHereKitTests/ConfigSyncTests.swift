@@ -294,7 +294,7 @@ struct ConfigSyncSafetyTests {
     }
 
     @Test func anOversizedConfigIsNotCopiedEitherWay() throws {
-        let big = "# " + String(repeating: "x", count: SyncValidation.maxBytes + 1) + "\n"
+        let big = "# " + String(repeating: "x", count: ConfigParser.maxBytes + 1) + "\n"
         let pushing = try prepared(one, local: big); defer { pushing.cleanUp() }
         #expect(throws: (any Error).self) { try pushing.sync.push(force: true) }
         #expect(try pushing.read(pushing.remoteFile) == one)

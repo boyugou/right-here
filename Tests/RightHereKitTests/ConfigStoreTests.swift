@@ -183,7 +183,7 @@ struct ConfigStoreSizeTests {
     @Test func aFileFarLargerThanAnyConfigIsRefusedNotRead() throws {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let paths = RHPaths(environment: ["RH_CONFIG_DIR": directory.path], home: directory)
-        let comment = "# " + String(repeating: "x", count: ConfigStore.maxConfigBytes + 10) + "\n"
+        let comment = "# " + String(repeating: "x", count: ConfigParser.maxBytes + 10) + "\n"
         try comment.write(to: paths.configFile, atomically: true, encoding: .utf8)
         let loaded = ConfigStore.load(paths: paths)
         #expect(loaded.fileExists)
@@ -202,7 +202,7 @@ struct ConfigStoreSizeTests {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let paths = RHPaths(environment: ["RH_CONFIG_DIR": directory.path], home: directory)
         let big = directory.appendingPathComponent("elsewhere.toml")
-        try ("# " + String(repeating: "x", count: ConfigStore.maxConfigBytes + 10) + "\n").write(to: big, atomically: true, encoding: .utf8)
+        try ("# " + String(repeating: "x", count: ConfigParser.maxBytes + 10) + "\n").write(to: big, atomically: true, encoding: .utf8)
         try FileManager.default.createSymbolicLink(at: paths.configFile, withDestinationURL: big)
         #expect(ConfigStore.load(paths: paths).result.diagnostics.contains { $0.message.contains("a few kilobytes") })
     }

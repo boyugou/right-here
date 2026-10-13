@@ -123,7 +123,7 @@ MUTANTS = [
     ("a config cut off inside an open bracket reaches the TOML library as it is", "Sources/RightHereCore/Config/ConfigParser.swift",
      'return try TOMLTable(source: text + "\\n")', "return try TOMLTable(source: text)"),
     ("a huge config file is read and parsed", "Sources/RightHereKit/ConfigStore.swift",
-     "as? Int, size > maxConfigBytes {", "as? Int, size > Int.max {"),
+     "as? Int, size > ConfigParser.maxBytes {", "as? Int, size > Int.max {"),
     ("a bidirectional control is printed as it is", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
      "if Self.bidiControls.contains(scalar) {", "if false {"),
     ("a name with a backslash and a control character gets a shell form", "Sources/RightHereCore/Paths/PathStyle.swift",
