@@ -147,7 +147,9 @@ public enum Documentation {
 
     - A dotfiles manager may keep `config.toml` as a symlink into its repository: `rh` follows it, and the Finder
       extension may not be able to (`rh doctor` warns); copy the file instead. `rh config sync pull` writes into
-      the file a link points at and leaves the link.
+      the file a link points at and leaves the link. A `config.toml` that is a link inside the sync folder is
+      treated the same way by `push`, but only when the link leads to a file inside that folder; one that leaves the
+      folder or points nowhere is refused, because anything that can write the folder could plant it.
     - Dropbox or any synced folder: `rh config sync enable --folder <folder>`.
     - A git repository: make it the folder, and commit there; Right Here only reads and writes `config.toml` in it.
     - Keep per-machine differences in `config.local.toml`, and out of the repository or the folder.

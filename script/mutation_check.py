@@ -226,6 +226,10 @@ MUTANTS = [
      ", replaced.insert(position).inserted {", " {"),
     ("a deleted local config reads as a local change", "Sources/RightHereCore/Config/SyncState.swift",
      "if snapshot.local == nil { return .remoteAhead }", "if false { return .remoteAhead }"),
+    ("push writes through a link in the sync folder that leaves the folder", "Sources/RightHereKit/ConfigSync.swift",
+     'guard target.path.hasPrefix(inside.hasSuffix("/") ? inside : inside + "/") else {', "guard true else {"),
+    ("push replaces a link in the sync folder with a regular file", "Sources/RightHereKit/ConfigSync.swift",
+     "let destination = try remoteWriteTarget(in: folder)", "let destination = folder.appendingPathComponent(Self.remoteFileName)"),
 ]
 
 

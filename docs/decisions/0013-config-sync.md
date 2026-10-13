@@ -105,7 +105,12 @@ the folder's copy, and the content at the last sync.
 - Writes are a temporary file in the destination's folder (rename is atomic only within a volume), `fsync`, then
   `rename`. A failed or interrupted write removes its own temporary file and leaves the old file. Nothing else is
   deleted; `disable` removes only `sync.toml`, the state file.
-- A symlinked local config stays a link: `pull` writes into the file the link points at.
+- A symlinked local config stays a link: `pull` writes into the file the link points at. The same holds for a
+  `config.toml` that is a link in the sync folder: `push` writes into the file it points at and the backup is a copy of
+  that file's content (before, the write replaced the link and the backup was a second link). The folder is written by
+  things this Mac does not control, so the link may only lead to a file inside the folder: one that leaves it, or
+  points nowhere, is refused (nothing is written, no backup is made), because a push through a planted link would
+  overwrite any file the person can write.
 - `enable` records the folder and creates nothing (it never creates the iCloud folder); the first `push` creates the
   last path component when its parent exists, and explains when it does not.
 - Hashes are over the raw bytes, so a byte order mark or a line-ending change counts as a change.

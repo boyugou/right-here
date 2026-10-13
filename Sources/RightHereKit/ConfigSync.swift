@@ -10,6 +10,8 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
     case invalid([SyncValidation.Problem], file: String)
     /// The copy in the folder would add or change something Right Here starts, and the caller did not say it is theirs.
     case commandsNeedApproval([LaunchCommands.Change])
+    /// `config.toml` in the folder is a link that `push` will not write through: to a file outside the folder, or to nothing (`target` is `nil`).
+    case remoteLink(String, target: String?)
     case folderUnreachable(String)
     case writeFailed(String)
 
@@ -39,6 +41,10 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
                 + changes.prefix(Self.listedChanges).map { "  " + $0.line }.joined(separator: "\n")
                 + (changes.count > Self.listedChanges ? "\n  and \(changes.count - Self.listedChanges) more" : "")
                 + "\nRead them. If they are yours, run `rh config sync pull --allow-commands` (with --force as well when this Mac's config changed). Nothing was changed."
+        case .remoteLink(let file, let target?):
+            "Not pushing: \(file) is a symbolic link to \(target), which is outside the sync folder. A push writes through a link, and a folder that other machines or a sync service can write could point it at any file you can write. Replace the link with a regular file, or point it at a file inside the folder, then push again. Nothing was changed."
+        case .remoteLink(let file, nil):
+            "Not pushing: \(file) is a symbolic link that points nowhere. Remove it, then push again. Nothing was changed."
         case .folderUnreachable(let folder):
             "The sync folder \(folder) does not exist and cannot be created (its parent folder is missing). Is iCloud Drive on, or the drive mounted? Choose another with `rh config sync enable --folder <folder>`."
         case .writeFailed(let reason):
@@ -273,7 +279,7 @@ public struct ConfigSync: Sendable {
                 throw ConfigSyncError.folderUnreachable(folder.path)
             }
         }
-        let destination = folder.appendingPathComponent(Self.remoteFileName)
+        let destination = try remoteWriteTarget(in: folder)
         var backup: URL?
         do {
             if inspection.remoteData != nil, current.status == .remoteAhead || current.status == .diverged {
@@ -288,6 +294,21 @@ public struct ConfigSync: Sendable {
         settings.lastSynced = Self.hash(data)
         try save(settings)
         return .pushed(backup: backup, createdFolder: createdFolder)
+    }
+
+    /// The file `push` writes: `config.toml` in the folder, or what it is a link to, so that a link stays a link (as `pull`
+    /// does on this machine's side) and the backup is a copy of real content, not a second link. The link may only lead
+    /// to a file inside the folder: the folder is written by things this Mac does not control, and a link they plant must
+    /// not turn a push into an overwrite of any file the person can write.
+    private func remoteWriteTarget(in folder: URL) throws -> URL {
+        let file = folder.appendingPathComponent(Self.remoteFileName)
+        guard (try? file.resourceValues(forKeys: [.isSymbolicLinkKey]))?.isSymbolicLink == true else { return file }
+        let target = file.resolvingSymlinksInPath()
+        // A link that points nowhere resolves to itself.
+        guard target.path != file.path else { throw ConfigSyncError.remoteLink(file.path, target: nil) }
+        let inside = folder.resolvingSymlinksInPath().path
+        guard target.path.hasPrefix(inside.hasSuffix("/") ? inside : inside + "/") else { throw ConfigSyncError.remoteLink(file.path, target: target.path) }
+        return target
     }
 
     /// Forgets the folder and the sync state. Both copies of the config stay where they are.

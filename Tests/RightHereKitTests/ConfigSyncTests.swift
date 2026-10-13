@@ -417,6 +417,66 @@ struct ConfigSyncSafetyTests {
     }
 }
 
+@Suite("ConfigSync: a link in the sync folder")
+struct ConfigSyncFolderLinkTests {
+    private func isLink(_ url: URL) -> Bool { (try? FileManager.default.destinationOfSymbolicLink(atPath: url.path)) != nil }
+
+    @Test func aLinkToAFileInsideTheFolderStaysALinkAndTheBackupIsARealCopy() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        let store = f.remote.appendingPathComponent("store/config.toml")
+        try FileManager.default.createDirectory(at: store.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try f.write(two, to: store)
+        try FileManager.default.createSymbolicLink(at: f.remoteFile, withDestinationURL: store)
+        try f.write(one, to: f.local)
+        try f.sync.enable(folder: f.remote.path)
+        guard case .pushed(let backup?, _) = try f.sync.push(force: true) else { Issue.record("expected the replaced copy to be saved"); return }
+        #expect(isLink(f.remoteFile), "the push replaced the link with a regular file")
+        #expect((try? FileManager.default.destinationOfSymbolicLink(atPath: f.remoteFile.path)) == store.path)
+        #expect(try f.read(store) == one)
+        #expect(!isLink(backup), "the backup is a second link, not a copy of what was replaced")
+        #expect(try f.read(backup) == two)
+        #expect(try f.sync.status().status == .inSync)
+    }
+
+    @Test func aLinkToAFileOutsideTheFolderIsNeverWrittenThrough() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        // Stands for any file the person can write, which a link planted in the folder could name.
+        let elsewhere = f.root.appendingPathComponent("elsewhere.toml")
+        try f.write(one, to: f.local)
+        try f.write(one, to: elsewhere)
+        try FileManager.default.createSymbolicLink(at: f.remoteFile, withDestinationURL: elsewhere)
+        try f.sync.enable(folder: f.remote.path)
+        #expect(try f.sync.status().status == .inSync)
+        // This Mac's config changes, so a plain push would proceed (the folder's copy did not change).
+        try f.write(two, to: f.local)
+        let lastSynced = f.sync.settings()?.lastSynced
+        for force in [false, true] {
+            do { try f.sync.push(force: force); Issue.record("pushed through a link that leaves the folder") } catch ConfigSyncError.remoteLink(let file, let target) {
+                #expect(file == f.remoteFile.path)
+                #expect(target?.hasSuffix("/elsewhere.toml") == true, "\(String(describing: target))")
+            }
+        }
+        #expect(try f.read(elsewhere) == one)
+        #expect(isLink(f.remoteFile))
+        #expect(f.names(in: f.remote) == ["config.toml"], "a refused push must not leave a saved copy")
+        #expect(f.sync.settings()?.lastSynced == lastSynced)
+        let description = ConfigSyncError.remoteLink(f.remoteFile.path, target: elsewhere.path).description
+        #expect(description.contains("outside the sync folder") && description.hasSuffix("Nothing was changed."))
+    }
+
+    @Test func aLinkThatPointsNowhereIsRefusedToo() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        let nowhere = f.root.appendingPathComponent("not-there.toml")
+        try f.write(one, to: f.local)
+        try FileManager.default.createSymbolicLink(at: f.remoteFile, withDestinationURL: nowhere)
+        try f.sync.enable(folder: f.remote.path)
+        #expect(try f.sync.status().status == .remoteMissing)
+        #expect(throws: ConfigSyncError.remoteLink(f.remoteFile.path, target: nil)) { try f.sync.push() }
+        #expect(!FileManager.default.fileExists(atPath: nowhere.path))
+        #expect(isLink(f.remoteFile))
+    }
+}
+
 @Suite("ConfigSync: doctor")
 struct ConfigSyncDoctorTests {
     @Test func nothingWhenSyncIsOff() throws {
