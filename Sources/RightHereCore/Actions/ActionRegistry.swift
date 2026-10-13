@@ -204,6 +204,13 @@ public struct ActionRegistry: Sendable {
         Suggestion.closest(to: word, in: catalog().map(\.id))
     }
 
+    /// Reads an action id typed by a person or an agent. A word that is not an id comes back as an error that
+    /// names the closest real id, so every surface says it the same way.
+    public func resolve(_ id: String) throws -> ActionRef {
+        guard let ref = ActionRef(parsing: id) else { throw UnknownActionID(id: id, suggestion: closestID(to: id)) }
+        return ref
+    }
+
     public func catalog() -> [ActionInfo] {
         var refs: [ActionRef] = []
         refs += PathStyle.allCases.map { .copyPath($0) }

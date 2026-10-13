@@ -181,12 +181,13 @@ enum Tools {
 
     private static func run(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         guard let id = arguments["action"]?.stringValue else { throw ToolError("action is required.") }
-        guard let ref = ActionRef(parsing: id) else {
-            let loaded = server.loadConfig()
-            let close = ActionRegistry(config: loaded.config, facts: server.facts).closestID(to: id)
-            throw ToolError("\"\(id)\" is not an action id.\(close.map { " Did you mean \"\($0)\"?" } ?? "") Call right_here_actions to list them.")
-        }
         let loaded = server.loadConfig()
+        let ref: ActionRef
+        do {
+            ref = try ActionRegistry(config: loaded.config, facts: server.facts).resolve(id)
+        } catch let unknown as UnknownActionID {
+            throw ToolError(unknown.message(next: "Call right_here_actions to list them."))
+        }
         let plan = try Planner(config: loaded.config, facts: server.facts).plan(ref, context: context(from: arguments, facts: server.facts))
         let planJSON = try JSONValue(encoding: plan)
         if arguments["dry_run"]?.boolValue == true {
