@@ -57,8 +57,10 @@ struct ConfigDiagnosticTextTests {
     }
 
     @Test func aProblemInAnOverlayKeyIsStillNamedForTheOverlay() {
-        // Origins are looked up by the path as a diagnostic spells it, which is the escaped spelling.
-        let result = ConfigLayers.load(base: .text("[general]\nagents = [\"claude\"]\n"), local: .text("[agent.\"bad\\u001bid\"]\nname = \"X\"\ncommand = \"x\"\n"))
+        // Origins are looked up by the path as a diagnostic spells it, which is the escaped spelling. The base has an
+        // [agent] table too, so the tables merge and the overlay's key is the only thing that says where its problem is.
+        let result = ConfigLayers.load(base: .text("[general]\nagents = [\"claude\"]\n[agent.claude]\ncommand = \"claude --x\"\n"),
+                                       local: .text("[agent.\"bad\\u001bid\"]\nname = \"X\"\ncommand = \"x\"\n"))
         let about = result.diagnostics.filter { $0.path.hasPrefix("agent.bad") }
         #expect(!about.isEmpty)
         #expect(about.allSatisfy { $0.file == ConfigLayers.overlayFileName }, "\(about)")
