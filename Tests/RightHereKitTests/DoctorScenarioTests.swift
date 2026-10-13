@@ -247,3 +247,56 @@ struct DoctorScenarioTests {
                                notes: ["config.toml is a symlink, which the Finder extension's sandbox may not be able to follow"]))
     }
 }
+
+private let pluginkitDisabled = pluginkitEnabled.replacingOccurrences(of: "+    ", with: "-    ")
+private let pluginkitSecondPlace = "     \(AppIdentity.extensionBundleID)(1.0)\tU2\t2026-10-11 23:20:00 +0000\t/Users/x/DerivedData/Right Here.app/Contents/PlugIns/FinderExtension.appex\n"
+
+@Suite("Doctor: looking at the Finder extension alone")
+struct DoctorExtensionLookTests {
+    @Test func aLookIsOnePluginkitCallAndNothingElse() async {
+        // The setup window looks every two seconds while its first-run card waits: no config read, no login shell for the agents.
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: pluginkitEnabled)])
+        let check = await Doctor.extensionCheck(runner: runner)
+        #expect(check.id == .finderExtension)
+        #expect(check.status == .ok)
+        #expect(runner.recorded.map(\.executable) == ["/usr/bin/pluginkit"])
+    }
+
+    @Test("the check alone says what the whole doctor says of the extension", arguments: [
+        "", pluginkitDisabled, pluginkitEnabled, pluginkitEnabled + pluginkitSecondPlace
+    ])
+    func theSameAsInAWholeRun(output: String) async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.answers = [ProcessResult(status: 0, standardOutput: output)]
+        let inTheWholeRun = said(await scene.run(), "finder.extension")
+        let alone = said(await Doctor.extensionCheck(runner: FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: output)])))
+        #expect(alone != nil)
+        #expect(alone == inTheWholeRun)
+    }
+
+    @Test func aNewCheckTakesThePlaceOfTheOldOneAndNothingElseChanges() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.answers = [ProcessResult(status: 0, standardOutput: pluginkitDisabled)]
+        let before = await scene.run()
+        let index = try #require(before.firstIndex { $0.id == .finderExtension })
+        #expect(before[index].status == .needsUser)
+
+        let found = await Doctor.extensionCheck(runner: FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: pluginkitEnabled)]))
+        let after = before.replacing(found)
+        #expect(after.map(\.id) == before.map(\.id), "the same rows in the same order")
+        #expect(after[index].status == .ok)
+        #expect(after.enumerated().allSatisfy { $0.offset == index || $0.element == before[$0.offset] }, "every other row is as it was")
+    }
+
+    @Test func aCheckWithNoRowToTakeThePlaceOfLeavesTheListAsItIs() {
+        let rows = [DoctorCheck(.config, status: .ok), DoctorCheck(.finderActivity, status: .ok)]
+        #expect(rows.replacing(DoctorCheck(.finderExtension, status: .ok)) == rows)
+        #expect([DoctorCheck]().replacing(DoctorCheck(.finderExtension, status: .ok)).isEmpty)
+    }
+
+    @Test func anAgentsRowIsToldApartByTheAgent() {
+        let rows = [DoctorCheck(.agent("claude"), title: "Claude Code", status: .ok), DoctorCheck(.agent("codex"), title: "Codex", status: .ok)]
+        let after = rows.replacing(DoctorCheck(.agent("codex"), title: "Codex", status: .warn))
+        #expect(after.map(\.status) == [.ok, .warn])
+    }
+}

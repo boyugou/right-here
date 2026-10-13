@@ -64,3 +64,12 @@ public struct DoctorCheck: Sendable, Equatable, Encodable {
         try container.encodeIfPresent(fix, forKey: .fix)
     }
 }
+
+extension Array where Element == DoctorCheck {
+    /// The checks with `check` in the place of the one that has its id; the order is kept. When none has that id the list
+    /// comes back as it is, since where a new row would go is not known. For looking at one check again without
+    /// running the whole doctor.
+    public func replacing(_ check: DoctorCheck) -> [DoctorCheck] {
+        map { $0.id == check.id ? check : $0 }
+    }
+}

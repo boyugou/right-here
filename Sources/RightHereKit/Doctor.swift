@@ -37,7 +37,7 @@ public struct Doctor: Sendable {
         checks += await agentChecks()
         checks.append(claudeLinkCheck())
         checks += integrationChecks()
-        checks.append(await extensionCheck())
+        checks.append(await Self.extensionCheck(runner: runner))
         checks.append(Self.activityCheck(logFile: paths.logFile))
         if probeLaunch {
             checks.append(await launchCheck(placement: launchPlacement))
@@ -270,7 +270,10 @@ public struct Doctor: Sendable {
         return DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer(String(installed.count), String(missing), String(stale)), fix: .doctorFixInstallServices)
     }
 
-    private func extensionCheck() async -> DoctorCheck {
+    /// What the Finder extension's check says, and nothing else: one `pluginkit` call. The setup window looks again
+    /// every two seconds while its first-run card waits for the extension to be switched on, and the whole doctor
+    /// would read the config and ask a login shell for the agents' commands each time.
+    public static func extensionCheck(runner: any ProcessRunner = LiveProcessRunner()) async -> DoctorCheck {
         let status = await FinderExtensionManager(runner: runner).status()
         switch status.state {
         case .notRegistered:
