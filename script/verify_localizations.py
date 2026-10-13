@@ -8,6 +8,8 @@
 - every entry carries all shipped languages, with no empty value;
 - placeholders (%@, %1$@) match the English text in every language;
 - the generated Swift file is up to date;
+- Localization/AppShortcuts.xcstrings (the spoken phrases of the Shortcuts actions) carries every language and
+  keeps the ${applicationName} placeholder;
 - Localization/InfoPlist.xcstrings (the permission-prompt text in the app and the extension) carries
   the same languages.
 
@@ -24,6 +26,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "Localization" / "Localizable.xcstrings"
 INFO_PLIST_CATALOG = ROOT / "Localization" / "InfoPlist.xcstrings"
+APP_SHORTCUTS_CATALOG = ROOT / "Localization" / "AppShortcuts.xcstrings"
 KEYS_FILE = ROOT / "Sources" / "RightHereCore" / "Localization" / "LocalizationKey.swift"
 SHIPPED = [
     "en", "ar", "bn", "de", "el", "es", "fa", "fr", "he", "hi", "id", "it", "ja", "ko", "mr", "ms", "nl", "pl",
@@ -107,6 +110,15 @@ def main() -> int:
         extra = set(entry["localizations"]) - set(SHIPPED)
         if extra:
             problems.append(f"InfoPlist.xcstrings {key}: unexpected languages {sorted(extra)}")
+
+    # The spoken phrases of the Shortcuts/Spotlight actions: every language, and the app-name placeholder in each.
+    for key, entry in sorted(json.loads(APP_SHORTCUTS_CATALOG.read_text(encoding="utf-8"))["strings"].items()):
+        for language in ["en"] + SHIPPED[1:]:
+            unit = entry["localizations"].get(language, {}).get("stringUnit")
+            if unit is None or not unit["value"].strip():
+                problems.append(f"AppShortcuts.xcstrings {key}: no {language} translation")
+            elif "${applicationName}" not in unit["value"]:
+                problems.append(f"AppShortcuts.xcstrings {key} [{language}]: ${{applicationName}} is missing")
 
     stale = subprocess.run([sys.executable, str(ROOT / "script" / "compile_localizations.py"), "--check"], capture_output=True, text=True)
     if stale.returncode != 0:
