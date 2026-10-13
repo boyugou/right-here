@@ -221,9 +221,29 @@ struct PresetTemplateTests {
         #expect(PresetTemplate.unknownPlaceholders(in: "Review {file} and {path}, {files} {file} { a } {\"json\": 1}") == ["file", "path"])
     }
 
-    @Test("what cannot be typed is named", arguments: ["", "  ", "a\nb", "a\u{0}b", "a\\b", "-x", String(repeating: "a", count: AgentPreset.maxPromptLength + 1)])
+    @Test("what cannot be typed is named", arguments: ["", "  ", "a\nb", "a\u{0}b", "a\\b", "-x", String(repeating: "a", count: AgentPreset.maxPromptBytes + 1)])
     func refusals(prompt: String) {
         #expect(PresetTemplate.typingRefusal(prompt) != nil)
+    }
+
+    @Test func theLengthLimitCountsBytesNotCharacters() {
+        let limit = AgentPreset.maxPromptBytes
+        #expect(PresetTemplate.typingRefusal(String(repeating: "a", count: limit)) == nil)
+        #expect(PresetTemplate.typingRefusal(String(repeating: "a", count: limit + 1))?.contains("bytes") == true)
+        // Two bytes each: half as many characters reach the limit.
+        #expect(PresetTemplate.typingRefusal(String(repeating: "é", count: limit / 2)) == nil)
+        #expect(PresetTemplate.typingRefusal(String(repeating: "é", count: limit / 2 + 1)) != nil)
+        // One Character, a quarter of a million bytes: it used to pass a limit of 4000 "characters".
+        let oneCharacter = "a" + String(repeating: "\u{301}", count: 125_000)
+        #expect(oneCharacter.count == 1 && oneCharacter.utf8.count > 200_000)
+        #expect(PresetTemplate.typingRefusal("Review {files} " + oneCharacter) != nil)
+    }
+
+    @Test func aConfigWhosePromptIsTooManyBytesIsAnError() {
+        let long = "a" + String(repeating: "\u{301}", count: 5000)
+        let result = ConfigParser.parse("[[preset]]\nid = \"p\"\ntitle = \"P\"\nprompt = \"Look at {files} \(long)\"\n")
+        #expect(result.diagnostics.contains { $0.severity == .error && $0.path == "preset.1.prompt" && $0.message.contains("bytes") }, "\(result.diagnostics.map(\.message))")
+        #expect(result.config.preset(id: "p") == nil)
     }
 
     @Test func anOrdinarySentenceIsFine() {

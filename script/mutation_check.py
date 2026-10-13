@@ -232,6 +232,8 @@ MUTANTS = [
      "let destination = try remoteWriteTarget(in: folder)", "let destination = folder.appendingPathComponent(Self.remoteFileName)"),
     ("an intent's failure text includes the config problems rh reported", "Sources/RightHereKit/IntentInvocation.swift",
      "&& $0.firstMatch(of: configProblem) == nil }", "}"),
+    ("the preset prompt limit counts Characters, not bytes", "Sources/RightHereCore/Presets/AgentPreset.swift",
+     "if prompt.utf8.count > AgentPreset.maxPromptBytes {", "if prompt.count > AgentPreset.maxPromptBytes {"),
 ]
 
 

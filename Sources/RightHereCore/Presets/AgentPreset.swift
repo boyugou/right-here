@@ -31,8 +31,10 @@ public enum PromptArgument: Sendable, Equatable, Hashable {
 public struct AgentPreset: Sendable, Equatable, Identifiable {
     public static let defaultMaxFiles = 20
     public static let maxFilesLimit = 50
-    /// A prompt is typed as one shell word; this keeps it a sentence or two, not a document.
-    public static let maxPromptLength = 4000
+    /// A prompt is typed as one shell word; this keeps it a sentence or two, not a document. Counted in UTF-8 bytes, what
+    /// is typed: a `Character` can be any number of scalars (a letter with a thousand combining marks is one), so a count
+    /// of them says nothing about how much text reaches the terminal.
+    public static let maxPromptBytes = 4000
 
     public var id: String
     public var title: String
@@ -164,7 +166,7 @@ public enum PresetTemplate {
         if ShellQuoting.containsControlCharacter(prompt) { return "it has a line break or another control character" }
         if prompt.unicodeScalars.contains("\\") { return "it has a backslash, which shells do not all read the same way inside quotes" }
         if prompt.unicodeScalars.first == "-" { return "it starts with a dash, which the agent would read as an option" }
-        if prompt.count > AgentPreset.maxPromptLength { return "it is longer than \(AgentPreset.maxPromptLength) characters" }
+        if prompt.utf8.count > AgentPreset.maxPromptBytes { return "it is longer than \(AgentPreset.maxPromptBytes) bytes" }
         return nil
     }
 }

@@ -52,7 +52,8 @@ parser refuses a template that already breaks the rules) when it:
   rather than guessed at;
 - starts with a dash: the agent would read it as an option (`{name}` of a file called `--version`). `--` is not
   inserted instead, since nothing here can show that every agent honors it without starting a session;
-- is empty or longer than 4000 characters.
+- is empty or longer than 4000 bytes (UTF-8, what is typed: it was 4000 characters, and one character can be any
+  number of bytes).
 
 A name that looks like a flag is harmless inside a mention (`@--help`), as the prompt begins with other text. More
 files than `max_files` is refused, never cut short: a prompt that quietly names fewer files than were selected is a
