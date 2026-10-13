@@ -35,7 +35,10 @@ struct Run: AsyncParsableCommand {
 
     func run() async throws {
         guard let ref = ActionRef(parsing: action) else {
-            throw ValidationError("\"\(action)\" is not an action id. Run `rh actions` to list them, or `rh docs actions` for the grammar.")
+            let runtime = Runtime()
+            let close = ActionRegistry(config: runtime.config, facts: runtime.facts).closestID(to: action)
+            let hint = close.map { " Did you mean \"\($0)\"?" } ?? ""
+            throw ValidationError("\"\(action)\" is not an action id.\(hint) Run `rh actions` to list them, or `rh docs actions` for the grammar.")
         }
         let runtime = Runtime()
         runtime.reportConfigProblems()

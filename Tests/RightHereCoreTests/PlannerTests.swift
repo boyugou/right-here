@@ -252,6 +252,13 @@ struct PlannerTests {
         #expect(variant.contains("Did you mean \"continue\"?"), Comment(rawValue: variant))
     }
 
+    @Test func aMistypedActionIdNamesTheClosestCatalogId() {
+        let registry = ActionRegistry(config: Config.default, facts: machine())
+        #expect(registry.closestID(to: "copy-path.absolut") == "copy-path.absolute")
+        #expect(registry.closestID(to: "copy-path.shell-quotd") == "copy-path.shell-quoted")
+        #expect(registry.closestID(to: "zzzzzzzzzzzz") == nil)
+    }
+
     @Test func claudeStartsInTheDefaultTerminalByTypingItsCommand() throws {
         let plan = try Planner(facts: machine()).plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
         guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }

@@ -199,6 +199,11 @@ public struct ActionRegistry: Sendable {
 
     /// The canonical set of actions on this machine, for `rh actions` and documentation. Terminal
     /// choices for agents are patterns (`agent.<id>@<terminal>`) and are not enumerated.
+    /// The catalog id closest to a mistyped one ("copy-path.absolut"), if any is near.
+    public func closestID(to word: String) -> String? {
+        Suggestion.closest(to: word, in: catalog().map(\.id))
+    }
+
     public func catalog() -> [ActionInfo] {
         var refs: [ActionRef] = []
         refs += PathStyle.allCases.map { .copyPath($0) }
