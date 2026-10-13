@@ -7,6 +7,8 @@ struct SetupView: View {
     let model: SetupModel
     private let l10n = Localizer.system
     @State private var detailsExpanded: Bool
+    /// Whether the person has opened or closed the menu preview; until then it follows `needsAttention`.
+    @State private var menuExpanded: Bool?
 
     init(model: SetupModel) {
         self.model = model
@@ -18,6 +20,7 @@ struct SetupView: View {
             header
             summary
             if model.extensionNeedsSetup { onboarding }
+            menuPreview
             details
             if let message = model.message {
                 Text(message).font(.callout).foregroundStyle(.secondary)
@@ -132,6 +135,27 @@ struct SetupView: View {
         .accessibilityLabel(l10n.render(.appStepLabel(number.formatted(), title)))
     }
 
+    /// The menu Finder shows for a folder, built by the code the extension runs. It starts open unless something needs
+    /// the person, so that the first-run card and the list of checks keep the attention, and it is not there at all
+    /// when there is no menu to show (the config has errors, or nothing has been read yet).
+    @ViewBuilder private var menuPreview: some View {
+        let rows = model.menuRows
+        if !rows.isEmpty {
+            DisclosureGroup(l10n.string(.appMenuTitle), isExpanded: Binding(get: { menuExpanded ?? !model.needsAttention }, set: { menuExpanded = $0 })) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(l10n.string(.appMenuCaption)).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(rows) { row in
+                            MenuLine(row: row, image: model.image(for: row.icon)) { model.toggleSubmenu(row.id) }
+                        }
+                    }
+                    .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+                }
+                .padding(.top, 8)
+            }
+        }
+    }
+
     private var details: some View {
         DisclosureGroup(l10n.string(.appDetails), isExpanded: $detailsExpanded) {
             VStack(alignment: .leading, spacing: 0) {
@@ -165,6 +189,54 @@ struct SetupView: View {
                 Button(l10n.string(.appCopySetupPrompt)) { model.copySetupPrompt() }
                 Spacer()
             }
+        }
+    }
+}
+
+/// One line of the menu preview: what Finder's menu line looks like, and nothing that acts. A submenu opens and closes
+/// in place; an entry does nothing when it is clicked.
+private struct MenuLine: View {
+    let row: MenuPreviewRow
+    let image: NSImage?
+    let toggle: () -> Void
+    private let l10n = Localizer.system
+
+    var body: some View {
+        switch row.kind {
+        case .separator:
+            Divider().padding(.horizontal, 14).accessibilityHidden(true)
+        case .submenu where row.hasChildren:
+            Button(action: toggle) { line }
+                .buttonStyle(.plain)
+                .accessibilityValue(l10n.string(row.isExpanded ? .appMenuSubmenuExpanded : .appMenuSubmenuCollapsed))
+        case .action, .submenu:
+            line.accessibilityElement(children: .combine)
+        }
+    }
+
+    private var line: some View {
+        HStack(spacing: 8) {
+            icon.frame(width: 16, height: 16).accessibilityHidden(true)
+            Text(row.title).font(.body)
+            Spacer(minLength: 8)
+            if row.hasChildren {
+                // Not a rotated chevron: the forward one is drawn mirrored in a right-to-left language, the down one is not.
+                Image(systemName: row.isExpanded ? "chevron.down" : "chevron.forward")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+            }
+        }
+        .padding(.leading, 14 + CGFloat(row.level) * 24)
+        .padding(.trailing, 14)
+        .padding(.vertical, 9)
+        .contentShape(Rectangle())
+    }
+
+    @ViewBuilder private var icon: some View {
+        if let image {
+            // A template glyph takes the text color; an app's icon keeps its own.
+            Image(nsImage: image).renderingMode(image.isTemplate ? .template : .original).resizable().scaledToFit().foregroundStyle(.primary)
         }
     }
 }

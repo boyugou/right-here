@@ -11,8 +11,13 @@ final class SetupModel {
     private(set) var checks: [DoctorCheck] = []
     private(set) var isWorking = false
     private(set) var message: String?
+    /// The Finder menu for a folder, built the way the Finder extension builds it; nothing when the config has errors.
+    private(set) var menu: [MenuNode] = []
+    /// The submenus of the menu preview that are open, by `MenuPreviewRow.id`.
+    private(set) var openSubmenus: Set<String> = []
 
     private let facts = LiveSystemFacts()
+    private var icons = IconProvider(facts: LiveSystemFacts())
 
     /// The `rh` that ships inside this app.
     private var helper: URL {
@@ -59,10 +64,50 @@ final class SetupModel {
         simulated = true
         previewOpensDetails = opensDetails
     }
+
+    /// For `script/preview_setup.sh --demo`: this menu, drawn with the icons of these facts.
+    func simulate(menu: [MenuNode], icons: IconProvider) {
+        self.menu = menu
+        self.icons = icons
+    }
+
+    /// For `script/preview_setup.sh --submenus`: these submenus of the menu preview start open.
+    func simulate(openSubmenus ids: Set<String>) {
+        openSubmenus = ids
+    }
+
+    /// An app's icon comes as a 16-bit extended-range image, and `ImageRenderer` renders the whole picture in extended
+    /// range as soon as it meets one, which washes out every color in it. An icon drawn into the renderer's own context
+    /// keeps the picture as it is on screen.
+    private static func drawnInTheRenderer(_ image: NSImage) -> NSImage {
+        guard !image.isTemplate else { return image }
+        return NSImage(size: image.size, flipped: false) { rect in
+            image.draw(in: rect)
+            return true
+        }
+    }
     #endif
 
     func check(_ id: CheckID) -> DoctorCheck? {
         checks.first { $0.id == id }
+    }
+
+    /// The lines of the menu preview that can be seen now.
+    var menuRows: [MenuPreviewRow] {
+        MenuPreview.rows(menu, expanded: openSubmenus)
+    }
+
+    func image(for icon: Icon?) -> NSImage? {
+        let image = icons.image(for: icon)
+        #if PREVIEW
+        return image.map(Self.drawnInTheRenderer)
+        #else
+        return image
+        #endif
+    }
+
+    func toggleSubmenu(_ id: String) {
+        if !openSubmenus.insert(id).inserted { openSubmenus.remove(id) }
     }
 
     /// While the extension is not switched on, looks at it every two seconds, so the card turns green by itself
@@ -100,6 +145,12 @@ final class SetupModel {
         defer { if !quiet { isWorking = false } }
         let doctor = Doctor(facts: facts, paths: paths, loaded: ConfigStore.load(paths: paths), rhPath: helper.path)
         checks = await doctor.run()
+        refreshMenu()
+    }
+
+    /// The preview follows the config and the installed apps as they are now, in the language of the system.
+    private func refreshMenu() {
+        menu = MenuPreview.folderMenu(ConfigStore.load(paths: paths).result, facts: facts, folder: facts.homeDirectory, localizer: .system)
     }
 
     /// Runs `rh install`: runner script, command link, config file and the Finder extension.
