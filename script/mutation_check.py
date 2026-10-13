@@ -68,6 +68,8 @@ MUTANTS = [
      'current.elementsEqual("..".unicodeScalars)', 'current.elementsEqual("...".unicodeScalars)'),
     ("a timed-out process that ignores SIGTERM is never killed hard", "Sources/RightHereKit/ProcessRunner.swift",
      "Self.killLeftovers(of: process)", "_ = process"),
+    ("the children of a killed process are left running", "Sources/RightHereKit/ProcessRunner.swift",
+     "{ killpg(pid, SIGKILL) }", "{ _ = pid }"),
     ("the Files & Folders button is gone", "Sources/RightHereKit/FailureAlert.swift",
      "settingsURL = filesAndFoldersSettingsURL", "settingsURL = nil"),
     ("SIGPIPE can kill the MCP server", "Sources/RightHereMCP/MCPServer.swift",
