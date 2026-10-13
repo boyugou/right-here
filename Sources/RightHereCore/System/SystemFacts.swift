@@ -43,12 +43,6 @@ public protocol SystemFacts: Sendable {
 
 extension SystemFacts {
     public var shellFlavor: ShellFlavor { ShellFlavor(loginShellPath: loginShell) }
-    public func displayName(bundleID: String) -> String? { nil }
-    public func bundleVersion(bundleID: String) -> String? { nil }
-    public func itemState(_ url: URL) -> ItemState { fileExists(url) ? .present : .missing }
-    public func onDiskPath(_ url: URL) -> String { url.path }
-    /// Whether the path is there as far as anyone can tell: a refusal to look is not "missing".
-    public func itemExists(_ url: URL) -> Bool { itemState(url) != .missing }
 }
 
 /// A deterministic stand-in for the machine, used by tests across modules.
@@ -69,6 +63,8 @@ public struct FakeSystemFacts: SystemFacts {
     public var variables: [String: String]
     /// Paths as stored on disk where that differs from what `URL.path` gives (key: `URL.path`).
     public var diskPaths: [String: String]
+    /// The system's name for an installed app, where it differs from the bundle's own (key: bundle identifier).
+    public var displayNames: [String: String]
 
     public init(
         homeDirectory: URL = URL(fileURLWithPath: "/Users/tester"),
@@ -83,9 +79,11 @@ public struct FakeSystemFacts: SystemFacts {
         bundleVersions: [String: String] = [:],
         runningApplications: Set<String> = [],
         variables: [String: String] = [:],
-        diskPaths: [String: String] = [:]
+        diskPaths: [String: String] = [:],
+        displayNames: [String: String] = [:]
     ) {
         self.diskPaths = diskPaths
+        self.displayNames = displayNames
         self.homeDirectory = homeDirectory
         self.currentDirectory = currentDirectory
         self.loginShell = loginShell
@@ -133,6 +131,7 @@ public struct FakeSystemFacts: SystemFacts {
     }
 
     public func applicationURL(bundleID: String) -> URL? { applications[bundleID] }
+    public func displayName(bundleID: String) -> String? { displayNames[bundleID] }
     public func bundleVersion(bundleID: String) -> String? { bundleVersions[bundleID] }
     public func isRunning(bundleID: String) -> Bool { runningApplications.contains(bundleID) }
     public func environment(_ key: String) -> String? { variables[key] }

@@ -25,6 +25,7 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
     public func displayName(bundleID: String) -> String? { base.displayName(bundleID: bundleID) }
     public func bundleVersion(bundleID: String) -> String? { base.bundleVersion(bundleID: bundleID) }
     public func environment(_ key: String) -> String? { base.environment(key) }
+    public func onDiskPath(_ url: URL) -> String { base.onDiskPath(url) }
 
     public func applicationURL(bundleID: String) -> URL? {
         let now = Date()

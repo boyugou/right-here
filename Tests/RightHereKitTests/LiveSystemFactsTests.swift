@@ -11,19 +11,19 @@ struct LiveSystemFactsExistenceTests {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let file = directory.appendingPathComponent("a.txt")
         try "x".write(to: file, atomically: true, encoding: .utf8)
-        #expect(facts.itemExists(file) && facts.itemExists(directory))
+        #expect(facts.itemState(file) == .present && facts.itemState(directory) == .present)
         #expect(facts.isDirectory(file) == false)
         #expect(facts.isDirectory(directory) == true)
     }
 
     @Test func nothingAtThePathIsMissing() throws {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
-        #expect(!facts.itemExists(directory.appendingPathComponent("nope")))
+        #expect(facts.itemState(directory.appendingPathComponent("nope")) == .missing)
         #expect(facts.isDirectory(directory.appendingPathComponent("nope")) == nil)
         // A file where a folder should be is "not there" as well (ENOTDIR).
         let file = directory.appendingPathComponent("f")
         try "x".write(to: file, atomically: true, encoding: .utf8)
-        #expect(!facts.itemExists(file.appendingPathComponent("inside")))
+        #expect(facts.itemState(file.appendingPathComponent("inside")) == .missing)
     }
 
     @Test func aNameTheFileSystemCannotHoldIsMissingNotRefused() throws {
@@ -32,7 +32,6 @@ struct LiveSystemFactsExistenceTests {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let long = directory.appendingPathComponent(String(repeating: "a", count: 300))
         #expect(facts.itemState(long) == .missing)
-        #expect(!facts.itemExists(long))
         // A symbolic link loop in the middle of a path is not a refusal either.
         let loop = directory.appendingPathComponent("loop")
         try FileManager.default.createSymbolicLink(atPath: loop.path, withDestinationPath: loop.path)
@@ -64,7 +63,7 @@ struct LiveSystemFactsExistenceTests {
         let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let link = directory.appendingPathComponent("broken")
         try FileManager.default.createSymbolicLink(atPath: link.path, withDestinationPath: "/nowhere/at/all")
-        #expect(facts.itemExists(link))
+        #expect(facts.itemState(link) == .present)
         #expect(facts.isDirectory(link) == nil)
     }
 
@@ -82,8 +81,7 @@ struct LiveSystemFactsExistenceTests {
         }
         try #require(geteuid() != 0, "root is never refused")
         let inside = locked.appendingPathComponent("inside.txt")
-        #expect(facts.itemState(inside) == .unreadable)
-        #expect(facts.itemExists(inside), "not missing: nobody can say it is a typo")
+        #expect(facts.itemState(inside) == .unreadable, "not missing: nobody can say it is a typo")
         #expect(facts.isDirectory(inside) == nil, "its type cannot be known")
         // A path that really is not there, in the same folder, cannot be told apart either.
         #expect(facts.itemState(locked.appendingPathComponent("who-knows")) == .unreadable)

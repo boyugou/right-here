@@ -117,23 +117,12 @@ struct LocalizerTests {
     }
 
     @Test func theSystemNameOfAnAppIsUsedWhenLocalized() {
-        struct NamedFacts: SystemFacts {
-            var base = FakeSystemFacts(applications: ["com.apple.Terminal": URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app")])
-            var homeDirectory: URL { base.homeDirectory }
-            var currentDirectory: URL { base.currentDirectory }
-            var loginShell: String { base.loginShell }
-            func isDirectory(_ url: URL) -> Bool? { base.isDirectory(url) }
-            func fileExists(_ url: URL) -> Bool { base.fileExists(url) }
-            func gitRoot(containing url: URL) -> URL? { base.gitRoot(containing: url) }
-            func applicationURL(bundleID: String) -> URL? { base.applicationURL(bundleID: bundleID) }
-            func displayName(bundleID: String) -> String? { bundleID == "com.apple.Terminal" ? "终端" : nil }
-            func isRunning(bundleID: String) -> Bool { false }
-            func environment(_ key: String) -> String? { nil }
-        }
+        let facts = FakeSystemFacts(applications: ["com.apple.Terminal": URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app")],
+                                    displayNames: ["com.apple.Terminal": "终端"])
         let config = Config(terminal: "terminal")
-        let chinese = ActionRegistry(config: config, facts: NamedFacts(), localizer: Localizer(languages: ["zh-Hans"]))
+        let chinese = ActionRegistry(config: config, facts: facts, localizer: Localizer(languages: ["zh-Hans"]))
         #expect(chinese.info(.openTerminal(nil)).title == "在“终端”中打开")
-        let english = ActionRegistry(config: config, facts: NamedFacts(), localizer: .english)
+        let english = ActionRegistry(config: config, facts: facts, localizer: .english)
         #expect(english.info(.openTerminal(nil)).title == "Open in Terminal")
     }
 }

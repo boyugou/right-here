@@ -179,6 +179,8 @@ MUTANTS = [
      "if !keys.isEmpty { problems.append(.secretKeys(keys)) }", "if false { problems.append(.secretKeys(keys)) }"),
     ("a pull replaces a symlinked config with a regular file", "Sources/RightHereKit/ConfigSync.swift",
      "let destination = paths.configFile.resolvingSymlinksInPath()", "let destination = paths.configFile"),
+    ("the Finder extension's facts do not forward the on-disk spelling", "Sources/RightHereKit/CachingSystemFacts.swift",
+     "public func onDiskPath(_ url: URL) -> String { base.onDiskPath(url) }", "public func onDiskPath(_ url: URL) -> String { url.path }"),
 ]
 
 
