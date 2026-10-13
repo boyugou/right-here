@@ -28,3 +28,23 @@
 6. After installing from the DMG on a clean user, run `rh install` and `rh doctor --probe-launch` (a terminal window opens and closes; macOS asks once to allow Right Here to control it).
 
 Releases are arm64 only, macOS 26 and later.
+
+## Before the first public push
+
+`script/verify_public_safety.sh` checks the working tree only. Scan the whole history as well, because a file that
+was committed once and removed later is still in every clone:
+
+```sh
+git log -p --all | grep -n -E '/Users/|@[A-Za-z0-9.-]+\.(com|edu|org)'
+```
+
+If anything shows up that must not be public, rewrite the history on a fresh clone rather than in the working
+repository, then publish from the clone:
+
+```sh
+git clone --no-local --no-hardlinks <repository> clean && cd clean
+git filter-repo --path <offending path> --invert-paths
+```
+
+Check the clone with the same scan, and publish it as a new repository or force-push it only when everyone who has
+the old history knows. Every commit hash changes.
