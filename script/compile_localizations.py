@@ -11,6 +11,7 @@ the doctor alike:
 
     Localizations.generated.swift      the languages and the table of every text
     LocalizationKey.generated.swift    one case per catalog key, and how many arguments its text takes
+    LocalizedMessage.generated.swift   a typed constructor per key, so a wrong number of arguments does not compile
 
     ./script/compile_localizations.py            write the Swift files
     ./script/compile_localizations.py --check    fail if one of them is out of date
@@ -78,7 +79,8 @@ def render_keys(catalog: dict) -> str:
     lines = [
         BANNER,
         "",
-        "/// One case per entry of the String Catalog; the raw value is the catalog key.",
+        "/// One case per entry of the String Catalog; the raw value is the catalog key. `LocalizedMessage` has a typed",
+        "/// constructor for each of them.",
         "public enum LocalizationKey: String, Sendable, CaseIterable {",
     ]
     for key, (name, _) in keys.items():
@@ -91,10 +93,27 @@ def render_keys(catalog: dict) -> str:
     return "\n".join(lines)
 
 
+def render_messages(catalog: dict) -> str:
+    keys = validated(catalog)
+    english = english_texts(catalog)
+    lines = [BANNER, "", "extension LocalizedMessage {"]
+    for key, (name, count) in keys.items():
+        lines.append(f"    /// {english[key].replace(chr(10), ' ')}")
+        if count == 0:
+            lines.append(f"    public static var {name}: LocalizedMessage {{ LocalizedMessage(.{name}) }}")
+        else:
+            parameters = ", ".join(f"_ argument{number}: String" for number in range(1, count + 1))
+            arguments = ", ".join(f"argument{number}" for number in range(1, count + 1))
+            lines.append(f"    public static func {name}({parameters}) -> LocalizedMessage {{ LocalizedMessage(.{name}, [{arguments}]) }}")
+    lines += ["}", ""]
+    return "\n".join(lines)
+
+
 def outputs(catalog: dict) -> dict:
     return {
         SWIFT_DIRECTORY / "Localizations.generated.swift": render_table(catalog),
         SWIFT_DIRECTORY / "LocalizationKey.generated.swift": render_keys(catalog),
+        SWIFT_DIRECTORY / "LocalizedMessage.generated.swift": render_messages(catalog),
     }
 
 

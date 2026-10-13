@@ -1,6 +1,6 @@
 import Foundation
 
-/// Picks the best available translation for a list of preferred languages and fills in arguments.
+/// Picks the best available translation for a list of preferred languages and fills in values.
 ///
 /// Human-facing surfaces (the Finder menu, the app, alerts, files created from Finder) use the
 /// system languages; the command line and the MCP server stay in English so their output is
@@ -27,20 +27,24 @@ public struct Localizer: Sendable, Equatable {
         return "en"
     }
 
-    public func string(_ key: LocalizationKey, _ arguments: CVarArg...) -> String {
-        format(key, arguments)
+    /// The text of a key that takes no values. A key that does is made with its `LocalizedMessage` constructor.
+    public func string(_ key: LocalizationKey) -> String {
+        render(LocalizedMessage(key))
     }
 
-    func format(_ key: LocalizationKey, _ arguments: [CVarArg]) -> String {
-        let translations = Localizations.table[key.rawValue]
-        let template = translations?[resolvedLanguage] ?? translations?["en"] ?? key.rawValue
-        return arguments.isEmpty ? template : String(format: template, arguments: arguments)
+    /// The message in the best language the catalog has for this localizer, with its values filled in.
+    public func render(_ message: LocalizedMessage) -> String {
+        let translations = Localizations.table[message.key.rawValue]
+        let template = translations?[resolvedLanguage] ?? translations?["en"] ?? message.key.rawValue
+        // A count that is not the text's own would make String(format:) read values that are not there.
+        guard message.key.arity > 0, message.arguments.count == message.key.arity else { return template }
+        return String(format: template, arguments: message.arguments.map { $0 as CVarArg })
     }
 
-    /// Maps a language tag such as `zh-Hans-US` or `pt-PT` to a language the catalog carries.
     /// The languages the catalog carries.
     public static var supportedLanguages: [String] { Localizations.languages }
 
+    /// Maps a language tag such as `zh-Hans-US` or `pt-PT` to a language the catalog carries.
     public static func match(_ tag: String) -> String? {
         let parts = tag.replacingOccurrences(of: "_", with: "-").split(separator: "-").map(String.init)
         guard let primary = parts.first?.lowercased() else { return nil }

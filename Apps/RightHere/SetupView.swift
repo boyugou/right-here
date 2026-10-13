@@ -129,7 +129,7 @@ struct SetupView: View {
             Spacer(minLength: 0)
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(l10n.string(.appStepLabel, number.formatted(), title))
+        .accessibilityLabel(l10n.render(.appStepLabel(number.formatted(), title)))
     }
 
     private var details: some View {

@@ -19,13 +19,13 @@ private enum Bundled {
             let answer = try await runner.perform(command)
             return .result(dialog: IntentDialog(stringLiteral: success(answer)))
         } catch {
-            throw IntentFailure(text: Localizer.system.string(.intentFailed, error.localizedDescription))
+            throw IntentFailure(text: Localizer.system.render(.intentFailed(error.localizedDescription)))
         }
     }
 
     static func path(of file: IntentFile) throws -> String {
         guard let url = file.fileURL, url.isFileURL else {
-            throw IntentFailure(text: Localizer.system.string(.intentFailed, "no file location"))
+            throw IntentFailure(text: Localizer.system.render(.intentFailed("no file location")))
         }
         return url.path
     }
@@ -45,7 +45,7 @@ struct OpenInTerminalIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let path = try Bundled.path(of: folder)
-        return try await Bundled.perform(.openTerminal(folder: path)) { Localizer.system.string(.intentDone, $0) }
+        return try await Bundled.perform(.openTerminal(folder: path)) { Localizer.system.render(.intentDone($0)) }
     }
 }
 
@@ -61,7 +61,7 @@ struct StartAgentIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let path = try Bundled.path(of: folder)
-        return try await Bundled.perform(.startAgent(agent: agent.id, folder: path)) { Localizer.system.string(.intentDone, $0) }
+        return try await Bundled.perform(.startAgent(agent: agent.id, folder: path)) { Localizer.system.render(.intentDone($0)) }
     }
 }
 
@@ -77,7 +77,7 @@ struct NewFileIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let path = try Bundled.path(of: folder)
-        return try await Bundled.perform(.newFile(template: template.id, folder: path)) { Localizer.system.string(.intentDone, $0) }
+        return try await Bundled.perform(.newFile(template: template.id, folder: path)) { Localizer.system.render(.intentDone($0)) }
     }
 }
 

@@ -2,14 +2,14 @@ import Foundation
 
 /// Typed access to the strings used by menus and alerts.
 extension Localizer {
-    func openIn(_ appName: String) -> String { string(.menuOpenIn, appName) }
-    func agentHere(_ agent: String) -> String { string(.menuAgentHere, agent) }
-    func agentVariant(_ agent: String, _ variant: String) -> String { string(.menuAgentVariant, agent, variant) }
-    func agentIn(_ agent: String, terminal: String) -> String { string(.menuAgentIn, agent, terminal) }
-    func agentVariantIn(_ agent: String, _ variant: String, terminal: String) -> String { string(.menuAgentVariantIn, agent, variant, terminal) }
-    func agentDesktop(_ agent: String) -> String { string(.menuAgentDesktop, agent) }
-    func agentLink(_ agent: String) -> String { string(.menuAgentLink, agent) }
-    func newFile(_ templateTitle: String) -> String { string(.menuNewFile, templateTitle) }
+    func openIn(_ appName: String) -> String { render(.menuOpenIn(appName)) }
+    func agentHere(_ agent: String) -> String { render(.menuAgentHere(agent)) }
+    func agentVariant(_ agent: String, _ variant: String) -> String { render(.menuAgentVariant(agent, variant)) }
+    func agentIn(_ agent: String, terminal: String) -> String { render(.menuAgentIn(agent, terminal)) }
+    func agentVariantIn(_ agent: String, _ variant: String, terminal: String) -> String { render(.menuAgentVariantIn(agent, variant, terminal)) }
+    func agentDesktop(_ agent: String) -> String { render(.menuAgentDesktop(agent)) }
+    func agentLink(_ agent: String) -> String { render(.menuAgentLink(agent)) }
+    func newFile(_ templateTitle: String) -> String { render(.menuNewFile(templateTitle)) }
 
     var newFileGroup: String { string(.groupNewFile) }
     var copyPathGroup: String { string(.groupCopyPath) }
@@ -33,5 +33,5 @@ extension Localizer {
         }
     }
 
-    func copyPathTitle(_ style: PathStyle) -> String { string(.copyPathTitleFormat, copyPath(style)) }
+    func copyPathTitle(_ style: PathStyle) -> String { render(.copyPathTitleFormat(copyPath(style))) }
 }

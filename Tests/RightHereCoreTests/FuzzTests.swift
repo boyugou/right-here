@@ -122,7 +122,7 @@ struct PathAndLanguageFuzzTests {
             let tag = (0..<Int(random.next() % 5)).map { _ in pick(pieces, &random) }.joined(separator: pick(["-", "_", ""], &random))
             let resolved = Localizer(languages: [tag]).resolvedLanguage
             #expect(Localizations.languages.contains(resolved), "\(tag.debugDescription) resolved to \(resolved)")
-            _ = Localizer(languages: [tag]).string(.menuOpenIn, "X")
+            _ = Localizer(languages: [tag]).render(.menuOpenIn("X"))
         }
     }
 }

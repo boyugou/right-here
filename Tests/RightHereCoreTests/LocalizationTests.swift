@@ -6,6 +6,11 @@ private func placeholders(_ text: String) -> [String] {
     text.matches(of: #/%(?:\d+\$)?@/#).map { String(text[$0.range]) }.sorted()
 }
 
+/// A message for any key, with as many values as the key takes.
+private func filled(_ key: LocalizationKey) -> LocalizedMessage {
+    LocalizedMessage(key, (0..<key.arity).map { "X\($0 + 1)" })
+}
+
 /// `Localization/languages.json`, the one list of the shipped languages. The scripts read it too.
 private struct LanguageManifest: Decodable {
     struct Language: Decodable {
@@ -72,6 +77,26 @@ struct LocalizationCatalogTests {
         }
     }
 
+    @Test func everyKeyIsWrittenInEveryLanguageWithAllItsValuesAndNothingLeftOver() {
+        for language in Localizations.languages {
+            let localizer = Localizer(languages: [language])
+            for key in LocalizationKey.allCases {
+                let text = localizer.render(filled(key))
+                #expect(!text.contains("%"), "\(key.rawValue) [\(language)] still has a placeholder: \(text)")
+                for number in 0..<key.arity { #expect(text.contains("X\(number + 1)"), "\(key.rawValue) [\(language)] drops value \(number + 1): \(text)") }
+            }
+        }
+    }
+
+    @Test func theKeysOfTheBuiltInTitlesTakeNoValues() {
+        // `titleKey.map { localizer.string($0) }` has nothing to fill in with.
+        let keys = KnownAgents.all.flatMap(\.variants).compactMap(\.titleKey)
+            + AgentPreset.builtIn.compactMap(\.titleKey)
+            + NewFileTemplate.builtIn.flatMap { [$0.titleKey, $0.newTitleKey, $0.baseNameKey].compactMap { $0 } }
+        #expect(!keys.isEmpty)
+        for key in keys { #expect(key.arity == 0, "\(key.rawValue) takes values, but a title is looked up by its key alone") }
+    }
+
     @Test func aTextWithSeveralValuesNumbersThem() {
         // `%1$@ in %2$@` can be reordered by a translation; two bare `%@` could not.
         for key in LocalizationKey.allCases where key.arity > 1 {
@@ -115,15 +140,15 @@ struct LocalizerTests {
     }
 
     @Test func formatsArguments() {
-        #expect(Localizer.english.string(.menuOpenIn, "Ghostty") == "Open in Ghostty")
-        #expect(Localizer(languages: ["de"]).string(.menuOpenIn, "Ghostty") == "In Ghostty öffnen")
-        #expect(Localizer(languages: ["zh-Hans"]).string(.menuOpenIn, "Ghostty") == "在“Ghostty”中打开")
+        #expect(Localizer.english.render(.menuOpenIn("Ghostty")) == "Open in Ghostty")
+        #expect(Localizer(languages: ["de"]).render(.menuOpenIn("Ghostty")) == "In Ghostty öffnen")
+        #expect(Localizer(languages: ["zh-Hans"]).render(.menuOpenIn("Ghostty")) == "在“Ghostty”中打开")
     }
 
     @Test func positionalPlaceholdersReorderArguments() {
-        let text = Localizer(languages: ["ja"]).string(.menuAgentIn, "Claude Code", "Ghostty")
+        let text = Localizer(languages: ["ja"]).render(.menuAgentIn("Claude Code", "Ghostty"))
         #expect(text == "GhosttyでClaude Codeを起動")
-        #expect(Localizer(languages: ["ko"]).string(.menuAgentVariantIn, "Claude Code", "Continue", "Ghostty") == "Claude Code: Ghostty에서 Continue")
+        #expect(Localizer(languages: ["ko"]).render(.menuAgentVariantIn("Claude Code", "Continue", "Ghostty")) == "Claude Code: Ghostty에서 Continue")
     }
 
     @Test func aMenuBuiltInAnotherLanguageUsesItsTitles() {
@@ -201,12 +226,13 @@ struct LocalizationDetailTests {
     @Test("right-to-left strings that begin with a Latin name or a placeholder carry a right-to-left mark", arguments: LanguageManifest.rightToLeft)
     func rightToLeftMarks(language: String) {
         let localizer = Localizer(languages: [language])
+        func rendered(_ key: LocalizationKey) -> String { localizer.render(filled(key)) }
         for key in LocalizationKey.allCases where key != .newFileBaseName {
-            let text = localizer.string(key, "X", "Y", "Z")
+            let text = rendered(key)
             guard let first = text.drop(while: { $0 == " " }).first else { continue }
             if first.isASCII && first.isLetter { Issue.record("\(language) \(key.rawValue) starts with a Latin letter and no mark: \(text)") }
         }
-        let marked = LocalizationKey.allCases.filter { localizer.string($0, "X", "Y", "Z").hasPrefix("\u{200F}") }
+        let marked = LocalizationKey.allCases.filter { rendered($0).hasPrefix("\u{200F}") }
         #expect(!marked.isEmpty, "\(language) has no string that needed a mark")
     }
 

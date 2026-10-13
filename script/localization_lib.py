@@ -1,10 +1,11 @@
 """What the localization scripts share: where the files are, how a catalog is read and written, how a
-placeholder is counted and how a catalog key becomes a Swift name.
+placeholder is counted, how a catalog key becomes a Swift name and what a good translation looks like.
 
 Used by compile_localizations.py, verify_localizations.py and merge_translations.py; not run on its own.
 """
 import json
 import re
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,8 +19,21 @@ CATALOGS = ("Localizable.xcstrings", "InfoPlist.xcstrings", "AppShortcuts.xcstri
 
 # %@ and %1$@ are the only placeholders a string may use.
 PLACEHOLDER = re.compile(r"%(?:(\d+)\$)?@")
-# Commands and settings names between backticks; the setup window shows them as code.
-CODE_SPAN = re.compile(r"`[^`]*`")
+# Commands and settings names between backticks (the setup window shows them as code), and the app-name placeholder of
+# the Shortcuts phrases. A translation keeps each of them as it is.
+PROTECTED = re.compile(r"`[^`]*`|\$\{[A-Za-z]+\}")
+RIGHT_TO_LEFT_MARK = "\u200f"
+# Keys whose text becomes a file name: no direction mark, no path separator.
+FILE_NAME_KEYS = {"newFile.baseName"}
+
+# The Unicode names (their first word) of the letters each script is written with. A translation with letters but none
+# of them in its script was pasted against the wrong language (one catalog entry once got its neighbour's text); a value
+# with no letters at all (a bare placeholder) and one equal to English ("OK") are fine.
+LETTERS = {
+    "Latn": {"LATIN"}, "Arab": {"ARABIC"}, "Hebr": {"HEBREW"}, "Beng": {"BENGALI"}, "Deva": {"DEVANAGARI"},
+    "Taml": {"TAMIL"}, "Telu": {"TELUGU"}, "Thai": {"THAI"}, "Grek": {"GREEK"}, "Cyrl": {"CYRILLIC"}, "Kore": {"HANGUL"},
+    "Jpan": {"CJK", "HIRAGANA", "KATAKANA"}, "Hans": {"CJK", "HIRAGANA", "KATAKANA"}, "Hant": {"CJK", "HIRAGANA", "KATAKANA"},
+}
 
 
 @dataclass(frozen=True)
@@ -81,3 +95,63 @@ def case_name(key: str) -> str:
 def swift_string(value: str) -> str:
     escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
     return f'"{escaped}"'
+
+
+def scripts_in(text: str) -> set[str]:
+    # Ordinal and micro signs (º ª µ) are Latin letters whose Unicode names do not begin with the script.
+    return {"LATIN" if unicodedata.name(c, "").split()[0] in ("MASCULINE", "FEMININE", "MICRO") else unicodedata.name(c, "").split()[0]
+            for c in text if c.isalpha()}
+
+
+def wrong_script(script: str, value: str, english: str) -> bool:
+    found = scripts_in(value)
+    if not found or value == english:
+        return False
+    if script == "Latn":
+        return bool(found - LETTERS["Latn"])
+    return not (found & LETTERS[script])
+
+
+def starts_left_to_right(value: str) -> bool:
+    """Whether the first letter that has a direction, once placeholders are filled in with Latin text, reads left to right."""
+    for character in PLACEHOLDER.sub("X", value):
+        direction = unicodedata.bidirectional(character)
+        if direction == "L":
+            return True
+        if direction in ("R", "AL"):
+            return False
+    return False
+
+
+def with_direction_mark(language: Language, key: str, value: str) -> str:
+    """A right-to-left text that would start with Latin text (a name, a command, a placeholder) is laid out left to right
+    unless it starts with a right-to-left mark. Not for a text that becomes a file name."""
+    if language.rtl and key not in FILE_NAME_KEYS and starts_left_to_right(value):
+        return RIGHT_TO_LEFT_MARK + value
+    return value
+
+
+def translation_problems(key: str, language: Language, value: str, english: str, keep: tuple[str, ...] | list[str] = (), direction: bool = True) -> list[str]:
+    """What is wrong with `value` as the translation of `english`, as lines that start with the key and the language.
+    `direction` is the right-to-left mark rule, which only the strings of the code follow (a Shortcuts phrase is spoken)."""
+    where = f"{key} [{language.code}]"
+    problems = []
+    if not value.strip():
+        return [f"{where}: empty"]
+    if sorted(placeholders(value)) != sorted(placeholders(english)):
+        problems.append(f"{where}: placeholders differ from English: {value!r}")
+    if "%" in PLACEHOLDER.sub("", value):
+        problems.append(f"{where}: a % that is not a placeholder: {value!r}")
+    if value.count("`") % 2 or sorted(PROTECTED.findall(value)) != sorted(PROTECTED.findall(english)):
+        problems.append(f"{where}: the commands between backticks differ from English: {value!r}")
+    for token in keep:
+        if token not in value:
+            problems.append(f"{where}: {token!r} is missing: {value!r}")
+    if wrong_script(language.script, value, english):
+        problems.append(f"{where}: not written in the script of {language.code}: {value!r}")
+    if key in FILE_NAME_KEYS:
+        if RIGHT_TO_LEFT_MARK in value or "/" in value or ":" in value:
+            problems.append(f"{where}: becomes a file name, so no direction mark, slash or colon: {value!r}")
+    elif direction and language.rtl and starts_left_to_right(value):
+        problems.append(f"{where}: starts with Latin text and no right-to-left mark: {value!r}")
+    return problems

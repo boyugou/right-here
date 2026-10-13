@@ -6,7 +6,7 @@
 
 - Localization/languages.json lists the shipped languages; every catalog carries all of them and no other;
 - the generated LocalizationKey has a case, with the right number of arguments, for every entry of the catalog and for
-  nothing else;
+  nothing else, and LocalizedMessage has a constructor that takes exactly those arguments;
 - placeholders (%@, %1$@) match the English text in every language, and a text with several of them numbers them
   so that a translation can reorder them;
 - the commands between backticks are the same in every language (the setup window shows them as code);
@@ -23,49 +23,13 @@
 import re
 import subprocess
 import sys
-import unicodedata
 
-from localization_lib import CODE_SPAN, PLACEHOLDER, ROOT, SWIFT_DIRECTORY, arity, case_name, languages, placeholders, read_catalog, source_language
+from localization_lib import (
+    CATALOGS, LETTERS, ROOT, SWIFT_DIRECTORY, arity, case_name, languages, read_catalog, source_language, translation_problems,
+)
 
 KEYS_FILE = SWIFT_DIRECTORY / "LocalizationKey.generated.swift"
-RIGHT_TO_LEFT_MARK = "‏"
-# Keys whose text becomes a file name: no direction mark, no path separator.
-FILE_NAME_KEYS = {"newFile.baseName"}
-
-# The Unicode names (their first word) of the letters each script is written with. A translation with letters but none
-# of them in its script was pasted against the wrong language (one catalog entry once got its neighbour's text); a value
-# with no letters at all (a bare placeholder) and one equal to English ("OK") are fine.
-LETTERS = {
-    "Latn": {"LATIN"}, "Arab": {"ARABIC"}, "Hebr": {"HEBREW"}, "Beng": {"BENGALI"}, "Deva": {"DEVANAGARI"},
-    "Taml": {"TAMIL"}, "Telu": {"TELUGU"}, "Thai": {"THAI"}, "Grek": {"GREEK"}, "Cyrl": {"CYRILLIC"}, "Kore": {"HANGUL"},
-    "Jpan": {"CJK", "HIRAGANA", "KATAKANA"}, "Hans": {"CJK", "HIRAGANA", "KATAKANA"}, "Hant": {"CJK", "HIRAGANA", "KATAKANA"},
-}
-
-
-def scripts_in(text: str) -> set[str]:
-    # Ordinal and micro signs (º ª µ) are Latin letters whose Unicode names do not begin with the script.
-    return {"LATIN" if unicodedata.name(c, "").split()[0] in ("MASCULINE", "FEMININE", "MICRO") else unicodedata.name(c, "").split()[0]
-            for c in text if c.isalpha()}
-
-
-def wrong_script(script: str, value: str, english: str) -> bool:
-    found = scripts_in(value)
-    if not found or value == english:
-        return False
-    if script == "Latn":
-        return bool(found - LETTERS["Latn"])
-    return not (found & LETTERS[script])
-
-
-def starts_left_to_right(value: str) -> bool:
-    """Whether the first letter that has a direction, once placeholders are filled in with Latin text, reads left to right."""
-    for character in PLACEHOLDER.sub("X", value):
-        direction = unicodedata.bidirectional(character)
-        if direction == "L":
-            return True
-        if direction in ("R", "AL"):
-            return False
-    return False
+MESSAGES_FILE = SWIFT_DIRECTORY / "LocalizedMessage.generated.swift"
 
 
 def check_manifest(problems: list[str]) -> None:
@@ -77,7 +41,7 @@ def check_manifest(problems: list[str]) -> None:
         problems.append(f"languages.json: the first language must be the source language {source_language()}")
     for language in shipped:
         if language.script not in LETTERS:
-            problems.append(f"languages.json: {language.code} has script {language.script}; add its letters to LETTERS in verify_localizations.py")
+            problems.append(f"languages.json: {language.code} has script {language.script}; add its letters to LETTERS in localization_lib.py")
         if (language.script in ("Arab", "Hebr")) != language.rtl:
             problems.append(f"languages.json: {language.code} is written in {language.script}, so \"rtl\" should be {language.script in ('Arab', 'Hebr')}")
 
@@ -107,23 +71,8 @@ def check_texts(strings: dict, problems: list[str]) -> None:
             problems.append(f"{key}: the English text {error}")
         for language in languages():
             unit = localizations.get(language.code, {}).get("stringUnit")
-            if unit is None or not unit["value"].strip():
-                continue
-            value = unit["value"]
-            where = f"{key} [{language.code}]"
-            if sorted(placeholders(value)) != sorted(placeholders(english)):
-                problems.append(f"{where}: placeholders differ from English")
-            if "%" in PLACEHOLDER.sub("", value):
-                problems.append(f"{where}: a % that is not a placeholder")
-            if value.count("`") % 2 or sorted(CODE_SPAN.findall(value)) != sorted(CODE_SPAN.findall(english)):
-                problems.append(f"{where}: the text between backticks differs from English: {value!r}")
-            if wrong_script(language.script, value, english):
-                problems.append(f"{where}: not written in the script of {language.code}: {value!r}")
-            if key in FILE_NAME_KEYS:
-                if RIGHT_TO_LEFT_MARK in value or "/" in value or ":" in value:
-                    problems.append(f"{where}: becomes a file name, so no direction mark, slash or colon: {value!r}")
-            elif language.rtl and starts_left_to_right(value):
-                problems.append(f"{where}: starts with Latin text and no right-to-left mark: {value!r}")
+            if unit is not None and unit["value"].strip():
+                problems += translation_problems(key, language, unit["value"], english)
 
 
 def check_generated_keys(strings: dict, problems: list[str]) -> None:
@@ -152,11 +101,23 @@ def check_generated_keys(strings: dict, problems: list[str]) -> None:
         if counts.get(name, 0) != expected:
             problems.append(f"{key}: the generated arity is {counts.get(name, 0)}, the English text takes {expected}")
 
+    constructors: dict[str, int] = {}
+    messages = MESSAGES_FILE.read_text(encoding="utf-8")
+    for name in re.findall(r"public static var (\w+): LocalizedMessage", messages):
+        constructors[name] = 0
+    for name, parameters in re.findall(r"public static func (\w+)\(([^)]*)\) -> LocalizedMessage", messages):
+        constructors[name] = len(parameters.split(","))
+    for name, key in sorted(cases.items()):
+        if key in strings and constructors.get(name) != counts.get(name, 0):
+            problems.append(f"{key}: LocalizedMessage.{name} takes {constructors.get(name)} values, the key takes {counts.get(name, 0)}")
+    for name in sorted(constructors.keys() - cases.keys()):
+        problems.append(f"LocalizedMessage.{name} is not a LocalizationKey")
+
 
 def main() -> int:
     if "--missing" in sys.argv:
         code = sys.argv[sys.argv.index("--missing") + 1]
-        for name in ("Localizable.xcstrings", "InfoPlist.xcstrings", "AppShortcuts.xcstrings"):
+        for name in CATALOGS:
             for key, entry in sorted(read_catalog(name)["strings"].items()):
                 if code not in entry["localizations"]:
                     print(f"{name}\t{key}")
@@ -167,7 +128,6 @@ def main() -> int:
     catalog = read_catalog("Localizable.xcstrings")
     strings = catalog["strings"]
     check_generated_keys(strings, problems)
-
     check_languages("Localizable.xcstrings", catalog, problems)
     check_texts(strings, problems)
 

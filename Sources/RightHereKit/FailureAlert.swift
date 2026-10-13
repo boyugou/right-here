@@ -33,7 +33,7 @@ public enum FailureAlert {
             let target = application ?? localizer.string(.alertTheApp)
             return Content(
                 title: localizer.string(.alertPermissionTitle),
-                message: localizer.string(.alertPermissionMessage, target),
+                message: localizer.render(.alertPermissionMessage(target)),
                 okTitle: localizer.string(.alertOk),
                 settingsTitle: localizer.string(.alertOpenSettings),
                 settingsURL: automationSettingsURL
