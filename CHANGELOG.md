@@ -19,6 +19,9 @@ First version, running on macOS 26 and later (Apple silicon).
   marks, one place that refuses any path that does not exist, bounded and budgeted MCP calls, a process runner
   that stops a login shell for good, an atomic claim for the probe request, parsers that refuse nesting deep
   enough to overflow the stack, and installs that keep the old Services and link when they fail halfway.
+- Config sync: an optional per-machine overlay `config.local.toml` (merged by id, with `disabled`), and
+  `rh config sync` (enable, status, pull, push, disable) that copies the config through a plain folder such as iCloud
+  Drive, with refusals for local or remote changes, secrets and invalid files, atomic writes and doctor checks.
 - Terminals without a built-in adapter can be defined in the config (`open_args`, `run_args`); copied paths use
   the spelling the file system stores.
 - Verified: the whole chain after a menu click on a real Mac; real-shell round trips of quoting; a notarized,

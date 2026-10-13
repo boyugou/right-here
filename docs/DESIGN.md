@@ -85,6 +85,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 9 | Thirty languages from a String Catalog compiled into Swift; human-facing surfaces follow the system language, the CLI and MCP stay English. | [0006](decisions/0006-localization.md) |
 | 10 | A Mac App Store edition, if any, is a reduced menu-only app, built only after a one-day sandbox spike. | [0007](decisions/0007-app-store-edition.md) |
 | 11 | Independent review and a cold-start usability test follow large changes; findings are reproduced first and each fix has a test that fails without it. | [0008](decisions/0008-independent-review.md) |
+| 12 | The config can be shared between Macs by copying it through a plain folder (`rh config sync`), with a never-synced per-machine overlay `config.local.toml`; no symlink, no CloudKit. | [0013](decisions/0013-config-sync.md) |
 
 ## 5. Platform facts
 
@@ -206,7 +207,7 @@ layout is: open in terminal, open in editor, one entry per enabled agent, a "Mor
 replaces it with group names or any action id. Entries that cannot run here (the app is not installed,
 the terminal cannot run commands) are not shown; `rh actions --all` and `rh doctor` say why.
 
-The extension caches the config by modification time and installed-app lookups for 30 seconds, and
+The extension caches the config by the modification dates of `config.toml` and the optional `config.local.toml` and installed-app lookups for 30 seconds, and
 icons for the life of the process, so a right-click costs milliseconds.
 
 ## 8. Config
@@ -215,7 +216,9 @@ TOML, parsed by a pure-Swift library (TOMLDecoder) and checked against a schema 
 of `rh docs config` and of the JSON Schema printed by `rh config schema`. Unknown keys are warnings with a
 "did you mean" suggestion; wrong types and unknown references are errors; everything valid still
 applies. The app never rewrites the file, so comments and ordering stay the person's. See
-[0004](decisions/0004-config.md).
+[0004](decisions/0004-config.md). An optional `config.local.toml` is merged over it (by id for apps, templates and
+variants, `disabled` to remove ids), and `rh config sync` copies `config.toml` to and from a plain folder; see
+[0013](decisions/0013-config-sync.md).
 
 ## 9. Security
 
