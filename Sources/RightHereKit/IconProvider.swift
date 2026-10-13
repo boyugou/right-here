@@ -48,7 +48,7 @@ public final class IconProvider: Sendable {
             image?.size = NSSize(width: side, height: side)
             return image
         case .symbol:
-            // Only the Finder extension's bundle carries the catalog; anywhere else this falls through to the system symbol.
+            // The app and the Finder extension carry the catalog (project.yml); any other process falls through to the system symbol.
             if let glyph = Self.dedicatedGlyphs[icon.value], let image = NSImage(named: NSImage.Name(glyph))?.copy() as? NSImage {
                 image.size = NSSize(width: side, height: side)
                 image.isTemplate = true

@@ -41,6 +41,10 @@ targets:
         excludes:
           - "*.entitlements"
           - Generated-Info.plist
+      # The Finder menu's own glyphs: the setup window's menu preview draws the ones the Finder menu shows. One catalog,
+      # compiled into the bundle of the app and of the extension.
+      - path: Apps/FinderExtension/Assets.xcassets
+        buildPhase: resources
       # The permission-prompt text, in every shipped language (one catalog for both targets).
       - path: Localization/InfoPlist.xcstrings
         buildPhase: resources
