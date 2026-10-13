@@ -151,8 +151,11 @@ struct SetupView: View {
                 Button(l10n.string(.appInstallOrRepair)) { Task { await model.installOrRepair() } }
                     .keyboardShortcut(.defaultAction)
                     .disabled(model.isWorking)
-                Button(l10n.string(.appTestLaunch)) { Task { await model.testTerminalLaunch() } }
-                    .disabled(model.isWorking)
+                // Step 3 of the first-run card has this button.
+                if !model.extensionNeedsSetup {
+                    Button(l10n.string(.appTestLaunch)) { Task { await model.testTerminalLaunch() } }
+                        .disabled(model.isWorking)
+                }
                 if model.isWorking && !model.checks.isEmpty { ProgressView().controlSize(.small) }
                 Spacer()
             }
