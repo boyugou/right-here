@@ -89,7 +89,7 @@ MUTANTS = [
      "// Neither gives a folder, and the folder around it is not what was asked for.\n        case nil: return Self.directory(from: first.deletingLastPathComponent(), facts: facts)"),
     ("process input is written on the Swift concurrency pool", "Sources/RightHereKit/ProcessRunner.swift",
      "DispatchQueue.global(qos: .userInitiated).async {", "Task.detached {"),
-    ("an absolute path is judged by its first Character", "Sources/RightHereMCP/Tools.swift",
+    ("an absolute path is judged by its first Character", "Sources/RightHereCore/Context/ContextInput.swift",
      'path.unicodeScalars.first == "/"', 'path.hasPrefix("/")'),
     ("the rotated log keeps its old mode", "Sources/RightHereKit/RunLog.swift",
      "chmod(older.path, 0o600)", "_ = older"),
@@ -138,7 +138,7 @@ MUTANTS = [
      'if resolved.contains("/Right Here.app/Contents/Helpers/") { return true }', "return true"),
     ("the runner takes every item", "Sources/RightHereKit/RunnerArguments.swift",
      "context.items.prefix(maxItems)", "context.items"),
-    ("a NUL in an MCP path is accepted", "Sources/RightHereMCP/Tools.swift",
+    ("a NUL in a path is accepted", "Sources/RightHereCore/Context/ContextInput.swift",
      'guard !path.unicodeScalars.contains("\\0") else', "guard true else"),
 ]
 
