@@ -3,7 +3,7 @@
 Effective date: [DATE]
 
 Right Here sends the folder you picked in Finder to a terminal, an editor or an AI agent on your Mac. It works
-entirely on your Mac.
+on your Mac and makes no network connections of its own.
 
 ## What Right Here collects
 
@@ -21,7 +21,11 @@ Right Here does not read the contents of your files.
 
 ## What Right Here stores
 
-- The settings file, on your Mac only.
+- The settings file, and an optional per-machine overlay file beside it, on your Mac.
+- If you turn on `rh config sync`, a copy of the settings file in the folder you choose (iCloud Drive by default), a
+  small state file that records the last synced copy, and backup copies of a settings file that a sync replaced.
+  Right Here itself sends nothing over the network: whatever syncs that folder (iCloud Drive, Dropbox and so on)
+  handles the copy under its own privacy practices. Sync is off until you enable it.
 - A small local log of recent actions and failures at `~/Library/Logs/right-here/rh.log`. It stays on your Mac, is
   never sent anywhere, and you can delete it at any time. Its size is limited and old entries are rotated out.
 
