@@ -12,7 +12,7 @@ final class FinderSyncExtension: FIFinderSync {
     private lazy var icons = IconProvider(facts: facts)
     private lazy var paths = RHPaths.current(facts: facts)
 
-    private var configCache: (modified: Date?, loaded: LoadedConfig)?
+    private var configCache: (stamp: ConfigStore.Stamp, loaded: LoadedConfig)?
     /// Finder receives a copy of each menu, and only the tag survives the trip back to the action method.
     /// The tags are stable (see `ActionTags`), so a menu built after the one being clicked cannot retarget it.
     private var tags = ActionTags()
@@ -74,14 +74,12 @@ final class FinderSyncExtension: FIFinderSync {
         return HereContext.finder(kind: kind, selected: controller.selectedItemURLs() ?? [], targeted: controller.targetedURL())
     }
 
-    /// The config, re-read only when the file changed.
+    /// The config, re-read only when one of its two files (the config and the per-machine overlay) changed.
     private func currentConfig() -> Config {
-        let file = paths.configFile
-        // Of what the path leads to: for a config kept as a link (dotfile managers do that), the link's own date never changes.
-        let modified = (try? FileManager.default.attributesOfItem(atPath: file.resolvingSymlinksInPath().path))?[.modificationDate] as? Date
-        if let cache = configCache, cache.modified == modified { return cache.loaded.config }
+        let stamp = ConfigStore.stamp(paths: paths)
+        if let cache = configCache, cache.stamp == stamp { return cache.loaded.config }
         let loaded = ConfigStore.load(paths: paths)
-        configCache = (modified, loaded)
+        configCache = (stamp, loaded)
         return loaded.config
     }
 

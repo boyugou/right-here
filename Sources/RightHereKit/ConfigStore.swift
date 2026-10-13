@@ -5,6 +5,15 @@ import RightHereCore
 public struct RHPaths: Sendable, Equatable {
     public var configDirectory: URL
     public var configFile: URL
+    /// The per-machine overlay next to the config file: `config.local.toml` (`<name>.local.toml` for another file name).
+    public var localConfigFile: URL {
+        let name = configFile.deletingPathExtension().lastPathComponent + ".local." + (configFile.pathExtension.isEmpty ? "toml" : configFile.pathExtension)
+        return configFile.deletingLastPathComponent().appendingPathComponent(name)
+    }
+    /// What `rh config sync` remembers: the folder and the content last synced.
+    public var syncStateFile: URL { configDirectory.appendingPathComponent("sync.toml") }
+    /// The home the paths were derived from; the default sync folder is under it.
+    public var home: URL
     /// `RH_LOG_DIR`, else `~/Library/Logs/right-here`.
     public var logDirectory: URL
 
@@ -13,6 +22,7 @@ public struct RHPaths: Sendable, Equatable {
     /// `RH_CONFIG` names the file itself; `RH_CONFIG_DIR` or `XDG_CONFIG_HOME` name its folder;
     /// otherwise it is `~/.config/right-here/config.toml`.
     public init(environment: [String: String], home: URL) {
+        self.home = home
         func expanded(_ path: String) -> URL {
             URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
         }
@@ -45,6 +55,17 @@ public struct LoadedConfig: Sendable, Equatable {
     public var result: ConfigLoadResult
     public var fileExists: Bool
     public var file: URL
+    /// The per-machine overlay, `config.local.toml`; it is optional.
+    public var localFile: URL
+    public var localFileExists: Bool
+
+    public init(result: ConfigLoadResult, fileExists: Bool, file: URL, localFile: URL? = nil, localFileExists: Bool = false) {
+        self.result = result
+        self.fileExists = fileExists
+        self.file = file
+        self.localFile = localFile ?? file.deletingLastPathComponent().appendingPathComponent("config.local.toml")
+        self.localFileExists = localFileExists
+    }
 
     public var config: Config { result.config }
 }
@@ -56,22 +77,41 @@ public enum ConfigStore {
     public static let maxConfigBytes = 1_048_576
 
     public static func load(paths: RHPaths) -> LoadedConfig {
+        let base = read(paths.configFile)
+        let local = read(paths.localConfigFile)
+        let result = ConfigLayers.load(base: base.source, local: local.source, overlayName: paths.localConfigFile.lastPathComponent)
+        return LoadedConfig(result: result, fileExists: base.exists, file: paths.configFile, localFile: paths.localConfigFile, localFileExists: local.exists)
+    }
+
+    /// What identifies the config as the menu sees it: the modification dates of both files and whether each exists.
+    /// A pair, not the later date: an overlay copied in with an older date (`cp -p`, a sync tool) must still count as a change.
+    public struct Stamp: Sendable, Equatable {
+        var base: Date?
+        var local: Date?
+    }
+
+    public static func stamp(paths: RHPaths) -> Stamp {
+        func modified(_ file: URL) -> Date? {
+            // Of what the path leads to: for a config kept as a link (dotfile managers do that), the link's own date never changes.
+            (try? FileManager.default.attributesOfItem(atPath: file.resolvingSymlinksInPath().path))?[.modificationDate] as? Date
+        }
+        return Stamp(base: modified(paths.configFile), local: modified(paths.localConfigFile))
+    }
+
+    /// One file: its text, or the reason it was not read.
+    private static func read(_ file: URL) -> (source: ConfigSource, exists: Bool) {
         // Through a link: a config kept in a dotfiles repository is a symlink, and the link itself is a few bytes.
-        let target = paths.configFile.resolvingSymlinksInPath().path
+        let target = file.resolvingSymlinksInPath().path
         if let size = (try? FileManager.default.attributesOfItem(atPath: target))?[.size] as? Int, size > maxConfigBytes {
             let diagnostic = ConfigDiagnostic(severity: .error, path: "", message: "The file is \(size / 1024) KB; a config is a few kilobytes, so it was not read. Is this the right file?")
-            return LoadedConfig(result: ConfigLoadResult(config: .default, diagnostics: [diagnostic]), fileExists: true, file: paths.configFile)
+            return (.unreadable(diagnostic), true)
         }
-        guard let data = try? Data(contentsOf: paths.configFile) else {
-            return LoadedConfig(result: ConfigLoadResult(config: .default, diagnostics: []), fileExists: false, file: paths.configFile)
-        }
+        guard let data = try? Data(contentsOf: file) else { return (.absent, false) }
         guard let text = String(data: data, encoding: .utf8) else {
-            let diagnostic = ConfigDiagnostic(severity: .error, path: "", message: "The file is not valid UTF-8.")
-            return LoadedConfig(result: ConfigLoadResult(config: .default, diagnostics: [diagnostic]), fileExists: true, file: paths.configFile)
+            return (.unreadable(ConfigDiagnostic(severity: .error, path: "", message: "The file is not valid UTF-8.")), true)
         }
         // Some editors put a byte order mark at the start of a UTF-8 file; TOML does not allow one.
-        let body = text.hasPrefix("\u{FEFF}") ? String(text.dropFirst()) : text
-        return LoadedConfig(result: ConfigParser.parse(body), fileExists: true, file: paths.configFile)
+        return (.text(text.hasPrefix("\u{FEFF}") ? String(text.dropFirst()) : text), true)
     }
 
     public enum InitializeOutcome: Sendable, Equatable {
