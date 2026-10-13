@@ -85,6 +85,19 @@ system language also changes their names, so run it again after that.
 `rh config validate --strict` lists every problem, with a likely replacement for a typo. Warnings are worth fixing:
 an unknown key only warns because the rest of the file still applies, but what it was meant to set is missing.
 
+## `rh config sync pull` will not take the copy
+
+The message says why, and nothing was changed. The usual reasons:
+
+- The copy would add or change a terminal template or an agent command. A synced folder can be written by other
+  Macs and by sync services, and a config with a program in it runs when you click, so `pull` lists what would change
+  and wants `rh config sync pull --allow-commands` once you have read it. `rh config sync status` shows the same list
+  first. This is separate from `--force`; the two combine.
+- This Mac's config changed since the last sync: `rh config sync status`, then `rh config sync push` to send it or
+  `rh config sync pull --force` to replace it (the old file is saved first).
+- The copy in the folder is not on this Mac yet (iCloud keeps it online only): open the folder in Finder and let it
+  download.
+
 ## Removing it
 
 `rh uninstall` removes the runner script, Quick Actions, the command link (only when it points at Right Here's `rh`)
