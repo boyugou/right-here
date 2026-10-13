@@ -198,6 +198,9 @@ public struct Installer: Sendable {
         var staged: [(name: String, url: URL)] = []
         for spec in specs {
             let name = ServiceWorkflow.bundleName(for: spec)
+            // Two actions with one title (open.terminal and open.terminal@ghostty) make one Service: a second bundle
+            // of that name could not be moved in, and would leave the install half done after the old ones are gone.
+            guard !staged.contains(where: { $0.name == name }) else { continue }
             let bundle = staging.appendingPathComponent(name)
             try write(spec, bundle)
             staged.append((name, bundle))

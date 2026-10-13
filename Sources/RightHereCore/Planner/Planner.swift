@@ -120,11 +120,13 @@ public struct Planner: Sendable {
         return LaunchPlan(action: ref.id, summary: "Open \(directory.lastPathComponent) in \(app.name)", steps: steps, notices: folderNotice(for: context, directory: directory))
     }
 
-    private func resolveTerminal(_ id: String?) throws -> (AppDescriptor, String) {
+    private func resolveTerminal(_ id: String?, forCommand: Bool = false) throws -> (AppDescriptor, String) {
         let app: AppDescriptor
         if let id {
             guard let found = config.app(id: id), found.role == .terminal else { throw PlanError.unknownTerminal(id) }
             app = found
+        } else if forCommand {
+            app = try resolveCommandTerminal()
         } else {
             app = try resolveDefault(role: .terminal, configured: config.terminal)
         }
@@ -154,6 +156,20 @@ public struct Planner: Sendable {
             throw PlanError.appNotInstalled(role == .terminal ? "A terminal" : "An editor")
         }
         return app
+    }
+
+    /// The terminal an agent is typed into when none is named: the configured default as it is, else the first
+    /// installed one that can run a command. A folder-only terminal (iTerm, kitty and the like) is a fine place to
+    /// open a folder but would make every agent entry fail while Terminal.app sits next to it.
+    public func resolveCommandTerminal() throws -> AppDescriptor {
+        if config.terminal != nil { return try resolveDefault(role: .terminal, configured: config.terminal) }
+        let candidates = Self.terminalOrder.compactMap { config.app(id: $0) }.filter { $0.role == .terminal } + config.apps.filter { $0.role == .terminal }
+        let capable = candidates.first { app in
+            guard let bundleID = app.installedBundleID(facts: facts) else { return false }
+            let adapter = TerminalAdapters.adapter(for: app)
+            return adapter.supportsCommands && adapter.commandBlocker(bundleID: bundleID, facts: facts) == nil
+        }
+        return try capable ?? resolveDefault(role: .terminal, configured: nil)
     }
 
     // MARK: Agents
@@ -191,7 +207,7 @@ public struct Planner: Sendable {
             let typed = ([agent.command] + (variant?.arguments ?? [])).joined(separator: " ")
             do { try ShellQuoting.validateForTyping(typed) } catch { throw PlanError.unsafeText(typed) }
             do { try ShellQuoting.validateForTyping(directory.path) } catch { throw PlanError.unsafeText(directory.path) }
-            let (app, bundleID) = try resolveTerminal(terminalID)
+            let (app, bundleID) = try resolveTerminal(terminalID, forCommand: true)
             let steps = try TerminalAdapters.adapter(for: app)
                 .steps(for: TerminalSession(directory: directory, typedInput: typed, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
             return LaunchPlan(

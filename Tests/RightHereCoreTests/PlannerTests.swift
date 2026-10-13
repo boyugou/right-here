@@ -259,6 +259,24 @@ struct PlannerTests {
         #expect(registry.closestID(to: "zzzzzzzzzzzz") == nil)
     }
 
+    @Test func anAgentSkipsAFolderOnlyDefaultTerminalForOneThatRunsCommands() throws {
+        let facts = machine(installed: ["com.googlecode.iterm2", "com.apple.Terminal"])
+        let planner = Planner(facts: facts)
+        // iTerm is the preferred default and opens folders, but cannot be typed into yet; Terminal can.
+        let open = try planner.plan(.openTerminal(nil), context: folder("/Users/tester/code/app"))
+        #expect(open.summary.contains("iTerm"), Comment(rawValue: open.summary))
+        let agent = try planner.plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
+        #expect(agent.summary.contains("Terminal") && !agent.summary.contains("iTerm"), Comment(rawValue: agent.summary))
+        let info = ActionRegistry(config: .default, facts: facts).info(.agent(id: "claude", variant: nil, launcher: nil))
+        #expect(info.available)
+        // An explicit choice is respected, and refused when it cannot run commands.
+        var config = Config.default
+        config.terminal = "iterm"
+        #expect(throws: PlanError.self) {
+            try Planner(config: config, facts: facts).plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
+        }
+    }
+
     @Test func claudeStartsInTheDefaultTerminalByTypingItsCommand() throws {
         let plan = try Planner(facts: machine()).plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
         guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }

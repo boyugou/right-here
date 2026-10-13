@@ -255,6 +255,15 @@ struct InstallerServicesTests {
         }
     }
 
+    @Test func twoActionsWithOneTitleInstallOneService() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let same = [specs[0], ServiceSpec(title: "Open in Ghostty", actionID: "open.terminal@ghostty", command: "echo three"), specs[1]]
+        let written = try installer.installServices(same)
+        #expect(written.map(\.lastPathComponent) == ["Right Here - Open in Ghostty.workflow", "Right Here - Claude Code Here.workflow"])
+    }
+
     @Test func reinstallingReplacesWhatWasThereAndLeavesOtherServicesAlone() throws {
         let home = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: home) }

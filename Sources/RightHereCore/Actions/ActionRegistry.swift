@@ -153,7 +153,7 @@ public struct ActionRegistry: Sendable {
             if agent.terminalLink == nil { unavailable(&info, reason: "\(agent.name) has no terminal link.") }
         case .terminal(let terminalID):
             let terminal: AppDescriptor?
-            if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? resolveDefault(role: .terminal, configured: config.terminal) }
+            if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? Planner(config: config, facts: facts, localizer: localizer).resolveCommandTerminal() }
             let terminalName = terminal.map(name(of:)) ?? terminalID ?? ""
             if let variant {
                 let variantTitle = variant.localizedTitle(localizer)
