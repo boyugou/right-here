@@ -150,7 +150,7 @@ public enum ConfigSchema {
                            example: "\"claude --model opus\""),
                 SchemaNode("launcher", .string,
                            "How the agent starts: terminal types the command into a terminal, link uses the agent's own terminal deep link, desktop opens its desktop app.",
-                           default: "\"terminal\"", allowed: ["terminal", "link", "desktop"]),
+                           default: "\"terminal\"", allowed: AgentLauncher.configNames),
                 SchemaNode("terminal", .string, "Terminal for launcher = \"terminal\". Omit it to use general.terminal.", suggested: terminalIDs),
                 SchemaNode("variant", .tableArray, "Extra start options shown in the agent's submenu.", required: ["id", "title"], children: [
                     SchemaNode("id", .string, "Identifier used in `agent.<agent>.<id>`; lowercase letters, digits and dashes.",

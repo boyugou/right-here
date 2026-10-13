@@ -24,6 +24,17 @@ struct CatalogTests {
         #expect(apps.allSatisfy { !$0.installed && $0.bundleID == nil })
     }
 
+    @Test func aConfigLauncherNameMapsToTheLauncher() {
+        #expect(AgentLauncher.configNames == ["terminal", "link", "desktop"])
+        #expect(AgentLauncher.fromConfig(name: "link", terminal: "ghostty") == .terminalLink)
+        #expect(AgentLauncher.fromConfig(name: "desktop", terminal: nil) == .desktop)
+        #expect(AgentLauncher.fromConfig(name: "terminal", terminal: "ghostty") == .terminal("ghostty"))
+        #expect(AgentLauncher.fromConfig(name: "terminal", terminal: nil) == .terminal(nil))
+        #expect(AgentLauncher.fromConfig(name: nil, terminal: "ghostty") == .terminal("ghostty"))
+        #expect(AgentLauncher.fromConfig(name: nil, terminal: nil) == nil)
+        for word in AgentLauncher.configNames { #expect(ActionRef(parsing: "agent.claude@\(word)") != nil) }
+    }
+
     @Test func allAgentsAppliesTheConfigsCommandOverride() {
         var config = Config()
         config.agents["claude"] = .init(command: "claude --model opus")

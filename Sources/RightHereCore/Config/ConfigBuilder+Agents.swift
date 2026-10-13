@@ -68,14 +68,9 @@ extension ConfigBuilder {
         }
 
         var settings = Config.AgentSettings()
-        let launcherName = reader.checkAllowed(reader.string("launcher"), key: "launcher", allowed: ["terminal", "link", "desktop"])
+        let launcherName = reader.checkAllowed(reader.string("launcher"), key: "launcher", allowed: AgentLauncher.configNames)
         let terminal = checkedTerminal(reader.string("terminal"), path: reader.path + ["terminal"], customApps: config.apps)
-        switch launcherName {
-        case "link"?: settings.launcher = .terminalLink
-        case "desktop"?: settings.launcher = .desktop
-        case "terminal"?: settings.launcher = .terminal(terminal)
-        default: if let terminal { settings.launcher = .terminal(terminal) }
-        }
+        settings.launcher = AgentLauncher.fromConfig(name: launcherName, terminal: terminal)
 
         if KnownAgents.agent(id: id) != nil {
             settings.command = command
