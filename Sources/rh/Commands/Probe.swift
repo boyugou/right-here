@@ -50,7 +50,7 @@ struct Probe: AsyncParsableCommand {
 
             var targets: [AppDescriptor] = []
             if apps.isEmpty {
-                if let terminal = try? runtime.planner.resolveDefault(role: .terminal, configured: runtime.config.terminal) { targets = [terminal] }
+                if let terminal = try? runtime.defaults.resolve(role: .terminal, configured: runtime.config.terminal) { targets = [terminal] }
             } else {
                 for id in apps {
                     guard let app = runtime.config.app(id: id) else { throw ValidationError("Unknown app \"\(id)\". Run `rh apps`.") }
@@ -141,7 +141,7 @@ struct Probe: AsyncParsableCommand {
                 app = found
             } else {
                 do {
-                    app = try runtime.planner.resolveDefault(role: .terminal, configured: runtime.config.terminal)
+                    app = try runtime.defaults.resolve(role: .terminal, configured: runtime.config.terminal)
                 } catch {
                     return .init(application: "terminal", outcome: .notInstalled, detail: error.localizedDescription)
                 }

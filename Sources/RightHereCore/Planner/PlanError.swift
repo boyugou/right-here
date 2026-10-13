@@ -12,6 +12,8 @@ public enum PlanError: Error, Equatable, Sendable {
     /// A terminal id (or an agent's launcher) that names no terminal.
     case unknownTerminal(String)
     case appNotInstalled(String)
+    /// None of the apps of a role is installed, so there is no default to pick.
+    case noDefaultApp(AppDescriptor.Role)
     case unknownAgent(String, choices: [String])
     case unknownVariant(agent: String, variant: String, choices: [String])
     case unknownTemplate(String, choices: [String])
@@ -39,7 +41,9 @@ extension PlanError: LocalizedError {
         return text
     }
 
-    private var message: String {
+    /// The text without any escaping: what `rh actions` shows as the reason an action is unavailable, so that it and
+    /// `rh run` say the same thing.
+    var message: String {
         switch self {
         case .noTarget: return "There is no folder or selection to act on."
         case .pathNotFound(let path): return "\(path) does not exist."
@@ -48,6 +52,12 @@ extension PlanError: LocalizedError {
         case .unknownApp(let id): return "Unknown app \"\(id)\"."
         case .unknownTerminal(let id): return "Unknown terminal \"\(id)\". Run `rh apps` to list them; an agent's launcher can also be default, link or desktop."
         case .appNotInstalled(let name): return "\(name) is not installed."
+        case .noDefaultApp(let role):
+            switch role {
+            case .terminal: return "No terminal is installed."
+            case .editor: return "No editor is installed."
+            case .general: return "No app is installed."
+            }
         case .unknownAgent(let id, let choices): return "Unknown agent \"\(id)\"." + Self.hint(id, choices) + " `rh agents` lists them."
         case .unknownVariant(let agent, let variant, let choices): return "Agent \"\(agent)\" has no variant \"\(variant)\"." + Self.hint(variant, choices)
         case .unknownTemplate(let id, let choices): return "Unknown new-file template \"\(id)\"." + Self.hint(id, choices) + " A `[[new_file.template]]` in the config replaces the built-in ones."

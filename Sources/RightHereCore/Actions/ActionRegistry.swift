@@ -19,6 +19,8 @@ public struct ActionRegistry: Sendable {
     public let facts: any SystemFacts
     public let localizer: Localizer
 
+    private var defaults: DefaultApps { DefaultApps(config: config, facts: facts) }
+
     public init(config: Config, facts: any SystemFacts, localizer: Localizer = .english) {
         self.config = config
         self.facts = facts
@@ -47,10 +49,9 @@ public struct ActionRegistry: Sendable {
 
         case .openEditor:
             info.group = "open"
-            if let app = try? resolveDefault(role: .editor, configured: config.editor) {
-                describeApp(&info, app: app)
-            } else {
-                unavailable(&info, title: localizer.openIn("Editor"), reason: "No editor is installed.")
+            switch defaultApp(.editor, configured: config.editor) {
+            case .success(let app): describeApp(&info, app: app)
+            case .failure(let error): unavailable(&info, title: localizer.openIn("Editor"), reason: error.message)
             }
 
         case .openApp(let id):
@@ -115,8 +116,7 @@ public struct ActionRegistry: Sendable {
         let presetTitle = preset.localizedTitle(localizer)
         info.title = presetTitle
         info.shortTitle = presetTitle
-        let planner = Planner(config: config, facts: facts, localizer: localizer)
-        if let refusal = planner.presetAgentRefusal(preset) {
+        if let refusal = config.presetAgentRefusal(preset) {
             unavailable(&info, reason: refusal)
             return
         }
@@ -131,7 +131,7 @@ public struct ActionRegistry: Sendable {
     /// Why a command cannot be typed into the terminal (the named one, or the default for commands), or `nil`.
     private func commandTerminalBlocker(_ terminalID: String?) -> String? {
         let terminal: AppDescriptor?
-        if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? Planner(config: config, facts: facts, localizer: localizer).resolveCommandTerminal() }
+        if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? defaults.commandTerminal() }
         guard let terminal else { return terminalID.map { "Unknown terminal \"\($0)\"." } ?? "No terminal is installed." }
         guard let bundleID = terminal.installedBundleID(facts: facts) else { return "\(terminal.name) is not installed." }
         let adapter = TerminalAdapters.adapter(for: terminal)
@@ -140,15 +140,20 @@ public struct ActionRegistry: Sendable {
     }
 
     private func describeApp(_ info: inout ActionInfo, terminal id: String?) {
-        let app: AppDescriptor?
+        let app: AppDescriptor
         if let id {
-            app = config.app(id: id)
+            guard let found = config.app(id: id) else {
+                unavailable(&info, title: localizer.openIn(id), reason: PlanError.unknownTerminal(id).message)
+                return
+            }
+            app = found
         } else {
-            app = try? resolveDefault(role: .terminal, configured: config.terminal)
-        }
-        guard let app else {
-            unavailable(&info, title: localizer.openIn(id ?? "Terminal"), reason: id.map { "Unknown terminal \"\($0)\"." } ?? "No terminal is installed.")
-            return
+            switch defaultApp(.terminal, configured: config.terminal) {
+            case .success(let found): app = found
+            case .failure(let error):
+                unavailable(&info, title: localizer.openIn("Terminal"), reason: error.message)
+                return
+            }
         }
         describeApp(&info, app: app)
         if info.available, app.role != .terminal {
@@ -203,7 +208,7 @@ public struct ActionRegistry: Sendable {
             if agent.terminalLink == nil { unavailable(&info, reason: "\(agent.name) has no terminal link.") }
         case .terminal(let terminalID):
             let terminal: AppDescriptor?
-            if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? Planner(config: config, facts: facts, localizer: localizer).resolveCommandTerminal() }
+            if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? defaults.commandTerminal() }
             let terminalName = terminal.map(name(of:)) ?? terminalID ?? ""
             if let variant {
                 let variantTitle = variant.localizedTitle(localizer)
@@ -241,8 +246,8 @@ public struct ActionRegistry: Sendable {
 
     // MARK: Defaults
 
-    func resolveDefault(role: AppDescriptor.Role, configured: String?) throws -> AppDescriptor {
-        try Planner(config: config, facts: facts, localizer: localizer).resolveDefault(role: role, configured: configured)
+    private func defaultApp(_ role: AppDescriptor.Role, configured: String?) -> Result<AppDescriptor, PlanError> {
+        do throws(PlanError) { return .success(try defaults.resolve(role: role, configured: configured)) } catch { return .failure(error) }
     }
 
     // MARK: Catalog

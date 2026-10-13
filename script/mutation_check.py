@@ -70,7 +70,7 @@ MUTANTS = [
      "_ = fcntl(descriptor, F_SETNOSIGPIPE, 1)", "_ = descriptor"),
     ("the runner is not told about a stopped process", "Sources/RightHereKit/ProcessRunner.swift",
      "terminatedAfter: cutOff.happened ? timeout : nil", "terminatedAfter: nil"),
-    ("a role-mismatched default terminal is picked", "Sources/RightHereCore/Planner/Planner.swift",
+    ("a role-mismatched default terminal is picked", "Sources/RightHereCore/Planner/DefaultApps.swift",
      "order.compactMap { config.app(id: $0) }.filter { $0.role == role }", "order.compactMap { config.app(id: $0) }"),
     ("a ping waits for a request slot like a tool call", "Sources/RightHereMCP/MCPServer.swift",
      'case .object: return message["method"]?.stringValue == "tools/call"', "case .object: return true"),

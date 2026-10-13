@@ -7,10 +7,7 @@ public struct Planner: Sendable {
     public let facts: any SystemFacts
     public let localizer: Localizer
 
-    /// Preference order when no default is configured. Terminal.app is always present, so it comes
-    /// last: a terminal the user installed on purpose is a better guess.
-    static let terminalOrder = ["ghostty", "cmux", "iterm", "wezterm", "kitty", "alacritty", "warp", "terminal"]
-    static let editorOrder = ["vscode", "cursor", "zed", "windsurf", "sublime", "nova", "bbedit", "intellij", "pycharm", "webstorm", "textedit"]
+    private var defaults: DefaultApps { DefaultApps(config: config, facts: facts) }
 
     public init(config: Config = .default, facts: any SystemFacts, localizer: Localizer = .english) {
         self.config = config
@@ -36,7 +33,7 @@ public struct Planner: Sendable {
         case .openTerminal(let id):
             return try openTerminal(id, ref: ref, context: context)
         case .openEditor:
-            return try openApp(try resolveDefault(role: .editor, configured: config.editor), ref: ref, context: context)
+            return try openApp(try defaults.resolve(role: .editor, configured: config.editor), ref: ref, context: context)
         case .openApp(let id):
             guard let app = config.app(id: id) else { throw PlanError.unknownApp(id) }
             return try openApp(app, ref: ref, context: context)
@@ -128,50 +125,12 @@ public struct Planner: Sendable {
             guard let found = config.app(id: id), found.role == .terminal else { throw PlanError.unknownTerminal(id) }
             app = found
         } else if forCommand {
-            app = try resolveCommandTerminal()
+            app = try defaults.commandTerminal()
         } else {
-            app = try resolveDefault(role: .terminal, configured: config.terminal)
+            app = try defaults.resolve(role: .terminal, configured: config.terminal)
         }
         guard let bundleID = app.installedBundleID(facts: facts) else { throw PlanError.appNotInstalled(app.name) }
         return (app, bundleID)
-    }
-
-    /// The app used when an action does not name one: the configured default, else the first
-    /// installed one in a fixed preference order.
-    public func resolveDefault(role: AppDescriptor.Role, configured: String?) throws -> AppDescriptor {
-        if let configured {
-            guard let app = config.app(id: configured) else { throw PlanError.unknownApp(configured) }
-            // The config can redefine a built-in id with another role; a terminal that is now an editor (or
-            // the reverse) is not what the setting asked for, and `rh actions` already says so.
-            if role == .terminal, app.role != .terminal {
-                throw PlanError.unsupported("\(app.name) is not a terminal. Use open.app.\(app.id) to open files with it.")
-            }
-            if role == .editor, app.role == .terminal {
-                throw PlanError.unsupported("\(app.name) is a terminal, not an editor. Use open.terminal@\(app.id) to open a folder in it.")
-            }
-            return app
-        }
-        let order = role == .terminal ? Self.terminalOrder : Self.editorOrder
-        // A built-in id the config redefined with another role is not a candidate for this one.
-        let candidates = order.compactMap { config.app(id: $0) }.filter { $0.role == role } + config.apps.filter { $0.role == role }
-        guard let app = candidates.first(where: { $0.installedBundleID(facts: facts) != nil }) else {
-            throw PlanError.appNotInstalled(role == .terminal ? "A terminal" : "An editor")
-        }
-        return app
-    }
-
-    /// The terminal an agent is typed into when none is named: the configured default as it is, else the first
-    /// installed one that can run a command. A folder-only terminal (iTerm, kitty and the like) is a fine place to
-    /// open a folder but would make every agent entry fail while Terminal.app sits next to it.
-    public func resolveCommandTerminal() throws -> AppDescriptor {
-        if config.terminal != nil { return try resolveDefault(role: .terminal, configured: config.terminal) }
-        let candidates = Self.terminalOrder.compactMap { config.app(id: $0) }.filter { $0.role == .terminal } + config.apps.filter { $0.role == .terminal }
-        let capable = candidates.first { app in
-            guard let bundleID = app.installedBundleID(facts: facts) else { return false }
-            let adapter = TerminalAdapters.adapter(for: app)
-            return adapter.supportsCommands && adapter.commandBlocker(bundleID: bundleID, facts: facts) == nil
-        }
-        return try capable ?? resolveDefault(role: .terminal, configured: nil)
     }
 
     // MARK: Agents
@@ -239,20 +198,11 @@ public struct Planner: Sendable {
         preset.refusal(forFileCount: preset.needsFiles ? presetFiles(in: context).count : 0)
     }
 
-    /// Why a preset's agent cannot be given its prompt, or `nil`.
-    func presetAgentRefusal(_ preset: AgentPreset) -> String? {
-        guard let agent = config.agent(for: preset) else {
-            return preset.agent.map { "Unknown agent \"\($0)\"." } ?? "No agent is enabled; list one in general.agents, or name an agent in the preset."
-        }
-        if agent.promptArgument == nil { return "\(agent.name) is not known to take a first prompt. Set prompt_arg in [agent.\(agent.id)] (\"positional\" or a flag such as \"--prompt\")." }
-        return nil
-    }
-
     /// `<agent command> [flag] '<prompt>'`: the prompt is one word, quoted by `ShellQuoting` after it has been checked
     /// for anything that would press a key or read as an option.
     private func runPreset(id: String, terminal: String?, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         guard let preset = config.preset(id: id) else { throw PlanError.unknownPreset(id, choices: config.presets.map(\.id)) }
-        if let refusal = presetAgentRefusal(preset) { throw PlanError.unsupported(refusal) }
+        if let refusal = config.presetAgentRefusal(preset) { throw PlanError.unsupported(refusal) }
         guard let agent = config.agent(for: preset), let promptArgument = agent.promptArgument else { throw PlanError.unsupported("No agent is enabled.") }
         let directory = try workingDirectory(for: context)
         if let refusal = presetContextRefusal(preset, context: context) { throw PlanError.unsupported(refusal) }
@@ -321,7 +271,7 @@ public struct Planner: Sendable {
         case .open:
             // Never a terminal: handed a file, it would run it.
             let chosen = template.openWith.flatMap(config.app(id:)).flatMap { $0.role != .terminal && $0.installedBundleID(facts: facts) != nil ? $0 : nil }
-            let editor = chosen ?? (try? resolveDefault(role: .editor, configured: config.editor))
+            let editor = chosen ?? (try? defaults.resolve(role: .editor, configured: config.editor))
             steps.append(.open(OpenStep(bundleID: editor?.installedBundleID(facts: facts), targets: [path])))
         case .nothing:
             break

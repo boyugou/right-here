@@ -141,4 +141,13 @@ public struct Config: Sendable, Equatable {
     public func agent(for preset: AgentPreset) -> AgentDescriptor? {
         (preset.agent ?? enabledAgents.first).flatMap { agent(id: $0) }
     }
+
+    /// Why a preset's agent cannot be given its prompt, or `nil`.
+    func presetAgentRefusal(_ preset: AgentPreset) -> String? {
+        guard let agent = agent(for: preset) else {
+            return preset.agent.map { "Unknown agent \"\($0)\"." } ?? "No agent is enabled; list one in general.agents, or name an agent in the preset."
+        }
+        if agent.promptArgument == nil { return "\(agent.name) is not known to take a first prompt. Set prompt_arg in [agent.\(agent.id)] (\"positional\" or a flag such as \"--prompt\")." }
+        return nil
+    }
 }

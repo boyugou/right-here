@@ -13,9 +13,9 @@ public struct Detector: Sendable {
     }
 
     public func detect() async -> DetectedEnvironment {
-        let planner = Planner(config: .default, facts: facts)
-        let terminal = try? planner.resolveDefault(role: .terminal, configured: nil)
-        let editor = try? planner.resolveDefault(role: .editor, configured: nil)
+        let defaults = DefaultApps(config: .default, facts: facts)
+        let terminal = try? defaults.resolve(role: .terminal, configured: nil)
+        let editor = try? defaults.resolve(role: .editor, configured: nil)
         let found = await commandsFound(KnownAgents.all.map(\.command))
         let agents = KnownAgents.all.filter { found.contains($0.command) }.map(\.id)
         return DetectedEnvironment(terminal: terminal?.id, editor: editor?.id, agents: agents)

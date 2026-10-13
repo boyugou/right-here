@@ -37,6 +37,7 @@ public struct MenuBuilder: Sendable {
 
     private let config: Config
     private let registry: ActionRegistry
+    private let defaults: DefaultApps
     private let facts: any SystemFacts
     private let localizer: Localizer
 
@@ -45,6 +46,7 @@ public struct MenuBuilder: Sendable {
         self.facts = facts
         self.localizer = localizer
         self.registry = ActionRegistry(config: config, facts: facts, localizer: localizer)
+        self.defaults = DefaultApps(config: config, facts: facts)
     }
 
     public func build(for context: HereContext) -> [MenuNode] {
@@ -52,8 +54,8 @@ public struct MenuBuilder: Sendable {
         let entries = config.menuItems ?? Self.defaultItems
         // "Open With" leaves out what the menu already offers on its own line.
         var listedAbove = Set<String>()
-        if entries.contains("open-terminal"), let terminal = try? registry.resolveDefault(role: .terminal, configured: config.terminal) { listedAbove.insert(terminal.id) }
-        if entries.contains("open-editor"), let editor = try? registry.resolveDefault(role: .editor, configured: config.editor) { listedAbove.insert(editor.id) }
+        if entries.contains("open-terminal"), let terminal = try? defaults.resolve(role: .terminal, configured: config.terminal) { listedAbove.insert(terminal.id) }
+        if entries.contains("open-editor"), let editor = try? defaults.resolve(role: .editor, configured: config.editor) { listedAbove.insert(editor.id) }
         for entry in entries {
             switch entry {
             case "-": nodes.append(.separator)
@@ -109,7 +111,7 @@ public struct MenuBuilder: Sendable {
 
     private func moreAgents(_ context: HereContext, withPresets: Bool) -> [MenuNode] {
         var children: [MenuNode] = []
-        let defaultTerminal = try? registry.resolveDefault(role: .terminal, configured: config.terminal)
+        let defaultTerminal = try? defaults.resolve(role: .terminal, configured: config.terminal)
         for id in config.enabledAgents {
             guard let agent = config.agent(id: id) else { continue }
             var refs: [ActionRef] = agent.variants.map { .agent(id: id, variant: $0.id, launcher: nil) }

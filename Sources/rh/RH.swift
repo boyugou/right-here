@@ -42,6 +42,7 @@ struct Runtime {
 
     var config: Config { loaded.config }
     var planner: Planner { Planner(config: config, facts: facts) }
+    var defaults: DefaultApps { DefaultApps(config: config, facts: facts) }
 
     /// Prints config problems to standard error. The valid parts of the config still apply.
     func reportConfigProblems() {
