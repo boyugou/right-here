@@ -4,12 +4,19 @@ Date: 2026-10-11. Status: accepted.
 
 ## Decision
 
-`Localization/Localizable.xcstrings` is the source of truth: 43 strings in thirty languages (English, Arabic, Bengali, German, Greek, Spanish, Persian, French, Hebrew,
-Hindi, Indonesian, Italian, Japanese, Korean, Marathi, Malay, Dutch, Polish, Brazilian Portuguese,
-Romanian, Russian, Tamil, Telugu, Thai, Turkish, Ukrainian, Urdu, Vietnamese, Simplified and
-Traditional Chinese). `script/compile_localizations.py` turns it into
-`Sources/RightHereCore/Localization/Localizations.generated.swift`; `script/verify_localizations.py`
-checks completeness, placeholders and that the generated file is current.
+`Localization/Localizable.xcstrings` is the source of truth for the strings and `Localization/languages.json` for the
+languages: thirty of them (English, Arabic, Bengali, German, Greek, Spanish, Persian, French, Hebrew, Hindi, Indonesian,
+Italian, Japanese, Korean, Marathi, Malay, Dutch, Polish, Brazilian Portuguese, Romanian, Russian, Tamil, Telugu, Thai,
+Turkish, Ukrainian, Urdu, Vietnamese, Simplified and Traditional Chinese). The manifest gives each language its code, its
+English name, its script and whether it is written right to left. The compiler, the verifier and the tests all read it, so
+a language is listed in one place.
+
+`script/compile_localizations.py` turns the catalog into three files in `Sources/RightHereCore/Localization/`: the table
+of texts (`Localizations.generated.swift`), `LocalizationKey` (one case per key, named from the key, with the number of
+values its English text takes) and `LocalizedMessage.generated.swift` (a typed constructor per key).
+`script/verify_localizations.py` checks completeness against the manifest, placeholders, that the commands between
+backticks survive, the script of each language, the right-to-left marks, that the generated Swift is current and that it
+agrees with the catalog (every key has its case, with the right arity, and a constructor with that many parameters).
 
 Human-facing surfaces follow the system language: the Finder menu, the app, alerts, and files created
 from Finder (the default name "untitled" becomes "unbenannt" and so on). The command line and the MCP
@@ -27,7 +34,7 @@ format that translation tools (Xcode, Weblate) understand.
 
 The initial translations were produced by an AI and every one is marked `needs_review`. They are
 usable, short UI strings, but they are awaiting native-speaker review. Adding a string
-means adding a `LocalizationKey`, an English entry and all thirty translations; the verifier rejects a
+means adding a catalog entry with its English text and a translation in every language; the verifier rejects a
 partial language.
 
 A second AI pass (one reviewer per group of languages, instructed to report only definite problems, each
@@ -48,6 +55,30 @@ wording in the 23 languages Finder ships, which changed Arabic, Hebrew, Hindi, P
 Ukrainian and Traditional Chinese for Open With, and several for Show in Finder; Thai and Indonesian now say
 "route" and "jalur" for a path as Finder does, and Romanian uses the formal register macOS uses. Run it after a
 macOS update. What a native speaker would change is still open.
+
+## Typed messages
+
+A sentence with values in it is a `LocalizedMessage`: a key and the values, not yet written in a language.
+`.menuOpenIn("Ghostty")` makes one; the constructor is generated from the catalog, so a wrong number of values does not
+compile. `Localizer.render` writes it in the language of the localizer and `english()` in English. A text that takes
+several values numbers its placeholders (`%1$@ in %2$@`), because a translation may need another order; the verifier
+rejects two bare `%@`. A key that takes no values is read with `Localizer.string(.key)`, which is also how the
+built-in titles (agent options, presets, new-file templates) are found by their key; a test holds each of those keys to
+take no values.
+
+Alternatives considered for the values: a `Localizer` method per key with named parameters (generated names are no
+better than `argument1`, and the doctor needs a value it can hand over before the language is chosen, which a method
+cannot be), and a variadic `string(key, args...)` (what there was: untyped, and a wrong count made `String(format:)`
+read memory that is not there).
+
+## Adding a string or a language
+
+A string: add the entry (English text, a comment for the translator) and its translations, compile, verify.
+`script/merge_translations.py` takes a JSON file of keys with `{language code: text}` dictionaries, checks each text
+like the verifier does, adds the right-to-left mark where a right-to-left text would start with Latin letters, marks
+the new texts `needs_review` and writes nothing unless every text passes. A language: add it to `languages.json`,
+list what is missing with `script/verify_localizations.py --missing <code>` (all three catalogs), translate, merge,
+compile, verify. `CONTRIBUTING.md` has the steps.
 
 ## Names of apps
 

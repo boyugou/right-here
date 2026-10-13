@@ -83,6 +83,23 @@ permission prompt text), fix what reads badly (macOS's own wording for that lang
 `./script/verify_localizations.py`. `./script/preview_setup.sh out.png <language>` renders the setup window to an
 image (add `--dark` for dark mode).
 
-To add a user-visible string: add a case to `LocalizationKey`, an English entry and all thirty translations to the
-catalog, then run the same two scripts. The verifier rejects a partial language. The command line and MCP output
-stay English.
+To add a language:
+
+1. Add it to `Localization/languages.json`: its code, its English name, its script (ISO 15924) and `"rtl": true` if it is
+   written right to left. That list is the only one; the scripts and the tests read it.
+2. `./script/verify_localizations.py --missing <code>` lists every string the language lacks, in the three catalogs.
+3. Write the translations as JSON, `{"key": {"translations": {"<code>": "text"}}}`, one file per catalog, and add them
+   with `./script/merge_translations.py file.json` (add `--catalog InfoPlist.xcstrings` or `AppShortcuts.xcstrings`
+   for the others). It checks each text (placeholders, the commands between backticks, the script of the language),
+   puts the right-to-left mark where a right-to-left text needs one, marks the texts `needs_review` and writes nothing
+   unless every text passes. Keep `%@` and `%1$@` and the text between backticks as they are.
+4. `./script/compile_localizations.py`, then `./script/verify_localizations.py` must pass and `swift test` must stay green.
+   Look at the setup window in the new language with `./script/preview_setup.sh out.png <code>`.
+
+To add a user-visible string: add its entry to `Localization/Localizable.xcstrings` (English text, a comment for the
+translator, a translation in every language; `./script/merge_translations.py` takes a file with the English text, the
+comment and a `{language code: text}` dictionary, the same way as above), then run `./script/compile_localizations.py`.
+That generates the `LocalizationKey` case and a typed `LocalizedMessage` constructor, so there is no Swift to write by
+hand: use `localizer.string(.groupCopyPath)` for a text without values and `localizer.render(.menuOpenIn(name))` for one with
+values. A text with several values numbers its placeholders (`%1$@ in %2$@`). The command line and MCP output stay
+English.

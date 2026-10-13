@@ -15,7 +15,7 @@ Sources/RightHereCore/   pure logic (context, paths, quoting, plan, planner, ada
 Sources/RightHereKit/    macOS runtime (facts, process runner, executor, installer, doctor)
 Sources/RightHereMCP/    the MCP server
 Sources/rh/              the command-line tool
-Localization/            Localizable.xcstrings, the source of every user-visible string
+Localization/            Localizable.xcstrings (every user-visible string), languages.json (the shipped languages)
 plugins/right-here/      the Claude Code plugin (MCP launcher and skills)
 Apps/RightHere/          the app (setup window)
 Apps/FinderExtension/    the Finder Sync extension
@@ -62,10 +62,13 @@ docs/                    DESIGN.md, decisions/, development/
   written down; do not rely on memory of older macOS versions.
 - Swift style: no force unwraps outside tests, `Sendable` across actors, comments
   only for a non-obvious reason (a hidden constraint, a platform quirk).
-- User-visible strings (menu titles, app and alert text) go through `Localization/Localizable.xcstrings`:
-  add a `LocalizationKey`, an English entry and all thirty translations, run
-  `script/compile_localizations.py`, and `script/verify_localizations.py` must pass. CLI and MCP output
-  stays English.
+- User-visible strings (menu titles, app and alert text, the doctor's sentences) go through
+  `Localization/Localizable.xcstrings`: add the entry with its English text and a translation in every language of
+  `Localization/languages.json` (the one list of languages; `script/merge_translations.py` adds translations after
+  checking them), then run `script/compile_localizations.py`, which generates `LocalizationKey` and a typed
+  `LocalizedMessage` constructor for each key (there is no Swift to write by hand), and `script/verify_localizations.py`
+  must pass. A text with values numbers its placeholders (`%1$@`) and is written with
+  `localizer.render(.menuOpenIn(name))`. CLI and MCP output stays English.
 - Check desktop behavior through the product's own chain, never by driving the person's apps from your own
   shell. `rh doctor --probe-launch` runs extension, runner script, `rh` and the terminal (a window opens and
   closes). An Apple event or UI-scripting call from your shell would make macOS grant your host app standing
