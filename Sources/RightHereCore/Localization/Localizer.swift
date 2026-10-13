@@ -32,13 +32,28 @@ public struct Localizer: Sendable, Equatable {
         render(LocalizedMessage(key))
     }
 
+    /// Whether the language of the catalog that will be used is written right to left.
+    public var isRightToLeft: Bool {
+        Locale.Language(identifier: resolvedLanguage).characterDirection == .rightToLeft
+    }
+
     /// The message in the best language the catalog has for this localizer, with its values filled in.
-    public func render(_ message: LocalizedMessage) -> String {
+    ///
+    /// `isolatingValues` is for text shown in a window that quotes things written left to right (a path, a command, a
+    /// name) inside a right-to-left sentence: each value is put in a Unicode isolate (U+2068 ... U+2069), so the
+    /// sentence around it cannot reorder it, which would otherwise show the leading slash of a path at its wrong end.
+    /// It changes nothing in a left-to-right language, and nothing for a text that is only its value (it has no
+    /// sentence around it). Not for a title that becomes a file name or a menu command's name.
+    public func render(_ message: LocalizedMessage, isolatingValues: Bool = false) -> String {
         let translations = Localizations.table[message.key.rawValue]
         let template = translations?[resolvedLanguage] ?? translations?["en"] ?? message.key.rawValue
         // A count that is not the text's own would make String(format:) read values that are not there.
         guard message.key.arity > 0, message.arguments.count == message.key.arity else { return template }
-        return String(format: template, arguments: message.arguments.map { $0 as CVarArg })
+        var values = message.arguments
+        if isolatingValues, isRightToLeft, template != "%@" {
+            values = values.map { "\u{2068}" + $0 + "\u{2069}" }
+        }
+        return String(format: template, arguments: values.map { $0 as CVarArg })
     }
 
     /// The languages the catalog carries.

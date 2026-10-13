@@ -243,3 +243,48 @@ struct LocalizationDetailTests {
         #expect(!name.contains("\u{200F}"))
     }
 }
+
+@Suite("Localization of values in a window")
+struct LocalizationIsolationTests {
+    private let path = "/Applications/Right Here.app/Contents/Helpers/rh"
+    private let first = "\u{2068}", end = "\u{2069}"
+
+    @Test func theLanguagesTheManifestCallsRightToLeftAreTheOnesTheSystemDoes() {
+        for language in LanguageManifest.current.languages {
+            #expect(Localizer(languages: [language.code]).isRightToLeft == (language.rtl == true), "\(language.code)")
+        }
+    }
+
+    @Test("a value in a right-to-left sentence is put in an isolate, so the sentence cannot reorder a path",
+          arguments: LanguageManifest.rightToLeft)
+    func valuesAreIsolated(language: String) {
+        let localizer = Localizer(languages: [language])
+        let plain = localizer.render(.doctorRunnerOk(path))
+        #expect(plain.contains(path) && !plain.contains(first))
+        #expect(localizer.render(.doctorRunnerOk(path), isolatingValues: true) == plain.replacingOccurrences(of: path, with: first + path + end))
+        // Each of several values, so a sentence with a number and a name keeps both in place.
+        let several = localizer.render(.doctorServicesDiffer("3", "1", "0"), isolatingValues: true)
+        for value in ["3", "1", "0"] { #expect(several.contains(first + value + end), "\(language): \(several)") }
+    }
+
+    @Test func aLeftToRightLanguageIsLeftAlone() {
+        for language in Localizations.languages where !LanguageManifest.rightToLeft.contains(language) {
+            let localizer = Localizer(languages: [language])
+            #expect(localizer.render(.doctorRunnerOk(path), isolatingValues: true) == localizer.render(.doctorRunnerOk(path)), "\(language)")
+        }
+    }
+
+    @Test func aTextThatIsOnlyItsValueIsShownAsItIsInEveryLanguage() {
+        for language in Localizations.languages {
+            #expect(Localizer(languages: [language]).render(.doctorVerbatim(path), isolatingValues: true) == path, "\(language)")
+        }
+    }
+
+    @Test func withoutTheOptionNothingIsAdded() {
+        // The menu, the alerts and the names of Services and files are rendered this way and must not carry invisible marks.
+        for language in Localizations.languages {
+            let text = Localizer(languages: [language]).render(.menuOpenIn("Ghostty"))
+            #expect(!text.contains(first) && !text.contains(end), "\(language)")
+        }
+    }
+}

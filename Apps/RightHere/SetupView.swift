@@ -85,7 +85,7 @@ struct SetupView: View {
                  done: model.check(.terminalDefault)?.status == .ok && model.check(.editorDefault)?.status == .ok) {
                 ForEach([CheckID.terminalDefault, .editorDefault], id: \.self) { id in
                     if let detail = model.check(id)?.detail {
-                        Text(CheckRow.styled(l10n.render(detail))).font(.callout).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
+                        Text(CheckRow.styled(l10n.render(detail, isolatingValues: true))).font(.callout).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } }
@@ -197,9 +197,10 @@ private struct CheckRow: View {
         .accessibilityValue(l10n.string(statusKey))
     }
 
-    /// One line of what the doctor says, in the system language, as long as it needs to be.
+    /// One line of what the doctor says, in the system language, as long as it needs to be. A path or a command in it
+    /// stays in one piece in a right-to-left sentence.
     private func line(_ message: LocalizedMessage, _ style: HierarchicalShapeStyle) -> some View {
-        Text(Self.styled(l10n.render(message))).font(.callout).foregroundStyle(style).fixedSize(horizontal: false, vertical: true)
+        Text(Self.styled(l10n.render(message, isolatingValues: true))).font(.callout).foregroundStyle(style).fixedSize(horizontal: false, vertical: true)
     }
 
     private var statusKey: LocalizationKey {
