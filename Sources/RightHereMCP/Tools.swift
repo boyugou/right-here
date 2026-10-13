@@ -242,11 +242,7 @@ enum Tools {
         let checks = await Doctor(facts: server.facts, paths: server.paths, loaded: loaded, runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), rhPath: server.rhPath).run()
         // What a check quotes (a config problem, a command, a path) is text somebody else may have written; the agent
         // reading this must be able to tell it from the tool's own words. Only an agent's check is titled by the config.
-        let lines = checks.map { check in
-            "[\(check.status.rawValue)] " + (check.id.hasPrefix("agent.") ? Fence.wrap(check.title) : check.title)
-                + (check.detail.map { ": " + Fence.wrap($0) } ?? "") + (check.fix.map { "\n    fix: " + Fence.wrap($0) } ?? "")
-        }
-        return ToolOutput(text: lines.joined(separator: "\n"), structured: .object(["checks": try JSONValue(encoding: checks)]))
+        return ToolOutput(text: checks.flatMap { $0.englishLines(quoting: Fence.wrap) }.joined(separator: "\n"), structured: .object(["checks": try JSONValue(encoding: checks)]))
     }
 
     private static func validateConfig(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {

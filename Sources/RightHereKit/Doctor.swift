@@ -1,30 +1,6 @@
 import Foundation
 import RightHereCore
 
-public struct DoctorCheck: Sendable, Equatable, Codable {
-    public enum Status: String, Sendable, Codable {
-        case ok
-        case warn
-        case fail
-        /// Only the person can fix it, for example by switching a Finder extension on in System Settings.
-        case needsUser = "needs-user"
-    }
-
-    public var id: String
-    public var title: String
-    public var status: Status
-    public var detail: String?
-    public var fix: String?
-
-    public init(id: String, title: String, status: Status, detail: String? = nil, fix: String? = nil) {
-        self.id = id
-        self.title = title
-        self.status = status
-        self.detail = detail
-        self.fix = fix
-    }
-}
-
 /// Checks that everything Right Here needs is in place. Shared by `rh doctor` and the app.
 public struct Doctor: Sendable {
     private let facts: any SystemFacts
@@ -139,26 +115,28 @@ public struct Doctor: Sendable {
     // MARK: Config
 
     func configCheck() -> DoctorCheck {
-        let overlay = loaded.localFileExists ? "; with the per-machine overlay \(loaded.localFile.path)" : ""
         if !loaded.fileExists && !loaded.localFileExists {
-            return DoctorCheck(id: "config", title: "Config file", status: .warn,
-                               detail: "none at \(loaded.file.path); defaults apply", fix: "Run `rh init`.")
+            return DoctorCheck(.config, status: .warn, detail: .doctorConfigMissing(loaded.file.path), fix: .doctorFixConfigInit)
         }
         if loaded.result.hasErrors {
             let first = loaded.result.diagnostics.first { $0.severity == .error }
-            return DoctorCheck(id: "config", title: "Config file", status: .fail,
-                               detail: first.map { $0.summary(file: loaded.file) },
-                               fix: "Run `rh config validate` and fix the errors.")
+            return DoctorCheck(.config, status: .fail, detail: first.map { .doctorVerbatim($0.summary(file: loaded.file)) }, fix: .doctorFixConfigErrors)
         }
         let warnings = loaded.result.diagnostics.count
-        var detail = (warnings == 0 ? (loaded.fileExists ? loaded.file.path : "none at \(loaded.file.path)") : "\(warnings) warning(s); run `rh config validate`") + overlay
         var status: DoctorCheck.Status = warnings == 0 ? .ok : .warn
+        var notes: [LocalizedMessage] = []
+        if loaded.localFileExists { notes.append(.doctorConfigOverlay(loaded.localFile.path)) }
         for file in [loaded.file, loaded.localFile] where (try? FileManager.default.destinationOfSymbolicLink(atPath: file.path)) != nil {
-            detail += "; \(file.lastPathComponent) is a symlink, which the Finder extension's sandbox may not be able to follow"
+            notes.append(.doctorConfigSymlink(file.lastPathComponent))
             status = .warn
         }
-        return DoctorCheck(id: "config", title: "Config file", status: status, detail: detail,
-                           fix: warnings == 0 ? nil : "Run `rh config validate`; warnings are usually typos, and what they were meant to set is missing.")
+        let detail: LocalizedMessage
+        if warnings > 0 {
+            detail = .doctorConfigWarnings(String(warnings))
+        } else {
+            detail = loaded.fileExists ? .doctorVerbatim(loaded.file.path) : .doctorConfigMissing(loaded.file.path)
+        }
+        return DoctorCheck(.config, status: status, detail: detail, notes: notes, fix: warnings == 0 ? nil : .doctorFixConfigWarnings)
     }
 
     // MARK: Apps and agents
@@ -168,20 +146,22 @@ public struct Doctor: Sendable {
         let terminal = registry.info(.openTerminal(nil))
         let editor = registry.info(.openEditor)
         return [
-            DoctorCheck(id: "terminal.default", title: "Default terminal", status: terminal.available ? .ok : .fail,
-                        detail: terminal.available ? terminal.title : terminal.unavailableReason,
-                        fix: terminal.available ? nil : "Install a terminal or set general.terminal."),
-            DoctorCheck(id: "editor.default", title: "Default editor", status: editor.available ? .ok : .warn,
-                        detail: editor.available ? editor.title : editor.unavailableReason,
-                        fix: editor.available ? nil : "Install an editor or set general.editor.")
+            DoctorCheck(.terminalDefault, status: terminal.available ? .ok : .fail, detail: Self.appDetail(terminal),
+                        fix: terminal.available ? nil : .doctorFixTerminal),
+            DoctorCheck(.editorDefault, status: editor.available ? .ok : .warn, detail: Self.appDetail(editor),
+                        fix: editor.available ? nil : .doctorFixEditor)
         ]
+    }
+
+    /// What a default app check says: the app a click opens, or why there is none.
+    private static func appDetail(_ app: ActionInfo) -> LocalizedMessage? {
+        app.available ? .menuOpenIn(app.shortTitle) : app.unavailableReason.map(LocalizedMessage.doctorVerbatim)
     }
 
     private func agentChecks() async -> [DoctorCheck] {
         let config = loaded.config
         guard !config.enabledAgents.isEmpty else {
-            return [DoctorCheck(id: "agents", title: "Agents", status: .warn, detail: "none enabled",
-                                fix: "Add agents to general.agents, for example agents = [\"claude\"].")]
+            return [DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd)]
         }
         let registry = ActionRegistry(config: config, facts: facts)
         let commands = config.enabledAgents.compactMap { config.agent(id: $0)?.executable }
@@ -192,15 +172,12 @@ public struct Doctor: Sendable {
             let command = agent.executable
             let action = registry.info(.agent(id: id, variant: nil, launcher: nil))
             if !found.contains(command) {
-                checks.append(DoctorCheck(id: "agent.\(id)", title: agent.name, status: .warn,
-                                          detail: "`\(command)` is not found in your login shell",
-                                          fix: "Install it, or remove \"\(id)\" from general.agents."))
+                checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: .doctorAgentNotFound(command), fix: .doctorFixAgentRemove(id)))
             } else if !action.available {
-                checks.append(DoctorCheck(id: "agent.\(id)", title: agent.name, status: .warn, detail: action.unavailableReason,
-                                          fix: "Choose another terminal with general.terminal, or set launcher = \"link\" or \"desktop\"."))
+                checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: action.unavailableReason.map(LocalizedMessage.doctorVerbatim),
+                                          fix: .doctorFixAgentLauncher))
             } else {
-                checks.append(DoctorCheck(id: "agent.\(id)", title: agent.name, status: .ok,
-                                          detail: "`\(command)` found; starts with \(action.title)"))
+                checks.append(DoctorCheck(.agent(id), title: agent.name, status: .ok, detail: .doctorAgentOk(command, action.title)))
             }
         }
         return checks
@@ -208,10 +185,10 @@ public struct Doctor: Sendable {
 
     private func claudeLinkCheck() -> DoctorCheck {
         let handler = facts.homeDirectory.appendingPathComponent("Applications/Claude Code URL Handler.app")
-        let present = facts.fileExists(handler)
-        return DoctorCheck(id: "claude.link", title: "Claude Code terminal link", status: present ? .ok : .warn,
-                           detail: present ? "handler installed" : "handler not installed (only needed for launcher = \"link\")",
-                           fix: present ? nil : "Start `claude` once and send a prompt; Claude Code registers the handler.")
+        guard facts.fileExists(handler) else {
+            return DoctorCheck(.claudeLink, status: .warn, detail: .doctorClaudeLinkMissing, fix: .doctorFixClaudeLink)
+        }
+        return DoctorCheck(.claudeLink, status: .ok, detail: .doctorClaudeLinkOk)
     }
 
     // MARK: Finder integration
@@ -223,15 +200,15 @@ public struct Doctor: Sendable {
         if let target = installer.installedRunnerTarget() {
             let exists = FileManager.default.isExecutableFile(atPath: target)
             let stale = rhPath.map { $0 != target } ?? false
-            checks.append(DoctorCheck(
-                id: "finder.runner", title: "Finder runner script",
-                status: exists ? (stale ? .warn : .ok) : .fail,
-                detail: exists ? (stale ? "points at \(target), not at this rh" : "runs \(target)") : "points at \(target), which does not exist",
-                fix: exists && !stale ? nil : "Run `rh install --scripts`."))
+            if !exists {
+                checks.append(DoctorCheck(.finderRunner, status: .fail, detail: .doctorRunnerTargetMissing(target), fix: .doctorFixInstallScripts))
+            } else if stale {
+                checks.append(DoctorCheck(.finderRunner, status: .warn, detail: .doctorRunnerStale(target), fix: .doctorFixInstallScripts))
+            } else {
+                checks.append(DoctorCheck(.finderRunner, status: .ok, detail: .doctorRunnerOk(target)))
+            }
         } else {
-            checks.append(DoctorCheck(id: "finder.runner", title: "Finder runner script", status: .fail,
-                                      detail: "not installed; the Finder menu cannot run actions",
-                                      fix: "Run `rh install --scripts`."))
+            checks.append(DoctorCheck(.finderRunner, status: .fail, detail: .doctorRunnerMissing, fix: .doctorFixInstallScripts))
         }
 
         checks.append(Self.servicesCheck(
@@ -241,18 +218,19 @@ public struct Doctor: Sendable {
 
         let linked = (try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path)) != nil
         let onPath = (facts.environment("PATH") ?? "").split(separator: ":").contains { String($0) == installer.locations.localBin.path }
-        checks.append(DoctorCheck(
-            id: "cli.link", title: "rh on your PATH",
-            status: linked && onPath ? .ok : .warn,
-            detail: linked ? (onPath ? installer.cliLink.path : "linked at \(installer.cliLink.path), but that folder is not on PATH") : "no link at \(installer.cliLink.path)",
-            fix: linked && onPath ? nil : (linked ? "Add ~/.local/bin to PATH in your shell profile." : "Run `rh install --cli`.")))
+        if !linked {
+            checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliMissing(installer.cliLink.path), fix: .doctorFixInstallCLI))
+        } else if !onPath {
+            checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath(installer.cliLink.path), fix: .doctorFixCliPath))
+        } else {
+            checks.append(DoctorCheck(.cliLink, status: .ok, detail: .doctorVerbatim(installer.cliLink.path)))
+        }
         return checks
     }
 
     /// Evidence that a click in Finder has reached `rh`: the newest successful action in the run log that
     /// did not come from the command line. Informational; nothing here is wrong when there is none yet.
     static func activityCheck(logFile: URL, now: Date = Date()) -> DoctorCheck {
-        let title = "Last action started from Finder"
         let text = [logFile, logFile.appendingPathExtension("1")]
             .compactMap { try? String(contentsOf: $0, encoding: .utf8) }
             .joined(separator: "\n")
@@ -260,49 +238,39 @@ public struct Doctor: Sendable {
             guard let entry = RunLog.Entry(parsing: line), entry.origin != .cli else { continue }
             let relative = RelativeDateTimeFormatter()
             relative.unitsStyle = .full
-            return DoctorCheck(id: "finder.activity", title: title, status: .ok,
-                               detail: "\(entry.actionID) from the \(entry.origin.rawValue) menu, \(relative.localizedString(for: entry.date, relativeTo: now))")
+            return DoctorCheck(.finderActivity, status: .ok,
+                               detail: .doctorActivityRecent(entry.actionID, entry.origin.rawValue, relative.localizedString(for: entry.date, relativeTo: now)))
         }
-        return DoctorCheck(id: "finder.activity", title: title, status: .ok,
-                           detail: "none yet; right-click a folder in Finder and choose an action, then run `rh doctor` again")
+        return DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityNone)
     }
 
     /// Compares the Services on disk with the ones the config asks for: they are files written by
     /// `rh install --services`, so editing the config does not change them by itself.
     static func servicesCheck(installed: Set<String>, expected: Set<String>) -> DoctorCheck {
         if installed.isEmpty {
-            return DoctorCheck(id: "services", title: "Finder Services", status: .warn,
-                               detail: "none installed; Quick Actions and keyboard shortcuts are not available",
-                               fix: "Run `rh install --services`.")
+            return DoctorCheck(.services, status: .warn, detail: .doctorServicesNone, fix: .doctorFixInstallServices)
         }
         if installed == expected {
-            return DoctorCheck(id: "services", title: "Finder Services", status: .ok, detail: "\(installed.count) installed")
+            return DoctorCheck(.services, status: .ok, detail: .doctorServicesOk(String(installed.count)))
         }
         let missing = expected.subtracting(installed).count
         let stale = installed.subtracting(expected).count
-        return DoctorCheck(id: "services", title: "Finder Services", status: .warn,
-                           detail: "\(installed.count) installed, but they differ from the config (\(missing) missing, \(stale) stale)",
-                           fix: "Run `rh install --services`.")
+        return DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer(String(installed.count), String(missing), String(stale)), fix: .doctorFixInstallServices)
     }
 
     private func extensionCheck() async -> DoctorCheck {
         let status = await FinderExtensionManager(runner: runner).status()
         switch status.state {
         case .notRegistered:
-            return DoctorCheck(id: "finder.extension", title: "Finder extension", status: .fail,
-                               detail: "not registered; Finder shows no Right Here menu",
-                               fix: "Install Right Here.app, then run `rh install --finder`.")
+            return DoctorCheck(.finderExtension, status: .fail, detail: .doctorExtensionNotRegistered, fix: .doctorFixExtensionInstall)
         case .disabled:
-            return DoctorCheck(id: "finder.extension", title: "Finder extension", status: .needsUser,
-                               detail: "registered but switched off",
-                               fix: "Run `rh install --finder`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder.")
+            return DoctorCheck(.finderExtension, status: .needsUser, detail: .doctorExtensionDisabled, fix: .doctorFixExtensionEnable)
         case .enabled:
             if status.paths.count > 1 {
-                return DoctorCheck(id: "finder.extension", title: "Finder extension", status: .warn,
-                                   detail: "enabled, but registered from \(status.paths.count) locations: " + status.paths.joined(separator: "; "),
-                                   fix: "Run `rh install --finder` to remove the stale copies.")
+                return DoctorCheck(.finderExtension, status: .warn, detail: .doctorExtensionMultiple(String(status.paths.count), status.paths.joined(separator: "; ")),
+                                   fix: .doctorFixExtensionClean)
             }
-            return DoctorCheck(id: "finder.extension", title: "Finder extension", status: .ok, detail: status.paths.first)
+            return DoctorCheck(.finderExtension, status: .ok, detail: status.paths.first.map(LocalizedMessage.doctorVerbatim))
         }
     }
 }

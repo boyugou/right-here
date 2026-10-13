@@ -325,73 +325,67 @@ public struct ConfigSync: Sendable {
     public func doctorChecks() -> [DoctorCheck] {
         guard let settings = settings() else {
             guard FileManager.default.fileExists(atPath: paths.syncStateFile.path) else { return [] }
-            return [DoctorCheck(id: "sync.state", title: "Config sync", status: .warn, detail: "\(paths.syncStateFile.path) cannot be read",
-                                fix: "Run `rh config sync enable` again, or `rh config sync disable`.")]
+            return [DoctorCheck(.syncState, status: .warn, detail: .doctorSyncStateUnreadable(paths.syncStateFile.path), fix: .doctorFixSyncReenable)]
         }
         let inspection = inspect(folder: URL(fileURLWithPath: settings.folder, isDirectory: true))
         let report = report(inspection, settings: settings)
-        var checks: [DoctorCheck] = []
-        if !inspection.folderReachable {
-            checks.append(DoctorCheck(id: "sync.folder", title: "Config sync folder", status: .warn, detail: "\(settings.folder) is not reachable",
-                                      fix: "Check that the drive or iCloud Drive is available, or run `rh config sync push` to create the folder, or choose another with `rh config sync enable --folder <folder>`."))
-            return checks
+        guard inspection.folderReachable else {
+            return [DoctorCheck(.syncFolder, status: .warn, detail: .doctorSyncFolderUnreachable(settings.folder), fix: .doctorFixSyncFolder)]
         }
-        checks.append(DoctorCheck(id: "sync.folder", title: "Config sync folder", status: .ok, detail: settings.folder))
+        var checks = [DoctorCheck(.syncFolder, status: .ok, detail: .doctorVerbatim(settings.folder))]
         switch inspection.remote {
         case .evicted:
-            checks.append(DoctorCheck(id: "sync.remote", title: "Synced config", status: .warn, detail: "config.toml in the folder is not downloaded yet (or cannot be read)",
-                                      fix: "Open the folder in Finder, let the download finish, then run `rh config sync status`."))
+            checks.append(DoctorCheck(.syncRemote, status: .warn, detail: .doctorSyncRemoteEvicted, fix: .doctorFixSyncDownload))
         case .missing:
-            checks.append(DoctorCheck(id: "sync.remote", title: "Synced config", status: .warn, detail: "no config.toml in the folder yet",
-                                      fix: "Run `rh config sync push` to put this machine's config there."))
+            checks.append(DoctorCheck(.syncRemote, status: .warn, detail: .doctorSyncRemoteMissing, fix: .doctorFixSyncPush))
         case .present:
             if let data = inspection.remoteData {
                 let problems = SyncValidation.check(data)
                 if problems.isEmpty {
-                    checks.append(DoctorCheck(id: "sync.remote", title: "Synced config", status: .ok, detail: "config.toml in the folder validates"))
+                    checks.append(DoctorCheck(.syncRemote, status: .ok, detail: .doctorSyncRemoteValid))
                 } else {
-                    checks.append(DoctorCheck(id: "sync.remote", title: "Synced config", status: .fail, detail: problems.map(\.message).joined(separator: "; "),
-                                              fix: "Fix the file in the folder, or run `rh config sync push --force` from a machine with a good config."))
+                    checks.append(DoctorCheck(.syncRemote, status: .fail, detail: .doctorVerbatim(problems.map(\.message).joined(separator: "; ")), fix: .doctorFixSyncFixRemote))
                 }
             }
         }
         if let row = commandsCheck(report, localData: inspection.localData) { checks.append(row) }
         switch report.status {
         case .inSync:
-            checks.append(DoctorCheck(id: "sync.state", title: "Config sync", status: .ok, detail: "in sync"))
+            checks.append(DoctorCheck(.syncState, status: .ok, detail: .doctorSyncInSync))
         case .localAhead:
-            checks.append(DoctorCheck(id: "sync.state", title: "Config sync", status: .warn, detail: "this machine's config is ahead of the folder", fix: "Run `rh config sync push`."))
+            checks.append(DoctorCheck(.syncState, status: .warn, detail: .doctorSyncLocalAhead, fix: .doctorFixSyncPushShort))
         case .remoteAhead:
-            checks.append(DoctorCheck(id: "sync.state", title: "Config sync", status: .warn, detail: "the folder has a newer config than this machine", fix: "Run `rh config sync pull`."))
+            checks.append(DoctorCheck(.syncState, status: .warn, detail: .doctorSyncRemoteAhead, fix: .doctorFixSyncPull))
         case .diverged:
-            checks.append(DoctorCheck(id: "sync.state", title: "Config sync", status: .warn, detail: "this machine and the folder both changed since the last sync",
-                                      fix: "Compare them (`rh config sync status`), then `rh config sync pull --force` to take the folder's or `push --force` to keep this one; the replaced file is saved first."))
+            checks.append(DoctorCheck(.syncState, status: .warn, detail: .doctorSyncDiverged, fix: .doctorFixSyncCompare))
         case .remoteMissing, .remoteEvicted:
             break
         }
         if !inspection.conflicts.isEmpty {
-            checks.append(DoctorCheck(id: "sync.conflict", title: "Config sync conflict copies", status: .warn,
-                                      detail: inspection.conflicts.joined(separator: ", ") + " in \(settings.folder)",
-                                      fix: "Two machines wrote config.toml at once. Compare the copies, keep the right content in config.toml, and delete the others by hand."))
+            checks.append(DoctorCheck(.syncConflict, status: .warn, detail: .doctorSyncConflict(inspection.conflicts.joined(separator: ", "), settings.folder), fix: .doctorFixSyncConflict))
         }
         return checks
     }
 
+    /// How many changed settings a row of the doctor lists before it says how many more there are.
+    private static let listedInRow = 3
+
     /// What starts programs, as one row: the folder's copy adding something (a pull will ask), or else what this Mac's
     /// config already starts that Right Here does not start by itself. Nothing when there is none of either.
     private func commandsCheck(_ report: Report, localData: Data?) -> DoctorCheck? {
-        func summary(_ changes: [LaunchCommands.Change]) -> String {
-            let shown = changes.prefix(3).map(\.line).joined(separator: "; ")
-            return changes.count > 3 ? "\(shown); and \(changes.count - 3) more" : shown
+        func listed(_ changes: [LaunchCommands.Change]) -> String {
+            changes.prefix(Self.listedInRow).map(\.line).joined(separator: "; ")
+        }
+        func more(_ changes: [LaunchCommands.Change]) -> [LocalizedMessage] {
+            changes.count > Self.listedInRow ? [.doctorSyncCommandsMore(String(changes.count - Self.listedInRow))] : []
         }
         if !report.pendingCommands.isEmpty {
-            return DoctorCheck(id: "sync.commands", title: "Config sync", status: .warn,
-                               detail: "the folder's copy would add or change \(report.pendingCommands.count) launch setting(s): " + summary(report.pendingCommands),
-                               fix: "Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy.")
+            let changes = report.pendingCommands
+            return DoctorCheck(.syncCommands, status: .warn, detail: .doctorSyncCommandsPending(String(changes.count), listed(changes)),
+                               notes: more(changes), fix: .doctorFixSyncCommands)
         }
         let custom = localData.map { LaunchCommands(configData: $0).custom } ?? []
         guard !custom.isEmpty else { return nil }
-        return DoctorCheck(id: "sync.commands", title: "Config sync", status: .ok,
-                           detail: "this config starts programs of its own through \(custom.count) setting(s): " + summary(custom))
+        return DoctorCheck(.syncCommands, status: .ok, detail: .doctorSyncCommandsOwn(String(custom.count), listed(custom)), notes: more(custom))
     }
 }

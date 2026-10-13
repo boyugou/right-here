@@ -11,10 +11,10 @@ struct DoctorProbeChecksTests {
     @Test func aCommandThatRanIsOkAndSaysHowLongItTook() {
         let check = launch(.ran)
         #expect(check.status == .ok)
-        #expect(check.id == "finder.launch")
-        #expect(check.detail?.contains("1.1 s") == true)
-        #expect(check.detail?.contains("accepted after 0.3 s") == true)
-        #expect(check.detail?.contains("/bin/zsh") == true)
+        #expect(check.id == .finderLaunch)
+        #expect(check.detail?.english().contains("1.1 s") == true)
+        #expect(check.detail?.english().contains("accepted after 0.3 s") == true)
+        #expect(check.detail?.english().contains("/bin/zsh") == true)
         #expect(check.fix == nil)
     }
 
@@ -30,19 +30,19 @@ struct DoctorProbeChecksTests {
     func outcomes(outcome: LaunchProbe.Outcome, status: DoctorCheck.Status) {
         let check = launch(outcome, detail: "some detail")
         #expect(check.status == status)
-        #expect(check.fix?.isEmpty == false)
+        #expect(check.fix?.english().isEmpty == false)
     }
 
     @Test func aPermissionPromptNamesTheTerminal() {
-        #expect(launch(.timedOut).fix?.contains("Ghostty") == true)
-        #expect(launch(.denied).fix?.contains("Automation") == true)
+        #expect(launch(.timedOut).fix?.english().contains("Ghostty") == true)
+        #expect(launch(.denied).fix?.english().contains("Automation") == true)
     }
 
     @Test func noReportMeansTheExtensionNeverAnswered() {
         let check = Doctor.launchCheck(for: nil)
         #expect(check.status == .fail)
-        #expect(check.detail?.contains("did not report back") == true)
-        #expect(check.fix?.contains("rh install --finder") == true)
+        #expect(check.detail?.english().contains("did not report back") == true)
+        #expect(check.fix?.english().contains("rh install --finder") == true)
     }
 
     @Test func theAutomationChainIsOkWhenEveryAppAllowedIt() {
@@ -69,22 +69,22 @@ struct DoctorServicesCheckTests {
     @Test func noServicesIsAWarningWithTheCommand() {
         let check = Doctor.servicesCheck(installed: [], expected: [a])
         #expect(check.status == .warn)
-        #expect(check.fix?.contains("rh install --services") == true)
+        #expect(check.fix?.english().contains("rh install --services") == true)
     }
 
     @Test func servicesMatchingTheConfigAreOk() {
         let check = Doctor.servicesCheck(installed: [a, b], expected: [a, b])
         #expect(check.status == .ok)
-        #expect(check.detail == "2 installed")
+        #expect(check.detail?.english() == "2 installed")
     }
 
     @Test func servicesThatDifferFromTheConfigAreFlagged() {
         let missing = Doctor.servicesCheck(installed: [a], expected: [a, b])
         #expect(missing.status == .warn)
-        #expect(missing.detail == "1 installed, but they differ from the config (1 missing, 0 stale)")
+        #expect(missing.detail?.english() == "1 installed, but they differ from the config (1 missing, 0 stale)")
         let extra = Doctor.servicesCheck(installed: [a, b], expected: [a])
         #expect(extra.status == .warn)
-        #expect(extra.detail == "2 installed, but they differ from the config (0 missing, 1 stale)")
+        #expect(extra.detail?.english() == "2 installed, but they differ from the config (0 missing, 1 stale)")
     }
 }
 
@@ -110,26 +110,26 @@ struct DoctorActivityCheckTests {
         defer { try? FileManager.default.removeItem(at: directory) }
         let check = Doctor.activityCheck(logFile: file, now: now)
         #expect(check.status == .ok)
-        #expect(check.detail?.contains("agent.codex from the container menu") == true)
-        #expect(check.detail?.contains("ago") == true)
+        #expect(check.detail?.english().contains("agent.codex from the container menu") == true)
+        #expect(check.detail?.english().contains("ago") == true)
     }
 
     @Test func commandLineRunsAndProbesDoNotCount() throws {
         let (directory, file) = try log(["2026-10-12T05:00:00Z ok agent.claude [cli, 0 items]", "2026-10-12T05:01:00Z agent.claude: Ghostty is not installed."])
         defer { try? FileManager.default.removeItem(at: directory) }
-        #expect(Doctor.activityCheck(logFile: file, now: now).detail?.hasPrefix("none yet") == true)
+        #expect(Doctor.activityCheck(logFile: file, now: now).detail?.english().hasPrefix("none yet") == true)
     }
 
     @Test func noLogMeansNoneYetNotAnError() {
         let check = Doctor.activityCheck(logFile: URL(fileURLWithPath: "/nonexistent/rh.log"), now: now)
         #expect(check.status == .ok)
-        #expect(check.detail?.hasPrefix("none yet") == true)
+        #expect(check.detail?.english().hasPrefix("none yet") == true)
     }
 
     @Test func theRotatedLogIsReadToo() throws {
         let (directory, file) = try log(["2026-10-12T05:58:00Z ok agent.claude [cli, 0 items]"])
         defer { try? FileManager.default.removeItem(at: directory) }
         try "2026-10-11T12:00:00Z ok new-file.md [toolbar, 0 items]\n".write(to: file.appendingPathExtension("1"), atomically: true, encoding: .utf8)
-        #expect(Doctor.activityCheck(logFile: file, now: now).detail?.contains("new-file.md from the toolbar menu") == true)
+        #expect(Doctor.activityCheck(logFile: file, now: now).detail?.english().contains("new-file.md from the toolbar menu") == true)
     }
 }

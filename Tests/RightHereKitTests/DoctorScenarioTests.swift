@@ -56,20 +56,21 @@ private struct Scene {
     }
 }
 
-/// What a check says, as text: one place to change if the doctor hands its words over in another form.
+/// What a check says, in English.
 private struct Said: Equatable, CustomStringConvertible {
     var status: DoctorCheck.Status
     var detail: String?
     var fix: String?
-    var description: String { "\(status.rawValue) | \(detail ?? "-") | \(fix ?? "-")" }
+    var notes: [String] = []
+    var description: String { "\(status.rawValue) | \(detail ?? "-") | \(notes) | \(fix ?? "-")" }
 }
 
 private func said(_ check: DoctorCheck?) -> Said? {
-    check.map { Said(status: $0.status, detail: $0.detail, fix: $0.fix) }
+    check.map { Said(status: $0.status, detail: $0.detail?.english(), fix: $0.fix?.english(), notes: $0.notes.map { $0.english() }) }
 }
 
 private func said(_ checks: [DoctorCheck], _ id: String) -> Said? {
-    said(checks.first { $0.id == id })
+    said(checks.first { $0.id.rawValue == id })
 }
 
 private let ghostty = URL(fileURLWithPath: "/Applications/Ghostty.app")
@@ -82,7 +83,7 @@ struct DoctorScenarioTests {
         var scene = try Scene(); defer { scene.cleanUp() }
         scene.answers = [ProcessResult(status: 0)]
         let checks = await scene.run()
-        #expect(checks.map(\.id) == ["config", "terminal.default", "editor.default", "agents", "claude.link", "finder.runner", "services", "cli.link", "finder.extension", "finder.activity"])
+        #expect(checks.map(\.id.rawValue) == ["config", "terminal.default", "editor.default", "agents", "claude.link", "finder.runner", "services", "cli.link", "finder.extension", "finder.activity"])
         #expect(said(checks, "config") == Said(status: .warn, detail: "none at \(scene.paths.configFile.path); defaults apply", fix: "Run `rh init`."))
         #expect(said(checks, "terminal.default") == Said(status: .fail, detail: "No terminal is installed.", fix: "Install a terminal or set general.terminal."))
         #expect(said(checks, "editor.default") == Said(status: .warn, detail: "No editor is installed.", fix: "Install an editor or set general.editor."))
@@ -127,7 +128,7 @@ struct DoctorScenarioTests {
         try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
         let checks = await scene.run()
         #expect(said(checks, "agent.claude") == Said(status: .warn, detail: "`claude` is not found in your login shell", fix: "Install it, or remove \"claude\" from general.agents."))
-        #expect(checks.first { $0.id == "agent.claude" }?.title == "Claude Code")
+        #expect(checks.first { $0.id == .agent("claude") }?.title == "Claude Code")
     }
 
     @Test func anAgentThatCannotStartSaysWhyAndOffersOtherLaunchers() async throws {
@@ -206,7 +207,8 @@ struct DoctorScenarioTests {
         scene.answers = [ProcessResult(status: 0)]
         try scene.writeConfig("[general]\neditor = \"vscode\"\n", to: scene.paths.localConfigFile)
         let config = said(await scene.run(), "config")
-        #expect(config == Said(status: .ok, detail: "none at \(scene.paths.configFile.path); with the per-machine overlay \(scene.paths.localConfigFile.path)", fix: nil))
+        #expect(config == Said(status: .ok, detail: "none at \(scene.paths.configFile.path); defaults apply", fix: nil,
+                               notes: ["merged with the per-machine overlay \(scene.paths.localConfigFile.path)"]))
     }
 
     @Test func aSymlinkedConfigIsAWarningBecauseTheExtensionCannotFollowIt() async throws {
@@ -216,6 +218,7 @@ struct DoctorScenarioTests {
         try scene.writeConfig("[general]\nterminal = \"ghostty\"\n", to: real)
         try FileManager.default.createSymbolicLink(atPath: scene.paths.configFile.path, withDestinationPath: real.path)
         let config = said(await scene.run(), "config")
-        #expect(config == Said(status: .warn, detail: "\(scene.paths.configFile.path); config.toml is a symlink, which the Finder extension's sandbox may not be able to follow", fix: nil))
+        #expect(config == Said(status: .warn, detail: scene.paths.configFile.path, fix: nil,
+                               notes: ["config.toml is a symlink, which the Finder extension's sandbox may not be able to follow"]))
     }
 }

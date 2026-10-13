@@ -28,21 +28,40 @@ final class SetupModel {
 
     /// The Finder extension is the one thing the first-run card waits for.
     var extensionNeedsSetup: Bool {
-        checks.contains { $0.id == "finder.extension" && $0.status != .ok }
+        checks.contains { $0.id == .finderExtension && $0.status != .ok }
+    }
+
+    /// Whether the details list starts open: when something needs attention, except under the first-run card.
+    var detailsStartOpen: Bool {
+        #if PREVIEW
+        if previewOpensDetails { return true }
+        #endif
+        return needsAttention && !extensionNeedsSetup
     }
 
     #if PREVIEW
+    private var simulated = false
+    private var previewOpensDetails = false
+
     /// For `script/preview_setup.sh --onboarding`: shows the first-run card on a machine where the extension is on.
     func simulateExtensionOff() {
         checks = checks.map { check in
             var copy = check
-            if check.id == "finder.extension" { copy.status = .needsUser }
+            if check.id == .finderExtension { copy.status = .needsUser }
             return copy
         }
     }
+
+    /// For `script/preview_setup.sh --demo` and `--gallery`: shows these checks and nothing this machine says, now or
+    /// later: a refresh is ignored from here on.
+    func simulate(checks: [DoctorCheck], opensDetails: Bool = false) {
+        self.checks = checks
+        simulated = true
+        previewOpensDetails = opensDetails
+    }
     #endif
 
-    func check(_ id: String) -> DoctorCheck? {
+    func check(_ id: CheckID) -> DoctorCheck? {
         checks.first { $0.id == id }
     }
 
@@ -58,6 +77,9 @@ final class SetupModel {
 
     /// - Parameter quiet: Do not show the busy state (buttons stay enabled); used by the background poll.
     func refresh(quiet: Bool = false) async {
+        #if PREVIEW
+        if simulated { return }
+        #endif
         if !quiet { isWorking = true }
         defer { if !quiet { isWorking = false } }
         let doctor = Doctor(facts: facts, paths: paths, loaded: ConfigStore.load(paths: paths), rhPath: helper.path)

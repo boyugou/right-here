@@ -83,11 +83,12 @@ struct ConfigOverlayStoreTests {
         try "[general]\nterminal = \"terminal\"\n".write(to: paths.configFile, atomically: true, encoding: .utf8)
         let without = Doctor(paths: paths, loaded: ConfigStore.load(paths: paths), runner: FakeProcessRunner(), rhPath: nil).configCheck()
         #expect(without.status == .ok)
-        #expect(without.detail?.contains("overlay") == false)
+        #expect(without.notes.isEmpty)
         try "[general]\neditor = \"vscode\"\n".write(to: paths.localConfigFile, atomically: true, encoding: .utf8)
         let with = Doctor(paths: paths, loaded: ConfigStore.load(paths: paths), runner: FakeProcessRunner(), rhPath: nil).configCheck()
         #expect(with.status == .ok)
-        #expect(with.detail?.contains("per-machine overlay") == true)
-        #expect(with.detail?.contains("config.local.toml") == true)
+        #expect(with.notes.count == 1)
+        #expect(with.notes.first?.english().contains("per-machine overlay") == true)
+        #expect(with.notes.first?.english().contains("config.local.toml") == true)
     }
 }

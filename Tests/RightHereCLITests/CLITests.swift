@@ -358,6 +358,28 @@ struct CLITests {
         for name in ["RH_CONFIG_DIR", "RH_LOG_DIR", "XDG_CONFIG_HOME"] { #expect(text.contains(name)) }
     }
 
+    @Test func theDoctorSaysEachThingInEnglishAndWithACodeForPrograms() throws {
+        // No config file: the config check is the one state every machine can be put in without touching anything else.
+        let rh = try RH(); defer { rh.cleanUp() }
+        let file = rh.configDirectory.appendingPathComponent("config.toml").path
+        let doctor = try #require(try rh.run(["doctor", "--json"]).json as? [String: Any])
+        let checks = try #require(doctor["checks"] as? [[String: Any]])
+        let config = try #require(checks.first { $0["id"] as? String == "config" })
+        #expect(config["title"] as? String == "Config file")
+        #expect(config["status"] as? String == "warn")
+        let detail = try #require(config["detail"] as? [String: Any])
+        #expect(detail["code"] as? String == "doctor.config.missing")
+        #expect(detail["args"] as? [String] == [file])
+        #expect(detail["text"] as? String == "none at \(file); defaults apply")
+        let fix = try #require(config["fix"] as? [String: Any])
+        #expect(fix["code"] as? String == "doctor.fix.configInit")
+        #expect(fix["text"] as? String == "Run `rh init`.")
+        // The same data, written for a person.
+        let lines = try rh.run(["doctor"]).standardOutput.split(separator: "\n").map(String.init)
+        let at = try #require(lines.firstIndex(of: "[warn] Config file: none at \(file); defaults apply"))
+        #expect(lines[at + 1] == "       fix: Run `rh init`.")
+    }
+
     @Test func aFirstInstallWritesEverythingUnderTheTrialHomeAndTheServicesFollowTheNewConfig() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)

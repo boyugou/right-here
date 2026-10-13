@@ -328,7 +328,16 @@ struct MCPToolTests {
     @Test func doctorReturnsChecks() async throws {
         let harness = try Harness(runnerResults: [ProcessResult(status: 0, standardOutput: ""), ProcessResult(status: 0, standardOutput: "")]); defer { harness.cleanUp() }
         let result = try await harness.call("right_here_doctor")
-        #expect(result["structuredContent"]?["checks"]?.arrayValue?.isEmpty == false)
+        let checks = try #require(result["structuredContent"]?["checks"]?.arrayValue)
+        #expect(!checks.isEmpty)
+        // What a check found is a message: a code and values for a program, and the English text for whoever reads it.
+        let config = try #require(checks.first { $0["id"]?.stringValue == "config" })
+        #expect(config["detail"]?["code"]?.stringValue == "doctor.config.missing")
+        #expect(config["detail"]?["text"]?.stringValue?.hasPrefix("none at ") == true)
+        // The text for the agent is the English the command line prints, with what a check says fenced as data.
+        let lines = (result["content"]?.arrayValue?.first?["text"]?.stringValue ?? "").split(separator: "\n").map(String.init)
+        let at = try #require(lines.firstIndex { $0.hasPrefix("[warn] Config file: ⟦user⟧none at ") })
+        #expect(lines[at + 1] == "       fix: ⟦user⟧Run `rh init`.⟦/user⟧")
     }
 }
 

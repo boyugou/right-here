@@ -50,10 +50,7 @@ struct Doctor: AsyncParsableCommand {
         if json {
             try Output.json(Report(ok: !failed, checks: checks))
         } else {
-            for check in checks {
-                Output.print("[\(check.status.rawValue)] \(check.title)" + (check.detail.map { ": \($0)" } ?? ""))
-                if let fix = check.fix { Output.print("       fix: \(fix)") }
-            }
+            for line in checks.flatMap({ $0.englishLines() }) { Output.print(line) }
         }
         if failed { throw ExitCode(1) }
     }

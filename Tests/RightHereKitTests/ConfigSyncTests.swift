@@ -325,9 +325,9 @@ struct ConfigSyncSafetyTests {
             #expect(!text.unicodeScalars.contains { $0.properties.generalCategory == .control && $0 != "\n" }, "a control character reached the message: \(text.debugDescription)")
         }
         // The doctor's detail for the same file.
-        let remote = f.sync.doctorChecks().first { $0.id == "sync.remote" }
+        let remote = f.sync.doctorChecks().first { $0.id == .syncRemote }
         #expect(remote?.status == .fail)
-        #expect(remote?.detail?.unicodeScalars.contains { $0.properties.generalCategory == .control } == false)
+        #expect(remote?.detail?.english().unicodeScalars.contains { $0.properties.generalCategory == .control } == false)
     }
 
     @Test func aRefusalEndsWithOnePeriod() throws {
@@ -406,9 +406,9 @@ struct ConfigSyncSafetyTests {
         try f.write(two, to: f.remote.appendingPathComponent("config 2.toml"))
         try f.write(two, to: f.remote.appendingPathComponent("notes 2.toml"))
         #expect(try f.sync.status().conflictCopies == ["config 2.toml"])
-        let conflict = f.sync.doctorChecks().first { $0.id == "sync.conflict" }
+        let conflict = f.sync.doctorChecks().first { $0.id == .syncConflict }
         #expect(conflict?.status == .warn)
-        #expect(conflict?.detail?.contains("config 2.toml") == true)
+        #expect(conflict?.detail?.english().contains("config 2.toml") == true)
     }
 }
 
@@ -485,7 +485,7 @@ struct ConfigSyncDoctorTests {
         try f.write(one, to: f.remoteFile)
         try f.sync.enable(folder: f.remote.path)
         let checks = f.sync.doctorChecks()
-        #expect(checks.map(\.id) == ["sync.folder", "sync.remote", "sync.state"])
+        #expect(checks.map(\.id) == [.syncFolder, .syncRemote, .syncState])
         #expect(checks.allSatisfy { $0.status == .ok })
     }
 
@@ -493,7 +493,7 @@ struct ConfigSyncDoctorTests {
         let f = try Fixture(); defer { f.cleanUp() }
         try f.sync.enable(folder: f.root.appendingPathComponent("gone").path)
         let checks = f.sync.doctorChecks()
-        #expect(checks.map(\.id) == ["sync.folder"])
+        #expect(checks.map(\.id) == [.syncFolder])
         #expect(checks.first?.status == .warn)
     }
 
@@ -504,9 +504,9 @@ struct ConfigSyncDoctorTests {
         try f.sync.enable(folder: f.remote.path)
         try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: f.remoteFile.path)
         try #require(!FileManager.default.isReadableFile(atPath: f.remoteFile.path), "running as a user that ignores permissions")
-        let remote = f.sync.doctorChecks().first { $0.id == "sync.remote" }
+        let remote = f.sync.doctorChecks().first { $0.id == .syncRemote }
         #expect(remote?.status == .warn)
-        #expect(remote?.detail?.contains("not downloaded") == true)
+        #expect(remote?.detail?.english().contains("not downloaded") == true)
     }
 
     @Test func aRemoteThatDoesNotValidateFails() throws {
@@ -514,7 +514,7 @@ struct ConfigSyncDoctorTests {
         try f.write(one, to: f.local)
         try f.write("[general\n", to: f.remoteFile)
         try f.sync.enable(folder: f.remote.path)
-        #expect(f.sync.doctorChecks().first { $0.id == "sync.remote" }?.status == .fail)
+        #expect(f.sync.doctorChecks().first { $0.id == .syncRemote }?.status == .fail)
     }
 
     @Test func divergenceIsAWarning() throws {
@@ -524,20 +524,20 @@ struct ConfigSyncDoctorTests {
         try f.sync.push()
         try f.write(two, to: f.local)
         try f.write(three, to: f.remoteFile)
-        let state = f.sync.doctorChecks().first { $0.id == "sync.state" }
+        let state = f.sync.doctorChecks().first { $0.id == .syncState }
         #expect(state?.status == .warn)
-        #expect(state?.detail?.contains("both changed") == true)
+        #expect(state?.detail?.english().contains("both changed") == true)
     }
 
     @Test func aBrokenStateFileIsReported() throws {
         let f = try Fixture(); defer { f.cleanUp() }
         try f.write("folder = 3\n", to: f.paths.syncStateFile)
-        #expect(f.sync.doctorChecks().first?.id == "sync.state")
+        #expect(f.sync.doctorChecks().first?.id == .syncState)
     }
 
     /// The checks as `id: status | detail | fix`, so a state's whole wording is pinned in one line.
     private func lines(_ checks: [DoctorCheck]) -> [String] {
-        checks.map { "\($0.id): \($0.status.rawValue) | \($0.detail ?? "-") | \($0.fix ?? "-")" }
+        checks.map { "\($0.id.rawValue): \($0.status.rawValue) | \($0.detail?.english() ?? "-") | \($0.fix?.english() ?? "-")" }
     }
 
     @Test func theWordingOfAHealthyFolder() throws {
@@ -582,7 +582,7 @@ struct ConfigSyncDoctorTests {
         try f.write(one, to: f.local)
         try f.write("[general\n", to: f.remoteFile)
         try f.sync.enable(folder: f.remote.path)
-        let remote = try #require(f.sync.doctorChecks().first { $0.id == "sync.remote" })
+        let remote = try #require(f.sync.doctorChecks().first { $0.id == .syncRemote })
         let problems = SyncValidation.check(try Data(contentsOf: f.remoteFile)).map(\.message).joined(separator: "; ")
         #expect(!problems.isEmpty)
         #expect(lines([remote]) == ["sync.remote: fail | \(problems) | Fix the file in the folder, or run `rh config sync push --force` from a machine with a good config."])
@@ -614,18 +614,51 @@ struct ConfigSyncDoctorTests {
         #expect(lines(g.sync.doctorChecks()) == ["sync.state: warn | \(g.paths.syncStateFile.path) cannot be read | Run `rh config sync enable` again, or `rh config sync disable`."])
     }
 
+    @Test func theWordingOfTheRowAboutLaunchSettingsTheFolderWouldAdd() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.sync.enable(folder: f.remote.path)
+        try f.sync.push()
+        try f.write(withCommands, to: f.remoteFile)
+        let row = try #require(f.sync.doctorChecks().first { $0.id == .syncCommands })
+        let changes = try f.sync.status().pendingCommands.map(\.line)
+        #expect(changes.count == 4)
+        // The first three are listed as the config writes them; how many more there are is a line of its own.
+        #expect(lines([row]) == ["sync.commands: warn | the folder's copy would add or change 4 launch setting(s): \(changes.prefix(3).joined(separator: "; ")) | Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy."])
+        #expect(row.notes.map { $0.english() } == ["and 1 more"])
+    }
+
+    @Test func theWordingOfTheRowAboutProgramsThisConfigStartsByItself() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        let agent = "[general]\nagents = [\"claude\"]\n[agent.claude]\ncommand = \"claude --dangerously-skip-permissions\"\n"
+        try f.write(agent, to: f.local)
+        try f.write(agent, to: f.remoteFile)
+        try f.sync.enable(folder: f.remote.path)
+        let one = try #require(f.sync.doctorChecks().first { $0.id == .syncCommands })
+        #expect(lines([one]) == [#"sync.commands: ok | this config starts programs of its own through 1 setting(s): [agent.claude] command = "claude --dangerously-skip-permissions" (was "claude") | -"#])
+        #expect(one.notes.isEmpty)
+        // With more than three, the first three are listed and the rest is a line of its own.
+        try f.write(withCommands, to: f.local)
+        try f.write(withCommands, to: f.remoteFile)
+        let many = try #require(f.sync.doctorChecks().first { $0.id == .syncCommands })
+        let custom = LaunchCommands(configData: Data(withCommands.utf8)).custom.map(\.line)
+        #expect(custom.count == 4)
+        #expect(lines([many]) == ["sync.commands: ok | this config starts programs of its own through 4 setting(s): \(custom.prefix(3).joined(separator: "; ")) | -"])
+        #expect(many.notes.map { $0.english() } == ["and 1 more"])
+    }
+
     @Test func launchCommandsAreOneRowAndOnlyWhenThereAreSome() throws {
         let f = try Fixture(); defer { f.cleanUp() }
         try f.write(withCommands, to: f.local)
         try f.write(withCommands, to: f.remoteFile)
         try f.sync.enable(folder: f.remote.path)
-        let row = try #require(f.sync.doctorChecks().filter { $0.id == "sync.commands" }.first)
+        let row = try #require(f.sync.doctorChecks().filter { $0.id == .syncCommands }.first)
         #expect(row.status == .ok)
-        #expect(row.detail?.contains("/usr/bin/id") == true && row.detail?.contains("/bin/sh") == true)
+        #expect(row.detail?.english().contains("/usr/bin/id") == true && row.detail?.english().contains("/bin/sh") == true)
         // Without any, no row (the healthy-folder test above has none).
         try f.write(one, to: f.local)
         try f.write(one, to: f.remoteFile)
-        #expect(f.sync.doctorChecks().filter { $0.id == "sync.commands" }.isEmpty)
+        #expect(f.sync.doctorChecks().filter { $0.id == .syncCommands }.isEmpty)
     }
 
     @Test func aFolderCopyThatWouldAddCommandsIsAWarningBeforeAnyPull() throws {
@@ -634,10 +667,10 @@ struct ConfigSyncDoctorTests {
         try f.sync.enable(folder: f.remote.path)
         try f.sync.push()
         try f.write(withCommands, to: f.remoteFile)
-        let rows = f.sync.doctorChecks().filter { $0.id == "sync.commands" }
+        let rows = f.sync.doctorChecks().filter { $0.id == .syncCommands }
         #expect(rows.count == 1)
         #expect(rows.first?.status == .warn)
-        #expect(rows.first?.fix?.contains("--allow-commands") == true)
+        #expect(rows.first?.fix?.english().contains("--allow-commands") == true)
     }
 }
 

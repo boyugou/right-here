@@ -10,7 +10,7 @@ struct SetupView: View {
 
     init(model: SetupModel) {
         self.model = model
-        _detailsExpanded = State(initialValue: model.needsAttention && !model.extensionNeedsSetup)
+        _detailsExpanded = State(initialValue: model.detailsStartOpen)
     }
 
     var body: some View {
@@ -64,7 +64,7 @@ struct SetupView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(l10n.string(model.needsAttention ? .appNeedsAttention : .appAllSet)).font(.body.weight(.medium))
                     // Which checks, so the banner is not a puzzle with the answer further down.
-                    let open = model.checks.filter { $0.status != .ok }.map(CheckRow.localizedTitle(of:))
+                    let open = model.checks.filter { $0.status != .ok }.map { $0.title(in: l10n) }
                     if !open.isEmpty {
                         Text(open.formatted(.list(type: .and, width: .narrow))).font(.callout).foregroundStyle(.secondary)
                     }
@@ -82,10 +82,10 @@ struct SetupView: View {
         VStack(alignment: .leading, spacing: 14) {
             Text(l10n.string(.appOnboardTitle)).font(.headline)
             step(1, title: l10n.string(.appStepOneTitle), body: l10n.string(.appStepOneBody),
-                 done: model.check("terminal.default")?.status == .ok && model.check("editor.default")?.status == .ok) {
-                ForEach(["terminal.default", "editor.default"], id: \.self) { id in
+                 done: model.check(.terminalDefault)?.status == .ok && model.check(.editorDefault)?.status == .ok) {
+                ForEach([CheckID.terminalDefault, .editorDefault], id: \.self) { id in
                     if let detail = model.check(id)?.detail {
-                        Text(CheckRow.styled(detail)).font(.callout).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
+                        Text(CheckRow.styled(l10n.render(detail))).font(.callout).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } }
@@ -168,6 +168,7 @@ struct SetupView: View {
 
 private struct CheckRow: View {
     let check: DoctorCheck
+    private let l10n = Localizer.system
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
@@ -176,12 +177,15 @@ private struct CheckRow: View {
                 .frame(width: 20)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
-                Text(Self.localizedTitle(of: check)).font(.body.weight(.medium))
+                Text(check.title(in: l10n)).font(.body.weight(.medium))
                 if let detail = check.detail {
-                    Text(Self.styled(detail)).font(.callout).foregroundStyle(.secondary).lineLimit(2).textSelection(.enabled)
+                    line(detail, .secondary).textSelection(.enabled)
+                }
+                ForEach(Array(check.notes.enumerated()), id: \.offset) { _, note in
+                    line(note, .secondary).textSelection(.enabled)
                 }
                 if let fix = check.fix {
-                    Text(Self.styled(fix)).font(.callout).foregroundStyle(.primary).lineLimit(3)
+                    line(fix, .primary)
                 }
             }
             Spacer(minLength: 0)
@@ -190,20 +194,12 @@ private struct CheckRow: View {
         .padding(.vertical, 9)
         // One stop for VoiceOver per check (title, detail and fix read together) instead of three.
         .accessibilityElement(children: .combine)
-        .accessibilityValue(Localizer.system.string(statusKey))
+        .accessibilityValue(l10n.string(statusKey))
     }
 
-    /// The doctor's titles are English (the command line is); the checks with a fixed title are translated here.
-    /// Agent checks carry the agent's own name, and the detail and fix lines stay as the doctor wrote them.
-    static func localizedTitle(of check: DoctorCheck) -> String {
-        let keys: [String: LocalizationKey] = [
-            "config": .appCheckConfig, "terminal.default": .appCheckTerminal, "editor.default": .appCheckEditor,
-            "agents": .appCheckAgents, "claude.link": .appCheckClaudeLink, "finder.runner": .appCheckRunner,
-            "services": .appCheckServices, "cli.link": .appCheckCLI, "finder.extension": .appCheckExtension,
-            "finder.activity": .appCheckLastAction, "finder.chain": .appCheckChain, "finder.launch": .appCheckLaunch,
-            "sync.folder": .appCheckSync, "sync.remote": .appCheckSync, "sync.state": .appCheckSync, "sync.conflict": .appCheckSync
-        ]
-        return keys[check.id].map { Localizer.system.string($0) } ?? check.title
+    /// One line of what the doctor says, in the system language, as long as it needs to be.
+    private func line(_ message: LocalizedMessage, _ style: HierarchicalShapeStyle) -> some View {
+        Text(Self.styled(l10n.render(message))).font(.callout).foregroundStyle(style).fixedSize(horizontal: false, vertical: true)
     }
 
     private var statusKey: LocalizationKey {

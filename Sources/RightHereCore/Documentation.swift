@@ -43,9 +43,10 @@ public enum Documentation {
 
     Goal: leave the person with a working Finder menu without making them click through settings.
 
-    1. Run `rh doctor --json`. Fix every entry whose status is "fail" using its "fix" text. Entries with
-       status "needs-user" are things only the person can do (for example switching a Finder extension on
-       in System Settings); tell them exactly what the entry says.
+    1. Run `rh doctor --json`. Fix every entry whose status is "fail" using `fix.text`; `detail.text` says what
+       was found. Each of the two also has a `code` and `args` (the sentence and the values in it, for a program).
+       Entries with status "needs-user" are things only the person can do (for example switching a Finder
+       extension on in System Settings); tell them exactly what the entry says.
     2. Run `rh init` if there is no config file, then read it. It is TOML with comments.
     3. Edit `config.toml` to match what the person asked for. `rh docs config` lists every key.
        Prefer small edits; never delete the person's comments.
