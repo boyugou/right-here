@@ -4,6 +4,8 @@ Right Here turns file names and configuration into commands, so it takes care ov
 shell or AppleScript text. The rules are in [`docs/DESIGN.md`](docs/DESIGN.md), section 9, and the review that
 shaped them in [`docs/decisions/0008-independent-review.md`](docs/decisions/0008-independent-review.md).
 
+Supported versions: the latest release.
+
 ## Reporting a problem
 
 Please report a vulnerability privately, through GitHub's "Report a vulnerability" button on the repository's

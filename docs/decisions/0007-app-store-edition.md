@@ -11,7 +11,7 @@ edition (notarized DMG, Homebrew).
 
 ## Why
 
-Research on 2026-10-11 (Apple documentation, App Review Guidelines, Developer Forums, shipping apps). Each
+Research sources: Apple documentation, App Review Guidelines, Developer Forums, shipping apps. Each
 claim carries its source; items marked UNVERIFIED are inferences or could not be confirmed.
 
 - **Finder menus are allowed in the store.** Shellcut (Terminal, iTerm2, kitty, Warp, Ghostty; menu, toolbar,

@@ -3,7 +3,7 @@
   "name": "right-here",
   "description": "Right Here, the Finder menu and command-line tool that sends a folder or selection to terminals, editors and AI agents, for Claude Code.",
   "owner": {
-    "name": "Right Here"
+    "name": "boyugou"
   },
   "plugins": [
     {

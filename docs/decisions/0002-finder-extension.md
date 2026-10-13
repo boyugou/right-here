@@ -1,6 +1,6 @@
 # 0002: A thin Finder extension that calls rh
 
-Date: 2026-10-11. Status: accepted. Evidence: a spike on macOS 27.2.
+Date: 2026-10-11. Status: accepted. Evidence: a spike on macOS 26.x (build as reported by `sw_vers`).
 
 ## Decision
 

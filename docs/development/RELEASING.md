@@ -21,8 +21,7 @@
    `dist/Right-Here-<version>.dmg` and its `.sha256`.
 
    If codesign reports "timestamps differ", the system clock is wrong: turn on Date & Time > Set time and
-   date automatically. The pipeline was run end to end on 2026-10-12: Apple accepted the app and the DMG, both
-   were stapled, and `spctl` reported "Notarized Developer ID".
+   date automatically.
 
 5. Tag `v<version>`, create a GitHub release with the DMG and its checksum, then update
    `packaging/homebrew/right-here.rb` (version, `sha256`) and `rh.rb` in the tap.

@@ -1,47 +1,83 @@
 # Contributing
 
-Right Here is Apache-2.0. Start with [`CLAUDE.md`](CLAUDE.md) (it is written for agents but is the shortest
-statement of the rules) and [`docs/INDEX.md`](docs/INDEX.md).
+Right Here is licensed under Apache-2.0, and contributions are welcome. By taking part you agree to the
+[Code of Conduct](CODE_OF_CONDUCT.md). Report a vulnerability privately as described in [`SECURITY.md`](SECURITY.md).
+[`docs/INDEX.md`](docs/INDEX.md) lists the design notes and decision records. [`CLAUDE.md`](CLAUDE.md) holds
+instructions for coding agents; everything a human needs is on this page.
 
-## Build and test
+## Setup
+
+You need macOS 26 or later on Apple silicon, Xcode 26 or later and `xcodegen` (`brew install xcodegen`). Optional
+but useful: `fish`, `dash` and `ksh` (the quoting tests round-trip through every shell found), and `uv` for the
+Python scripts.
 
 ```sh
-swift build && swift test         # unit tests; none touches your home folder, Finder or an installed terminal
-./script/verify_all.sh            # what CI runs: build, tests, localization catalog, config schema, embedded docs, the docs check (commands and links), public-safety check
+swift build                       # the libraries and rh
+swift test                        # unit tests; none touches your home folder, Finder or an installed terminal
+./script/verify_all.sh            # what CI runs, plus the app and extension build: tests, localization catalog,
+                                  # config schema, embedded docs, the docs check (commands and links), public-safety check
 ./script/install_local.sh         # build the app and install it for yourself
-./script/mutation_check.py        # after touching quoting, planning, MCP limits or the probe: do the tests still notice
-                                  # when a protection is taken away? (slow: works on a throwaway clone of HEAD)
+./script/mutation_check.py        # after touching quoting, planning, MCP limits or the probe: do the tests still
+                                  # notice when a protection is taken away? (slow: works on a throwaway clone of HEAD)
 ```
 
-macOS 26 or later on Apple silicon, Xcode 26 or later, `xcodegen` (`brew install xcodegen`).
+Run `./script/verify_all.sh` before opening a pull request. The project layout is in `CLAUDE.md` and
+[`docs/DESIGN.md`](docs/DESIGN.md); [`docs/development/SETUP.md`](docs/development/SETUP.md) covers building and
+installing in more detail.
 
-## Rules that matter
+## Tests
 
-- **No GPL code.** Read other projects' docs and issues for the problem; write the code yourself.
-- **File names are data.** Never put one into a shell command or AppleScript source; pass it as an argument. Text
-  made safe for a shell works on Unicode scalars, not `Character`s (a quote followed by a combining mark is still a
-  quote to a shell).
-- **A terminal is only ever handed a folder.**
-- **Tests that can fail.** A fix for a defect comes with a test that fails without it; tests that guard against bad
-  input generate it (the quoting tests round-trip every metacharacter with every joining mark through real shells).
-  Nothing in the tests may open a window, send an Apple event or touch your real config: use fake system facts, a
-  fake process runner, a temporary folder, or `RH_HOME` and `RH_CONFIG_DIR`.
-- **Strings people see** go through `Localization/Localizable.xcstrings` in all thirty languages; run
-  `script/compile_localizations.py` and `script/verify_localizations.py`.
-- **Platform claims are checked on a real machine** and written down in `docs/DESIGN.md` as verified, sourced or open.
-- `docs/TROUBLESHOOTING.md` is embedded for `rh docs troubleshooting` and the MCP server: after editing it run
+- A fix for a defect comes with a test that fails without the fix. Tests that guard against bad input generate it:
+  the quoting tests round-trip every shell metacharacter with every joining mark through real shells.
+- Nothing in the tests may open a window, send an Apple event or touch your real config. Use fake system facts, a
+  fake process runner, a temporary folder, or `RH_HOME` and `RH_CONFIG_DIR`. Tests that run the real `rh` give it an
+  empty home so your shell startup files do not run.
+- To see an action without side effects, use `rh run <id> --dry-run`. To check the click chain on a real Mac, use
+  `rh doctor --probe-launch` (a terminal window opens and closes).
+
+## Style and rules
+
+- Swift 6 with strict concurrency; no force unwraps outside tests; values crossing actors are `Sendable`. Comments
+  explain a non-obvious reason (a platform quirk, a hidden constraint), not what the code does.
+- **File names are data.** Never put one into a shell command or AppleScript source; pass it as an argument, or
+  use `ShellQuoting`. Quoting works on Unicode scalars, not `Character`s (a quote followed by a combining mark is
+  still a quote to a shell).
+- **A terminal is only ever handed a folder.** Handing it a file runs it.
+- The core (`Sources/RightHereCore`) is pure: planning is deterministic and unit-tested; side effects live in
+  `Sources/RightHereKit`. The Finder extension stays thin and does no network or other I/O beyond a cached config read.
+- **No code from GPL-licensed projects.** Read other projects' docs and issues for the problem; write the code
+  yourself.
+- Platform claims are checked on a real Mac and written down in `docs/DESIGN.md` as verified, sourced or open.
+- Do not commit email addresses, machine-specific paths or keys (`script/verify_public_safety.sh` checks).
+- Commit in small steps; every commit builds and passes the tests.
+- `docs/TROUBLESHOOTING.md` and other embedded guides are compiled into the tool: after editing them run
   `script/compile_docs.py` (`verify_all.sh` checks).
-- Commit in small steps; every commit builds and passes the tests. Do not commit emails, machine paths or keys
-  (`script/verify_public_safety.sh` checks).
 
-## Reviewing a translation
+## Adding a terminal
 
-All thirty translations were written with AI help and are marked `needs_review`. If you read one of the languages:
-open `Localization/Localizable.xcstrings` (and `InfoPlist.xcstrings` for the permission prompt text), fix what reads
-badly (macOS's own wording for that language is the model), change `"state"` to `"translated"` for each entry you
-checked, then run `./script/compile_localizations.py` and `./script/verify_localizations.py`.
-`./script/preview_setup.sh out.png <language>` shows how the setup window reads.
+For a terminal that can be driven from its command line, no code is needed: define an `[[app]]` with
+`role = "terminal"`, `open_args` and `run_args` in the config (see `rh docs config` and
+[`docs/development/MANUAL_CHECKS.md`](docs/development/MANUAL_CHECKS.md)), and check it with `rh config validate`
+and `rh run ... --dry-run`. For a built-in adapter, add a descriptor in `Sources/RightHereCore/Catalog/AppDescriptor.swift`
+and an adapter beside `GhosttyAdapter` in `Sources/RightHereCore/Terminals/`. The adapter must validate that the
+working directory is a folder, pass paths as arguments (never as script text), and come with tests in
+`TerminalAdapterTests`. Say in the pull request which terminal version you checked it against.
 
-## Looking at the setup window
+## Adding an agent
 
-`./script/preview_setup.sh out.png [language] [--dark]` renders it to an image without a screen.
+Add an `AgentDescriptor` to `Sources/RightHereCore/Catalog/AgentDescriptor.swift` (id, display name, command,
+variants, icon bundle identifier) and include it in `AgentDescriptor.all`. A person can also add any agent in their
+config without code. Cover it in the planner tests.
+
+## Adding or fixing a language
+
+All thirty translations are machine-generated and marked `needs_review`; corrections from native speakers are
+especially welcome. Open `Localization/Localizable.xcstrings` (and `Localization/InfoPlist.xcstrings` for the
+permission prompt text), fix what reads badly (macOS's own wording for that language is the model), change
+`"state"` to `"translated"` for each entry you checked, then run `./script/compile_localizations.py` and
+`./script/verify_localizations.py`. `./script/preview_setup.sh out.png <language>` renders the setup window to an
+image (add `--dark` for dark mode).
+
+To add a user-visible string: add a case to `LocalizationKey`, an English entry and all thirty translations to the
+catalog, then run the same two scripts. The verifier rejects a partial language. The command line and MCP output
+stay English.

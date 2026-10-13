@@ -1,6 +1,6 @@
-# Reports to send upstream
+# Known upstream issues
 
-Drafts for problems found in dependencies. Nothing here has been sent; filing is the owner's call.
+Problems found in dependencies, with reproductions. They are not yet filed upstream.
 
 ## TOMLDecoder 0.4.5: a trap on a table header cut off after an empty quoted key
 
