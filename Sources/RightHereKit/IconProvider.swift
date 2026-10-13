@@ -1,10 +1,11 @@
 import AppKit
 import Foundation
 import RightHereCore
+import Synchronization
 
 /// Turns a menu `Icon` into an image, remembering the result: loading an application icon is slow
 /// enough to make a menu feel sluggish when repeated on every right-click.
-public final class IconProvider: @unchecked Sendable {
+public final class IconProvider: Sendable {
     /// The dedicated template icons (Apps/FinderExtension/Assets.xcassets, drawn by script/generate_menu_icons.swift),
     /// keyed by the SF Symbol name an `Icon` carries. A symbol without an entry is drawn from the system set.
     public static let dedicatedGlyphs: [String: String] = [
@@ -18,8 +19,7 @@ public final class IconProvider: @unchecked Sendable {
     ]
 
     private let facts: any SystemFacts
-    private let lock = NSLock()
-    private var cache: [String: NSImage] = [:]
+    private let cache = Mutex<[String: NSImage]>([:])
 
     public init(facts: any SystemFacts) {
         self.facts = facts
@@ -28,9 +28,9 @@ public final class IconProvider: @unchecked Sendable {
     public func image(for icon: Icon?, side: CGFloat = 16) -> NSImage? {
         guard let icon else { return nil }
         let key = "\(icon.kind.rawValue):\(icon.value):\(side)"
-        if let cached = lock.withLock({ cache[key] }) { return cached }
+        if let cached = cache.withLock({ $0[key] }) { return cached }
         guard let image = makeImage(icon, side: side) else { return nil }
-        lock.withLock { cache[key] = image }
+        cache.withLock { $0[key] = image }
         return image
     }
 
