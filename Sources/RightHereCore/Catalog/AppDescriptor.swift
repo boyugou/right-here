@@ -1,9 +1,8 @@
 import Foundation
 
-/// An application Right Here knows how to open a folder with.
-/// How a terminal that has no built-in adapter is started, written in the config. Each is an argument vector, never a
-/// shell line: `{dir}`, `{command}`, `{shell}` (the login shell) and `{app}` (the installed .app) are replaced inside its
-/// elements, and the first element must be an absolute path (or start with `{app}/`).
+/// How a terminal that has no built-in way of being driven is started, written in the config. Each is an argument
+/// vector, never a shell line: `{dir}`, `{command}`, `{shell}` (the login shell) and `{app}` (the installed .app) are
+/// replaced inside its elements, and the first element must be an absolute path (or start with `{app}/`).
 public struct TerminalLaunch: Sendable, Equatable {
     /// Opens a folder. Without it the app is handed the folder with `open`.
     public var open: [String]?
@@ -16,11 +15,24 @@ public struct TerminalLaunch: Sendable, Equatable {
     }
 }
 
+/// An application Right Here knows how to open a folder with.
 public struct AppDescriptor: Sendable, Equatable, Identifiable {
     public enum Role: String, Sendable, Codable, CaseIterable {
         case terminal
         case editor
         case general
+    }
+
+    /// How a session is started in the app. Only a terminal needs more than being handed the folder.
+    public enum Driver: Sendable, Equatable {
+        /// Ghostty 1.3 and later, through its AppleScript dictionary.
+        case ghostty
+        /// Terminal.app: a folder is handed over, a command is typed with `do script`.
+        case appleScriptTerminal
+        /// The app is handed the folder with `open`; it cannot be told to run a command.
+        case openFolder
+        /// Started the way the config says (`open_args`, `run_args`).
+        case template(TerminalLaunch)
     }
 
     /// Stable lowercase identifier used in the config and in action ids.
@@ -29,15 +41,18 @@ public struct AppDescriptor: Sendable, Equatable, Identifiable {
     /// Candidate bundle identifiers, most preferred first (stable, preview and beta builds).
     public var bundleIDs: [String]
     public var role: Role
-    /// Only for a terminal defined in the config.
-    public var launch: TerminalLaunch?
+    public var driver: Driver
+    /// Where the app stands when no default is configured and the first installed app of its role is picked: lower
+    /// comes first. `nil` means it is never picked that way, though the config can still name it.
+    public var defaultRank: Int?
 
-    public init(id: String, name: String, bundleIDs: [String], role: Role, launch: TerminalLaunch? = nil) {
+    public init(id: String, name: String, bundleIDs: [String], role: Role, driver: Driver = .openFolder, defaultRank: Int? = nil) {
         self.id = id
         self.name = name
         self.bundleIDs = bundleIDs
         self.role = role
-        self.launch = launch
+        self.driver = driver
+        self.defaultRank = defaultRank
     }
 
     /// The first candidate that is installed on this machine.
@@ -50,8 +65,8 @@ public enum KnownApps {
     public static let all: [AppDescriptor] = terminals + editors
 
     public static let terminals: [AppDescriptor] = [
-        AppDescriptor(id: "ghostty", name: "Ghostty", bundleIDs: ["com.mitchellh.ghostty"], role: .terminal),
-        AppDescriptor(id: "terminal", name: "Terminal", bundleIDs: ["com.apple.Terminal"], role: .terminal),
+        AppDescriptor(id: "ghostty", name: "Ghostty", bundleIDs: ["com.mitchellh.ghostty"], role: .terminal, driver: .ghostty),
+        AppDescriptor(id: "terminal", name: "Terminal", bundleIDs: ["com.apple.Terminal"], role: .terminal, driver: .appleScriptTerminal),
         AppDescriptor(id: "iterm", name: "iTerm", bundleIDs: ["com.googlecode.iterm2"], role: .terminal),
         AppDescriptor(id: "wezterm", name: "WezTerm", bundleIDs: ["com.github.wez.wezterm"], role: .terminal),
         AppDescriptor(id: "kitty", name: "kitty", bundleIDs: ["net.kovidgoyal.kitty"], role: .terminal),

@@ -271,4 +271,21 @@ struct TerminalAdapterTests {
             try adapter.steps(for: TerminalSession(directory: directory, typedInput: "claude"), bundleID: "x", facts: facts)
         }
     }
+
+    @Test func theAdapterFollowsTheDriverAndNotTheId() {
+        func adapter(_ id: String, _ driver: AppDescriptor.Driver) -> any TerminalAdapter {
+            TerminalAdapters.adapter(for: AppDescriptor(id: id, name: id, bundleIDs: ["x"], role: .terminal, driver: driver))
+        }
+        #expect(adapter("anything", .ghostty) is GhosttyAdapter)
+        #expect(adapter("anything", .appleScriptTerminal) is AppleTerminalAdapter)
+        #expect(adapter("ghostty", .openFolder) is OpenFolderTerminalAdapter)
+        #expect(adapter("terminal", .template(TerminalLaunch(run: ["/bin/x", "{command}"]))) is TemplateTerminalAdapter)
+    }
+
+    @Test func theBuiltInDriversAreGhosttyAndTerminalAppAndTheRestAreHandedTheFolder() {
+        let drivers = Dictionary(uniqueKeysWithValues: KnownApps.terminals.map { ($0.id, $0.driver) })
+        #expect(drivers["ghostty"] == .ghostty)
+        #expect(drivers["terminal"] == .appleScriptTerminal)
+        for id in ["iterm", "wezterm", "kitty", "alacritty", "warp", "cmux"] { #expect(drivers[id] == .openFolder, "\(id)") }
+    }
 }

@@ -87,7 +87,14 @@ extension ConfigBuilder {
                 launch = TerminalLaunch(open: open, run: run)
             }
         }
-        return AppDescriptor(id: id, name: name, bundleIDs: bundleIDs, role: role, launch: launch)
+        // An entry that reuses a built-in id replaces that app but is still the same kind of app: it is started the way the
+        // built-in is and keeps its place in the default order, unless it brings launch arguments of its own.
+        let replaced = KnownApps.app(id: id).flatMap { $0.role == role ? $0 : nil }
+        return AppDescriptor(
+            id: id, name: name, bundleIDs: bundleIDs, role: role,
+            driver: launch.map { .template($0) } ?? replaced?.driver ?? .openFolder,
+            defaultRank: replaced?.defaultRank
+        )
     }
 
     /// A shell is given a string to interpret: the program is a shell, or an element is a `-c` style option.

@@ -94,13 +94,13 @@ public struct OpenFolderTerminalAdapter: TerminalAdapter {
 }
 
 public enum TerminalAdapters {
-    /// The adapter for a terminal. Terminals without a dedicated adapter can only open a folder.
+    /// The adapter that drives a terminal. A terminal with no driver of its own can only be handed a folder.
     public static func adapter(for app: AppDescriptor) -> any TerminalAdapter {
-        if let launch = app.launch { return TemplateTerminalAdapter(terminalID: app.id, displayName: app.name, launch: launch) }
-        switch app.id {
-        case "ghostty": return GhosttyAdapter()
-        case "terminal": return AppleTerminalAdapter()
-        default: return OpenFolderTerminalAdapter(terminalID: app.id, displayName: app.name)
+        switch app.driver {
+        case .ghostty: return GhosttyAdapter()
+        case .appleScriptTerminal: return AppleTerminalAdapter()
+        case .template(let launch): return TemplateTerminalAdapter(terminalID: app.id, displayName: app.name, launch: launch)
+        case .openFolder: return OpenFolderTerminalAdapter(terminalID: app.id, displayName: app.name)
         }
     }
 }
