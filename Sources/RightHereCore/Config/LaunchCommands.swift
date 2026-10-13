@@ -73,10 +73,11 @@ public struct LaunchCommands: Sendable, Equatable {
         self.init(ConfigParser.parse(text).config)
     }
 
-    /// The config in a file's bytes. What cannot be read as text applies as nothing at all, so everything custom in a
-    /// config compared against it counts as new.
+    /// The config in a file's bytes. What cannot be read as text, or is past the size a config may have (it is never
+    /// parsed: that is what the limit is for), applies as nothing at all, so everything custom in a config compared
+    /// against it counts as new.
     public init(configData data: Data) {
-        guard var text = String(data: data, encoding: .utf8) else { self.init(Config.default); return }
+        guard data.count <= ConfigParser.maxBytes, var text = String(data: data, encoding: .utf8) else { self.init(Config.default); return }
         if text.hasPrefix("\u{FEFF}") { text.removeFirst() }
         self.init(configText: text)
     }

@@ -120,3 +120,15 @@ struct LaunchCommandsTests {
         #expect(text.contains(#""a\"b\\c""#), "quotes and backslashes stay readable: \(text)")
     }
 }
+
+@Suite("LaunchCommands: bytes")
+struct LaunchCommandsBytesTests {
+    @Test func aFilePastTheSizeLimitIsNeverParsed() {
+        // Valid, with an agent command in it: if it were parsed the command would be listed.
+        let text = "[agent.mine]\nname = \"Mine\"\ncommand = \"mine --yes\"\n# " + String(repeating: "x", count: ConfigParser.maxBytes) + "\n"
+        #expect(text.utf8.count > ConfigParser.maxBytes)
+        #expect(LaunchCommands(configData: Data(text.utf8)) == LaunchCommands(.default), "an agent of its own was found in a file past the limit")
+        // The same text within the limit is read.
+        #expect(LaunchCommands(configData: Data("[agent.mine]\nname = \"Mine\"\ncommand = \"mine --yes\"\n".utf8)) != LaunchCommands(.default))
+    }
+}

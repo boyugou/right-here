@@ -8,6 +8,8 @@ public enum SyncValidation {
 
     public enum Problem: Sendable, Equatable {
         case tooLarge(bytes: Int)
+        /// The file is there but cannot be read (no permission, not a regular file).
+        case unreadable(reason: String)
         case notUTF8
         /// The first error the parser reports, as one line.
         case invalid(String)
@@ -18,6 +20,7 @@ public enum SyncValidation {
         public var message: String {
             switch self {
             case .tooLarge(let bytes): "the file is \(bytes / 1024) KB; a config is a few kilobytes (the limit is \(ConfigParser.maxBytes / 1024) KB)"
+            case .unreadable(let reason): "the file cannot be read (\(reason))"
             case .notUTF8: "the file is not valid UTF-8"
             case .invalid(let reason): "the config is not valid: \(reason.hasSuffix(".") ? String(reason.dropLast()) : reason). Run `rh config validate`"
             case .secretKeys(let keys): "the config has key names that suggest a secret (\(keys.joined(separator: ", "))); a synced config must not hold credentials. Keep them in the environment or the keychain"

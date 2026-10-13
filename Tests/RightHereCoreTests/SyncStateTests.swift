@@ -89,3 +89,35 @@ struct SyncStateTests {
         #expect(SyncStatus.allCases.map(\.rawValue) == ["in-sync", "local-ahead", "remote-ahead", "diverged", "remote-missing", "remote-evicted"])
     }
 }
+
+@Suite("SyncState: files that were not read")
+struct SyncStateUnreadTests {
+    private func status(_ local: SyncLocal, _ remote: SyncRemote, last: String?) -> SyncStatus {
+        SyncState.status(SyncSnapshot(local: local, remote: remote, lastSynced: last))
+    }
+
+    @Test func aCopyPastTheLimitIsNeverReadOrReplaced() {
+        for local in [SyncLocal.missing, .present(hash: "a"), .unknown] {
+            #expect(status(local, .tooLarge(bytes: 2_000_000), last: "a") == .remoteEvicted)
+            #expect(status(local, .tooLarge(bytes: 2_000_000), last: nil) == .remoteEvicted)
+        }
+        #expect(SyncState.pull(.remoteEvicted, force: true) == .refuse(.remoteEvicted))
+        #expect(SyncState.push(.remoteEvicted, force: true) == .refuse(.remoteEvicted))
+    }
+
+    @Test func aLocalFileWhoseContentIsUnknownIsNeitherMissingNorTheSameAsAnything() {
+        // Never synced, or the copy changed: both sides are different, which only a person can settle.
+        #expect(status(.unknown, .present(hash: "a"), last: nil) == .diverged)
+        #expect(status(.unknown, .present(hash: "b"), last: "a") == .diverged)
+        // The copy is what was last synced and this file is not known to be: a change to send, never a pull without force.
+        #expect(status(.unknown, .present(hash: "a"), last: "a") == .localAhead)
+        #expect(SyncState.pull(.localAhead, force: false) == .refuse(.localChanged))
+        // A missing file, by contrast, is restored by a plain pull.
+        #expect(status(.missing, .present(hash: "a"), last: "a") == .remoteAhead)
+    }
+
+    @Test func theStringSpellingOfALocalHashIsTheSameAsPresent() {
+        #expect(SyncSnapshot(local: "a", remote: .missing, lastSynced: nil) == SyncSnapshot(local: .present(hash: "a"), remote: .missing, lastSynced: nil))
+        #expect(SyncSnapshot(local: nil as String?, remote: .missing, lastSynced: nil).local == .missing)
+    }
+}

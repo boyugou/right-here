@@ -92,6 +92,9 @@ The message says why, and nothing was changed. The usual reasons:
   `rh config sync pull --force` to replace it (the old file is saved first).
 - The copy in the folder is not on this Mac yet (iCloud keeps it online only): open the folder in Finder and let it
   download.
+- The copy (or this Mac's config) is far larger than a config can be, over 1 MiB: it is not read, and nothing writes
+  over it. `rh config sync status` gives its size; if it is the wrong folder or a file that was pasted over the config,
+  move it out of the way, then `push` (or `pull`).
 
 ## Removing it
 

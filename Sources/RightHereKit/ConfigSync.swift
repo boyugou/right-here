@@ -14,6 +14,11 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
     case remoteLink(String, target: String?)
     case folderUnreachable(String)
     case writeFailed(String)
+    /// The copy in the folder is over the size limit of a config: it is not read, and never written over.
+    case remoteTooLarge(file: String, bytes: Int)
+    /// This machine's config file is there but was not read (past the size limit, or no permission): it can be neither
+    /// compared with the copy nor saved first, so nothing is written over it.
+    case localNotRead(file: String, why: String)
 
     /// How many changed settings a message lists before saying "and N more".
     public static let listedChanges = 12
@@ -49,6 +54,10 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
             "The sync folder \(folder) does not exist and cannot be created (its parent folder is missing). Is iCloud Drive on, or the drive mounted? Choose another with `rh config sync enable --folder <folder>`."
         case .writeFailed(let reason):
             "Could not write: \(reason). The existing file was left as it was."
+        case .remoteTooLarge(let file, let bytes):
+            "The copy in the sync folder, \(file), is \(bytes / 1024) KB; a config is a few kilobytes (the limit is \(ConfigParser.maxBytes / 1024) KB), so it was not read and is never replaced. Is this the right folder? Move the file out of it, then run `rh config sync push`. Nothing was changed."
+        case .localNotRead(let file, let why):
+            "\(file) \(why), so Right Here can neither compare it with the copy in the sync folder nor save it first. Fix it or move it aside, then try again. Nothing was changed."
         }
     }
 }
@@ -88,6 +97,12 @@ public struct ConfigSync: Sendable {
         public var lastSynced: String?
         /// What the folder's copy would add to, or change in, what this machine's config starts (`LaunchCommands`).
         public var pendingCommands: [LaunchCommands.Change]
+        /// The copy in the folder as it was found: `.tooLarge` means it was not read at all.
+        public var remote: SyncRemote
+        /// What stops this machine's config from being sent (`push` refuses it), and what stops the folder's copy from being
+        /// taken (`pull` refuses it). Empty when there is nothing, or no such file.
+        public var localProblems: [SyncValidation.Problem]
+        public var remoteProblems: [SyncValidation.Problem]
     }
 
     public enum PullOutcome: Sendable, Equatable {
@@ -133,10 +148,25 @@ public struct ConfigSync: Sendable {
     struct Inspection {
         var folder: URL
         var folderReachable: Bool
-        var localData: Data?
+        /// This machine's config file as `BoundedRead` found it.
+        var local: BoundedRead.Outcome
         var remoteData: Data?
         var remote: SyncRemote
         var conflicts: [String]
+
+        var localData: Data? {
+            if case .data(let data) = local { return data }
+            return nil
+        }
+
+        /// Why the local file was not read, in words that follow its path; `nil` when it was read or is not there.
+        var localNotRead: String? {
+            switch local {
+            case .tooLarge(let bytes): "is \(bytes / 1024) KB, over the \(ConfigParser.maxBytes / 1024) KB limit for a config"
+            case .unreadable(let reason): "cannot be read (\(reason))"
+            case .absent, .data: nil
+            }
+        }
     }
 
     static func hash(_ data: Data) -> String {
@@ -147,40 +177,64 @@ public struct ConfigSync: Sendable {
         let manager = FileManager.default
         var isDirectory: ObjCBool = false
         let reachable = manager.fileExists(atPath: folder.path, isDirectory: &isDirectory) && isDirectory.boolValue
-        let localData = try? Data(contentsOf: paths.configFile)
+        // Neither side is read past `ConfigParser.maxBytes`: a file over it is a mistake or an attack, and reading and
+        // parsing it costs seconds and memory every time anything looks at the folder.
+        let local = BoundedRead.read(paths.configFile)
         guard reachable else {
-            return Inspection(folder: folder, folderReachable: false, localData: localData, remoteData: nil, remote: .missing, conflicts: [])
+            return Inspection(folder: folder, folderReachable: false, local: local, remoteData: nil, remote: .missing, conflicts: [])
         }
         let file = folder.appendingPathComponent(Self.remoteFileName)
         var remote = SyncRemote.missing
         var remoteData: Data?
-        let fileThere = manager.fileExists(atPath: file.path)
         // Asked first: reading a file iCloud has not downloaded would wait for the network.
-        let notDownloaded = (try? file.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey]))?.ubiquitousItemDownloadingStatus == .notDownloaded
-        if fileThere, !notDownloaded, let data = try? Data(contentsOf: file) {
-            remoteData = data
-            remote = .present(hash: Self.hash(data))
-        } else if fileThere || notDownloaded {
+        if (try? file.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey]))?.ubiquitousItemDownloadingStatus == .notDownloaded {
             remote = .evicted
+        } else {
+            switch BoundedRead.read(file) {
+            case .absent: remote = .missing
+            case .data(let data):
+                remoteData = data
+                remote = .present(hash: Self.hash(data))
+            case .tooLarge(let bytes): remote = .tooLarge(bytes: bytes)
+            case .unreadable: remote = .evicted
+            }
         }
         let names = (try? manager.contentsOfDirectory(atPath: folder.path)) ?? []
         let conflicts = names.filter { $0.wholeMatch(of: #/config \d+\.toml/#) != nil }.sorted()
-        return Inspection(folder: folder, folderReachable: true, localData: localData, remoteData: remoteData, remote: remote, conflicts: conflicts)
+        return Inspection(folder: folder, folderReachable: true, local: local, remoteData: remoteData, remote: remote, conflicts: conflicts)
     }
 
     private func report(_ inspection: Inspection, settings: SyncSettings) -> Report {
         let local = inspection.localData.map(Self.hash)
-        let snapshot = SyncSnapshot(local: local, remote: inspection.remote, lastSynced: settings.lastSynced)
+        let snapshotLocal: SyncLocal
+        switch inspection.local {
+        case .absent: snapshotLocal = .missing
+        case .data: snapshotLocal = .present(hash: local ?? "")
+        case .tooLarge, .unreadable: snapshotLocal = .unknown
+        }
+        let snapshot = SyncSnapshot(local: snapshotLocal, remote: inspection.remote, lastSynced: settings.lastSynced)
         var remoteHash: String?
         if case .present(let hash) = inspection.remote { remoteHash = hash }
         var pending: [LaunchCommands.Change] = []
+        var remoteProblems: [SyncValidation.Problem] = []
         if let remoteData = inspection.remoteData {
             let known = inspection.localData.map(LaunchCommands.init(configData:)) ?? LaunchCommands(.default)
             pending = LaunchCommands(configData: remoteData).additions(to: known)
+            remoteProblems = SyncValidation.check(remoteData)
+        } else if case .tooLarge(let bytes) = inspection.remote {
+            remoteProblems = [.tooLarge(bytes: bytes)]
+        }
+        var localProblems: [SyncValidation.Problem] = []
+        switch inspection.local {
+        case .data(let data): localProblems = SyncValidation.check(data)
+        case .tooLarge(let bytes): localProblems = [.tooLarge(bytes: bytes)]
+        case .unreadable(let reason): localProblems = [.unreadable(reason: reason)]
+        case .absent: break
         }
         return Report(status: SyncState.status(snapshot), folder: inspection.folder, remoteFile: inspection.folder.appendingPathComponent(Self.remoteFileName),
                       localFile: paths.configFile, folderReachable: inspection.folderReachable, conflictCopies: inspection.conflicts,
-                      localHash: local, remoteHash: remoteHash, lastSynced: settings.lastSynced, pendingCommands: pending)
+                      localHash: local, remoteHash: remoteHash, lastSynced: settings.lastSynced, pendingCommands: pending,
+                      remote: inspection.remote, localProblems: localProblems, remoteProblems: remoteProblems)
     }
 
     // MARK: Commands
@@ -217,6 +271,9 @@ public struct ConfigSync: Sendable {
         guard var settings = settings() else { throw ConfigSyncError.notEnabled }
         let inspection = inspect(folder: URL(fileURLWithPath: settings.folder, isDirectory: true))
         let current = report(inspection, settings: settings)
+        // A file that was not read is never read afterwards and never written over, whatever `force` says.
+        if case .tooLarge(let bytes) = inspection.remote { throw ConfigSyncError.remoteTooLarge(file: current.remoteFile.path, bytes: bytes) }
+        if let why = inspection.localNotRead { throw ConfigSyncError.localNotRead(file: paths.configFile.path, why: why) }
         switch SyncState.pull(current.status, force: force) {
         case .refuse(let refusal): throw ConfigSyncError.refused(refusal, folder: settings.folder)
         case .nothingToDo:
@@ -225,7 +282,7 @@ public struct ConfigSync: Sendable {
         case .proceed: break
         }
         guard let data = inspection.remoteData, let hash = current.remoteHash else { throw ConfigSyncError.refused(.remoteMissing, folder: settings.folder) }
-        let problems = SyncValidation.check(data)
+        let problems = current.remoteProblems
         if !problems.isEmpty { throw ConfigSyncError.invalid(problems, file: current.remoteFile.path) }
         // A config carries commands, and the folder is written by things this Mac does not control: what it would start
         // that this Mac's config does not is never taken without the caller saying so (`force` is about something else).
@@ -255,8 +312,15 @@ public struct ConfigSync: Sendable {
         guard var settings = settings() else { throw ConfigSyncError.notEnabled }
         let folder = URL(fileURLWithPath: settings.folder, isDirectory: true)
         let inspection = inspect(folder: folder)
-        guard let data = inspection.localData else { throw ConfigSyncError.noLocalConfig(paths.configFile.path) }
+        let data: Data
+        switch inspection.local {
+        case .data(let bytes): data = bytes
+        case .absent: throw ConfigSyncError.noLocalConfig(paths.configFile.path)
+        case .tooLarge(let bytes): throw ConfigSyncError.invalid([.tooLarge(bytes: bytes)], file: paths.configFile.path)
+        case .unreadable: throw ConfigSyncError.localNotRead(file: paths.configFile.path, why: inspection.localNotRead ?? "cannot be read")
+        }
         let current = report(inspection, settings: settings)
+        if case .tooLarge(let bytes) = inspection.remote { throw ConfigSyncError.remoteTooLarge(file: current.remoteFile.path, bytes: bytes) }
         switch SyncState.push(current.status, force: force) {
         case .refuse(let refusal): throw ConfigSyncError.refused(refusal, folder: settings.folder)
         case .nothingToDo:
@@ -264,7 +328,7 @@ public struct ConfigSync: Sendable {
             return .alreadyInSync
         case .proceed: break
         }
-        let problems = SyncValidation.check(data)
+        let problems = current.localProblems
         if !problems.isEmpty { throw ConfigSyncError.invalid(problems, file: paths.configFile.path) }
 
         var createdFolder = false
@@ -338,9 +402,13 @@ public struct ConfigSync: Sendable {
             checks.append(DoctorCheck(.syncRemote, status: .warn, detail: .doctorSyncRemoteEvicted, fix: .doctorFixSyncDownload))
         case .missing:
             checks.append(DoctorCheck(.syncRemote, status: .warn, detail: .doctorSyncRemoteMissing, fix: .doctorFixSyncPush))
+        case .tooLarge:
+            // Not read, so not parsed either; and never replaced, so `push --force` is not the way out.
+            checks.append(DoctorCheck(.syncRemote, status: .fail, detail: .doctorVerbatim(report.remoteProblems.map(\.message).joined(separator: "; ")),
+                                      fix: .doctorVerbatim("Is this the right folder? Move the file out of it, then run `rh config sync push`.")))
         case .present:
-            if let data = inspection.remoteData {
-                let problems = SyncValidation.check(data)
+            if inspection.remoteData != nil {
+                let problems = report.remoteProblems
                 if problems.isEmpty {
                     checks.append(DoctorCheck(.syncRemote, status: .ok, detail: .doctorSyncRemoteValid))
                 } else {

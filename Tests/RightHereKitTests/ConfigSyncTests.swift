@@ -816,3 +816,107 @@ struct ConfigSyncTrustTests {
         #expect(try f.read(f.local) == one)
     }
 }
+
+@Suite("ConfigSync: a file past the size limit is never read")
+struct ConfigSyncOversizeTests {
+    /// A valid config with an agent command in it, padded with a comment past the limit: whatever parsed it would list the
+    /// command, so the command not being listed shows the file was not parsed.
+    private var oversize: String {
+        "[agent.mine]\nname = \"Mine\"\ncommand = \"mine --yes\"\n# " + String(repeating: "x", count: ConfigParser.maxBytes) + "\n"
+    }
+
+    @Test func aCopyPastTheLimitIsNotReadOrParsed() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.write(oversize, to: f.remoteFile)
+        let report = try f.sync.enable(folder: f.remote.path)
+        #expect(report.remote == .tooLarge(bytes: oversize.utf8.count))
+        #expect(report.remoteHash == nil, "it was hashed, so it was read")
+        #expect(report.pendingCommands.isEmpty, "it was parsed: \(report.pendingCommands.map(\.line))")
+        #expect(report.status == .remoteEvicted)
+        #expect(report.remoteProblems == [.tooLarge(bytes: oversize.utf8.count)])
+        #expect(try f.sync.status() == report)
+    }
+
+    @Test func aCopyPastTheLimitIsNeverPulledOrReplaced() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.write(oversize, to: f.remoteFile)
+        try f.sync.enable(folder: f.remote.path)
+        let size = oversize.utf8.count
+        #expect(throws: ConfigSyncError.remoteTooLarge(file: f.remoteFile.path, bytes: size)) { try f.sync.pull(force: true, allowCommands: true) }
+        #expect(throws: ConfigSyncError.remoteTooLarge(file: f.remoteFile.path, bytes: size)) { try f.sync.push(force: true) }
+        #expect(try f.read(f.local) == one)
+        #expect(try f.read(f.remoteFile) == oversize)
+        #expect(f.names(in: f.paths.configDirectory) == ["config.toml", "sync.toml"], "a copy of a huge file was made")
+        #expect(f.names(in: f.remote) == ["config.toml"])
+        #expect(ConfigSyncError.remoteTooLarge(file: "/x/config.toml", bytes: size).description.contains("is never replaced"))
+    }
+
+    @Test func theDoctorSaysTheCopyIsTooLargeAndAsksNothingAboutIt() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.write(oversize, to: f.remoteFile)
+        try f.sync.enable(folder: f.remote.path)
+        let checks = f.sync.doctorChecks()
+        let remote = try #require(checks.first { $0.id == .syncRemote })
+        #expect(remote.status == .fail)
+        #expect(remote.detail?.english().contains("KB") == true && remote.detail?.english().contains("limit") == true)
+        #expect(remote.fix?.english().contains("Move the file out of it") == true)
+        #expect(!checks.contains { $0.id == .syncCommands }, "the copy was parsed for launch commands")
+    }
+
+    @Test func aCopyOfEightMegabytesIsAnsweredAtOnce() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write("[general]\nagents = []\n", to: f.local)
+        // Valid config, expensive to parse: eight megabytes of [[app]] tables took ten seconds and hundreds of MB.
+        var text = "[general]\nagents = []\n"
+        var number = 0
+        while text.utf8.count < 8 * 1024 * 1024 {
+            text += "[[app]]\nid = \"a-\(number)\"\nname = \"x\"\nbundle_id = \"y\"\n"
+            number += 1
+        }
+        try f.write(text, to: f.remoteFile)
+        try f.sync.enable(folder: f.remote.path)
+        let started = ContinuousClock.now
+        let report = try f.sync.status()
+        let elapsed = ContinuousClock.now - started
+        #expect(report.folderReachable && report.remote == .tooLarge(bytes: text.utf8.count))
+        #expect(elapsed < .seconds(3), "status took \(elapsed) for a copy past the limit")
+    }
+
+    @Test func aLocalConfigPastTheLimitIsNotReadEither() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(oversize, to: f.local)
+        try f.write(one, to: f.remoteFile)
+        let report = try f.sync.enable(folder: f.remote.path)
+        #expect(report.localHash == nil)
+        #expect(report.localProblems == [.tooLarge(bytes: oversize.utf8.count)])
+        #expect(report.status != .remoteAhead, "a file that is there reads as one that is not, and a pull writes over it")
+        #expect(throws: ConfigSyncError.invalid([.tooLarge(bytes: oversize.utf8.count)], file: f.local.path)) { try f.sync.push(force: true) }
+        let why = "is \(oversize.utf8.count / 1024) KB, over the \(ConfigParser.maxBytes / 1024) KB limit for a config"
+        #expect(throws: ConfigSyncError.localNotRead(file: f.local.path, why: why)) { try f.sync.pull(force: true, allowCommands: true) }
+        #expect(try f.read(f.local) == oversize)
+        #expect(f.names(in: f.paths.configDirectory) == ["config.toml", "sync.toml"], "a copy of a huge file was made")
+        #expect(try f.read(f.remoteFile) == one)
+    }
+
+    @Test func aLocalConfigThatCannotBeReadIsNotAMissingOne() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.write(two, to: f.remoteFile)
+        try f.sync.enable(folder: f.remote.path)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: f.local.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: f.local.path) }
+        try #require(!FileManager.default.isReadableFile(atPath: f.local.path), "running as a user that ignores permissions")
+        let report = try f.sync.status()
+        #expect(report.status != .remoteAhead, "an unreadable file read as a missing one, which a plain pull writes over with no backup")
+        #expect(report.localProblems == [.unreadable(reason: "Permission denied")])
+        #expect(throws: ConfigSyncError.self) { try f.sync.pull() }
+        #expect(throws: ConfigSyncError.self) { try f.sync.pull(force: true) }
+        #expect(throws: ConfigSyncError.self) { try f.sync.push(force: true) }
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: f.local.path)
+        #expect(try f.read(f.local) == one, "the file this Mac could not read was written over")
+        #expect(f.names(in: f.paths.configDirectory) == ["config.toml", "sync.toml"])
+    }
+}

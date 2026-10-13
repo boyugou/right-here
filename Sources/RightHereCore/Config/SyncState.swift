@@ -10,7 +10,8 @@ public enum SyncStatus: String, Sendable, Codable, CaseIterable {
     /// Both changed, or they differ and nothing says which is newer (no sync happened yet).
     case diverged
     case remoteMissing = "remote-missing"
-    /// The copy is a file iCloud has not downloaded, or one that cannot be read.
+    /// The copy is a file that is not to be read or written over: one iCloud has not downloaded, one that cannot be
+    /// read, or one past the size limit of a config.
     case remoteEvicted = "remote-evicted"
 }
 
@@ -18,22 +19,38 @@ public enum SyncStatus: String, Sendable, Codable, CaseIterable {
 public enum SyncRemote: Sendable, Equatable {
     case missing
     case evicted
+    /// There, but past `ConfigParser.maxBytes`: it was never read, so there is nothing to compare and it is not a config.
+    case tooLarge(bytes: Int)
     /// SHA-256 of the file's bytes, in hex.
     case present(hash: String)
 }
 
+/// This machine's config file.
+public enum SyncLocal: Sendable, Equatable {
+    case missing
+    /// SHA-256 of the file's bytes, in hex.
+    case present(hash: String)
+    /// There, but its content is not known (past the size limit, or no permission to read it). It is never equal to anything:
+    /// it must not read as a missing file, which a pull would write over without a word.
+    case unknown
+}
+
 /// What is known when deciding: hashes only, so the state machine is pure.
 public struct SyncSnapshot: Sendable, Equatable {
-    /// `nil` when there is no local config file.
-    public var local: String?
+    public var local: SyncLocal
     public var remote: SyncRemote
     /// The content both sides had at the last successful sync; `nil` before any.
     public var lastSynced: String?
 
-    public init(local: String?, remote: SyncRemote, lastSynced: String?) {
+    public init(local: SyncLocal, remote: SyncRemote, lastSynced: String?) {
         self.local = local
         self.remote = remote
         self.lastSynced = lastSynced
+    }
+
+    /// `local` is the hash of this machine's config, or `nil` when there is no file.
+    public init(local: String?, remote: SyncRemote, lastSynced: String?) {
+        self.init(local: local.map { .present(hash: $0) } ?? .missing, remote: remote, lastSynced: lastSynced)
     }
 }
 
@@ -56,19 +73,26 @@ public enum SyncState {
     public static func status(_ snapshot: SyncSnapshot) -> SyncStatus {
         let remote: String
         switch snapshot.remote {
-        case .evicted: return .remoteEvicted
+        case .evicted, .tooLarge: return .remoteEvicted
         case .missing: return .remoteMissing
         case .present(let hash): remote = hash
         }
-        if snapshot.local == remote { return .inSync }
+        // `nil`: there is a file, and nothing is known of what is in it.
+        let local: String?
+        switch snapshot.local {
+        case .present(let hash):
+            if hash == remote { return .inSync }
+            local = hash
         // A machine with no config file has nothing to lose and nothing to send, whatever was synced before: a deleted
         // file read as a local change would advise a push that cannot happen and refuse the pull that restores it.
-        if snapshot.local == nil { return .remoteAhead }
+        case .missing: return .remoteAhead
+        case .unknown: local = nil
+        }
         guard let last = snapshot.lastSynced else {
             // Never synced: two different files are a conflict only a person can settle.
             return .diverged
         }
-        switch (snapshot.local != last, remote != last) {
+        switch (local != last, remote != last) {
         case (false, true): return .remoteAhead
         case (true, false): return .localAhead
         default: return .diverged

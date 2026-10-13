@@ -87,7 +87,7 @@ The state machine (`SyncState`, pure, tested for every status and both direction
 the folder's copy, and the content at the last sync.
 
 - Statuses: `in-sync`, `local-ahead`, `remote-ahead`, `diverged` (both changed, or they differ and no sync has
-  happened), `remote-missing`, `remote-evicted`.
+  happened), `remote-missing`, `remote-evicted` (also a copy that is past the size limit, which is not read).
 - A missing local config is `remote-ahead`, whatever was synced before: it has nothing to send and nothing to lose,
   and `pull` restores it without `--force`. (A deleted file used to read as a local change, which advised a push that
   could not happen and refused the pull that fixes it.)
@@ -98,6 +98,21 @@ the folder's copy, and the content at the last sync.
   key names containing token, secret, password or api_key (compared in lowercase, dashes as underscores; names only,
   not values). Refusing at the door is cheaper than scrubbing a secret out of a synced folder afterwards.
 - `pull` also refuses a config that would add or change what Right Here starts, unless `--allow-commands` (see Trust).
+- **A file past `ConfigParser.maxBytes` is never read**, on either side. `inspect` asks the open file for its size
+  (`fstat`, through `BoundedRead`) and the read itself stops one byte past the limit, so a file that grows meanwhile, or
+  reports no size, cannot make `rh` read without end. Before, the whole copy was read and then parsed to look for launch
+  commands, and the size was checked after that: a valid 24 MiB `config.toml` in the folder made `status` take 14 s and
+  `doctor` 15 s with 500 MB of memory (an 8 MiB one, 9 s in a debug build), every time anything looked at the folder,
+  and the setup window's doctor does that every two seconds while the first-run card waits. Such a copy has no hash and
+  is not parsed; it reads as `remote-evicted` (not read, pulled or replaced, `--force` included, so no copy of a huge
+  file is saved either) with a message of its own that gives the size. `LaunchCommands(configData:)`, the one place that
+  parses data for the launch guard, applies the same limit. This Mac's own config past the limit is refused by `push`
+  as too large, and `pull` writes nothing over it (it cannot be compared or saved first): move it aside. The limit is
+  not in `ConfigParser.parse`, because the merge of two files that each fit emits text that may be longer.
+- **A local config that is there but cannot be read is not a missing one.** It used to read as "no local config", which
+  is `remote-ahead`, and a plain `pull` replaced it with nothing saved (reproduced: permissions 000, `pull` exit 0). It is
+  now a file whose content is unknown (`SyncLocal.unknown`): equal to nothing, so never a plain pull, and `pull` and
+  `push` say why they refuse.
 - **Evicted wins over missing, and is never overwritten, not even with `--force`**: a `config.toml` that is there but
   whose iCloud status is `notDownloaded`, or that cannot be read, may hold newer content than this Mac knows. The
   status is asked before reading, because reading would block on the network. (The `.config.toml.icloud` placeholder

@@ -42,6 +42,7 @@ struct ConfigSyncCommand: ParsableCommand {
                 let report = try ConfigSync(paths: runtime.paths).enable(folder: folder)
                 Output.print("Sync folder: \(report.folder.path)")
                 Output.print(Status.describe(report))
+                for line in Status.problems(report) { Output.print(line) }
                 for line in Status.pendingCommands(report) { Output.print(line) }
                 Output.print(Status.nextStep(report))
             }
@@ -81,6 +82,7 @@ struct ConfigSyncCommand: ParsableCommand {
                 }
                 Output.print("Sync folder: \(report.folder.path)" + (report.folderReachable ? "" : " (not reachable)"))
                 Output.print(Self.describe(report))
+                for line in Self.problems(report) { Output.print(line) }
                 for copy in report.conflictCopies {
                     Output.print("Conflict copy: \(copy) (two machines wrote at once; compare it with config.toml and remove it by hand)")
                 }
@@ -96,9 +98,28 @@ struct ConfigSyncCommand: ParsableCommand {
                 .remoteAhead: "the folder's copy is newer than this machine's",
                 .diverged: "both changed since the last sync (or they differ and nothing says which is newer)",
                 .remoteMissing: report.folderReachable ? "there is no config.toml in the folder yet" : "the folder does not exist yet",
-                .remoteEvicted: "config.toml in the folder is not downloaded to this Mac (or cannot be read)"
+                .remoteEvicted: Self.remoteTooLarge(report).map { "config.toml in the folder is \($0 / 1024) KB, past the \(ConfigParser.maxBytes / 1024) KB a config may have; it is not read and never replaced" }
+                    ?? "config.toml in the folder is not downloaded to this Mac (or cannot be read)"
             ]
             return "Status: \(report.status.rawValue): \(words[report.status] ?? "")"
+        }
+
+        /// The size of the copy in the folder when it is past the limit and so was not read.
+        static func remoteTooLarge(_ report: ConfigSync.Report) -> Int? {
+            if case .tooLarge(let bytes) = report.remote { return bytes }
+            return nil
+        }
+
+        /// What would make `push` or `pull` refuse, said before anyone tries.
+        static func problems(_ report: ConfigSync.Report) -> [String] {
+            var lines: [String] = []
+            if !report.localProblems.isEmpty {
+                lines.append("This machine's config would be refused by `push`: " + report.localProblems.map(\.message).joined(separator: "; ") + ".")
+            }
+            if !report.remoteProblems.isEmpty {
+                lines.append("The folder's copy would be refused by `pull`: " + report.remoteProblems.map(\.message).joined(separator: "; ") + ".")
+            }
+            return lines
         }
 
         /// What the folder's copy would start that this machine's config does not, one line each, or nothing.
@@ -117,7 +138,9 @@ struct ConfigSyncCommand: ParsableCommand {
             case .remoteAhead:
                 return report.pendingCommands.isEmpty ? "Next: `rh config sync pull`." : "Next: read what the folder's copy would start, and if it is yours, `rh config sync pull\(approval)`."
             case .diverged: return "Next: compare the two files, then `rh config sync pull --force\(approval)` (take the folder's) or `rh config sync push --force` (keep this one); the replaced file is saved first."
-            case .remoteEvicted: return "Next: open the folder in Finder, let config.toml download, then run `rh config sync status` again."
+            case .remoteEvicted:
+                if remoteTooLarge(report) != nil { return "Next: is this the right folder? Move config.toml out of it, then run `rh config sync push`." }
+                return "Next: open the folder in Finder, let config.toml download, then run `rh config sync status` again."
             }
         }
     }

@@ -141,7 +141,9 @@ public enum Documentation {
       `rh config sync pull --allow-commands` (a separate flag from `--force`; they combine). `status` and `enable`
       show the same list, `rh doctor` has a row for it, and a first pull on a new Mac asks only about programs of your
       own, never about the built-in apps and agents.
-    - A copy iCloud has not downloaded (`remote-evicted`) is never read as missing and never overwritten.
+    - A copy iCloud has not downloaded (`remote-evicted`) is never read as missing and never overwritten. A file past
+      the size limit (this Mac's config or the copy) is not read at all: the copy shows up as `remote-evicted` with its
+      size, and `push` and `pull` never write over a file they did not read.
     - Writes are atomic (a temporary file beside the destination, then a rename), and nothing is deleted.
     - `rh doctor` adds checks while sync is on: the folder is reachable, the copy is downloaded and valid, how the
       two compare, and conflict copies such as `config 2.toml` that a sync service leaves when two Macs wrote at once.

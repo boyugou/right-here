@@ -1050,6 +1050,26 @@ struct ConfigSyncCLITests {
         #expect((report["diagnostics"] as? [[String: Any]])?.first?["file"] as? String == "config.local.toml")
     }
 
+    @Test func aCopyPastTheSizeLimitIsReportedAndNeitherReadNorReplaced() throws {
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let huge = "[agent.mine]\nname = \"Mine\"\ncommand = \"mine --yes\"\n# " + String(repeating: "x", count: ConfigParser.maxBytes) + "\n"
+        try huge.write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        let enable = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        #expect(enable.status == 0, "\(enable.standardError)")
+        #expect(enable.standardOutput.contains("remote-evicted") && enable.standardOutput.contains("past the 1024 KB a config may have"), "\(enable.standardOutput)")
+        #expect(!enable.standardOutput.contains("mine --yes"), "the copy was parsed: \(enable.standardOutput)")
+        let json = try #require(try rh.run(["config", "sync", "status", "--json"]).json as? [String: Any])
+        #expect(json["remoteSHA256"] == nil && (json["pendingLaunchCommands"] as? [String])?.isEmpty == true, "\(json)")
+        for arguments in [["pull", "--force", "--allow-commands"], ["push", "--force"]] {
+            let refused = try rh.run(["config", "sync"] + arguments)
+            #expect(refused.status == 1 && refused.standardError.contains("is never replaced"), "\(arguments): \(refused.standardError)")
+        }
+        #expect(try String(contentsOf: folder.appendingPathComponent("config.toml"), encoding: .utf8) == huge)
+        #expect(try String(contentsOf: try configFile(rh), encoding: .utf8) == "[general]\nterminal = \"terminal\"\n")
+    }
+
     @Test func syncIsListedInHelp() throws {
         let rh = try isolated(); defer { rh.cleanUp() }
         let text = try rh.run(["config", "--help"]).standardOutput

@@ -242,7 +242,7 @@ MUTANTS = [
     ("a duplicate in the overlay silently replaces the earlier one when the shared file has entries", "Sources/RightHereCore/Config/ConfigMerge.swift",
      ", replaced.insert(position).inserted {", " {"),
     ("a deleted local config reads as a local change", "Sources/RightHereCore/Config/SyncState.swift",
-     "if snapshot.local == nil { return .remoteAhead }", "if false { return .remoteAhead }"),
+     "case .missing: return .remoteAhead", "case .missing: local = nil"),
     ("push writes through a link in the sync folder that leaves the folder", "Sources/RightHereKit/ConfigSync.swift",
      'guard target.path.hasPrefix(inside.hasSuffix("/") ? inside : inside + "/") else {', "guard true else {"),
     ("push replaces a link in the sync folder with a regular file", "Sources/RightHereKit/ConfigSync.swift",
@@ -254,6 +254,12 @@ MUTANTS = [
     ("an editor named as a terminal is opened as one", "Sources/RightHereCore/Planner/DefaultApps.swift",
      "guard let app = config.terminalApp(id: id) else { throw PlanError.unknownTerminal(id) }",
      "guard let app = config.app(id: id) else { throw PlanError.unknownTerminal(id) }"),
+    ("a file past the size limit is read to find its size", "Sources/RightHereKit/BoundedRead.swift",
+     "if info.st_size > limit { return .tooLarge(bytes: Int(info.st_size)) }", "if false { return .tooLarge(bytes: Int(info.st_size)) }"),
+    ("launch commands are looked for in a file past the size limit", "Sources/RightHereCore/Config/LaunchCommands.swift",
+     "guard data.count <= ConfigParser.maxBytes, var text = String(data: data, encoding: .utf8) else", "guard var text = String(data: data, encoding: .utf8) else"),
+    ("a local config that cannot be read counts as a missing one", "Sources/RightHereKit/ConfigSync.swift",
+     "case .tooLarge, .unreadable: snapshotLocal = .unknown", "case .tooLarge, .unreadable: snapshotLocal = .missing"),
 ]
 
 
