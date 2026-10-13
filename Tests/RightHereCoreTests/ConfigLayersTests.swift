@@ -197,6 +197,100 @@ struct ConfigLayersDisabledTests {
         #expect(result.diagnostics.contains { $0.path == "disabled" && $0.severity == .error && $0.file == "config.local.toml" })
         #expect(result.config.apps.count == 2)
     }
+
+    private static let presetOfADisabledAgent = """
+    [general]
+    agents = ["claude", "myagent"]
+    [agent.myagent]
+    name = "My Agent"
+    command = "myagent"
+    prompt_arg = "positional"
+    [[preset]]
+    id = "mine"
+    title = "Mine"
+    agent = "myagent"
+    prompt = "Look at {files}"
+    """
+
+    @Test func aPresetWhoseAgentIsDisabledIsDroppedWithAWarningNotAnError() {
+        let result = layered(Self.presetOfADisabledAgent, "disabled = [\"myagent\"]\n")
+        #expect(!result.hasErrors, "\(result.diagnostics.map { "\($0.severity) \($0.path): \($0.message)" })")
+        #expect(!result.config.presets.contains { $0.id == "mine" })
+        let warning = result.diagnostics.first { $0.message.contains("\"mine\"") }
+        #expect(warning?.severity == .warning)
+        #expect(warning?.file == "config.local.toml", "the overlay's `disabled` is what the person would edit")
+        #expect(warning?.message.contains("\"myagent\"") == true)
+        // Without the overlay the preset is there and nothing is dropped.
+        #expect(layered(Self.presetOfADisabledAgent, nil).config.presets.contains { $0.id == "mine" })
+    }
+
+    @Test func aBuiltInAgentThatIsDisabledDropsItsPresetsToo() {
+        let base = "[general]\nagents = [\"claude\", \"codex\"]\n[[preset]]\nid = \"mine\"\ntitle = \"Mine\"\nagent = \"codex\"\nprompt = \"Look at {files}\"\n"
+        let result = layered(base, "disabled = [\"codex\"]\n")
+        #expect(!result.hasErrors)
+        #expect(!result.config.presets.contains { $0.id == "mine" })
+        #expect(result.config.enabledAgents == ["claude"])
+    }
+
+    @Test func menuAndServiceEntriesOfADroppedPresetGoWithIt() {
+        let base = Self.presetOfADisabledAgent + "\n[menu]\nitems = [\"preset.mine\", \"open-terminal\", \"preset.review\"]\n[services]\nitems = [\"preset.mine@ghostty\", \"open.terminal\"]\n"
+        let result = layered(base, "disabled = [\"myagent\"]\n")
+        #expect(result.config.menuItems == ["open-terminal", "preset.review"])
+        #expect(result.config.serviceItems == ["open.terminal"])
+        #expect(!result.hasErrors)
+        #expect(!result.diagnostics.contains { $0.message.contains("not defined") }, "\(result.diagnostics.map(\.message))")
+    }
+
+    @Test func droppingAPresetThatReplacedABuiltInOneBringsTheBuiltInBack() {
+        let base = "[general]\nagents = [\"claude\", \"myagent\"]\n[agent.myagent]\nname = \"M\"\ncommand = \"m\"\nprompt_arg = \"positional\"\n"
+            + "[[preset]]\nid = \"review\"\ntitle = \"Review\"\nagent = \"myagent\"\nprompt = \"Look at {files}\"\n[menu]\nitems = [\"preset.review\"]\n"
+        let result = layered(base, "disabled = [\"myagent\"]\n")
+        #expect(!result.hasErrors)
+        #expect(result.config.preset(id: "review")?.agent == nil, "the built-in review preset is back")
+        #expect(result.config.preset(id: "review")?.prompt == AgentPreset.builtIn.first { $0.id == "review" }?.prompt)
+        #expect(result.config.menuItems == ["preset.review"], "the entry names a preset that exists")
+    }
+
+    @Test func aDisabledTerminalIsRemovedFromPresetEntriesToo() {
+        let base = """
+        [menu]
+        items = ["open.terminal@ghostty", "agent.claude@ghostty", "preset.review@ghostty"]
+        [services]
+        items = ["open.terminal@ghostty", "preset.review@ghostty"]
+        """
+        let result = layered(base, "disabled = [\"ghostty\"]\n")
+        #expect(result.config.menuItems == [])
+        #expect(result.config.serviceItems == [])
+    }
+
+    @Test func aBuiltInAppIsReallyRemoved() throws {
+        let facts = FakeSystemFacts(
+            directories: ["/Users/tester/code"],
+            applications: ["com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app"), "com.apple.Terminal": URL(fileURLWithPath: "/Applications/Terminal.app"),
+                           "com.microsoft.VSCode": URL(fileURLWithPath: "/Applications/VSCode.app")])
+        let context = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/code"))
+        let before = layered("[general]\nagents = [\"claude\"]\n", nil)
+        #expect(try Planner(config: before.config, facts: facts).plan(.openTerminal(nil), context: context).steps == [.open(OpenStep(bundleID: "com.mitchellh.ghostty", targets: ["/Users/tester/code"]))])
+
+        let after = layered("[general]\nagents = [\"claude\"]\n", "disabled = [\"ghostty\", \"vscode\"]\n")
+        #expect(!after.hasErrors)
+        #expect(after.config.app(id: "ghostty") == nil && after.config.app(id: "vscode") == nil)
+        #expect(after.config.allApps.contains { $0.id == "terminal" } && !after.config.allApps.contains { ["ghostty", "vscode"].contains($0.id) })
+        // The default terminal is the next installed one, and Ghostty cannot be named any more, though it is installed.
+        #expect(try Planner(config: after.config, facts: facts).plan(.openTerminal(nil), context: context).steps == [.open(OpenStep(bundleID: "com.apple.Terminal", targets: ["/Users/tester/code"]))])
+        #expect(throws: PlanError.unknownTerminal("ghostty")) { try Planner(config: after.config, facts: facts).plan(.openTerminal("ghostty"), context: context) }
+        let registry = ActionRegistry(config: after.config, facts: facts)
+        #expect(!registry.catalog().contains { $0.id == "open.terminal@ghostty" || $0.id == "open.app.vscode" })
+        #expect(ActionRegistry(config: before.config, facts: facts).catalog().contains { $0.id == "open.terminal@ghostty" })
+    }
+
+    @Test func anAppTheConfigDefinesUnderABuiltInIdIsRemovedToo() {
+        let base = "[[app]]\nid = \"ghostty\"\nname = \"Mine\"\nbundle_id = \"a.mine\"\nrole = \"terminal\"\n"
+        let result = layered(base, "disabled = [\"ghostty\"]\n")
+        #expect(result.config.app(id: "ghostty") == nil)
+        #expect(result.config.apps.isEmpty)
+        #expect(!result.hasErrors)
+    }
 }
 
 @Suite("ConfigLayers: diagnostics")

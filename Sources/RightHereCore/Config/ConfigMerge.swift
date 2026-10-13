@@ -9,7 +9,9 @@ import Foundation
 /// - `[agent.<id>]` is a table like the others, so an overlay can change one key of an agent the base defines
 ///   (its `command`) and the base's variants stay.
 /// - `disabled = ["id", ...]` in the overlay removes those ids from the merged result: app, template and agent
-///   definitions, the ids in `general.agents`, `menu.items` and `services.items`, and a default terminal or editor of that id.
+///   definitions, the ids in `general.agents`, `menu.items` and `services.items` (an entry that names the id as an agent,
+///   an app, a terminal to open in or a preset's terminal), a default terminal or editor of that id, and every preset
+///   whose agent it is.
 struct ConfigMerge {
     enum Layer: Equatable, Sendable { case base, local }
 
@@ -28,10 +30,18 @@ struct ConfigMerge {
         var disabled: Set<String>
         /// The overlay's `disabled` is not a list of strings.
         var disabledProblem: Bool
+        /// Presets removed because the agent they name is disabled.
+        var droppedPresets: [DroppedPreset]
+    }
+
+    struct DroppedPreset: Equatable {
+        var id: String
+        var agent: String
     }
 
     private var keyOrigins: [String: Layer] = [:]
     private var arrayOrigins: [String: [Origin]] = [:]
+    private var droppedPresets: [DroppedPreset] = []
 
     static let idKeyedArrays: Set<String> = ["app", "template", "variant"]
 
@@ -51,7 +61,8 @@ struct ConfigMerge {
         inherited.removeValue(forKey: "disabled")
         var root = merger.mergeTables(base: inherited, local: overlay, path: [])
         merger.apply(disabled: disabled, to: &root)
-        return Result(root: root, keyOrigins: merger.keyOrigins, arrayOrigins: merger.arrayOrigins, disabled: disabled, disabledProblem: problem)
+        return Result(root: root, keyOrigins: merger.keyOrigins, arrayOrigins: merger.arrayOrigins, disabled: disabled, disabledProblem: problem,
+                      droppedPresets: merger.droppedPresets)
     }
 
     private mutating func mergeTables(base: [String: TOMLValue], local: [String: TOMLValue], path: [String]) -> [String: TOMLValue] {
@@ -112,6 +123,12 @@ struct ConfigMerge {
         return nil
     }
 
+    /// The agent a `[[preset]]` entry names.
+    private static func agent(of entry: TOMLValue) -> String? {
+        if case .string(let agent)? = entry.tableValue?["agent"] { return agent }
+        return nil
+    }
+
     private mutating func record(_ value: TOMLValue, layer: Layer, path: [String]) {
         keyOrigins[Self.dotted(path)] = layer
         if let items = value.arrayValue, value.isTableArray {
@@ -126,8 +143,13 @@ struct ConfigMerge {
 
     private mutating func apply(disabled: Set<String>, to root: inout [String: TOMLValue]) {
         guard !disabled.isEmpty else { return }
-        filterEntries(&root, at: ["app"], disabled: disabled)
-        filterEntries(&root, at: ["new_file", "template"], disabled: disabled)
+        let byID: (TOMLValue) -> Bool = { item in Self.id(of: item).map(disabled.contains) ?? false }
+        filterEntries(&root, at: ["app"], dropping: byID)
+        filterEntries(&root, at: ["new_file", "template"], dropping: byID)
+        // A preset runs with one agent. Without it the preset cannot run on this machine, and left in place it would be
+        // an error about an agent that was removed on purpose: it is dropped, and the caller reports that.
+        droppedPresets = filterEntries(&root, at: ["preset"]) { Self.agent(of: $0).map(disabled.contains) ?? false }
+            .map { DroppedPreset(id: Self.id(of: $0) ?? "", agent: Self.agent(of: $0) ?? "") }
         if case .table(var agents)? = root["agent"] {
             for id in disabled { agents.removeValue(forKey: id) }
             // What names a disabled app falls back to the default, instead of becoming an error on this machine.
@@ -154,10 +176,13 @@ struct ConfigMerge {
                 root["general"] = .table(general)
             }
         }
+        // A dropped preset that replaced a built-in one leaves the built-in one behind, and entries naming it stay valid.
+        let goneIDs = Set(droppedPresets.map(\.id)).subtracting(AgentPreset.builtIn.map(\.id))
         for path in [["menu", "items"], ["services", "items"]] {
             Self.update(&root, at: path) { value in
                 Self.filterStrings(value) { entry in
                     guard let ref = ActionRef(parsing: entry) else { return true }
+                    if case .preset(let id, _) = ref, goneIDs.contains(id) { return false }
                     return !Self.referencedIDs(ref).contains(where: disabled.contains)
                 }
             }
@@ -171,25 +196,31 @@ struct ConfigMerge {
         case .agent(let id, _, let launcher):
             if case .terminal(let terminal?)? = launcher { return [id, terminal] }
             return [id]
+        case .preset(_, let terminal?): return [terminal]
         default: return []
         }
     }
 
-    private mutating func filterEntries(_ root: inout [String: TOMLValue], at path: [String], disabled: Set<String>) {
+    /// Takes the entries of the array of tables at `path` that `drop` picks out, keeps the origins of the rest in step,
+    /// and returns what it took.
+    @discardableResult
+    private mutating func filterEntries(_ root: inout [String: TOMLValue], at path: [String], dropping drop: (TOMLValue) -> Bool) -> [TOMLValue] {
         let key = Self.dotted(path)
         let origins = arrayOrigins[key]
         var keptOrigins: [Origin] = []
+        var dropped: [TOMLValue] = []
         Self.update(&root, at: path) { value in
             guard let items = value.arrayValue else { return value }
             var kept: [TOMLValue] = []
             for (position, item) in items.enumerated() {
-                if let id = Self.id(of: item), disabled.contains(id) { continue }
+                if drop(item) { dropped.append(item); continue }
                 kept.append(item)
                 if let origins, position < origins.count { keptOrigins.append(origins[position]) }
             }
             return .array(kept)
         }
         if origins != nil { arrayOrigins[key] = keptOrigins }
+        return dropped
     }
 
     private static func filterStrings(_ value: TOMLValue, keep: (String) -> Bool) -> TOMLValue {

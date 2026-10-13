@@ -65,7 +65,13 @@ public enum ConfigLayers {
         if merged.disabledProblem {
             localDiagnostics.append(ConfigDiagnostic(severity: .error, path: "disabled", message: "expected an array of strings", file: overlayName))
         }
+        for preset in merged.droppedPresets {
+            localDiagnostics.append(ConfigDiagnostic(severity: .warning, path: "disabled", message: "the preset \"\(preset.id)\" is not offered on this machine: its agent \"\(preset.agent)\" is disabled", file: overlayName))
+        }
+        // The catalogs that are not in the file: built-in templates are removed from the list, built-in apps are marked
+        // removed (they are found through `KnownApps`, which a config cannot edit).
         result.config.newFile.templates.removeAll { merged.disabled.contains($0.id) }
+        result.config.disabledApps = Set(merged.disabled.filter { KnownApps.app(id: $0) != nil })
         result.diagnostics = baseDiagnostics + result.diagnostics + localDiagnostics
         return result
     }

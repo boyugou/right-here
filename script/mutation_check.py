@@ -206,6 +206,20 @@ MUTANTS = [
      'for component in path.split(separator: "/", omittingEmptySubsequences: true).map({ $0.unicodeScalars }) {'),
     ("a relative path is told from an absolute one by its first Character in the hazard check", "Sources/RightHereCore/Context/ContextInput.swift",
      'hasLinkBeforeDotDot(expanded.unicodeScalars.first == "/" ? expanded :', 'hasLinkBeforeDotDot(expanded.hasPrefix("/") ? expanded :'),
+    ("a disabled built-in app is still found by id", "Sources/RightHereCore/Config/Config.swift",
+     "?? (disabledApps.contains(id) ? nil : KnownApps.app(id: id))", "?? KnownApps.app(id: id)"),
+    ("a disabled built-in app is still offered", "Sources/RightHereCore/Config/Config.swift",
+     "!replaced.contains($0.id) && !disabledApps.contains($0.id)", "!replaced.contains($0.id)"),
+    ("the overlay's disabled built-in apps are not recorded", "Sources/RightHereCore/Config/ConfigLayers.swift",
+     "result.config.disabledApps = Set(merged.disabled.filter { KnownApps.app(id: $0) != nil })", "result.config.disabledApps = []"),
+    ("a preset that names a disabled agent is kept", "Sources/RightHereCore/Config/ConfigMerge.swift",
+     'filterEntries(&root, at: ["preset"]) { Self.agent(of: $0).map(disabled.contains) ?? false }', 'filterEntries(&root, at: ["preset"]) { _ in false }'),
+    ("a disabled terminal stays in a preset entry of the menu", "Sources/RightHereCore/Config/ConfigMerge.swift",
+     "case .preset(_, let terminal?): return [terminal]", "case .preset(_, let terminal?): return []"),
+    ("the menu entry of a dropped preset stays", "Sources/RightHereCore/Config/ConfigMerge.swift",
+     "if case .preset(let id, _) = ref, goneIDs.contains(id) { return false }", "if false, case .preset(let id, _) = ref, goneIDs.contains(id) { return false }"),
+    ("a dropped preset takes the entries of the built-in preset it replaced", "Sources/RightHereCore/Config/ConfigMerge.swift",
+     "Set(droppedPresets.map(\\.id)).subtracting(AgentPreset.builtIn.map(\\.id))", "Set(droppedPresets.map(\\.id))"),
 ]
 
 

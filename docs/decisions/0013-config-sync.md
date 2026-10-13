@@ -26,11 +26,21 @@ Rules (`ConfigMerge`, pure, in `RightHereCore`):
   make the variant rule meaningless, since variants live inside the agent table. Key by key is the only reading in
   which both rules do something.)
 - `disabled = ["id", ...]` in the overlay removes those ids from the result: app and template definitions, agent
-  tables, the ids in `general.agents`, `menu.items` and `services.items` (by parsing each entry as an action id), a
-  default terminal or editor of that id, and built-in new-file templates. An id that does not exist is skipped
-  silently, because a shared config may name apps another Mac lacks. A built-in app cannot be removed this way (there
-  is no list to remove it from), only left out of the menu. In `config.toml` the key is accepted by the schema and
-  reported as "only meaningful in config.local.toml".
+  tables, the ids in `general.agents`, `menu.items` and `services.items` (by parsing each entry as an action id and
+  looking at every id it names: the agent, the app or terminal, the terminal of a preset entry), a default terminal or
+  editor of that id, and built-in new-file templates. An id that does not exist is skipped silently, because a shared
+  config may name apps another Mac lacks. In `config.toml` the key is accepted by the schema and reported as "only
+  meaningful in config.local.toml".
+  - **A built-in app is removed from the catalog.** The merged `Config` records it in `disabledApps`, and
+    `Config.app(id:)` and `Config.allApps`, which the planner, the registry and the menu read, no longer have it: a
+    disabled terminal is not offered, cannot be named (`open.terminal@ghostty` is an unknown terminal even with Ghostty
+    installed) and is no longer the default. (An earlier reading said a built-in app "has no list to remove it from"
+    and could only be left out of the menu; that left the default terminal unchanged and no warning, which is not what
+    "disabled" says.) A built-in agent is only taken out of `general.agents` and every list that names it: agents are
+    offered by that list, and the registry keeps listing every defined agent.
+  - **A preset whose `agent` is disabled is dropped, with a warning** on the overlay's `disabled` (it cannot run here,
+    and keeping it would be an error about something removed on purpose), together with the menu and Services entries
+    that name it. If it replaced a built-in preset (`review`), the built-in one is back, and entries naming it stay.
 
 ### Why the merge works on TOML values, not on parsed `Config` values
 

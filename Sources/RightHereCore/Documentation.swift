@@ -88,10 +88,13 @@ public enum Documentation {
     - Entries with an id merge by id: an `[[app]]`, `[[new_file.template]]` or `[[agent.<id>.variant]]` in the
       overlay replaces the shared entry with that id, and one with a new id is added.
     - `[agent.<id>]` merges key by key, so the overlay can change one agent's `command` and keep its variants.
-    - `disabled = ["id", ...]` removes ids from the result on this Mac: apps, new-file templates and agents,
-      and their entries in `general.agents`, `menu.items` and `services.items`. An id that does not exist here is
-      skipped, so a shared config may name apps this Mac lacks. Disabling every template the shared config
-      defines brings the built-in txt and md back. `disabled` does nothing in `config.toml` and is reported there.
+    - `disabled = ["id", ...]` removes ids from the result on this Mac: apps (the built-in ones too: a disabled
+      terminal is not offered, cannot be named in an action id and is no longer the default), new-file templates and
+      agents, and their entries in `general.agents`, `menu.items` and `services.items`. A built-in agent is only taken
+      out of those lists. A preset whose agent is disabled is dropped, with a warning; if it replaced a built-in preset,
+      the built-in one is back. An id that does not exist here is skipped, so a shared config may name apps this Mac
+      lacks. Disabling every template the shared config defines brings the built-in txt and md back. `disabled` does
+      nothing in `config.toml` and is reported there.
 
     Example, a work laptop without Codex and with another default terminal:
 

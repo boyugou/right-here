@@ -57,6 +57,8 @@ public struct Config: Sendable, Equatable {
     public var agents: [String: AgentSettings]
     /// Applications added by the user, alongside the built-in ones.
     public var apps: [AppDescriptor]
+    /// Built-in applications the per-machine overlay removed with `disabled`: they are neither offered nor found by id.
+    public var disabledApps: Set<String>
     /// Custom agents added by the user.
     public var customAgents: [AgentDescriptor]
     /// Prompt presets: the built-in ones, with those the config redefines replaced in place, then the config's own.
@@ -73,6 +75,7 @@ public struct Config: Sendable, Equatable {
         serviceItems: [String]? = nil,
         agents: [String: AgentSettings] = [:],
         apps: [AppDescriptor] = [],
+        disabledApps: Set<String> = [],
         customAgents: [AgentDescriptor] = [],
         presets: [AgentPreset] = AgentPreset.builtIn
     ) {
@@ -86,6 +89,7 @@ public struct Config: Sendable, Equatable {
         self.serviceItems = serviceItems
         self.agents = agents
         self.apps = apps
+        self.disabledApps = disabledApps
         self.customAgents = customAgents
         self.presets = presets
     }
@@ -95,7 +99,7 @@ public struct Config: Sendable, Equatable {
     public static let defaultCopyPathStyles: [PathStyle] = [.absolute, .tilde, .gitRelative, .name, .shellEscaped, .aiMention]
 
     public func app(id: String) -> AppDescriptor? {
-        apps.first { $0.id == id } ?? KnownApps.app(id: id)
+        apps.first { $0.id == id } ?? (disabledApps.contains(id) ? nil : KnownApps.app(id: id))
     }
 
     /// The terminal with this id; `nil` when no app has it or it is not a terminal (a built-in id can be redefined as
@@ -108,7 +112,7 @@ public struct Config: Sendable, Equatable {
     /// replace. An app defined under a built-in id replaces that built-in everywhere.
     public var allApps: [AppDescriptor] {
         let replaced = Set(apps.map(\.id))
-        return apps + KnownApps.all.filter { !replaced.contains($0.id) }
+        return apps + KnownApps.all.filter { !replaced.contains($0.id) && !disabledApps.contains($0.id) }
     }
 
     /// How an agent action starts. Variants are command-line options typed into a shell, so an action with

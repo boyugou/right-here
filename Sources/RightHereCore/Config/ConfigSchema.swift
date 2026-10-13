@@ -73,7 +73,7 @@ public enum ConfigSchema {
         return [
             SchemaNode("version", .integer, "Config format version. Only 1 exists.", default: "1", allowed: ["1"]),
             SchemaNode("disabled", .stringArray,
-                       "Only meaningful in config.local.toml, the per-machine overlay: ids of apps, new-file templates and agents to remove from the shared config on this machine. Entries naming them in general.agents, menu.items and services.items are removed too. In config.toml it does nothing and is reported.",
+                       "Only meaningful in config.local.toml, the per-machine overlay: ids of apps (built-in ones included), new-file templates and agents to remove from the shared config on this machine. Entries naming them in general.agents, menu.items and services.items are removed too, and so are presets that use a disabled agent. In config.toml it does nothing and is reported.",
                        example: "[\"zed\", \"codex\"]"),
             SchemaNode("general", .table, "Defaults used by actions.", children: [
                 SchemaNode("terminal", .string,
