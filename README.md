@@ -107,7 +107,9 @@ with a "did you mean"; `--strict` also fails on warnings), `rh config schema` pr
 editor. `rh init --force` saves your old file before replacing it.
 
 To use one config on several Macs, `rh config sync enable` keeps a copy in a folder (iCloud Drive by default,
-or any folder), and a `config.local.toml` next to the config holds what differs per machine (`rh docs sync`).
+or any folder), and a `config.local.toml` next to the config holds what differs per machine (`rh docs sync`). The
+folder is not trusted with programs: a pull that would add or change a terminal template or an agent command is
+refused, with the list, until you pass `--allow-commands`.
 
 ## For AI agents
 
