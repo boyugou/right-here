@@ -474,6 +474,17 @@ struct ConfigLayersValidateTests {
         #expect(!result.diagnostics.contains { $0.message.contains("hides it") })
     }
 
+    @Test func anErrorThatIsStillThereWithTheOverlayIsNotCalledHiddenWhateverItsSentenceListsOfChoices() {
+        // The merged build lists the terminals the overlay defines among the known ones, so its sentence differs from the one the
+        // shared file alone gives; it is the same error, once, and the overlay hides nothing.
+        let shared = "[general]\nterminal = \"nope\"\n"
+        let overlay = "[[app]]\nid = \"extra-terminal\"\nname = \"E\"\nbundle_id = \"a.b\"\nrole = \"terminal\"\n"
+        let result = ConfigLayers.validate(base: .text(shared), local: .text(overlay))
+        let errors = result.diagnostics.filter { $0.path == "general.terminal" }
+        #expect(errors.count == 1, "\(errors.map(\.message))")
+        #expect(errors.first?.message.contains("extra-terminal") == true && errors.first?.message.contains("hides it") == false, "\(errors.map(\.message))")
+    }
+
     @Test func withoutAnOverlayValidateSaysWhatLoadSays() {
         #expect(ConfigLayers.validate(base: .text(shared), local: .absent) == ConfigLayers.load(base: .text(shared), local: .absent))
         #expect(ConfigLayers.validate(base: .absent, local: .text(overlay)) == ConfigLayers.load(base: .absent, local: .text(overlay)))

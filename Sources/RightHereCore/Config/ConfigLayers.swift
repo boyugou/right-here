@@ -112,7 +112,12 @@ public enum ConfigLayers {
         var extra: [ConfigDiagnostic] = []
         if case .text = local {
             for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {
-                guard !result.diagnostics.contains(where: { $0.file == nil && $0.path == error.path && $0.message == error.message }) else { continue }
+                // Reported already when the key has an error for the file as it applies here. The sentence need not be the same: it
+                // lists the choices, and the merged ones include what the overlay defines. (A problem with the file as a whole has no
+                // key, and is the same sentence.)
+                guard !result.diagnostics.contains(where: {
+                    $0.file == nil && $0.severity == .error && $0.path == error.path && (!error.path.isEmpty || $0.message == error.message)
+                }) else { continue }
                 extra.append(ConfigDiagnostic(severity: .error, path: error.path,
                                               message: error.message + "; \(overlayName.withControlCharactersEscaped) hides it on this Mac, but other Macs read this file as it is",
                                               line: error.line, suggestion: error.suggestion, replacement: error.replacement))
