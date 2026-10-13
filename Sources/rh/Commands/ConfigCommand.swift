@@ -7,7 +7,7 @@ struct ConfigCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "config",
         abstract: "Inspect, check and create the config file.",
-        subcommands: [Path.self, Show.self, Validate.self, Schema.self]
+        subcommands: [Path.self, Show.self, Validate.self, Schema.self, ConfigSyncCommand.self]
     )
 
     struct Path: ParsableCommand {

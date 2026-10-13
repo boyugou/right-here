@@ -797,3 +797,88 @@ struct CLITests {
         #expect((reply["result"] as? [String: Any])?["protocolVersion"] as? String == "2025-06-18")
     }
 }
+
+@Suite("rh config sync")
+struct ConfigSyncCLITests {
+    private func configFile(_ rh: RH) throws -> URL {
+        URL(fileURLWithPath: try rh.run(["config", "path"]).standardOutput.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    @Test func theDefaultFolderIsResolvedThroughTheTrialHome() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let result = try rh.run(["config", "sync", "enable"])
+        #expect(result.status == 0, "\(result.standardError)")
+        let home = try #require(rh.home)
+        #expect(result.standardOutput.contains(home.path + "/Library/Mobile Documents/com~apple~CloudDocs/Right Here"))
+        #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent("Library").path), "enable must not create the folder")
+    }
+
+    @Test func pushStatusPullRoundTrip() throws {
+        let rh = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        #expect(try rh.run(["config", "sync", "status"]).status == 1)
+        #expect(try rh.run(["config", "sync", "enable", "--folder", folder.path]).status == 0)
+        let before = try #require(try rh.run(["config", "sync", "status", "--json"]).json as? [String: Any])
+        #expect(before["status"] as? String == "remote-missing")
+        #expect(try rh.run(["config", "sync", "push"]).status == 0)
+        #expect(try String(contentsOf: folder.appendingPathComponent("config.toml"), encoding: .utf8) == "[general]\nterminal = \"terminal\"\n")
+        let after = try #require(try rh.run(["config", "sync", "status", "--json"]).json as? [String: Any])
+        #expect(after["status"] as? String == "in-sync")
+        try "[general]\nterminal = \"ghostty\"\n".write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        #expect((try rh.run(["config", "sync", "status", "--json"]).json as? [String: Any])?["status"] as? String == "remote-ahead")
+        #expect(try rh.run(["config", "sync", "pull"]).status == 0)
+        #expect(try String(contentsOf: try configFile(rh), encoding: .utf8) == "[general]\nterminal = \"ghostty\"\n")
+        #expect(try rh.run(["config", "sync", "disable"]).status == 0)
+        #expect(try rh.run(["config", "sync", "status"]).status == 1)
+    }
+
+    @Test func pullRefusesALocalEditUnlessForced() throws {
+        let rh = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        _ = try rh.run(["config", "sync", "push"])
+        let local = try configFile(rh)
+        try "[general]\nterminal = \"ghostty\"\n".write(to: local, atomically: true, encoding: .utf8)
+        try "[general]\neditor = \"vscode\"\n".write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        let refused = try rh.run(["config", "sync", "pull"])
+        #expect(refused.status == 1)
+        #expect(refused.standardError.contains("--force"))
+        #expect(try String(contentsOf: local, encoding: .utf8) == "[general]\nterminal = \"ghostty\"\n")
+        #expect(try rh.run(["config", "sync", "pull", "--force"]).status == 0)
+        #expect(try String(contentsOf: local, encoding: .utf8) == "[general]\neditor = \"vscode\"\n")
+        let saved = try FileManager.default.contentsOfDirectory(atPath: local.deletingLastPathComponent().path).filter { $0.hasPrefix("config.toml.bak-") }
+        #expect(saved.count == 1)
+    }
+
+    @Test func aConfigWithASecretLookingKeyIsNotPushed() throws {
+        let rh = try RH(config: "[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("synced")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
+        let result = try rh.run(["config", "sync", "push", "--force"])
+        #expect(result.status == 1)
+        #expect(result.standardError.contains("secret"))
+        #expect(!FileManager.default.fileExists(atPath: folder.appendingPathComponent("config.toml").path))
+    }
+
+    @Test func anOverlayIsReadByValidateAndNamedInProblems() throws {
+        let rh = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let overlay = try configFile(rh).deletingLastPathComponent().appendingPathComponent("config.local.toml")
+        try "[general]\ntermnial = \"x\"\n".write(to: overlay, atomically: true, encoding: .utf8)
+        let result = try rh.run(["config", "validate"])
+        #expect(result.standardOutput.contains("config.local.toml"))
+        let report = try #require(try rh.run(["config", "validate", "--json"]).json as? [String: Any])
+        #expect(report["localExists"] as? Bool == true)
+        #expect((report["diagnostics"] as? [[String: Any]])?.first?["file"] as? String == "config.local.toml")
+    }
+
+    @Test func syncIsListedInHelp() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let text = try rh.run(["config", "--help"]).standardOutput
+        #expect(text.contains("sync"))
+        let sync = try rh.run(["config", "sync", "--help"]).standardOutput
+        for word in ["enable", "status", "pull", "push", "disable"] { #expect(sync.contains(word)) }
+    }
+}
