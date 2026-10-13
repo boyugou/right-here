@@ -535,6 +535,85 @@ struct ConfigSyncDoctorTests {
         #expect(f.sync.doctorChecks().first?.id == "sync.state")
     }
 
+    /// The checks as `id: status | detail | fix`, so a state's whole wording is pinned in one line.
+    private func lines(_ checks: [DoctorCheck]) -> [String] {
+        checks.map { "\($0.id): \($0.status.rawValue) | \($0.detail ?? "-") | \($0.fix ?? "-")" }
+    }
+
+    @Test func theWordingOfAHealthyFolder() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.write(one, to: f.remoteFile)
+        try f.sync.enable(folder: f.remote.path)
+        #expect(lines(f.sync.doctorChecks()) == [
+            "sync.folder: ok | \(f.remote.path) | -",
+            "sync.remote: ok | config.toml in the folder validates | -",
+            "sync.state: ok | in sync | -"
+        ])
+    }
+
+    @Test func theWordingOfAFolderThatIsNotThere() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        let gone = f.root.appendingPathComponent("gone").path
+        try f.sync.enable(folder: gone)
+        #expect(lines(f.sync.doctorChecks()) == [
+            "sync.folder: warn | \(gone) is not reachable | Check that the drive or iCloud Drive is available, or run `rh config sync push` to create the folder, or choose another with `rh config sync enable --folder <folder>`."
+        ])
+    }
+
+    @Test func theWordingOfACopyThatIsMissingOrNotDownloaded() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.sync.enable(folder: f.remote.path)
+        #expect(lines(f.sync.doctorChecks()) == [
+            "sync.folder: ok | \(f.remote.path) | -",
+            "sync.remote: warn | no config.toml in the folder yet | Run `rh config sync push` to put this machine's config there."
+        ])
+        try f.write(one, to: f.remoteFile)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: f.remoteFile.path)
+        try #require(!FileManager.default.isReadableFile(atPath: f.remoteFile.path), "running as a user that ignores permissions")
+        #expect(lines(f.sync.doctorChecks()).dropFirst() == [
+            "sync.remote: warn | config.toml in the folder is not downloaded yet (or cannot be read) | Open the folder in Finder, let the download finish, then run `rh config sync status`."
+        ])
+    }
+
+    @Test func theWordingOfACopyThatDoesNotValidate() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.write("[general\n", to: f.remoteFile)
+        try f.sync.enable(folder: f.remote.path)
+        let remote = try #require(f.sync.doctorChecks().first { $0.id == "sync.remote" })
+        let problems = SyncValidation.check(try Data(contentsOf: f.remoteFile)).map(\.message).joined(separator: "; ")
+        #expect(!problems.isEmpty)
+        #expect(lines([remote]) == ["sync.remote: fail | \(problems) | Fix the file in the folder, or run `rh config sync push --force` from a machine with a good config."])
+    }
+
+    @Test func theWordingOfEachWayTheTwoCopiesCanDiffer() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.sync.enable(folder: f.remote.path)
+        try f.sync.push()
+        try f.write(two, to: f.local)
+        #expect(lines(f.sync.doctorChecks()).last == "sync.state: warn | this machine's config is ahead of the folder | Run `rh config sync push`.")
+        try f.write(one, to: f.local)
+        try f.write(three, to: f.remoteFile)
+        #expect(lines(f.sync.doctorChecks()).last == "sync.state: warn | the folder has a newer config than this machine | Run `rh config sync pull`.")
+        try f.write(two, to: f.local)
+        #expect(lines(f.sync.doctorChecks()).last == "sync.state: warn | this machine and the folder both changed since the last sync | Compare them (`rh config sync status`), then `rh config sync pull --force` to take the folder's or `push --force` to keep this one; the replaced file is saved first.")
+    }
+
+    @Test func theWordingOfConflictCopiesAndOfAStateFileThatCannotBeRead() throws {
+        let f = try Fixture(); defer { f.cleanUp() }
+        try f.write(one, to: f.local)
+        try f.write(one, to: f.remoteFile)
+        try f.sync.enable(folder: f.remote.path)
+        try f.write(two, to: f.remote.appendingPathComponent("config 2.toml"))
+        #expect(lines(f.sync.doctorChecks()).last == "sync.conflict: warn | config 2.toml in \(f.remote.path) | Two machines wrote config.toml at once. Compare the copies, keep the right content in config.toml, and delete the others by hand.")
+        let g = try Fixture(); defer { g.cleanUp() }
+        try g.write("folder = 3\n", to: g.paths.syncStateFile)
+        #expect(lines(g.sync.doctorChecks()) == ["sync.state: warn | \(g.paths.syncStateFile.path) cannot be read | Run `rh config sync enable` again, or `rh config sync disable`."])
+    }
+
     @Test func launchCommandsAreOneRowAndOnlyWhenThereAreSome() throws {
         let f = try Fixture(); defer { f.cleanUp() }
         try f.write(withCommands, to: f.local)
