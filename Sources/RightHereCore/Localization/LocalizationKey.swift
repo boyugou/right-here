@@ -74,6 +74,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appCheckLastAction = "app.checkLastAction"
     case appCheckChain = "app.checkChain"
     case appCheckLaunch = "app.checkLaunch"
+    case appCheckSync = "app.checkSync"
     case intentOpenTerminalTitle = "intent.openTerminal.title"
     case intentOpenTerminalDescription = "intent.openTerminal.description"
     case intentStartAgentTitle = "intent.startAgent.title"

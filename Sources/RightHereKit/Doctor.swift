@@ -56,6 +56,7 @@ public struct Doctor: Sendable {
     public func run(probeExtension: Bool = false, probeLaunch: Bool = false, launchPlacement: TerminalPlacement? = nil) async -> [DoctorCheck] {
         var checks: [DoctorCheck] = []
         checks.append(configCheck())
+        checks += ConfigSync(paths: paths).doctorChecks()
         checks += menuChecks()
         checks += await agentChecks()
         checks.append(claudeLinkCheck())
@@ -137,8 +138,9 @@ public struct Doctor: Sendable {
 
     // MARK: Config
 
-    private func configCheck() -> DoctorCheck {
-        if !loaded.fileExists {
+    func configCheck() -> DoctorCheck {
+        let overlay = loaded.localFileExists ? "; with the per-machine overlay \(loaded.localFile.path)" : ""
+        if !loaded.fileExists && !loaded.localFileExists {
             return DoctorCheck(id: "config", title: "Config file", status: .warn,
                                detail: "none at \(loaded.file.path); defaults apply", fix: "Run `rh init`.")
         }
@@ -149,10 +151,10 @@ public struct Doctor: Sendable {
                                fix: "Run `rh config validate` and fix the errors.")
         }
         let warnings = loaded.result.diagnostics.count
-        var detail = warnings == 0 ? loaded.file.path : "\(warnings) warning(s); run `rh config validate`"
+        var detail = (warnings == 0 ? (loaded.fileExists ? loaded.file.path : "none at \(loaded.file.path)") : "\(warnings) warning(s); run `rh config validate`") + overlay
         var status: DoctorCheck.Status = warnings == 0 ? .ok : .warn
-        if (try? FileManager.default.destinationOfSymbolicLink(atPath: loaded.file.path)) != nil {
-            detail += "; the file is a symlink, which the Finder extension's sandbox may not be able to follow"
+        for file in [loaded.file, loaded.localFile] where (try? FileManager.default.destinationOfSymbolicLink(atPath: file.path)) != nil {
+            detail += "; \(file.lastPathComponent) is a symlink, which the Finder extension's sandbox may not be able to follow"
             status = .warn
         }
         return DoctorCheck(id: "config", title: "Config file", status: status, detail: detail,

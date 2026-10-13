@@ -78,6 +78,16 @@ INVALID = {
     "an unknown launcher": '[agent.claude]\nlauncher = "magic"\n',
 }
 
+# config.local.toml, the per-machine overlay, is read by the same schema; `disabled` is only meaningful there.
+OVERLAY_VALID = {
+    "an overlay that disables ids": 'disabled = ["codex", "zed"]\n[general]\nterminal = "terminal"\n',
+    "an overlay that replaces an app": '[[app]]\nid = "tower"\nname = "Tower"\nbundle_id = "com.fournova.Tower3"\n',
+}
+OVERLAY_INVALID = {
+    "a disabled list that is not a list": 'disabled = "codex"\n',
+    "a disabled list of numbers": "disabled = [1, 2]\n",
+}
+
 
 def main() -> int:
     if not os.access(RH, os.X_OK):
@@ -112,10 +122,23 @@ def main() -> int:
             if cli.returncode == 0:
                 problems.append(f"`rh config validate --strict` accepts {name}")
 
+    with tempfile.TemporaryDirectory() as folder:
+        env = dict(os.environ, RH_CONFIG_DIR=folder, RH_LOG_DIR=folder + "/logs")
+        Path(folder, "config.toml").write_text("")
+        for table, expect_valid in ((OVERLAY_VALID, True), (OVERLAY_INVALID, False)):
+            for name, text in table.items():
+                found = [e.message for e in validator.iter_errors(tomllib.loads(text))]
+                Path(folder, "config.local.toml").write_text(text)
+                cli = subprocess.run([RH, "config", "validate", "--strict"], capture_output=True, text=True, env=env)
+                if expect_valid and (found or cli.returncode != 0):
+                    problems.append(f"the valid overlay '{name}' is rejected: {found[:1] or cli.stdout.strip() or cli.stderr.strip()}")
+                if not expect_valid and (not found or cli.returncode == 0):
+                    problems.append(f"the invalid overlay '{name}' is accepted")
+
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
-    print(f"ok: the schema and `rh config validate` agree on {len(VALID)} valid and {len(INVALID)} invalid configs")
+    print(f"ok: the schema and `rh config validate` agree on {len(VALID)} valid and {len(INVALID)} invalid configs, and {len(OVERLAY_VALID)} valid and {len(OVERLAY_INVALID)} invalid overlays")
     return 0
 
 

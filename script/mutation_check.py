@@ -121,7 +121,7 @@ MUTANTS = [
     ("an interrupt is not wired to the cleanup", "Sources/RightHereKit/ProbeMarker.swift",
      "            source.resume()\n            return source", "            return source"),
     ("a config cut off inside an open bracket reaches the TOML library as it is", "Sources/RightHereCore/Config/ConfigParser.swift",
-     'root = try TOMLTable(source: text + "\\n")', "root = try TOMLTable(source: text)"),
+     'return try TOMLTable(source: text + "\\n")', "return try TOMLTable(source: text)"),
     ("a huge config file is read and parsed", "Sources/RightHereKit/ConfigStore.swift",
      "as? Int, size > maxConfigBytes {", "as? Int, size > Int.max {"),
     ("a bidirectional control is printed as it is", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
@@ -159,6 +159,25 @@ MUTANTS = [
      "context.items.filter { facts.isDirectory($0) == false }", "context.items"),
     ("the config accepts a preset prompt that cannot be typed", "Sources/RightHereCore/Config/ConfigBuilder+Presets.swift",
      "if let refusal = PresetTemplate.typingRefusal(prompt) {", "if false, let refusal = PresetTemplate.typingRefusal(prompt) {"),
+    ("pull overwrites a locally changed config without --force", "Sources/RightHereCore/Config/SyncState.swift",
+     "case .localAhead, .diverged: return force ? .proceed : .refuse(.localChanged)", "case .localAhead, .diverged: return .proceed"),
+    ("push overwrites a changed folder copy without --force", "Sources/RightHereCore/Config/SyncState.swift",
+     "case .remoteAhead, .diverged: return force ? .proceed : .refuse(.remoteChanged)", "case .remoteAhead, .diverged: return .proceed"),
+    ("a sync write is not atomic", "Sources/RightHereKit/AtomicFile.swift",
+     r'''let temporary = folder.appendingPathComponent(".\(destination.lastPathComponent).tmp-\(UUID().uuidString)")
+        let descriptor = open(temporary.path, O_WRONLY | O_CREAT | O_EXCL, mode)''',
+     """let temporary = destination
+        let descriptor = open(temporary.path, O_WRONLY | O_CREAT | O_TRUNC, mode)"""),
+    ("a forced push overwrites a copy iCloud has not downloaded", "Sources/RightHereCore/Config/SyncState.swift",
+     "anything this machine knows.\n        case .remoteEvicted: return .refuse(.remoteEvicted)",
+     "anything this machine knows.\n        case .remoteEvicted: return force ? .proceed : .refuse(.remoteEvicted)"),
+    ("a sync copy that does not validate is pulled", "Sources/RightHereKit/ConfigSync.swift",
+     "if !problems.isEmpty { throw ConfigSyncError.invalid(problems, file: current.remoteFile.path) }",
+     "if false { throw ConfigSyncError.invalid(problems, file: current.remoteFile.path) }"),
+    ("a config with a secret-looking key is synced", "Sources/RightHereCore/Config/SyncValidation.swift",
+     "if !keys.isEmpty { problems.append(.secretKeys(keys)) }", "if false { problems.append(.secretKeys(keys)) }"),
+    ("a pull replaces a symlinked config with a regular file", "Sources/RightHereKit/ConfigSync.swift",
+     "let destination = paths.configFile.resolvingSymlinksInPath()", "let destination = paths.configFile"),
 ]
 
 

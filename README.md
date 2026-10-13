@@ -102,6 +102,9 @@ and then for real.
 with a "did you mean"; `--strict` also fails on warnings), `rh config schema` prints a JSON Schema for your
 editor. `rh init --force` saves your old file before replacing it.
 
+To use one config on several Macs, `rh config sync enable` keeps a copy in a folder (iCloud Drive by default,
+or any folder), and a `config.local.toml` next to the config holds what differs per machine (`rh docs sync`).
+
 ## For AI agents
 
 - `claude mcp add right-here -- rh mcp` adds an MCP server over the same actions: list and run them, read

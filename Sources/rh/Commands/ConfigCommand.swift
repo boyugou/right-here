@@ -7,7 +7,7 @@ struct ConfigCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "config",
         abstract: "Inspect, check and create the config file.",
-        subcommands: [Path.self, Show.self, Validate.self, Schema.self]
+        subcommands: [Path.self, Show.self, Validate.self, Schema.self, ConfigSyncCommand.self]
     )
 
     struct Path: ParsableCommand {
@@ -49,6 +49,9 @@ struct ConfigCommand: ParsableCommand {
         struct Report: Encodable {
             var file: String
             var exists: Bool
+            /// The per-machine overlay, `config.local.toml`, and whether it exists.
+            var localFile: String
+            var localExists: Bool
             /// No errors.
             var ok: Bool
             /// No errors and no warnings.
@@ -59,14 +62,15 @@ struct ConfigCommand: ParsableCommand {
         func run() throws {
             let runtime = Runtime()
             let result = runtime.loaded.result
-            let report = Report(file: runtime.paths.configFile.path, exists: runtime.loaded.fileExists, ok: !result.hasErrors,
+            let report = Report(file: runtime.paths.configFile.path, exists: runtime.loaded.fileExists,
+                                localFile: runtime.paths.localConfigFile.path, localExists: runtime.loaded.localFileExists, ok: !result.hasErrors,
                                 clean: result.diagnostics.isEmpty, diagnostics: result.diagnostics)
             if json {
                 try Output.json(report)
-            } else if !runtime.loaded.fileExists {
+            } else if !runtime.loaded.fileExists && !runtime.loaded.localFileExists {
                 Output.print("No config file at \(report.file); defaults apply. Run `rh init` to create one.")
             } else if result.diagnostics.isEmpty {
-                Output.print("ok: \(report.file)")
+                Output.print("ok: \(report.file)" + (runtime.loaded.localFileExists ? " and \(report.localFile)" : ""))
             } else {
                 for diagnostic in result.diagnostics { Output.print(diagnostic.summary(file: runtime.loaded.file)) }
             }

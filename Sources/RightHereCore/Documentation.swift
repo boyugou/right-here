@@ -72,12 +72,81 @@ public enum Documentation {
       `rh docs troubleshooting` before guessing.
     """
 
-    public static let config = ConfigSchema.markdown()
+    public static let sync = """
+    # Keep your config in sync
+
+    One config on several Macs, with the differences kept per machine. Two parts: an optional per-machine
+    overlay, and a copy of the config in a plain folder.
+
+    ## The per-machine overlay: config.local.toml
+
+    `config.local.toml` sits next to `config.toml` and is read with it, by `rh` and by the Finder menu. It is never
+    synced. It holds what differs on this Mac. Where it and `config.toml` meet:
+
+    - A setting the overlay sets replaces the shared one (`[general] terminal`, `[new_file] then`, ...).
+    - A list is replaced as a whole, never merged: `menu.items`, `services.items`, `copy_path.styles`, `general.agents`.
+    - Entries with an id merge by id: an `[[app]]`, `[[new_file.template]]` or `[[agent.<id>.variant]]` in the
+      overlay replaces the shared entry with that id, and one with a new id is added.
+    - `[agent.<id>]` merges key by key, so the overlay can change one agent's `command` and keep its variants.
+    - `disabled = ["id", ...]` removes ids from the result on this Mac: apps, new-file templates and agents,
+      and their entries in `general.agents`, `menu.items` and `services.items`. An id that does not exist here is
+      skipped, so a shared config may name apps this Mac lacks. Disabling every template the shared config
+      defines brings the built-in txt and md back. `disabled` does nothing in `config.toml` and is reported there.
+
+    Example, a work laptop without Codex and with another default terminal:
+
+        disabled = ["codex"]
+        [general]
+        terminal = "terminal"
+
+    A problem in either file is reported with its own file name (`rh config validate`, `rh doctor`).
+    Per-machine differences need no overlay when they are only missing software: an app or agent that is not
+    installed is skipped by the menu; use `disabled` for what is installed but should not be offered.
+
+    ## Sync through a folder
+
+    The config is copied, not linked. A symlink to iCloud Drive does not work here: the Finder extension is
+    sandboxed and can read only its own config folder, not what a link points at, and iCloud can replace a file it
+    has not downloaded with a placeholder that looks like a missing file through a link. So each Mac keeps an
+    ordinary file, and `rh config sync` moves content between it and a folder.
+
+        rh config sync enable                     choose the folder (default: iCloud Drive, folder "Right Here")
+        rh config sync enable --folder ~/Sync/rh  any folder works: Dropbox, a git checkout, a network share
+        rh config sync push                       send this Mac's config to the folder (creates the folder)
+        rh config sync pull                       take the folder's config
+        rh config sync status                     in-sync, local-ahead, remote-ahead, diverged, remote-missing or remote-evicted
+        rh config sync disable                    forget the folder; both copies stay
+
+    The state (the folder and a hash of what was last synced) is in `sync.toml` next to the config.
+    A second Mac runs `rh config sync enable` and `rh config sync pull`.
+
+    Rules, all enforced:
+    - `pull` refuses when this Mac's config changed since the last sync, and `push` refuses when the folder's copy
+      did, unless `--force`. A forced replacement saves the old file as `config.toml.bak-<date>` first.
+    - Both refuse a config that does not validate, is over 1 MiB, or has key names that look like secrets
+      (token, secret, password, api_key). Keep credentials in the environment or the keychain.
+    - A copy iCloud has not downloaded (`remote-evicted`) is never read as missing and never overwritten.
+    - Writes are atomic (a temporary file beside the destination, then a rename), and nothing is deleted.
+    - `rh doctor` adds checks while sync is on: the folder is reachable, the copy is downloaded and valid, how the
+      two compare, and conflict copies such as `config 2.toml` that a sync service leaves when two Macs wrote at once.
+
+    ## Dotfiles, Dropbox and git
+
+    - A dotfiles manager may keep `config.toml` as a symlink into its repository: `rh` follows it, and the Finder
+      extension may not be able to (`rh doctor` warns); copy the file instead. `rh config sync pull` writes into
+      the file a link points at and leaves the link.
+    - Dropbox or any synced folder: `rh config sync enable --folder <folder>`.
+    - A git repository: make it the folder, and commit there; Right Here only reads and writes `config.toml` in it.
+    - Keep per-machine differences in `config.local.toml`, and out of the repository or the folder.
+    """
+
+    public static let config = ConfigSchema.markdown() + "\n\nOne config on several Macs, and per-machine settings in config.local.toml: `rh docs sync`.\n"
 
     /// The topics, in the order they are listed, with a one-line summary each. Every surface that names topics
     /// (`rh docs`, the MCP docs tool) takes them from here.
     public static let topicSummaries: [(name: String, summary: String)] = [
         ("config", "every setting in config.toml, with defaults and examples"),
+        ("sync", "keep the config in sync across Macs: config.local.toml and rh config sync"),
         ("actions", "the action id grammar"),
         ("agent-setup", "how an AI agent should set up Right Here"),
         ("troubleshooting", "the menu does not appear, a click does nothing, permission prompts")
@@ -101,6 +170,7 @@ public enum Documentation {
         case "config": return config
         case "actions": return actions
         case "agent-setup": return agentSetup
+        case "sync": return sync
         default: return guides[topic]
         }
     }
