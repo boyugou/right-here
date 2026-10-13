@@ -220,6 +220,8 @@ MUTANTS = [
      "if case .preset(let id, _) = ref, goneIDs.contains(id) { return false }", "if false, case .preset(let id, _) = ref, goneIDs.contains(id) { return false }"),
     ("a dropped preset takes the entries of the built-in preset it replaced", "Sources/RightHereCore/Config/ConfigMerge.swift",
      "Set(droppedPresets.map(\\.id)).subtracting(AgentPreset.builtIn.map(\\.id))", "Set(droppedPresets.map(\\.id))"),
+    ("an overlay preset replaces every shared preset", "Sources/RightHereCore/Config/ConfigMerge.swift",
+     'static let idKeyedArrays: Set<String> = ["app", "template", "variant", "preset"]', 'static let idKeyedArrays: Set<String> = ["app", "template", "variant"]'),
 ]
 
 

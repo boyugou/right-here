@@ -85,8 +85,9 @@ public enum Documentation {
 
     - A setting the overlay sets replaces the shared one (`[general] terminal`, `[new_file] then`, ...).
     - A list is replaced as a whole, never merged: `menu.items`, `services.items`, `copy_path.styles`, `general.agents`.
-    - Entries with an id merge by id: an `[[app]]`, `[[new_file.template]]` or `[[agent.<id>.variant]]` in the
-      overlay replaces the shared entry with that id, and one with a new id is added.
+    - Entries with an id merge by id: an `[[app]]`, `[[preset]]`, `[[new_file.template]]` or `[[agent.<id>.variant]]`
+      in the overlay replaces the shared entry with that id, and one with a new id is added (so an overlay preset adds
+      to the shared ones instead of replacing them all).
     - `[agent.<id>]` merges key by key, so the overlay can change one agent's `command` and keep its variants.
     - `disabled = ["id", ...]` removes ids from the result on this Mac: apps (the built-in ones too: a disabled
       terminal is not offered, cannot be named in an action id and is no longer the default), new-file templates and

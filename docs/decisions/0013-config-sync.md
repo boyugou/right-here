@@ -19,8 +19,9 @@ Rules (`ConfigMerge`, pure, in `RightHereCore`):
 
 - tables merge key by key; a scalar or a list the overlay sets replaces the base value as a whole (`menu.items`,
   `general.agents`, `services.items`, `copy_path.styles` are never merged element by element);
-- `[[app]]`, `[[new_file.template]]` and `[[agent.<id>.variant]]` merge by `id`: the overlay entry replaces the base
-  entry with that id in place, a new id is appended;
+- `[[app]]`, `[[preset]]`, `[[new_file.template]]` and `[[agent.<id>.variant]]` merge by `id`: the overlay entry
+  replaces the base entry with that id in place, a new id is appended (without `preset` in that list, the first
+  `[[preset]]` in an overlay replaced every shared preset);
 - `[agent.<id>]` is a table like the others, so the overlay can change one agent's `command` and the base's variants
   stay. (Reading "tables merge by id, the local entry replacing the base entry" as whole-table replacement would
   make the variant rule meaningless, since variants live inside the agent table. Key by key is the only reading in

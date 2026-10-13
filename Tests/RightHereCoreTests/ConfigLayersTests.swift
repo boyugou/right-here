@@ -78,6 +78,40 @@ struct ConfigLayersMergeTests {
         #expect(result.config.newFile.templates[0].fileExtension == "md")
     }
 
+    @Test func presetsMergeByIDAndAnOverlayPresetDoesNotWipeTheSharedOnes() {
+        let base = """
+        [general]
+        agents = ["claude"]
+        [[preset]]
+        id = "alpha"
+        title = "Alpha"
+        prompt = "Alpha {files}"
+        [[preset]]
+        id = "beta"
+        title = "Beta"
+        prompt = "Beta {files}"
+        """
+        let overlay = """
+        [[preset]]
+        id = "gamma"
+        title = "Gamma"
+        prompt = "Gamma {files}"
+        [[preset]]
+        id = "beta"
+        title = "Beta Two"
+        prompt = "Beta two {files}"
+        """
+        let result = layered(base, overlay)
+        #expect(!result.hasErrors)
+        #expect(result.config.presets.map(\.id) == ["review", "explain", "tests", "alpha", "beta", "gamma"])
+        #expect(result.config.preset(id: "beta")?.title == "Beta Two")
+        #expect(result.config.preset(id: "alpha")?.title == "Alpha")
+        // A problem in an overlay preset is reported at its place in the overlay, not in the merged list.
+        let broken = layered(base, "[[preset]]\nid = \"gamma\"\ntitle = \"G\"\nprompt = \"{nope}\"\n")
+        let problem = broken.diagnostics.first { $0.severity == .error }
+        #expect(problem?.file == "config.local.toml" && problem?.path.hasPrefix("preset.1.") == true, "\(broken.diagnostics)")
+    }
+
     @Test func anAgentTableMergesKeyByKeyAndVariantsByID() {
         let result = layered(baseConfig, """
         [agent.claude]

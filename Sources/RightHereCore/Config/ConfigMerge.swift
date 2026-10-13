@@ -4,8 +4,8 @@ import Foundation
 ///
 /// - Tables merge key by key: a scalar or a list the overlay sets replaces the base value as a whole
 ///   (`menu.items`, `general.agents` and every other list are never merged element by element).
-/// - Entries with an `id` (`[[app]]`, `[[new_file.template]]`, `[[agent.<id>.variant]]`) merge by id: the overlay entry
-///   replaces the base entry of that id in place, and an entry with a new id is appended.
+/// - Entries with an `id` (`[[app]]`, `[[preset]]`, `[[new_file.template]]`, `[[agent.<id>.variant]]`) merge by id: the
+///   overlay entry replaces the base entry of that id in place, and an entry with a new id is appended.
 /// - `[agent.<id>]` is a table like the others, so an overlay can change one key of an agent the base defines
 ///   (its `command`) and the base's variants stay.
 /// - `disabled = ["id", ...]` in the overlay removes those ids from the merged result: app, template and agent
@@ -43,7 +43,7 @@ struct ConfigMerge {
     private var arrayOrigins: [String: [Origin]] = [:]
     private var droppedPresets: [DroppedPreset] = []
 
-    static let idKeyedArrays: Set<String> = ["app", "template", "variant"]
+    static let idKeyedArrays: Set<String> = ["app", "template", "variant", "preset"]
 
     static func merge(base: [String: TOMLValue], local: [String: TOMLValue]) -> Result {
         var merger = ConfigMerge()
