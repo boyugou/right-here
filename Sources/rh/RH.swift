@@ -13,7 +13,8 @@ struct RH: AsyncParsableCommand {
         start an AI agent there, or create a new file. The Finder menu runs the same actions.
 
         Start with `rh init`, then `rh menu` to preview the Finder menu and `rh actions` to list \
-        every action. Everything is also available as JSON (--json) for scripts and agents.
+        every action. Run one with `rh run <action> [folder]`, for example `rh run copy-path.absolute ~/Projects`. \
+        Everything is also available as JSON (--json) for scripts and agents.
         """,
         version: RightHereInfo.version,
         subcommands: [
