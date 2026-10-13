@@ -5209,6 +5209,750 @@
         }
       }
     },
+    "app.menuCaption": {
+      "comment": "Caption under the title of the Finder menu preview in the setup window: it shows the menu for a folder, and Finder adds items for selected files when files are selected. Two short sentences at most.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "هذه قائمة المجلد. تظهر العناصر الخاصة بالملفات المحددة عند تحديد ملفات."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "এটি একটি ফোল্ডারের মেনু। আপনি ফাইল নির্বাচন করলে নির্বাচিত ফাইলের জন্য আইটেমগুলো দেখা যায়।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Das ist das Menü für einen Ordner. Befehle für ausgewählte Dateien erscheinen, wenn du Dateien auswählst."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Αυτό είναι το μενού για έναν φάκελο. Τα στοιχεία για επιλεγμένα αρχεία εμφανίζονται όταν επιλέξετε αρχεία."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is the menu for a folder. Items for selected files appear when you select files."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Este es el menú para una carpeta. Los comandos para los archivos seleccionados aparecen cuando seleccionas archivos."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "این منوی یک پوشه است. گزینه‌های مربوط به پرونده‌های انتخاب‌شده وقتی پرونده انتخاب می‌کنید ظاهر می‌شوند."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Voici le menu d’un dossier. Les commandes pour les fichiers sélectionnés apparaissent lorsque vous sélectionnez des fichiers."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "זהו התפריט לתיקייה. פריטים עבור הקבצים שנבחרו מופיעים כשאתה בוחר קבצים."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "यह एक फ़ोल्डर का मेनू है। चयनित फ़ाइलों के आइटम तभी दिखते हैं, जब आप फ़ाइलें चुनते हैं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ini adalah menu untuk folder. Item untuk file yang dipilih muncul saat Anda memilih file."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Questo è il menu per una cartella. I comandi per i file selezionati compaiono quando selezioni dei file."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "これはフォルダ用のメニューです。選択したファイル向けの項目は、ファイルを選択したときに表示されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "이것은 폴더용 메뉴입니다. 선택한 파일에 해당하는 항목은 파일을 선택하면 나타납니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "हा एका फोल्डरचा मेनू आहे. निवडलेल्या फाइल्ससाठीचे आयटम्स तुम्ही फाइल्स निवडता तेव्हा दिसतात."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ini ialah menu untuk folder. Item untuk fail yang dipilih muncul apabila anda memilih fail."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dit is het menu voor een map. Opdrachten voor geselecteerde bestanden verschijnen wanneer je bestanden selecteert."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "To jest menu dla folderu. Pozycje dotyczące plików pojawiają się dopiero po ich zaznaczeniu."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Este é o menu para uma pasta. Os itens para arquivos aparecem somente quando arquivos são selecionados."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Acesta este meniul pentru un folder. Elementele pentru fișiere apar doar la selectarea fișierelor."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Это меню для папки. Пункты для выбранных файлов появляются только при выборе файлов."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "இது ஒரு கோப்புறைக்கான மெனு. நீங்கள் கோப்புகளைத் தேர்ந்தெடுக்கும்போது, தேர்ந்தெடுத்த கோப்புகளுக்கான உருப்படிகள் தோன்றும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఇది ఫోల్డర్ కోసం మెనూ. మీరు ఫైల్స్ ఎంచుకున్నప్పుడు, ఎంచుకున్న ఫైల్స్ కోసం అంశాలు కనిపిస్తాయి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "นี่คือเมนูสำหรับโฟลเดอร์ รายการสำหรับไฟล์ที่เลือกจะปรากฏขึ้นเมื่อคุณเลือกไฟล์"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bu, bir klasör için menüdür. Seçili dosyalara yönelik öğeler, dosya seçtiğinizde görünür."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Це меню для папки. Пункти для файлів відображаються лише тоді, коли файли виділено."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "یہ فولڈر کا مینو ہے۔ منتخب فائلوں سے متعلق آئٹمز اس وقت ظاہر ہوتے ہیں جب آپ فائلیں منتخب کرتے ہیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đây là trình đơn cho một thư mục. Các mục dành cho tệp đã chọn chỉ xuất hiện khi bạn chọn tệp."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "这是文件夹的菜单。选中文件时，针对所选文件的项目才会出现。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "這是檔案夾的選單。選取檔案時，針對所選檔案的項目才會出現。"
+          }
+        }
+      }
+    },
+    "app.menuSubmenuCollapsed": {
+      "comment": "Spoken by VoiceOver after the name of a line of the Finder menu preview that has a submenu, while the submenu is closed. It reads like: Open With, submenu, collapsed.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "قائمة فرعية، مطوية"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "সাবমেনু, সংকুচিত"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Untermenü, eingeklappt"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Υπομενού, συμπτυγμένο"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Submenu, collapsed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenú, contraído"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "زیرمنو، جمع‌شده"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sous-menu, réduit"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "תת-תפריט, מכווץ"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सबमेनू, संकुचित"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenu, diciutkan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sottomenu, compresso"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "サブメニュー、折りたたまれています"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "하위 메뉴, 접힘"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सबमेनू, संकुचित"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenu, dikuncupkan"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenu, ingeklapt"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Podmenu, zwinięte"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenu, recolhido"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submeniu, restrâns"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Подменю, свёрнуто"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "துணைமெனு, சுருக்கப்பட்டது"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సబ్‌మెనూ, కుదించబడింది"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เมนูย่อย, ยุบแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Alt menü, daraltılmış"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Підменю, згорнуто"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ذیلی مینو، سمٹا ہوا"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Trình đơn con, đã thu gọn"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "子菜单，已折叠"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "子選單，已收合"
+          }
+        }
+      }
+    },
+    "app.menuSubmenuExpanded": {
+      "comment": "Spoken by VoiceOver after the name of a line of the Finder menu preview that has a submenu, while the submenu is open. It reads like: Open With, submenu, expanded.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "قائمة فرعية، موسّعة"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "সাবমেনু, প্রসারিত"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Untermenü, ausgeklappt"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Υπομενού, αναπτυγμένο"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Submenu, expanded"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenú, expandido"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "زیرمنو، گسترده"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sous-menu, développé"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "תת-תפריט, מורחב"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सबमेनू, विस्तारित"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenu, diperluas"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sottomenu, espanso"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "サブメニュー、展開されています"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "하위 메뉴, 펼쳐짐"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सबमेनू, विस्तारित"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenu, dikembangkan"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenu, uitgeklapt"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Podmenu, rozwinięte"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submenu, expandido"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Submeniu, extins"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Подменю, развёрнуто"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "துணைமெனு, விரிவாக்கப்பட்டது"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సబ్‌మెనూ, విస్తరించబడింది"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เมนูย่อย, ขยายแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Alt menü, genişletilmiş"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Підменю, розгорнуто"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ذیلی مینو، پھیلا ہوا"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Trình đơn con, đã mở rộng"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "子菜单，已展开"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "子選單，已展開"
+          }
+        }
+      }
+    },
+    "app.menuTitle": {
+      "comment": "Title of the collapsible section in the setup window that previews the right-click menu Finder shows for a folder. Finder keeps its macOS name, written as in the other strings that mention it.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "قائمة Finder"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder মেনু"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder-Menü"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Μενού του Finder"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder menu"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menú del Finder"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "منوی Finder"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu du Finder"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "תפריט Finder"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder मेनू"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu Finder"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu del Finder"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder メニュー"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder 메뉴"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder मेनू"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu Finder"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder-menu"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu Findera"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu do Finder"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Meniu Finder"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Меню Finder"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder மெனு"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder మెనూ"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เมนูของ Finder"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder menüsü"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Меню Finder"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Finder مینو"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Trình đơn Finder"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "访达菜单"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder 選單"
+          }
+        }
+      }
+    },
     "app.needsAttention": {
       "comment": "Summary line in the setup window when a check failed or needs the person.",
       "extractionState": "manual",

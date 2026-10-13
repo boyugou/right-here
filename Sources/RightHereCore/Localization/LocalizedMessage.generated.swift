@@ -57,6 +57,14 @@ extension LocalizedMessage {
     public static var appExtensionSettings: LocalizedMessage { LocalizedMessage(.appExtensionSettings) }
     /// Install or Repair
     public static var appInstallOrRepair: LocalizedMessage { LocalizedMessage(.appInstallOrRepair) }
+    /// This is the menu for a folder. Items for selected files appear when you select files.
+    public static var appMenuCaption: LocalizedMessage { LocalizedMessage(.appMenuCaption) }
+    /// Submenu, collapsed
+    public static var appMenuSubmenuCollapsed: LocalizedMessage { LocalizedMessage(.appMenuSubmenuCollapsed) }
+    /// Submenu, expanded
+    public static var appMenuSubmenuExpanded: LocalizedMessage { LocalizedMessage(.appMenuSubmenuExpanded) }
+    /// Finder menu
+    public static var appMenuTitle: LocalizedMessage { LocalizedMessage(.appMenuTitle) }
     /// Some checks need your attention.
     public static var appNeedsAttention: LocalizedMessage { LocalizedMessage(.appNeedsAttention) }
     /// Set up in three steps
