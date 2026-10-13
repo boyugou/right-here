@@ -70,6 +70,11 @@ things keep that honest:
   overlay and requires the same `Config` and the same diagnostics as parsing the file alone; another checks that
   reading a tree, writing it and reading it again is the identity.
 
+`rh config show` prints every file that makes up the config, in the order they are read, each under a `==> <path> <==`
+line, and `rh config path --all` lists them (it showed `config.toml` only and gave no hint that an overlay existed; the only
+merged view was `rh menu`). There is no merged TOML dump: the merge works on values and writes text only to build from it,
+and a printed merge would be text no file contains.
+
 `rh config validate` also reads the shared file on its own (`ConfigLayers.validate`, through `ConfigStore.load(validating:)`;
 the Finder menu and `rh run` do not, they need the config and not a second reading of it on every right-click): the shared
 file is what other Macs read, and an error that the overlay masks here (it sets the same key itself, replaces the entry,

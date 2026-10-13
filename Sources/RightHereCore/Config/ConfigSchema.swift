@@ -201,6 +201,9 @@ public enum ConfigSchema {
             "(default `~/Library/Logs/right-here`). `RH_HOME` points every per-user path at another folder, to try",
             "an install without touching your own.", "",
             "Validate with `rh config validate` (add `--strict` to fail on warnings too). Print the effective menu with `rh menu`.",
+            "`rh config show` prints each file that makes up the config under a header line that names it (`config.toml`, then",
+            "`config.local.toml`, the per-machine overlay, when it exists), and `rh config path --all` lists their paths: the",
+            "config is those files read in that order, and there is no merged text to print.",
             "A key the file does not know is a warning, not an error, so everything else still applies; it is",
             "almost always a typo, so treat warnings as problems.", ""
         ]

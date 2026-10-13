@@ -11,22 +11,48 @@ struct ConfigCommand: ParsableCommand {
     )
 
     struct Path: ParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "Print where the config file is.")
+        static let configuration = CommandConfiguration(
+            abstract: "Print where the config file is.",
+            discussion: "With --all, every file that makes up the config: config.toml, then config.local.toml (the per-machine overlay) when it exists."
+        )
+
+        @Flag(help: "Print every file that makes up the config, one per line, in the order they are read.")
+        var all = false
 
         func run() {
-            Output.print(Runtime().paths.configFile.path)
+            let runtime = Runtime()
+            Output.print(runtime.paths.configFile.path)
+            if all, runtime.loaded.localFileExists { Output.print(runtime.paths.localConfigFile.path) }
         }
     }
 
     struct Show: ParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "Print the config file.")
+        static let configuration = CommandConfiguration(
+            abstract: "Print the files that make up the config.",
+            discussion: """
+            Each file is printed as it is, under a line `==> <path> <==` that names it: config.toml, then config.local.toml \
+            (the per-machine overlay) when it exists. There is no merged text; `rh menu` shows what the two make of the menu.
+            """
+        )
 
         func run() throws {
             let runtime = Runtime()
-            guard runtime.loaded.fileExists else {
+            var printed = 0
+            for file in [runtime.paths.configFile, runtime.paths.localConfigFile] {
+                switch ConfigStore.text(of: file) {
+                case .absent: continue
+                case .problem(let reason):
+                    throw Output.fail("Cannot show \(file.path): \(reason)")
+                case .text(let text):
+                    if printed > 0 { Output.print("") }
+                    Output.print("==> \(file.path) <==")
+                    Output.print(text.hasSuffix("\n") ? String(text.dropLast()) : text)
+                    printed += 1
+                }
+            }
+            guard printed > 0 else {
                 throw Output.fail("No config file yet at \(runtime.paths.configFile.path). Run `rh init` to create one.")
             }
-            Output.print(try String(contentsOf: runtime.paths.configFile, encoding: .utf8))
         }
     }
 

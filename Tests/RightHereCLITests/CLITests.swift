@@ -1255,6 +1255,57 @@ struct ConfigSyncCLITests {
         #expect(try rh.run(["config", "sync", "pull"]).status == 1)
     }
 
+    @Test func showPrintsEveryFileThatMakesUpTheConfigUnderAHeaderAndPathListsThem() throws {
+        let shared = "# shared\n[general]\nterminal = \"ghostty\"\n"
+        let rh = try isolated(config: shared); defer { rh.cleanUp() }
+        let base = try configFile(rh)
+        let overlay = base.deletingLastPathComponent().appendingPathComponent("config.local.toml")
+        // One file: a header naming it, then its text as it is.
+        let one = try rh.run(["config", "show"])
+        #expect(one.status == 0 && one.standardOutput == "==> \(base.path) <==\n# shared\n[general]\nterminal = \"ghostty\"\n", "\(one.standardOutput.debugDescription)")
+        #expect(try rh.run(["config", "path", "--all"]).standardOutput == base.path + "\n")
+        #expect(try rh.run(["config", "path"]).standardOutput == base.path + "\n")
+        // Both: in the order they are read, each under its own header, and nothing merged.
+        try "# this machine\n[general]\nterminal = \"terminal\"\ndisabled_here = true\n".write(to: overlay, atomically: true, encoding: .utf8)
+        let both = try rh.run(["config", "show"])
+        #expect(both.standardOutput == """
+        ==> \(base.path) <==
+        # shared
+        [general]
+        terminal = "ghostty"
+
+        ==> \(overlay.path) <==
+        # this machine
+        [general]
+        terminal = "terminal"
+        disabled_here = true
+
+        """, "\(both.standardOutput)")
+        #expect(both.standardOutput.components(separatedBy: "terminal = ").count == 3, "a merged text would have one terminal")
+        #expect(try rh.run(["config", "path", "--all"]).standardOutput == base.path + "\n" + overlay.path + "\n")
+        #expect(try rh.run(["config", "path"]).standardOutput == base.path + "\n", "without --all, the shared file's path only")
+        // An overlay alone is shown too; nothing at all is the old error.
+        try FileManager.default.removeItem(at: base)
+        #expect(try rh.run(["config", "show"]).standardOutput.hasPrefix("==> \(overlay.path) <==\n"))
+        try FileManager.default.removeItem(at: overlay)
+        let none = try rh.run(["config", "show"])
+        #expect(none.status == 1 && none.standardError.contains("No config file yet at \(base.path)"), "\(none.standardError)")
+        #expect(try rh.run(["config", "path", "--all"]).standardOutput == base.path + "\n")
+        // The docs say so.
+        let docs = try rh.run(["docs", "config"]).standardOutput
+        #expect(docs.contains("rh config show") && docs.contains("rh config path --all") && docs.contains("no merged text"), "\(docs.prefix(600))")
+    }
+
+    @Test func showSaysWhyAFileCannotBeShown() throws {
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let file = try configFile(rh)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: file.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: file.path) }
+        try #require(!FileManager.default.isReadableFile(atPath: file.path), "running as a user that ignores permissions")
+        let result = try rh.run(["config", "show"])
+        #expect(result.status == 1 && result.standardError.contains("Cannot show \(file.path): cannot read \(file.path): Permission denied"), "\(result.standardError)")
+    }
+
     @Test func syncIsListedInHelp() throws {
         let rh = try isolated(); defer { rh.cleanUp() }
         let text = try rh.run(["config", "--help"]).standardOutput

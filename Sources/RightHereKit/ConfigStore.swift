@@ -89,6 +89,23 @@ public enum ConfigStore {
         return LoadedConfig(result: result, fileExists: base.exists, file: paths.configFile, localFile: paths.localConfigFile, localFileExists: local.exists, fileProblem: problem)
     }
 
+    /// A config file's text as `rh config show` prints it: what `load` would have read (the size limit, a link followed, no byte
+    /// order mark), or why there is none.
+    public enum FileText: Sendable, Equatable {
+        case absent
+        case text(String)
+        case problem(String)
+    }
+
+    public static func text(of file: URL) -> FileText {
+        let found = read(file)
+        switch found.source {
+        case .absent: return .absent
+        case .text(let text): return .text(text)
+        case .unreadable(let diagnostic): return .problem(diagnostic.message)
+        }
+    }
+
     /// What identifies the config as the menu sees it: the modification dates of both files and whether each exists.
     /// A pair, not the later date: an overlay copied in with an older date (`cp -p`, a sync tool) must still count as a change.
     public struct Stamp: Sendable, Equatable {

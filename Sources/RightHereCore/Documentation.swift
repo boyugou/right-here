@@ -110,6 +110,9 @@ public enum Documentation {
     also reads `config.toml` on its own, as other Macs do, and reports an error that the overlay hides on this Mac (the
     overlay sets the same key); `rh config sync push` refuses that file for the same error. A key named like a credential
     in `config.toml` is a warning there too, because `push` refuses it.
+    `rh config show` prints both files, each under a header line that names it (`config.toml`, then `config.local.toml`
+    when it exists), and `rh config path --all` lists their paths; there is no merged text, and `rh menu` shows what
+    the two make of the menu.
     Per-machine differences need no overlay when they are only missing software: an app or agent that is not
     installed is skipped by the menu; use `disabled` for what is installed but should not be offered.
 
