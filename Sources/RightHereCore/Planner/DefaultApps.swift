@@ -6,11 +6,6 @@ public struct DefaultApps: Sendable {
     public let config: Config
     public let facts: any SystemFacts
 
-    /// Preference order when no default is configured. Terminal.app is always present, so it comes
-    /// last: a terminal the user installed on purpose is a better guess.
-    static let terminalOrder = ["ghostty", "cmux", "iterm", "wezterm", "kitty", "alacritty", "warp", "terminal"]
-    static let editorOrder = ["vscode", "cursor", "zed", "windsurf", "sublime", "nova", "bbedit", "intellij", "pycharm", "webstorm", "textedit"]
-
     public init(config: Config, facts: any SystemFacts) {
         self.config = config
         self.facts = facts
@@ -50,15 +45,14 @@ public struct DefaultApps: Sendable {
         return try resolve(role: .terminal, configured: nil)
     }
 
-    /// The apps of a role that have a rank, best first.
+    /// The apps of a role that have a rank, best first. An app the config gave another role than its built-in id has is
+    /// not a candidate for this one.
     static func ranked(_ apps: [AppDescriptor], role: AppDescriptor.Role) -> [AppDescriptor] {
         apps.filter { $0.role == role }.compactMap { app in app.defaultRank.map { (app: app, rank: $0) } }.sorted { $0.rank < $1.rank }.map(\.app)
     }
 
-    /// The apps of a role in the order they are tried: the built-in ones in the preference order, then the config's own.
+    /// The apps of a role in the order they are tried: the ranked ones, then the config's own that have no rank.
     private func candidates(for role: AppDescriptor.Role) -> [AppDescriptor] {
-        let order = role == .terminal ? Self.terminalOrder : Self.editorOrder
-        // A built-in id the config redefined with another role is not a candidate for this one.
-        return order.compactMap { config.app(id: $0) }.filter { $0.role == role } + config.apps.filter { $0.role == role }
+        Self.ranked(config.allApps, role: role) + config.apps.filter { $0.role == role && $0.defaultRank == nil }
     }
 }

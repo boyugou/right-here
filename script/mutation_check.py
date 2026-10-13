@@ -71,7 +71,7 @@ MUTANTS = [
     ("the runner is not told about a stopped process", "Sources/RightHereKit/ProcessRunner.swift",
      "terminatedAfter: cutOff.happened ? timeout : nil", "terminatedAfter: nil"),
     ("a role-mismatched default terminal is picked", "Sources/RightHereCore/Planner/DefaultApps.swift",
-     "order.compactMap { config.app(id: $0) }.filter { $0.role == role }", "order.compactMap { config.app(id: $0) }"),
+     "apps.filter { $0.role == role }.compactMap { app in", "apps.compactMap { app in"),
     ("a ping waits for a request slot like a tool call", "Sources/RightHereMCP/MCPServer.swift",
      'case .object: return message["method"]?.stringValue == "tools/call"', "case .object: return true"),
     ("the server holds any number of tool calls", "Sources/RightHereMCP/MCPServer.swift",

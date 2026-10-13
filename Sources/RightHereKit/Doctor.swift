@@ -104,7 +104,7 @@ public struct Doctor: Sendable {
                                fix: "Choose another terminal with general.terminal and report this, with the terminal's name and version.")
         case .notInstalled, .unsupported:
             return DoctorCheck(id: "finder.launch", title: title, status: .warn, detail: result.detail,
-                               fix: "Choose a terminal that can run commands with general.terminal (Ghostty or Terminal).")
+                               fix: "Choose a terminal that can run commands with general.terminal (\(KnownApps.commandTerminalPhrase)).")
         case .failed:
             return DoctorCheck(id: "finder.launch", title: title, status: .fail, detail: result.detail,
                                fix: "Run `rh probe launch` in a terminal for details.")

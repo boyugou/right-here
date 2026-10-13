@@ -282,6 +282,12 @@ struct TerminalAdapterTests {
         #expect(adapter("terminal", .template(TerminalLaunch(run: ["/bin/x", "{command}"]))) is TemplateTerminalAdapter)
     }
 
+    @Test func theAdviceNamesTheBuiltInTerminalsThatCanRunCommands() {
+        // `rh doctor` says which terminals to choose; a built-in terminal that gains a way to run commands joins the phrase.
+        #expect(KnownApps.commandTerminalPhrase == "Ghostty or Terminal")
+        #expect(KnownApps.terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name) == ["Ghostty", "Terminal"])
+    }
+
     @Test func theBuiltInDriversAreGhosttyAndTerminalAppAndTheRestAreHandedTheFolder() {
         let drivers = Dictionary(uniqueKeysWithValues: KnownApps.terminals.map { ($0.id, $0.driver) })
         #expect(drivers["ghostty"] == .ghostty)

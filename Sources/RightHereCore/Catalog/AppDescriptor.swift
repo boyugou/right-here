@@ -97,6 +97,13 @@ public enum KnownApps {
         AppDescriptor(id: "android-studio", name: "Android Studio", bundleIDs: ["com.google.android.studio"], role: .editor)
     ]
 
+    /// The built-in terminals an agent can be typed into, as a phrase for advice: "Ghostty or Terminal".
+    public static var commandTerminalPhrase: String {
+        let names = terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name)
+        guard names.count > 1, let last = names.last else { return names.first ?? "" }
+        return names.dropLast().joined(separator: ", ") + " or " + last
+    }
+
     public static func app(id: String) -> AppDescriptor? {
         all.first { $0.id == id }
     }

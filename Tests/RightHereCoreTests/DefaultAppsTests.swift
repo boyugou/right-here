@@ -23,9 +23,32 @@ struct DefaultAppsTests {
         #expect(try DefaultApps(config: .default, facts: machine).resolve(role: .terminal, configured: "warp").id == "warp")
     }
 
-    @Test func theRanksOnTheCatalogRowsGiveTheOrderTheDefaultsHaveAlwaysBeenPickedIn() {
-        #expect(DefaultApps.ranked(KnownApps.all, role: .terminal).map(\.id) == DefaultApps.terminalOrder)
-        #expect(DefaultApps.ranked(KnownApps.all, role: .editor).map(\.id) == DefaultApps.editorOrder)
+    /// Changing the default order is a visible change, so it is a change to this test as well.
+    @Test func theDefaultsArePickedInThisOrder() {
+        #expect(DefaultApps.ranked(KnownApps.all, role: .terminal).map(\.id) == ["ghostty", "cmux", "iterm", "wezterm", "kitty", "alacritty", "warp", "terminal"])
+        #expect(DefaultApps.ranked(KnownApps.all, role: .editor).map(\.id) == ["vscode", "cursor", "zed", "windsurf", "sublime", "nova", "bbedit", "intellij", "pycharm", "webstorm", "textedit"])
+    }
+
+    @Test func ranksAreUniqueWithinARoleAndOnlyAppsThatMeanToBePickedHaveOne() {
+        for role in AppDescriptor.Role.allCases {
+            let ranks = KnownApps.all.filter { $0.role == role }.compactMap(\.defaultRank)
+            #expect(Set(ranks).count == ranks.count, "two \(role.rawValue)s share a rank")
+        }
+        for id in ["xcode", "typora", "obsidian", "android-studio"] { #expect(KnownApps.app(id: id)?.defaultRank == nil, "\(id) is never a default") }
+        #expect(KnownApps.terminals.max { ($0.defaultRank ?? -1) < ($1.defaultRank ?? -1) }?.id == "terminal", "Terminal.app is always there, so it is the last resort")
+    }
+
+    @Test func anEditorIsNeverTheDefaultTerminalAndAnAppWithoutARankIsOnlyUsedWhenTheConfigDefinesIt() throws {
+        let editorsOnly = facts(installed: ["com.microsoft.VSCode", "com.apple.TextEdit", "com.apple.dt.Xcode"])
+        #expect(throws: PlanError.noDefaultApp(.terminal)) { try DefaultApps(config: .default, facts: editorsOnly).resolve(role: .terminal, configured: nil) }
+        // Xcode has no rank, so it is not a default editor either; an editor the config defines is, after the ranked ones.
+        #expect(try DefaultApps(config: .default, facts: editorsOnly).resolve(role: .editor, configured: nil).id == "vscode")
+        let onlyXcode = facts(installed: ["com.apple.dt.Xcode"])
+        #expect(throws: PlanError.noDefaultApp(.editor)) { try DefaultApps(config: .default, facts: onlyXcode).resolve(role: .editor, configured: nil) }
+        let own = AppDescriptor(id: "tower", name: "Tower", bundleIDs: ["com.fournova.Tower3"], role: .editor)
+        let both = facts(installed: ["com.apple.dt.Xcode", "com.fournova.Tower3", "com.apple.TextEdit"])
+        #expect(try DefaultApps(config: Config(apps: [own]), facts: both).resolve(role: .editor, configured: nil).id == "textedit")
+        #expect(try DefaultApps(config: Config(apps: [own]), facts: facts(installed: ["com.fournova.Tower3"])).resolve(role: .editor, configured: nil).id == "tower")
     }
 
     @Test func theTerminalForACommandSkipsOnesThatCannotRunOne() throws {
