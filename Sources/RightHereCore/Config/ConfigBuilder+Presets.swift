@@ -26,7 +26,7 @@ extension ConfigBuilder {
     private func preset(_ reader: ConfigReader, config: Config) -> AgentPreset? {
         reader.checkKnownKeys()
         guard let id = reader.string("id"), let title = reader.string("title"), let prompt = reader.string("prompt") else {
-            sink.error(reader.path, "a preset needs id, title and prompt")
+            reportMissing("a preset", needs: ["id", "title", "prompt"], in: reader)
             return nil
         }
         guard isValidID(id, at: reader.path + ["id"]) else { return nil }
@@ -37,7 +37,7 @@ extension ConfigBuilder {
         }
         for word in PresetTemplate.unknownPlaceholders(in: prompt) {
             sink.error(reader.path + ["prompt"], "unknown placeholder {\(word)}; the placeholders are " + PresetTemplate.placeholders.map { "{\($0)}" }.joined(separator: ", "),
-                       suggestion: Suggestion.didYouMean(word, in: PresetTemplate.placeholders).map { Hint(text: $0.text, replacement: "{\($0.replacement)}") })
+                       suggestion: Suggestion.didYouMean(word, in: PresetTemplate.placeholders).map { Hint(text: $0.text, replacement: "{\($0.replacement ?? word)}") })
             valid = false
         }
         if !isPlainName(title, at: reader.path + ["title"], noun: "title") { valid = false }
@@ -54,8 +54,11 @@ extension ConfigBuilder {
                     sink.warning(reader.path + ["agent"], "agent \"\(named)\" is not known to take a first prompt, so this preset cannot run; set prompt_arg in [agent.\(named)]")
                 }
             } else {
-                sink.error(reader.path + ["agent"], "unknown agent \"\(named)\"; known agents: " + agentIDs.joined(separator: ", "),
-                           suggestion: Suggestion.didYouMean(named, in: agentIDs))
+                // An agent the config defines and the check refused has an error of its own already.
+                if !sink.rejectedAgents.contains(named) {
+                    sink.error(reader.path + ["agent"], "unknown agent \"\(named)\"; known agents: " + agentIDs.joined(separator: ", "),
+                               suggestion: Suggestion.didYouMean(named, in: (config.customAgents + KnownAgents.all).map { ($0.id, $0.name) }))
+                }
                 valid = false
             }
         }

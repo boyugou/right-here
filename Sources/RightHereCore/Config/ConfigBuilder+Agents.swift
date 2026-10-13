@@ -5,7 +5,10 @@ extension ConfigBuilder {
     func readAgents(_ root: ConfigReader, into config: inout Config) {
         guard let agents = root.subtable("agent") else { return }
         for id in agents.table.keys.sorted() {
-            guard isValidID(id, at: ["agent", id], noun: "agent ids") else { continue }
+            guard isValidID(id, at: ["agent", id], noun: "agent ids") else {
+                sink.rejectedAgents.insert(id)
+                continue
+            }
             guard let reader = agents.subtable(id) else { continue }
             agent(id: id, reader: ConfigReader(table: reader.table, path: reader.path, schema: agentSchema, sink: sink), into: &config)
         }
@@ -23,7 +26,7 @@ extension ConfigBuilder {
                 }
             } else if !sink.rejectedAgents.contains(id) {
                 sink.error(["general", "agents"], "unknown agent \"\(id)\"; known agents: " + agentIDs.joined(separator: ", "),
-                           suggestion: Suggestion.didYouMean(id, in: agentIDs))
+                           suggestion: Suggestion.didYouMean(id, in: (config.customAgents + KnownAgents.all).map { ($0.id, $0.name) }))
             }
         }
         // An agent the config defines is not in the menu until general.agents lists it, or `menu.items` names it, and nothing
@@ -77,7 +80,7 @@ extension ConfigBuilder {
         let declaredVariants: [AgentDescriptor.Variant] = reader.tableArray("variant").compactMap { variant in
             variant.checkKnownKeys()
             guard let variantID = variant.string("id"), let title = variant.string("title") else {
-                sink.error(variant.path, "a variant needs id and title")
+                reportMissing("a variant", needs: ["id", "title"], in: variant)
                 return nil
             }
             guard isValidID(variantID, at: variant.path + ["id"]) else { return nil }
@@ -110,7 +113,9 @@ extension ConfigBuilder {
             settings.variants = variants
         } else {
             guard let name = reader.string("name"), let command else {
-                if !sink.rejectedAgents.contains(id) { sink.error(reader.path, "an agent that is not built in needs name and command") }
+                // The definition is refused; the checks that follow must not call the agent unknown as well.
+                if !sink.rejectedAgents.contains(id) { reportMissing("an agent that is not built in", needs: ["name", "command"], in: reader) }
+                sink.rejectedAgents.insert(id)
                 return
             }
             guard isPlainName(name, at: reader.path + ["name"], noun: "name") else {

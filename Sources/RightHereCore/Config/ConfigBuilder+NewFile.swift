@@ -18,7 +18,7 @@ extension ConfigBuilder {
             guard let app = template.openWith else { continue }
             let path = ["new_file", "template", String(index + 1), "open_with"]
             guard let found = config.app(id: app) else {
-                sink.error(path, "unknown app \"\(app)\"", suggestion: Suggestion.didYouMean(app, in: allAppIDs(config)))
+                sink.error(path, "unknown app \"\(app)\"", suggestion: Suggestion.didYouMean(app, in: config.allApps.filter { $0.role != .terminal }.map { ($0.id, $0.name) }))
                 config.newFile.templates[index].openWith = nil
                 continue
             }
@@ -33,7 +33,7 @@ extension ConfigBuilder {
     private func template(_ reader: ConfigReader) -> NewFileTemplate? {
         reader.checkKnownKeys()
         guard let id = reader.string("id"), let title = reader.string("title"), let ext = reader.string("extension") else {
-            sink.error(reader.path, "a template needs id, title and extension")
+            reportMissing("a template", needs: ["id", "title", "extension"], in: reader)
             return nil
         }
         guard isValidID(id, at: reader.path + ["id"]) else { return nil }

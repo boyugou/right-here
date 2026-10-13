@@ -142,6 +142,8 @@ struct TOMLOutline {
                     for known in entryCounts.keys where known.hasPrefix(counted + Self.separator) { entryCounts[known] = nil }
                 }
                 table = resolved(key.segments, includingLast: isArray)
+                // A problem with the array as a whole (`[[agent]]` where a table was expected) is at its first entry.
+                if isArray { record(Array(table.dropLast()), at: opener) }
                 record(table, at: opener)
                 index = skipSpaces(next)
                 guard isLineEnd(index) else { return }

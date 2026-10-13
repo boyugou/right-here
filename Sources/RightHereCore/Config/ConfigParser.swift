@@ -27,7 +27,7 @@ public enum ConfigParser {
     /// `parse` without the lines: a problem names a path, and the merge of two files finds its line in the file it came
     /// from, which is not this text.
     static func parseUnlocated(_ text: String, consequence: String = defaultsApply) -> ConfigLoadResult {
-        let sink = ConfigSink()
+        let sink = ConfigSink(source: text)
         guard let root = readTable(text, sink: sink, consequence: consequence) else {
             return ConfigLoadResult(config: .default, diagnostics: sink.items)
         }
@@ -74,7 +74,12 @@ public enum ConfigParser {
     static func readTree(_ text: String, consequence: String = defaultsApply) -> (tree: [String: TOMLValue]?, diagnostics: [ConfigDiagnostic]) {
         let sink = ConfigSink()
         guard let table = readTable(text, sink: sink, consequence: consequence) else { return (nil, sink.items) }
-        guard let tree = TOMLValue.read(table) else {
+        var outline: TOMLOutline?
+        let tree = TOMLValue.read(table) { path in
+            if outline == nil { outline = TOMLOutline(text) }
+            return outline?.rawValue(of: path.map(\.withControlCharactersEscaped).joined(separator: "."))
+        }
+        guard let tree else {
             sink.error([], "contains a value of a kind this build cannot read")
             return (nil, sink.items)
         }

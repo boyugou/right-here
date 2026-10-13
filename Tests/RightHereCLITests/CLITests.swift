@@ -159,6 +159,21 @@ struct CLITests {
         #expect(diagnostics.first?["line"] as? Int == 6)
     }
 
+    @Test func aWrongValueSaysWhatItWasAndWhereAndAMissingKeyIsNamed() throws {
+        let text = "[general]\nterminal = ghostty\neditor = \"Visual Studio Code\"\ntermnial = 1\n[[app]]\nid = \"x\"\n"
+        let rh = try RH(config: text); defer { rh.cleanUp() }
+        let lines = try rh.run(["config", "validate"]).standardOutput.split(separator: "\n").map(String.init)
+        #expect(lines.count == 4, "\(lines)")
+        #expect(lines[0] == "error: config.toml:2 [general.terminal]: expected a string, found text without quotes (write it in quotes: \"ghostty\")", "\(lines[0])")
+        #expect(lines[1].hasPrefix("error: config.toml:3 [general.editor]: unknown app \"Visual Studio Code\"") && lines[1].hasSuffix("(did you mean \"vscode\"?)"), "\(lines[1])")
+        #expect(lines[2] == "warning: config.toml:4 [general.termnial]: unknown key (did you mean \"terminal\"?)", "\(lines[2])")
+        #expect(lines[3] == "error: config.toml:5 [app.1]: an app needs id and name (missing: name)", "\(lines[3])")
+        // One bare word in the shared file does not cost the rest of it once there is an overlay.
+        try "[general]\nagents = [\"claude\"]\n".write(to: rh.configDirectory.appendingPathComponent("config.local.toml"), atomically: true, encoding: .utf8)
+        let layered = try rh.run(["config", "validate"]).standardOutput.split(separator: "\n").map(String.init)
+        #expect(layered == lines, "\(layered)")
+    }
+
     @Test func theSchemaIsValidJSON() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let schema = try #require(try rh.run(["config", "schema"]).json as? [String: Any])

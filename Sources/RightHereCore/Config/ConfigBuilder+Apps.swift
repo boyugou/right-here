@@ -21,7 +21,7 @@ extension ConfigBuilder {
                 }
             } else {
                 sink.error(["general", "editor"], "unknown app \"\(editor)\"; the first installed editor is used instead",
-                           suggestion: Suggestion.didYouMean(editor, in: allAppIDs(config)))
+                           suggestion: Suggestion.didYouMean(editor, in: config.allApps.filter { $0.role != .terminal }.map { ($0.id, $0.name) }))
             }
         }
     }
@@ -38,7 +38,7 @@ extension ConfigBuilder {
                 sink.error(path, "\"\(id)\" is defined with role \"\(other.role.rawValue)\", not as a terminal; known terminals: " + terminals.joined(separator: ", "))
             } else {
                 sink.error(path, "unknown terminal \"\(id)\"; known terminals: " + terminals.joined(separator: ", ") + ". The first installed terminal is used instead.",
-                           suggestion: Suggestion.didYouMean(id, in: terminals))
+                           suggestion: Suggestion.didYouMean(id, in: apps.filter { $0.role == .terminal }.map { ($0.id, $0.name) }))
             }
             return nil
         }
@@ -48,7 +48,7 @@ extension ConfigBuilder {
     private func app(_ reader: ConfigReader) -> AppDescriptor? {
         reader.checkKnownKeys()
         guard let id = reader.string("id"), let name = reader.string("name") else {
-            sink.error(reader.path, "an app needs id and name")
+            reportMissing("an app", needs: ["id", "name"], in: reader)
             return nil
         }
         guard isValidID(id, at: reader.path + ["id"]) else { return nil }

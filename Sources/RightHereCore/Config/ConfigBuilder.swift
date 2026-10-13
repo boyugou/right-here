@@ -88,6 +88,17 @@ struct ConfigBuilder {
         return false
     }
 
+    /// Says which of what an entry needs is not there: "an app needs id and name (missing: name)". Nothing when every key is
+    /// there: one of the wrong type has been reported already, and a second complaint about the same key would only repeat it.
+    func reportMissing(_ noun: String, needs required: [String], in reader: ConfigReader) {
+        let missing = required.filter { !reader.table.contains(key: $0) }
+        guard !missing.isEmpty else { return }
+        func list(_ words: [String]) -> String {
+            words.count < 2 ? (words.first ?? "") : words.dropLast().joined(separator: ", ") + " and " + words[words.count - 1]
+        }
+        sink.error(reader.path, "\(noun) needs \(list(required)) (missing: \(list(missing)))")
+    }
+
     func allAppIDs(_ config: Config) -> [String] {
         (config.apps + KnownApps.all).map(\.id)
     }

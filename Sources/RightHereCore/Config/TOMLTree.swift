@@ -15,6 +15,9 @@ enum TOMLValue: Equatable {
     case datetime(String)
     case array([TOMLValue])
     case table([String: TOMLValue])
+    /// A value this reader cannot type (text without quotes, a string with a bad escape), kept as it was written and written
+    /// back the same, so that the builder reports it as it would have in the file alone, and the rest of the file applies.
+    case untyped(String)
 
     var tableValue: [String: TOMLValue]? {
         if case .table(let table) = self { return table }
@@ -32,19 +35,26 @@ enum TOMLValue: Equatable {
         return items.allSatisfy { $0.tableValue != nil }
     }
 
-    /// Reads a whole table. `nil` when a value is of a kind this reader does not know.
-    static func read(_ table: TOMLTable) -> [String: TOMLValue]? {
+    /// Reads a whole table. A value of a kind this reader does not know is kept as it was written, when `written` can say
+    /// how (it is given the path of the key); `nil` when it cannot.
+    static func read(_ table: TOMLTable, path: [String] = [], written: ([String]) -> String? = { _ in nil }) -> [String: TOMLValue]? {
         var result: [String: TOMLValue] = [:]
         for key in table.keys {
-            guard let value = read(table, key: key) else { return nil }
-            result[key] = value
+            let here = path + [key]
+            if let value = read(table, key: key, path: here, written: written) {
+                result[key] = value
+            } else if let raw = written(here) {
+                result[key] = .untyped(raw)
+            } else {
+                return nil
+            }
         }
         return result
     }
 
-    private static func read(_ table: TOMLTable, key: String) -> TOMLValue? {
-        if let nested = try? table.table(forKey: key) { return read(nested).map(TOMLValue.table) }
-        if let array = try? table.array(forKey: key) { return read(array).map(TOMLValue.array) }
+    private static func read(_ table: TOMLTable, key: String, path: [String], written: ([String]) -> String?) -> TOMLValue? {
+        if let nested = try? table.table(forKey: key) { return read(nested, path: path, written: written).map(TOMLValue.table) }
+        if let array = try? table.array(forKey: key) { return read(array, path: path, written: written).map(TOMLValue.array) }
         if let value = try? table.string(forKey: key) { return .string(value) }
         if let value = try? table.bool(forKey: key) { return .bool(value) }
         if let value = try? table.integer(forKey: key) { return .integer(value) }
@@ -56,12 +66,12 @@ enum TOMLValue: Equatable {
         return nil
     }
 
-    private static func read(_ array: TOMLArray) -> [TOMLValue]? {
+    private static func read(_ array: TOMLArray, path: [String], written: ([String]) -> String?) -> [TOMLValue]? {
         var items: [TOMLValue] = []
         for index in 0..<array.count {
             let item: TOMLValue?
-            if let nested = try? array.table(atIndex: index) { item = read(nested).map(TOMLValue.table) }
-            else if let nested = try? array.array(atIndex: index) { item = read(nested).map(TOMLValue.array) }
+            if let nested = try? array.table(atIndex: index) { item = read(nested, path: path + [String(index + 1)], written: written).map(TOMLValue.table) }
+            else if let nested = try? array.array(atIndex: index) { item = read(nested, path: path + [String(index + 1)], written: written).map(TOMLValue.array) }
             else if let value = try? array.string(atIndex: index) { item = .string(value) }
             else if let value = try? array.bool(atIndex: index) { item = .bool(value) }
             else if let value = try? array.integer(atIndex: index) { item = .integer(value) }
@@ -118,7 +128,7 @@ public enum TOMLEmitter {
         case .string(let text): return quote(text)
         case .integer(let number): return String(number)
         case .bool(let flag): return flag ? "true" : "false"
-        case .datetime(let text): return text
+        case .datetime(let text), .untyped(let text): return text
         case .float(let number):
             if number.isNaN { return "nan" }
             if number.isInfinite { return number < 0 ? "-inf" : "inf" }

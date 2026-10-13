@@ -918,3 +918,131 @@ struct AgentLauncherDiagnosticTests {
         #expect(!warnings("[menu]\nitems = [\"preset.mine@terminal\"]\n" + preset).contains { $0.message.contains("not in general.agents") })
     }
 }
+
+@Suite("Config: what a value was when it is not what was asked for")
+struct ConfigValueDiagnosticTests {
+    private func only(_ text: String) throws -> ConfigDiagnostic {
+        let result = ConfigParser.parse(text)
+        #expect(result.diagnostics.count == 1, "\(result.diagnostics)")
+        return try #require(result.diagnostics.first)
+    }
+
+    @Test("a value of the wrong kind says what it is, and the line", arguments: [
+        ("[general]\nterminal = 5\n", "general.terminal", "expected a string, found an integer", 2),
+        ("[general]\nterminal = true\n", "general.terminal", "expected a string, found a boolean", 2),
+        ("[general]\nterminal = 1.5\n", "general.terminal", "expected a string, found a number with a decimal point", 2),
+        ("[general]\nterminal = 1979-05-27\n", "general.terminal", "expected a string, found a date or time", 2),
+        ("[general]\nterminal = [\"a\"]\n", "general.terminal", "expected a string, found an array", 2),
+        ("[general]\nterminal = { a = 1 }\n", "general.terminal", "expected a string, found a table", 2),
+        ("# one\n[general]\nagents = [1, 2]\n", "general.agents", "expected an array of strings, found an integer as item 1", 3),
+        ("[general]\nagents = [\"claude\", true]\n", "general.agents", "expected an array of strings, found a boolean as item 2", 2),
+        ("[general]\nagents = 5\n", "general.agents", "expected an array of strings, found an integer", 2),
+        ("general = \"x\"\n", "general", "expected a table, found a string", 1),
+        ("[[agent]]\nname = \"x\"\n", "agent", "expected a table, found an array", 1),
+        ("app = \"x\"\n", "app", "expected an array of tables, written [[app]], found a string", 1),
+        ("[[preset]]\nid = \"p\"\ntitle = \"P\"\nprompt = \"x\"\nmax_files = \"ten\"\n", "preset.1.max_files", "expected an integer, found a string", 5),
+    ])
+    func wrongKind(text: String, path: String, message: String, line: Int) throws {
+        let found = try only(text)
+        #expect(found.path == path && found.message == message && found.line == line && found.severity == .error, "\(found)")
+    }
+
+    @Test func textWithoutQuotesSaysSoAndOffersTheQuotedText() throws {
+        let found = try only("[general]\nterminal = ghostty\n")
+        #expect(found.message == "expected a string, found text without quotes")
+        #expect(found.suggestion == "write it in quotes: \"ghostty\"" && found.replacement == "\"ghostty\"", "\(found)")
+        #expect(found.line == 2)
+        // Inside a list: the item, without a replacement (the raw text of one item is not known).
+        let item = try only("[general]\nagents = [\"claude\", codex]\n")
+        #expect(item.message == "expected an array of strings, found text without quotes as item 2" && item.replacement == nil)
+    }
+
+    @Test func aStringWhereAListWasMeantOffersTheList() throws {
+        let found = try only("[general]\nagents = \"claude\"\n")
+        #expect(found.message == "expected an array of strings, found a string" && found.replacement == "[\"claude\"]", "\(found)")
+    }
+
+    @Test func aStringWithABadEscapeSaysWhySinceItIsAStringAfterAll() throws {
+        let found = try only("[general]\nterminal = \"gh\\qostty\"\n")
+        #expect(found.message.hasPrefix("expected a string, found a value that is not valid (illegal escape character 'q'"), "\(found.message)")
+        #expect(found.message.contains("single quotes"))
+    }
+
+    @Test func aValueTheMergeCannotTypeIsKeptAsWrittenSoTheRestOfTheFileStillApplies() throws {
+        // `readTree` found no kind for `ghostty` or for the bad escape and dropped the whole shared file with "contains a value
+        // of a kind this build cannot read", so the editor and everything else in it were lost the moment an overlay existed.
+        let base = "[general]\nterminal = ghostty\neditor = \"vscode\"\n[[preset]]\nid = \"p\"\ntitle = \"P\"\nprompt = \"look \\d\"\n"
+        let plain = ConfigParser.parse(base)
+        let layered = ConfigLayers.load(base: .text(base), local: .text("[general]\nagents = [\"claude\"]\n"))
+        #expect(layered.config.editor == "vscode" && layered.config.enabledAgents == ["claude"], "\(layered.diagnostics)")
+        #expect(!layered.diagnostics.contains { $0.message.contains("a kind this build cannot read") })
+        // The problems are the ones the file alone has, at the same lines, and nothing else is said.
+        #expect(layered.diagnostics == plain.diagnostics, "\(layered.diagnostics)")
+        #expect(plain.diagnostics.map(\.path) == ["general.terminal", "preset.1.prompt"] && plain.diagnostics.map(\.line) == [2, 7])
+        // With an empty overlay the merge path says the same as the plain one, which the fuzz test also holds.
+        #expect(ConfigLayers.load(base: .text(base), local: .text("# nothing here\n")).diagnostics == plain.diagnostics)
+    }
+
+    @Test func anUntypedValueInTheOverlayIsKeptToo() throws {
+        let layered = ConfigLayers.load(base: .text("[general]\neditor = \"vscode\"\n"), local: .text("[general]\nterminal = ghostty\nagents = [\"codex\"]\n"))
+        #expect(layered.config.editor == "vscode" && layered.config.enabledAgents == ["codex"])
+        let found = try #require(layered.diagnostics.first)
+        #expect(found.file == "config.local.toml" && found.line == 2 && found.path == "general.terminal" && found.message == "expected a string, found text without quotes", "\(found)")
+    }
+
+    @Test func aMissingKeyIsNamedAndAWrongTypedOneIsNotSaidTwice() {
+        func messages(_ text: String) -> [String] { ConfigParser.parse(text).diagnostics.map(\.message) }
+        #expect(messages("[[app]]\nid = \"x\"\n") == ["an app needs id and name (missing: name)"])
+        #expect(messages("[[new_file.template]]\nid = \"y\"\n") == ["a template needs id, title and extension (missing: title and extension)"])
+        #expect(messages("[[preset]]\nid = \"z\"\n") == ["a preset needs id, title and prompt (missing: title and prompt)"])
+        #expect(messages("[agent.q]\ncommand = \"q\"\n") == ["an agent that is not built in needs name and command (missing: name)"])
+        #expect(messages("[agent.claude]\n[[agent.claude.variant]]\nid = \"v\"\n") == ["a variant needs id and title (missing: title)"])
+        // The key is there with the wrong type: one error, the type's, not "needs id" as well.
+        #expect(messages("[[app]]\nid = 5\nname = \"X\"\nbundle_id = \"a.b\"\n") == ["expected a string, found an integer"])
+    }
+
+    @Test func anAgentWithoutANameIsOneErrorNotTwo() {
+        let result = ConfigParser.parse("[general]\nagents = [\"mything\"]\n[agent.mything]\ncommand = \"x\"\n[[preset]]\nid = \"p\"\ntitle = \"P\"\nagent = \"mything\"\nprompt = \"x {files}\"\n")
+        #expect(result.diagnostics.map(\.path) == ["agent.mything"], "\(result.diagnostics)")
+        let invalidID = ConfigParser.parse("[general]\nagents = [\"Bad Id\"]\n[agent.\"Bad Id\"]\nname = \"B\"\ncommand = \"b\"\n")
+        #expect(invalidID.diagnostics.count == 1 && invalidID.diagnostics.first?.path == "agent.Bad Id", "\(invalidID.diagnostics)")
+    }
+
+    @Test func anEnumErrorListsTheValidValues() throws {
+        let found = try only("[copy_path]\nstyles = [\"absolute\", \"relative\"]\n")
+        #expect(found.message.hasPrefix("unknown style \"relative\"; known styles: absolute, tilde, git-relative"), "\(found.message)")
+        for style in PathStyle.allCases { #expect(found.message.contains(style.rawValue)) }
+    }
+
+    @Test("a name finds the id it is the name of", arguments: [
+        ("[general]\neditor = \"Visual Studio Code\"\n", "general.editor", "vscode"),
+        ("[general]\nterminal = \"Ghostty\"\n", "general.terminal", "ghostty"),
+        ("[general]\nagents = [\"Claude Code\"]\n", "general.agents", "claude"),
+        ("[general]\nagents = [\"Gemini CLI\"]\n", "general.agents", "gemini"),
+        ("[[new_file.template]]\nid = \"t\"\ntitle = \"T\"\nextension = \"md\"\nopen_with = \"Typora\"\n", "new_file.template.1.open_with", "typora"),
+    ])
+    func didYouMeanByName(text: String, path: String, id: String) throws {
+        let found = try #require(ConfigParser.parse(text).diagnostics.first { $0.path == path })
+        #expect(found.replacement == id && found.suggestion == "did you mean \"\(id)\"?", "\(found)")
+    }
+
+    @Test func aKeyThatBelongsInAnotherTableSaysWhere() throws {
+        func hint(_ text: String) throws -> ConfigDiagnostic { try #require(ConfigParser.parse(text).diagnostics.first { $0.message == "unknown key" }) }
+        let placement = try hint("[copy_path]\nterminal_placement = \"tab\"\n")
+        #expect(placement.suggestion == "\"terminal_placement\" belongs in [general]" && placement.replacement == nil, "\(placement)")
+        #expect(try hint("[copy_path]\nitems = []\n").suggestion == "\"items\" is a key of [menu] and [services]")
+        #expect(try hint("[menu]\nagents = [\"claude\"]\n").suggestion == "\"agents\" belongs in [general]")
+        #expect(try hint("[general]\ncommand = \"x\"\n").suggestion == "\"command\" belongs in [agent.<id>]")
+        #expect(try hint("[general]\nvariant = 1\n").suggestion == "\"variant\" belongs in [agent.<id>]")
+        // Too many homes to be a hint; and a typo of a key of this table is a typo first.
+        #expect(try hint("[copy_path]\nid = \"x\"\n").suggestion == nil)
+        #expect(try hint("[copy_path]\nstyls = []\n").suggestion == "did you mean \"styles\"?")
+        #expect(try hint("[copy_path]\nzzzzzzzzzz = 1\n").suggestion == nil)
+    }
+
+    @Test func problemsComeInTheOrderOfTheFile() {
+        let result = ConfigParser.parse("[general]\ntermnial = \"x\"\nagnts = []\nedtor = \"x\"\n[menu]\nitemz = []\n")
+        #expect(result.diagnostics.map(\.path) == ["general.termnial", "general.agnts", "general.edtor", "menu.itemz"])
+        #expect(result.diagnostics.map(\.line) == [2, 3, 4, 6])
+    }
+}

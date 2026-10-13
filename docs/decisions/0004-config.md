@@ -59,4 +59,17 @@ A cold-start agent that only had the installed `rh` and its docs found the sharp
   `--force`, which could not save the old file first). It used to read as a missing file (`No config file ...; defaults
   apply`) everywhere except in `rh init`. The reading is `BoundedRead`, the one reader the sync folder uses too: a file
   past the size limit is not read, and a link is followed.
+- A value of the wrong kind says what it is: `expected a string, found an integer`, `... found text without quotes` (with the
+  quoted text as the replacement), `expected an array of strings, found a string` (with the list as the replacement),
+  `... found an integer as item 2`. The kind is found by asking the library to read the value as each kind it has; a string in
+  quotes that the library cannot read (a bad escape) is said with the library's reason, which `outline`'s written text tells from
+  bare text. Enum errors list the valid values, an unknown key that is a key of another table says where it belongs
+  (`"terminal_placement" belongs in [general]`; `id`, which a dozen tables have, says nothing), an id given as a display name
+  ("Visual Studio Code", "Claude Code") is matched to its id, an entry that lacks keys says which, and an agent the config
+  defines without a name is one error and not also an unknown agent in `general.agents` and in a preset.
+- A value this build cannot type used to make the whole shared file unreadable the moment an overlay existed (the merge works on
+  typed values; one bare word failed `TOMLValue.read`, so `config.toml` was dropped with "contains a value of a kind this build
+  cannot read" and none of its settings applied, where the file alone applied everything else). Such a value is now carried
+  through the merge as it was written (`TOMLValue.untyped`, found by the outline) and written back the same, so the builder
+  reports it as it does for the file alone, and everything else in the file applies.
 

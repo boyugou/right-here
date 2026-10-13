@@ -181,7 +181,8 @@ struct TOMLOutlineTests {
         #expect(outline.line(of: "general.agents") == 5)
         #expect(outline.line(of: "general.nothing") == 3)
         #expect(outline.line(of: "app.2.id") == 13)
-        #expect(outline.line(of: "app.3.id") == nil && outline.line(of: "app.3") == nil)
+        // An entry that is not there falls back to the array's first one: `[[app]]` as a whole is at line 8.
+        #expect(outline.line(of: "app") == 8 && outline.line(of: "app.3.id") == 8)
         #expect(outline.line(of: "nothing") == nil)
     }
 

@@ -40,7 +40,7 @@ extension ConfigBuilder {
                     return nil
                 }
                 if let style = PathStyle(rawValue: name) { return style }
-                sink.error(["copy_path", "styles"], "unknown style \"\(name)\"",
+                sink.error(["copy_path", "styles"], "unknown style \"\(name)\"; known styles: " + PathStyle.allCases.map(\.rawValue).joined(separator: ", "),
                            suggestion: Suggestion.didYouMean(name, in: PathStyle.allCases.map(\.rawValue)))
                 return nil
             }
@@ -74,7 +74,7 @@ extension ConfigBuilder {
             guard let problem else { return }
             let word = problem.word
             sink.warning(path, "\"\(entry)\" names something that is not defined (\(problem.what)), so it is left out",
-                         suggestion: Suggestion.didYouMean(word, in: problem.choices).map { Hint(text: $0.text, replacement: entry.replacingOccurrences(of: word, with: $0.replacement)) })
+                         suggestion: Suggestion.didYouMean(word, in: problem.choices).map { Hint(text: $0.text, replacement: entry.replacingOccurrences(of: word, with: $0.replacement ?? word)) })
         }
         for entry in config.menuItems ?? [] where entry != "-" && !MenuBuilder.groups.contains(entry) { check(entry, in: ["menu", "items"]) }
         for entry in config.serviceItems ?? [] { check(entry, in: ["services", "items"]) }
