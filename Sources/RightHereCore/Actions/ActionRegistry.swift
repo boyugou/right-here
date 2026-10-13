@@ -122,21 +122,9 @@ public struct ActionRegistry: Sendable {
         }
         guard let agent = config.agent(for: preset) else { return }
         info.title = localizer.agentVariant(agent.name, presetTitle)
-        info.icon = agent.iconBundleID.flatMap { facts.applicationURL(bundleID: $0) != nil ? Icon.app($0) : nil } ?? .symbol("terminal")
-        let resolved = config.launcher(forAgent: agent.id, explicit: terminalID.map { .terminal($0) }, hasVariant: true)
-        guard case .terminal(let chosen) = resolved.launcher else { return }
-        if let blocker = commandTerminalBlocker(chosen) { unavailable(&info, reason: blocker) }
-    }
-
-    /// Why a command cannot be typed into the terminal (the named one, or the default for commands), or `nil`.
-    private func commandTerminalBlocker(_ terminalID: String?) -> String? {
-        let terminal: AppDescriptor?
-        if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? defaults.commandTerminal() }
-        guard let terminal else { return terminalID.map { "Unknown terminal \"\($0)\"." } ?? "No terminal is installed." }
-        guard let bundleID = terminal.installedBundleID(facts: facts) else { return "\(terminal.name) is not installed." }
-        let adapter = TerminalAdapters.adapter(for: terminal)
-        if !adapter.supportsCommands { return "\(terminal.name) cannot run commands yet." }
-        return adapter.commandBlocker(bundleID: bundleID, facts: facts)
+        info.icon = icon(of: agent)
+        let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: true, explicit: terminalID.map { .terminal($0) }, config: config, facts: facts)
+        if case .failure(let why) = resolution.route { unavailable(&info, reason: why.text) }
     }
 
     private func describeApp(_ info: inout ActionInfo, terminal id: String?) {
@@ -185,31 +173,19 @@ public struct ActionRegistry: Sendable {
             }
             variant = found
         }
-        info.icon = agent.iconBundleID.flatMap { facts.applicationURL(bundleID: $0) != nil ? Icon.app($0) : nil } ?? .symbol("terminal")
+        info.icon = icon(of: agent)
 
-        let resolved = config.launcher(forAgent: id, explicit: launcher, hasVariant: variant != nil)
-        if let conflict = resolved.conflict {
-            info.title = localizer.agentVariant(agent.name, variant?.localizedTitle(localizer) ?? "")
-            info.shortTitle = variant?.localizedTitle(localizer) ?? info.title
-            unavailable(&info, reason: conflict)
-            return
-        }
-        switch resolved.launcher {
+        // Titles follow the launcher whether or not it can start; availability is the resolution's.
+        let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: variant != nil, explicit: launcher, config: config, facts: facts)
+        switch resolution.launcher {
         case .desktop:
             info.title = localizer.agentDesktop(agent.name)
             info.shortTitle = info.title
-            if agent.desktopLink == nil { unavailable(&info, reason: "\(agent.name) has no desktop app link.") }
-            else if let bundleID = agent.iconBundleID, facts.applicationURL(bundleID: bundleID) == nil {
-                unavailable(&info, reason: "The \(agent.name) desktop app is not installed.")
-            }
         case .terminalLink:
             info.title = localizer.agentLink(agent.name)
             info.shortTitle = info.title
-            if agent.terminalLink == nil { unavailable(&info, reason: "\(agent.name) has no terminal link.") }
         case .terminal(let terminalID):
-            let terminal: AppDescriptor?
-            if let terminalID { terminal = config.app(id: terminalID).flatMap { $0.role == .terminal ? $0 : nil } } else { terminal = try? defaults.commandTerminal() }
-            let terminalName = terminal.map(name(of:)) ?? terminalID ?? ""
+            let terminalName = terminalID.flatMap { config.terminalApp(id: $0) }.map(name(of:)) ?? terminalID ?? ""
             if let variant {
                 let variantTitle = variant.localizedTitle(localizer)
                 info.title = terminalID == nil ? localizer.agentVariant(agent.name, variantTitle) : localizer.agentVariantIn(agent.name, variantTitle, terminal: terminalName)
@@ -218,21 +194,13 @@ public struct ActionRegistry: Sendable {
                 info.title = terminalID == nil ? localizer.agentHere(agent.name) : localizer.agentIn(agent.name, terminal: terminalName)
                 info.shortTitle = info.title
             }
-            guard let terminal else {
-                unavailable(&info, reason: terminalID.map { "Unknown terminal \"\($0)\"." } ?? "No terminal is installed.")
-                return
-            }
-            if let bundleID = terminal.installedBundleID(facts: facts) {
-                let adapter = TerminalAdapters.adapter(for: terminal)
-                if !adapter.supportsCommands {
-                    unavailable(&info, reason: "\(terminal.name) cannot run commands yet.")
-                } else if let blocker = adapter.commandBlocker(bundleID: bundleID, facts: facts) {
-                    unavailable(&info, reason: blocker)
-                }
-            } else {
-                unavailable(&info, reason: "\(terminal.name) is not installed.")
-            }
         }
+        if case .failure(let why) = resolution.route { unavailable(&info, reason: why.text) }
+    }
+
+    /// The agent's own app icon when that app is installed, else a terminal symbol.
+    private func icon(of agent: AgentDescriptor) -> Icon {
+        agent.iconBundleID.flatMap { facts.applicationURL(bundleID: $0) != nil ? Icon.app($0) : nil } ?? .symbol("terminal")
     }
 
     private func unavailable(_ info: inout ActionInfo, title: String? = nil, reason: String) {

@@ -130,4 +130,14 @@ struct AgentLaunchResolutionTests {
         guard case .success(.terminal(let app, _, _)) = resolution.route else { Issue.record("\(resolution.route)"); return }
         #expect(app.id == "terminal")
     }
+
+    @Test func thePlannerRefusesWithTheSameSentenceAsTheRegistry() throws {
+        let machine = facts([terminalApp])
+        let context = HereContext(origin: .container, container: URL(fileURLWithPath: "/Users/tester/code"))
+        for ref in [ActionRef.agent(id: "claude", variant: nil, launcher: .desktop), .agent(id: "codex", variant: nil, launcher: .terminalLink),
+                    .agent(id: "claude", variant: nil, launcher: .terminal("warp")), .agent(id: "claude", variant: "continue", launcher: .desktop)] {
+            let reason = try #require(ActionRegistry(config: .default, facts: machine).info(ref).unavailableReason)
+            #expect(throws: PlanError.unsupported(reason), "\(ref.id)") { try Planner(facts: machine).plan(ref, context: context) }
+        }
+    }
 }

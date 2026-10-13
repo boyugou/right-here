@@ -122,10 +122,20 @@ struct AgentLaunchAgreementTests {
                     if case .preset = ref { context = files } else { context = folder }
                     let info: ActionInfo
                     if case .preset = ref { info = registry.info(ref, context: context) } else { info = registry.info(ref) }
-                    let planned = (try? planner.plan(ref, context: context)) != nil
+                    var refusal: PlanError?
+                    do { _ = try planner.plan(ref, context: context) } catch { refusal = error as? PlanError }
+                    let planned = refusal == nil
                     if info.available { offered += 1 } else { refused += 1 }
                     if info.available != planned || (info.available == (info.unavailableReason != nil)) {
                         disagreements.append("\(machine.name) / \(configName) / \(ref.id): offered \(info.available) (\(info.unavailableReason ?? "no reason")), planned \(planned)")
+                    }
+                    // What cannot start is explained in the same words by `rh actions` and by `rh run`.
+                    switch ref {
+                    case .agent, .preset:
+                        if case .unsupported(let text)? = refusal, text != info.unavailableReason {
+                            disagreements.append("\(machine.name) / \(configName) / \(ref.id): the planner says \"\(text)\", the registry \"\(info.unavailableReason ?? "nothing")\"")
+                        }
+                    default: break
                     }
                 }
             }

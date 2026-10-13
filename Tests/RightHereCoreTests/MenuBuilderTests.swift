@@ -132,7 +132,7 @@ struct ActionRegistryTests {
         let facts = machine(installed: ["dev.warp.Warp-Stable"])
         let info = ActionRegistry(config: Config(terminal: "warp"), facts: facts).info(.agent(id: "claude", variant: nil, launcher: nil))
         #expect(!info.available)
-        #expect(info.unavailableReason == "Warp cannot run commands yet.")
+        #expect(info.unavailableReason == "Warp cannot run commands yet. Choose another terminal for this agent.")
     }
 
     @Test func agentLinksNeedNoTerminalAdapter() {
