@@ -451,6 +451,7 @@ struct CLITests {
         #expect(guide.standardOutput.contains("rh doctor"))
         #expect(guide.standardOutput.contains("tccutil reset AppleEvents"))
         #expect(try rh.run(["docs", "nonsense"]).status != 0)
+        #expect(try rh.run(["docs", "troubleshoot"]).standardError.contains("Did you mean \"troubleshooting\"?"))
     }
 
     @Test func probeLaunchRefusesAnUnknownTerminal() throws {

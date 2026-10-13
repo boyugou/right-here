@@ -27,7 +27,9 @@ struct Docs: ParsableCommand {
             return
         }
         guard let text = Documentation.text(for: topic) else {
-            throw ValidationError("Unknown topic \"\(topic)\". Run `rh docs` to list them.")
+            let word = topic.lowercased()
+            let close = ["config", "actions", "agent-setup", "troubleshooting"].first { !word.isEmpty && ($0.hasPrefix(word) || word.hasPrefix($0)) }
+            throw ValidationError("Unknown topic \"\(topic)\".\(close.map { " Did you mean \"\($0)\"?" } ?? "") Run `rh docs` to list them.")
         }
         Output.print(text)
     }
