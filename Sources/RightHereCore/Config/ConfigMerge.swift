@@ -124,7 +124,22 @@ struct ConfigMerge {
         filterEntries(&root, at: ["new_file", "template"], disabled: disabled)
         if case .table(var agents)? = root["agent"] {
             for id in disabled { agents.removeValue(forKey: id) }
+            // What names a disabled app falls back to the default, instead of becoming an error on this machine.
+            for (id, value) in agents {
+                if case .table(var table) = value, case .string(let terminal)? = table["terminal"], disabled.contains(terminal) {
+                    table.removeValue(forKey: "terminal")
+                    agents[id] = .table(table)
+                }
+            }
             root["agent"] = .table(agents)
+        }
+        Self.update(&root, at: ["new_file", "template"]) { value in
+            guard let items = value.arrayValue else { return value }
+            return .array(items.map { item in
+                guard var table = item.tableValue, case .string(let app)? = table["open_with"], disabled.contains(app) else { return item }
+                table.removeValue(forKey: "open_with")
+                return .table(table)
+            })
         }
         Self.update(&root, at: ["general", "agents"]) { Self.filterStrings($0) { !disabled.contains($0) } }
         for key in ["terminal", "editor"] {

@@ -800,12 +800,23 @@ struct CLITests {
 
 @Suite("rh config sync")
 struct ConfigSyncCLITests {
+    /// An `rh` whose home, config included, is a folder of its own, with the config written where `rh config path` says.
+    private func isolated(config: String? = nil) throws -> RH {
+        let rh = try RH(trialHome: true)
+        if let config {
+            let file = try configFile(rh)
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try config.write(to: file, atomically: true, encoding: .utf8)
+        }
+        return rh
+    }
+
     private func configFile(_ rh: RH) throws -> URL {
         URL(fileURLWithPath: try rh.run(["config", "path"]).standardOutput.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
     @Test func theDefaultFolderIsResolvedThroughTheTrialHome() throws {
-        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let rh = try isolated(); defer { rh.cleanUp() }
         let result = try rh.run(["config", "sync", "enable"])
         #expect(result.status == 0, "\(result.standardError)")
         let home = try #require(rh.home)
@@ -814,7 +825,7 @@ struct ConfigSyncCLITests {
     }
 
     @Test func pushStatusPullRoundTrip() throws {
-        let rh = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("synced")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         #expect(try rh.run(["config", "sync", "status"]).status == 1)
@@ -834,7 +845,7 @@ struct ConfigSyncCLITests {
     }
 
     @Test func pullRefusesALocalEditUnlessForced() throws {
-        let rh = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("synced")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
@@ -853,7 +864,7 @@ struct ConfigSyncCLITests {
     }
 
     @Test func aConfigWithASecretLookingKeyIsNotPushed() throws {
-        let rh = try RH(config: "[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n"); defer { rh.cleanUp() }
+        let rh = try isolated(config: "[agent.mine]\nname = \"M\"\ncommand = \"m\"\napi_key = \"x\"\n"); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("synced")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         _ = try rh.run(["config", "sync", "enable", "--folder", folder.path])
@@ -864,7 +875,7 @@ struct ConfigSyncCLITests {
     }
 
     @Test func anOverlayIsReadByValidateAndNamedInProblems() throws {
-        let rh = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let rh = try isolated(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
         let overlay = try configFile(rh).deletingLastPathComponent().appendingPathComponent("config.local.toml")
         try "[general]\ntermnial = \"x\"\n".write(to: overlay, atomically: true, encoding: .utf8)
         let result = try rh.run(["config", "validate"])
@@ -875,7 +886,7 @@ struct ConfigSyncCLITests {
     }
 
     @Test func syncIsListedInHelp() throws {
-        let rh = try RH(); defer { rh.cleanUp() }
+        let rh = try isolated(); defer { rh.cleanUp() }
         let text = try rh.run(["config", "--help"]).standardOutput
         #expect(text.contains("sync"))
         let sync = try rh.run(["config", "sync", "--help"]).standardOutput

@@ -86,7 +86,8 @@ public enum Documentation {
     - `[agent.<id>]` merges key by key, so the overlay can change one agent's `command` and keep its variants.
     - `disabled = ["id", ...]` removes ids from the result on this Mac: apps, new-file templates and agents,
       and their entries in `general.agents`, `menu.items` and `services.items`. An id that does not exist here is
-      skipped, so a shared config may name apps this Mac lacks. `disabled` does nothing in `config.toml` and is reported there.
+      skipped, so a shared config may name apps this Mac lacks. Disabling every template the shared config
+      defines brings the built-in txt and md back. `disabled` does nothing in `config.toml` and is reported there.
 
     Example, a work laptop without Codex and with another default terminal:
 

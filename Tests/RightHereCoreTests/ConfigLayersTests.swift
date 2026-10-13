@@ -152,6 +152,32 @@ struct ConfigLayersDisabledTests {
         #expect(!result.hasErrors)
     }
 
+    @Test func whatNamesADisabledAppFallsBackInsteadOfBecomingAnError() {
+        let base = """
+        [[app]]
+        id = "warpish"
+        name = "W"
+        bundle_id = "a.w"
+        role = "terminal"
+        [[app]]
+        id = "tower"
+        name = "T"
+        bundle_id = "a.t"
+        [[new_file.template]]
+        id = "py"
+        title = "Py"
+        extension = "py"
+        open_with = "tower"
+        [agent.claude]
+        terminal = "warpish"
+        """
+        let result = layered(base, "disabled = [\"warpish\", \"tower\"]\n")
+        #expect(!result.hasErrors, "\(result.diagnostics.map(\.message))")
+        #expect(result.config.apps.isEmpty)
+        #expect(result.config.newFile.templates.first { $0.id == "py" }?.openWith == nil)
+        #expect(result.config.agents["claude"]?.launcher == nil)
+    }
+
     @Test func aMissingIDIsSimplySkipped() {
         let result = layered(baseConfig, "disabled = [\"not-installed-here\"]\n")
         #expect(result.config.apps.count == 2)
