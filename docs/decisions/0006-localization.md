@@ -111,7 +111,10 @@ rendering the Arabic window showed `~/.config/...` and `/Applications/...` with 
 The window therefore renders doctor lines with `render(_:isolatingValues: true)`, which puts each value of a
 right-to-left language in a Unicode isolate (U+2068 ... U+2069); a text that is only its value is left as it is. It is an
 option, off by default, because the menu, the alerts and the names of Services and files go through the same function
-and must not carry invisible marks.
+and must not carry invisible marks. A command between backticks in the catalog's own text is not a value, so it cannot be
+isolated that way; one that ends in a bracket (`rh config sync enable --folder <folder>`) had its closing bracket drawn
+mirrored and on the wrong side, so a right-to-left translation puts a left-to-right mark after it, which
+`merge_translations.py` adds, `verify_localizations.py` demands and a test holds.
 
 Alternatives: the doctor takes a `Localizer` and returns strings (every consumer must choose a language, the JSON has
 no codes, and the English the tests pin would depend on the language); leaving the sentences English and translating
