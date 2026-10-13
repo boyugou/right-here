@@ -10,13 +10,14 @@ struct SetupView: View {
 
     init(model: SetupModel) {
         self.model = model
-        _detailsExpanded = State(initialValue: model.needsAttention)
+        _detailsExpanded = State(initialValue: model.needsAttention && !model.extensionNeedsSetup)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             header
             summary
+            if model.extensionNeedsSetup { onboarding }
             details
             if let message = model.message {
                 Text(message).font(.callout).foregroundStyle(.secondary)
@@ -25,9 +26,13 @@ struct SetupView: View {
         }
         .padding(24)
         .frame(width: 560)
-        .task { await model.refresh() }
+        .task {
+            await model.refresh()
+            await model.watchExtension()
+        }
         .onChange(of: model.needsAttention) { _, attention in
-            if attention { detailsExpanded = true }
+            // The first-run card already says what to do; the long list would push it off a small screen.
+            if attention, !model.extensionNeedsSetup { detailsExpanded = true }
         }
     }
 
@@ -72,6 +77,61 @@ struct SetupView: View {
         .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
     }
 
+    /// First run: three steps in order, and a way around the extension. Shown until the extension is on.
+    private var onboarding: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(l10n.string(.appOnboardTitle)).font(.headline)
+            step(1, title: l10n.string(.appStepOneTitle), body: l10n.string(.appStepOneBody),
+                 done: model.check("terminal.default")?.status == .ok && model.check("editor.default")?.status == .ok) {
+                ForEach(["terminal.default", "editor.default"], id: \.self) { id in
+                    if let detail = model.check(id)?.detail {
+                        Text(CheckRow.styled(detail)).font(.callout).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } }
+            }
+            step(2, title: l10n.string(.appStepTwoTitle), body: l10n.string(.appStepTwoBody), done: false) {
+                Button(l10n.string(.appExtensionSettings)) { model.showExtensionSettings() }
+            }
+            step(3, title: l10n.string(.appStepThreeTitle), body: l10n.string(.appStepThreeBody), done: false) {
+                Button(l10n.string(.appTestLaunch)) { Task { await model.testTerminalLaunch() } }
+                    .disabled(model.isWorking)
+            }
+            Divider()
+            VStack(alignment: .leading, spacing: 2) {
+                Text(l10n.string(.appQuickActionsTitle)).font(.callout.weight(.medium))
+                Text(l10n.string(.appQuickActionsBody)).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityElement(children: .combine)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    private func step(_ number: Int, title: String, body: String, done: Bool, @ViewBuilder content: () -> some View) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle().fill(done ? Color.green : Color.accentColor)
+                if done {
+                    Image(systemName: "checkmark").font(.caption.weight(.bold)).foregroundStyle(.white)
+                } else {
+                    Text(number.formatted()).font(.caption.weight(.bold)).foregroundStyle(.white)
+                }
+            }
+            .frame(width: 24, height: 24)
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title).font(.body.weight(.medium))
+                Text(body).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                content()
+            }
+            Spacer(minLength: 0)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(l10n.string(.appStepLabel, number.formatted(), title))
+    }
+
     private var details: some View {
         DisclosureGroup(l10n.string(.appDetails), isExpanded: $detailsExpanded) {
             VStack(alignment: .leading, spacing: 0) {
@@ -97,12 +157,10 @@ struct SetupView: View {
                 Spacer()
             }
             HStack {
-                Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } }
+                // The first-run card has its own buttons for these two.
+                if !model.extensionNeedsSetup { Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } } }
                 Button(l10n.string(.appCopySetupPrompt)) { model.copySetupPrompt() }
                 Spacer()
-                if model.checks.contains(where: { $0.id == "finder.extension" && $0.status != .ok }) {
-                    Button(l10n.string(.appExtensionSettings)) { model.showExtensionSettings() }
-                }
             }
         }
     }

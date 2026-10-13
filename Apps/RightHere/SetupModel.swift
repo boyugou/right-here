@@ -26,9 +26,40 @@ final class SetupModel {
         checks.contains { $0.status != .ok }
     }
 
-    func refresh() async {
-        isWorking = true
-        defer { isWorking = false }
+    /// The Finder extension is the one thing the first-run card waits for.
+    var extensionNeedsSetup: Bool {
+        checks.contains { $0.id == "finder.extension" && $0.status != .ok }
+    }
+
+    #if PREVIEW
+    /// For `script/preview_setup.sh --onboarding`: shows the first-run card on a machine where the extension is on.
+    func simulateExtensionOff() {
+        checks = checks.map { check in
+            var copy = check
+            if check.id == "finder.extension" { copy.status = .needsUser }
+            return copy
+        }
+    }
+    #endif
+
+    func check(_ id: String) -> DoctorCheck? {
+        checks.first { $0.id == id }
+    }
+
+    /// While the extension is not switched on, looks again every two seconds, so the card turns green by itself
+    /// after the person flips the switch in System Settings. It stops as soon as the extension is ok, and when the
+    /// caller's task is cancelled (the window closed). It stays out of the way of work the person started.
+    func watchExtension() async {
+        while extensionNeedsSetup, !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(2))
+            if !isWorking, !Task.isCancelled { await refresh(quiet: true) }
+        }
+    }
+
+    /// - Parameter quiet: Do not show the busy state (buttons stay enabled); used by the background poll.
+    func refresh(quiet: Bool = false) async {
+        if !quiet { isWorking = true }
+        defer { if !quiet { isWorking = false } }
         let doctor = Doctor(facts: facts, paths: paths, loaded: ConfigStore.load(paths: paths), rhPath: helper.path)
         checks = await doctor.run()
     }

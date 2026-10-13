@@ -5252,7 +5252,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Quick Actions بدون افزونه کار می‌کند: روی یک فایل یا پوشه کلیک راست کنید و Quick Actions را انتخاب کنید. برای میان‌بر صفحه‌کلید، به System Settings › Keyboard › Keyboard Shortcuts › Services بروید."
+            "value": "‏Quick Actions بدون افزونه کار می‌کند: روی یک فایل یا پوشه کلیک راست کنید و Quick Actions را انتخاب کنید. برای میان‌بر صفحه‌کلید، به System Settings › Keyboard › Keyboard Shortcuts › Services بروید."
           }
         },
         "fr": {
@@ -5372,7 +5372,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Quick Actions ایکسٹینشن کے بغیر کام کرتے ہیں: کسی فائل یا فولڈر پر دائیں کلک کریں اور Quick Actions منتخب کریں۔ کی بورڈ شارٹ کٹ کے لیے System Settings › Keyboard › Keyboard Shortcuts › Services پر جائیں۔"
+            "value": "‏Quick Actions ایکسٹینشن کے بغیر کام کرتے ہیں: کسی فائل یا فولڈر پر دائیں کلک کریں اور Quick Actions منتخب کریں۔ کی بورڈ شارٹ کٹ کے لیے System Settings › Keyboard › Keyboard Shortcuts › Services پر جائیں۔"
           }
         },
         "vi": {
@@ -6554,7 +6554,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here این‌ها را در مک شما پیدا کرد. برای تغییر آن‌ها، فایل پیکربندی را ویرایش کنید."
+            "value": "‏Right Here این‌ها را در مک شما پیدا کرد. برای تغییر آن‌ها، فایل پیکربندی را ویرایش کنید."
           }
         },
         "fr": {
@@ -6566,7 +6566,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here מצאה את אלה ב-Mac שלכם. כדי לשנות אותם, ערכו את קובץ ההגדרות."
+            "value": "‏Right Here מצאה את אלה ב-Mac שלכם. כדי לשנות אותם, ערכו את קובץ ההגדרות."
           }
         },
         "hi": {
@@ -6674,7 +6674,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here کو آپ کے Mac پر یہ ملے۔ انہیں تبدیل کرنے کے لیے کنفیگ فائل میں ترمیم کریں۔"
+            "value": "‏Right Here کو آپ کے Mac پر یہ ملے۔ انہیں تبدیل کرنے کے لیے کنفیگ فائل میں ترمیم کریں۔"
           }
         },
         "vi": {
@@ -7298,7 +7298,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here را در فهرست Finder روشن کنید. این صفحه خودبه‌خود به‌روز می‌شود."
+            "value": "‏Right Here را در فهرست Finder روشن کنید. این صفحه خودبه‌خود به‌روز می‌شود."
           }
         },
         "fr": {
@@ -7604,7 +7604,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder ایکسٹینشن آن کریں"
+            "value": "‏Finder ایکسٹینشن آن کریں"
           }
         },
         "vi": {
@@ -11762,7 +11762,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here نتوانست این کار را انجام دهد: %@"
+            "value": "‏Right Here نتوانست این کار را انجام دهد: %@"
           }
         },
         "fr": {
@@ -11774,7 +11774,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here לא הצליחה לבצע את הפעולה: %@"
+            "value": "‏Right Here לא הצליחה לבצע את הפעולה: %@"
           }
         },
         "hi": {
@@ -11882,7 +11882,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here یہ کام نہیں کر سکا: %@"
+            "value": "‏Right Here یہ کام نہیں کر سکا: %@"
           }
         },
         "vi": {
@@ -13928,7 +13928,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI ایجنٹ شروع کریں"
+            "value": "‏AI ایجنٹ شروع کریں"
           }
         },
         "vi": {
@@ -14114,7 +14114,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI ایجنٹ"
+            "value": "‏AI ایجنٹ"
           }
         },
         "vi": {
