@@ -156,7 +156,11 @@ public struct Planner: Sendable {
             return LaunchPlan(action: ref.id, summary: "Open \(agent.name) in \(directory.lastPathComponent)", steps: [.openURL(url)])
 
         case .terminal(let app, let bundleID, let adapter):
-            let typed = ([agent.command] + (variant?.arguments ?? [])).joined(separator: " ")
+            let typed: String
+            switch AgentLaunchResolution.typedLine(agent: agent, variant: variant) {
+            case .success(let line): typed = line
+            case .failure(let why): throw PlanError(why)
+            }
             let fallback = resolution.launcher == .terminal(nil) ? fallbackNotice(role: .terminal, typing: true, used: app) : []
             return try typeCommand(typed, summary: typed, in: app, bundleID: bundleID, adapter: adapter, directory: directory, ref: ref, context: context, notices: fallback)
         }

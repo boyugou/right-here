@@ -23,6 +23,8 @@ struct AgentLaunchResolution: Sendable {
         case terminalNotInstalled(String)
         /// The terminal has no way to run a command, or none on this machine (an old version): the adapter says which.
         case terminalCannotRunCommands(String)
+        /// An argument of a variant cannot be quoted so that every shell reads it back the same.
+        case variantArgument(variant: String, argument: String)
 
         var text: String {
             switch self {
@@ -34,6 +36,8 @@ struct AgentLaunchResolution: Sendable {
             case .noDefaultTerminal(let error): return error.message
             case .terminalNotInstalled(let name): return PlanError.appNotInstalled(name).message
             case .terminalCannotRunCommands(let text): return text
+            case .variantArgument(let variant, let argument):
+                return "The argument \"\(argument)\" of the variant \"\(variant)\" has a backslash, which shells do not all read the same way inside quotes. Put the whole command in the agent's `command`, which is typed as written."
             }
         }
     }
@@ -64,6 +68,21 @@ struct AgentLaunchResolution: Sendable {
         case .terminal(let id):
             return resolution(terminalRoute(id, config: config, facts: facts))
         }
+    }
+
+    /// The line typed to start the agent. `command` is a typed command line, so it goes in as written and may carry arguments of
+    /// its own (`claude --model opus`). Each element of a variant's `arguments` is one argument, one word of the line: it is
+    /// quoted when it needs it, so `"be brief; echo $HOME"` reaches the agent as that one argument and not as shell syntax,
+    /// and a word that needs no quoting (`--continue`, `resume`) is typed bare, as it always was. An argument with a backslash
+    /// is refused: fish reads one inside single quotes differently from the other shells (the reason presets refuse it too),
+    /// and the terminal's shell is not necessarily the login shell.
+    static func typedLine(agent: AgentDescriptor, variant: AgentDescriptor.Variant?) -> Result<String, Unavailable> {
+        var words = [agent.command]
+        for argument in variant?.arguments ?? [] {
+            if argument.unicodeScalars.contains("\\") { return .failure(.variantArgument(variant: variant?.id ?? "", argument: argument)) }
+            words.append(ShellQuoting.quote(argument, for: .posix))
+        }
+        return .success(words.joined(separator: " "))
     }
 
     /// The terminal a command is typed into: the named one, or the default for commands.

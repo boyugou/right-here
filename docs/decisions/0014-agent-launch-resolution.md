@@ -21,6 +21,13 @@ terminal link, or a terminal with its adapter) or an `Unavailable` that carries 
   that names both, `rh menu --explain` lists it, and the plan carries a note). Only the default falls back: an action that
   names an app (`open.terminal@iterm`, an agent's own `terminal`) keeps saying that app is not installed. When nothing of
   the role is installed the configured app is returned as it is, so the action says it is missing.
+- `AgentLaunchResolution.typedLine` builds the line typed to start the agent. `command` is a typed command line and goes
+  in as written, so it may carry arguments of its own (`claude --model opus`). Each element of a variant's `arguments` is
+  one argument: it is quoted with `ShellQuoting` when it needs it (`"be brief; echo $HOME"` is one word, not shell
+  syntax), and a word that needs no quoting is typed bare, so the built-in variants are typed exactly as before. An
+  argument with a backslash is refused, in the menu (it is unavailable, with the sentence) and by `rh run` alike, since fish
+  reads a backslash inside single quotes differently from the other shells (the reason presets refuse one too); the
+  place for such text is `command`. `[agent.<id>.variant] arguments` is the only list of arguments there is.
 - A terminal adapter owns the sentence for "cannot run commands" (`commandRefusal`); the resolution reports it and
   `steps` still throws it.
 - How a terminal is started (`driver`: Ghostty, Terminal.app, hand it the folder, or an argument vector from

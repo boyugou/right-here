@@ -192,7 +192,11 @@ public struct ActionRegistry: Sendable {
                 info.shortTitle = info.title
             }
         }
-        if case .failure(let why) = resolution.route { unavailable(&info, reason: why.text) }
+        if case .failure(let why) = resolution.route {
+            unavailable(&info, reason: why.text)
+        } else if variant != nil, case .failure(let why) = AgentLaunchResolution.typedLine(agent: agent, variant: variant) {
+            unavailable(&info, reason: why.text)
+        }
     }
 
     /// The agent's own app icon when that app is installed, else a terminal symbol.
