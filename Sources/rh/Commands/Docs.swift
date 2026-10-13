@@ -17,18 +17,11 @@ struct Docs: ParsableCommand {
 
     func run() throws {
         guard let topic else {
-            Output.print("""
-            Topics:
-              config           every setting in config.toml, with defaults and examples
-              actions          the action id grammar
-              agent-setup      how an AI agent should set up Right Here
-              troubleshooting  the menu does not appear, a click does nothing, permission prompts
-            """)
+            Output.print(Documentation.listing)
             return
         }
         guard let text = Documentation.text(for: topic) else {
-            let word = topic.lowercased()
-            let close = ["config", "actions", "agent-setup", "troubleshooting"].first { !word.isEmpty && ($0.hasPrefix(word) || word.hasPrefix($0)) }
+            let close = Documentation.closestTopic(to: topic)
             throw ValidationError("Unknown topic \"\(topic)\".\(close.map { " Did you mean \"\($0)\"?" } ?? "") Run `rh docs` to list them.")
         }
         Output.print(text)

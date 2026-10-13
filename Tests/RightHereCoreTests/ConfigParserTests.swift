@@ -662,6 +662,13 @@ struct DocumentationTopicTests {
         #expect(Documentation.text(for: "nope") == nil)
     }
 
+    @Test func theListingAndTheSuggestionComeFromTheSameTopics() {
+        for topic in Documentation.topics { #expect(Documentation.listing.contains("  \(topic) ")) }
+        #expect(Documentation.closestTopic(to: "troubleshoot") == "troubleshooting")
+        #expect(Documentation.closestTopic(to: "") == nil)
+        #expect(Documentation.closestTopic(to: "zzz") == nil)
+    }
+
     @Test func theTroubleshootingGuideMatchesTheFileInTheRepository() throws {
         let file = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("docs/TROUBLESHOOTING.md")

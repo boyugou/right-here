@@ -70,7 +70,27 @@ public enum Documentation {
 
     public static let config = ConfigSchema.markdown()
 
-    public static let topics = ["config", "actions", "agent-setup", "troubleshooting"]
+    /// The topics, in the order they are listed, with a one-line summary each. Every surface that names topics
+    /// (`rh docs`, the MCP docs tool) takes them from here.
+    public static let topicSummaries: [(name: String, summary: String)] = [
+        ("config", "every setting in config.toml, with defaults and examples"),
+        ("actions", "the action id grammar"),
+        ("agent-setup", "how an AI agent should set up Right Here"),
+        ("troubleshooting", "the menu does not appear, a click does nothing, permission prompts")
+    ]
+
+    public static let topics = topicSummaries.map(\.name)
+
+    /// The topic list `rh docs` prints without an argument.
+    public static var listing: String {
+        "Topics:\n" + topicSummaries.map { "  " + $0.name.padding(toLength: 17, withPad: " ", startingAt: 0) + $0.summary }.joined(separator: "\n")
+    }
+
+    /// The topic a mistyped word most likely meant.
+    public static func closestTopic(to word: String) -> String? {
+        let word = word.lowercased()
+        return topics.first { !word.isEmpty && ($0.hasPrefix(word) || word.hasPrefix($0)) }
+    }
 
     public static func text(for topic: String) -> String? {
         switch topic {
