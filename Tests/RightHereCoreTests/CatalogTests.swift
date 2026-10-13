@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import RightHereCore
 
@@ -12,16 +13,36 @@ struct CatalogTests {
     @Test func rowsCarryEnabledStateInstalledStateAndVariants() {
         var config = Config(enabledAgents: ["claude"])
         config.agents["claude"] = .init(command: "claude --model opus")
-        let claude = config.agentRows.first { $0.id == "claude" }
+        let claude = config.agentRows().first { $0.id == "claude" }
         #expect(claude?.enabled == true)
         #expect(claude?.command == "claude --model opus")
         #expect(claude?.variants == ["continue", "resume"])
         #expect(claude?.terminalLink == true && claude?.desktopLink == true)
-        #expect(config.agentRows.first { $0.id == "aider" }?.enabled == false)
-        #expect(config.agentRows.map(\.id) == config.allAgents.map(\.id))
+        #expect(config.agentRows().first { $0.id == "aider" }?.enabled == false)
+        #expect(config.agentRows().map(\.id) == config.allAgents.map(\.id))
         let apps = config.appRows(facts: FakeSystemFacts())
         #expect(apps.map(\.id) == config.allApps.map(\.id))
         #expect(apps.allSatisfy { !$0.installed && $0.bundleID == nil })
+    }
+
+    @Test func aRowSaysWhetherTheShellFoundTheCommandOnlyWhenItWasAsked() {
+        var config = Config(enabledAgents: ["claude"])
+        config.agents["claude"] = .init(command: "claude --model opus")
+        #expect(config.agentRows().allSatisfy { $0.foundInShell == nil })
+        let asked = config.agentRows(found: ["claude"])
+        #expect(asked.first { $0.id == "claude" }?.foundInShell == true, "found by the first word of the command")
+        #expect(asked.first { $0.id == "aider" }?.foundInShell == false)
+        #expect(asked.map(\.id) == config.agentRows().map(\.id), "the same rows in the same order, asked or not")
+    }
+
+    @Test func aRowReadsBackAsItWasWritten() throws {
+        let config = Config(enabledAgents: ["claude"])
+        for rows in [config.agentRows(), config.agentRows(found: ["claude", "codex"])] {
+            let data = try JSONEncoder().encode(rows)
+            #expect(try JSONDecoder().decode([AgentRow].self, from: data) == rows)
+            let written = try #require(try JSONSerialization.jsonObject(with: data) as? [[String: Any]])
+            #expect(written.allSatisfy { ($0["foundInShell"] == nil) == (rows.first?.foundInShell == nil) }, "not asked, so not said")
+        }
     }
 
     @Test func aConfigLauncherNameMapsToTheLauncher() {

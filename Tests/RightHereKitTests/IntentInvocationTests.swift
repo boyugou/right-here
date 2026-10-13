@@ -32,14 +32,18 @@ struct IntentInvocationTests {
         }
     }
 
-    @Test func agentsAreTheEnabledOrFoundOnes() {
-        let json = """
-        [{"id":"claude","name":"Claude Code","command":"claude","enabled":true,"foundInShell":true,"variants":[],"terminalLink":false,"desktopLink":false},
-         {"id":"codex","name":"Codex","command":"codex","enabled":false,"foundInShell":true,"variants":[],"terminalLink":false,"desktopLink":false},
-         {"id":"aider","name":"Aider","command":"aider","enabled":false,"foundInShell":false,"variants":[],"terminalLink":false,"desktopLink":false}]
-        """
-        #expect(IntentCatalog.agents(fromJSON: Data(json.utf8)) == [IntentChoice(id: "claude", name: "Claude Code"), IntentChoice(id: "codex", name: "Codex")])
+    @Test func agentsAreTheEnabledOrFoundOnes() throws {
+        // The rows `rh agents --json` writes, written the way it writes them: the intents read the very type it prints.
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        let rows = Config(enabledAgents: ["claude"]).agentRows(found: ["claude", "codex"])
+        #expect(IntentCatalog.agents(fromJSON: try encoder.encode(rows)) == [IntentChoice(id: "claude", name: "Claude Code"), IntentChoice(id: "codex", name: "Codex")])
         #expect(IntentCatalog.agents(fromJSON: Data()) == [])
+    }
+
+    @Test func anAgentThatWasNotLookedUpIsOfferedOnlyWhenEnabled() throws {
+        let rows = Config(enabledAgents: ["claude"]).agentRows()
+        #expect(IntentCatalog.agents(fromJSON: try JSONEncoder().encode(rows)) == [IntentChoice(id: "claude", name: "Claude Code")])
     }
 
     @Test func templatesComeFromTheNewFileActions() {

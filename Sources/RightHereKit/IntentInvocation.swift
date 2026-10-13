@@ -62,17 +62,10 @@ public struct IntentChoice: Sendable, Equatable, Hashable {
 }
 
 public enum IntentCatalog {
-    private struct AgentRow: Decodable {
-        var id: String
-        var name: String
-        var enabled: Bool
-        var foundInShell: Bool
-    }
-
     /// Agents that are enabled or found in the login shell; the others would only fail with "not found".
     public static func agents(fromJSON data: Data) -> [IntentChoice] {
         guard let rows = try? JSONDecoder().decode([AgentRow].self, from: data) else { return [] }
-        return rows.filter { $0.enabled || $0.foundInShell }.map { IntentChoice(id: $0.id, name: $0.name) }
+        return rows.filter { $0.enabled || $0.foundInShell == true }.map { IntentChoice(id: $0.id, name: $0.name) }
     }
 
     /// The templates in `rh actions --json`: ids `new-file.<template>`, titled for the menu ("New Markdown File").

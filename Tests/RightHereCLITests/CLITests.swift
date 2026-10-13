@@ -269,6 +269,16 @@ struct CLITests {
         #expect(agents.first { $0["id"] as? String == "claude" }?["promptArgument"] as? String == "positional")
     }
 
+    @Test func theAgentsTheIntentsOfferAreReadFromWhatRhAgentsPrints() throws {
+        let rh = try RH(config: "[general]\nagents = [\"claude\"]\n"); defer { rh.cleanUp() }
+        let result = try rh.run(["agents", "--json"])
+        #expect(result.status == 0, Comment(rawValue: result.standardError))
+        let rows = try #require(result.json as? [[String: Any]])
+        #expect(!rows.isEmpty && rows.allSatisfy { $0["foundInShell"] is Bool }, "rh agents asks the login shell about every command")
+        // The App Intents decode this very output, and a row they cannot read would leave their picker empty without a word.
+        #expect(IntentCatalog.agents(fromJSON: Data(result.standardOutput.utf8)).contains(IntentChoice(id: "claude", name: "Claude Code")))
+    }
+
     @Test("what a menu click sends is accepted by the real rh, for every kind of Finder menu", arguments: [
         FinderMenuKind.items, .container, .sidebar, .toolbar
     ])

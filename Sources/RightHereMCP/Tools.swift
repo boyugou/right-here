@@ -262,15 +262,12 @@ enum Tools {
 
     private static func catalog(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         let config = server.loadConfig().config
-        let apps = config.appRows(facts: server.facts).map { app -> JSONValue in
-            .object(["id": .string(app.id), "name": .string(app.name), "role": .string(app.role), "installed": .bool(app.installed)])
-        }
-        let agents = config.agentRows.map { agent -> JSONValue in
-            .object(["id": .string(agent.id), "name": .string(agent.name), "command": .string(agent.command),
-                     "enabled": .bool(agent.enabled), "variants": .array(agent.variants.map { .string($0) }),
-                     "prompt_arg": agent.promptArgument.map { .string($0) } ?? .null])
-        }
-        let structured = JSONValue.object(["apps": .array(apps), "agents": .array(agents)])
+        // The rows `rh apps --json` and `rh agents --json` print. Whether a command is in the login shell is not asked
+        // here (that starts a shell), so an agent has no `foundInShell`.
+        let structured = JSONValue.object([
+            "apps": try JSONValue(encoding: config.appRows(facts: server.facts)),
+            "agents": try JSONValue(encoding: config.agentRows())
+        ])
         return ToolOutput(text: structured.pretty(), structured: structured)
     }
 

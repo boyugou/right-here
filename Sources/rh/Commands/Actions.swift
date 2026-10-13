@@ -97,35 +97,16 @@ struct Agents: AsyncParsableCommand {
     @Flag(help: "Print JSON.")
     var json = false
 
-    struct Row: Encodable {
-        var id: String
-        var name: String
-        var command: String
-        var enabled: Bool
-        var foundInShell: Bool
-        var variants: [String]
-        var terminalLink: Bool
-        var desktopLink: Bool
-        var promptArgument: String?
-    }
-
     func run() async throws {
         let runtime = Runtime()
-        let all = runtime.config.allAgents
-        let found = await Detector(facts: runtime.facts).commandsFound(all.map(\.executable))
-        let rows = zip(all, runtime.config.agentRows).map { agent, row in
-            Row(
-                id: row.id, name: row.name, command: row.command, enabled: row.enabled, foundInShell: found.contains(agent.executable),
-                variants: row.variants, terminalLink: row.terminalLink, desktopLink: row.desktopLink,
-                promptArgument: row.promptArgument
-            )
-        }
+        let found = await Detector(facts: runtime.facts).commandsFound(runtime.config.allAgents.map(\.executable))
+        let rows = runtime.config.agentRows(found: found)
         if json {
             try Output.json(rows)
             return
         }
         for row in rows {
-            let state = row.enabled ? "enabled" : (row.foundInShell ? "found, not enabled" : "not found")
+            let state = row.enabled ? "enabled" : (row.foundInShell == true ? "found, not enabled" : "not found")
             Output.print("\(row.id.padding(toLength: 12, withPad: " ", startingAt: 0))\(row.name.padding(toLength: 16, withPad: " ", startingAt: 0))\(state)")
         }
     }

@@ -322,7 +322,12 @@ struct MCPToolTests {
         let result = try await harness.call("right_here_catalog")
         let apps = try #require(result["structuredContent"]?["apps"]?.arrayValue)
         #expect(apps.contains { $0["id"]?.stringValue == "ghostty" && $0["installed"]?.boolValue == true })
-        #expect(result["structuredContent"]?["agents"]?.arrayValue?.contains { $0["id"]?.stringValue == "claude" } == true)
+        let agents = try #require(result["structuredContent"]?["agents"]?.arrayValue)
+        let claude = try #require(agents.first { $0["id"]?.stringValue == "claude" })
+        // The rows `rh agents --json` prints, one shape; asking the login shell starts a shell, which this tool does not do.
+        #expect(claude["promptArgument"]?.stringValue == "positional")
+        #expect(claude["terminalLink"]?.boolValue == true)
+        #expect(agents.allSatisfy { $0["foundInShell"] == nil })
     }
 
     @Test func doctorReturnsChecks() async throws {

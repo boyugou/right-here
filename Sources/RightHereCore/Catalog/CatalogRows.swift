@@ -9,13 +9,14 @@ public struct AppRow: Sendable, Equatable, Encodable {
     public var bundleID: String?
 }
 
-/// One agent as `rh agents` and the MCP catalog tool list it. Whether the command is found in the login shell
-/// is not part of it: that takes a shell, which only `rh agents` starts.
-public struct AgentRow: Sendable, Equatable, Encodable {
+/// One agent as `rh agents`, the MCP catalog tool and the App Intents (which read `rh agents --json` back) list it.
+public struct AgentRow: Sendable, Equatable, Codable {
     public var id: String
     public var name: String
     public var command: String
     public var enabled: Bool
+    /// Whether the login shell finds the command; `nil` when nobody asked it, which takes a shell that only `rh agents` starts.
+    public var foundInShell: Bool?
     public var variants: [String]
     public var terminalLink: Bool
     public var desktopLink: Bool
@@ -31,11 +32,13 @@ extension Config {
         }
     }
 
-    public var agentRows: [AgentRow] {
+    /// - Parameter found: The commands the login shell found among those of the agents, or `nil` when nobody asked it.
+    public func agentRows(found: Set<String>? = nil) -> [AgentRow] {
         allAgents.map { agent in
             AgentRow(
                 id: agent.id, name: agent.name, command: agent.command,
                 enabled: enabledAgents.contains(agent.id),
+                foundInShell: found.map { $0.contains(agent.executable) },
                 variants: agent.variants.map(\.id), terminalLink: agent.terminalLink != nil, desktopLink: agent.desktopLink != nil,
                 promptArgument: agent.promptArgument?.configValue
             )
