@@ -190,7 +190,7 @@ struct PlannerTests {
         #expect(throws: PlanError.unknownTerminal("nope")) {
             try Planner(facts: machine()).plan(.openTerminal("nope"), context: folder("/Users/tester/code/app"))
         }
-        #expect(throws: PlanError.unknownTerminal("nowhere")) {
+        #expect(throws: PlanError.unsupported(PlanError.unknownTerminal("nowhere").localizedDescription)) {
             try Planner(facts: machine()).plan(.agent(id: "claude", variant: nil, launcher: .terminal("nowhere")), context: folder("/Users/tester/code/app"))
         }
     }
@@ -229,7 +229,7 @@ struct PlannerTests {
     }
 
     @Test func codexDesktopLink() throws {
-        let plan = try Planner(facts: machine()).plan(
+        let plan = try Planner(facts: machine(installed: ["com.openai.codex"])).plan(
             .agent(id: "codex", variant: nil, launcher: .desktop), context: folder("/Users/tester/code/app")
         )
         #expect(plan.steps == [.openURL("codex://threads/new?path=%2FUsers%2Ftester%2Fcode%2Fapp")])

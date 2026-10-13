@@ -4,7 +4,6 @@ import Foundation
 /// `do script`, which types the line into the user's own login shell.
 public struct AppleTerminalAdapter: TerminalAdapter {
     public let terminalID = "terminal"
-    public var supportsCommands: Bool { true }
     public var typesTheFolder: Bool { true }
 
     public init() {}

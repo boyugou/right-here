@@ -8,7 +8,6 @@ import Foundation
 /// PATH, version managers and aliases apply, and the shell stays open afterwards.
 public struct GhosttyAdapter: TerminalAdapter {
     public let terminalID = "ghostty"
-    public var supportsCommands: Bool { true }
 
     /// The first release with an AppleScript dictionary.
     static let firstScriptableVersion = AppVersion("1.3")!

@@ -56,8 +56,8 @@ public struct TerminalSession: Sendable, Equatable {
 /// Knows how one terminal opens a session in a folder. Adapters only build steps.
 public protocol TerminalAdapter: Sendable {
     var terminalID: String { get }
-    /// Whether the terminal can run a command in the new session, which agents need.
-    var supportsCommands: Bool { get }
+    /// Why this terminal has no way to run a command in a new session, which agents need; `nil` when it has one.
+    var commandRefusal: String? { get }
     /// Whether the folder reaches the shell as typed text (`cd …`) rather than as the session's working
     /// directory. Typed text is read by a shell the adapter cannot see, so such an adapter refuses folder
     /// names the common shells read differently.
@@ -69,6 +69,9 @@ public protocol TerminalAdapter: Sendable {
 }
 
 extension TerminalAdapter {
+    public var commandRefusal: String? { nil }
+    /// Whether the terminal can run a command in the new session.
+    public var supportsCommands: Bool { commandRefusal == nil }
     public func commandBlocker(bundleID: String, facts: any SystemFacts) -> String? { nil }
     public var typesTheFolder: Bool { false }
 }
@@ -77,7 +80,7 @@ extension TerminalAdapter {
 public struct OpenFolderTerminalAdapter: TerminalAdapter {
     public let terminalID: String
     public let displayName: String
-    public var supportsCommands: Bool { false }
+    public var commandRefusal: String? { "\(displayName) cannot run commands yet. Choose another terminal for this agent." }
 
     public init(terminalID: String, displayName: String) {
         self.terminalID = terminalID
@@ -85,9 +88,7 @@ public struct OpenFolderTerminalAdapter: TerminalAdapter {
     }
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
-        if session.typedInput != nil {
-            throw PlanError.unsupported("\(displayName) cannot run a command yet. Choose another terminal for this agent.")
-        }
+        if session.typedInput != nil, let refusal = commandRefusal { throw PlanError.unsupported(refusal) }
         return [.open(OpenStep(bundleID: bundleID, targets: [try session.requireDirectory(facts)]))]
     }
 }

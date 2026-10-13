@@ -108,15 +108,6 @@ struct AgentLaunchAgreementTests {
     private let folder = HereContext(origin: .container, container: URL(fileURLWithPath: appFolder))
     private let files = HereContext(origin: .items, items: [URL(fileURLWithPath: "\(appFolder)/a.txt")])
 
-    /// While a desktop launch is planned whether or not the agent's app is there, the menu does not offer it.
-    private func desktopAppMissing(_ ref: ActionRef, config: Config, facts: FakeSystemFacts) -> Bool {
-        guard case .agent(let id, let variant, let launcher) = ref, let agent = config.agent(id: id),
-              agent.variants.contains(where: { $0.id == variant }) || variant == nil else { return false }
-        let chosen = config.launcher(forAgent: id, explicit: launcher, hasVariant: variant != nil)
-        guard chosen.conflict == nil, chosen.launcher == .desktop, agent.desktopLink != nil, let bundleID = agent.iconBundleID else { return false }
-        return facts.applicationURL(bundleID: bundleID) == nil
-    }
-
     @Test("an action is offered exactly when it can be planned, for every agent, variant, launcher and terminal")
     func offeredExactlyWhenPlannable() {
         var disagreements: [String] = []
@@ -132,9 +123,8 @@ struct AgentLaunchAgreementTests {
                     let info: ActionInfo
                     if case .preset = ref { info = registry.info(ref, context: context) } else { info = registry.info(ref) }
                     let planned = (try? planner.plan(ref, context: context)) != nil
-                    let expected = planned && !desktopAppMissing(ref, config: config, facts: machine.facts)
                     if info.available { offered += 1 } else { refused += 1 }
-                    if info.available != expected || (info.available == (info.unavailableReason != nil)) {
+                    if info.available != planned || (info.available == (info.unavailableReason != nil)) {
                         disagreements.append("\(machine.name) / \(configName) / \(ref.id): offered \(info.available) (\(info.unavailableReason ?? "no reason")), planned \(planned)")
                     }
                 }

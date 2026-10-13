@@ -119,13 +119,11 @@ public struct Planner: Sendable {
         return LaunchPlan(action: ref.id, summary: "Open \(directory.lastPathComponent) in \(app.name)", steps: steps, notices: folderNotice(for: context, directory: directory))
     }
 
-    private func resolveTerminal(_ id: String?, forCommand: Bool = false) throws -> (AppDescriptor, String) {
+    private func resolveTerminal(_ id: String?) throws -> (AppDescriptor, String) {
         let app: AppDescriptor
         if let id {
-            guard let found = config.app(id: id), found.role == .terminal else { throw PlanError.unknownTerminal(id) }
+            guard let found = config.terminalApp(id: id) else { throw PlanError.unknownTerminal(id) }
             app = found
-        } else if forCommand {
-            app = try defaults.commandTerminal()
         } else {
             app = try defaults.resolve(role: .terminal, configured: config.terminal)
         }
@@ -145,38 +143,35 @@ public struct Planner: Sendable {
             variant = found
         }
         let directory = try workingDirectory(for: context)
-        let resolved = config.launcher(forAgent: id, explicit: launcher, hasVariant: variant != nil)
-        if let conflict = resolved.conflict { throw PlanError.unsupported(conflict) }
-        let chosen = resolved.launcher
+        let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: variant != nil, explicit: launcher, config: config, facts: facts)
 
-        switch chosen {
-        case .desktop:
-            guard let link = agent.desktopLink else {
-                throw PlanError.unsupported("\(agent.name) has no desktop app link.")
-            }
+        switch try route(of: resolution) {
+        case .desktop(let link):
             let url = Self.expand(link, directory: directory, prompt: "")
             return LaunchPlan(action: ref.id, summary: "Open \(agent.name) desktop in \(directory.lastPathComponent)", steps: [.openURL(url)])
 
-        case .terminalLink:
-            guard let link = agent.terminalLink else {
-                throw PlanError.unsupported("\(agent.name) has no terminal link. Use a terminal launcher instead.")
-            }
+        case .terminalLink(let link):
             let url = Self.expand(link, directory: directory, prompt: mentionPrefill(context: context, directory: directory))
             return LaunchPlan(action: ref.id, summary: "Open \(agent.name) in \(directory.lastPathComponent)", steps: [.openURL(url)])
 
-        case .terminal(let terminalID):
+        case .terminal(let app, let bundleID, let adapter):
             let typed = ([agent.command] + (variant?.arguments ?? [])).joined(separator: " ")
-            return try typeCommand(typed, summary: typed, terminalID: terminalID, directory: directory, ref: ref, context: context)
+            return try typeCommand(typed, summary: typed, in: app, bundleID: bundleID, adapter: adapter, directory: directory, ref: ref, context: context)
+        }
+    }
+
+    private func route(of resolution: AgentLaunchResolution) throws -> AgentLaunchResolution.Route {
+        switch resolution.route {
+        case .success(let route): return route
+        case .failure(let unavailable): throw PlanError(unavailable)
         }
     }
 
     /// Types a command into a new shell of a terminal that can run commands, in `directory`.
-    private func typeCommand(_ typed: String, summary: String, terminalID: String?, directory: URL, ref: ActionRef, context: HereContext, notices: [String] = []) throws -> LaunchPlan {
+    private func typeCommand(_ typed: String, summary: String, in app: AppDescriptor, bundleID: String, adapter: any TerminalAdapter, directory: URL, ref: ActionRef, context: HereContext, notices: [String] = []) throws -> LaunchPlan {
         do { try ShellQuoting.validateForTyping(typed) } catch { throw PlanError.unsafeText(typed) }
         do { try ShellQuoting.validateForTyping(directory.path) } catch { throw PlanError.unsafeText(directory.path) }
-        let (app, bundleID) = try resolveTerminal(terminalID, forCommand: true)
-        let steps = try TerminalAdapters.adapter(for: app)
-            .steps(for: TerminalSession(directory: directory, typedInput: typed, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
+        let steps = try adapter.steps(for: TerminalSession(directory: directory, typedInput: typed, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
         return LaunchPlan(
             action: ref.id,
             summary: "Run \(summary) in \(directory.lastPathComponent) with \(app.name)",
@@ -220,13 +215,13 @@ public struct Planner: Sendable {
         var words = [agent.command]
         if case .flag(let flag) = promptArgument { words.append(ShellQuoting.quote(flag, for: .posix)) }
         words.append(ShellQuoting.quote(prompt, for: .posix))
-        let resolved = config.launcher(forAgent: agent.id, explicit: terminal.map { .terminal($0) }, hasVariant: true)
-        guard case .terminal(let terminalID) = resolved.launcher else { throw PlanError.unsupported("A preset is typed into a terminal.") }
+        let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: true, explicit: terminal.map { .terminal($0) }, config: config, facts: facts)
+        guard case .terminal(let app, let bundleID, let adapter) = try route(of: resolution) else { throw PlanError.unsupported("A preset is typed into a terminal.") }
         var notices: [String] = []
         if context.items.contains(where: { facts.isDirectory($0) == true }), preset.needsFiles {
             notices.append("Folders in the selection are not named in the prompt; only files are.")
         }
-        return try typeCommand(words.joined(separator: " "), summary: "\(agent.command) with preset \(id)", terminalID: terminalID, directory: directory, ref: ref, context: context, notices: notices)
+        return try typeCommand(words.joined(separator: " "), summary: "\(agent.command) with preset \(id)", in: app, bundleID: bundleID, adapter: adapter, directory: directory, ref: ref, context: context, notices: notices)
     }
 
     /// Selected files become `@` mentions in the prompt box; nothing is sent.

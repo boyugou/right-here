@@ -98,6 +98,12 @@ public struct Config: Sendable, Equatable {
         apps.first { $0.id == id } ?? KnownApps.app(id: id)
     }
 
+    /// The terminal with this id; `nil` when no app has it or it is not a terminal (a built-in id can be redefined as
+    /// an editor).
+    public func terminalApp(id: String) -> AppDescriptor? {
+        app(id: id).flatMap { $0.role == .terminal ? $0 : nil }
+    }
+
     /// Every app Right Here offers: the ones the config defines, then the built-in ones they do not
     /// replace. An app defined under a built-in id replaces that built-in everywhere.
     public var allApps: [AppDescriptor] {
