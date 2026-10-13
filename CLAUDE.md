@@ -49,6 +49,10 @@ docs/                    DESIGN.md, decisions/, development/
    this clone.
 7. **Platform.** macOS 26 or later, Apple silicon, Swift 6 with strict
    concurrency. No older-OS fallbacks.
+8. **No backward compatibility.** The project has no existing users. Change or delete on-disk formats, JSON
+   output, config keys, action ids and command-line output when a cleaner design calls for it; do not add
+   deprecated aliases, migration code or tests that keep an old shape working. The safety rules and the tests that
+   pin real behaviour stay.
 
 ## Working agreements
 
