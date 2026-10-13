@@ -1,5 +1,6 @@
 import Foundation
 import RightHereCore
+import Synchronization
 
 public struct ProcessResult: Sendable, Equatable {
     public var status: Int32
@@ -164,11 +165,14 @@ public struct LiveProcessRunner: ProcessRunner {
 }
 
 /// Accumulates what a pipe delivers, and notices when every writer has closed it.
-private final class PipeCollector: @unchecked Sendable {
+private final class PipeCollector: Sendable {
+    private struct State {
+        var data = Data()
+        var reachedEnd = false
+    }
+
     private let handle: FileHandle
-    private let lock = NSLock()
-    private var data = Data()
-    private var reachedEnd = false
+    private let state = Mutex(State())
 
     init(_ handle: FileHandle) {
         self.handle = handle
@@ -177,19 +181,19 @@ private final class PipeCollector: @unchecked Sendable {
             guard let self else { return }
             if chunk.isEmpty {
                 source.readabilityHandler = nil
-                self.lock.withLock { self.reachedEnd = true }
+                self.state.withLock { $0.reachedEnd = true }
             } else {
-                self.lock.withLock { self.data.append(chunk) }
+                self.state.withLock { $0.data.append(chunk) }
             }
         }
     }
 
-    var collected: Data { lock.withLock { data } }
+    var collected: Data { state.withLock { $0.data } }
 
     /// Returns as soon as the pipe reaches its end, or after `limit`.
     func waitForEnd(upTo limit: Duration) async {
         let deadline = ContinuousClock.now + limit
-        while !lock.withLock({ reachedEnd }), ContinuousClock.now < deadline {
+        while !state.withLock({ $0.reachedEnd }), ContinuousClock.now < deadline {
             try? await Task.sleep(for: .milliseconds(5))
         }
     }
@@ -205,12 +209,11 @@ private final class LaunchFailure: @unchecked Sendable {
 }
 
 /// Whether the watchdog stopped the process, written by the watchdog's task and read once the process is gone.
-private final class CutOff: @unchecked Sendable {
-    private let lock = NSLock()
-    private var fired = false
+private final class CutOff: Sendable {
+    private let fired = Mutex(false)
 
-    func mark() { lock.withLock { fired = true } }
-    var happened: Bool { lock.withLock { fired } }
+    func mark() { fired.withLock { $0 = true } }
+    var happened: Bool { fired.withLock { $0 } }
 }
 
 /// Gives every process that has no limit of its own a default one, so a step that waits for a person (an Apple

@@ -85,25 +85,17 @@ struct ContextOptions: ParsableArguments {
     var paths: [String] = []
 
     func makeContext(facts: any SystemFacts) throws -> HereContext {
-        // An empty argument is most often an unset shell variable (`rh run reveal "$DIR"`); acting on the current
-        // directory instead would be a surprise.
-        if paths.contains(where: \.isEmpty) || container?.isEmpty == true {
+        let input = ContextInput(origin: origin, paths: paths, container: container, resolution: .relative(to: facts.currentDirectory))
+        do {
+            return try input.makeContext()
+        } catch ContextInput.Problem.emptyPath {
+            // An empty argument is most often an unset shell variable (`rh run reveal "$DIR"`); acting on the current
+            // directory instead would be a surprise.
             throw ValidationError("An empty path was given (is a shell variable unset?). Leave the path out to use the current directory.")
+        } catch ContextInput.Problem.unknownOrigin(let name) {
+            throw ValidationError("Unknown origin \"\(name)\". Use one of: " + HereContext.Origin.allCases.map(\.rawValue).joined(separator: ", "))
+        } catch ContextInput.Problem.containsNUL {
+            throw ValidationError("A path cannot contain a NUL character.")
         }
-        func resolve(_ path: String) -> URL {
-            URL(fileURLWithPath: (path as NSString).expandingTildeInPath, relativeTo: facts.currentDirectory).lexicallyNormalized
-        }
-        let items = paths.map(resolve)
-        let folder = container.map(resolve)
-        let chosen: HereContext.Origin
-        if let origin {
-            guard let parsed = HereContext.Origin(rawValue: origin) else {
-                throw ValidationError("Unknown origin \"\(origin)\". Use one of: " + HereContext.Origin.allCases.map(\.rawValue).joined(separator: ", "))
-            }
-            chosen = parsed
-        } else {
-            chosen = items.isEmpty ? (folder == nil ? .cli : .container) : .items
-        }
-        return HereContext(origin: chosen, items: items, container: folder)
     }
 }

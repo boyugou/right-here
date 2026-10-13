@@ -64,9 +64,8 @@ public struct SchemaNode: Sendable, Equatable {
 public enum ConfigSchema {
     public static let version = 1
 
-    /// Ids of things the user names (apps, templates, variants, agents).
-    /// Matches `ConfigParser.isIdentifier`: no leading dash (it would read as an option on a command line).
-    static let identifierPattern = "^[a-z0-9][a-z0-9-]*$"
+    /// Ids of things the user names (apps, templates, variants, agents); `IDRule` is the rule the parser applies.
+    static let identifierPattern = IDRule.pattern
 
     public static var root: [SchemaNode] {
         let terminalIDs = KnownApps.terminals.map(\.id)
@@ -151,7 +150,7 @@ public enum ConfigSchema {
                            example: "\"claude --model opus\""),
                 SchemaNode("launcher", .string,
                            "How the agent starts: terminal types the command into a terminal, link uses the agent's own terminal deep link, desktop opens its desktop app.",
-                           default: "\"terminal\"", allowed: ["terminal", "link", "desktop"]),
+                           default: "\"terminal\"", allowed: AgentLauncher.configNames),
                 SchemaNode("terminal", .string, "Terminal for launcher = \"terminal\". Omit it to use general.terminal.", suggested: terminalIDs),
                 SchemaNode("variant", .tableArray, "Extra start options shown in the agent's submenu.", required: ["id", "title"], children: [
                     SchemaNode("id", .string, "Identifier used in `agent.<agent>.<id>`; lowercase letters, digits and dashes.",

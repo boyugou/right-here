@@ -165,28 +165,33 @@ enum Tools {
     // MARK: Handlers
 
     private static func context(from arguments: JSONValue, facts: any SystemFacts) throws -> HereContext {
-        func absolute(_ value: JSONValue) throws -> URL {
-            // The first scalar, not the first Character: "/" followed by a combining mark is one Character that is not "/".
-            guard let path = value.stringValue, path.unicodeScalars.first == "/" else { throw ToolError("Paths must be absolute strings.") }
-            // No real path holds a NUL, and the system calls that check a path stop reading at one, so what is
-            // checked would differ from what is later handed to an app.
-            guard !path.unicodeScalars.contains("\0") else { throw ToolError("A path cannot contain a NUL character.") }
-            return URL(fileURLWithPath: path)
+        func text(_ value: JSONValue) throws -> String {
+            guard let path = value.stringValue else { throw ToolError("Paths must be absolute strings.") }
+            return path
         }
-        let items = try (arguments["paths"]?.arrayValue ?? []).map(absolute)
-        let container = try arguments["container"].map(absolute)
-        let origin: HereContext.Origin = items.isEmpty ? (container == nil ? .cli : .container) : .items
-        return HereContext(origin: origin, items: items, container: container)
+        let input = ContextInput(
+            paths: try (arguments["paths"]?.arrayValue ?? []).map(text),
+            container: try arguments["container"].map(text),
+            resolution: .absoluteOnly
+        )
+        do {
+            return try input.makeContext()
+        } catch ContextInput.Problem.containsNUL {
+            throw ToolError("A path cannot contain a NUL character.")
+        } catch {
+            throw ToolError("Paths must be absolute strings.")
+        }
     }
 
     private static func run(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         guard let id = arguments["action"]?.stringValue else { throw ToolError("action is required.") }
-        guard let ref = ActionRef(parsing: id) else {
-            let loaded = server.loadConfig()
-            let close = ActionRegistry(config: loaded.config, facts: server.facts).closestID(to: id)
-            throw ToolError("\"\(id)\" is not an action id.\(close.map { " Did you mean \"\($0)\"?" } ?? "") Call right_here_actions to list them.")
-        }
         let loaded = server.loadConfig()
+        let ref: ActionRef
+        do {
+            ref = try ActionRegistry(config: loaded.config, facts: server.facts).resolve(id)
+        } catch let unknown as UnknownActionID {
+            throw ToolError(unknown.message(next: "Call right_here_actions to list them."))
+        }
         let plan = try Planner(config: loaded.config, facts: server.facts).plan(ref, context: context(from: arguments, facts: server.facts))
         let planJSON = try JSONValue(encoding: plan)
         if arguments["dry_run"]?.boolValue == true {
@@ -255,14 +260,12 @@ enum Tools {
 
     private static func catalog(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         let config = server.loadConfig().config
-        let apps = config.allApps.map { app -> JSONValue in
-            .object(["id": .string(app.id), "name": .string(app.name), "role": .string(app.role.rawValue),
-                     "installed": .bool(app.installedBundleID(facts: server.facts) != nil)])
+        let apps = config.appRows(facts: server.facts).map { app -> JSONValue in
+            .object(["id": .string(app.id), "name": .string(app.name), "role": .string(app.role), "installed": .bool(app.installed)])
         }
-        let agents = (config.customAgents + KnownAgents.all).compactMap { config.agent(id: $0.id) }.map { agent -> JSONValue in
+        let agents = config.agentRows.map { agent -> JSONValue in
             .object(["id": .string(agent.id), "name": .string(agent.name), "command": .string(agent.command),
-                     "enabled": .bool(config.enabledAgents.contains(agent.id)),
-                     "variants": .array(agent.variants.map { .string($0.id) })])
+                     "enabled": .bool(agent.enabled), "variants": .array(agent.variants.map { .string($0) })])
         }
         let structured = JSONValue.object(["apps": .array(apps), "agents": .array(agents)])
         return ToolOutput(text: structured.pretty(), structured: structured)

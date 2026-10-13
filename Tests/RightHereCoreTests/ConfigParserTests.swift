@@ -631,7 +631,7 @@ struct ConfigSchemaDetailTests {
         let regex = try NSRegularExpression(pattern: ConfigSchema.identifierPattern)
         let whole = NSRange(id.startIndex..., in: id)
         let matches = regex.firstMatch(in: id, range: whole)?.range == whole
-        #expect(matches == ConfigParser.isIdentifier(id), "pattern and parser disagree about \(id.debugDescription)")
+        #expect(matches == IDRule.isValid(id), "pattern and parser disagree about \(id.debugDescription)")
     }
 
     @Test("the schema's extension pattern and the parser's extension rule agree",
@@ -660,6 +660,13 @@ struct DocumentationTopicTests {
             #expect(Documentation.text(for: topic)?.isEmpty == false, "no text for \(topic)")
         }
         #expect(Documentation.text(for: "nope") == nil)
+    }
+
+    @Test func theListingAndTheSuggestionComeFromTheSameTopics() {
+        for topic in Documentation.topics { #expect(Documentation.listing.contains("  \(topic) ")) }
+        #expect(Documentation.closestTopic(to: "troubleshoot") == "troubleshooting")
+        #expect(Documentation.closestTopic(to: "") == nil)
+        #expect(Documentation.closestTopic(to: "zzz") == nil)
     }
 
     @Test func theTroubleshootingGuideMatchesTheFileInTheRepository() throws {

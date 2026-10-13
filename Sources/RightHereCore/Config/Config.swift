@@ -111,6 +111,11 @@ public struct Config: Sendable, Equatable {
         return (.terminal(nil), conflict)
     }
 
+    /// Every agent Right Here offers, as the config shapes it: the ones the config defines, then the built-in ones.
+    public var allAgents: [AgentDescriptor] {
+        (customAgents + KnownAgents.all).compactMap { agent(id: $0.id) }
+    }
+
     public func agent(id: String) -> AgentDescriptor? {
         guard var agent = customAgents.first(where: { $0.id == id }) ?? KnownAgents.agent(id: id) else { return nil }
         if let settings = agents[id] {

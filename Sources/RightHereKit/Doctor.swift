@@ -182,13 +182,12 @@ public struct Doctor: Sendable {
                                 fix: "Add agents to general.agents, for example agents = [\"claude\"].")]
         }
         let registry = ActionRegistry(config: config, facts: facts)
-        func firstWord(_ command: String) -> String { command.split(separator: " ").first.map(String.init) ?? command }
-        let commands = config.enabledAgents.compactMap { config.agent(id: $0).map { firstWord($0.command) } }
+        let commands = config.enabledAgents.compactMap { config.agent(id: $0)?.executable }
         let found = await Detector(facts: facts, runner: runner).commandsFound(commands)
         var checks: [DoctorCheck] = []
         for id in config.enabledAgents {
             guard let agent = config.agent(id: id) else { continue }
-            let command = firstWord(agent.command)
+            let command = agent.executable
             let action = registry.info(.agent(id: id, variant: nil, launcher: nil))
             if !found.contains(command) {
                 checks.append(DoctorCheck(id: "agent.\(id)", title: agent.name, status: .warn,
@@ -255,16 +254,12 @@ public struct Doctor: Sendable {
         let text = [logFile, logFile.appendingPathExtension("1")]
             .compactMap { try? String(contentsOf: $0, encoding: .utf8) }
             .joined(separator: "\n")
-        let formatter = ISO8601DateFormatter()
         for line in text.split(separator: "\n").reversed() {
-            let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: true).map(String.init)
-            guard parts.count == 4, parts[1] == "ok", let when = formatter.date(from: parts[0]),
-                  let origin = parts[3].split(separator: "]").first.flatMap({ $0.split(separator: "[").last })?.split(separator: ",").first.map(String.init),
-                  ["items", "container", "sidebar", "toolbar", "services"].contains(origin) else { continue }
+            guard let entry = RunLog.Entry(parsing: line), entry.origin != .cli else { continue }
             let relative = RelativeDateTimeFormatter()
             relative.unitsStyle = .full
             return DoctorCheck(id: "finder.activity", title: title, status: .ok,
-                               detail: "\(parts[2]) from the \(origin) menu, \(relative.localizedString(for: when, relativeTo: now))")
+                               detail: "\(entry.actionID) from the \(entry.origin.rawValue) menu, \(relative.localizedString(for: entry.date, relativeTo: now))")
         }
         return DoctorCheck(id: "finder.activity", title: title, status: .ok,
                            detail: "none yet; right-click a folder in Finder and choose an action, then run `rh doctor` again")

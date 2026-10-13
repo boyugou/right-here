@@ -49,6 +49,11 @@ public struct AgentDescriptor: Sendable, Equatable, Identifiable {
     /// File an agent reads project instructions from, for documentation only.
     public var instructionFile: String?
 
+    /// The program the command starts: its first word, which is what is looked up in the login shell's PATH.
+    public var executable: String {
+        command.split(separator: " ").first.map(String.init) ?? command
+    }
+
     public init(
         id: String,
         name: String,

@@ -34,13 +34,13 @@ struct Run: AsyncParsableCommand {
     var alert = false
 
     func run() async throws {
-        guard let ref = ActionRef(parsing: action) else {
-            let runtime = Runtime()
-            let close = ActionRegistry(config: runtime.config, facts: runtime.facts).closestID(to: action)
-            let hint = close.map { " Did you mean \"\($0)\"?" } ?? ""
-            throw ValidationError("\"\(action)\" is not an action id.\(hint) Run `rh actions` to list them, or `rh docs actions` for the grammar.")
-        }
         let runtime = Runtime()
+        let ref: ActionRef
+        do {
+            ref = try ActionRegistry(config: runtime.config, facts: runtime.facts).resolve(action)
+        } catch let unknown as UnknownActionID {
+            throw ValidationError(unknown.message(next: "Run `rh actions` to list them, or `rh docs actions` for the grammar."))
+        }
         runtime.reportConfigProblems()
         let here = try context.makeContext(facts: runtime.facts)
         // Files created from Finder follow the system language; the command line stays English.
@@ -60,7 +60,7 @@ struct Run: AsyncParsableCommand {
         do {
             let report = try await LiveExecutor().execute(plan)
             // The plan's summary is left out: it names the typed command, which may carry a key someone put in it.
-            RunLog.record("ok \(action) [\(here.origin.rawValue), \(here.items.count) items]")
+            RunLog.record(RunLog.Entry(actionID: action, origin: here.origin, itemCount: here.items.count))
             if json {
                 try Output.json(RunResult(ok: true, plan: plan, report: report))
             } else {

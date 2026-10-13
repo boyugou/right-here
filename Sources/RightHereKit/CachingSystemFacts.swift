@@ -1,13 +1,13 @@
 import Foundation
 import RightHereCore
+import Synchronization
 
 /// Wraps another `SystemFacts` and remembers which applications are installed for a short time,
 /// so building a menu on every right-click does not repeat LaunchServices lookups.
-public final class CachingSystemFacts: SystemFacts, @unchecked Sendable {
+public final class CachingSystemFacts: SystemFacts, Sendable {
     private let base: any SystemFacts
     private let lifetime: TimeInterval
-    private let lock = NSLock()
-    private var applications: [String: (url: URL?, stored: Date)] = [:]
+    private let applications = Mutex<[String: (url: URL?, stored: Date)]>([:])
 
     public init(base: any SystemFacts = LiveSystemFacts(), lifetime: TimeInterval = 30) {
         self.base = base
@@ -28,11 +28,11 @@ public final class CachingSystemFacts: SystemFacts, @unchecked Sendable {
 
     public func applicationURL(bundleID: String) -> URL? {
         let now = Date()
-        if let cached = lock.withLock({ applications[bundleID] }), now.timeIntervalSince(cached.stored) < lifetime {
+        if let cached = applications.withLock({ $0[bundleID] }), now.timeIntervalSince(cached.stored) < lifetime {
             return cached.url
         }
         let url = base.applicationURL(bundleID: bundleID)
-        lock.withLock { applications[bundleID] = (url, now) }
+        applications.withLock { $0[bundleID] = (url, now) }
         return url
     }
 }

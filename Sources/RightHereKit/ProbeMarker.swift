@@ -1,5 +1,6 @@
 import Foundation
 import RightHereCore
+import Synchronization
 
 /// The request `rh doctor` leaves for the Finder extension: a file named `.probe` in the config folder whose
 /// text names the probe. It is a request for the next minute or two, not a standing order. If the doctor is
@@ -71,12 +72,12 @@ extension ProbeMarker {
 /// Runs the interrupt cleanup when the process gets one of `signals`. The signals are ignored by default and read
 /// through dispatch sources, so the handler runs on a normal thread and may start a process; `finish` is what ends
 /// the process (`exit(130)` in `rh`, a recorder in tests).
-public final class InterruptGuard: @unchecked Sendable {
-    private var sources: [DispatchSourceSignal] = []
+public final class InterruptGuard: Sendable {
+    private let sources: Mutex<[DispatchSourceSignal]>
 
     public init(signals: [Int32] = [SIGINT, SIGTERM, SIGHUP], paths: RHPaths, reenableExtension: @escaping @Sendable () -> Void, finish: @escaping @Sendable () -> Void) {
         for number in signals { signal(number, SIG_IGN) }
-        sources = signals.map { number in
+        let made: [DispatchSourceSignal] = signals.map { number in
             let source = DispatchSource.makeSignalSource(signal: number, queue: .global())
             source.setEventHandler {
                 ProbeMarker.cleanUpAfterInterrupt(in: paths, reenableExtension: reenableExtension)
@@ -85,11 +86,15 @@ public final class InterruptGuard: @unchecked Sendable {
             source.resume()
             return source
         }
+        sources = Mutex(made)
     }
 
     public func cancel() {
-        sources.forEach { $0.cancel() }
-        sources = []
+        let taken = sources.withLock { current in
+            defer { current = [] }
+            return current
+        }
+        taken.forEach { $0.cancel() }
     }
 }
 

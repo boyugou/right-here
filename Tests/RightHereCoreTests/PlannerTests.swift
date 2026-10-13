@@ -259,6 +259,16 @@ struct PlannerTests {
         #expect(registry.closestID(to: "zzzzzzzzzzzz") == nil)
     }
 
+    @Test func resolveReadsAnIdOrNamesTheClosestOne() throws {
+        let registry = ActionRegistry(config: Config.default, facts: machine())
+        #expect(try registry.resolve("copy-path.absolute") == .copyPath(.absolute))
+        let error = try #require(throws: UnknownActionID.self) { try registry.resolve("copy-path.absolut") }
+        #expect(error.suggestion == "copy-path.absolute")
+        #expect(error.message(next: "List them.") == "\"copy-path.absolut\" is not an action id. Did you mean \"copy-path.absolute\"? List them.")
+        let far = try #require(throws: UnknownActionID.self) { try registry.resolve("zzzzzzzzzzzz") }
+        #expect(far.message(next: "List them.") == "\"zzzzzzzzzzzz\" is not an action id. List them.")
+    }
+
     @Test func anAgentSkipsAFolderOnlyDefaultTerminalForOneThatRunsCommands() throws {
         let facts = machine(installed: ["com.googlecode.iterm2", "com.apple.Terminal"])
         let planner = Planner(facts: facts)

@@ -1,42 +1,45 @@
 import Foundation
 import RightHereCore
+import Synchronization
 
 /// Test doubles for code that runs processes or writes the clipboard. They live in the library so
 /// every test target can share them.
 
 /// Records every process it is asked to run and answers from a script of results.
-public final class FakeProcessRunner: ProcessRunner, @unchecked Sendable {
-    private let lock = NSLock()
-    private var calls: [ProcessStep] = []
-    private var results: [ProcessResult]
+public final class FakeProcessRunner: ProcessRunner, Sendable {
+    private struct State {
+        var calls: [ProcessStep] = []
+        var results: [ProcessResult]
+    }
+
+    private let state: Mutex<State>
 
     public init(results: [ProcessResult] = []) {
-        self.results = results
+        state = Mutex(State(results: results))
     }
 
     public var recorded: [ProcessStep] {
-        lock.withLock { calls }
+        state.withLock { $0.calls }
     }
 
     public func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
-        lock.withLock {
-            calls.append(step)
-            return results.isEmpty ? ProcessResult(status: 0) : results.removeFirst()
+        state.withLock {
+            $0.calls.append(step)
+            return $0.results.isEmpty ? ProcessResult(status: 0) : $0.results.removeFirst()
         }
     }
 }
 
-public final class RecordingPasteboard: PasteboardWriting, @unchecked Sendable {
-    private let lock = NSLock()
-    private var texts: [String] = []
+public final class RecordingPasteboard: PasteboardWriting, Sendable {
+    private let texts = Mutex<[String]>([])
 
     public init() {}
 
     public var written: [String] {
-        lock.withLock { texts }
+        texts.withLock { $0 }
     }
 
     public func write(_ text: String) {
-        lock.withLock { texts.append(text) }
+        texts.withLock { $0.append(text) }
     }
 }

@@ -8,6 +8,27 @@ public enum AgentLauncher: Sendable, Equatable, Hashable {
     case terminalLink
     /// The agent's desktop app, through its deep link.
     case desktop
+
+    /// The words for a launcher in an action id (`agent.claude@link`) and in a config's `launcher` key.
+    public static let terminalWord = "terminal"
+    public static let linkWord = "link"
+    public static let desktopWord = "desktop"
+    /// Only in an action id: the default terminal.
+    public static let defaultWord = "default"
+
+    /// What `launcher = "…"` accepts in an `[agent.<id>]` table.
+    public static let configNames = [terminalWord, linkWord, desktopWord]
+
+    /// The launcher an `[agent.<id>]` table asks for. `terminal` is the table's own terminal choice, which applies
+    /// with `launcher = "terminal"` and also when no launcher is named.
+    public static func fromConfig(name: String?, terminal: String?) -> AgentLauncher? {
+        switch name {
+        case linkWord?: return .terminalLink
+        case desktopWord?: return .desktop
+        case terminalWord?: return .terminal(terminal)
+        default: return terminal.map { .terminal($0) }
+        }
+    }
 }
 
 /// A parsed action identifier. The text form is stable and meant to be written by people and agents:
@@ -83,9 +104,9 @@ public enum ActionRef: Sendable, Equatable, Hashable {
             let suffix: String
             switch launcher {
             case nil: suffix = ""
-            case .terminal(let terminal)?: suffix = "@" + (terminal ?? "default")
-            case .terminalLink?: suffix = "@link"
-            case .desktop?: suffix = "@desktop"
+            case .terminal(let terminal)?: suffix = "@" + (terminal ?? AgentLauncher.defaultWord)
+            case .terminalLink?: suffix = "@" + AgentLauncher.linkWord
+            case .desktop?: suffix = "@" + AgentLauncher.desktopWord
             }
             return "agent.\(agent)" + (variant.map { ".\($0)" } ?? "") + suffix
         case .newFile(let template):
@@ -110,12 +131,7 @@ public enum ActionRef: Sendable, Equatable, Hashable {
     }
 
     private static func isWord(_ part: String) -> Bool {
-        guard let first = part.utf8.first, isLowercaseAlphanumeric(first) else { return false }
-        return part.utf8.allSatisfy { isLowercaseAlphanumeric($0) || $0 == UInt8(ascii: "-") }
-    }
-
-    private static func isLowercaseAlphanumeric(_ byte: UInt8) -> Bool {
-        (byte >= UInt8(ascii: "a") && byte <= UInt8(ascii: "z")) || (byte >= UInt8(ascii: "0") && byte <= UInt8(ascii: "9"))
+        IDRule.isValid(part)
     }
 
     /// `@ghostty` selects a terminal; no suffix means the default terminal.
@@ -128,9 +144,9 @@ public enum ActionRef: Sendable, Equatable, Hashable {
     private static func launcherSuffix(_ suffix: String?) -> Parsed<AgentLauncher?> {
         guard let suffix else { return .valid(nil) }
         switch suffix {
-        case "link": return .valid(.terminalLink)
-        case "desktop": return .valid(.desktop)
-        case "default": return .valid(.terminal(nil))
+        case AgentLauncher.linkWord: return .valid(.terminalLink)
+        case AgentLauncher.desktopWord: return .valid(.desktop)
+        case AgentLauncher.defaultWord: return .valid(.terminal(nil))
         default: return isWord(suffix) ? .valid(.terminal(suffix)) : .malformed
         }
     }

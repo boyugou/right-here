@@ -110,14 +110,12 @@ struct Agents: AsyncParsableCommand {
 
     func run() async throws {
         let runtime = Runtime()
-        let all = (runtime.config.customAgents + KnownAgents.all).compactMap { runtime.config.agent(id: $0.id) }
-        let found = await Detector(facts: runtime.facts).commandsFound(all.map { $0.command.split(separator: " ").first.map(String.init) ?? $0.command })
-        let rows = all.map { agent in
+        let all = runtime.config.allAgents
+        let found = await Detector(facts: runtime.facts).commandsFound(all.map(\.executable))
+        let rows = zip(all, runtime.config.agentRows).map { agent, row in
             Row(
-                id: agent.id, name: agent.name, command: agent.command,
-                enabled: runtime.config.enabledAgents.contains(agent.id),
-                foundInShell: found.contains(agent.command.split(separator: " ").first.map(String.init) ?? agent.command),
-                variants: agent.variants.map(\.id), terminalLink: agent.terminalLink != nil, desktopLink: agent.desktopLink != nil
+                id: row.id, name: row.name, command: row.command, enabled: row.enabled, foundInShell: found.contains(agent.executable),
+                variants: row.variants, terminalLink: row.terminalLink, desktopLink: row.desktopLink
             )
         }
         if json {
@@ -137,21 +135,9 @@ struct Apps: ParsableCommand {
     @Flag(help: "Print JSON.")
     var json = false
 
-    struct Row: Encodable {
-        var id: String
-        var name: String
-        var role: String
-        var installed: Bool
-        var bundleID: String?
-    }
-
     func run() throws {
         let runtime = Runtime()
-        let apps = runtime.config.allApps
-        let rows = apps.map { app -> Row in
-            let bundleID = app.installedBundleID(facts: runtime.facts)
-            return Row(id: app.id, name: app.name, role: app.role.rawValue, installed: bundleID != nil, bundleID: bundleID)
-        }
+        let rows = runtime.config.appRows(facts: runtime.facts)
         if json {
             try Output.json(rows)
             return
