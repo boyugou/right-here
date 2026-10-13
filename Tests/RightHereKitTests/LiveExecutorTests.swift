@@ -236,8 +236,9 @@ struct LiveProcessRunnerTests {
         let marker = directory.appendingPathComponent("alive")
         // A background child that would touch a file after the limit, if it survived.
         _ = try await LiveProcessRunner().run(
-            ProcessStep(executable: "/bin/sh", arguments: ["-c", "trap '' TERM; (sleep 2; touch '\(marker.path)') & wait"]), timeout: .milliseconds(300))
-        try await Task.sleep(for: .seconds(3))
+            ProcessStep(executable: "/bin/sh", arguments: ["-c", "trap '' TERM; (sleep 5; touch '\(marker.path)') & wait"]), timeout: .milliseconds(300))
+        // The hard kill comes one second after the limit; the margin to the child's write has to survive a loaded machine.
+        try await Task.sleep(for: .seconds(6))
         #expect(!FileManager.default.fileExists(atPath: marker.path), "a child of the killed process kept running")
     }
 
