@@ -84,6 +84,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case doctorConfigWarnings = "doctor.config.warnings"
     case doctorEditorNone = "doctor.editor.none"
     case doctorExtensionDisabled = "doctor.extension.disabled"
+    case doctorExtensionEnabled = "doctor.extension.enabled"
     case doctorExtensionMultiple = "doctor.extension.multiple"
     case doctorExtensionNotRegistered = "doctor.extension.notRegistered"
     case doctorFixAgentLauncher = "doctor.fix.agentLauncher"
@@ -168,7 +169,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     /// How many arguments the English text takes: its `%@` placeholders, or the highest `%n$@`.
     public var arity: Int {
         switch self {
-        case .alertPermissionMessage, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAppNotInstalled, .doctorCliMissing, .doctorCliNotOnPath, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorFixAgentRemove, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
+        case .alertPermissionMessage, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAppNotInstalled, .doctorCliMissing, .doctorCliNotOnPath, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorExtensionEnabled, .doctorFixAgentRemove, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
         case .appStepLabel, .doctorAgentOk, .doctorAppFallback, .doctorExtensionMultiple, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
         case .doctorActivityRecent, .doctorServicesDiffer, .menuAgentVariantIn: 3
         default: 0

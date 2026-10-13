@@ -15067,6 +15067,192 @@
         }
       }
     },
+    "doctor.extension.enabled": {
+      "comment": "Detail line of a check in the setup window's Details list; it follows the check's title (\"Finder extension\"), so it is a fragment with no final period. The Finder extension is registered with macOS and switched on. %@ is the path of the extension (technical text, shown as it is).",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "مفعَّل: %@"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "চালু আছে: %@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "eingeschaltet: %@"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ενεργοποιημένη: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "switched on: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "activada: %@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "روشن: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "activée : %@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "מופעלת: %@"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "चालू है: %@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "diaktifkan: %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "attivata: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "オンになっています：%@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "켜져 있음: %@"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "चालू आहे: %@"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "dihidupkan: %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ingeschakeld: %@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "włączone: %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ativada: %@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "activată: %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "включено: %@"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "இயக்கப்பட்டுள்ளது: %@"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఆన్ చేయబడింది: %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เปิดอยู่: %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "açık: %@"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "увімкнено: %@"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "آن ہے: %@"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "đang bật: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已开启：%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已開啟：%@"
+          }
+        }
+      }
+    },
     "doctor.extension.multiple": {
       "comment": "Detail line of a check in the setup window's Details list; it follows the check's title, so it is a fragment with no final period. %1$@ is a number (2 or more) of places the Finder extension is registered from; %2$@ is the list of their paths.",
       "extractionState": "manual",

@@ -34,6 +34,11 @@ struct Doctor: AsyncParsableCommand {
 
     func run() async throws {
         let runtime = Runtime()
+        // The rows mix this home (config, log, runner script, Services, command link) with what is registered system-wide (the
+        // extension), so a trial home says so. On standard error: `--json` keeps standard output a document.
+        if let home = LiveSystemFacts.homeOverride {
+            Output.error("note: RH_HOME is set, so the config, run log, runner script, Services and command link are looked for under \(home.path), not in your home folder. The Finder extension is checked as it is really registered.")
+        }
         // A probe switches the Finder extension off and on again to make it look for its request. Ctrl-C in between
         // would leave it off (no menu until `rh install --finder`), so an interrupt switches it back on first.
         let paths = runtime.paths

@@ -117,7 +117,8 @@ struct DoctorScenarioTests {
         #expect(said(checks, "claude.link") == Said(status: .ok, detail: "handler installed", fix: nil))
         #expect(said(checks, "finder.runner") == Said(status: .ok, detail: "runs \(target)", fix: nil))
         #expect(said(checks, "cli.link") == Said(status: .ok, detail: "\(scene.home.path)/.local/bin/rh", fix: nil))
-        #expect(said(checks, "finder.extension") == Said(status: .ok, detail: "/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex", fix: nil))
+        // Not just the path: an ok row says the extension is switched on, which is what lets the menu appear.
+        #expect(said(checks, "finder.extension") == Said(status: .ok, detail: "switched on: /Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex", fix: nil))
     }
 
     @Test func anAgentThatTheLoginShellDoesNotFindSaysSoAndHowToRemoveIt() async throws {

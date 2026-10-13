@@ -293,7 +293,7 @@ public struct Doctor: Sendable {
                 return DoctorCheck(.finderExtension, status: .warn, detail: .doctorExtensionMultiple(String(status.paths.count), status.paths.joined(separator: "; ")),
                                    fix: .doctorFixExtensionClean)
             }
-            return DoctorCheck(.finderExtension, status: .ok, detail: status.paths.first.map(LocalizedMessage.doctorVerbatim))
+            return DoctorCheck(.finderExtension, status: .ok, detail: status.paths.first.map(LocalizedMessage.doctorExtensionEnabled))
         }
     }
 }

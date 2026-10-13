@@ -28,6 +28,7 @@ removes it (the config stays).
   when the app quits. Move Right Here.app into Applications first.
 - Try an install without touching your own: `RH_HOME=/tmp/trial rh install --skip-finder` writes the config,
   runner script, command link and Services under that folder (the Finder extension's registration is
-  system-wide, so a trial leaves it alone). `rh uninstall` under the same `RH_HOME` undoes it.
+  system-wide, so a trial leaves it alone). `rh uninstall` under the same `RH_HOME` undoes it. `rh doctor` under it says
+  so on standard error, since its rows mix that home's files with the real extension registration.
 - Test an action without side effects with `rh run <id> --dry-run`.
 - Point a command at a throwaway config with `RH_CONFIG_DIR=/tmp/x`.

@@ -418,6 +418,18 @@ struct CLITests {
         #expect(lines[at + 1] == "       fix: Run `rh init`.")
     }
 
+    @Test func underATrialHomeTheDoctorSaysSoOnStandardErrorAndItsJSONStaysADocument() throws {
+        // `rh doctor` mixes this home's files (config, log, runner script) with the system-wide extension registration, which a
+        // reader of the rows cannot tell apart unless the report says that RH_HOME is active.
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let json = try rh.run(["doctor", "--json"])
+        #expect(json.json as? [String: Any] != nil, "standard output is not one JSON document: \(json.standardOutput.prefix(200))")
+        #expect(json.standardError.contains("RH_HOME is set") && json.standardError.contains(home.path), "\(json.standardError)")
+        let text = try rh.run(["doctor"])
+        #expect(text.standardError.contains("RH_HOME is set") && !text.standardOutput.contains("RH_HOME"))
+    }
+
     @Test func aFirstInstallWritesEverythingUnderTheTrialHomeAndTheServicesFollowTheNewConfig() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)

@@ -6,14 +6,17 @@ import RightHereCore
 public struct LiveSystemFacts: SystemFacts {
     public init() {}
 
+    /// The folder `RH_HOME` names, when it is set: it points every per-user path (config, logs, Services, the runner script,
+    /// the command link) at another folder, so an install can be tried or tested without touching the real one.
+    public static var homeOverride: URL? {
+        guard let override = ProcessInfo.processInfo.environment["RH_HOME"], !override.isEmpty else { return nil }
+        return URL(fileURLWithPath: (override as NSString).expandingTildeInPath)
+    }
+
     /// The real home directory. In a sandboxed process `NSHomeDirectory()` is the container, so the
     /// account database is asked instead.
     public var homeDirectory: URL {
-        // `RH_HOME` points every per-user path (config, logs, Services, the runner script, the command
-        // link) at another folder, so an install can be tried or tested without touching the real one.
-        if let override = ProcessInfo.processInfo.environment["RH_HOME"], !override.isEmpty {
-            return URL(fileURLWithPath: (override as NSString).expandingTildeInPath)
-        }
+        if let override = Self.homeOverride { return override }
         if let entry = getpwuid(getuid()), let directory = entry.pointee.pw_dir {
             return URL(fileURLWithPath: String(cString: directory))
         }

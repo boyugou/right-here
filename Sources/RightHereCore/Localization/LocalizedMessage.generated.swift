@@ -163,6 +163,8 @@ extension LocalizedMessage {
     public static var doctorEditorNone: LocalizedMessage { LocalizedMessage(.doctorEditorNone) }
     /// registered but switched off
     public static var doctorExtensionDisabled: LocalizedMessage { LocalizedMessage(.doctorExtensionDisabled) }
+    /// switched on: %@
+    public static func doctorExtensionEnabled(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorExtensionEnabled, [argument1]) }
     /// enabled, but registered from %1$@ locations: %2$@
     public static func doctorExtensionMultiple(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorExtensionMultiple, [argument1, argument2]) }
     /// not registered; Finder shows no Right Here menu
