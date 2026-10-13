@@ -5,7 +5,8 @@
 """Check the String Catalogs.
 
 - Localization/languages.json lists the shipped languages; every catalog carries all of them and no other;
-- every LocalizationKey in Swift has an entry, and the catalog has no stray entries;
+- the generated LocalizationKey has a case, with the right number of arguments, for every entry of the catalog and for
+  nothing else;
 - placeholders (%@, %1$@) match the English text in every language, and a text with several of them numbers them
   so that a translation can reorder them;
 - the commands between backticks are the same in every language (the setup window shows them as code);
@@ -24,9 +25,9 @@ import subprocess
 import sys
 import unicodedata
 
-from localization_lib import CODE_SPAN, LOCALIZATION, PLACEHOLDER, ROOT, SWIFT_DIRECTORY, arity, languages, placeholders, read_catalog, read_json, source_language
+from localization_lib import CODE_SPAN, PLACEHOLDER, ROOT, SWIFT_DIRECTORY, arity, case_name, languages, placeholders, read_catalog, source_language
 
-KEYS_FILE = SWIFT_DIRECTORY / "LocalizationKey.swift"
+KEYS_FILE = SWIFT_DIRECTORY / "LocalizationKey.generated.swift"
 RIGHT_TO_LEFT_MARK = "‏"
 # Keys whose text becomes a file name: no direction mark, no path separator.
 FILE_NAME_KEYS = {"newFile.baseName"}
@@ -125,6 +126,33 @@ def check_texts(strings: dict, problems: list[str]) -> None:
                 problems.append(f"{where}: starts with Latin text and no right-to-left mark: {value!r}")
 
 
+def check_generated_keys(strings: dict, problems: list[str]) -> None:
+    """Reads the generated Swift back, so a generator that drops or miscounts a key cannot go unnoticed."""
+    text = KEYS_FILE.read_text(encoding="utf-8")
+    cases = dict(re.findall(r'case (\w+) = "([A-Za-z0-9.]+)"', text))
+    keys = set(cases.values())
+    for key in sorted(keys - strings.keys()):
+        problems.append(f"{key}: a LocalizationKey but missing from the catalog")
+    for key in sorted(strings.keys() - keys):
+        problems.append(f"{key}: in the catalog but not a LocalizationKey")
+    counts: dict[str, int] = {}
+    for names, number in re.findall(r"case ((?:\.\w+(?:, )?)+): (\d+)\n", text):
+        for name in re.findall(r"\.(\w+)", names):
+            counts[name] = int(number)
+    for name, key in sorted(cases.items()):
+        if key not in strings:
+            continue
+        if name != case_name(key):
+            problems.append(f"{key}: the case is called {name}, not {case_name(key)}")
+        english = strings[key]["localizations"]["en"]["stringUnit"]["value"]
+        try:
+            expected = arity(english)
+        except ValueError:
+            continue
+        if counts.get(name, 0) != expected:
+            problems.append(f"{key}: the generated arity is {counts.get(name, 0)}, the English text takes {expected}")
+
+
 def main() -> int:
     if "--missing" in sys.argv:
         code = sys.argv[sys.argv.index("--missing") + 1]
@@ -138,11 +166,7 @@ def main() -> int:
     check_manifest(problems)
     catalog = read_catalog("Localizable.xcstrings")
     strings = catalog["strings"]
-    swift_keys = set(re.findall(r'= "([A-Za-z.]+)"', KEYS_FILE.read_text(encoding="utf-8")))
-    for key in sorted(swift_keys - strings.keys()):
-        problems.append(f"{key}: used in Swift but missing from the catalog")
-    for key in sorted(strings.keys() - swift_keys):
-        problems.append(f"{key}: in the catalog but not a LocalizationKey")
+    check_generated_keys(strings, problems)
 
     check_languages("Localizable.xcstrings", catalog, problems)
     check_texts(strings, problems)

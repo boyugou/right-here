@@ -34,7 +34,7 @@ public enum FailureAlert {
             return Content(
                 title: localizer.string(.alertPermissionTitle),
                 message: localizer.string(.alertPermissionMessage, target),
-                okTitle: localizer.string(.alertOK),
+                okTitle: localizer.string(.alertOk),
                 settingsTitle: localizer.string(.alertOpenSettings),
                 settingsURL: automationSettingsURL
             )
@@ -45,7 +45,7 @@ public enum FailureAlert {
         return Content(
             title: localizer.string(.alertFailedTitle),
             message: error.localizedDescription + "\n\n(\(action))",
-            okTitle: localizer.string(.alertOK),
+            okTitle: localizer.string(.alertOk),
             settingsTitle: localizer.string(.alertOpenSettings),
             settingsURL: settingsURL
         )

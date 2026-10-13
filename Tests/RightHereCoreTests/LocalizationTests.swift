@@ -64,6 +64,22 @@ struct LocalizationCatalogTests {
         }
     }
 
+    @Test func theArityOfAKeyIsTheNumberOfValuesItsEnglishTextTakes() {
+        for key in LocalizationKey.allCases {
+            let found = (Localizations.table[key.rawValue]?["en"] ?? "").matches(of: #/%(?:(\d+)\$)?@/#)
+            let highest = found.compactMap { $0.output.1.flatMap { Int($0) } }.max()
+            #expect(key.arity == (highest ?? found.count), "\(key.rawValue) takes \(highest ?? found.count) values, its arity says \(key.arity)")
+        }
+    }
+
+    @Test func aTextWithSeveralValuesNumbersThem() {
+        // `%1$@ in %2$@` can be reordered by a translation; two bare `%@` could not.
+        for key in LocalizationKey.allCases where key.arity > 1 {
+            let english = Localizations.table[key.rawValue]?["en"] ?? ""
+            #expect(!english.contains("%@"), "\(key.rawValue) takes several values but does not number them")
+        }
+    }
+
     @Test func defaultFileNamesAreUsableAsFileNames() {
         let names = Localizations.table[LocalizationKey.newFileBaseName.rawValue] ?? [:]
         for (language, name) in names {

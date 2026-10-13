@@ -28,7 +28,7 @@ extension Localizer {
         case .shellEscaped: return string(.copyPathShellEscaped)
         case .shellQuoted: return string(.copyPathShellQuoted)
         case .fileURL: return string(.copyPathFileURL)
-        case .aiMention: return string(.copyPathAIMention)
+        case .aiMention: return string(.copyPathAiMention)
         case .markdownLink: return string(.copyPathMarkdownLink)
         }
     }
