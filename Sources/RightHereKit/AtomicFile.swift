@@ -12,10 +12,10 @@ enum AtomicFile {
     /// interrupt the write. A failure removes the temporary file and leaves the destination as it was.
     static func write(_ data: Data, to destination: URL, beforeRename: ((URL) throws -> Void)? = nil) throws {
         let folder = destination.deletingLastPathComponent()
-        let temporary = folder.appendingPathComponent(".\(destination.lastPathComponent).tmp-\(UUID().uuidString)")
         var mode: mode_t = 0o644
         var existing = stat()
         if stat(destination.path, &existing) == 0 { mode = existing.st_mode & 0o777 }
+        let temporary = folder.appendingPathComponent(".\(destination.lastPathComponent).tmp-\(UUID().uuidString)")
         let descriptor = open(temporary.path, O_WRONLY | O_CREAT | O_EXCL, mode)
         guard descriptor >= 0 else { throw WriteError(description: "cannot create \(temporary.path): \(String(cString: strerror(errno)))") }
         var closed = false

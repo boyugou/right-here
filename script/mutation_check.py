@@ -140,6 +140,25 @@ MUTANTS = [
      "context.items.prefix(maxItems)", "context.items"),
     ("a NUL in a path is accepted", "Sources/RightHereCore/Context/ContextInput.swift",
      'guard !path.unicodeScalars.contains("\\0") else', "guard true else"),
+    ("pull overwrites a locally changed config without --force", "Sources/RightHereCore/Config/SyncState.swift",
+     "case .localAhead, .diverged: return force ? .proceed : .refuse(.localChanged)", "case .localAhead, .diverged: return .proceed"),
+    ("push overwrites a changed folder copy without --force", "Sources/RightHereCore/Config/SyncState.swift",
+     "case .remoteAhead, .diverged: return force ? .proceed : .refuse(.remoteChanged)", "case .remoteAhead, .diverged: return .proceed"),
+    ("a sync write is not atomic", "Sources/RightHereKit/AtomicFile.swift",
+     r'''let temporary = folder.appendingPathComponent(".\(destination.lastPathComponent).tmp-\(UUID().uuidString)")
+        let descriptor = open(temporary.path, O_WRONLY | O_CREAT | O_EXCL, mode)''',
+     """let temporary = destination
+        let descriptor = open(temporary.path, O_WRONLY | O_CREAT | O_TRUNC, mode)"""),
+    ("a forced push overwrites a copy iCloud has not downloaded", "Sources/RightHereCore/Config/SyncState.swift",
+     "anything this machine knows.\n        case .remoteEvicted: return .refuse(.remoteEvicted)",
+     "anything this machine knows.\n        case .remoteEvicted: return force ? .proceed : .refuse(.remoteEvicted)"),
+    ("a sync copy that does not validate is pulled", "Sources/RightHereKit/ConfigSync.swift",
+     "if !problems.isEmpty { throw ConfigSyncError.invalid(problems, file: current.remoteFile.path) }",
+     "if false { throw ConfigSyncError.invalid(problems, file: current.remoteFile.path) }"),
+    ("a config with a secret-looking key is synced", "Sources/RightHereCore/Config/SyncValidation.swift",
+     "if !keys.isEmpty { problems.append(.secretKeys(keys)) }", "if false { problems.append(.secretKeys(keys)) }"),
+    ("a pull replaces a symlinked config with a regular file", "Sources/RightHereKit/ConfigSync.swift",
+     "let destination = paths.configFile.resolvingSymlinksInPath()", "let destination = paths.configFile"),
 ]
 
 
