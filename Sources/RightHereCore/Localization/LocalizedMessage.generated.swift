@@ -143,8 +143,8 @@ extension LocalizedMessage {
     public static func doctorAppFallback(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorAppFallback, [argument1, argument2]) }
     /// %@ is not installed.
     public static func doctorAppNotInstalled(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorAppNotInstalled, [argument1]) }
-    /// handler not installed (only needed for launcher = "link")
-    public static var doctorClaudeLinkMissing: LocalizedMessage { LocalizedMessage(.doctorClaudeLinkMissing) }
+    /// handler not installed (only needed for %@)
+    public static func doctorClaudeLinkMissing(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorClaudeLinkMissing, [argument1]) }
     /// handler installed
     public static var doctorClaudeLinkOk: LocalizedMessage { LocalizedMessage(.doctorClaudeLinkOk) }
     /// no link at %@
@@ -169,16 +169,16 @@ extension LocalizedMessage {
     public static func doctorExtensionMultiple(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorExtensionMultiple, [argument1, argument2]) }
     /// not registered; Finder shows no Right Here menu
     public static var doctorExtensionNotRegistered: LocalizedMessage { LocalizedMessage(.doctorExtensionNotRegistered) }
-    /// Choose another terminal with general.terminal, or set launcher = "link" or "desktop".
-    public static var doctorFixAgentLauncher: LocalizedMessage { LocalizedMessage(.doctorFixAgentLauncher) }
+    /// Choose another terminal with general.terminal, or set %1$@ or %2$@.
+    public static func doctorFixAgentLauncher(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorFixAgentLauncher, [argument1, argument2]) }
     /// Install it, or remove "%@" from general.agents.
     public static func doctorFixAgentRemove(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixAgentRemove, [argument1]) }
-    /// Add agents to general.agents, for example agents = ["claude"].
-    public static var doctorFixAgentsAdd: LocalizedMessage { LocalizedMessage(.doctorFixAgentsAdd) }
+    /// Add agents to general.agents, for example %@.
+    public static func doctorFixAgentsAdd(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixAgentsAdd, [argument1]) }
     /// Start `claude` once and send a prompt; Claude Code registers the handler.
     public static var doctorFixClaudeLink: LocalizedMessage { LocalizedMessage(.doctorFixClaudeLink) }
-    /// Add ~/.local/bin to PATH in your shell profile.
-    public static var doctorFixCliPath: LocalizedMessage { LocalizedMessage(.doctorFixCliPath) }
+    /// Add %@ to PATH in your shell profile.
+    public static func doctorFixCliPath(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixCliPath, [argument1]) }
     /// Run `rh config validate` and fix the errors.
     public static var doctorFixConfigErrors: LocalizedMessage { LocalizedMessage(.doctorFixConfigErrors) }
     /// Run `rh init`.

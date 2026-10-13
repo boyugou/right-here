@@ -1,3 +1,5 @@
+import AppKit
+import CoreText
 import Foundation
 import Testing
 @testable import RightHereCore
@@ -9,6 +11,42 @@ private func placeholders(_ text: String) -> [String] {
 /// A message for any key, with as many values as the key takes.
 private func filled(_ key: LocalizationKey) -> LocalizedMessage {
     LocalizedMessage(key, (0..<key.arity).map { "X\($0 + 1)" })
+}
+
+/// The UTF-16 offsets of `text` in the order CoreText draws them from left to right (the Unicode bidirectional algorithm applied,
+/// the paragraph direction taken from the first strong character, as SwiftUI does). Nothing is shown: CoreText lays a string out
+/// in memory, which is what a SwiftUI `Text` does with it.
+private func visualOrder(_ text: String) -> [Int] {
+    let font = CTFontCreateWithName("Helvetica" as CFString, 13, nil)
+    let attributed = NSAttributedString(string: text, attributes: [.font: font, .ligature: 0])
+    let line = CTLineCreateWithAttributedString(attributed)
+    var order: [Int] = []
+    for run in (CTLineGetGlyphRuns(line) as? [CTRun]) ?? [] {
+        var indices = [CFIndex](repeating: 0, count: CTRunGetGlyphCount(run))
+        CTRunGetStringIndices(run, CFRange(location: 0, length: 0), &indices)
+        order += indices
+    }
+    return order
+}
+
+/// The paths (`~/...`, `/...`) written in `text` that are not drawn in one piece, left to right.
+private func scrambledPaths(in text: String) -> [String] {
+    // The setup window turns a command between backticks into code and drops the backticks, so it lays out the text without them.
+    let visible = text.replacingOccurrences(of: "`", with: "")
+    var position: [Int: Int] = [:]
+    for (drawn, offset) in visualOrder(visible).enumerated() { position[offset] = drawn }
+    var scrambled: [String] = []
+    for match in visible.matches(of: #/(?:^|[\s\u{2068}\u{200E}\u{200F}])(~?\/[^\s\u{2069}]*[A-Za-z][^\s\u{2069}]*)/#) {
+        var path = String(match.output.1)
+        while let last = path.last, ".,;:!?،؛۔".contains(last) { path.removeLast() }
+        guard path.count > 2 else { continue }
+        let start = visible.utf16.distance(from: visible.utf16.startIndex, to: match.output.1.startIndex)
+        let length = path.utf16.count
+        let drawn = (start..<(start + length)).compactMap { position[$0] }
+        guard drawn.count == length else { continue }
+        if !zip(drawn, drawn.dropFirst()).allSatisfy({ $1 == $0 + 1 }) { scrambled.append(path) }
+    }
+    return scrambled
 }
 
 /// `Localization/languages.json`, the one list of the shipped languages. The scripts read it too.
@@ -255,6 +293,34 @@ struct LocalizationDetailTests {
             }
         }
         #expect(found > 0, "\(language) has no such command, so this checks nothing")
+    }
+
+    @Test("a path written in a right-to-left sentence reads left to right in one piece", arguments: LanguageManifest.rightToLeft)
+    func pathsInRightToLeftSentencesAreNotScrambled(language: String) {
+        // `~/.local/bin` sat in a sentence as plain text: its leading `~/.` are neutral characters between Arabic and Latin letters
+        // and took the direction of the sentence, so it was drawn `local/bin./~`. A path is a value of the message, and the window
+        // puts a value in an isolate. This lays every text out with CoreText, as the window does, and finds a path that is still
+        // written in the translation itself.
+        let localizer = Localizer(languages: [language])
+        #expect(localizer.isRightToLeft)
+        var checked = 0
+        for key in LocalizationKey.allCases where key != .newFileBaseName {
+            let text = localizer.render(filled(key), isolatingValues: true)
+            for path in scrambledPaths(in: text) {
+                Issue.record("\(language) \(key.rawValue): \"\(path)\" is not drawn in one piece, left to right: \(text)")
+            }
+            checked += 1
+        }
+        #expect(checked > 100)
+    }
+
+    @Test("a value that is a path is drawn in one piece in a right-to-left sentence", arguments: LanguageManifest.rightToLeft)
+    func aPathValueIsDrawnInOnePiece(language: String) {
+        // The positive side of the test above: the value of the "rh on your PATH" fix is put in its isolate and read left to right.
+        let localizer = Localizer(languages: [language])
+        let text = localizer.render(.doctorFixCliPath("~/.local/bin"), isolatingValues: true)
+        #expect(text.contains("\u{2068}~/.local/bin\u{2069}"), "\(text)")
+        #expect(scrambledPaths(in: text).isEmpty, "\(text)")
     }
 
     @Test("a name that becomes a file name never carries a direction mark", arguments: LanguageManifest.rightToLeft)

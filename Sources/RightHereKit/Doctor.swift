@@ -9,6 +9,16 @@ public struct Doctor: Sendable {
     private let runner: any ProcessRunner
     private let rhPath: String?
 
+    /// Paths and config text that a sentence quotes. They are values of the message, not words of its translation: in a
+    /// right-to-left sentence the setup window puts a value in an isolate, which is what keeps `~/.local/bin` or a quoted word
+    /// in one piece. Their English is what the command line prints.
+    private enum Quoted {
+        static let localBin = "~/.local/bin"
+        static let linkLauncher = "launcher = \"link\""
+        static let desktop = "\"desktop\""
+        static let agentsExample = "agents = [\"claude\"]"
+    }
+
     public init(
         facts: any SystemFacts = LiveSystemFacts(),
         paths: RHPaths,
@@ -181,7 +191,7 @@ public struct Doctor: Sendable {
     private func agentChecks() async -> [DoctorCheck] {
         let config = loaded.config
         guard !config.enabledAgents.isEmpty else {
-            return [DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd)]
+            return [DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd(Quoted.agentsExample))]
         }
         let registry = ActionRegistry(config: config, facts: facts)
         let commands = config.enabledAgents.compactMap { config.agent(id: $0)?.executable }
@@ -195,7 +205,7 @@ public struct Doctor: Sendable {
                 checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: .doctorAgentNotFound(command), fix: .doctorFixAgentRemove(id)))
             } else if !action.available {
                 checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: action.unavailableReason.map(LocalizedMessage.doctorVerbatim),
-                                          fix: .doctorFixAgentLauncher))
+                                          fix: .doctorFixAgentLauncher(Quoted.linkLauncher, Quoted.desktop)))
             } else {
                 checks.append(DoctorCheck(.agent(id), title: agent.name, status: .ok, detail: .doctorAgentOk(command, action.title)))
             }
@@ -206,7 +216,7 @@ public struct Doctor: Sendable {
     private func claudeLinkCheck() -> DoctorCheck {
         let handler = facts.homeDirectory.appendingPathComponent("Applications/Claude Code URL Handler.app")
         guard facts.fileExists(handler) else {
-            return DoctorCheck(.claudeLink, status: .warn, detail: .doctorClaudeLinkMissing, fix: .doctorFixClaudeLink)
+            return DoctorCheck(.claudeLink, status: .warn, detail: .doctorClaudeLinkMissing(Quoted.linkLauncher), fix: .doctorFixClaudeLink)
         }
         return DoctorCheck(.claudeLink, status: .ok, detail: .doctorClaudeLinkOk)
     }
@@ -241,7 +251,7 @@ public struct Doctor: Sendable {
         if !linked {
             checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliMissing(installer.cliLink.path), fix: .doctorFixInstallCLI))
         } else if !onPath {
-            checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath(installer.cliLink.path), fix: .doctorFixCliPath))
+            checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath(installer.cliLink.path), fix: .doctorFixCliPath(Quoted.localBin)))
         } else {
             checks.append(DoctorCheck(.cliLink, status: .ok, detail: .doctorVerbatim(installer.cliLink.path)))
         }

@@ -30,6 +30,12 @@ LEFT_TO_RIGHT_MARK = "\u200e"
 # A command between backticks that ends in a bracket (`rh ... <folder>`). In a right-to-left sentence the bracket takes the
 # direction of the sentence, so it is drawn mirrored and on the wrong side of the command unless a left-to-right mark follows.
 BRACKET_ENDING_COMMAND = re.compile(r"(`[^`]*[<>()\[\]{}]`)(?!" + LEFT_TO_RIGHT_MARK + ")")
+# A path, or Latin text with a quote, an equals sign or a bracket in it (`launcher = "link"`, `agents = ["claude"]`). In a
+# right-to-left sentence the neutral characters at the ends of such a literal (the `~/.` of a path, a closing quote, a bracket) take the
+# direction of the sentence and are drawn at the wrong end of it (`~/.local/bin` as `local/bin./~`). The setup window puts the value
+# of a message in an isolate, which keeps it in one piece, so these are values (%@) of the message and never words of a translation.
+LITERAL_PATH = re.compile(r"(?<![\w/.])(?:~/|/(?:usr|bin|opt|etc|var|tmp|Users|Library|Applications|System|private|Volumes)\b)")
+SYMBOLS_IN_LATIN_LITERAL = set('"=[]')
 # Keys whose text becomes a file name: no direction mark, no path separator.
 FILE_NAME_KEYS = {"newFile.baseName"}
 
@@ -147,6 +153,18 @@ def with_direction_mark(language: Language, key: str, value: str, english: str) 
     return value
 
 
+def right_to_left_literals(value: str) -> list[str]:
+    """The paths and the quoted, assigned or bracketed Latin words that a right-to-left translation writes itself, as the words
+    around them: a path anywhere (a command between backticks included), the other kind outside backticks and placeholders."""
+    without_values = PLACEHOLDER.sub(" ", value).replace(RIGHT_TO_LEFT_MARK, " ").replace(LEFT_TO_RIGHT_MARK, " ")
+    outside_commands = PROTECTED.sub(" ", without_values)
+    found = [token for token in without_values.split() if LITERAL_PATH.search(token)]
+    for token in outside_commands.split():
+        if token not in found and re.search(r"[A-Za-z]", token) and SYMBOLS_IN_LATIN_LITERAL & set(token):
+            found.append(token)
+    return found
+
+
 def translation_problems(key: str, language: Language, value: str, english: str, keep: tuple[str, ...] | list[str] = (), direction: bool = True) -> list[str]:
     """What is wrong with `value` as the translation of `english`, as lines that start with the key and the language.
     `direction` is the right-to-left mark rule, which only the strings of the code follow (a Shortcuts phrase is spoken)."""
@@ -174,4 +192,8 @@ def translation_problems(key: str, language: Language, value: str, english: str,
         problems.append(f"{where}: starts with Latin text and no right-to-left mark: {value!r}")
     if direction and language.rtl and key not in FILE_NAME_KEYS and BRACKET_ENDING_COMMAND.search(value):
         problems.append(f"{where}: a command that ends in a bracket needs a left-to-right mark after it: {value!r}")
+    if direction and language.rtl:
+        for literal in right_to_left_literals(value):
+            problems.append(f"{where}: {literal!r} is a path, or Latin text with a quote, an equals sign or a bracket, written in a right-to-left "
+                            f"sentence; its ends would be drawn at the wrong side. Make it a value (%@), which the window isolates: {value!r}")
     return problems

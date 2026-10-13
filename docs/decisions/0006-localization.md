@@ -116,6 +116,14 @@ isolated that way; one that ends in a bracket (`rh config sync enable --folder <
 mirrored and on the wrong side, so a right-to-left translation puts a left-to-right mark after it, which
 `merge_translations.py` adds, `verify_localizations.py` demands and a test holds.
 
+The same goes for a path, or a quoted, assigned or bracketed word, written in the sentence itself: the fix line of "rh on
+your PATH" had `~/.local/bin` in its text and the window drew it `local/bin./~` in Arabic, Persian, Hebrew and Urdu
+(review round 16), and `launcher = "link"` had its closing quote at the wrong end. These are values of the message
+(`doctorFixCliPath("~/.local/bin")`, `doctorFixAgentLauncher("launcher = \"link\"", "\"desktop\"")`), and
+`verify_localizations.py` and `merge_translations.py` refuse such a literal in a right-to-left translation of a text the
+window shows (the lint found all seventeen of them in the old catalog, and none of the new one). A test lays every text
+out with CoreText, as the window does, and finds a path that is still drawn out of order.
+
 Alternatives: the doctor takes a `Localizer` and returns strings (every consumer must choose a language, the JSON has
 no codes, and the English the tests pin would depend on the language); leaving the sentences English and translating
 the titles only (what there was: a window half in one language and half in another). A test holds every doctor sentence

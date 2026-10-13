@@ -13208,187 +13208,187 @@
       }
     },
     "doctor.claudeLink.missing": {
-      "comment": "Detail line of a check in the setup window's Details list; it follows the check's title, so it is a fragment with no final period. The helper app Claude Code installs is missing. launcher = \"link\" is a config setting: keep it exactly.",
+      "comment": "Detail line of a check in the setup window's Details list; it follows the check's title, so it is a fragment with no final period. The helper app Claude Code installs is missing. %@ is a config setting, launcher = \"link\" (technical text, shown as it is).",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "المعالِج غير مثبَّت (لا يلزم إلا مع launcher = \"link\")"
+            "value": "المعالِج غير مثبَّت (لا يلزم إلا مع %@)"
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "হ্যান্ডলার ইনস্টল করা নেই (শুধু launcher = \"link\" হলে দরকার)"
+            "value": "হ্যান্ডলার ইনস্টল করা নেই (শুধু %@ হলে দরকার)"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Handler nicht installiert (nur für launcher = \"link\" nötig)"
+            "value": "Handler nicht installiert (nur für %@ nötig)"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "χειριστής μη εγκατεστημένος (χρειάζεται μόνο για launcher = \"link\")"
+            "value": "χειριστής μη εγκατεστημένος (χρειάζεται μόνο για %@)"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "handler not installed (only needed for launcher = \"link\")"
+            "value": "handler not installed (only needed for %@)"
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "manejador no instalado (solo se necesita para launcher = \"link\")"
+            "value": "manejador no instalado (solo se necesita para %@)"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "کنترل‌کننده نصب نشده (فقط برای launcher = \"link\" لازم است)"
+            "value": "کنترل‌کننده نصب نشده (فقط برای %@ لازم است)"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "gestionnaire non installé (nécessaire uniquement pour launcher = \"link\")"
+            "value": "gestionnaire non installé (nécessaire uniquement pour %@)"
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "המטפל לא מותקן (נדרש רק עבור launcher = \"link\")"
+            "value": "המטפל לא מותקן (נדרש רק עבור %@)"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "हैंडलर इंस्टॉल नहीं है (केवल launcher = \"link\" के लिए ज़रूरी)"
+            "value": "हैंडलर इंस्टॉल नहीं है (केवल %@ के लिए ज़रूरी)"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "handler tidak terpasang (hanya diperlukan untuk launcher = \"link\")"
+            "value": "handler tidak terpasang (hanya diperlukan untuk %@)"
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "gestore non installato (necessario solo per launcher = \"link\")"
+            "value": "gestore non installato (necessario solo per %@)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ハンドラが未インストール（launcher = \"link\" の場合のみ必要）"
+            "value": "ハンドラが未インストール（%@ の場合のみ必要）"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "핸들러 설치 안 됨 (launcher = \"link\"인 경우에만 필요)"
+            "value": "핸들러 설치 안 됨 (%@인 경우에만 필요)"
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "हँडलर इन्स्टॉल नाही (फक्त launcher = \"link\" साठी आवश्यक)"
+            "value": "हँडलर इन्स्टॉल नाही (फक्त %@ साठी आवश्यक)"
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "pengendali tidak dipasang (hanya diperlukan untuk launcher = \"link\")"
+            "value": "pengendali tidak dipasang (hanya diperlukan untuk %@)"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "handler niet geïnstalleerd (alleen nodig voor launcher = \"link\")"
+            "value": "handler niet geïnstalleerd (alleen nodig voor %@)"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "handler niezainstalowany (potrzebny tylko dla launcher = \"link\")"
+            "value": "handler niezainstalowany (potrzebny tylko dla %@)"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "manipulador não instalado (só é necessário para launcher = \"link\")"
+            "value": "manipulador não instalado (só é necessário para %@)"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "handler neinstalat (necesar doar pentru launcher = \"link\")"
+            "value": "handler neinstalat (necesar doar pentru %@)"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "обработчик не установлен (нужен только для launcher = \"link\")"
+            "value": "обработчик не установлен (нужен только для %@)"
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "handler நிறுவப்படவில்லை (launcher = \"link\" க்கு மட்டுமே தேவை)"
+            "value": "handler நிறுவப்படவில்லை (%@ க்கு மட்டுமே தேவை)"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "handler ఇన్‌స్టాల్ చేయబడలేదు (launcher = \"link\" కోసం మాత్రమే అవసరం)"
+            "value": "handler ఇన్‌స్టాల్ చేయబడలేదు (%@ కోసం మాత్రమే అవసరం)"
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ยังไม่ได้ติดตั้ง handler (ต้องใช้เฉพาะเมื่อ launcher = \"link\")"
+            "value": "ยังไม่ได้ติดตั้ง handler (ต้องใช้เฉพาะเมื่อ %@)"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "handler yüklü değil (yalnızca launcher = \"link\" için gerekli)"
+            "value": "handler yüklü değil (yalnızca %@ için gerekli)"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "обробник не встановлено (потрібен лише для launcher = \"link\")"
+            "value": "обробник не встановлено (потрібен лише для %@)"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ہینڈلر انسٹال نہیں ہے (صرف launcher = \"link\" کے لیے درکار ہے)"
+            "value": "ہینڈلر انسٹال نہیں ہے (صرف %@ کے لیے درکار ہے)"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "chưa cài đặt trình xử lý (chỉ cần khi launcher = \"link\")"
+            "value": "chưa cài đặt trình xử lý (chỉ cần khi %@)"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "处理程序未安装（仅在 launcher = \"link\" 时需要）"
+            "value": "处理程序未安装（仅在 %@ 时需要）"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "處理程式未安裝（僅在 launcher = \"link\" 時需要）"
+            "value": "處理程式未安裝（僅在 %@ 時需要）"
           }
         }
       }
@@ -15626,187 +15626,187 @@
       }
     },
     "doctor.fix.agentLauncher": {
-      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence. general.terminal and launcher = \"link\" or \"desktop\" are config text: keep them exactly (translate only the word or).",
+      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence. general.terminal is a config setting: keep it exactly. %1$@ is the setting launcher = \"link\" and %2$@ the word \"desktop\" in quotes (technical text, shown as it is); translate only the word or between them.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "اختر طرفية أخرى باستخدام general.terminal، أو اضبط launcher = \"link\" أو \"desktop\"."
+            "value": "اختر طرفية أخرى باستخدام general.terminal، أو اضبط %1$@ أو %2$@."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.terminal দিয়ে অন্য একটি টার্মিনাল বেছে নিন, অথবা launcher = \"link\" বা \"desktop\" সেট করুন।"
+            "value": "general.terminal দিয়ে অন্য একটি টার্মিনাল বেছে নিন, অথবা %1$@ বা %2$@ সেট করুন।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Wählen Sie mit general.terminal ein anderes Terminal, oder setzen Sie launcher = \"link\" oder \"desktop\"."
+            "value": "Wählen Sie mit general.terminal ein anderes Terminal, oder setzen Sie %1$@ oder %2$@."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Επιλέξτε άλλο τερματικό με το general.terminal ή ορίστε launcher = \"link\" ή \"desktop\"."
+            "value": "Επιλέξτε άλλο τερματικό με το general.terminal ή ορίστε %1$@ ή %2$@."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose another terminal with general.terminal, or set launcher = \"link\" or \"desktop\"."
+            "value": "Choose another terminal with general.terminal, or set %1$@ or %2$@."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Elija otra terminal con general.terminal o defina launcher = \"link\" o \"desktop\"."
+            "value": "Elija otra terminal con general.terminal o defina %1$@ o %2$@."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "با general.terminal ترمینال دیگری انتخاب کنید، یا launcher = \"link\" یا \"desktop\" را تنظیم کنید."
+            "value": "با general.terminal ترمینال دیگری انتخاب کنید، یا %1$@ یا %2$@ را تنظیم کنید."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Choisissez un autre terminal avec general.terminal, ou définissez launcher = \"link\" ou \"desktop\"."
+            "value": "Choisissez un autre terminal avec general.terminal, ou définissez %1$@ ou %2$@."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "בחרו מסוף אחר עם general.terminal, או הגדירו launcher = \"link\" או \"desktop\"."
+            "value": "בחרו מסוף אחר עם general.terminal, או הגדירו %1$@ או %2$@."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.terminal से कोई दूसरा टर्मिनल चुनें, या launcher = \"link\" या \"desktop\" सेट करें।"
+            "value": "general.terminal से कोई दूसरा टर्मिनल चुनें, या %1$@ या %2$@ सेट करें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pilih terminal lain dengan general.terminal, atau atur launcher = \"link\" atau \"desktop\"."
+            "value": "Pilih terminal lain dengan general.terminal, atau atur %1$@ atau %2$@."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Scegli un altro terminale con general.terminal, oppure imposta launcher = \"link\" o \"desktop\"."
+            "value": "Scegli un altro terminale con general.terminal, oppure imposta %1$@ o %2$@."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.terminal で別のターミナルを選ぶか、launcher = \"link\" または \"desktop\" を設定してください。"
+            "value": "general.terminal で別のターミナルを選ぶか、%1$@ または %2$@ を設定してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.terminal로 다른 터미널을 고르거나, launcher = \"link\" 또는 \"desktop\"으로 설정하세요."
+            "value": "general.terminal로 다른 터미널을 고르거나, %1$@ 또는 %2$@으로 설정하세요."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.terminal वापरून दुसरे टर्मिनल निवडा, किंवा launcher = \"link\" किंवा \"desktop\" सेट करा."
+            "value": "general.terminal वापरून दुसरे टर्मिनल निवडा, किंवा %1$@ किंवा %2$@ सेट करा."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pilih terminal lain dengan general.terminal, atau tetapkan launcher = \"link\" atau \"desktop\"."
+            "value": "Pilih terminal lain dengan general.terminal, atau tetapkan %1$@ atau %2$@."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Kies een andere terminal met general.terminal, of stel launcher = \"link\" of \"desktop\" in."
+            "value": "Kies een andere terminal met general.terminal, of stel %1$@ of %2$@ in."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Wybierz inny terminal za pomocą general.terminal albo ustaw launcher = \"link\" lub \"desktop\"."
+            "value": "Wybierz inny terminal za pomocą general.terminal albo ustaw %1$@ lub %2$@."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Escolha outro terminal com general.terminal, ou defina launcher = \"link\" ou \"desktop\"."
+            "value": "Escolha outro terminal com general.terminal, ou defina %1$@ ou %2$@."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Alegeți alt terminal cu general.terminal sau setați launcher = \"link\" sau \"desktop\"."
+            "value": "Alegeți alt terminal cu general.terminal sau setați %1$@ sau %2$@."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Выберите другой терминал с помощью general.terminal или задайте launcher = \"link\" или \"desktop\"."
+            "value": "Выберите другой терминал с помощью general.terminal или задайте %1$@ или %2$@."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.terminal மூலம் வேறொரு டெர்மினலைத் தேர்ந்தெடுக்கவும், அல்லது launcher = \"link\" அல்லது \"desktop\" என அமைக்கவும்."
+            "value": "general.terminal மூலம் வேறொரு டெர்மினலைத் தேர்ந்தெடுக்கவும், அல்லது %1$@ அல்லது %2$@ என அமைக்கவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.terminal ద్వారా మరో టెర్మినల్‌ను ఎంచుకోండి, లేదా launcher = \"link\" లేదా \"desktop\" గా సెట్ చేయండి."
+            "value": "general.terminal ద్వారా మరో టెర్మినల్‌ను ఎంచుకోండి, లేదా %1$@ లేదా %2$@ గా సెట్ చేయండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เลือกเทอร์มินัลอื่นด้วย general.terminal หรือตั้ง launcher = \"link\" หรือ \"desktop\"."
+            "value": "เลือกเทอร์มินัลอื่นด้วย general.terminal หรือตั้ง %1$@ หรือ %2$@."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.terminal ile başka bir terminal seçin veya launcher = \"link\" veya \"desktop\" olarak ayarlayın."
+            "value": "general.terminal ile başka bir terminal seçin veya %1$@ veya %2$@ olarak ayarlayın."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Виберіть інший термінал через general.terminal або задайте launcher = \"link\" або \"desktop\"."
+            "value": "Виберіть інший термінал через general.terminal або задайте %1$@ або %2$@."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏general.terminal کے ذریعے کوئی اور ٹرمینل منتخب کریں، یا launcher = \"link\" یا \"desktop\" سیٹ کریں۔"
+            "value": "‏general.terminal کے ذریعے کوئی اور ٹرمینل منتخب کریں، یا %1$@ یا %2$@ سیٹ کریں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Chọn terminal khác bằng general.terminal, hoặc đặt launcher = \"link\" hoặc \"desktop\"."
+            "value": "Chọn terminal khác bằng general.terminal, hoặc đặt %1$@ hoặc %2$@."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "用 general.terminal 选择其他终端，或设置 launcher = \"link\" 或 \"desktop\"。"
+            "value": "用 general.terminal 选择其他终端，或设置 %1$@ 或 %2$@。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "使用 general.terminal 選擇其他終端機，或設定 launcher = \"link\" 或 \"desktop\"。"
+            "value": "使用 general.terminal 選擇其他終端機，或設定 %1$@ 或 %2$@。"
           }
         }
       }
@@ -15998,187 +15998,187 @@
       }
     },
     "doctor.fix.agentsAdd": {
-      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence. general.agents and agents = [\"claude\"] are config text: keep them exactly.",
+      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence. general.agents is config text: keep it exactly. %@ is the example setting agents = [\"claude\"] (technical text, shown as it is).",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "أضف وكلاء إلى general.agents، مثلًا agents = [\"claude\"]."
+            "value": "أضف وكلاء إلى general.agents، مثلًا %@."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.agents-এ এজেন্ট যোগ করুন, যেমন agents = [\"claude\"]।"
+            "value": "general.agents-এ এজেন্ট যোগ করুন, যেমন %@।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tragen Sie Agenten in general.agents ein, zum Beispiel agents = [\"claude\"]."
+            "value": "Tragen Sie Agenten in general.agents ein, zum Beispiel %@."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Προσθέστε πράκτορες στο general.agents, για παράδειγμα agents = [\"claude\"]."
+            "value": "Προσθέστε πράκτορες στο general.agents, για παράδειγμα %@."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add agents to general.agents, for example agents = [\"claude\"]."
+            "value": "Add agents to general.agents, for example %@."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Añada agentes a general.agents, por ejemplo agents = [\"claude\"]."
+            "value": "Añada agentes a general.agents, por ejemplo %@."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "عامل‌ها را به general.agents اضافه کنید، برای نمونه agents = [\"claude\"]."
+            "value": "عامل‌ها را به general.agents اضافه کنید، برای نمونه %@."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ajoutez des agents à general.agents, par exemple agents = [\"claude\"]."
+            "value": "Ajoutez des agents à general.agents, par exemple %@."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "הוסיפו סוכנים ל-general.agents, למשל agents = [\"claude\"]."
+            "value": "הוסיפו סוכנים ל-general.agents, למשל %@."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.agents में एजेंट जोड़ें, उदाहरण के लिए agents = [\"claude\"]।"
+            "value": "general.agents में एजेंट जोड़ें, उदाहरण के लिए %@।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tambahkan agen ke general.agents, misalnya agents = [\"claude\"]."
+            "value": "Tambahkan agen ke general.agents, misalnya %@."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Aggiungi degli agenti a general.agents, ad esempio agents = [\"claude\"]."
+            "value": "Aggiungi degli agenti a general.agents, ad esempio %@."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.agents にエージェントを追加してください（例：agents = [\"claude\"]）。"
+            "value": "general.agents にエージェントを追加してください（例：%@）。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.agents에 에이전트를 추가하세요. 예: agents = [\"claude\"]."
+            "value": "general.agents에 에이전트를 추가하세요. 예: %@."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.agents मध्ये एजंट जोडा, उदाहरणार्थ agents = [\"claude\"]."
+            "value": "general.agents मध्ये एजंट जोडा, उदाहरणार्थ %@."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tambahkan ejen ke general.agents, contohnya agents = [\"claude\"]."
+            "value": "Tambahkan ejen ke general.agents, contohnya %@."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Voeg agenten toe aan general.agents, bijvoorbeeld agents = [\"claude\"]."
+            "value": "Voeg agenten toe aan general.agents, bijvoorbeeld %@."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Dodaj agentów do general.agents, na przykład agents = [\"claude\"]."
+            "value": "Dodaj agentów do general.agents, na przykład %@."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Adicione agentes a general.agents, por exemplo agents = [\"claude\"]."
+            "value": "Adicione agentes a general.agents, por exemplo %@."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Adăugați agenți în general.agents, de exemplu agents = [\"claude\"]."
+            "value": "Adăugați agenți în general.agents, de exemplu %@."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Добавьте агентов в general.agents, например agents = [\"claude\"]."
+            "value": "Добавьте агентов в general.agents, например %@."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.agents இல் முகவர்களைச் சேர்க்கவும், எடுத்துக்காட்டாக agents = [\"claude\"]."
+            "value": "general.agents இல் முகவர்களைச் சேர்க்கவும், எடுத்துக்காட்டாக %@."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.agents కు ఏజెంట్లను జోడించండి, ఉదాహరణకు agents = [\"claude\"]."
+            "value": "general.agents కు ఏజెంట్లను జోడించండి, ఉదాహరణకు %@."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เพิ่มเอเจนต์ใน general.agents เช่น agents = [\"claude\"]."
+            "value": "เพิ่มเอเจนต์ใน general.agents เช่น %@."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "general.agents’a ajan ekleyin, örneğin agents = [\"claude\"]."
+            "value": "general.agents’a ajan ekleyin, örneğin %@."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Додайте агентів до general.agents, наприклад agents = [\"claude\"]."
+            "value": "Додайте агентів до general.agents, наприклад %@."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏general.agents میں ایجنٹس شامل کریں، مثلاً agents = [\"claude\"]۔"
+            "value": "‏general.agents میں ایجنٹس شامل کریں، مثلاً %@۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Thêm tác tử vào general.agents, chẳng hạn agents = [\"claude\"]."
+            "value": "Thêm tác tử vào general.agents, chẳng hạn %@."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "将智能体添加到 general.agents，例如 agents = [\"claude\"]。"
+            "value": "将智能体添加到 general.agents，例如 %@。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "將智慧代理加入 general.agents，例如 agents = [\"claude\"]。"
+            "value": "將智慧代理加入 general.agents，例如 %@。"
           }
         }
       }
@@ -16370,187 +16370,187 @@
       }
     },
     "doctor.fix.cliPath": {
-      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence. ~/.local/bin is a folder and PATH an environment variable: keep both exactly.",
+      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence. %@ is the folder ~/.local/bin (technical text, shown as it is); PATH is an environment variable: keep it exactly.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "أضف ~/.local/bin إلى PATH في ملف إعدادات الصدفة لديك."
+            "value": "أضف %@ إلى PATH في ملف إعدادات الصدفة لديك."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "আপনার শেল প্রোফাইলে PATH-এ ~/.local/bin যোগ করুন।"
+            "value": "আপনার শেল প্রোফাইলে PATH-এ %@ যোগ করুন।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Fügen Sie ~/.local/bin in Ihrem Shell-Profil zum PATH hinzu."
+            "value": "Fügen Sie %@ in Ihrem Shell-Profil zum PATH hinzu."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Προσθέστε το ~/.local/bin στο PATH στο προφίλ του κελύφους σας."
+            "value": "Προσθέστε το %@ στο PATH στο προφίλ του κελύφους σας."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add ~/.local/bin to PATH in your shell profile."
+            "value": "Add %@ to PATH in your shell profile."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Añada ~/.local/bin a PATH en su perfil de shell."
+            "value": "Añada %@ a PATH en su perfil de shell."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏~/.local/bin را در پروفایل پوستهٔ خود به PATH اضافه کنید."
+            "value": "‏%@ را در پروفایل پوستهٔ خود به PATH اضافه کنید."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ajoutez ~/.local/bin à PATH dans le profil de votre shell."
+            "value": "Ajoutez %@ à PATH dans le profil de votre shell."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "הוסיפו את ~/.local/bin ל-PATH בפרופיל המעטפת שלכם."
+            "value": "הוסיפו את %@ ל-PATH בפרופיל המעטפת שלכם."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "अपनी शेल प्रोफ़ाइल में ~/.local/bin को PATH में जोड़ें।"
+            "value": "अपनी शेल प्रोफ़ाइल में %@ को PATH में जोड़ें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tambahkan ~/.local/bin ke PATH di profil shell Anda."
+            "value": "Tambahkan %@ ke PATH di profil shell Anda."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Aggiungi ~/.local/bin a PATH nel profilo della tua shell."
+            "value": "Aggiungi %@ a PATH nel profilo della tua shell."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "シェルのプロファイルで、PATH に ~/.local/bin を追加してください。"
+            "value": "シェルのプロファイルで、PATH に %@ を追加してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "셸 프로필에서 PATH에 ~/.local/bin을 추가하세요."
+            "value": "셸 프로필에서 PATH에 %@을 추가하세요."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "तुमच्या शेल प्रोफाइलमध्ये PATH मध्ये ~/.local/bin जोडा."
+            "value": "तुमच्या शेल प्रोफाइलमध्ये PATH मध्ये %@ जोडा."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tambahkan ~/.local/bin ke PATH dalam profil shell anda."
+            "value": "Tambahkan %@ ke PATH dalam profil shell anda."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Voeg ~/.local/bin toe aan PATH in je shellprofiel."
+            "value": "Voeg %@ toe aan PATH in je shellprofiel."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Dodaj ~/.local/bin do PATH w profilu powłoki."
+            "value": "Dodaj %@ do PATH w profilu powłoki."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Adicione ~/.local/bin ao PATH no perfil do seu shell."
+            "value": "Adicione %@ ao PATH no perfil do seu shell."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Adăugați ~/.local/bin în PATH, în profilul shell-ului."
+            "value": "Adăugați %@ în PATH, în profilul shell-ului."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Добавьте ~/.local/bin в переменную PATH в профиле оболочки."
+            "value": "Добавьте %@ в переменную PATH в профиле оболочки."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "உங்கள் shell profile இல் ~/.local/bin ஐ PATH-இல் சேர்க்கவும்."
+            "value": "உங்கள் shell profile இல் %@ ஐ PATH-இல் சேர்க்கவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "మీ shell profile లో ~/.local/bin ను PATH లో జోడించండి."
+            "value": "మీ shell profile లో %@ ను PATH లో జోడించండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เพิ่ม ~/.local/bin ลงใน PATH ในไฟล์โปรไฟล์ของเชลล์."
+            "value": "เพิ่ม %@ ลงใน PATH ในไฟล์โปรไฟล์ของเชลล์."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Shell profilinize ~/.local/bin klasörünü PATH’e ekleyin."
+            "value": "Shell profilinize %@ klasörünü PATH’e ekleyin."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Додайте ~/.local/bin до PATH у профілі вашої оболонки."
+            "value": "Додайте %@ до PATH у профілі вашої оболонки."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "اپنی شیل پروفائل میں ~/.local/bin کو PATH میں شامل کریں۔"
+            "value": "اپنی شیل پروفائل میں %@ کو PATH میں شامل کریں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Thêm ~/.local/bin vào PATH trong tệp hồ sơ shell của bạn."
+            "value": "Thêm %@ vào PATH trong tệp hồ sơ shell của bạn."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在你的 shell 配置文件中将 ~/.local/bin 添加到 PATH。"
+            "value": "在你的 shell 配置文件中将 %@ 添加到 PATH。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在你的 shell 設定檔中將 ~/.local/bin 加入 PATH。"
+            "value": "在你的 shell 設定檔中將 %@ 加入 PATH。"
           }
         }
       }

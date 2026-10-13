@@ -12,6 +12,8 @@
 - the commands between backticks are the same in every language (the setup window shows them as code);
 - a translation is written in the script of its language, and a right-to-left one that would start with Latin text
   starts with a right-to-left mark instead;
+- a right-to-left translation writes no path and no quoted, assigned or bracketed Latin word itself (`~/.local/bin`,
+  `launcher = "link"`): the window isolates a value (%@) of a message, so that is what such a literal has to be;
 - the generated Swift is up to date;
 - Localization/AppIntents.xcstrings (what the App Intents are called, read by key from the app bundle) is checked like the
   strings of the code, and the app's `LocalizedStringResource`s agree with the catalogs: each key is in the catalog of its
