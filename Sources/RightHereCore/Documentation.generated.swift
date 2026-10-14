@@ -69,9 +69,22 @@ nowhere counts as existing.
 ## An agent says "not found", or starts without my aliases
 
 The agent's command is typed into your own login shell, so it sees what a new terminal window sees: nvm, your
-PATH and your aliases. If `claude` works in a new window of your terminal it works here. `rh agents` shows which
+PATH and your aliases. If `agy`, `claude`, or `codex` works in a new window of your terminal it works here. `rh agents` shows which
 agent commands your login shell finds. If your shell takes a few seconds to start, the agent starts that much
 later; that is your shell's startup time, and `rh doctor --probe-launch` reports how long the round trip took.
+
+## Running an agent in an isolated git worktree
+
+To launch an agent on an isolated branch without dirtying your current branch or working tree, use:
+`rh run agent.agy --worktree` or `rh run agent.claude --worktree --branch experiment-1`. Right Here prepares a clean
+git worktree under `.right-here/worktrees/`, automatically adds `.right-here` to `.git/info/exclude` so git status remains clean,
+and launches the agent directly in the isolated worktree directory. Manage worktrees via `rh worktree list` and `rh worktree remove`.
+
+## WezTerm or kitty launch questions
+
+Right Here includes native adapters for WezTerm and kitty without requiring manual template configurations.
+Ensure the application is in `/Applications` or on your `PATH`. WezTerm is invoked via `wezterm start --cwd <folder>`
+and kitty via `kitty --directory <folder>`.
 
 ## Terminal says it will not start a command in a folder
 

@@ -1,6 +1,6 @@
 # Right Here privacy policy
 
-Effective date: [DATE]
+Effective date: 2026-10-14
 
 Right Here sends the folder you picked in Finder to a terminal, an editor or an AI agent on your Mac. It works
 on your Mac and makes no network connections of its own.
@@ -47,9 +47,9 @@ Right Here collects no personal information from anyone, including children.
 ## Open source
 
 The source code is public under the Apache License 2.0, so these statements can be checked:
-[REPOSITORY URL]
+https://github.com/boyugou/right-here
 
 ## Changes and contact
 
 If this policy changes, the new version and its date appear on this page. Questions: open an issue at
-[REPOSITORY URL]/issues.
+https://github.com/boyugou/right-here/issues.

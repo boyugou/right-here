@@ -26,7 +26,7 @@ To turn it on: open Right Here, then enable the Finder extension in System Setti
 Extensions, Added Extensions (Finder).
 
 Note: this edition is the menu-only edition. Starting AI agents in a terminal, the `rh` command-line tool and the
-MCP server are in the free direct download at [REPOSITORY URL].
+MCP server are in the free direct download at https://github.com/boyugou/right-here.
 
 ## Keywords (max 100 characters, comma-separated, no spaces after commas)
 
@@ -40,9 +40,9 @@ First release. A configurable Finder menu for opening folders and copying paths.
 
 ## URLs
 
-- Support URL: [REPOSITORY URL]/issues
-- Marketing URL: [PROJECT PAGE URL] (optional)
-- Privacy policy URL: [WEBSITE]/privacy (from PRIVACY.md)
+- Support URL: https://github.com/boyugou/right-here/issues
+- Marketing URL: https://boyugou.github.io/right-here/
+- Privacy policy URL: https://boyugou.github.io/right-here/privacy.html (from PRIVACY.md)
 - Copyright: Licensed under the Apache License 2.0.
 
 ## Review notes (draft)
