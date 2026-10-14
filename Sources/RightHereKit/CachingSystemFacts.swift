@@ -10,6 +10,7 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
     private let applications = Mutex<[String: (url: URL?, stored: Date)]>([:])
     private let displayNames = Mutex<[String: (name: String?, stored: Date)]>([:])
     private let bundleVersions = Mutex<[String: (version: String?, stored: Date)]>([:])
+    private let directories = Mutex<[String: (isDir: Bool?, stored: Date)]>([:])
 
     public init(base: any SystemFacts = LiveSystemFacts(), lifetime: TimeInterval = 300) {
         self.base = base
@@ -19,7 +20,16 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
     public var homeDirectory: URL { base.homeDirectory }
     public var currentDirectory: URL { base.currentDirectory }
     public var loginShell: String { base.loginShell }
-    public func isDirectory(_ url: URL) -> Bool? { base.isDirectory(url) }
+    public func isDirectory(_ url: URL) -> Bool? {
+        let key = url.path
+        let now = Date()
+        if let cached = directories.withLock({ $0[key] }), now.timeIntervalSince(cached.stored) < min(lifetime, 30) {
+            return cached.isDir
+        }
+        let isDir = base.isDirectory(url)
+        directories.withLock { $0[key] = (isDir, now) }
+        return isDir
+    }
     public func fileExists(_ url: URL) -> Bool { base.fileExists(url) }
     public func itemState(_ url: URL) -> ItemState { base.itemState(url) }
     public func gitRoot(containing url: URL) -> URL? { base.gitRoot(containing: url) }

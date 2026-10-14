@@ -13,7 +13,8 @@ final class FinderSyncExtension: FIFinderSync {
     private lazy var paths = RHPaths.current(facts: facts)
 
     private var configCache: (stamp: ConfigStore.Stamp, loaded: LoadedConfig)?
-    private var cachedFolderNodes: (stamp: ConfigStore.Stamp, nodes: [MenuNode])?
+    private var cachedFolderMenus: [FinderMenuKind: (stamp: ConfigStore.Stamp, menu: NSMenu)] = [:]
+    private var isWarmingUp = false
     private var activityToken: (any NSObjectProtocol)?
     /// Finder receives a copy of each menu, and only the tag survives the trip back to the action method.
     /// The tags are stable (see `ActionTags`), so a menu built after the one being clicked cannot retarget it.
@@ -22,8 +23,10 @@ final class FinderSyncExtension: FIFinderSync {
 
     override init() {
         super.init()
+        ProcessInfo.processInfo.disableAutomaticTermination("Keep Finder Sync Extension responsive")
+        ProcessInfo.processInfo.disableSuddenTermination()
         activityToken = ProcessInfo.processInfo.beginActivity(
-            options: [.userInitiatedAllowingIdleSystemSleep, .latencyCritical],
+            options: [.userInitiated, .latencyCritical],
             reason: "Right Here Finder Sync Menu"
         )
         FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: "/")]
@@ -33,7 +36,6 @@ final class FinderSyncExtension: FIFinderSync {
 
     override func beginObservingDirectory(at url: URL) {
         super.beginObservingDirectory(at: url)
-        warmupInBackground()
     }
 
     override func endObservingDirectory(at url: URL) {
@@ -41,9 +43,14 @@ final class FinderSyncExtension: FIFinderSync {
     }
 
     private func warmupInBackground() {
+        guard !isWarmingUp else { return }
+        isWarmingUp = true
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            defer {
+                DispatchQueue.main.async { self?.isWarmingUp = false }
+            }
             guard let self else { return }
-            let config = self.currentConfig()
+            let (config, stamp) = self.currentConfigWithStamp()
             var iconsToWarm: [Icon] = []
             for app in config.allApps {
                 if let bundleID = app.installedBundleID(facts: self.facts) {
@@ -59,11 +66,14 @@ final class FinderSyncExtension: FIFinderSync {
                 iconsToWarm.append(.fileType(ext))
             }
             self.icons.prewarm(iconsToWarm)
-            let defaultContext = HereContext(origin: .container)
-            let nodes = MenuBuilder(config: config, facts: self.facts, localizer: .system).build(for: defaultContext)
-            let stamp = ConfigStore.stamp(paths: self.paths)
+            let folderContext = HereContext(origin: .container, container: URL(fileURLWithPath: "/tmp"))
+            let nodes = MenuBuilder(config: config, facts: self.facts, localizer: .system).build(for: folderContext)
             DispatchQueue.main.async { [weak self] in
-                self?.cachedFolderNodes = (stamp, nodes)
+                guard let self, !nodes.isEmpty else { return }
+                for kind in [FinderMenuKind.items, .container, .sidebar] {
+                    let menu = self.makeMenu(nodes, kind: kind)
+                    self.cachedFolderMenus[kind] = (stamp, menu)
+                }
             }
         }
     }
@@ -95,21 +105,21 @@ final class FinderSyncExtension: FIFinderSync {
         let started = ContinuousClock.now
         let kind = Self.kind(menuKind)
         let context = currentContext(kind)
-        let config = currentConfig()
         let isSingleFolder = context.items.isEmpty || (context.items.count == 1 && facts.isDirectory(context.items[0]) == true)
-        let nodes: [MenuNode]
-        let stamp = ConfigStore.stamp(paths: paths)
-        if isSingleFolder, let cached = cachedFolderNodes, cached.stamp == stamp {
-            nodes = cached.nodes
-        } else {
-            nodes = MenuBuilder(config: config, facts: facts, localizer: .system).build(for: context)
-            if isSingleFolder {
-                cachedFolderNodes = (stamp, nodes)
-            }
+        let (config, stamp) = currentConfigWithStamp()
+
+        if isSingleFolder, let cached = cachedFolderMenus[kind], cached.stamp == stamp {
+            log.notice("menu \(kind.rawValue, privacy: .public): \(context.items.count, privacy: .public) items, served from cache in \(String(describing: ContinuousClock.now - started), privacy: .public)")
+            return cached.menu.copy() as? NSMenu
         }
+
+        let nodes = MenuBuilder(config: config, facts: facts, localizer: .system).build(for: context)
         guard !nodes.isEmpty else { return nil }
 
         let menu = makeMenu(nodes, kind: kind)
+        if isSingleFolder {
+            cachedFolderMenus[kind] = (stamp, menu)
+        }
         log.notice("menu \(kind.rawValue, privacy: .public): \(context.items.count, privacy: .public) items, built in \(String(describing: ContinuousClock.now - started), privacy: .public)")
         return menu
     }
@@ -130,12 +140,12 @@ final class FinderSyncExtension: FIFinderSync {
     }
 
     /// The config, re-read only when one of its two files (the config and the per-machine overlay) changed.
-    private func currentConfig() -> Config {
+    private func currentConfigWithStamp() -> (config: Config, stamp: ConfigStore.Stamp) {
         let stamp = ConfigStore.stamp(paths: paths)
-        if let cache = configCache, cache.stamp == stamp { return cache.loaded.config }
+        if let cache = configCache, cache.stamp == stamp { return (cache.loaded.config, stamp) }
         let loaded = ConfigStore.load(paths: paths)
         configCache = (stamp, loaded)
-        return loaded.config
+        return (loaded.config, stamp)
     }
 
     private func makeMenu(_ nodes: [MenuNode], kind: FinderMenuKind) -> NSMenu {
