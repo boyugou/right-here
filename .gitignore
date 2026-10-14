@@ -31,6 +31,7 @@ config.local.toml
 # Test & preview scratch
 out.png
 preview.png
+test.png
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/

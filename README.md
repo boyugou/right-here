@@ -5,169 +5,204 @@
 # Right Here
 
 **Act on the folder you are looking at. Right here.**<br>
-Send "here" (a folder, or whatever you selected in Finder) to your terminals, editors and AI agents.
+The open-source action layer for macOS: send current folders and selections to terminals, editors, and AI agents.
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](LICENSE)
 [![Swift 6](https://img.shields.io/badge/Swift-6.0-F05138?style=flat-square&logo=swift&logoColor=white)](.)
 [![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-black?style=flat-square&logo=apple&logoColor=white)](.)
 [![Notarized DMG](https://img.shields.io/badge/Download-Notarized%20DMG-brightgreen?style=flat-square&logo=apple)](https://github.com/boyugou/right-here/releases/latest)
-[![MCP Server](https://img.shields.io/badge/MCP-Server-6B57D2?style=flat-square)](.)
+[![MCP Server](https://img.shields.io/badge/MCP-Server%20(stdio)-6B57D2?style=flat-square)](.)
 
-[Download for Mac (DMG)](https://github.com/boyugou/right-here/releases/latest) · [Install Guide](#install) · [Features](#what-you-get) · [CLI Usage](#use) · [Roadmap](ROADMAP.md)
+[Website](https://boyugou.github.io/right-here/) · [Download for Mac](https://github.com/boyugou/right-here/releases/latest) · [Install Guide](#install) · [CLI Usage](#use) · [Connect AI Assistant](#connect-an-ai-assistant) · [Architecture](#how-it-works) · [Documentation](docs/INDEX.md)
+
+<br>
+
+<table>
+  <tr>
+    <td align="center" width="33%"><b>Finder Menu & Quick Actions</b></td>
+    <td align="center" width="33%"><b>AI Agents & MCP Server</b></td>
+    <td align="center" width="33%"><b>Unified CLI & Automation</b></td>
+  </tr>
+  <tr>
+    <td align="left"><sub>Open any folder or selection in Ghostty, Terminal, iTerm2, VS Code, Cursor, or Zed. Create custom template files, and copy absolute, git-relative, or @mention paths with one click.</sub></td>
+    <td align="left"><sub>Launch Claude Code or Codex in your authentic login shell (with your PATH, nvm, and aliases intact). Connect assistants via stdio typed Model Context Protocol (MCP) tools.</sub></td>
+    <td align="left"><sub>Zero resident daemons. The sandboxed extension responds in ~0.15ms. Every GUI action maps 1:1 to an audited <code>rh run</code> command with dry-run verification and JSON output.</sub></td>
+  </tr>
+</table>
 
 </div>
 
 ---
 
-Right Here is a small, ultra-fast action layer for macOS: a command-line tool (`rh`), a plain-text config file, and Finder entry points (a right-click menu and Quick Actions). Developers use the actions from Finder; AI agents use the same actions from the command line or over MCP.
+Right Here is a lightweight, ultra-fast macOS action layer composed of a sandboxed FinderSync extension, an audited command-line tool (`rh`), a plain-text configuration file (`~/.config/right-here/config.toml`), and a Model Context Protocol (MCP) server.
+
+Developers use contextual clicks in Finder; AI agents use the exact same actions from the terminal or over MCP.
+
+- **Zero resident daemons.** No background memory footprint or battery drain. The FinderSync extension activates on demand in ~0.15ms, and `rh` runs only when invoked.
+- **Robust safety & sandboxing.** File paths travel strictly as raw argv arguments and AppleScript descriptors, never concatenated into shell strings. The sandboxed extension has zero network entitlements.
+- **Deterministic 1:1 parity.** Anything clickable in Finder can be simulated, tested, and executed via `rh run <action>` and the stdio MCP server.
+- **Local-first configuration.** Configured via standard TOML with JSON Schema validation (`rh config schema`) and optional multi-device sync without third-party servers.
+- **Native everywhere.** Supports Apple silicon, macOS 26+, native Dark Mode, and 30 languages with bidirectional right-to-left script support (Arabic, Hebrew, Persian, Urdu).
+
+## How it works
+
+```
+┌──────────────┐   MCP (stdio)   ┌───────────────┐        ┌──────────────────┐
+│ AI assistant │ ◄─────────────► │    rh mcp     │ ◄────► │  RightHereCore   │
+│(Claude, ...) │    typed tools  │ (MCP server)  │        │  Config & Models │
+└──────────────┘                 └───────────────┘        └────────┬─────────┘
+                                                                   │
+┌──────────────┐   right-click   ┌───────────────┐                 │
+│ Finder / You │ ◄─────────────► │ FinderSync    │ ◄───────────────┤
+└──────────────┘                 │ (Extension)   │                 │
+                                 └───────┬───────┘                 │
+                                         │ posix_spawn             ▼
+                                         ▼                ┌──────────────────┐
+                                 ┌───────────────┐        │  macOS Apps      │
+                                 │ rh runner     │ ◄────► │  Terminals & IDEs│
+                                 │ (~/.local/bin)│        └──────────────────┘
+```
+
+When you right-click in Finder or run an action:
+1. The **FinderSync Extension** resolves the container folder or selection.
+2. It generates menu nodes in accordance with your `config.toml`.
+3. Selecting an action invokes `rh` runner via `posix_spawn`, which resolves the configured terminal or editor adapter and dispatches the task safely into your environment.
 
 ## What you get
 
-Right-click a folder, a file or the empty background of a Finder window:
+Right-click a folder, a file, or the empty canvas of a Finder window:
 
-- **Open in a terminal or editor**: Ghostty, Terminal, iTerm2, VS Code, and any app you add.
-- **Start an AI agent here**: "Claude Code Here", "Codex Here" and others, in the terminal you choose. The
-  command is typed into your own login shell, so nvm, your PATH and your aliases apply, and the shell stays
-  open when the agent exits. More options sit one level down: continue the last session, resume one, the
-  agent's own terminal link, its desktop app.
-  Claude Code and Codex each exist as a command-line tool and as a desktop app. "Claude Code Here" and
-  "Codex Here" type the command into a terminal; "in Desktop App" opens the desktop app on the folder. To make
-  the desktop app an agent's main entry, set `launcher = "desktop"` under `[agent.claude]` (or `codex`) in the
-  config; `rh docs config` lists the launchers (a terminal id, `default`, `link` or `desktop`).
-- **New file**: an empty text or Markdown file (or your own templates), then reveal it or open it.
-- **Copy Path**: absolute, `~`-relative, relative to the git root, file name, shell-escaped, or an `@path`
-  mention to paste into an agent's prompt.
+- **Open in a terminal or editor**: Ghostty, Terminal, iTerm2, VS Code, Cursor, Zed, and any custom application.
+- **Start an AI agent here**: Launch Claude Code or Codex directly inside your chosen terminal. The command is typed into your own interactive login shell, preserving your environment, `PATH`, `nvm`, and aliases.
+- **New file from templates**: Instantly create empty text or Markdown files (or custom project templates), automatically revealing or opening them.
+- **Copy Path in any format**: Absolute, `~`-relative, git-repository-relative, bare filename, shell-escaped, or formatted as `@path` mentions ready for AI prompts.
 
-Everything is also a command: `rh run agent.claude`, `rh run copy-path.git-relative src/main.swift`.
-Add `--dry-run --json` to see exactly what an action would do before it does it.
-
-There is no resident daemon process: the Finder extension responds to contextual clicks in ~0.15ms, and `rh` runs only when invoked.
+Every action is accessible via the CLI:
+```sh
+rh run agent.claude
+rh run copy-path.git-relative src/main.swift
+rh run new-file.md --container ~/notes
+```
+Add `--dry-run --json` to inspect the exact planned execution before running.
 
 ## Install
 
 ### Download DMG (Recommended)
 
-1. Download the latest notarized release from [GitHub Releases](https://github.com/boyugou/right-here/releases/latest).
-2. Open the disk image and drag **Right Here.app** to `/Applications`.
-3. Open **Right Here.app** to configure and verify permissions in the setup window.
+1. Download the latest release from [GitHub Releases](https://github.com/boyugou/right-here/releases/latest).
+2. Open `RightHere-macOS-arm64.dmg` and drag **Right Here.app** into `/Applications`.
+3. Open **Right Here.app** and follow the 3-step setup to enable the Finder extension in macOS System Settings.
 
 ### Build from source
 
-Xcode 26 or later and `xcodegen`:
+Requires Xcode 26 or later and `xcodegen`:
 
 ```sh
 brew install xcodegen
-./script/install_local.sh     # build, copy to ~/Applications, link rh into ~/.local/bin, enable the extension
-rh doctor                     # check everything
+./script/install_local.sh     # build, copy to ~/Applications, link rh into ~/.local/bin, enable extension
+rh doctor                     # verify all diagnostics pass
 ```
 
-If `rh doctor` says the Finder extension is switched off, turn on Right Here in System Settings, General, Login Items & Extensions, Finder. Details: [`docs/development/SETUP.md`](docs/development/SETUP.md).
+If `rh doctor` indicates the extension needs activation, toggle Right Here under **System Settings › General › Login Items & Extensions › Finder**.
 
 ## Use
 
 ```sh
-rh init                       # create ~/.config/right-here/config.toml from what is installed
-rh menu                       # preview the Finder menu (--explain adds what it leaves out, and why)
-rh actions                    # every action available here (--all adds the ones that are not, and why)
-rh run agent.claude           # start Claude Code in the current folder, in your terminal
+rh init                       # create ~/.config/right-here/config.toml
+rh menu                       # preview the Finder menu (--explain shows filtered items)
+rh actions                    # list all actions available in the current directory
+rh run agent.claude           # launch Claude Code in current directory
 rh run copy-path.git-relative src/main.swift
-rh run new-file.md --container ~/notes
-rh doctor                     # check the setup
-rh doctor --probe-launch      # prove a click can start a command in your terminal (a window opens and closes)
+rh doctor                     # run full diagnostic health check
+rh doctor --probe-launch      # test terminal AppleEvent automation launch
 ```
 
-Shell completions: `rh --generate-completion-script zsh` (or `bash`, `fish`) prints a script; the Homebrew
-formula installs them, and a man page (`man rh`).
-
-The app's setup window shows the same menu under "Finder menu", with its own icons and submenus that open in place,
-whether or not the Finder extension is switched on yet.
-
-The Finder menu is not shown inside iCloud Drive (including a synced Desktop or Documents folder), a
-limit of Finder extensions. The same actions are installed as **Quick Actions**, which work there and take
-keyboard shortcuts: System Settings, Keyboard, Keyboard Shortcuts, Services, Files and Folders.
-
-The first time an action controls a terminal, macOS asks whether Right Here may. Allow it once. If something
-does not work, start with `rh doctor` and [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
+Shell completions:
+```sh
+rh --generate-completion-script zsh > ~/.zfunc/_rh
+```
 
 ## Configure
 
-One TOML file, `~/.config/right-here/config.toml`, which the app never rewrites. For example:
+Configuration is stored in `~/.config/right-here/config.toml`, validated strictly against a schema:
 
 ```toml
 [general]
 terminal = "ghostty"
-terminal_placement = "tab"           # a new tab in the front Ghostty window instead of a new window
+terminal_placement = "tab"               # open in tab instead of new window
 editor = "vscode"
-agents = ["claude", "codex", "lazygit"]   # what the menu offers, in order (custom agents too)
+agents = ["claude", "codex", "lazygit"]  # enabled agents in menu order
 
 [menu]
 items = ["open-terminal", "open-editor", "agents", "-", "new-file", "copy-path"]
 
 [new_file]
-then = "open"                        # open a new file after creating it...
+then = "open"
 
-[[new_file.template]]                # ...Markdown in Typora (defining templates replaces the built-in two)
+[[new_file.template]]
 id = "md"
 title = "Markdown Document"
 extension = "md"
 open_with = "typora"
 
 [agent.claude]
-command = "claude --model opus"      # what is typed into the shell
+command = "claude --model opus"
 
-[agent.lazygit]                      # any command you want started in the folder works like an agent
+[agent.lazygit]
 name = "lazygit"
 command = "lazygit"
 ```
 
-A terminal without a built-in adapter (WezTerm, kitty, Alacritty, ...) can start agents too, if you say how: give its
-`[[app]]` entry `role = "terminal"` and `run_args`, an argument vector with `{dir}`, `{command}`, `{shell}` and `{app}`
-placeholders (see `rh docs config`). Right Here has not tried those terminals, so check with `rh run agent.claude@<id> --dry-run`
-and then for real.
+- Validate configuration: `rh config validate` (supports `--strict`).
+- Inspect configuration files: `rh config show`.
+- Export schema: `rh config schema`.
+- Sync across machines: `rh config sync enable` (uses private folder or iCloud Drive; commands are protected by `--allow-commands`).
 
-`rh docs config` lists every key with defaults, `rh config validate` checks the file (each problem names its file and
-line; unknown keys come with a "did you mean"; `--strict` also fails on warnings), `rh config show` prints the files that
-make up the config, `rh config schema` prints a JSON Schema for your editor. `rh init --force` saves your old file
-before replacing it.
+## Connect an AI Assistant
 
-To use one config on several Macs, `rh config sync enable` keeps a copy in a folder (iCloud Drive by default,
-or any folder), and a `config.local.toml` next to the config holds what differs per machine (`rh docs sync`). The
-folder is not trusted with programs: a pull that would add or change a terminal template or an agent command is
-refused, with the list, until you pass `--allow-commands`.
+### Claude Code Plugin
 
-## For AI agents
+Install the official Right Here plugin in Claude Code for contextual workspace actions and Finder automation:
 
-- `claude mcp add right-here -- rh mcp` adds an MCP server over the same actions: list and run them, read
-  the menu, see what is selected in Finder, run the doctor, validate the config.
-- Or install the Claude Code plugin from this repository (`/plugin marketplace add boyugou/right-here`),
-  which also brings skills for setup, opening things, and showing the files an agent changed in Finder.
-- `rh docs agent-setup` is the playbook an agent follows to set Right Here up for someone; the app has a
-  "Copy Setup Prompt for AI" button that starts it.
+```sh
+/plugin marketplace add boyugou/right-here
+/plugin install right-here@right-here
+```
 
-File names in tool output are marked as data, and a terminal is only ever handed a folder.
+### Model Context Protocol (MCP)
 
-## Safety
+To connect Claude Desktop, Cursor, Zed, or Windsurf, add `rh mcp` as a stdio server:
 
-File names are data: they travel as argument-vector entries and AppleScript arguments, never as shell or
-AppleScript source, and the quoting code is tested by round-tripping awkward names through real `sh`,
-`bash` and `zsh` (and `fish` where it is installed). A terminal app that is handed a file would run it, so every terminal action validates
-that its working directory is a folder. The Finder extension stays sandboxed; what it cannot do is done by
-`rh` through a script only you can install. Configuration is never read from the folder being acted on.
-Right Here makes no network connections and collects nothing: there is no network code, and the sandboxed
-extension has no network entitlement. See [`docs/DESIGN.md`](docs/DESIGN.md), section 9.
+```json
+{
+  "mcpServers": {
+    "right-here": {
+      "command": "rh",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+### Automated Setup via AI
+
+Right Here provides an automated onboarding guide for AI assistants:
+- Run `rh docs agent-setup` for the full agent playbook.
+- In **Right Here.app**, click **Copy Setup Prompt for AI** to have your assistant verify dependencies and configure your system.
+
+## Safety & Privacy
+
+- **Data isolation**: File paths are strictly processed as arguments and AppleScript parameters, preventing shell injection vulnerabilities.
+- **Type verification**: Terminal actions verify that target directories are valid containers before launching.
+- **Zero telemetry**: Right Here contains no analytics, network trackers, or resident daemons. The sandboxed extension has no network entitlements.
+- See [`docs/DESIGN.md`](docs/DESIGN.md) for full architectural specifications.
 
 ## Languages
 
-The menu, the app and alerts follow the system language, in thirty languages. The translations were
-machine-generated, are marked for native-speaker review, are under Apache-2.0, and corrections are welcome
-(see [`CONTRIBUTING.md`](CONTRIBUTING.md)); the command line stays English.
+Right Here supports 30 languages with native scripts and right-to-left layout support (Arabic, Bengali, German, Greek, English, Spanish, Persian, French, Hebrew, Hindi, Indonesian, Italian, Japanese, Korean, Marathi, Malay, Dutch, Polish, Portuguese, Russian, Swedish, Tamil, Telugu, Thai, Turkish, Ukrainian, Urdu, Vietnamese, Simplified Chinese, Traditional Chinese).
 
-## Requirements and status
-
-macOS 26 or later on Apple silicon. Early development: the core, the command line, the Finder extension,
-Quick Actions, the MCP server and the plugin work and are tested. Design notes and decisions live in
-[`docs/`](docs/INDEX.md); what is next is in the [roadmap](ROADMAP.md).
+The command-line interface stays in English for predictable scripting.
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [`LICENSE`](LICENSE) for details.

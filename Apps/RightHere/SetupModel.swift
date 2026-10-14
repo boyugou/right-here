@@ -4,10 +4,20 @@ import Observation
 import RightHereCore
 import RightHereKit
 
+enum SetupTab: String, CaseIterable, Identifiable {
+    case overview = "overview"
+    case menu = "menu"
+    case diagnostics = "diagnostics"
+    case ai = "ai"
+
+    var id: String { rawValue }
+}
+
 /// What the setup window shows and does. All the work is done by the same code `rh` uses.
 @MainActor
 @Observable
 final class SetupModel {
+    var selectedTab: SetupTab = .overview
     private(set) var checks: [DoctorCheck] = []
     private(set) var isWorking = false
     private(set) var message: String?
@@ -36,6 +46,46 @@ final class SetupModel {
         checks.contains { $0.id == .finderExtension && $0.status != .ok }
     }
 
+    /// Default terminal name from checks or config.
+    var defaultTerminalName: String {
+        if let detail = check(.terminalDefault)?.detail {
+            let rendered = Localizer.system.render(detail)
+            let cleaned = rendered
+                .replacingOccurrences(of: "Open in ", with: "")
+                .replacingOccurrences(of: "Öffnen in ", with: "")
+                .replacingOccurrences(of: "Ouvrir dans ", with: "")
+            if !cleaned.isEmpty { return cleaned }
+        }
+        return "Ghostty"
+    }
+
+    /// Default editor name from checks or config.
+    var defaultEditorName: String {
+        if let detail = check(.editorDefault)?.detail {
+            let rendered = Localizer.system.render(detail)
+            let cleaned = rendered
+                .replacingOccurrences(of: "Open in ", with: "")
+                .replacingOccurrences(of: "Öffnen in ", with: "")
+                .replacingOccurrences(of: "Ouvrir dans ", with: "")
+            if !cleaned.isEmpty { return cleaned }
+        }
+        return "Visual Studio Code"
+    }
+
+    /// Count of checks by status.
+    var doctorStats: (ok: Int, warn: Int, fail: Int, needsUser: Int) {
+        var ok = 0, warn = 0, fail = 0, needsUser = 0
+        for check in checks {
+            switch check.status {
+            case .ok: ok += 1
+            case .warn: warn += 1
+            case .fail: fail += 1
+            case .needsUser: needsUser += 1
+            }
+        }
+        return (ok, warn, fail, needsUser)
+    }
+
     /// Whether the details list starts open: when something needs attention, except under the first-run card.
     var detailsStartOpen: Bool {
         #if PREVIEW
@@ -55,6 +105,7 @@ final class SetupModel {
             if check.id == .finderExtension { copy.status = .needsUser }
             return copy
         }
+        selectedTab = .overview
     }
 
     /// For `script/preview_setup.sh --demo` and `--gallery`: shows these checks and nothing this machine says, now or
@@ -63,17 +114,24 @@ final class SetupModel {
         self.checks = checks
         simulated = true
         previewOpensDetails = opensDetails
+        if opensDetails {
+            selectedTab = .diagnostics
+        }
     }
 
     /// For `script/preview_setup.sh --demo`: this menu, drawn with the icons of these facts.
     func simulate(menu: [MenuNode], icons: IconProvider) {
         self.menu = menu
         self.icons = icons
+        if !previewOpensDetails {
+            selectedTab = .menu
+        }
     }
 
     /// For `script/preview_setup.sh --submenus`: these submenus of the menu preview start open.
     func simulate(openSubmenus ids: Set<String>) {
         openSubmenus = ids
+        selectedTab = .menu
     }
 
     /// An app's icon comes as a 16-bit extended-range image, and `ImageRenderer` renders the whole picture in extended
@@ -216,5 +274,28 @@ final class SetupModel {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(prompt, forType: .string)
         message = Localizer.system.string(.appPromptCopied)
+    }
+
+    func copyClaudePluginCommand() {
+        let cmd = "/plugin marketplace add boyugou/right-here\n/plugin install right-here@right-here"
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(cmd, forType: .string)
+        message = "Plugin install command copied"
+    }
+
+    func copyMCPConfig() {
+        let config = """
+        {
+          "mcpServers": {
+            "right-here": {
+              "command": "rh",
+              "args": ["mcp"]
+            }
+          }
+        }
+        """
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(config, forType: .string)
+        message = "MCP configuration copied"
     }
 }
