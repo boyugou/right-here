@@ -8,8 +8,10 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
     private let base: any SystemFacts
     private let lifetime: TimeInterval
     private let applications = Mutex<[String: (url: URL?, stored: Date)]>([:])
+    private let displayNames = Mutex<[String: (name: String?, stored: Date)]>([:])
+    private let bundleVersions = Mutex<[String: (version: String?, stored: Date)]>([:])
 
-    public init(base: any SystemFacts = LiveSystemFacts(), lifetime: TimeInterval = 30) {
+    public init(base: any SystemFacts = LiveSystemFacts(), lifetime: TimeInterval = 300) {
         self.base = base
         self.lifetime = lifetime
     }
@@ -22,8 +24,6 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
     public func itemState(_ url: URL) -> ItemState { base.itemState(url) }
     public func gitRoot(containing url: URL) -> URL? { base.gitRoot(containing: url) }
     public func isRunning(bundleID: String) -> Bool { base.isRunning(bundleID: bundleID) }
-    public func displayName(bundleID: String) -> String? { base.displayName(bundleID: bundleID) }
-    public func bundleVersion(bundleID: String) -> String? { base.bundleVersion(bundleID: bundleID) }
     public func environment(_ key: String) -> String? { base.environment(key) }
     public func onDiskPath(_ url: URL) -> String { base.onDiskPath(url) }
 
@@ -35,5 +35,25 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
         let url = base.applicationURL(bundleID: bundleID)
         applications.withLock { $0[bundleID] = (url, now) }
         return url
+    }
+
+    public func displayName(bundleID: String) -> String? {
+        let now = Date()
+        if let cached = displayNames.withLock({ $0[bundleID] }), now.timeIntervalSince(cached.stored) < lifetime {
+            return cached.name
+        }
+        let name = base.displayName(bundleID: bundleID)
+        displayNames.withLock { $0[bundleID] = (name, now) }
+        return name
+    }
+
+    public func bundleVersion(bundleID: String) -> String? {
+        let now = Date()
+        if let cached = bundleVersions.withLock({ $0[bundleID] }), now.timeIntervalSince(cached.stored) < lifetime {
+            return cached.version
+        }
+        let version = base.bundleVersion(bundleID: bundleID)
+        bundleVersions.withLock { $0[bundleID] = (version, now) }
+        return version
     }
 }

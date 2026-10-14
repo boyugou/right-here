@@ -29,7 +29,11 @@ jobs:
       - name: Build
         run: swift build
       - name: Test
-        run: swift test
+        run: |
+          swift test --filter RightHereCoreTests.
+          swift test --filter RightHereKitTests.
+          swift test --filter RightHereMCPTests.
+          swift test --filter RightHereCLITests.
       - name: App and Finder extension build
         # Not part of the package: ad hoc signed, as script/verify_all.sh does it.
         run: |

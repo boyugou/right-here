@@ -13,6 +13,8 @@ final class FinderSyncExtension: FIFinderSync {
     private lazy var paths = RHPaths.current(facts: facts)
 
     private var configCache: (stamp: ConfigStore.Stamp, loaded: LoadedConfig)?
+    private var cachedFolderNodes: (stamp: ConfigStore.Stamp, nodes: [MenuNode])?
+    private var activityToken: (any NSObjectProtocol)?
     /// Finder receives a copy of each menu, and only the tag survives the trip back to the action method.
     /// The tags are stable (see `ActionTags`), so a menu built after the one being clicked cannot retarget it.
     private var tags = ActionTags()
@@ -20,8 +22,50 @@ final class FinderSyncExtension: FIFinderSync {
 
     override init() {
         super.init()
+        activityToken = ProcessInfo.processInfo.beginActivity(
+            options: [.userInitiatedAllowingIdleSystemSleep, .latencyCritical],
+            reason: "Right Here Finder Sync Menu"
+        )
         FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: "/")]
         probeIfRequested()
+        warmupInBackground()
+    }
+
+    override func beginObservingDirectory(at url: URL) {
+        super.beginObservingDirectory(at: url)
+        warmupInBackground()
+    }
+
+    override func endObservingDirectory(at url: URL) {
+        super.endObservingDirectory(at: url)
+    }
+
+    private func warmupInBackground() {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            let config = self.currentConfig()
+            var iconsToWarm: [Icon] = []
+            for app in config.allApps {
+                if let bundleID = app.installedBundleID(facts: self.facts) {
+                    _ = self.facts.displayName(bundleID: bundleID)
+                    _ = self.facts.bundleVersion(bundleID: bundleID)
+                    iconsToWarm.append(.app(bundleID))
+                }
+            }
+            for glyph in IconProvider.dedicatedGlyphs.keys {
+                iconsToWarm.append(.symbol(glyph))
+            }
+            for ext in config.newFile.templates.map(\.fileExtension) where !ext.isEmpty {
+                iconsToWarm.append(.fileType(ext))
+            }
+            self.icons.prewarm(iconsToWarm)
+            let defaultContext = HereContext(origin: .container)
+            let nodes = MenuBuilder(config: config, facts: self.facts, localizer: .system).build(for: defaultContext)
+            let stamp = ConfigStore.stamp(paths: self.paths)
+            DispatchQueue.main.async { [weak self] in
+                self?.cachedFolderNodes = (stamp, nodes)
+            }
+        }
     }
 
     /// `rh doctor --probe-extension` leaves a marker in the config folder; the extension then runs
@@ -51,7 +95,18 @@ final class FinderSyncExtension: FIFinderSync {
         let started = ContinuousClock.now
         let kind = Self.kind(menuKind)
         let context = currentContext(kind)
-        let nodes = MenuBuilder(config: currentConfig(), facts: facts, localizer: .system).build(for: context)
+        let config = currentConfig()
+        let isSingleFolder = context.items.isEmpty || (context.items.count == 1 && facts.isDirectory(context.items[0]) == true)
+        let nodes: [MenuNode]
+        let stamp = ConfigStore.stamp(paths: paths)
+        if isSingleFolder, let cached = cachedFolderNodes, cached.stamp == stamp {
+            nodes = cached.nodes
+        } else {
+            nodes = MenuBuilder(config: config, facts: facts, localizer: .system).build(for: context)
+            if isSingleFolder {
+                cachedFolderNodes = (stamp, nodes)
+            }
+        }
         guard !nodes.isEmpty else { return nil }
 
         let menu = makeMenu(nodes, kind: kind)

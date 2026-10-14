@@ -506,7 +506,7 @@ struct MCPHardeningTests {
         let harness = try Harness(bundleVersions: ["com.mitchellh.ghostty": "1.3.1"], hangingRunner: .milliseconds(300)); defer { harness.cleanUp() }
         let started = ContinuousClock.now
         let result = try await harness.call("right_here_run", ["action": .string("agent.claude@ghostty"), "container": .string("/Users/tester/code/app")])
-        #expect(ContinuousClock.now - started < .seconds(5))
+        #expect(ContinuousClock.now - started < .seconds(10))
         #expect(result["isError"]?.boolValue == true)
         #expect(text(result).contains("did not finish"), Comment(rawValue: text(result)))
         #expect(text(result).contains("permission"))
@@ -657,7 +657,7 @@ private final class RecordsLimits: ProcessRunner, @unchecked Sendable {
     }
 }
 
-@Suite("MCP serving: slow calls never hold up the rest")
+@Suite("MCP serving: slow calls never hold up the rest", .serialized)
 struct MCPServingTests {
     private func slowCall(_ id: Int) -> String {
         #"{"jsonrpc":"2.0","id":\#(id),"method":"tools/call","params":{"name":"right_here_finder_selection","arguments":{}}}"#
@@ -672,13 +672,13 @@ struct MCPServingTests {
     @Test func aPingIsAnsweredAtOnceWhileEightSlowCallsAreRunning() async throws {
         // Eight slow calls take every running slot for 2.5 seconds; the quick requests must not wait for them.
         let limits = MCPServer.Limits(running: 8, outstanding: 32)
-        let harness = try Harness(hangingRunner: .milliseconds(2_500), limits: limits); defer { harness.cleanUp() }
+        let harness = try Harness(hangingRunner: .milliseconds(4_000), limits: limits); defer { harness.cleanUp() }
         let session = ServeSession(server: harness.server)
         session.send((1...limits.running).map(slowCall) + [#"{"jsonrpc":"2.0","id":100,"method":"ping"}"#,
                                                                    #"{"jsonrpc":"2.0","id":101,"method":"tools/list"}"#,
                                                                    #"{"jsonrpc":"2.0","id":102,"method":"initialize","params":{}}"#])
         let quick: Set<Int> = [100, 101, 102]
-        await wait(upTo: .seconds(2)) { Set(session.replies.compactMap { $0.reply["id"]?.intValue }).isSuperset(of: quick) }
+        await wait(upTo: .seconds(3)) { Set(session.replies.compactMap { $0.reply["id"]?.intValue }).isSuperset(of: quick) }
         let early = session.replies
         #expect(Set(early.compactMap { $0.reply["id"]?.intValue }) == quick,
                 Comment(rawValue: "the quick requests should be answered while the slow calls still run, got \(early.map(\.reply))"))

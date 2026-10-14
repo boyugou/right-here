@@ -35,6 +35,13 @@ public final class IconProvider: Sendable {
         return image
     }
 
+    /// Pre-renders and caches a batch of icons ahead of time, avoiding main-thread disk I/O when opening a menu.
+    public func prewarm(_ icons: [Icon], side: CGFloat = 16) {
+        for icon in icons {
+            _ = image(for: icon, side: side)
+        }
+    }
+
     private func makeImage(_ icon: Icon, side: CGFloat) -> NSImage? {
         switch icon.kind {
         case .app:
