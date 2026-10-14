@@ -41,12 +41,16 @@ struct AgentLaunchResolutionTests {
     }
 
     @Test func theDefaultTerminalForACommandSkipsOnesThatCannotRunOne() throws {
-        for installed in [["com.cmuxterm.app", terminalApp], ["net.kovidgoyal.kitty", terminalApp]] {
+        for installed in [["com.cmuxterm.app", terminalApp], ["dev.warp.Warp-Stable", terminalApp]] {
             guard case .success(.terminal(let app, _, _)) = try resolve(installed: installed).route else { Issue.record("no route for \(installed)"); return }
             #expect(app.id == "terminal")
         }
         guard case .success(.terminal(let itermApp, _, _)) = try resolve(installed: ["com.googlecode.iterm2", terminalApp]).route else { Issue.record("no route for iterm"); return }
         #expect(itermApp.id == "iterm")
+        guard case .success(.terminal(let weztermApp, _, let wezAdapter)) = try resolve(installed: ["com.github.wez.wezterm", terminalApp]).route else { Issue.record("no route for wezterm"); return }
+        #expect(weztermApp.id == "wezterm" && wezAdapter is WezTermAdapter)
+        guard case .success(.terminal(let kittyApp, _, let kittyAdapter)) = try resolve(installed: ["net.kovidgoyal.kitty", terminalApp]).route else { Issue.record("no route for kitty"); return }
+        #expect(kittyApp.id == "kitty" && kittyAdapter is KittyAdapter)
     }
 
     @Test func aTerminalIdThatIsNoTerminalIsUnknown() throws {

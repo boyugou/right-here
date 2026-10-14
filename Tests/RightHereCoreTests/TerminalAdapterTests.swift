@@ -349,6 +349,8 @@ struct TerminalAdapterTests {
         #expect(throws: PlanError.self) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try ITermAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try WezTermAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try KittyAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try TerminalAdapters.adapter(for: KnownApps.terminal(id: "warp")!).steps(for: session, bundleID: "x", facts: facts) }
     }
 
@@ -358,6 +360,8 @@ struct TerminalAdapterTests {
         #expect(throws: PlanError.self) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try ITermAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try WezTermAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try KittyAdapter().steps(for: session, bundleID: "x", facts: facts) }
     }
 
     @Test("a typed launch refuses text that would press Return or other keys", arguments: ["claude\nrm -rf ~", "claude\r", "claude\u{1b}[A", "claude\u{2028}"])
@@ -366,6 +370,8 @@ struct TerminalAdapterTests {
         #expect(throws: PlanError.unsafeText(text)) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.unsafeText(text)) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.unsafeText(text)) { try ITermAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.unsafeText(text)) { try WezTermAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.unsafeText(text)) { try KittyAdapter().steps(for: session, bundleID: "x", facts: facts) }
     }
 
     @Test func terminalRefusesAFolderItWouldHaveToTypeWithALineBreak() {
@@ -402,21 +408,56 @@ struct TerminalAdapterTests {
         #expect(adapter("anything", .ghostty) is GhosttyAdapter)
         #expect(adapter("anything", .appleScriptTerminal) is AppleTerminalAdapter)
         #expect(adapter("anything", .iterm) is ITermAdapter)
+        #expect(adapter("anything", .wezterm) is WezTermAdapter)
+        #expect(adapter("anything", .kitty) is KittyAdapter)
         #expect(adapter("ghostty", .openFolder) is OpenFolderTerminalAdapter)
         #expect(adapter("terminal", .template(TerminalLaunch(run: ["/bin/x", "{command}"]))) is TemplateTerminalAdapter)
     }
 
     @Test func theAdviceNamesTheBuiltInTerminalsThatCanRunCommands() {
         // `rh doctor` says which terminals to choose; a built-in terminal that gains a way to run commands joins the phrase.
-        #expect(KnownApps.commandTerminalPhrase == "Ghostty, Terminal or iTerm")
-        #expect(KnownApps.terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name) == ["Ghostty", "Terminal", "iTerm"])
+        #expect(KnownApps.commandTerminalPhrase == "Ghostty, Terminal, iTerm, WezTerm or kitty")
+        #expect(KnownApps.terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name) == ["Ghostty", "Terminal", "iTerm", "WezTerm", "kitty"])
     }
 
-    @Test func theBuiltInDriversAreGhosttyTerminalAppAndITermAndTheRestAreHandedTheFolder() {
+    @Test func theBuiltInDriversAreGhosttyTerminalAppITermWezTermKittyAndTheRestAreHandedTheFolder() {
         let drivers = Dictionary(uniqueKeysWithValues: KnownApps.terminals.map { ($0.id, $0.driver) })
         #expect(drivers["ghostty"] == .ghostty)
         #expect(drivers["terminal"] == .appleScriptTerminal)
         #expect(drivers["iterm"] == .iterm)
-        for id in ["wezterm", "kitty", "alacritty", "warp", "cmux"] { #expect(drivers[id] == .openFolder, "\(id)") }
+        #expect(drivers["wezterm"] == .wezterm)
+        #expect(drivers["kitty"] == .kitty)
+        for id in ["alacritty", "warp", "cmux"] { #expect(drivers[id] == .openFolder, "\(id)") }
+    }
+
+    @Test func wezTermAdapterBuildsExecutableRunSteps() throws {
+        let wezFacts = FakeSystemFacts(directories: ["/Users/tester/code"], applications: ["com.github.wez.wezterm": URL(fileURLWithPath: "/Applications/WezTerm.app")])
+        let plainSession = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"))
+        let plainSteps = try WezTermAdapter().steps(for: plainSession, bundleID: "com.github.wez.wezterm", facts: wezFacts)
+        guard case .run(let step1)? = plainSteps.first else { Issue.record("expected run step"); return }
+        #expect(step1.executable == "/Applications/WezTerm.app/Contents/MacOS/wezterm")
+        #expect(step1.arguments == ["start", "--cwd", "/Users/tester/code"])
+
+        let typedSession = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"), typedInput: "claude")
+        let typedSteps = try WezTermAdapter().steps(for: typedSession, bundleID: "com.github.wez.wezterm", facts: wezFacts)
+        guard case .run(let step2)? = typedSteps.first else { Issue.record("expected run step"); return }
+        #expect(step2.executable == "/Applications/WezTerm.app/Contents/MacOS/wezterm")
+        #expect(step2.arguments == ["start", "--cwd", "/Users/tester/code", "--", "/bin/zsh", "-lic", "claude; exec /bin/zsh -l"])
+    }
+
+    @Test func kittyAdapterBuildsExecutableRunSteps() throws {
+        let kittyFacts = FakeSystemFacts(directories: ["/Users/tester/code"], applications: ["net.kovidgoyal.kitty": URL(fileURLWithPath: "/Applications/kitty.app")])
+        let plainSession = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"))
+        let plainSteps = try KittyAdapter().steps(for: plainSession, bundleID: "net.kovidgoyal.kitty", facts: kittyFacts)
+        guard case .run(let step1)? = plainSteps.first else { Issue.record("expected run step"); return }
+        #expect(step1.executable == "/Applications/kitty.app/Contents/MacOS/kitty")
+        #expect(step1.arguments == ["--directory", "/Users/tester/code"])
+
+        let typedSession = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"), typedInput: "claude")
+        let typedSteps = try KittyAdapter().steps(for: typedSession, bundleID: "net.kovidgoyal.kitty", facts: kittyFacts)
+        guard case .run(let step2)? = typedSteps.first else { Issue.record("expected run step"); return }
+        #expect(step2.executable == "/Applications/kitty.app/Contents/MacOS/kitty")
+        #expect(step2.arguments == ["--directory", "/Users/tester/code", "/bin/zsh", "-lic", "claude; exec /bin/zsh -l"])
     }
 }
+

@@ -284,11 +284,11 @@ struct MenuExplainTests {
     }
 
     @Test func aTerminalThatCannotRunACommandIsTheAgentsFallbackAndSaysSoOnItsOwn() {
-        // kitty opens a folder; Terminal has to take the agents.
-        let machine = facts(["net.kovidgoyal.kitty", "com.apple.Terminal"])
+        // Warp opens a folder; Terminal has to take the agents.
+        let machine = facts(["dev.warp.Warp-Stable", "com.apple.Terminal"])
         let explained = explain("[general]\nterminal = \"iterm\"\nagents = [\"claude\"]\n", machine)
         #expect(explained.changed.map(\.line) == [
-            "Open in kitty: iTerm is not installed; kitty is used instead.",
+            "Open in Warp: iTerm is not installed; Warp is used instead.",
             "Agents: iTerm is not installed; Terminal is used instead."
         ], "\(explained.changed.map(\.line))")
     }

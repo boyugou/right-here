@@ -57,12 +57,12 @@ struct DefaultAppsTests {
     }
 
     @Test func theFallbackForTypingACommandSkipsTerminalsThatCannotRunOne() throws {
-        // kitty opens a folder but cannot be told to run a command here; Terminal can. The two answers differ.
-        let machine = facts(installed: ["net.kovidgoyal.kitty", "com.apple.Terminal"])
+        // Warp opens a folder but cannot be told to run a command here; Terminal can. The two answers differ.
+        let machine = facts(installed: ["dev.warp.Warp-Stable", "com.apple.Terminal"])
         let defaults = DefaultApps(config: Config(terminal: "iterm"), facts: machine)
-        #expect(try defaults.resolve(role: .terminal, configured: "iterm").id == "kitty")
+        #expect(try defaults.resolve(role: .terminal, configured: "iterm").id == "warp")
         #expect(try defaults.commandTerminal().id == "terminal")
-        #expect(defaults.substitution(role: .terminal)?.used.id == "kitty")
+        #expect(defaults.substitution(role: .terminal)?.used.id == "warp")
         #expect(defaults.substitution(role: .terminal, typing: true)?.used.id == "terminal")
     }
 
@@ -126,9 +126,9 @@ struct DefaultAppsTests {
     }
 
     @Test func theTerminalForACommandSkipsOnesThatCannotRunOne() throws {
-        // cmux and kitty open folders only, and older Ghostty / iTerm cannot be scripted; Terminal can.
+        // cmux and warp open folders only, and older Ghostty / iTerm cannot be scripted; Terminal can.
         for machine in [facts(installed: ["com.cmuxterm.app", "com.apple.Terminal"]),
-                        facts(installed: ["net.kovidgoyal.kitty", "com.apple.Terminal"]),
+                        facts(installed: ["dev.warp.Warp-Stable", "com.apple.Terminal"]),
                         facts(installed: ["com.googlecode.iterm2", "com.apple.Terminal"], versions: ["com.googlecode.iterm2": "2.9.0"]),
                         facts(installed: ["com.mitchellh.ghostty", "com.apple.Terminal"], versions: ["com.mitchellh.ghostty": "1.2.3"])] {
             let defaults = DefaultApps(config: .default, facts: machine)
@@ -138,6 +138,10 @@ struct DefaultAppsTests {
         #expect(try DefaultApps(config: .default, facts: ghosttyScriptable).commandTerminal().id == "ghostty")
         let itermScriptable = facts(installed: ["com.googlecode.iterm2", "com.apple.Terminal"], versions: ["com.googlecode.iterm2": "3.5.0"])
         #expect(try DefaultApps(config: .default, facts: itermScriptable).commandTerminal().id == "iterm")
+        let weztermScriptable = facts(installed: ["com.github.wez.wezterm", "com.apple.Terminal"])
+        #expect(try DefaultApps(config: .default, facts: weztermScriptable).commandTerminal().id == "wezterm")
+        let kittyScriptable = facts(installed: ["net.kovidgoyal.kitty", "com.apple.Terminal"])
+        #expect(try DefaultApps(config: .default, facts: kittyScriptable).commandTerminal().id == "kitty")
         // With nothing that can run a command, the first installed terminal is still the answer, and starting an agent in it says why not.
         let foldersOnly = facts(installed: ["com.cmuxterm.app", "dev.warp.Warp-Stable"])
         #expect(try DefaultApps(config: .default, facts: foldersOnly).commandTerminal().id == "cmux")
