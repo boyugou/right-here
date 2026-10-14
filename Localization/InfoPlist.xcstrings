@@ -182,7 +182,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here 會請求你的終端機在所選檔案夾中開啟視窗，並執行你選擇的指令，例如你的 AI 代理。"
+            "value": "Right Here 會請求你的終端機在所選資料夾中開啟視窗，並執行你選擇的指令，例如你的 AI 代理。"
           }
         }
       }

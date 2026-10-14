@@ -392,7 +392,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Erstellt eine neue Datei aus einer Ihrer Vorlagen in einem Ordner."
+            "value": "Erstellt eine neue Datei aus einer deiner Vorlagen in einem Ordner."
           }
         },
         "el": {
@@ -764,13 +764,13 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Öffnet einen Ordner in Ihrer Terminal-App."
+            "value": "Öffnet einen Ordner in deiner Terminal-App."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ανοίγει έναν φάκελο στην εφαρμογή Terminal σας."
+            "value": "Ανοίγει έναν φάκελο στην εφαρμογή τερματικού σας."
           }
         },
         "en": {
@@ -782,7 +782,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abre una carpeta en la app Terminal."
+            "value": "Abre una carpeta en tu app de terminal."
           }
         },
         "fa": {
@@ -794,7 +794,7 @@
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ouvre un dossier dans votre application Terminal."
+            "value": "Ouvre un dossier dans votre application de terminal."
           }
         },
         "he": {
@@ -818,7 +818,7 @@
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Apre una cartella nell'app Terminale."
+            "value": "Apre una cartella nella tua app di terminale."
           }
         },
         "ja": {
@@ -872,7 +872,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Открывает папку в вашем приложении «Терминал»."
+            "value": "Открывает папку в вашем приложении терминала."
           }
         },
         "ta": {
@@ -902,7 +902,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Відкриває папку у вашій програмі «Термінал»."
+            "value": "Відкриває папку у вашій програмі терміналу."
           }
         },
         "ur": {
@@ -980,7 +980,7 @@
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ouvrir dans le Terminal"
+            "value": "Ouvrir dans le terminal"
           }
         },
         "he": {
@@ -1034,31 +1034,31 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Openen in Terminal"
+            "value": "Openen in terminal"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Otwórz w Terminalu"
+            "value": "Otwórz w terminalu"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abrir no Terminal"
+            "value": "Abrir no terminal"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deschide în Terminal"
+            "value": "Deschide în terminal"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Открыть в Терминале"
+            "value": "Открыть в терминале"
           }
         },
         "ta": {
@@ -1082,13 +1082,13 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Terminal'de Aç"
+            "value": "Terminalde Aç"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Відкрити в Терміналі"
+            "value": "Відкрити в терміналі"
           }
         },
         "ur": {
@@ -1100,7 +1100,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Mở trong Terminal"
+            "value": "Mở trong terminal"
           }
         },
         "zh-Hans": {
@@ -2066,13 +2066,13 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Startet einen KI-Agenten in einem Ordner, in Ihrer Terminal-App."
+            "value": "Startet einen KI-Agenten in einem Ordner, in deiner Terminal-App."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ξεκινά έναν πράκτορα AI σε έναν φάκελο, στην εφαρμογή Terminal σας."
+            "value": "Ξεκινά έναν πράκτορα AI σε έναν φάκελο, στην εφαρμογή τερματικού σας."
           }
         },
         "en": {
@@ -2084,7 +2084,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Inicia un agente de IA en una carpeta, en la app Terminal."
+            "value": "Inicia un agente de IA en una carpeta, en tu app de terminal."
           }
         },
         "fa": {
@@ -2096,7 +2096,7 @@
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Démarre un agent IA dans un dossier, dans votre application Terminal."
+            "value": "Démarre un agent IA dans un dossier, dans votre application de terminal."
           }
         },
         "he": {
@@ -2120,7 +2120,7 @@
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Avvia un agente IA in una cartella, nell'app Terminale."
+            "value": "Avvia un agente IA in una cartella, nella tua app di terminale."
           }
         },
         "ja": {
@@ -2132,7 +2132,7 @@
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "터미널 앱에서 폴더의 AI 에이전트를 시작합니다."
+            "value": "폴더에서 터미널 앱으로 AI 에이전트를 시작합니다."
           }
         },
         "mr": {

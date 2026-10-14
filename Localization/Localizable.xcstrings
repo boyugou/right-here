@@ -224,7 +224,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here no pudo terminar"
+            "value": "Right Here no pudo completar la acción"
           }
         },
         "fa": {
@@ -236,7 +236,7 @@
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here n’a pas pu terminer"
+            "value": "Right Here n’a pas pu terminer l’action"
           }
         },
         "he": {
@@ -248,7 +248,7 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here पूरा नहीं कर सका"
+            "value": "Right Here कार्रवाई पूरी नहीं कर सका"
           }
         },
         "id": {
@@ -278,7 +278,7 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here पूर्ण करू शकले नाही"
+            "value": "Right Here ही कृती पूर्ण करू शकले नाही"
           }
         },
         "ms": {
@@ -350,13 +350,13 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here مکمل نہیں کر سکا"
+            "value": "‏Right Here کارروائی مکمل نہیں کر سکا"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here không thể hoàn tất"
+            "value": "Right Here không thể hoàn tất thao tác"
           }
         },
         "zh-Hans": {
@@ -2786,7 +2786,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder 擴充功能"
+            "value": "Finder 延伸功能"
           }
         }
       }
@@ -3638,7 +3638,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder-services"
+            "value": "Finder-voorzieningen"
           }
         },
         "pl": {
@@ -3686,7 +3686,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder Hizmetleri"
+            "value": "Finder Servisleri"
           }
         },
         "uk": {
@@ -5378,7 +5378,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Cài đặt tiện ích mở rộng Finder"
+            "value": "Cài đặt của tiện ích mở rộng Finder"
           }
         },
         "zh-Hans": {
@@ -5762,7 +5762,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "這是檔案夾的選單。選取檔案時，針對所選檔案的項目才會出現。"
+            "value": "這是資料夾的選單。選取檔案時，針對所選檔案的項目才會出現。"
           }
         }
       }
@@ -7088,7 +7088,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Schnellaktionen funktionieren auch ohne die Erweiterung: Klicken Sie mit der rechten Maustaste auf eine Datei oder einen Ordner und wählen Sie Schnellaktionen. Für einen Tastaturkurzbefehl gehen Sie zu Systemeinstellungen › Tastatur › Tastaturkurzbefehle › Dienste."
+            "value": "Schnellaktionen funktionieren auch ohne die Erweiterung: Klicke mit der rechten Maustaste auf eine Datei oder einen Ordner und wähle Schnellaktionen. Für einen Tastaturkurzbefehl gehe zu Systemeinstellungen › Tastatur › Tastaturkurzbefehle › Dienste."
           }
         },
         "el": {
@@ -7106,7 +7106,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Las Acciones rápidas funcionan sin la extensión: haga clic con el botón derecho en un archivo o carpeta y elija Acciones rápidas. Para un atajo de teclado, vaya a Ajustes del Sistema › Teclado › Atajos de teclado › Servicios."
+            "value": "Las Acciones rápidas funcionan sin la extensión: haz clic con el botón derecho en un archivo o carpeta y elige Acciones rápidas. Para un atajo de teclado, ve a Ajustes del Sistema › Teclado › Atajos de teclado › Servicios."
           }
         },
         "fa": {
@@ -7130,7 +7130,7 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Quick Actions एक्सटेंशन के बिना काम करते हैं: किसी फ़ाइल या फ़ोल्डर पर राइट-क्लिक करें और Quick Actions चुनें। कीबोर्ड शॉर्टकट के लिए सिस्टम सेटिंग्स › कीबोर्ड › कीबोर्ड शॉर्टकट › सेवाएँ पर जाएँ।"
+            "value": "Quick Actions एक्सटेंशन के बिना काम करते हैं: किसी फ़ाइल या फ़ोल्डर पर राइट-क्लिक करें और Quick Actions चुनें। कीबोर्ड शॉर्टकट के लिए सिस्टम सेटिंग › कीबोर्ड › कीबोर्ड शॉर्टकट › सेवाएँ पर जाएँ।"
           }
         },
         "id": {
@@ -7148,7 +7148,7 @@
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "クイックアクションは Finder 拡張機能がなくても使えます。ファイルまたはフォルダを右クリックして「クイックアクション」を選択します。キーボードショートカットを設定するには、システム設定 › キーボード › キーボードショートカット › サービス を開いてください。"
+            "value": "クイックアクションは Finder 機能拡張がなくても使えます。ファイルまたはフォルダを右クリックして「クイックアクション」を選択します。キーボードショートカットを設定するには、システム設定 › キーボード › キーボードショートカット › サービス を開いてください。"
           }
         },
         "ko": {
@@ -7172,7 +7172,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Snelle acties werken zonder de extensie: klik met de rechtermuisknop op een bestand of map en kies Snelle acties. Voor een sneltoets ga naar Systeeminstellingen › Toetsenbord › Sneltoetsen › Services."
+            "value": "Snelle acties werken zonder de extensie: klik met de rechtermuisknop op een bestand of map en kies Snelle acties. Voor een sneltoets ga naar Systeeminstellingen › Toetsenbord › Sneltoetsen › Voorzieningen."
           }
         },
         "pl": {
@@ -7190,7 +7190,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Acțiunile rapide funcționează fără extensie: fă clic dreapta pe un fișier sau dosar și alege Acțiuni rapide. Pentru o comandă rapidă de la tastatură, mergi la Setări sistem › Tastatură › Comenzi rapide de la tastatură › Servicii."
+            "value": "Acțiunile rapide funcționează fără extensie: faceți clic dreapta pe un fișier sau dosar și alegeți Acțiuni rapide. Pentru o comandă rapidă de la tastatură, mergeți la Setări sistem › Tastatură › Comenzi rapide de la tastatură › Servicii."
           }
         },
         "ru": {
@@ -7202,7 +7202,7 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Quick Actions நீட்டிப்பு இல்லாமலும் வேலை செய்யும்: கோப்பு அல்லது கோப்புறையில் வலது கிளிக் செய்து Quick Actions-ஐத் தேர்ந்தெடுக்கவும். விசைப்பலகை குறுக்குவழிக்கு, System Settings › Keyboard › Keyboard Shortcuts › Services செல்லவும்."
+            "value": "Quick Actions நீட்டிப்பு இல்லாமலும் வேலை செய்யும்: கோப்பு அல்லது கோப்புறையில் வலது கிளிக் செய்து Quick Actions-ஐத் தேர்ந்தெடுக்கவும். விசைப்பலகை குறுக்குவழிக்கு, System Settings › Keyboard › Keyboard Shortcuts › Services-க்குச் செல்லவும்."
           }
         },
         "te": {
@@ -7214,7 +7214,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "การดำเนินการด่วนใช้ได้โดยไม่ต้องมีส่วนขยาย: คลิกขวาที่ไฟล์หรือโฟลเดอร์ แล้วเลือกการดำเนินการด่วน หากต้องการทางลัดแป้นพิมพ์ ไปที่ ตั้งค่าระบบ › แป้นพิมพ์ › ทางลัดแป้นพิมพ์ › บริการ"
+            "value": "การดำเนินการด่วนใช้ได้โดยไม่ต้องมีส่วนขยาย: คลิกขวาที่ไฟล์หรือโฟลเดอร์ แล้วเลือกการดำเนินการด่วน หากต้องการทางลัดแป้นพิมพ์ ไปที่ การตั้งค่าระบบ › แป้นพิมพ์ › ทางลัดแป้นพิมพ์ › บริการ"
           }
         },
         "tr": {
@@ -7226,7 +7226,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Швидкі дії працюють без розширення: клацніть файл або папку правою кнопкою миші та оберіть «Швидкі дії». Щоб призначити комбінацію клавіш, відкрийте Системні налаштування › Клавіатура › Комбінації клавіш › Служби."
+            "value": "Швидкі дії працюють без розширення: клацніть файл або папку правою кнопкою миші та оберіть «Швидкі дії». Щоб призначити комбінацію клавіш, відкрийте Системні параметри › Клавіатура › Комбінації клавіш › Служби."
           }
         },
         "ur": {
@@ -7250,7 +7250,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "快速動作不需要擴充功能也能使用：在檔案或資料夾上按右鍵，然後選擇「快速動作」。如要設定鍵盤快捷鍵，請前往「系統設定」>「鍵盤」>「鍵盤快捷鍵」>「服務」。"
+            "value": "快速動作不需要延伸功能也能使用：在檔案或資料夾上按右鍵，然後選擇「快速動作」。如要設定鍵盤快速鍵，請前往「系統設定」>「鍵盤」>「鍵盤快速鍵」>「服務」。"
           }
         }
       }
@@ -7274,7 +7274,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Menü wird nicht angezeigt? Verwenden Sie Schnellaktionen"
+            "value": "Menü wird nicht angezeigt? Verwende Schnellaktionen"
           }
         },
         "el": {
@@ -7292,7 +7292,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "¿No aparece el menú? Use Acciones rápidas"
+            "value": "¿No aparece el menú? Usa Acciones rápidas"
           }
         },
         "fa": {
@@ -7376,7 +7376,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Meniul nu apare? Folosește Acțiuni rapide"
+            "value": "Meniul nu apare? Folosiți Acțiuni rapide"
           }
         },
         "ru": {
@@ -8390,7 +8390,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here hat diese auf Ihrem Mac gefunden. Zum Ändern bearbeiten Sie die Konfigurationsdatei."
+            "value": "Right Here hat diese auf deinem Mac gefunden. Bearbeite zum Ändern die Konfigurationsdatei."
           }
         },
         "el": {
@@ -8408,7 +8408,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here encontró estos en su Mac. Para cambiarlos, edite el archivo de configuración."
+            "value": "Right Here encontró estos en tu Mac. Para cambiarlos, edita el archivo de configuración."
           }
         },
         "fa": {
@@ -8492,7 +8492,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here le-a găsit pe acestea pe Mac. Pentru a le schimba, editează fișierul de configurare."
+            "value": "Right Here le-a găsit pe acestea pe Mac. Pentru a le schimba, editați fișierul de configurare."
           }
         },
         "ru": {
@@ -8546,13 +8546,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here 在您的 Mac 上找到了以下应用。如需更改，请编辑配置文件。"
+            "value": "Right Here 在你的 Mac 上找到了以下应用。如需更改，请编辑配置文件。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here 在您的 Mac 上找到了這些 App。如要變更，請編輯設定檔。"
+            "value": "Right Here 在你的 Mac 上找到了這些 App。如要變更，請編輯設定檔。"
           }
         }
       }
@@ -8582,7 +8582,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Επιλέξτε το Terminal και τον επεξεργαστή σας"
+            "value": "Επιλέξτε το τερματικό και τον επεξεργαστή σας"
           }
         },
         "en": {
@@ -8678,7 +8678,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Alege terminalul și editorul"
+            "value": "Alegeți terminalul și editorul"
           }
         },
         "ru": {
@@ -8768,7 +8768,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ανοίγει ένα παράθυρο Terminal σε έναν φάκελο δοκιμής και το κλείνει ξανά."
+            "value": "Ανοίγει ένα παράθυρο τερματικού σε έναν φάκελο δοκιμής και το κλείνει ξανά."
           }
         },
         "en": {
@@ -8780,7 +8780,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abre una ventana de Terminal en una carpeta de prueba y la vuelve a cerrar."
+            "value": "Abre una ventana de terminal en una carpeta de prueba y la vuelve a cerrar."
           }
         },
         "fa": {
@@ -8792,7 +8792,7 @@
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ouvre une fenêtre du Terminal dans un dossier de test, puis la referme."
+            "value": "Ouvre une fenêtre de terminal dans un dossier de test, puis la referme."
           }
         },
         "he": {
@@ -8816,7 +8816,7 @@
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Apre una finestra del Terminale in una cartella di prova e la chiude di nuovo."
+            "value": "Apre una finestra di terminale in una cartella di prova e la chiude di nuovo."
           }
         },
         "ja": {
@@ -9050,7 +9050,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Încearcă"
+            "value": "Încercați"
           }
         },
         "ru": {
@@ -9086,7 +9086,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Спробувати"
+            "value": "Спробуйте"
           }
         },
         "ur": {
@@ -9134,7 +9134,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Aktivieren Sie Right Here unter Finder in der Liste. Diese Seite aktualisiert sich automatisch."
+            "value": "Aktiviere Right Here unter Finder in der Liste. Diese Seite aktualisiert sich automatisch."
           }
         },
         "el": {
@@ -9152,7 +9152,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Active Right Here en la lista del Finder. Esta página se actualiza sola."
+            "value": "Activa Right Here en la lista del Finder. Esta página se actualiza sola."
           }
         },
         "fa": {
@@ -9236,7 +9236,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Activează Right Here în Finder, din listă. Această pagină se actualizează singură."
+            "value": "Activați Right Here în Finder, din listă. Această pagină se actualizează singură."
           }
         },
         "ru": {
@@ -9296,7 +9296,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在清單中開啟訪達下的 Right Here。此頁面會自動更新。"
+            "value": "在清單中開啟 Finder 下的 Right Here。此頁面會自動更新。"
           }
         }
       }
@@ -9338,7 +9338,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Active la extensión del Finder"
+            "value": "Activa la extensión del Finder"
           }
         },
         "fa": {
@@ -9380,7 +9380,7 @@
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder 拡張機能をオンにする"
+            "value": "Finder 機能拡張をオンにする"
           }
         },
         "ko": {
@@ -9422,7 +9422,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Activează extensia Finder"
+            "value": "Activați extensia Finder"
           }
         },
         "ru": {
@@ -9482,7 +9482,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "開啟訪達擴充功能"
+            "value": "開啟 Finder 延伸功能"
           }
         }
       }
@@ -9668,7 +9668,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "將檔案夾或所選項目傳送到你的終端機、編輯器和 AI 代理。"
+            "value": "將資料夾或所選項目傳送到你的終端機、編輯器和 AI 代理。"
           }
         }
       }
@@ -11342,7 +11342,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "上層檔案夾路徑"
+            "value": "上層資料夾路徑"
           }
         }
       }
@@ -12482,7 +12482,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`%@` wurde in Ihrer Login-Shell nicht gefunden"
+            "value": "`%@` wurde in deiner Login-Shell nicht gefunden"
           }
         },
         "el": {
@@ -14600,7 +14600,7 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ सिम्लिंक आहे; Finder एक्सटेंशनचा सँडबॉक्स सिम्लिंकचे अनुसरण करू शकणार नाही"
+            "value": "%@ सिम्लिंक आहे; Finder एक्सटेंशनचा सँडबॉक्स कदाचित सिम्लिंकचे अनुसरण करू शकणार नाही"
           }
         },
         "ms": {
@@ -14690,7 +14690,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ 是符號連結，Finder 擴充功能的沙箱可能無法追蹤該連結"
+            "value": "%@ 是符號連結，Finder 延伸功能的沙箱可能無法追蹤該連結"
           }
         }
       }
@@ -16016,7 +16016,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installieren Sie ihn, oder entfernen Sie „%@“ aus general.agents."
+            "value": "Installiere ihn, oder entferne „%@“ aus general.agents."
           }
         },
         "el": {
@@ -16034,7 +16034,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instálelo o quite «%@» de general.agents."
+            "value": "Instálalo o quita «%@» de general.agents."
           }
         },
         "fa": {
@@ -16388,7 +16388,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Starten Sie `claude` einmal und senden Sie eine Eingabe; Claude Code registriert den Handler."
+            "value": "Starte `claude` einmal und sende eine Eingabe; Claude Code registriert den Handler."
           }
         },
         "el": {
@@ -16406,7 +16406,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Inicie `claude` una vez y envíe un mensaje; Claude Code registra el manejador."
+            "value": "Inicia `claude` una vez y envía un mensaje; Claude Code registra el manejador."
           }
         },
         "fa": {
@@ -16760,7 +16760,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh config validate` aus und beheben Sie die Fehler."
+            "value": "Führe `rh config validate` aus und behebe die Fehler."
           }
         },
         "el": {
@@ -16778,7 +16778,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh config validate` y corrija los errores."
+            "value": "Ejecuta `rh config validate` y corrige los errores."
           }
         },
         "fa": {
@@ -16946,7 +16946,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh init` aus."
+            "value": "Führe `rh init` aus."
           }
         },
         "el": {
@@ -16964,7 +16964,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh init`."
+            "value": "Ejecuta `rh init`."
           }
         },
         "fa": {
@@ -17132,7 +17132,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh config validate` aus; Warnungen sind meist Tippfehler, und was damit gesetzt werden sollte, fehlt."
+            "value": "Führe `rh config validate` aus; Warnungen sind meist Tippfehler, und was damit gesetzt werden sollte, fehlt."
           }
         },
         "el": {
@@ -17150,7 +17150,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh config validate`; las advertencias suelen ser errores tipográficos, y falta lo que se pretendía configurar."
+            "value": "Ejecuta `rh config validate`; las advertencias suelen ser errores tipográficos, y falta lo que se pretendía configurar."
           }
         },
         "fa": {
@@ -17318,7 +17318,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installieren Sie einen Editor oder setzen Sie general.editor."
+            "value": "Installiere einen Editor oder setze general.editor."
           }
         },
         "el": {
@@ -17336,7 +17336,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instale un editor o configure general.editor."
+            "value": "Instala un editor o configura general.editor."
           }
         },
         "fa": {
@@ -17690,7 +17690,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh install --finder` aus, um die veralteten Kopien zu entfernen."
+            "value": "Führe `rh install --finder` aus, um die veralteten Kopien zu entfernen."
           }
         },
         "el": {
@@ -17708,7 +17708,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh install --finder` para eliminar las copias obsoletas."
+            "value": "Ejecuta `rh install --finder` para eliminar las copias obsoletas."
           }
         },
         "fa": {
@@ -17864,7 +17864,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "شغّل `rh install --finder`، أو فعّل Right Here في إعدادات النظام › عام › عناصر الدخول والملحقات › فايندر."
+            "value": "شغّل `rh install --finder`، أو فعّل Right Here في إعدادات النظام › عام › عناصر الدخول والملحقات › Finder."
           }
         },
         "bn": {
@@ -17876,7 +17876,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh install --finder` aus, oder aktivieren Sie Right Here unter Systemeinstellungen › Allgemein › Anmeldeobjekte & Erweiterungen › Finder."
+            "value": "Führe `rh install --finder` aus, oder aktiviere Right Here unter Systemeinstellungen › Allgemein › Anmeldeobjekte & Erweiterungen › Finder."
           }
         },
         "el": {
@@ -17894,7 +17894,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh install --finder` o active Right Here en Ajustes del Sistema › General › Ítems de inicio y extensiones › Finder."
+            "value": "Ejecuta `rh install --finder` o activa Right Here en Ajustes del Sistema › General › Ítems de inicio y extensiones › Finder."
           }
         },
         "fa": {
@@ -17972,7 +17972,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Execute `rh install --finder` ou ative o Right Here em Ajustes do Sistema › Geral › Itens de Início de Sessão e Extensões › Finder."
+            "value": "Execute `rh install --finder` ou ative o Right Here em Ajustes do Sistema › Geral › Itens de Login e Extensões › Finder."
           }
         },
         "ro": {
@@ -18008,7 +18008,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` komutunu çalıştırın veya Sistem Ayarları › Genel › Oturum Açma Öğeleri ve Genişletmeler › Finder bölümünde Right Here’ı açın."
+            "value": "`rh install --finder` komutunu çalıştırın veya Sistem Ayarları › Genel › Oturum Açma Öğeleri ve Uzantılar › Finder bölümünde Right Here’ı açın."
           }
         },
         "uk": {
@@ -18062,7 +18062,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installieren Sie Right Here.app und führen Sie danach `rh install --finder` aus."
+            "value": "Installiere Right Here.app und führe danach `rh install --finder` aus."
           }
         },
         "el": {
@@ -18080,7 +18080,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instale Right Here.app y, después, ejecute `rh install --finder`."
+            "value": "Instala Right Here.app y, después, ejecuta `rh install --finder`."
           }
         },
         "fa": {
@@ -18248,7 +18248,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh install --cli` aus."
+            "value": "Führe `rh install --cli` aus."
           }
         },
         "el": {
@@ -18266,7 +18266,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh install --cli`."
+            "value": "Ejecuta `rh install --cli`."
           }
         },
         "fa": {
@@ -18434,7 +18434,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh install --scripts` aus."
+            "value": "Führe `rh install --scripts` aus."
           }
         },
         "el": {
@@ -18452,7 +18452,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh install --scripts`."
+            "value": "Ejecuta `rh install --scripts`."
           }
         },
         "fa": {
@@ -18620,7 +18620,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh install --services` aus."
+            "value": "Führe `rh install --services` aus."
           }
         },
         "el": {
@@ -18638,7 +18638,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh install --services`."
+            "value": "Ejecuta `rh install --services`."
           }
         },
         "fa": {
@@ -18992,7 +18992,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Prüfen Sie sie mit `rh config sync status`. Wenn sie von Ihnen stammen, führen Sie `rh config sync pull --allow-commands` aus, um die Kopie aus dem Ordner zu übernehmen."
+            "value": "Prüfe sie mit `rh config sync status`. Wenn sie von dir stammen, führe `rh config sync pull --allow-commands` aus, um die Kopie aus dem Ordner zu übernehmen."
           }
         },
         "el": {
@@ -19010,7 +19010,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Revíselos con `rh config sync status`. Si son suyos, ejecute `rh config sync pull --allow-commands` para quedarse con la copia de la carpeta."
+            "value": "Revísalos con `rh config sync status`. Si son tuyos, ejecuta `rh config sync pull --allow-commands` para quedarte con la copia de la carpeta."
           }
         },
         "fa": {
@@ -19178,7 +19178,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Vergleichen Sie beide (`rh config sync status`) und führen Sie dann `rh config sync pull --force` aus, um die Version aus dem Ordner zu übernehmen, oder `push --force`, um diese zu behalten; die ersetzte Datei wird vorher gesichert."
+            "value": "Vergleiche beide (`rh config sync status`) und führe dann `rh config sync pull --force` aus, um die Version aus dem Ordner zu übernehmen, oder `push --force`, um diese zu behalten; die ersetzte Datei wird vorher gesichert."
           }
         },
         "el": {
@@ -19196,7 +19196,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Compare ambas versiones (`rh config sync status`) y luego ejecute `rh config sync pull --force` para quedarse con la de la carpeta, o `push --force` para conservar esta; el archivo reemplazado se guarda antes."
+            "value": "Compara ambas versiones (`rh config sync status`) y luego ejecuta `rh config sync pull --force` para quedarte con la de la carpeta, o `push --force` para conservar esta; el archivo reemplazado se guarda antes."
           }
         },
         "fa": {
@@ -19292,7 +19292,7 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "அவற்றை ஒப்பிடவும் (`rh config sync status`), பிறகு கோப்புறையிலுள்ளதை எடுக்க `rh config sync pull --force` ஐயும், இந்தக் கணினியிலுள்ளதை வைத்திருக்க `push --force` ஐயும் இயக்கவும்; மாற்றப்படும் கோப்பு முதலில் சேமிக்கப்படும்."
+            "value": "அவற்றை ஒப்பிடவும் (`rh config sync status`), பிறகு கோப்புறையிலுள்ளதை எடுக்க `rh config sync pull --force` ஐ, அல்லது இந்தக் கணினியிலுள்ளதை வைத்திருக்க `push --force` ஐ இயக்கவும்; மாற்றப்படும் கோப்பு முதலில் சேமிக்கப்படும்."
           }
         },
         "te": {
@@ -19364,7 +19364,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Zwei Rechner haben config.toml gleichzeitig geschrieben. Vergleichen Sie die Kopien, behalten Sie den richtigen Inhalt in config.toml und löschen Sie die übrigen von Hand."
+            "value": "Zwei Rechner haben config.toml gleichzeitig geschrieben. Vergleiche die Kopien, behalte den richtigen Inhalt in config.toml und lösche die übrigen von Hand."
           }
         },
         "el": {
@@ -19382,7 +19382,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Dos equipos escribieron config.toml a la vez. Compare las copias, deje el contenido correcto en config.toml y elimine las demás a mano."
+            "value": "Dos equipos escribieron config.toml a la vez. Compara las copias, deja el contenido correcto en config.toml y elimina las demás a mano."
           }
         },
         "fa": {
@@ -19550,7 +19550,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Öffnen Sie den Ordner im Finder, warten Sie, bis der Download abgeschlossen ist, und führen Sie dann `rh config sync status` aus."
+            "value": "Öffne den Ordner im Finder, warte, bis der Download abgeschlossen ist, und führe dann `rh config sync status` aus."
           }
         },
         "el": {
@@ -19568,7 +19568,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abra la carpeta en el Finder, espere a que termine la descarga y luego ejecute `rh config sync status`."
+            "value": "Abre la carpeta en el Finder, espera a que termine la descarga y luego ejecuta `rh config sync status`."
           }
         },
         "fa": {
@@ -19736,7 +19736,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Korrigieren Sie die Datei im Ordner, oder führen Sie `rh config sync push --force` auf einem Rechner mit einer guten Konfiguration aus."
+            "value": "Korrigiere die Datei im Ordner, oder führe `rh config sync push --force` auf einem Rechner mit einer guten Konfiguration aus."
           }
         },
         "el": {
@@ -19754,7 +19754,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Corrija el archivo de la carpeta o ejecute `rh config sync push --force` desde un equipo con una configuración correcta."
+            "value": "Corrige el archivo de la carpeta o ejecuta `rh config sync push --force` desde un equipo con una configuración correcta."
           }
         },
         "fa": {
@@ -19922,7 +19922,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Prüfen Sie, ob das Laufwerk oder iCloud Drive verfügbar ist, führen Sie `rh config sync push` aus, um den Ordner anzulegen, oder wählen Sie mit `rh config sync enable --folder <folder>` einen anderen."
+            "value": "Prüfe, ob das Laufwerk oder iCloud Drive verfügbar ist, führe `rh config sync push` aus, um den Ordner anzulegen, oder wähle mit `rh config sync enable --folder <folder>` einen anderen."
           }
         },
         "el": {
@@ -19940,7 +19940,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Compruebe que la unidad o iCloud Drive esté disponible, ejecute `rh config sync push` para crear la carpeta, o elija otra con `rh config sync enable --folder <folder>`."
+            "value": "Comprueba que la unidad o iCloud Drive esté disponible, ejecuta `rh config sync push` para crear la carpeta, o elige otra con `rh config sync enable --folder <folder>`."
           }
         },
         "fa": {
@@ -20108,7 +20108,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh config sync pull` aus."
+            "value": "Führe `rh config sync pull` aus."
           }
         },
         "el": {
@@ -20126,7 +20126,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh config sync pull`."
+            "value": "Ejecuta `rh config sync pull`."
           }
         },
         "fa": {
@@ -20294,7 +20294,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh config sync push` aus, um die Konfiguration dieses Rechners dorthin zu kopieren."
+            "value": "Führe `rh config sync push` aus, um die Konfiguration dieses Rechners dorthin zu kopieren."
           }
         },
         "el": {
@@ -20312,7 +20312,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh config sync push` para copiar allí la configuración de este equipo."
+            "value": "Ejecuta `rh config sync push` para copiar allí la configuración de este equipo."
           }
         },
         "fa": {
@@ -20480,7 +20480,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh config sync push` aus."
+            "value": "Führe `rh config sync push` aus."
           }
         },
         "el": {
@@ -20498,7 +20498,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh config sync push`."
+            "value": "Ejecuta `rh config sync push`."
           }
         },
         "fa": {
@@ -20666,7 +20666,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh config sync enable` erneut aus oder `rh config sync disable`."
+            "value": "Führe `rh config sync enable` erneut aus oder `rh config sync disable`."
           }
         },
         "el": {
@@ -20684,7 +20684,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Vuelva a ejecutar `rh config sync enable` o ejecute `rh config sync disable`."
+            "value": "Vuelve a ejecutar `rh config sync enable` o ejecuta `rh config sync disable`."
           }
         },
         "fa": {
@@ -20852,7 +20852,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installieren Sie ein Terminal oder setzen Sie general.terminal."
+            "value": "Installiere ein Terminal oder setze general.terminal."
           }
         },
         "el": {
@@ -20870,7 +20870,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instale una terminal o configure general.terminal."
+            "value": "Instala una terminal o configura general.terminal."
           }
         },
         "fa": {
@@ -22502,7 +22502,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "未安裝；無法使用快速動作與鍵盤快捷鍵"
+            "value": "未安裝；無法使用快速動作與鍵盤快速鍵"
           }
         }
       }
@@ -25838,7 +25838,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Thêm tùy chọn tác tử"
+            "value": "Tùy chọn tác tử khác"
           }
         },
         "zh-Hans": {
@@ -26222,7 +26222,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "打開檔案的應用程式"
+            "value": "打開方式"
           }
         }
       }
@@ -29030,7 +29030,7 @@
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ব্যাখ্যা করো"
+            "value": "ব্যাখ্যা করুন"
           }
         },
         "de": {
@@ -29060,7 +29060,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "توضیح بده"
+            "value": "توضیح دادن"
           }
         },
         "fr": {
@@ -29150,13 +29150,13 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "விளக்கு"
+            "value": "விளக்கிச் சொல்"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "వివరించు"
+            "value": "వివరించండి"
           }
         },
         "th": {
@@ -29342,7 +29342,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "సమీక్షించు"
+            "value": "సమీక్షించండి"
           }
         },
         "th": {
@@ -29528,7 +29528,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "పరీక్షలు రాయి"
+            "value": "పరీక్షలు రాయండి"
           }
         },
         "th": {
