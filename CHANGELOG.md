@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 (not released yet)
+## 0.1.0 (2026-10-14)
 
 First version, running on macOS 26 and later (Apple silicon).
 
