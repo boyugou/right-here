@@ -95,7 +95,7 @@ struct Probe: AsyncParsableCommand {
         @Argument(help: "A terminal id from `rh apps`. Default: the default terminal.")
         var terminal: String?
 
-        @Option(help: "Start the session in a new \"window\" or a new \"tab\". Default: general.terminal_placement.")
+        @Option(help: "Start the session in a new \"window\", \"tab\", or \"split\". Default: general.terminal_placement.")
         var placement: String?
 
         @Flag(help: "Print JSON.")
@@ -130,7 +130,9 @@ struct Probe: AsyncParsableCommand {
             // Arguments are checked before anything is looked up or started.
             var chosen = runtime.config.terminalPlacement
             if let placement {
-                guard let parsed = TerminalPlacement(configName: placement) else { throw ValidationError("--placement is \"window\" or \"tab\".") }
+                guard let parsed = TerminalPlacement(configName: placement) else {
+                    throw ValidationError("--placement must be one of: \(TerminalPlacement.configNames.joined(separator: ", ")).")
+                }
                 chosen = parsed
             }
             let app: AppDescriptor

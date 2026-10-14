@@ -65,7 +65,7 @@ INVALID = {
     "a wrong version": "version = 2\n",
     "an unknown copy-path style": '[copy_path]\nstyles = ["absolutee"]\n',
     "an unknown then": '[new_file]\nthen = "close"\n',
-    "an unknown placement": '[general]\nterminal_placement = "split"\n',
+    "an unknown placement": '[general]\nterminal_placement = "floating"\n',
     "a template without a title": '[[new_file.template]]\nid = "x"\nextension = "txt"\n',
     "an app without a bundle id": '[[app]]\nid = "x"\nname = "X"\n',
     "an app id that is not an id": '[[app]]\nid = "Bad Id"\nname = "X"\nbundle_id = "a.b"\n',

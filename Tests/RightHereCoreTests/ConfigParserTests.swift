@@ -460,7 +460,13 @@ struct ConfigStrictnessTests {
         #expect(result.config.agent(id: "claude")?.command == "claude")
     }
 
-    @Test("terminal_placement accepts window and tab and defaults to a window", arguments: [("window", TerminalPlacement.newWindow), ("tab", .newTab)])
+    @Test("terminal_placement accepts valid placement names and defaults to a window", arguments: [
+        ("window", TerminalPlacement.newWindow),
+        ("tab", .newTab),
+        ("split", .splitRight),
+        ("split-right", .splitRight),
+        ("split-down", .splitDown)
+    ])
     func terminalPlacement(name: String, expected: TerminalPlacement) {
         let result = parse("[general]\nterminal_placement = \"\(name)\"\n")
         #expect(result.diagnostics.isEmpty)

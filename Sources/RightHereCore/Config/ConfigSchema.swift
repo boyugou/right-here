@@ -90,7 +90,7 @@ public enum ConfigSchema {
                            "Editor used by \"open in editor\". Omit it to use the first installed one. A named app that is not installed is replaced by the first installed one; the doctor says so.",
                            example: "\"vscode\"; known: " + editorIDs.joined(separator: ", "), suggested: editorIDs),
                 SchemaNode("terminal_placement", .string,
-                           "Where a terminal session starts: a new window, or a new tab of the front window. Tabs apply to Ghostty (Terminal.app always opens a window) and need permission to control it, which a plain \"open in terminal\" otherwise does not.",
+                           "Where a terminal session starts: \"window\", \"tab\", \"split-right\" (or \"split\"), or \"split-down\". Tabs and splits apply to Ghostty and iTerm (Terminal.app always opens a window) and need permission to control it, which a plain \"open in terminal\" otherwise does not.",
                            default: "\"window\"", allowed: TerminalPlacement.configNames),
                 SchemaNode("agents", .stringArray,
                            "Agents offered in the menu, in order. `rh init` fills this with the agents it finds.",

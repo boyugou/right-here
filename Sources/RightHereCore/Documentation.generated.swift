@@ -79,9 +79,9 @@ Terminal types `cd <folder>` into whichever shell its profile starts, and shells
 name, so Terminal will not start an agent in a folder whose name has one (opening the folder alone works). Rename
 the folder, or use Ghostty, which is handed the folder and types nothing.
 
-## The agent opens in a window and I want a tab
+## The agent opens in a window and I want a tab or split
 
-Set `terminal_placement = "tab"` under `[general]` (Ghostty).
+Set `terminal_placement = "tab"` or `terminal_placement = "split"` (also `"split-right"`, `"split-down"`) under `[general]` (Ghostty and iTerm).
 
 ## Quick Actions are missing or out of date
 

@@ -84,10 +84,30 @@ struct TerminalAdapterTests {
         #expect(typed == window)
     }
 
+    @Test func ghosttyOpensAFolderInASplit() throws {
+        let session = TerminalSession(directory: directory, placement: .splitRight)
+        guard case .appleScript(let step)? = try GhosttyAdapter().steps(for: session, bundleID: "com.mitchellh.ghostty", facts: facts).first else {
+            Issue.record("expected AppleScript"); return
+        }
+        #expect(step.arguments == ["/Users/tester/my code", "", "split-right"])
+        #expect(step.controls == "Ghostty")
+    }
+
+    @Test func ghosttyOpensAFolderInASplitDown() throws {
+        let session = TerminalSession(directory: directory, typedInput: "claude", placement: .splitDown)
+        guard case .appleScript(let step)? = try GhosttyAdapter().steps(for: session, bundleID: "com.mitchellh.ghostty", facts: facts).first else {
+            Issue.record("expected AppleScript"); return
+        }
+        #expect(step.arguments == ["/Users/tester/my code", "claude", "split-down"])
+    }
+
     @Test func placementNamesRoundTrip() {
         #expect(TerminalPlacement(configName: "tab") == .newTab)
         #expect(TerminalPlacement(configName: "window") == .newWindow)
-        #expect(TerminalPlacement(configName: "split") == nil)
+        #expect(TerminalPlacement(configName: "split") == .splitRight)
+        #expect(TerminalPlacement(configName: "split-right") == .splitRight)
+        #expect(TerminalPlacement(configName: "split-down") == .splitDown)
+        #expect(TerminalPlacement(configName: "floating") == nil)
         for placement in TerminalPlacement.allCases { #expect(TerminalPlacement(configName: placement.configName) == placement) }
     }
 
@@ -123,6 +143,22 @@ struct TerminalAdapterTests {
         }
         #expect(step.arguments == ["cd '/Users/tester/my code'", "tab"])
         #expect(step.controls == "iTerm")
+    }
+
+    @Test func itermSplitPlacement() throws {
+        let session = TerminalSession(directory: directory, typedInput: "claude", placement: .splitRight)
+        guard case .appleScript(let step)? = try ITermAdapter().steps(for: session, bundleID: "com.googlecode.iterm2", facts: facts).first else {
+            Issue.record("expected AppleScript"); return
+        }
+        #expect(step.arguments == ["cd '/Users/tester/my code' && claude", "split-right"])
+    }
+
+    @Test func itermSplitDownPlacement() throws {
+        let session = TerminalSession(directory: directory, placement: .splitDown)
+        guard case .appleScript(let step)? = try ITermAdapter().steps(for: session, bundleID: "com.googlecode.iterm2", facts: facts).first else {
+            Issue.record("expected AppleScript"); return
+        }
+        #expect(step.arguments == ["cd '/Users/tester/my code'", "split-down"])
     }
 
     @Test func itermScriptNeverEmbedsUserText() throws {

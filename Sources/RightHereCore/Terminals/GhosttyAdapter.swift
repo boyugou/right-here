@@ -30,7 +30,7 @@ public struct GhosttyAdapter: TerminalAdapter {
             return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
         }
         if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.unsupported(blocker) }
-        let placement = session.placement == .newTab ? "tab" : "window"
+        let placement = session.placement.configName
         return [.appleScript(AppleScriptStep(
             source: Self.script,
             arguments: [directory, typed ?? "", placement],
@@ -49,7 +49,13 @@ public struct GhosttyAdapter: TerminalAdapter {
             set cfg to new surface configuration
             set initial working directory of cfg to cwd
             if typed is not "" then set initial input of cfg to typed & linefeed
-            if placement is "tab" and (count of windows) > 0 then
+            if (placement is "split" or placement is "split-right") and (count of windows) > 0 then
+                set currTab to selected tab of front window
+                split (focused terminal of currTab) direction right with configuration cfg
+            else if placement is "split-down" and (count of windows) > 0 then
+                set currTab to selected tab of front window
+                split (focused terminal of currTab) direction down with configuration cfg
+            else if placement is "tab" and (count of windows) > 0 then
                 new tab in front window with configuration cfg
             else
                 new window with configuration cfg

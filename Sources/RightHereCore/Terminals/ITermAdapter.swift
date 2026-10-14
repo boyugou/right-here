@@ -42,7 +42,7 @@ public struct ITermAdapter: TerminalAdapter {
         } else {
             line = quotedDir
         }
-        let placement = session.placement == .newTab ? "tab" : "window"
+        let placement = session.placement.configName
         return [.appleScript(AppleScriptStep(
             source: Self.script,
             arguments: [line, placement],
@@ -57,7 +57,17 @@ public struct ITermAdapter: TerminalAdapter {
         set line to item 1 of argv
         set placement to item 2 of argv
         tell application id "com.googlecode.iterm2"
-            if placement is "tab" and (count of windows) > 0 then
+            if (placement is "split" or placement is "split-right") and (count of windows) > 0 then
+                tell current session of current window
+                    set newSession to (split vertically with default profile)
+                    tell newSession to write text line
+                end tell
+            else if placement is "split-down" and (count of windows) > 0 then
+                tell current session of current window
+                    set newSession to (split horizontally with default profile)
+                    tell newSession to write text line
+                end tell
+            else if placement is "tab" and (count of windows) > 0 then
                 tell current window
                     create tab with default profile
                     tell current session
