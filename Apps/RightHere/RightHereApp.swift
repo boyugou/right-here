@@ -17,6 +17,7 @@ struct RightHereApp: App {
             SetupView(model: model)
         }
         .windowResizability(.contentMinSize)
+        .defaultSize(width: 860, height: 580)
         .defaultLaunchBehavior(.presented)
     }
 }

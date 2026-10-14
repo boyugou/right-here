@@ -5,7 +5,7 @@ import RightHereCore
 ///
 /// What a check says is kept as catalog messages and not as sentences: the command line and the MCP server write them in
 /// English, the setup window in the language of the system, from the same data.
-public struct DoctorCheck: Sendable, Equatable, Encodable {
+public struct DoctorCheck: Sendable, Equatable, Encodable, Identifiable {
     public enum Status: String, Sendable, Encodable {
         case ok
         case warn

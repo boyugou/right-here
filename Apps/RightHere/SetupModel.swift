@@ -7,8 +7,11 @@ import RightHereKit
 enum SetupTab: String, CaseIterable, Identifiable {
     case overview = "overview"
     case menu = "menu"
-    case diagnostics = "diagnostics"
     case ai = "ai"
+    case worktrees = "worktrees"
+    case bookmarks = "bookmarks"
+    case diagnostics = "diagnostics"
+    case config = "config"
 
     var id: String { rawValue }
 }
@@ -25,6 +28,13 @@ final class SetupModel {
     private(set) var menu: [MenuNode] = []
     /// The submenus of the menu preview that are open, by `MenuPreviewRow.id`.
     private(set) var openSubmenus: Set<String> = []
+
+    private(set) var pins: [String] = []
+    private(set) var recents: [String] = []
+    private(set) var worktrees: [WorktreeEntry] = []
+    private(set) var configContent: String = ""
+    private(set) var configValid = true
+    private(set) var configDiagnostics: [String] = []
 
     private let facts = LiveSystemFacts()
     private var icons = IconProvider(facts: LiveSystemFacts())
@@ -201,14 +211,67 @@ final class SetupModel {
         #endif
         if !quiet { isWorking = true }
         defer { if !quiet { isWorking = false } }
-        let doctor = Doctor(facts: facts, paths: paths, loaded: ConfigStore.load(paths: paths), rhPath: helper.path)
+        let loaded = ConfigStore.load(paths: paths)
+        let doctor = Doctor(facts: facts, paths: paths, loaded: loaded, rhPath: helper.path)
         checks = await doctor.run()
         refreshMenu()
+        refreshBookmarks()
+        await refreshWorktrees()
+        refreshConfigState(loaded: loaded)
     }
 
     /// The preview follows the config and the installed apps as they are now, in the language of the system.
     private func refreshMenu() {
         menu = MenuPreview.folderMenu(ConfigStore.load(paths: paths).result, facts: facts, folder: facts.homeDirectory, localizer: .system)
+    }
+
+    func refreshBookmarks() {
+        let store = StateStore.load(paths: paths)
+        pins = store.pins
+        recents = store.recents
+    }
+
+    func pinFolder(_ path: String) {
+        var store = StateStore.load(paths: paths)
+        if store.pin(path) {
+            try? store.save(paths: paths)
+            refreshBookmarks()
+        }
+    }
+
+    func unpinFolder(_ path: String) {
+        var store = StateStore.load(paths: paths)
+        if store.unpin(path) {
+            try? store.save(paths: paths)
+            refreshBookmarks()
+        }
+    }
+
+    func clearRecents() {
+        var store = StateStore.load(paths: paths)
+        store.clearRecents()
+        try? store.save(paths: paths)
+        refreshBookmarks()
+    }
+
+    func refreshWorktrees() async {
+        guard let gitRoot = facts.gitRoot(containing: facts.currentDirectory) else {
+            worktrees = []
+            return
+        }
+        worktrees = (try? await GitWorktreeManager.listWorktrees(in: gitRoot)) ?? []
+    }
+
+    func removeWorktree(_ path: String) async {
+        guard let gitRoot = facts.gitRoot(containing: facts.currentDirectory) else { return }
+        try? await GitWorktreeManager.removeWorktree(worktreePath: path, gitRoot: gitRoot, deleteBranch: true)
+        await refreshWorktrees()
+    }
+
+    func refreshConfigState(loaded: LoadedConfig) {
+        configValid = !loaded.result.hasErrors
+        configDiagnostics = loaded.result.diagnostics.map { $0.summary(file: loaded.file) }
+        configContent = (try? String(contentsOf: paths.configFile, encoding: .utf8)) ?? "# No config.toml created yet. Run `rh init`."
     }
 
     /// Runs `rh install`: runner script, command link, config file and the Finder extension.

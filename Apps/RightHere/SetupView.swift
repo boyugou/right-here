@@ -12,127 +12,157 @@ struct SetupView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            headerSection
-                .padding(.horizontal, 24)
-                .padding(.top, 20)
-                .padding(.bottom, 14)
+        HStack(spacing: 0) {
+            sidebarSection
+                .frame(width: 220)
+                .background(.ultraThinMaterial)
 
             Divider()
 
-            #if PREVIEW
-            mainContent
-                .padding(24)
-                .frame(width: 640, alignment: .leading)
-            #else
-            ScrollView(.vertical) {
-                mainContent
-                    .padding(24)
-                    .frame(width: 640, alignment: .leading)
-            }
-            .scrollIndicators(.automatic)
-            .frame(minHeight: 460, maxHeight: 760)
-            #endif
-
-            Divider()
-
-            footerSection
-                .padding(.horizontal, 24)
-                .padding(.vertical, 14)
-                .background(.quaternary.opacity(0.35))
+            detailSection
+                .frame(minWidth: 580, maxWidth: .infinity)
+                .background(Color(nsColor: .windowBackgroundColor))
         }
-        .frame(width: 640)
+        .frame(minWidth: 800, minHeight: 560)
         .task {
             await model.refresh()
             await model.watchExtension()
         }
     }
 
-    // MARK: - Header & Tab Navigation
+    // MARK: - Sidebar
 
-    private var headerSection: some View {
-        VStack(spacing: 16) {
-            HStack(alignment: .center, spacing: 14) {
+    private var sidebarSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Brand header
+            HStack(spacing: 12) {
                 Image(nsImage: NSApplication.shared.applicationIconImage)
                     .resizable()
-                    .frame(width: 44, height: 44)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .shadow(color: .black.opacity(0.12), radius: 3, x: 0, y: 1.5)
+                    .frame(width: 36, height: 36)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
                     .accessibilityHidden(true)
 
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
                         Text("Right Here")
-                            .font(.title2.weight(.bold))
+                            .font(.headline.weight(.bold))
                         Text("v0.2.0")
-                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
+                            .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1.5)
                             .background(.quaternary.opacity(0.6), in: Capsule())
                             .foregroundStyle(.secondary)
                     }
                     Text(l10n.string(.appSubtitle))
-                        .font(.callout)
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 16)
 
-                Spacer(minLength: 8)
+            Divider()
+                .padding(.horizontal, 12)
 
-                statusPill
+            // Navigation List
+            ScrollView(.vertical) {
+                VStack(spacing: 2) {
+                    sidebarItem(.overview, title: tabTitle(.overview), icon: "sparkles")
+                    sidebarItem(.menu, title: tabTitle(.menu), icon: "menubar.dock.rectangle")
+                    sidebarItem(.ai, title: tabTitle(.ai), icon: "cpu")
+                    sidebarItem(.worktrees, title: tabTitle(.worktrees), icon: "arrow.triangle.branch", badge: model.worktrees.count > 0 ? "\(model.worktrees.count)" : nil)
+                    sidebarItem(.bookmarks, title: tabTitle(.bookmarks), icon: "bookmark", badge: model.pins.count > 0 ? "\(model.pins.count)" : nil)
+                    sidebarItem(.diagnostics, title: tabTitle(.diagnostics), icon: "stethoscope", badge: model.needsAttention ? "!" : nil, badgeColor: .orange)
+                    sidebarItem(.config, title: tabTitle(.config), icon: "gearshape")
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 12)
             }
 
-            segmentedTabBar
+            Spacer(minLength: 8)
+
+            Divider()
+                .padding(.horizontal, 12)
+
+            // Sidebar Footer Status Card
+            sidebarFooterCard
+                .padding(12)
         }
     }
 
-    private var segmentedTabBar: some View {
-        HStack(spacing: 4) {
-            tabButton(.overview, title: tabTitle(.overview), icon: "sparkles")
-            tabButton(.menu, title: tabTitle(.menu), icon: "menubar.dock.rectangle")
-            tabButton(.diagnostics, title: tabTitle(.diagnostics), icon: "stethoscope")
-            tabButton(.ai, title: tabTitle(.ai), icon: "cpu")
-        }
-        .padding(3)
-        .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 9))
-    }
-
-    private func tabButton(_ tab: SetupTab, title: String, icon: String) -> some View {
+    private func sidebarItem(_ tab: SetupTab, title: String, icon: String, badge: String? = nil, badgeColor: Color = .blue) -> some View {
         let isSelected = model.selectedTab == tab
         return Button(action: {
             withAnimation(.easeInOut(duration: 0.15)) {
                 model.selectedTab = tab
             }
         }) {
-            HStack(spacing: 6) {
+            HStack(spacing: 9) {
                 Image(systemName: icon)
-                    .font(.caption.weight(isSelected ? .semibold : .regular))
+                    .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
+                    .frame(width: 18)
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+
                 Text(title)
-                    .font(.caption.weight(isSelected ? .semibold : .medium))
+                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                    .foregroundStyle(isSelected ? Color.primary : Color.secondary)
+
+                Spacer(minLength: 4)
+
+                if let badge {
+                    Text(badge)
+                        .font(.system(size: 10, weight: .bold))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(badgeColor.opacity(isSelected ? 0.2 : 0.12), in: Capsule())
+                        .foregroundStyle(badgeColor)
+                }
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .frame(maxWidth: .infinity)
-            .background(isSelected ? Color(nsColor: .controlBackgroundColor) : Color.clear, in: RoundedRectangle(cornerRadius: 7))
-            .shadow(color: isSelected ? Color.black.opacity(0.08) : Color.clear, radius: 2, y: 1)
-            .foregroundStyle(isSelected ? Color.primary : Color.secondary)
+            .padding(.vertical, 7)
+            .background(isSelected ? Color.accentColor.opacity(0.12) : Color.clear, in: RoundedRectangle(cornerRadius: 8))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
-    private var statusPill: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(model.needsAttention ? Color.orange : Color.green)
-                .frame(width: 8, height: 8)
-                .shadow(color: (model.needsAttention ? Color.orange : Color.green).opacity(0.5), radius: 2)
-            Text(l10n.string(model.needsAttention ? .appNeedsAttention : .appAllSet))
-                .font(.caption.weight(.medium))
-                .foregroundStyle(model.needsAttention ? Color.orange : Color.green)
+    private var sidebarFooterCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(model.needsAttention ? Color.orange : Color.green)
+                    .frame(width: 8, height: 8)
+                Text(l10n.string(model.needsAttention ? .appNeedsAttention : .appAllSet))
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(model.needsAttention ? Color.orange : Color.green)
+                Spacer()
+                Button(action: { Task { await model.refresh() } }) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+
+            if model.isWorking {
+                HStack(spacing: 6) {
+                    ProgressView().controlSize(.mini)
+                    Text("Refreshing…")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            } else if let message = model.message {
+                Text(message)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background((model.needsAttention ? Color.orange : Color.green).opacity(0.1), in: Capsule())
-        .overlay(Capsule().strokeBorder((model.needsAttention ? Color.orange : Color.green).opacity(0.25), lineWidth: 1))
+        .padding(10)
+        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private func tabTitle(_ tab: SetupTab) -> String {
@@ -146,31 +176,87 @@ struct SetupView: View {
             case "fr": return "Aperçu"
             case "es": return "Resumen"
             case "it": return "Panoramica"
-            case "ru": return "Обзор"
             default: return "Overview"
             }
         case .menu:
             return l10n.string(.appMenuTitle)
-        case .diagnostics:
-            return l10n.string(.appDetails)
         case .ai:
             return "AI & MCP"
+        case .worktrees:
+            switch l10n.resolvedLanguage {
+            case "zh-Hans", "zh-Hant": return "Git 工作区"
+            case "ja": return "Git ワークツリー"
+            default: return "Git Worktrees"
+            }
+        case .bookmarks:
+            switch l10n.resolvedLanguage {
+            case "zh-Hans", "zh-Hant": return "书签与最近"
+            default: return "Bookmarks"
+            }
+        case .diagnostics:
+            return l10n.string(.appDetails)
+        case .config:
+            switch l10n.resolvedLanguage {
+            case "zh-Hans", "zh-Hant": return "配置"
+            default: return "Configuration"
+            }
         }
     }
 
-    // MARK: - Main Tab Switcher
+    // MARK: - Detail Content Section
 
-    @ViewBuilder
-    private var mainContent: some View {
-        switch model.selectedTab {
-        case .overview:
-            overviewTab
-        case .menu:
-            menuTab
-        case .diagnostics:
-            diagnosticsTab
-        case .ai:
-            aiTab
+    private var detailSection: some View {
+        VStack(spacing: 0) {
+            detailToolbar
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+
+            Divider()
+
+            ScrollView(.vertical) {
+                VStack(alignment: .leading, spacing: 20) {
+                    switch model.selectedTab {
+                    case .overview:
+                        overviewTab
+                    case .menu:
+                        menuTab
+                    case .ai:
+                        aiTab
+                    case .worktrees:
+                        worktreesTab
+                    case .bookmarks:
+                        bookmarksTab
+                    case .diagnostics:
+                        diagnosticsTab
+                    case .config:
+                        configTab
+                    }
+                }
+                .padding(24)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private var detailToolbar: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Text(tabTitle(model.selectedTab))
+                .font(.title2.weight(.bold))
+
+            Spacer()
+
+            Button(action: { Task { await model.openConfig() } }) {
+                Label(l10n.string(.appOpenConfig), systemImage: "square.and.pencil")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+            Button(action: { Task { await model.installOrRepair() } }) {
+                Label(l10n.string(.appInstallOrRepair), systemImage: "wrench.and.screwdriver")
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+            .disabled(model.isWorking)
         }
     }
 
@@ -203,311 +289,193 @@ struct SetupView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(l10n.string(model.needsAttention ? .appNeedsAttention : .appAllSet))
-                    .font(.headline)
-                if model.needsAttention {
-                    let open = model.checks.filter { $0.status != .ok }.map { $0.title(in: l10n) }
-                    Text(open.formatted(.list(type: .and, width: .narrow)))
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("FinderSync extension is active. Right-click any folder or file to trigger actions.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            Spacer(minLength: 0)
-
-            if model.needsAttention {
-                Button(l10n.string(.appDetails)) {
-                    model.selectedTab = .diagnostics
-                }
-                .buttonStyle(.bordered)
-            }
-        }
-        .padding(16)
-        .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
-    }
-
-    private var appsConfiguredRow: some View {
-        HStack(spacing: 14) {
-            appConfigCard(
-                category: "Terminal",
-                icon: "terminal.fill",
-                accentColor: .blue,
-                name: model.defaultTerminalName,
-                actionTitle: l10n.string(.appTestLaunch),
-                action: { Task { await model.testTerminalLaunch() } }
-            )
-
-            appConfigCard(
-                category: "Editor",
-                icon: "doc.text.fill",
-                accentColor: .purple,
-                name: model.defaultEditorName,
-                actionTitle: l10n.string(.appOpenConfig),
-                action: { Task { await model.openConfig() } }
-            )
-        }
-    }
-
-    private func appConfigCard(
-        category: String,
-        icon: String,
-        accentColor: Color,
-        name: String,
-        actionTitle: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .foregroundStyle(accentColor)
-                Text(category)
-                    .font(.caption.weight(.semibold))
+                    .font(.headline.weight(.semibold))
+                Text(model.needsAttention
+                     ? "Some settings or permissions need adjustment. Open Diagnostics for details."
+                     : "Right Here is registered in Finder. Right-click any folder or file to act on it.")
+                    .font(.callout)
                     .foregroundStyle(.secondary)
-                Spacer()
             }
 
-            Text(name)
-                .font(.body.weight(.medium))
-                .lineLimit(1)
+            Spacer(minLength: 8)
 
-            Button(actionTitle, action: action)
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .disabled(model.isWorking)
+            if model.extensionNeedsSetup {
+                Button(l10n.string(.appExtensionSettings)) {
+                    model.showExtensionSettings()
+                }
+                .buttonStyle(.borderedProminent)
+            }
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(nsColor: .controlBackgroundColor))
+                .shadow(color: .black.opacity(0.04), radius: 4, y: 1.5)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+        )
     }
 
     private var onboardingCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
-                Image(systemName: "sparkles")
+                Image(systemName: "1.circle.fill")
                     .foregroundStyle(Color.accentColor)
-                Text(l10n.string(.appOnboardTitle))
-                    .font(.headline)
+                Text(l10n.string(.appStepOneTitle))
+                    .font(.headline.weight(.semibold))
             }
 
-            stepRow(1, title: l10n.string(.appStepOneTitle), body: l10n.string(.appStepOneBody),
-                    done: model.check(.terminalDefault)?.status == .ok && model.check(.editorDefault)?.status == .ok) {
-                ForEach([CheckID.terminalDefault, .editorDefault], id: \.self) { id in
-                    if let detail = model.check(id)?.detail {
-                        Text(CheckRow.styled(l10n.render(detail, isolatingValues: true)))
-                            .font(.callout)
-                            .foregroundStyle(.primary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } }
-                    .controlSize(.small)
-            }
+            Text("Right Here needs to be enabled under macOS System Settings so its actions appear in Finder.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
 
-            stepRow(2, title: l10n.string(.appStepTwoTitle), body: l10n.string(.appStepTwoBody), done: !model.extensionNeedsSetup) {
-                Button(l10n.string(.appExtensionSettings)) { model.showExtensionSettings() }
-                    .controlSize(.small)
+            Button(action: { model.showExtensionSettings() }) {
+                Label(l10n.string(.appExtensionSettings), systemImage: "arrow.up.forward.app")
             }
-
-            stepRow(3, title: l10n.string(.appStepThreeTitle), body: l10n.string(.appStepThreeBody), done: false) {
-                Button(l10n.string(.appTestLaunch)) { Task { await model.testTerminalLaunch() } }
-                    .controlSize(.small)
-                    .disabled(model.isWorking)
-            }
+            .buttonStyle(.borderedProminent)
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(nsColor: .controlBackgroundColor))
+                .shadow(color: .black.opacity(0.04), radius: 4, y: 1.5)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1.5)
+        )
     }
 
-    private func stepRow(_ number: Int, title: String, body: String, done: Bool, @ViewBuilder content: () -> some View) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                Circle().fill(done ? Color.green : Color.accentColor)
-                if done {
-                    Image(systemName: "checkmark").font(.caption.weight(.bold)).foregroundStyle(.white)
-                } else {
-                    Text(number.formatted()).font(.caption.weight(.bold)).foregroundStyle(.white)
-                }
-            }
-            .frame(width: 24, height: 24)
-            .accessibilityHidden(true)
+    private var appsConfiguredRow: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Configured Applications")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title).font(.body.weight(.medium))
-                Text(body).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                content()
+            HStack(spacing: 14) {
+                appSummaryCard(title: "Default Terminal", name: model.defaultTerminalName, icon: "terminal.fill", role: "Splits & Tabs Supported")
+                appSummaryCard(title: "Default Editor", name: model.defaultEditorName, icon: "chevron.left.forwardslash.chevron.right", role: "IDE & Text Editor")
             }
-            Spacer(minLength: 0)
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(l10n.render(.appStepLabel(number.formatted(), title)))
+    }
+
+    private func appSummaryCard(title: String, name: String, icon: String, role: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 32, height: 32)
+                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(name)
+                    .font(.body.weight(.semibold))
+                Text(role)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            Spacer()
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity)
+        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
     }
 
     private var quickActionsCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Image(systemName: "command")
-                    .foregroundStyle(.secondary)
-                Text(l10n.string(.appQuickActionsTitle))
-                    .font(.callout.weight(.medium))
-            }
-            Text(l10n.string(.appQuickActionsBody))
-                .font(.callout)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Quick Actions")
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 12) {
-                commandPill("rh menu")
-                commandPill("rh doctor")
-                commandPill("rh config validate")
+                actionButton(title: l10n.string(.appTestLaunch), icon: "play.circle") {
+                    Task { await model.testTerminalLaunch() }
+                }
+                actionButton(title: l10n.string(.appCopySetupPrompt), icon: "doc.on.doc") {
+                    model.copySetupPrompt()
+                }
+                actionButton(title: l10n.string(.appOpenConfig), icon: "gearshape") {
+                    Task { await model.openConfig() }
+                }
             }
-            .padding(.top, 4)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary.opacity(0.25), in: RoundedRectangle(cornerRadius: 10))
     }
 
-    private func commandPill(_ cmd: String) -> some View {
-        Text(cmd)
-            .font(.system(size: 11, weight: .regular, design: .monospaced))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 6))
+    private func actionButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundStyle(Color.accentColor)
+                Text(title)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity, minHeight: 64)
+            .padding(10)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
-    // MARK: - Tab 2: Finder Menu Preview
+    // MARK: - Tab 2: Menu Preview
 
     private var menuTab: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(l10n.string(.appMenuTitle))
-                        .font(.headline)
-                    Text(l10n.string(.appMenuCaption))
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-            }
+            Text("Finder Context Menu Preview")
+                .font(.headline.weight(.semibold))
+            Text("Shows the actions that appear when right-clicking a folder in Finder.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
 
-            VStack(alignment: .leading, spacing: 0) {
-                let rows = model.menuRows
-                if rows.isEmpty {
-                    Text("No menu items configured or config has errors.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .padding(20)
-                } else {
-                    ForEach(rows) { row in
-                        MenuLine(row: row, image: model.image(for: row.icon)) {
-                            model.toggleSubmenu(row.id)
-                        }
+            VStack(spacing: 0) {
+                ForEach(model.menuRows) { row in
+                    MenuLine(row: row, image: model.image(for: row.icon)) {
+                        model.toggleSubmenu(row.id)
                     }
                 }
             }
-            .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 3)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
         }
     }
 
-    // MARK: - Tab 3: Diagnostics
-
-    private var diagnosticsTab: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text(l10n.string(.appDetails))
-                    .font(.headline)
-                Spacer()
-                HStack(spacing: 8) {
-                    statPill("\(model.checks.count) total", color: .secondary)
-                    if model.doctorStats.warn > 0 {
-                        statPill("\(model.doctorStats.warn) warnings", color: .orange)
-                    }
-                    if model.doctorStats.fail > 0 {
-                        statPill("\(model.doctorStats.fail) issues", color: .red)
-                    }
-                }
-            }
-
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(model.checks.enumerated()), id: \.element.id) { index, check in
-                    CheckRow(check: check)
-                    if index < model.checks.count - 1 {
-                        Divider()
-                    }
-                }
-            }
-            .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-        }
-    }
-
-    private func statPill(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(.caption.weight(.medium))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(color.opacity(0.12), in: Capsule())
-            .foregroundStyle(color)
-    }
-
-    // MARK: - Tab 4: AI & MCP
+    // MARK: - Tab 3: AI & MCP
 
     private var aiTab: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            // Hero
-            VStack(alignment: .leading, spacing: 4) {
-                Text("AI Agent Automation & MCP")
-                    .font(.headline)
-                Text("Right Here connects macOS Finder actions, terminal sessions, and workspace automation to AI agents through Model Context Protocol (MCP) and direct plugins.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
-
-            // Claude Code Plugin Card
+        VStack(alignment: .leading, spacing: 20) {
+            // Agents Showcase
             VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Label("Claude Code Plugin", systemImage: "sparkle")
-                        .font(.body.weight(.semibold))
-                    Spacer()
-                    badgePill("Official Plugin", color: .purple)
-                }
-                Text("Install the Right Here plugin in Claude Code for contextual file manipulation and automation:")
+                Text("Supported AI Agents")
+                    .font(.headline.weight(.semibold))
+                Text("Launch coding agents in your authenticated login shell with PATH, nvm, and aliases.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
 
-                codeBlock("""
-/plugin marketplace add boyugou/right-here
-/plugin install right-here@right-here
-""")
-
-                Button("Copy Install Command") {
-                    model.copyClaudePluginCommand()
+                HStack(spacing: 12) {
+                    agentCard("Claude Code", command: "claude", icon: "brain.head.profile", instruction: "CLAUDE.md")
+                    agentCard("Codex", command: "codex", icon: "terminal", instruction: "AGENTS.md")
+                    agentCard("Antigravity", command: "agy", icon: "sparkles", instruction: "AGENTS.md")
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 10))
-            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
 
-            // MCP Server Card
+            // MCP Configuration
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Label("Model Context Protocol (MCP)", systemImage: "point.3.filled.connected.trianglepath.dotted")
-                        .font(.body.weight(.semibold))
+                        .font(.headline.weight(.semibold))
                     Spacer()
                     badgePill("stdio", color: .blue)
                 }
-                Text("Add Right Here to Claude Desktop, Cursor, Zed, or Windsurf as an MCP tool server:")
+                Text("Connect Claude Desktop, Cursor, Zed, or Windsurf directly via stdio:")
                     .font(.callout)
                     .foregroundStyle(.secondary)
 
@@ -521,41 +489,292 @@ struct SetupView: View {
   }
 }
 """)
-
                 Button("Copy MCP Configuration") {
                     model.copyMCPConfig()
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 10))
-            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
-
-            // AI Setup Prompt Card
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Label("AI Setup Hand-off", systemImage: "person.crop.circle.badge.checkmark")
-                        .font(.body.weight(.semibold))
-                    Spacer()
-                }
-                Text("Let your AI assistant configure, doctor-check, and customize Right Here for you automatically:")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-
-                Button(action: { model.copySetupPrompt() }) {
-                    Label(l10n.string(.appCopySetupPrompt), systemImage: "doc.on.doc")
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 10))
-            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
+            .padding(16)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+
+            // Claude Code Plugin
+            VStack(alignment: .leading, spacing: 10) {
+                Label("Claude Code Plugin", systemImage: "puzzlepiece.extension")
+                    .font(.headline.weight(.semibold))
+                Text("Install the Right Here workspace plugin in Claude Code:")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+
+                codeBlock("/plugin marketplace add boyugou/right-here\n/plugin install right-here@right-here")
+
+                Button("Copy Plugin Install Command") {
+                    model.copyClaudePluginCommand()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+            .padding(16)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
         }
     }
+
+    private func agentCard(_ name: String, command: String, icon: String, instruction: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundStyle(Color.accentColor)
+                Text(name)
+                    .font(.body.weight(.semibold))
+            }
+            Text("`\(command)`")
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundStyle(.secondary)
+            Text("Guides: \(instruction)")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+    }
+
+    // MARK: - Tab 4: Git Worktrees
+
+    private var worktreesTab: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Isolated Git Worktrees")
+                    .font(.headline.weight(.semibold))
+                Text("Run AI agents and experimental tasks in an isolated git branch without touching your working tree or uncommitted files.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+
+            HStack {
+                Text("CLI Usage:")
+                    .font(.caption.weight(.semibold))
+                Text("`rh run agent.agy --worktree` or `rh run agent.claude --worktree my-feature`")
+                    .font(.system(size: 11, design: .monospaced))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.black.opacity(0.15), in: RoundedRectangle(cornerRadius: 5))
+            }
+
+            if model.worktrees.isEmpty {
+                VStack(spacing: 10) {
+                    Image(systemName: "arrow.triangle.branch")
+                        .font(.largeTitle)
+                        .foregroundStyle(.tertiary)
+                    Text("No active Right Here worktrees found in the current repository.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 140)
+                .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(model.worktrees, id: \.path) { entry in
+                        HStack(spacing: 12) {
+                            Image(systemName: "folder.fill")
+                                .foregroundStyle(Color.accentColor)
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(entry.branch ?? "detached")
+                                        .font(.body.weight(.semibold))
+                                    if entry.isRightHere {
+                                        badgePill("rh", color: .purple)
+                                    }
+                                }
+                                Text(entry.path)
+                                    .font(.system(size: 11, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                            Spacer()
+                            Button("Remove") {
+                                Task { await model.removeWorktree(entry.path) }
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                        .padding(12)
+                        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Tab 5: Bookmarks
+
+    private var bookmarksTab: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            // Pinned Folders
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("Pinned Folders")
+                        .font(.headline.weight(.semibold))
+                    Spacer()
+                    Text("\(model.pins.count)")
+                        .font(.caption.weight(.bold))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.blue.opacity(0.12), in: Capsule())
+                        .foregroundStyle(.blue)
+                }
+                Text("Folders pinned for instant Finder menu access (`rh pin <path>`).")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+
+                if model.pins.isEmpty {
+                    Text("No pinned folders. Pin any directory using `rh pin <path>`.")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .padding(12)
+                } else {
+                    VStack(spacing: 6) {
+                        ForEach(model.pins, id: \.self) { pin in
+                            HStack(spacing: 10) {
+                                Image(systemName: "pin.fill")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: 16)
+                                Text(pin)
+                                    .font(.system(size: 12, design: .monospaced))
+                                    .lineLimit(1)
+                                Spacer()
+                                Button(action: { model.unpinFolder(pin) }) {
+                                    Image(systemName: "trash")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(10)
+                            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+                        }
+                    }
+                }
+            }
+
+            Divider()
+
+            // Recent Folders
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("Recent Folders")
+                        .font(.headline.weight(.semibold))
+                    Spacer()
+                    if !model.recents.isEmpty {
+                        Button("Clear Recents") {
+                            model.clearRecents()
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.mini)
+                    }
+                }
+                Text("Directories recently acted on by Right Here.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+
+                if model.recents.isEmpty {
+                    Text("No recent folders recorded yet.")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .padding(12)
+                } else {
+                    VStack(spacing: 6) {
+                        ForEach(model.recents, id: \.self) { recent in
+                            HStack(spacing: 10) {
+                                Image(systemName: "clock")
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 16)
+                                Text(recent)
+                                    .font(.system(size: 12, design: .monospaced))
+                                    .lineLimit(1)
+                                Spacer()
+                            }
+                            .padding(10)
+                            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Tab 6: Diagnostics
+
+    private var diagnosticsTab: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text(l10n.string(.appDetails))
+                    .font(.headline.weight(.semibold))
+                Spacer()
+                Button(action: { Task { await model.testTerminalLaunch() } }) {
+                    Label(l10n.string(.appTestLaunch), systemImage: "play.circle")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+
+            VStack(spacing: 0) {
+                ForEach(model.checks) { check in
+                    CheckRow(check: check)
+                    if check.id != model.checks.last?.id {
+                        Divider().padding(.horizontal, 14)
+                    }
+                }
+            }
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+        }
+    }
+
+    // MARK: - Tab 7: Configuration
+
+    private var configTab: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("Configuration File")
+                    .font(.headline.weight(.semibold))
+                Spacer()
+                badgePill(model.configValid ? "Valid TOML" : "Has Errors", color: model.configValid ? .green : .red)
+            }
+
+            if !model.configDiagnostics.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(model.configDiagnostics, id: \.self) { diag in
+                        Text("• " + diag)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+            }
+
+            codeBlock(model.configContent)
+
+            HStack {
+                Button("Open in Default Editor") {
+                    Task { await model.openConfig() }
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
+        }
+    }
+
+    // MARK: - UI Helpers
 
     private func badgePill(_ text: String, color: Color) -> some View {
         Text(text)
@@ -569,39 +788,10 @@ struct SetupView: View {
     private func codeBlock(_ code: String) -> some View {
         Text(code)
             .font(.system(size: 11, weight: .regular, design: .monospaced))
-            .padding(10)
+            .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.black.opacity(0.2), in: RoundedRectangle(cornerRadius: 6))
+            .background(Color.black.opacity(0.2), in: RoundedRectangle(cornerRadius: 8))
             .textSelection(.enabled)
-    }
-
-    // MARK: - Footer
-
-    private var footerSection: some View {
-        HStack(alignment: .center, spacing: 12) {
-            if model.isWorking {
-                ProgressView().controlSize(.small)
-            }
-            if let message = model.message {
-                Text(message)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-            Spacer()
-
-            Button(l10n.string(.appOpenConfig)) {
-                Task { await model.openConfig() }
-            }
-            .buttonStyle(.bordered)
-
-            Button(l10n.string(.appInstallOrRepair)) {
-                Task { await model.installOrRepair() }
-            }
-            .buttonStyle(.borderedProminent)
-            .keyboardShortcut(.defaultAction)
-            .disabled(model.isWorking)
-        }
     }
 }
 
