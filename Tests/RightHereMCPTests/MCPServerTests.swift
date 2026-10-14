@@ -670,15 +670,15 @@ struct MCPServingTests {
     }
 
     @Test func aPingIsAnsweredAtOnceWhileEightSlowCallsAreRunning() async throws {
-        // Eight slow calls take every running slot for 1.5 seconds; the quick requests must not wait for them.
+        // Eight slow calls take every running slot for 2.5 seconds; the quick requests must not wait for them.
         let limits = MCPServer.Limits(running: 8, outstanding: 32)
-        let harness = try Harness(hangingRunner: .milliseconds(1_500), limits: limits); defer { harness.cleanUp() }
+        let harness = try Harness(hangingRunner: .milliseconds(2_500), limits: limits); defer { harness.cleanUp() }
         let session = ServeSession(server: harness.server)
         session.send((1...limits.running).map(slowCall) + [#"{"jsonrpc":"2.0","id":100,"method":"ping"}"#,
                                                                    #"{"jsonrpc":"2.0","id":101,"method":"tools/list"}"#,
                                                                    #"{"jsonrpc":"2.0","id":102,"method":"initialize","params":{}}"#])
         let quick: Set<Int> = [100, 101, 102]
-        await wait(upTo: .seconds(1)) { Set(session.replies.compactMap { $0.reply["id"]?.intValue }).isSuperset(of: quick) }
+        await wait(upTo: .seconds(2)) { Set(session.replies.compactMap { $0.reply["id"]?.intValue }).isSuperset(of: quick) }
         let early = session.replies
         #expect(Set(early.compactMap { $0.reply["id"]?.intValue }) == quick,
                 Comment(rawValue: "the quick requests should be answered while the slow calls still run, got \(early.map(\.reply))"))

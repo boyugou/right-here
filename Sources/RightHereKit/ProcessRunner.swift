@@ -83,7 +83,7 @@ public struct LiveProcessRunner: ProcessRunner {
         let pid = process.processIdentifier
         guard pid > 1 else { return }
         if process.isRunning { kill(pid, SIGKILL) }
-        if pid != getpgrp(), getpgid(pid) == pid || !process.isRunning { killpg(pid, SIGKILL) }
+        if pid != getpgrp() { killpg(pid, SIGKILL) }
     }
 
     public func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
@@ -121,7 +121,12 @@ public struct LiveProcessRunner: ProcessRunner {
                 Self.killLeftovers(of: process)
             }
         }
-        defer { watchdog?.cancel() }
+        defer {
+            if cutOff.happened {
+                Self.killLeftovers(of: process)
+            }
+            watchdog?.cancel()
+        }
         let status: Int32 = await withCheckedContinuation { continuation in
             process.terminationHandler = { continuation.resume(returning: $0.terminationStatus) }
             do {

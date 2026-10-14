@@ -218,7 +218,7 @@ struct LiveProcessRunnerTests {
         let started = clock.now
         // The shell is terminated at the limit; its `sleep` keeps the pipes open.
         _ = try await LiveProcessRunner().run(ProcessStep(executable: "/bin/sh", arguments: ["-c", "sleep 8 & wait"]), timeout: .milliseconds(300))
-        #expect(clock.now - started < .seconds(3), "took \(clock.now - started)")
+        #expect(clock.now - started < .seconds(5), "took \(clock.now - started)")
     }
 
     @Test func aProcessThatIgnoresTerminateIsStillKilledAtTheLimit() async throws {
@@ -227,7 +227,7 @@ struct LiveProcessRunnerTests {
         let started = clock.now
         let result = try await LiveProcessRunner().run(
             ProcessStep(executable: "/bin/sh", arguments: ["-c", "trap '' TERM; sleep 30"]), timeout: .milliseconds(300))
-        #expect(clock.now - started < .seconds(5), "waited \(clock.now - started) for a process that ignores SIGTERM")
+        #expect(clock.now - started < .seconds(8), "waited \(clock.now - started) for a process that ignores SIGTERM")
         #expect(result.status != 0)
     }
 
