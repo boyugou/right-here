@@ -16,19 +16,25 @@ struct SetupView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            header
-            summary
-            if model.extensionNeedsSetup { onboarding }
-            menuPreview
-            details
-            if let message = model.message {
-                Text(message).font(.callout).foregroundStyle(.secondary)
+        ScrollView(.vertical) {
+            VStack(alignment: .leading, spacing: 18) {
+                header
+                summary
+                if model.extensionNeedsSetup { onboarding }
+                menuPreview
+                details
+                if let message = model.message {
+                    Text(message).font(.callout).foregroundStyle(.secondary)
+                }
+                actions
             }
-            actions
+            .padding(24)
+            .frame(width: 560, alignment: .leading)
         }
-        .padding(24)
         .frame(width: 560)
+        #if !PREVIEW
+        .frame(maxHeight: 720)
+        #endif
         .task {
             await model.refresh()
             await model.watchExtension()
