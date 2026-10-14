@@ -16,24 +16,31 @@ struct SetupView: View {
     }
 
     var body: some View {
-        ScrollView(.vertical) {
-            VStack(alignment: .leading, spacing: 18) {
-                header
-                summary
-                if model.extensionNeedsSetup { onboarding }
-                menuPreview
-                details
-                if let message = model.message {
-                    Text(message).font(.callout).foregroundStyle(.secondary)
+        VStack(spacing: 0) {
+            ScrollView(.vertical) {
+                VStack(alignment: .leading, spacing: 18) {
+                    header
+                    summary
+                    if model.extensionNeedsSetup { onboarding }
+                    menuPreview
+                    details
                 }
-                actions
+                .padding(24)
+                .frame(width: 560, alignment: .leading)
             }
-            .padding(24)
-            .frame(width: 560, alignment: .leading)
+            .scrollIndicators(.automatic)
+
+            Divider()
+
+            footer
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+                .frame(width: 560, alignment: .leading)
+                .background(.quaternary.opacity(0.3))
         }
         .frame(width: 560)
         #if !PREVIEW
-        .frame(maxHeight: 720)
+        .frame(minHeight: 460, maxHeight: 800)
         #endif
         .task {
             await model.refresh()
@@ -42,6 +49,15 @@ struct SetupView: View {
         .onChange(of: model.needsAttention) { _, attention in
             // The first-run card already says what to do; the long list would push it off a small screen.
             if attention, !model.extensionNeedsSetup { detailsExpanded = true }
+        }
+    }
+
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let message = model.message {
+                Text(message).font(.callout).foregroundStyle(.secondary)
+            }
+            actions
         }
     }
 
