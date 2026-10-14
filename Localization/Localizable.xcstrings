@@ -15830,7 +15830,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Wählen Sie mit general.terminal ein anderes Terminal, oder setzen Sie %1$@ oder %2$@."
+            "value": "Wähle mit general.terminal ein anderes Terminal, oder setze %1$@ oder %2$@."
           }
         },
         "el": {
@@ -15848,7 +15848,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Elija otra terminal con general.terminal o defina %1$@ o %2$@."
+            "value": "Elige otra terminal con general.terminal o define %1$@ o %2$@."
           }
         },
         "fa": {
@@ -16202,7 +16202,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tragen Sie Agenten in general.agents ein, zum Beispiel %@."
+            "value": "Trage Agenten in general.agents ein, zum Beispiel %@."
           }
         },
         "el": {
@@ -16220,7 +16220,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Añada agentes a general.agents, por ejemplo %@."
+            "value": "Añade agentes a general.agents, por ejemplo %@."
           }
         },
         "fa": {
@@ -16574,7 +16574,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Fügen Sie %@ in Ihrem Shell-Profil zum PATH hinzu."
+            "value": "Füge %@ in deinem Shell-Profil zum PATH hinzu."
           }
         },
         "el": {
@@ -16592,7 +16592,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Añada %@ a PATH en su perfil de shell."
+            "value": "Añade %@ a PATH en tu perfil de shell."
           }
         },
         "fa": {
@@ -17504,7 +17504,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installieren Sie ihn, oder ändern Sie general.editor (entfernen Sie die Einstellung, um den ersten installierten Editor zu verwenden)."
+            "value": "Installiere ihn, oder ändere general.editor (entferne die Einstellung, um den ersten installierten Editor zu verwenden)."
           }
         },
         "el": {
@@ -17522,7 +17522,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instálelo, o cambie general.editor (quite el ajuste para usar el primer editor instalado)."
+            "value": "Instálalo, o cambia general.editor (quita el ajuste para usar el primer editor instalado)."
           }
         },
         "fa": {
@@ -18806,7 +18806,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie `rh menu --explain` aus, um zu sehen, warum jeder Eintrag weggelassen wird."
+            "value": "Führe `rh menu --explain` aus, um zu sehen, warum jeder Eintrag weggelassen wird."
           }
         },
         "el": {
@@ -18824,7 +18824,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute `rh menu --explain` para ver por qué se omite cada elemento."
+            "value": "Ejecuta `rh menu --explain` para ver por qué se omite cada elemento."
           }
         },
         "fa": {
@@ -21038,7 +21038,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installieren Sie es, oder ändern Sie general.terminal (entfernen Sie die Einstellung, um das erste installierte Terminal zu verwenden)."
+            "value": "Installiere es, oder ändere general.terminal (entferne die Einstellung, um das erste installierte Terminal zu verwenden)."
           }
         },
         "el": {
@@ -21056,7 +21056,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instálela, o cambie general.terminal (quite el ajuste para usar la primera terminal instalada)."
+            "value": "Instálala, o cambia general.terminal (quita el ajuste para usar la primera terminal instalada)."
           }
         },
         "fa": {
