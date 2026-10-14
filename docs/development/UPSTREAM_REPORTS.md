@@ -33,3 +33,35 @@ Not diagnosed in the library's source; the pattern (it needs the end of the inpu
 an empty key, and one more byte avoids it) points at an index read one past the end of the buffer.
 
 Workaround used here (`ConfigParser.parse`): the text is given to the library with a final line break added.
+
+## Swift 6.3.2: the optimizer never finishes on a large nested dictionary literal
+
+Found when `script/install_local.sh` sat on `Compiling RightHereCore` for ever (macOS 26.5, the command-line tools
+of Xcode 26.5, `swift-driver 1.148.6 Apple Swift version 6.3.2 (swiftlang-6.3.2.1.108)`).
+
+The static initializer of a `[String: [String: String]]` literal with 157 keys, each a literal of 30 strings (the
+compiled localization catalog, 4,710 strings), never comes out of the SIL optimizer in a release build (`-O`,
+whole module). A debug build compiles it in seconds.
+
+Where it spins (`sample` of the `swift-frontend` process after nine minutes, every sample in the same frame):
+
+```
+COWArrayOptPass::run()
+  swift::ColdBlockInfo::analyze(swift::SILFunction*)
+```
+
+and `-Xllvm -sil-print-pass-name` names the function: `$s13RightHereCore13LocalizationsO5table_WZ`, the
+initializer of `Localizations.table`, pass 17 of the mid-level function pipeline, `COWArrayOpts (cowarray-opt)`.
+
+| compile of `RightHereCore` in release | time |
+|---|---|
+| as is | not finished after 9 minutes (killed) |
+| with `-Xllvm -sil-disable-pass=cowarray-opt` | 23 seconds |
+| the table as one dictionary per key (the workaround below) | the whole `rh` product in 53 seconds |
+
+Expected: the pass finishes, as it does for the same data split into smaller literals. Observed: a hang, with no
+output, that looks like a build still running.
+
+Workaround used here (`script/compile_localizations.py`, `render_table`): the generated file holds one
+`private static let` dictionary per key and `Localizations.table` is a literal that only gathers them. Nothing else
+changed; `Localizer` still reads `Localizations.table[key]`.

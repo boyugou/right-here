@@ -54,7 +54,15 @@ def validated(catalog: dict) -> dict[str, tuple[str, int]]:
 
 
 def render_table(catalog: dict) -> str:
+    """The languages, one dictionary per key, and the table that gathers them.
+
+    The texts are not written as one nested literal: the initializer of a `[String: [String: String]]` literal that
+    holds every text (157 keys x 30 languages) never finishes in a release build with Swift 6.3.2 (the COWArrayOpts
+    pass of the optimizer, in ColdBlockInfo::analyze; measured on macOS 26.5, the command-line tools of Xcode 26.5).
+    A dictionary per key, each a small literal, compiles the module in under half a minute.
+    """
     strings = catalog["strings"]
+    names = validated(catalog)
     codes = [language.code for language in languages()]
     lines = [
         BANNER,
@@ -62,16 +70,20 @@ def render_table(catalog: dict) -> str:
         "enum Localizations {",
         "    static let languages: [String] = [" + ", ".join(swift_string(code) for code in codes) + "]",
         "",
+        "    // One literal with every text in it hangs the optimizer of Swift 6.3 (see script/compile_localizations.py).",
         "    static let table: [String: [String: String]] = [",
     ]
     for key in sorted(strings):
-        lines.append(f"        {swift_string(key)}: [")
+        lines.append(f"        {swift_string(key)}: {names[key][0]},")
+    lines.append("    ]")
+    for key in sorted(strings):
+        lines += ["", f"    private static let {names[key][0]}: [String: String] = ["]
         for code in codes:
             unit = strings[key]["localizations"].get(code, {}).get("stringUnit")
             if unit is not None:
-                lines.append(f"            {swift_string(code)}: {swift_string(unit['value'])},")
-        lines.append("        ],")
-    lines += ["    ]", "}", ""]
+                lines.append(f"        {swift_string(code)}: {swift_string(unit['value'])},")
+        lines.append("    ]")
+    lines += ["}", ""]
     return "\n".join(lines)
 
 
