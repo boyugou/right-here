@@ -212,7 +212,7 @@ public struct MCPServer: Sendable {
         return .object([
             "protocolVersion": .string(version),
             "capabilities": .object(["tools": .object(["listChanged": .bool(false)])]),
-            "serverInfo": .object(["name": .string(Self.serverName), "version": .string("0.1.0")]),
+            "serverInfo": .object(["name": .string(Self.serverName), "version": .string("0.2.0")]),
             "instructions": .string(Self.instructions)
         ])
     }

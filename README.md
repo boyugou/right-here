@@ -1,16 +1,31 @@
+<div align="center">
+
+<img src="Apps/RightHere/icon-1024.png" alt="Right Here Icon" width="128" height="128">
+
 # Right Here
 
+**Act on the folder you are looking at. Right here.**<br>
 Send "here" (a folder, or whatever you selected in Finder) to your terminals, editors and AI agents.
 
-Right Here is a small action layer for macOS: a command-line tool (`rh`), a plain-text config file, and
-Finder entry points (a right-click menu and Quick Actions). People use the actions from Finder; AI agents
-use the same actions from the command line or over MCP.
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](LICENSE)
+[![Swift 6](https://img.shields.io/badge/Swift-6.0-F05138?style=flat-square&logo=swift&logoColor=white)](.)
+[![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-black?style=flat-square&logo=apple&logoColor=white)](.)
+[![Notarized DMG](https://img.shields.io/badge/Download-Notarized%20DMG-brightgreen?style=flat-square&logo=apple)](https://github.com/boyugou/right-here/releases/latest)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-6B57D2?style=flat-square)](.)
+
+[Download for Mac (DMG)](https://github.com/boyugou/right-here/releases/latest) · [Install Guide](#install) · [Features](#what-you-get) · [CLI Usage](#use) · [Roadmap](ROADMAP.md)
+
+</div>
+
+---
+
+Right Here is a small, ultra-fast action layer for macOS: a command-line tool (`rh`), a plain-text config file, and Finder entry points (a right-click menu and Quick Actions). Developers use the actions from Finder; AI agents use the same actions from the command line or over MCP.
 
 ## What you get
 
 Right-click a folder, a file or the empty background of a Finder window:
 
-- **Open in a terminal or editor**: Ghostty, Terminal, VS Code, and any app you add.
+- **Open in a terminal or editor**: Ghostty, Terminal, iTerm2, VS Code, and any app you add.
 - **Start an AI agent here**: "Claude Code Here", "Codex Here" and others, in the terminal you choose. The
   command is typed into your own login shell, so nvm, your PATH and your aliases apply, and the shell stays
   open when the agent exits. More options sit one level down: continue the last session, resume one, the
@@ -26,12 +41,19 @@ Right-click a folder, a file or the empty background of a Finder window:
 Everything is also a command: `rh run agent.claude`, `rh run copy-path.git-relative src/main.swift`.
 Add `--dry-run --json` to see exactly what an action would do before it does it.
 
-There is no resident process: the Finder extension only exists while Finder runs, and `rh` runs only
-when something calls it.
+There is no resident daemon process: the Finder extension responds to contextual clicks in ~0.15ms, and `rh` runs only when invoked.
 
 ## Install
 
-Right Here is not released yet. Build and install it from source (Xcode 26 or later, `xcodegen`):
+### Download DMG (Recommended)
+
+1. Download the latest notarized release from [GitHub Releases](https://github.com/boyugou/right-here/releases/latest).
+2. Open the disk image and drag **Right Here.app** to `/Applications`.
+3. Open **Right Here.app** to configure and verify permissions in the setup window.
+
+### Build from source
+
+Xcode 26 or later and `xcodegen`:
 
 ```sh
 brew install xcodegen
@@ -39,9 +61,7 @@ brew install xcodegen
 rh doctor                     # check everything
 ```
 
-If `rh doctor` says the Finder extension is switched off, turn on Right Here in System Settings, General,
-Login Items & Extensions, Finder. Notarized downloads and a Homebrew cask are on the
-[roadmap](ROADMAP.md). Details: [`docs/development/SETUP.md`](docs/development/SETUP.md).
+If `rh doctor` says the Finder extension is switched off, turn on Right Here in System Settings, General, Login Items & Extensions, Finder. Details: [`docs/development/SETUP.md`](docs/development/SETUP.md).
 
 ## Use
 

@@ -26,7 +26,7 @@ struct RH: AsyncParsableCommand {
 }
 
 enum RightHereInfo {
-    static let version = "0.1.0"
+    static let version = "0.2.0"
 }
 
 /// Everything a command needs: the live machine and the loaded config.
