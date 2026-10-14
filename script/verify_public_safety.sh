@@ -41,5 +41,11 @@ if grep -nE 'Developer ID (Application|Installer): [A-Z][a-z]+ [A-Z]|Apple (Deve
   report "signing identity found"
 fi
 
+# External reference app names must not be mentioned in tracked files.
+if grep -nEi '\b(OpenInTerminal|RClick|iRightMouse|Shellcut|New Terminal Here|New File Menu|FinderGo|Easy New File|QSpace|XtraFinder|TotalFinder|CotEditor)\b' -- "${files[@]}" 2>/dev/null \
+  | grep -vE 'OpenInTerminalIntent|script/verify_public_safety\.sh'; then
+  report "forbidden reference app name found"
+fi
+
 if [[ "$fail" == 1 ]]; then exit 1; fi
 echo "public-safety: ok (${#files[@]} files)"

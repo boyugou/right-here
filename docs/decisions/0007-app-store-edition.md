@@ -14,11 +14,9 @@ edition (notarized DMG, Homebrew).
 Research sources: Apple documentation, App Review Guidelines, Developer Forums, shipping apps. Each
 claim carries its source; items marked UNVERIFIED are inferences or could not be confirmed.
 
-- **Finder menus are allowed in the store.** Shellcut (Terminal, iTerm2, kitty, Warp, Ghostty; menu, toolbar,
-  copy path), New Terminal Here and New File Menu ship there
-  (apps.apple.com/us/app/shellcut-open-in-terminal/id6746333545, apps.apple.com/tw/app/new-terminal-here/id1067646949,
-  apps.apple.com/us/app/id1064959555). Shellcut's listing says it needs no file or folder access; how it opens
-  the terminal is UNVERIFIED.
+- **Finder menus are allowed in the store.** Multiple sandboxed Finder menu and toolbar utility apps ship there,
+  handling basic actions like terminal launching, copying paths, or creating files. Their App Store listings
+  typically declare no general file access; how they open terminal sessions without a folder entitlement is UNVERIFIED.
 - **What review has refused.** Temporary exceptions on a FinderSync extension (guideline 2.4.5(i); zenn.dev/kyome/articles/f5a7b9224c7fda),
   Apple-event exceptions for Terminal and Finder (developer.apple.com/forums/thread/663311), and an app that installed AppleScripts
   into Application Scripts for core functionality (2019, developer.apple.com/forums/thread/113216).
@@ -33,10 +31,10 @@ claim carries its source; items marked UNVERIFIED are inferences or could not be
   (developer.apple.com/forums/thread/794326). `NSAppleEventsUsageDescription` is required wherever Apple events are
   sent (the direct edition now carries it).
 - **Opening a folder in another app from the sandbox is the open question.** NSWorkspace open can fail for a URL
-  outside the sandbox (developer.apple.com/forums/thread/731972), yet Shellcut does it. Whether a URL handed to a
+  outside the sandbox (developer.apple.com/forums/thread/731972), yet some store apps achieve this. Whether a URL handed to a
   FinderSync menu action carries a sandbox extension that LaunchServices honors is UNVERIFIED and decides the scope.
-- **A bundled CLI** must itself be sandboxed (ITMS-90296), so `rh` could not be an unsandboxed binary on PATH; store
-  apps such as CotEditor ship the tool and ask the user to link it.
+- **A bundled CLI** must itself be sandboxed (ITMS-90296), so `rh` could not be an unsandboxed binary on PATH; other
+  sandboxed App Store apps ship the tool inside their bundle and ask the user to link it.
 
 ## What an edition could contain
 

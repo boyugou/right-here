@@ -23,7 +23,7 @@ is also what people and agents use directly, and which Homebrew can install on i
 
 ### Where it sits
 
-Other Finder-menu tools (OpenInTerminal, RClick, iRightMouse) cover opening a terminal; Right Here adds a
+Traditional Finder-menu tools focus primarily on opening a terminal; Right Here adds a
 documented text config, a CLI and MCP surface, and agent launching.
 
 ## 2. Goals and non-goals
@@ -153,8 +153,8 @@ Sourced:
   including synced Desktop and Documents (Apple Developer Forums 737283). Quick Actions and Services are not affected, which is why they are a second surface.
 - macOS 27 hides menu item images unless `preferredImageVisibility = .visible` is set (SDK header).
 - The breakages reported for Finder tools on macOS 26 and 27 were App Group naming: `cfprefsd` drops
-  writes to a bare `group.*` domain, and Group Containers are protected from other teams (OpenInTerminal
-  pull request 285; Apple documentation). Right Here uses no App Group.
+  writes to a bare `group.*` domain, and Group Containers are protected from other teams (Apple documentation;
+  upstream issues in third-party Finder extensions). Right Here uses no App Group.
 - Homebrew 7.0 deprecated `post_install` and forbids writing `$HOME` from a formula; the official cask
   repository disables casks that fail Gatekeeper since 2026-09-01. So `rh install` does the setup at
   runtime and the app is notarized.
