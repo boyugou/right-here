@@ -84,10 +84,10 @@ public enum ConfigSchema {
                        example: "[\"zed\", \"codex\"]"),
             SchemaNode("general", .table, "Defaults used by actions.", children: [
                 SchemaNode("terminal", .string,
-                           "Terminal used by \"open in terminal\" and by agents. Omit it to use the first installed one.",
+                           "Terminal used by \"open in terminal\" and by agents. Omit it to use the first installed one. A named app that is not installed is replaced by the first installed one; the doctor says so.",
                            example: "\"ghostty\"; known: " + terminalIDs.joined(separator: ", "), suggested: terminalIDs),
                 SchemaNode("editor", .string,
-                           "Editor used by \"open in editor\". Omit it to use the first installed one.",
+                           "Editor used by \"open in editor\". Omit it to use the first installed one. A named app that is not installed is replaced by the first installed one; the doctor says so.",
                            example: "\"vscode\"; known: " + editorIDs.joined(separator: ", "), suggested: editorIDs),
                 SchemaNode("terminal_placement", .string,
                            "Where a terminal session starts: a new window, or a new tab of the front window. Tabs apply to Ghostty (Terminal.app always opens a window) and need permission to control it, which a plain \"open in terminal\" otherwise does not.",
@@ -120,7 +120,7 @@ public enum ConfigSchema {
             ]),
             SchemaNode("new_file", .table, "The \"new file\" action.", children: [
                 SchemaNode("then", .string,
-                           "What happens after the file is created: reveal selects it in Finder, open opens it in the default editor (general.editor), nothing does nothing.",
+                           "What happens after the file is created: reveal selects it in Finder, open opens it in the default editor (general.editor), nothing does nothing. With no installed editor the file is selected in Finder instead of opened.",
                            default: "\"reveal\"", allowed: Config.AfterNewFile.allCases.map(\.rawValue)),
                 SchemaNode("template", .tableArray, "File templates. Defining any replaces the built-in txt and md.",
                            required: ["id", "title", "extension"], children: [
@@ -133,7 +133,7 @@ public enum ConfigSchema {
                     SchemaNode("extension", .string, "File extension without the dot or a slash.", example: "\"md\"", pattern: "^[^./\\u0000]+$"),
                     SchemaNode("contents", .string, "Initial contents.", default: "\"\""),
                     SchemaNode("open_with", .string,
-                               "App id (see `rh apps`) that opens this kind of file after it is created, when new_file.then is \"open\". The default editor opens it when this app is not installed.",
+                               "App id (see `rh apps`) that opens this kind of file after it is created, when new_file.then is \"open\". The default editor opens it when this app is not installed. With no installed editor the file is selected in Finder instead of opened.",
                                example: "\"typora\"")
                 ])
             ]),
@@ -170,7 +170,7 @@ public enum ConfigSchema {
                     SchemaNode("id", .string, "Identifier used in `agent.<agent>.<id>`; lowercase letters, digits and dashes.",
                                example: "\"opus\"", pattern: identifierPattern),
                     SchemaNode("title", .string, "Menu title, on one line.", example: "\"Use Opus\"", pattern: displayNamePattern),
-                    SchemaNode("arguments", .stringArray, "Arguments appended to the command.", example: "[\"--model\", \"opus\"]")
+                    SchemaNode("arguments", .stringArray, "Each element is one argument, quoted for the shell when it needs it and typed bare when it does not. An argument with a backslash is refused; put such text in `command`, which is typed as written and may contain arguments.", example: "[\"--model\", \"opus\"]")
                 ])
             ]),
             SchemaNode("preset", .tableArray,
