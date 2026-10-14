@@ -33,6 +33,12 @@ struct Run: AsyncParsableCommand {
     @Flag(help: "Show an alert when the action fails. The Finder extension uses this. Never with --dry-run. RH_NO_UI turns alerts off and stops rh from starting open or osascript.")
     var alert = false
 
+    @Flag(name: .customLong("worktree"), help: "Launch the action in an isolated git worktree branch.")
+    var worktree = false
+
+    @Option(name: .customLong("branch"), help: "Branch name for the isolated git worktree (implies --worktree).")
+    var branch: String?
+
     func run() async throws {
         let runtime = Runtime()
         let ref: ActionRef
@@ -43,12 +49,36 @@ struct Run: AsyncParsableCommand {
         }
         runtime.reportConfigProblems()
         let here = try context.makeContext(facts: runtime.facts)
+
+        let effectiveContext: HereContext
+        if worktree || branch != nil {
+            guard let dir = here.workingDirectory(facts: runtime.facts) else {
+                throw ValidationError("--worktree requires a folder target.")
+            }
+            guard let root = runtime.facts.gitRoot(containing: dir) else {
+                throw ValidationError("--worktree requires a git repository (no git root found for \(dir.path)).")
+            }
+            if dryRun {
+                let targetBranch = branch ?? "rh/<auto-branch>"
+                let sanitized = targetBranch.replacingOccurrences(of: "/", with: "-")
+                let previewURL = root.appendingPathComponent(".right-here/worktrees/\(sanitized)")
+                Output.print("note: --worktree will create or attach branch '\(targetBranch)' at \(previewURL.path)")
+                effectiveContext = HereContext(origin: here.origin, container: previewURL)
+            } else {
+                let res = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch)
+                Output.print("note: isolated worktree ready on branch '\(res.branch)' at \(res.worktreeURL.path)")
+                effectiveContext = HereContext(origin: here.origin, container: res.worktreeURL)
+            }
+        } else {
+            effectiveContext = here
+        }
+
         // Files created from Finder follow the system language; the command line stays English.
-        let localizer: Localizer = here.origin == .cli ? .english : .system
+        let localizer: Localizer = effectiveContext.origin == .cli ? .english : .system
 
         let plan: LaunchPlan
         do {
-            plan = try Planner(config: runtime.config, facts: runtime.facts, localizer: localizer).plan(ref, context: here)
+            plan = try Planner(config: runtime.config, facts: runtime.facts, localizer: localizer).plan(ref, context: effectiveContext)
         } catch {
             try await fail(error)
         }

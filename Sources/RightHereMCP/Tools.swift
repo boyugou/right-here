@@ -167,6 +167,24 @@ enum Tools {
             inputSchema: schema(),
             readOnly: true,
             handler: bookmarks
+        ),
+        ToolDefinition(
+            name: "right_here_worktree",
+            title: "Manage isolated git worktrees",
+            description: "List, create, or remove isolated git worktree branches so agents can make changes without affecting the current working directory.",
+            inputSchema: schema([
+                "operation": .object([
+                    "type": .string("string"),
+                    "enum": .array(["list", "create", "remove"].map(JSONValue.string)),
+                    "description": .string("The operation to perform (default: list).")
+                ]),
+                "path": string("Path to the git repository or folder inside it (default: current directory).", maxLength: maxPathLength),
+                "branch": string("Branch name to create or attach to (for create operation).", maxLength: 200),
+                "worktree_path": string("Worktree path to remove (for remove operation).", maxLength: maxPathLength),
+                "delete_branch": boolean("Also delete the branch after removing worktree (default: false).")
+            ]),
+            readOnly: false,
+            handler: worktree
         )
     ]
 
@@ -303,5 +321,33 @@ enum Tools {
         }
         if lines.isEmpty { lines.append("No pinned or recent folders yet.") }
         return ToolOutput(text: lines.joined(separator: "\n"), structured: structured)
+    }
+
+    private static func worktree(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
+        let op = arguments["operation"]?.stringValue ?? "list"
+        let target = arguments["path"]?.stringValue ?? server.facts.currentDirectory.path
+        guard let root = server.facts.gitRoot(containing: URL(fileURLWithPath: target)) else {
+            throw ToolError("Not inside a git repository.")
+        }
+        switch op {
+        case "list":
+            let list = try await GitWorktreeManager.listWorktrees(in: root, runner: server.runner)
+            let json = try JSONValue(encoding: list)
+            return ToolOutput(text: json.pretty(), structured: .object(["worktrees": json]))
+        case "create":
+            let branch = arguments["branch"]?.stringValue
+            let res = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch, runner: server.runner)
+            let json = try JSONValue(encoding: res)
+            return ToolOutput(text: "Prepared worktree at \(res.worktreeURL.path) on branch '\(res.branch)'", structured: json)
+        case "remove":
+            guard let worktreePath = arguments["worktree_path"]?.stringValue else {
+                throw ToolError("worktree_path is required for remove operation.")
+            }
+            let deleteBranch = arguments["delete_branch"]?.boolValue ?? false
+            try await GitWorktreeManager.removeWorktree(worktreePath: worktreePath, gitRoot: root, deleteBranch: deleteBranch, runner: server.runner)
+            return ToolOutput(text: "Removed worktree at \(worktreePath)", structured: .object(["removed": .bool(true)]))
+        default:
+            throw ToolError("Unknown operation '\(op)'. Supported operations: list, create, remove.")
+        }
     }
 }

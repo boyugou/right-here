@@ -136,7 +136,7 @@ struct MCPProtocolTests {
         let names = tools.compactMap { $0["name"]?.stringValue }
         #expect(Set(names) == ["right_here_run", "right_here_actions", "right_here_menu", "right_here_finder_selection",
                                "right_here_doctor", "right_here_config_validate", "right_here_catalog", "right_here_docs",
-                               "right_here_bookmarks"])
+                               "right_here_bookmarks", "right_here_worktree"])
         for tool in tools {
             #expect(tool["inputSchema"]?["type"]?.stringValue == "object")
             #expect(tool["description"]?.stringValue?.isEmpty == false)
@@ -352,6 +352,22 @@ struct MCPToolTests {
         let structured = try #require(result["structuredContent"])
         #expect(structured["pins"]?.arrayValue != nil)
         #expect(structured["recents"]?.arrayValue != nil)
+    }
+
+    @Test func worktreeToolListsWorktrees() async throws {
+        let porcelain = """
+        worktree /Users/tester/code/app
+        HEAD 1234567890ab
+        branch refs/heads/main
+        """
+        let harness = try Harness(runnerResults: [
+            ProcessResult(status: 0, standardOutput: porcelain)
+        ]); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_worktree", ["path": .string("/Users/tester/code/app")])
+        let structured = try #require(result["structuredContent"])
+        let worktrees = try #require(structured["worktrees"]?.arrayValue)
+        #expect(worktrees.count == 1)
+        #expect(worktrees.first?["branch"]?.stringValue == "main")
     }
 }
 

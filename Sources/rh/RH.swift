@@ -19,7 +19,7 @@ struct RH: AsyncParsableCommand {
         version: RightHereInfo.version,
         subcommands: [
             Run.self, Actions.self, MenuCommand.self, Agents.self, Apps.self,
-            Pin.self, Unpin.self, Pins.self, Recents.self,
+            Pin.self, Unpin.self, Pins.self, Recents.self, WorktreeCommand.self,
             ConfigCommand.self, Init.self, Install.self, Uninstall.self, Docs.self, Doctor.self,
             FinderCommand.self, MCP.self, Probe.self
         ]
