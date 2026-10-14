@@ -11,7 +11,9 @@
 - The app (summary, details, a launch test button) with its icon, and the Finder extension; installer;
   `rh doctor`.
 - Finder Services (Quick Actions) generated from the config; the doctor notices when they drift from it.
-- A notarized, stapled DMG builds with `script/package_dmg.sh` (Apple accepted it; Gatekeeper accepts it).
+- A notarized, stapled DMG builds with `script/package_dmg.sh` and is published to GitHub Releases (`v0.2.0`) with checksum verification (Apple accepted; Gatekeeper accepts).
+- Premium macOS app icon (dark frosted obsidian folder + illuminated cyan-violet targeting reticle with `>_` terminal prompt).
+- Zero-latency Finder extension: prebuilt in-memory `NSMenu` templates, automatic termination prevention, and fact caching.
 - MCP server and the Claude Code plugin (setup, open-here and review-changes skills).
 - Hardened through repeated independent reviews and a mutation check (`docs/decisions/0008-independent-review.md`):
   every finding is fixed with a test that fails on the old code, and `script/mutation_check.py` removes each
@@ -30,8 +32,7 @@ The items that need a person with a real Finder and terminals are listed with th
 
 - Confirm a real Finder click reaching `rh` (everything after it, typed launch included, is verified by
   `rh doctor --probe-launch`), and the first-ever Automation prompt on a clean system.
-- Publish a release: tag, GitHub release with the notarized DMG and its checksum, then the Homebrew cask and
-  formula (the release pipeline is verified; publishing needs the repository to be public).
+- Homebrew cask and formula for distribution.
 - Built-in adapters for WezTerm, kitty, Alacritty, Warp, cmux, to be written and checked against the real
   terminals (not yet tested with these terminals); a config-defined launcher (`open_args`, `run_args`) exists
   for the meantime.
