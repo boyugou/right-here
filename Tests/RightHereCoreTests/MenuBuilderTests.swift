@@ -51,14 +51,21 @@ struct MenuBuilderTests {
     }
 
     @Test func theMoreMenuDoesNotRepeatTheTerminalTheAgentEntryAlreadyUses() throws {
-        // iTerm is the preferred default for opening a folder but cannot be typed into yet, so "Claude Code Here" runs in
+        // cmux is the preferred default for opening a folder but cannot be typed into yet, so "Claude Code Here" runs in
         // Terminal; "Claude Code in Terminal" would be the same action twice.
-        let facts = machine(installed: ["com.googlecode.iterm2", "com.apple.Terminal"])
+        let facts = machine(installed: ["com.cmuxterm.app", "com.apple.Terminal"])
         let menu = MenuBuilder(config: Config(enabledAgents: ["claude"]), facts: facts).build(for: background)
         let plain = try #require(menu.first { $0.title == "Claude Code Here" })
         #expect(plain.actionID == "agent.claude")
         let more = try #require(menu.first { $0.title == "More Agent Options" })
         #expect(!more.children.compactMap(\.actionID).contains("agent.claude@terminal"))
+
+        // iTerm can be typed into, so "Claude Code Here" runs in iTerm; "Claude Code in iTerm" is not repeated.
+        let itermFacts = machine(installed: ["com.googlecode.iterm2", "com.apple.Terminal"])
+        let itermMenu = MenuBuilder(config: Config(enabledAgents: ["claude"]), facts: itermFacts).build(for: background)
+        let itermMore = try #require(itermMenu.first { $0.title == "More Agent Options" })
+        #expect(!itermMore.children.compactMap(\.actionID).contains("agent.claude@iterm"))
+        #expect(itermMore.children.compactMap(\.actionID).contains("agent.claude@terminal"))
     }
 
     @Test func enabledAgentsAppearWithTheirVariantsInTheMoreMenu() throws {

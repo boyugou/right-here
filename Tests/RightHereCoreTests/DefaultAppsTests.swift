@@ -106,7 +106,9 @@ struct DefaultAppsTests {
             let ranks = KnownApps.all.filter { $0.role == role }.compactMap(\.defaultRank)
             #expect(Set(ranks).count == ranks.count, "two \(role.rawValue)s share a rank")
         }
-        for id in ["xcode", "typora", "obsidian", "android-studio"] { #expect(KnownApps.app(id: id)?.defaultRank == nil, "\(id) is never a default") }
+        for id in ["xcode", "typora", "obsidian", "android-studio", "trae", "positron", "fleet", "rustrover", "clion", "goland"] {
+            #expect(KnownApps.app(id: id)?.defaultRank == nil, "\(id) is never a default")
+        }
         #expect(KnownApps.terminals.max { ($0.defaultRank ?? -1) < ($1.defaultRank ?? -1) }?.id == "terminal", "Terminal.app is always there, so it is the last resort")
     }
 
@@ -124,20 +126,23 @@ struct DefaultAppsTests {
     }
 
     @Test func theTerminalForACommandSkipsOnesThatCannotRunOne() throws {
-        // iTerm and cmux open folders only, and a Ghostty older than 1.3 cannot be scripted; Terminal can.
-        for machine in [facts(installed: ["com.googlecode.iterm2", "com.apple.Terminal"]),
-                        facts(installed: ["com.cmuxterm.app", "com.apple.Terminal"]),
+        // cmux and kitty open folders only, and older Ghostty / iTerm cannot be scripted; Terminal can.
+        for machine in [facts(installed: ["com.cmuxterm.app", "com.apple.Terminal"]),
+                        facts(installed: ["net.kovidgoyal.kitty", "com.apple.Terminal"]),
+                        facts(installed: ["com.googlecode.iterm2", "com.apple.Terminal"], versions: ["com.googlecode.iterm2": "2.9.0"]),
                         facts(installed: ["com.mitchellh.ghostty", "com.apple.Terminal"], versions: ["com.mitchellh.ghostty": "1.2.3"])] {
             let defaults = DefaultApps(config: .default, facts: machine)
             #expect(try defaults.commandTerminal().id == "terminal")
         }
-        let scriptable = facts(installed: ["com.mitchellh.ghostty", "com.apple.Terminal"], versions: ["com.mitchellh.ghostty": "1.3.1"])
-        #expect(try DefaultApps(config: .default, facts: scriptable).commandTerminal().id == "ghostty")
+        let ghosttyScriptable = facts(installed: ["com.mitchellh.ghostty", "com.apple.Terminal"], versions: ["com.mitchellh.ghostty": "1.3.1"])
+        #expect(try DefaultApps(config: .default, facts: ghosttyScriptable).commandTerminal().id == "ghostty")
+        let itermScriptable = facts(installed: ["com.googlecode.iterm2", "com.apple.Terminal"], versions: ["com.googlecode.iterm2": "3.5.0"])
+        #expect(try DefaultApps(config: .default, facts: itermScriptable).commandTerminal().id == "iterm")
         // With nothing that can run a command, the first installed terminal is still the answer, and starting an agent in it says why not.
-        let foldersOnly = facts(installed: ["com.googlecode.iterm2", "dev.warp.Warp-Stable"])
-        #expect(try DefaultApps(config: .default, facts: foldersOnly).commandTerminal().id == "iterm")
+        let foldersOnly = facts(installed: ["com.cmuxterm.app", "dev.warp.Warp-Stable"])
+        #expect(try DefaultApps(config: .default, facts: foldersOnly).commandTerminal().id == "cmux")
         // A configured default that is installed is used as it is, even when it cannot run a command.
-        #expect(try DefaultApps(config: Config(terminal: "iterm"), facts: facts(installed: ["com.googlecode.iterm2", "com.apple.Terminal"])).commandTerminal().id == "iterm")
+        #expect(try DefaultApps(config: Config(terminal: "cmux"), facts: facts(installed: ["com.cmuxterm.app", "com.apple.Terminal"])).commandTerminal().id == "cmux")
     }
 
     @Test func noTerminalOrEditorInstalledIsSaidInTheSameWordsByTheRegistryAndThePlanner() {

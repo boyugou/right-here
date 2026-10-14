@@ -99,6 +99,7 @@ public enum TerminalAdapters {
         switch app.driver {
         case .ghostty: return GhosttyAdapter()
         case .appleScriptTerminal: return AppleTerminalAdapter()
+        case .iterm: return ITermAdapter()
         case .template(let launch): return TemplateTerminalAdapter(terminalID: app.id, displayName: app.name, launch: launch)
         case .openFolder: return OpenFolderTerminalAdapter(terminalID: app.id, displayName: app.name)
         }

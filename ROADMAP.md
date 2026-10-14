@@ -4,7 +4,7 @@
 
 - Core: actions, planner, config, menu, catalogs, path styles, quoting (with real-shell tests).
 - `rh`: run, actions, menu, agents, apps, config, init, install, uninstall, docs, doctor, finder, mcp, probe.
-- Terminal adapters: Ghostty (1.3 and later for commands, new window or new tab), Terminal.app. Agent
+- Terminal adapters: Ghostty (1.3 and later for commands, new window or new tab), iTerm2 (3.0 and later for commands, new window or new tab), Terminal.app. Agent
   launchers: typed, terminal link, desktop app.
 - `rh doctor --probe-launch`: a throwaway terminal session started through the Finder extension proves a
   typed command runs, in the right folder, in the login shell.
@@ -32,7 +32,7 @@ The items that need a person with a real Finder and terminals are listed with th
   `rh doctor --probe-launch`), and the first-ever Automation prompt on a clean system.
 - Publish a release: tag, GitHub release with the notarized DMG and its checksum, then the Homebrew cask and
   formula (the release pipeline is verified; publishing needs the repository to be public).
-- Built-in adapters for iTerm2, WezTerm, kitty, Alacritty, Warp, cmux, to be written and checked against the real
+- Built-in adapters for WezTerm, kitty, Alacritty, Warp, cmux, to be written and checked against the real
   terminals (not yet tested with these terminals); a config-defined launcher (`open_args`, `run_args`) exists
   for the meantime.
 - Native-speaker review of the translations.

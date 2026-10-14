@@ -311,21 +311,29 @@ struct PlannerTests {
     }
 
     @Test func anAgentSkipsAFolderOnlyDefaultTerminalForOneThatRunsCommands() throws {
-        let facts = machine(installed: ["com.googlecode.iterm2", "com.apple.Terminal"])
+        let facts = machine(installed: ["com.cmuxterm.app", "com.apple.Terminal"])
         let planner = Planner(facts: facts)
-        // iTerm is the preferred default and opens folders, but cannot be typed into yet; Terminal can.
+        // cmux is the preferred default and opens folders, but cannot be typed into yet; Terminal can.
         let open = try planner.plan(.openTerminal(nil), context: folder("/Users/tester/code/app"))
-        #expect(open.summary.contains("iTerm"), Comment(rawValue: open.summary))
+        #expect(open.summary.contains("cmux"), Comment(rawValue: open.summary))
         let agent = try planner.plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
-        #expect(agent.summary.contains("Terminal") && !agent.summary.contains("iTerm"), Comment(rawValue: agent.summary))
+        #expect(agent.summary.contains("Terminal") && !agent.summary.contains("cmux"), Comment(rawValue: agent.summary))
         let info = ActionRegistry(config: .default, facts: facts).info(.agent(id: "claude", variant: nil, launcher: nil))
         #expect(info.available)
         // An explicit choice is respected, and refused when it cannot run commands.
         var config = Config.default
-        config.terminal = "iterm"
+        config.terminal = "cmux"
         #expect(throws: PlanError.self) {
             try Planner(config: config, facts: facts).plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
         }
+
+        // iTerm can be typed into, so it is chosen for agent launch when installed.
+        let itermFacts = machine(installed: ["com.googlecode.iterm2", "com.apple.Terminal"])
+        let itermPlanner = Planner(facts: itermFacts)
+        let itermAgent = try itermPlanner.plan(.agent(id: "claude", variant: nil, launcher: nil), context: folder("/Users/tester/code/app"))
+        #expect(itermAgent.summary.contains("iTerm"))
+        guard case .appleScript(let step)? = itermAgent.steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(step.controls == "iTerm")
     }
 
     @Test func claudeStartsInTheDefaultTerminalByTypingItsCommand() throws {

@@ -91,6 +91,86 @@ struct TerminalAdapterTests {
         for placement in TerminalPlacement.allCases { #expect(TerminalPlacement(configName: placement.configName) == placement) }
     }
 
+    // MARK: iTerm
+
+    @Test func itermOpensAFolderInAWindowWithoutAppleScript() throws {
+        let steps = try ITermAdapter().steps(for: TerminalSession(directory: directory), bundleID: "com.googlecode.iterm2", facts: facts)
+        #expect(steps == [.open(OpenStep(bundleID: "com.googlecode.iterm2", targets: ["/Users/tester/my code"]))])
+    }
+
+    @Test func itermRunsACommandThroughAppleScriptWithLineAndPlacementArguments() throws {
+        let session = TerminalSession(directory: directory, typedInput: "claude --continue")
+        let steps = try ITermAdapter().steps(for: session, bundleID: "com.googlecode.iterm2", facts: facts)
+        let script = try #require(steps.first)
+        guard case .appleScript(let step) = script else { Issue.record("expected AppleScript"); return }
+        #expect(step.arguments == ["cd '/Users/tester/my code' && claude --continue", "window"])
+        #expect(step.controls == "iTerm")
+        #expect(step.source == ITermAdapter.script)
+    }
+
+    @Test func itermTabPlacement() throws {
+        let session = TerminalSession(directory: directory, typedInput: "claude", placement: .newTab)
+        guard case .appleScript(let step)? = try ITermAdapter().steps(for: session, bundleID: "com.googlecode.iterm2", facts: facts).first else {
+            Issue.record("expected AppleScript"); return
+        }
+        #expect(step.arguments == ["cd '/Users/tester/my code' && claude", "tab"])
+    }
+
+    @Test func itermOpensAFolderInATab() throws {
+        let session = TerminalSession(directory: directory, placement: .newTab)
+        guard case .appleScript(let step)? = try ITermAdapter().steps(for: session, bundleID: "com.googlecode.iterm2", facts: facts).first else {
+            Issue.record("expected AppleScript"); return
+        }
+        #expect(step.arguments == ["cd '/Users/tester/my code'", "tab"])
+        #expect(step.controls == "iTerm")
+    }
+
+    @Test func itermScriptNeverEmbedsUserText() throws {
+        let values = ["/tmp/a\"; do shell script \"rm -rf ~\"; \"", "/tmp/x' & (do shell script \"id\") & '"]
+        let awkward = FakeSystemFacts(directories: Set(values))
+        for value in values {
+            let session = TerminalSession(directory: URL(fileURLWithPath: value), typedInput: "claude")
+            guard case .appleScript(let step)? = try ITermAdapter().steps(for: session, bundleID: "com.googlecode.iterm2", facts: awkward).first else {
+                Issue.record("expected AppleScript"); return
+            }
+            #expect(!step.source.contains(value))
+            #expect(step.arguments.count == 2)
+            #expect(step.arguments[1] == "window")
+        }
+    }
+
+    @Test func itermScriptUsesTheDocumentedCommands() {
+        let source = ITermAdapter.script
+        for fragment in ["com.googlecode.iterm2", "create tab with default profile", "create window with default profile", "current session", "write text"] {
+            #expect(source.contains(fragment), "missing \(fragment)")
+        }
+    }
+
+    @Test func itermVersionChecks() {
+        let old = FakeSystemFacts(directories: ["/Users/tester/my code"], bundleVersions: ["com.googlecode.iterm2": "2.9.3"])
+        #expect(throws: PlanError.self) {
+            try ITermAdapter().steps(for: TerminalSession(directory: directory, placement: .newTab), bundleID: "com.googlecode.iterm2", facts: old)
+        }
+        #expect(throws: PlanError.self) {
+            try ITermAdapter().steps(for: TerminalSession(directory: directory, typedInput: "claude"), bundleID: "com.googlecode.iterm2", facts: old)
+        }
+        let valid = FakeSystemFacts(directories: ["/Users/tester/my code"], bundleVersions: ["com.googlecode.iterm2": "3.5.0"])
+        #expect(ITermAdapter().commandBlocker(bundleID: "com.googlecode.iterm2", facts: valid) == nil)
+    }
+
+    @Test func itermRefusesBackslashInDirectory() {
+        let folderWithBackslash = "/Users/tester/my\\code"
+        let backslashFacts = FakeSystemFacts(directories: [folderWithBackslash])
+        let session = TerminalSession(directory: URL(fileURLWithPath: folderWithBackslash), typedInput: "claude")
+        #expect(throws: PlanError.self) {
+            try ITermAdapter().steps(for: session, bundleID: "com.googlecode.iterm2", facts: backslashFacts)
+        }
+    }
+
+    @Test func itermTypesTheFolder() {
+        #expect(ITermAdapter().typesTheFolder)
+    }
+
     // MARK: Ghostty versions
 
     private func ghosttyMachine(version: String?, directories: Set<String> = []) -> FakeSystemFacts {
@@ -232,6 +312,7 @@ struct TerminalAdapterTests {
         let session = TerminalSession(directory: URL(fileURLWithPath: path))
         #expect(throws: PlanError.self) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try ITermAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try TerminalAdapters.adapter(for: KnownApps.terminal(id: "warp")!).steps(for: session, bundleID: "x", facts: facts) }
     }
 
@@ -240,6 +321,7 @@ struct TerminalAdapterTests {
         let session = TerminalSession(directory: URL(fileURLWithPath: path), typedInput: "claude")
         #expect(throws: PlanError.self) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try ITermAdapter().steps(for: session, bundleID: "x", facts: facts) }
     }
 
     @Test("a typed launch refuses text that would press Return or other keys", arguments: ["claude\nrm -rf ~", "claude\r", "claude\u{1b}[A", "claude\u{2028}"])
@@ -247,6 +329,7 @@ struct TerminalAdapterTests {
         let session = TerminalSession(directory: directory, typedInput: text)
         #expect(throws: PlanError.unsafeText(text)) { try GhosttyAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.unsafeText(text)) { try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.unsafeText(text)) { try ITermAdapter().steps(for: session, bundleID: "x", facts: facts) }
     }
 
     @Test func terminalRefusesAFolderItWouldHaveToTypeWithALineBreak() {
@@ -255,6 +338,9 @@ struct TerminalAdapterTests {
         #expect(throws: PlanError.unsafeText(name)) {
             try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: FakeSystemFacts(directories: [name]))
         }
+        #expect(throws: PlanError.unsafeText(name)) {
+            try ITermAdapter().steps(for: session, bundleID: "x", facts: FakeSystemFacts(directories: [name]))
+        }
     }
 
     // MARK: Registry
@@ -262,6 +348,7 @@ struct TerminalAdapterTests {
     @Test func registryReturnsDedicatedAdaptersAndAFallback() {
         #expect(TerminalAdapters.adapter(for: KnownApps.terminal(id: "ghostty")!).supportsCommands)
         #expect(TerminalAdapters.adapter(for: KnownApps.terminal(id: "terminal")!).supportsCommands)
+        #expect(TerminalAdapters.adapter(for: KnownApps.terminal(id: "iterm")!).supportsCommands)
         #expect(!TerminalAdapters.adapter(for: KnownApps.terminal(id: "warp")!).supportsCommands)
     }
 
@@ -278,20 +365,22 @@ struct TerminalAdapterTests {
         }
         #expect(adapter("anything", .ghostty) is GhosttyAdapter)
         #expect(adapter("anything", .appleScriptTerminal) is AppleTerminalAdapter)
+        #expect(adapter("anything", .iterm) is ITermAdapter)
         #expect(adapter("ghostty", .openFolder) is OpenFolderTerminalAdapter)
         #expect(adapter("terminal", .template(TerminalLaunch(run: ["/bin/x", "{command}"]))) is TemplateTerminalAdapter)
     }
 
     @Test func theAdviceNamesTheBuiltInTerminalsThatCanRunCommands() {
         // `rh doctor` says which terminals to choose; a built-in terminal that gains a way to run commands joins the phrase.
-        #expect(KnownApps.commandTerminalPhrase == "Ghostty or Terminal")
-        #expect(KnownApps.terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name) == ["Ghostty", "Terminal"])
+        #expect(KnownApps.commandTerminalPhrase == "Ghostty, Terminal or iTerm")
+        #expect(KnownApps.terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name) == ["Ghostty", "Terminal", "iTerm"])
     }
 
-    @Test func theBuiltInDriversAreGhosttyAndTerminalAppAndTheRestAreHandedTheFolder() {
+    @Test func theBuiltInDriversAreGhosttyTerminalAppAndITermAndTheRestAreHandedTheFolder() {
         let drivers = Dictionary(uniqueKeysWithValues: KnownApps.terminals.map { ($0.id, $0.driver) })
         #expect(drivers["ghostty"] == .ghostty)
         #expect(drivers["terminal"] == .appleScriptTerminal)
-        for id in ["iterm", "wezterm", "kitty", "alacritty", "warp", "cmux"] { #expect(drivers[id] == .openFolder, "\(id)") }
+        #expect(drivers["iterm"] == .iterm)
+        for id in ["wezterm", "kitty", "alacritty", "warp", "cmux"] { #expect(drivers[id] == .openFolder, "\(id)") }
     }
 }

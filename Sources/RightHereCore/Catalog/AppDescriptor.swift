@@ -29,6 +29,8 @@ public struct AppDescriptor: Sendable, Equatable, Identifiable {
         case ghostty
         /// Terminal.app: a folder is handed over, a command is typed with `do script`.
         case appleScriptTerminal
+        /// iTerm2 3.0 and later, through its AppleScript dictionary.
+        case iterm
         /// The app is handed the folder with `open`; it cannot be told to run a command.
         case openFolder
         /// Started the way the config says (`open_args`, `run_args`).
@@ -70,7 +72,7 @@ public enum KnownApps {
     public static let terminals: [AppDescriptor] = [
         AppDescriptor(id: "ghostty", name: "Ghostty", bundleIDs: ["com.mitchellh.ghostty"], role: .terminal, driver: .ghostty, defaultRank: 0),
         AppDescriptor(id: "terminal", name: "Terminal", bundleIDs: ["com.apple.Terminal"], role: .terminal, driver: .appleScriptTerminal, defaultRank: 7),
-        AppDescriptor(id: "iterm", name: "iTerm", bundleIDs: ["com.googlecode.iterm2"], role: .terminal, defaultRank: 2),
+        AppDescriptor(id: "iterm", name: "iTerm", bundleIDs: ["com.googlecode.iterm2"], role: .terminal, driver: .iterm, defaultRank: 2),
         AppDescriptor(id: "wezterm", name: "WezTerm", bundleIDs: ["com.github.wez.wezterm"], role: .terminal, defaultRank: 3),
         AppDescriptor(id: "kitty", name: "kitty", bundleIDs: ["net.kovidgoyal.kitty"], role: .terminal, defaultRank: 4),
         AppDescriptor(id: "alacritty", name: "Alacritty", bundleIDs: ["org.alacritty"], role: .terminal, defaultRank: 5),
@@ -94,10 +96,16 @@ public enum KnownApps {
         AppDescriptor(id: "intellij", name: "IntelliJ IDEA", bundleIDs: ["com.jetbrains.intellij", "com.jetbrains.intellij.ce"], role: .editor, defaultRank: 7),
         AppDescriptor(id: "pycharm", name: "PyCharm", bundleIDs: ["com.jetbrains.pycharm", "com.jetbrains.pycharm.ce"], role: .editor, defaultRank: 8),
         AppDescriptor(id: "webstorm", name: "WebStorm", bundleIDs: ["com.jetbrains.WebStorm"], role: .editor, defaultRank: 9),
-        AppDescriptor(id: "android-studio", name: "Android Studio", bundleIDs: ["com.google.android.studio"], role: .editor)
+        AppDescriptor(id: "android-studio", name: "Android Studio", bundleIDs: ["com.google.android.studio"], role: .editor),
+        AppDescriptor(id: "trae", name: "Trae", bundleIDs: ["com.trae.app", "cn.trae.app", "com.byteplus.trae"], role: .editor),
+        AppDescriptor(id: "positron", name: "Positron", bundleIDs: ["com.rstudio.positron", "co.posit.positron"], role: .editor),
+        AppDescriptor(id: "fleet", name: "Fleet", bundleIDs: ["com.jetbrains.fleet"], role: .editor),
+        AppDescriptor(id: "rustrover", name: "RustRover", bundleIDs: ["com.jetbrains.rustrover"], role: .editor),
+        AppDescriptor(id: "clion", name: "CLion", bundleIDs: ["com.jetbrains.CLion"], role: .editor),
+        AppDescriptor(id: "goland", name: "GoLand", bundleIDs: ["com.jetbrains.goland"], role: .editor)
     ]
 
-    /// The built-in terminals an agent can be typed into, as a phrase for advice: "Ghostty or Terminal".
+    /// The built-in terminals an agent can be typed into, as a phrase for advice: "Ghostty, Terminal or iTerm".
     public static var commandTerminalPhrase: String {
         let names = terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name)
         guard names.count > 1, let last = names.last else { return names.first ?? "" }
