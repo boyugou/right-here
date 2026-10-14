@@ -5,9 +5,10 @@
 #   ./script/archive_mas.sh --preflight
 #   MAS_APP_SIGN_IDENTITY="<MAS-App-Sign-Identity>" \
 #   MAS_INSTALLER_SIGN_IDENTITY="<MAS-Installer-Sign-Identity>" \
-#     ./script/archive_mas.sh --package
 #   APPLE_ID="APPLE_ACCOUNT_ID" APPLE_APP_PASSWORD="app-specific-password" \
 #     ./script/archive_mas.sh --validate
+#   APPLE_ID="APPLE_ACCOUNT_ID" APPLE_APP_PASSWORD="app-specific-password" \
+#     ./script/archive_mas.sh --upload
 #
 # Environment variables:
 #   MAS_APP_SIGN_IDENTITY         "Apple Distribution: ..." or "3rd Party Mac Developer Application: ..."
@@ -153,12 +154,21 @@ validate_mas() {
   xcrun altool --validate-app -f "$PKG_PATH" -t osx -u "$APPLE_ID" -p "$APPLE_APP_PASSWORD"
 }
 
+upload_mas() {
+  require_env APPLE_ID
+  require_env APPLE_APP_PASSWORD
+  [[ -f "$PKG_PATH" ]] || { echo "error: $PKG_PATH not found; run --package first" >&2; exit 1; }
+  log "Uploading package to Apple App Store Connect / TestFlight: $PKG_PATH"
+  xcrun altool --upload-app -f "$PKG_PATH" -t osx -u "$APPLE_ID" -p "$APPLE_APP_PASSWORD"
+}
+
 case "${1:-}" in
   --preflight) preflight ;;
   --package) package_mas ;;
   --validate) validate_mas ;;
+  --upload) upload_mas ;;
   *)
-    echo "Usage: $0 [--preflight | --package | --validate]" >&2
+    echo "Usage: $0 [--preflight | --package | --validate | --upload]" >&2
     exit 1
     ;;
 esac
