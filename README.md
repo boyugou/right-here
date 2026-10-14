@@ -162,7 +162,7 @@ command = "lazygit"
 
 ### Claude Code Plugin
 
-Install the official Right Here plugin in Claude Code for contextual workspace actions and Finder automation:
+Install the official Right Here plugin in Claude Code for contextual workspace actions and Finder automation ([`plugins/right-here`](plugins/right-here/README.md)):
 
 ```sh
 /plugin marketplace add boyugou/right-here

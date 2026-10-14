@@ -24,6 +24,10 @@
   sentences (the first error of a config, why an agent cannot start) and text quoted from the config stay English.
 - A strict, self-describing config: unique ids, no silent shadowing, `--strict`, replacements in
   diagnostics, a JSON Schema with required keys and patterns, a backup on `rh init --force`.
+- App Intents: native Shortcuts and Spotlight actions (`OpenInTerminalIntent`, `StartAgentIntent`, `NewFileIntent`, `CopyPathIntent`) that execute safely without requiring the Finder extension.
+- Config sync: `rh config sync` (push, pull, status) syncing across Macs through iCloud Drive or any local folder, with `--allow-commands` safety protection for executable templates.
+- Elevated macOS Control Center: 4-tab dashboard (Overview, Finder Menu preview, Diagnostics, AI & MCP) with live system status and interactive 3-step setup.
+- Official Claude Code plugin with dedicated skills (`setup`, `open-here`, `review-changes`).
 
 ## Next
 
@@ -43,23 +47,12 @@ The items that need a person with a real Finder and terminals are listed with th
 
 Researched against macOS 26 as of October 2026; each needs a short decision record before it is built.
 
-1. **App Intents** (Shortcuts and Spotlight actions) that run `rh run <id>` with the folder as argv: a second entry
-   point that does not depend on the Finder extension (Apple has not announced a Finder Sync deprecation, but
-   developer forums report it failing to load on some macOS 26 machines).
-2. **Recent and pinned folders**: a recents command, a pin command, a private state file, offered as intent entities.
-3. **Agent prompt presets that carry the selection** (`[[preset]]` with `{files}` as `@` mentions), typed safely.
-   Built, see [0012](docs/decisions/0012-agent-presets.md). Not as first written: a typed preset is sent when the agent
-   starts, because `claude` and `codex` take the prompt as an argument and there is no honest "prefill, do not send"
-   through the typing path (only Claude's own link does that). A `prefill` option on top of that link is open.
-4. **Project-local overrides** (`.right-here.toml` at the git root) behind an explicit trust step pinned to the file
+1. **Recent and pinned folders**: a recents command, a pin command, a private state file, offered as intent entities.
+2. **Ghostty split-pane placement**: open new sessions in an adjacent split pane instead of a new window or tab.
+3. **Project-local overrides** (`.right-here.toml` at the git root) behind an explicit trust step pinned to the file
    content, as direnv does. Reverses the rule that config is never read from the acted-on folder, so it needs its own
    record and mutation entries first.
-5. A three-step **first-run setup** that waits for the Finder extension to turn green.
-6. **Quick Actions as a primary path** in the setup window and doctor, with suggested keyboard shortcuts.
-7. **Menu personalization** in the setup app, writing an include file so the hand-written config is never rewritten.
-8. **Config sync**: a per-machine `config.local.toml` overlay and a sync command copying through a folder the person
-   chooses (iCloud Drive or any other); no symlink (the extension cannot read through one), no CloudKit.
-9. Git-aware actions (agent in a new worktree), split-pane placement for Ghostty, an activity tab in the app.
+4. **Git-aware workflow actions**: launch agents directly inside a newly isolated git worktree for clean branch testing.
 
 ## Open
 
