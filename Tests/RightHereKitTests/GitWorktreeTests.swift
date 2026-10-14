@@ -47,7 +47,7 @@ struct GitWorktreeTests {
         // Setup git repo
         _ = try Shell.run("/usr/bin/git", args: ["-C", repoDir.path, "init"])
         _ = try Shell.run("/usr/bin/git", args: ["-C", repoDir.path, "config", "user.name", "Test User"])
-        _ = try Shell.run("/usr/bin/git", args: ["-C", repoDir.path, "config", "user.email", "test@example.com"])
+        _ = try Shell.run("/usr/bin/git", args: ["-C", repoDir.path, "config", "user.email", "test"])
         let dummy = repoDir.appendingPathComponent("README.md")
         try "initial".write(to: dummy, atomically: true, encoding: .utf8)
         _ = try Shell.run("/usr/bin/git", args: ["-C", repoDir.path, "add", "README.md"])

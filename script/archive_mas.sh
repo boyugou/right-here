@@ -3,8 +3,8 @@
 #
 # Usage:
 #   ./script/archive_mas.sh --preflight
-#   MAS_APP_SIGN_IDENTITY="Apple Distribution: Team Name (TEAMID)" \
-#   MAS_INSTALLER_SIGN_IDENTITY="3rd Party Mac Developer Installer: Team Name (TEAMID)" \
+#   MAS_APP_SIGN_IDENTITY="<MAS-App-Sign-Identity>" \
+#   MAS_INSTALLER_SIGN_IDENTITY="<MAS-Installer-Sign-Identity>" \
 #     ./script/archive_mas.sh --package
 #   APPLE_ID="APPLE_ACCOUNT_ID" APPLE_APP_PASSWORD="app-specific-password" \
 #     ./script/archive_mas.sh --validate
