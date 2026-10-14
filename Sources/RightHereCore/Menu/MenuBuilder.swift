@@ -97,7 +97,14 @@ public struct MenuBuilder: Sendable {
                     continue
                 }
                 let info = registry.info(ref, context: context)
-                if info.available { nodes.append(.action(info)) } else { leftOut(info, ref, collector) }
+                if info.available {
+                    if case .copyPath(let style) = ref, (style == .absolute || config.copyPathTitle != nil) {
+                        let title = config.copyPathTitle ?? (style == .absolute ? localizer.copyPathGroup : info.title)
+                        nodes.append(.action(info, title: title))
+                    } else {
+                        nodes.append(.action(info))
+                    }
+                } else { leftOut(info, ref, collector) }
             }
         }
         return Self.tidy(nodes)
@@ -227,12 +234,22 @@ public struct MenuBuilder: Sendable {
 
     private func copyPath(_ collector: MenuNoteCollector?) -> [MenuNode] {
         let infos = config.copyPathStyles.map { registry.info(.copyPath($0)) }
+        let groupTitle = config.copyPathTitle ?? localizer.copyPathGroup
         switch infos.count {
         case 0:
-            collector?.leftOut(localizer.copyPathGroup, "copy_path.styles lists no style.")
+            collector?.leftOut(groupTitle, "copy_path.styles lists no style.")
             return []
-        case 1: return [.action(infos[0])]
-        default: return [.submenu(localizer.copyPathGroup, icon: .symbol("doc.on.doc"), infos.map { .action($0, title: $0.shortTitle) })]
+        case 1:
+            let title: String
+            if let custom = config.copyPathTitle {
+                title = custom
+            } else if config.copyPathStyles.first == .absolute {
+                title = localizer.copyPathGroup
+            } else {
+                title = infos[0].title
+            }
+            return [.action(infos[0], title: title)]
+        default: return [.submenu(groupTitle, icon: .symbol("doc.on.doc"), infos.map { .action($0, title: $0.shortTitle) })]
         }
     }
 

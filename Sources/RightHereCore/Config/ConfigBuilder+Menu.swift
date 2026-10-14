@@ -32,6 +32,7 @@ extension ConfigBuilder {
     func readCopyPath(_ root: ConfigReader, into config: inout Config) {
         guard let copyPath = root.subtable("copy_path") else { return }
         copyPath.checkKnownKeys()
+        config.copyPathTitle = copyPath.string("title")
         if let names = copyPath.stringArray("styles") {
             var seen = Set<String>()
             config.copyPathStyles = names.compactMap { name in

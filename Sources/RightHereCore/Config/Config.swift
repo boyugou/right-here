@@ -51,6 +51,8 @@ public struct Config: Sendable, Equatable {
     public var menuItems: [String]?
     /// The forms offered under "Copy Path".
     public var copyPathStyles: [PathStyle]
+    /// Custom menu title for "Copy Path" action or submenu; `nil` uses the localized default.
+    public var copyPathTitle: String?
     /// Action ids offered as Finder Services (Quick Actions); `nil` means the default set.
     public var serviceItems: [String]?
     /// Settings per agent id. Agents that are absent use their built-in descriptor.
@@ -72,6 +74,7 @@ public struct Config: Sendable, Equatable {
         enabledAgents: [String] = [],
         menuItems: [String]? = nil,
         copyPathStyles: [PathStyle] = Config.defaultCopyPathStyles,
+        copyPathTitle: String? = nil,
         serviceItems: [String]? = nil,
         agents: [String: AgentSettings] = [:],
         apps: [AppDescriptor] = [],
@@ -86,6 +89,7 @@ public struct Config: Sendable, Equatable {
         self.enabledAgents = enabledAgents
         self.menuItems = menuItems
         self.copyPathStyles = copyPathStyles
+        self.copyPathTitle = copyPathTitle
         self.serviceItems = serviceItems
         self.agents = agents
         self.apps = apps

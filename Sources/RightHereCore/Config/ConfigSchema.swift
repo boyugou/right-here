@@ -114,6 +114,8 @@ public enum ConfigSchema {
                            example: "[\"open.terminal\", \"agent.claude\", \"copy-path.absolute\"]")
             ]),
             SchemaNode("copy_path", .table, "The \"Copy Path\" submenu.", children: [
+                SchemaNode("title", .string, "Custom menu title for the action or submenu; by default \"Copy Path\" in the system language.",
+                           example: "\"Copy Path\""),
                 SchemaNode("styles", .stringArray, "Forms offered, in order.",
                            default: "[\"absolute\", \"tilde\", \"git-relative\", \"name\", \"shell-escaped\", \"ai-mention\"]",
                            allowed: PathStyle.allCases.map(\.rawValue))

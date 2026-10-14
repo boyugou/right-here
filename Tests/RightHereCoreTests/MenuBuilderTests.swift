@@ -102,6 +102,19 @@ struct MenuBuilderTests {
         let config = Config(menuItems: ["copy-path"], copyPathStyles: [.absolute])
         let menu = MenuBuilder(config: config, facts: machine()).build(for: background)
         #expect(menu.map(\.actionID) == ["copy-path.absolute"])
+        #expect(menu.first?.title == "Copy Path")
+    }
+
+    @Test func customCopyPathTitleIsUsed() {
+        let config = Config(menuItems: ["copy-path"], copyPathStyles: [.absolute], copyPathTitle: "Copy Path Clean")
+        let menu = MenuBuilder(config: config, facts: machine()).build(for: background)
+        #expect(menu.first?.title == "Copy Path Clean")
+    }
+
+    @Test func singleNonAbsoluteStyleKeepsSpecificTitleWhenNotCustom() {
+        let config = Config(menuItems: ["copy-path"], copyPathStyles: [.tilde])
+        let menu = MenuBuilder(config: config, facts: machine()).build(for: background)
+        #expect(menu.first?.title == "Copy Path: Path from Home (~)")
     }
 
     @Test func openWithListsInstalledAppsOnly() throws {
