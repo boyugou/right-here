@@ -135,7 +135,8 @@ struct MCPProtocolTests {
         let tools = try #require(reply["result"]?["tools"]?.arrayValue)
         let names = tools.compactMap { $0["name"]?.stringValue }
         #expect(Set(names) == ["right_here_run", "right_here_actions", "right_here_menu", "right_here_finder_selection",
-                               "right_here_doctor", "right_here_config_validate", "right_here_catalog", "right_here_docs"])
+                               "right_here_doctor", "right_here_config_validate", "right_here_catalog", "right_here_docs",
+                               "right_here_bookmarks"])
         for tool in tools {
             #expect(tool["inputSchema"]?["type"]?.stringValue == "object")
             #expect(tool["description"]?.stringValue?.isEmpty == false)
@@ -343,6 +344,14 @@ struct MCPToolTests {
         let lines = (result["content"]?.arrayValue?.first?["text"]?.stringValue ?? "").split(separator: "\n").map(String.init)
         let at = try #require(lines.firstIndex { $0.hasPrefix("[warn] Config file: ⟦user⟧none at ") })
         #expect(lines[at + 1] == "       fix: ⟦user⟧Run `rh init`.⟦/user⟧")
+    }
+
+    @Test func theBookmarksToolReturnsPinsAndRecents() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_bookmarks")
+        let structured = try #require(result["structuredContent"])
+        #expect(structured["pins"]?.arrayValue != nil)
+        #expect(structured["recents"]?.arrayValue != nil)
     }
 }
 

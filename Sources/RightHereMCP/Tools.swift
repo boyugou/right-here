@@ -159,6 +159,14 @@ enum Tools {
             ])], required: ["topic"]),
             readOnly: true,
             handler: docs
+        ),
+        ToolDefinition(
+            name: "right_here_bookmarks",
+            title: "List pinned and recent folders",
+            description: "List the person's pinned folders and recently accessed folders.",
+            inputSchema: schema(),
+            readOnly: true,
+            handler: bookmarks
         )
     ]
 
@@ -276,5 +284,24 @@ enum Tools {
             throw ToolError("topic must be one of: " + Documentation.topics.joined(separator: ", "))
         }
         return ToolOutput(text: text, structured: nil)
+    }
+
+    private static func bookmarks(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
+        let state = StateStore.load(paths: server.paths)
+        let structured = JSONValue.object([
+            "pins": .array(state.pins.map(JSONValue.string)),
+            "recents": .array(state.recents.map(JSONValue.string))
+        ])
+        var lines: [String] = []
+        if !state.pins.isEmpty {
+            lines.append("Pinned:")
+            lines += state.pins.map { "  " + Fence.wrap($0) }
+        }
+        if !state.recents.isEmpty {
+            lines.append("Recent:")
+            lines += state.recents.map { "  " + Fence.wrap($0) }
+        }
+        if lines.isEmpty { lines.append("No pinned or recent folders yet.") }
+        return ToolOutput(text: lines.joined(separator: "\n"), structured: structured)
     }
 }

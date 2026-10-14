@@ -86,6 +86,7 @@ public enum KnownApps {
         AppDescriptor(id: "cursor", name: "Cursor", bundleIDs: ["com.todesktop.230313mzl4w4u92"], role: .editor, defaultRank: 1),
         AppDescriptor(id: "windsurf", name: "Windsurf", bundleIDs: ["com.exafunction.windsurf"], role: .editor, defaultRank: 3),
         AppDescriptor(id: "zed", name: "Zed", bundleIDs: ["dev.zed.Zed", "dev.zed.Zed-Preview"], role: .editor, defaultRank: 2),
+        AppDescriptor(id: "antigravity", name: "Antigravity", bundleIDs: ["com.google.antigravity"], role: .editor),
         AppDescriptor(id: "xcode", name: "Xcode", bundleIDs: ["com.apple.dt.Xcode"], role: .editor),
         AppDescriptor(id: "sublime", name: "Sublime Text", bundleIDs: ["com.sublimetext.4", "com.sublimetext.3"], role: .editor, defaultRank: 4),
         AppDescriptor(id: "nova", name: "Nova", bundleIDs: ["com.panic.Nova"], role: .editor, defaultRank: 5),

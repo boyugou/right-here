@@ -80,7 +80,19 @@ public struct AgentDescriptor: Sendable, Equatable, Identifiable {
 }
 
 public enum KnownAgents {
-    public static let all: [AgentDescriptor] = [claude, codex, gemini, opencode, aider, amp]
+    public static let all: [AgentDescriptor] = [claude, codex, gemini, agy, opencode, aider, amp]
+
+    public static let agy = AgentDescriptor(
+        id: "agy",
+        name: "Antigravity",
+        command: "agy",
+        variants: [
+            .init(id: "continue", title: "Continue Last Session", arguments: ["--continue"], titleKey: .variantContinue)
+        ],
+        iconBundleID: "com.google.antigravity",
+        instructionFile: "AGENTS.md",
+        promptArgument: .flag("-i")
+    )
 
     public static let claude = AgentDescriptor(
         id: "claude",
