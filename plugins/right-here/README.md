@@ -20,7 +20,7 @@ Then start a new Claude Code session.
 
 | Component | What it does |
 |-----------|--------------|
-| MCP server `right-here` | Exposes 8 typed tools (`right_here_run`, `right_here_actions`, `right_here_menu`, `right_here_finder_selection`, `right_here_doctor`, `right_here_config_validate`, `right_here_catalog`, `right_here_docs`). |
+| MCP server `right-here` | Exposes 10 typed tools (`right_here_run`, `right_here_actions`, `right_here_menu`, `right_here_finder_selection`, `right_here_doctor`, `right_here_config_validate`, `right_here_catalog`, `right_here_docs`, `right_here_bookmarks`, `right_here_worktree`). `rh docs mcp` describes them. |
 | `/right-here:setup` | Asks which terminal, editor and AI agents you use, runs `rh setup` once with your answers, tells you what only you can do, and checks the result. |
 | `/right-here:open-here` | Resolves the user's active Finder selection or a directory path, and opens it in their configured terminal, IDE, or AI agent. |
 | `/right-here:review-changes` | Reveals modified workspace files in native Finder windows for interactive visual review. |

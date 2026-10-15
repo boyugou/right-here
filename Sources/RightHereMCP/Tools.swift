@@ -154,7 +154,7 @@ enum Tools {
         ToolDefinition(
             name: "right_here_docs",
             title: "Read the documentation",
-            description: "Read built-in documentation: config (every setting), actions (the id grammar), agent-setup (how to configure Right Here for a person) or troubleshooting (the menu does not appear, a click does nothing, permission prompts).",
+            description: "Read a built-in guide by topic: " + Documentation.topicSummaries.map { "\($0.name) (\($0.summary))" }.joined(separator: "; ") + ".",
             inputSchema: schema(["topic": .object([
                 "type": .string("string"), "enum": .array(Documentation.topics.map(JSONValue.string)),
                 "description": .string("The topic to read.")
@@ -247,7 +247,7 @@ enum Tools {
         let config = server.loadConfig().config
         let all = arguments["include_unavailable"]?.boolValue == true
         let infos = ActionRegistry(config: config, facts: server.facts).catalog().filter { all || $0.available }
-        let lines = infos.map { "\($0.id)  \($0.title)" + ($0.available ? "" : "  [unavailable: \($0.unavailableReason ?? "")]") }
+        let lines = infos.map { "\($0.id)  " + Fence.name($0.title) + ($0.available ? "" : "  [unavailable: " + Fence.name($0.unavailableReason ?? "") + "]") }
         return ToolOutput(text: lines.joined(separator: "\n"), structured: .object(["actions": try JSONValue(encoding: infos)]))
     }
 
@@ -255,7 +255,7 @@ enum Tools {
         let config = server.loadConfig().config
         let nodes = MenuBuilder(config: config, facts: server.facts).build(for: try context(from: arguments, facts: server.facts))
         let json = try JSONValue(encoding: nodes)
-        return ToolOutput(text: json.pretty(), structured: .object(["menu": json]))
+        return ToolOutput(text: json.fencing(["title"]).pretty(), structured: .object(["menu": json]))
     }
 
     private static func finderSelection(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
@@ -297,11 +297,11 @@ enum Tools {
             "apps": try JSONValue(encoding: config.appRows(facts: server.facts)),
             "agents": try JSONValue(encoding: config.agentRows())
         ])
-        return ToolOutput(text: structured.pretty(), structured: structured)
+        return ToolOutput(text: structured.fencing(["name", "command", "bundleID"]).pretty(), structured: structured)
     }
 
     private static func docs(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
-        guard let topic = arguments["topic"]?.stringValue, let text = Documentation.text(for: topic) else {
+        guard let topic = arguments["topic"]?.stringValue, let text = Guides.text(for: topic) else {
             throw ToolError("topic must be one of: " + Documentation.topics.joined(separator: ", "))
         }
         return ToolOutput(text: text, structured: nil)

@@ -12,9 +12,10 @@ struct RH: AsyncParsableCommand {
         rh runs actions: copy a path in the form you need, open a folder in a terminal or editor, \
         start an AI agent there, or create a new file. The Finder menu runs the same actions.
 
-        Start with `rh init`, then `rh menu` to preview the Finder menu and `rh actions` to list \
-        every action. Run one with `rh run <action> [folder]`, for example `rh run copy-path.absolute ~/Projects`. \
-        Everything is also available as JSON (--json) for scripts and agents.
+        Start with `rh setup` (it writes the config and connects Finder, and says what only you can do), then `rh menu` (it previews \
+        the Finder menu) and `rh doctor` (it checks the setup). `rh docs start` has the steps. `rh actions` lists every action; run one with \
+        `rh run <action> [folder]`, for example `rh run copy-path.absolute ~/Projects`. Everything is also available as JSON \
+        (--json) for scripts and agents.
         """,
         version: AppIdentity.version,
         subcommands: [
@@ -24,6 +25,17 @@ struct RH: AsyncParsableCommand {
             FinderCommand.self, MCP.self, Probe.self
         ]
     )
+
+    /// Looks at the command line before ArgumentParser reads it (`InvocationCheck`): a misspelt command, or an argument with a dash that
+    /// would be read as an option, is said in one line with status 64, instead of printing the whole help with status 0.
+    static func main() async {
+        let arguments = Array(CommandLine.arguments.dropFirst())
+        if let problem = InvocationCheck.problem(arguments, commands: configuration.subcommands.map { $0._commandName }) {
+            Output.error("error: " + problem)
+            Darwin.exit(64)
+        }
+        await main(arguments)
+    }
 }
 
 /// Everything a command needs: the live machine and the loaded config.
@@ -56,6 +68,13 @@ enum Output {
 
     static func error(_ text: String) {
         FileHandle.standardError.write(Data((text + "\n").utf8))
+    }
+
+    /// The text padded with spaces to a column `width` characters wide. `String.padding(toLength:)` cuts a longer text off,
+    /// which dropped the end of a long name or id (and an escaped name is longer than it looks); here it is kept whole and
+    /// two spaces keep it apart from the next column.
+    static func column(_ text: String, _ width: Int) -> String {
+        text.count >= width ? text + "  " : text + String(repeating: " ", count: width - text.count)
     }
 
     /// Prints the message to standard error and returns the exit status to throw.

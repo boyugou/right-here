@@ -682,9 +682,11 @@ struct ConfigSchemaDetailTests {
 @Suite("Documentation topics")
 struct DocumentationTopicTests {
     @Test func everyListedTopicHasText() {
-        for topic in Documentation.topics {
+        // The MCP guide is written by RightHereMCP, which reads the tools from the code (`Guides`); every other topic has its text here.
+        for topic in Documentation.topics where topic != Documentation.mcpTopic {
             #expect(Documentation.text(for: topic)?.isEmpty == false, "no text for \(topic)")
         }
+        #expect(Documentation.topics.first == "start", "the quick start is listed first")
         #expect(Documentation.text(for: "nope") == nil)
     }
 

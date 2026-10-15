@@ -156,7 +156,7 @@ Sourced:
   writes to a bare `group.*` domain, and Group Containers are protected from other teams (Apple documentation;
   upstream issues in third-party Finder extensions). Right Here uses no App Group.
 - Homebrew 7.0 deprecated `post_install` and forbids writing `$HOME` from a formula; the official cask
-  repository disables casks that fail Gatekeeper since 2026-09-01. So `rh install` does the setup at
+  repository disables casks that fail Gatekeeper since 2026-09-01. So `rh setup` does the setup at
   runtime and the app is notarized.
 - A shell started by a GUI app has no nvm or alias: `zsh -lc` does not find `claude` (nvm is initialized
   in `.zshrc`), `zsh -lic` does. Text typed into a terminal's shell gets the full interactive setup.
@@ -231,7 +231,7 @@ icons for the life of the process, so a right-click costs milliseconds.
 The setup window shows this menu without Finder, so that a person can see what the extension will offer and why an
 entry is missing (the extension needs System Settings and a Finder relaunch before anything shows).
 `MenuPreview.folderMenu` runs `MenuBuilder` on the config and the installed apps as they are when the window opens or
-`rh install` has run, in the system language, with the context the extension makes for a click on a folder's
+`rh setup` has run, in the system language, with the context the extension makes for a click on a folder's
 background (`HereContext.finder`); `MenuPreview.rows` flattens the tree into the lines the window draws, with a
 submenu opening in place. The app carries the extension's glyph catalog (`Apps/FinderExtension/Assets.xcassets`, a
 source of both targets in `project.yml`), so the icons are the menu's own. The section "Finder menu" is open unless a
@@ -269,8 +269,11 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    from the rest (csh and tcsh also expand `!` inside single quotes, which in a new session only makes the `cd`
    fail, so nothing runs).
    Paths are cut at slash scalars, as the kernel cuts them, so a combining mark cannot hide a `..`.
-2. Text typed into a terminal is read as keystrokes, so a path with a line break or any control character
-   is refused for typed launches. Deep links percent-encode everything but unreserved characters. A preset's
+2. Text typed into a terminal is read as keystrokes, so a command line with a line break or any control character
+   is refused for typed launches, and so is a folder whose path has one when the terminal types the folder (`cd …`):
+   Terminal, iTerm and a terminal defined in the config, whose template may put `{dir}` into a shell line (an adapter
+   that says nothing about it is held to that rule). Ghostty, WezTerm and kitty are handed the folder as an argument
+   and type none of it, so they take any folder name. Deep links percent-encode everything but unreserved characters. A preset's
    prompt (a template plus file names) is typed as one single-quoted word, and the expanded text is refused when it
    has a control character, a backslash (fish and the other shells read it differently inside quotes), a leading
    dash (the agent would read an option) or more files than `max_files`; see
@@ -279,7 +282,7 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    in their wording.
 3. The sandbox stays on for the extension. What it cannot do is done by `rh` through the runner script,
    which only the user can install and which passes on only `run` and `probe`: a compromised extension
-   cannot call `rh install`, `rh uninstall` or `rh init --force`.
+   cannot call `rh setup`, `rh install`, `rh uninstall` or `rh init --force`.
 4. Configuration is never loaded from the folder being acted on. The one other place a config comes from is the sync
    folder, which item 7 guards.
 5. `rh` itself is not privileged and needs no administrator rights anywhere.
@@ -294,8 +297,11 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    config problem quotes from the config (a key, a value, an id): `ConfigDiagnostic` stores its text escaped, since a
    config can arrive from the sync folder and an escape sequence in a key name must not act on a terminal. The names
    and titles a config gives to apps, agents, templates, variants and presets are refused when they hold a control
-   character (an error, the entry is left out), so such text reaches no terminal through `rh actions`, `rh menu` or
-   `rh apps` either.
+   character (an error, the entry is left out), and `rh actions`, `rh menu`, `rh apps` and `rh agents` print them with
+   such characters as escapes in any case, which also covers the controls that reorder text (U+202E and the like: the
+   config check lets them through, and a name can be made to read backwards). The MCP tools that list them
+   (`right_here_actions`, `right_here_menu`, `right_here_catalog`) mark them as data in their text, like the doctor does,
+   and keep the structured data plain.
 7. A config is more than settings: terminal templates (`open_args`, `run_args`), agent commands, variant arguments and
    first-prompt flags decide which program a click starts, and a terminal listed as another kind of app is handed
    files, which it runs (item 0). The sync folder can be written by things this Mac does not
@@ -323,7 +329,7 @@ An independent review and a cold-start usability test shaped several of these; s
 ## 11. Distribution
 
 Direct first: a notarized, stapled DMG with the app (extension and `rh` inside), a Homebrew cask that
-installs the app and links `rh`, and a formula for the CLI alone (Swift build), with `rh install` doing
+installs the app and links `rh`, and a formula for the CLI alone (Swift build), with `rh setup` doing
 the per-user setup. An App Store build would be a menu-only app (sandboxed, no agent launching beyond
 user-installed scripts); App Store guideline 2.4.5 and the sandboxed-CLI problems rule out the full
 product there. The name is a working name; the identifiers derive from `AppIdentity` in one place.

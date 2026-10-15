@@ -424,9 +424,52 @@ struct PlannerTests {
 
     @Test func typedLaunchRejectsAPathWithALineBreak() {
         let facts = machine(directories: ["/Users/tester/bad\nname"])
-        #expect(throws: PlanError.unsafeText("/Users/tester/bad\nname")) {
+        #expect(throws: PlanError.unsafeFolder("/Users/tester/bad\nname")) {
             try Planner(facts: facts).plan(.agent(id: "claude", variant: nil, launcher: .terminal("terminal")), context: folder("/Users/tester/bad\nname"))
         }
+    }
+
+    @Test func ghosttyIsNotRefusedForAFolderNameItNeverTypes() throws {
+        // `agent.claude@ghostty` used to be refused for a folder with a line break in its name, which Ghostty is handed as the
+        // working directory of the new surface and types nothing of; the command it does type has none.
+        let name = "/Users/tester/bad\nname"
+        let plan = try Planner(facts: machine(directories: [name])).plan(.agent(id: "claude", variant: nil, launcher: .terminal("ghostty")), context: folder(name))
+        guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(step.arguments == [name, "claude", "window"])
+    }
+
+    @Test("a terminal that types the folder still refuses a name with a control character", arguments: ["terminal", "iterm"])
+    func terminalsThatTypeTheFolderRefuseIt(terminal: String) {
+        let name = "/Users/tester/bad\u{1b}[2Jname"
+        let facts = machine(installed: ["com.apple.Terminal", "com.googlecode.iterm2"], directories: [name])
+        #expect(throws: PlanError.unsafeFolder(name)) {
+            try Planner(facts: facts).plan(.agent(id: "claude", variant: nil, launcher: .terminal(terminal)), context: folder(name))
+        }
+    }
+
+    @Test func aTerminalTheConfigDefinesIsHeldToTheStrictRuleBecauseItsTemplateMayTypeTheFolder() {
+        let text = """
+        [[app]]
+        id = "shellterm"
+        name = "Shell Term"
+        bundle_id = "com.example.shellterm"
+        role = "terminal"
+        run_args = ["/bin/sh", "-c", "cd {dir} && {command}"]
+        """
+        let config = ConfigParser.parse(text).config
+        let name = "/Users/tester/bad\nname"
+        let facts = machine(installed: ["com.example.shellterm"], directories: [name])
+        #expect(throws: PlanError.unsafeFolder(name)) {
+            try Planner(config: config, facts: facts).plan(.agent(id: "claude", variant: nil, launcher: .terminal("shellterm")), context: folder(name))
+        }
+    }
+
+    @Test func theRefusalsNameWhatIsWrongWithoutDoubledQuotes() {
+        let folder = PlanError.unsafeFolder("/Users/tester/two\nlines").errorDescription ?? ""
+        #expect(folder == "The folder \"/Users/tester/two\\nlines\" has a line break or another control character in its path, so it cannot be typed into a terminal. Rename it, or use a terminal that is handed the folder, such as Ghostty.")
+        let text = PlanError.unsafeText("claude\nrm").errorDescription ?? ""
+        #expect(text == "\"claude\\nrm\" contains line breaks or control characters and cannot be typed into a terminal.")
+        for message in [folder, text] { #expect(!message.contains("\"\""), Comment(rawValue: message)) }
     }
 
     @Test func linkLaunchAcceptsAPathWithALineBreakBecauseItIsPercentEncoded() throws {
@@ -657,11 +700,27 @@ struct PlannerNoticeTests {
     @Test func aFileSaysItsFolderIsUsedAndSeveralItemsSayTheFirstDecides() throws {
         let planner = Planner(facts: facts())
         let file = try planner.plan(.openTerminal(nil), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p/src/main.swift")]))
-        #expect(file.notices.contains { $0.contains("main.swift is a file") && $0.contains("/p/src") })
+        // Names in a notice are quoted like every other value in a plan.
+        #expect(file.notices.contains { $0.contains("\"main.swift\" is a file") && $0.contains("\"/p/src\"") })
         let several = try planner.plan(.agent(id: "claude", variant: nil, launcher: .terminal(nil)), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p"), URL(fileURLWithPath: "/q")]))
-        #expect(several.notices.contains { $0.contains("Several items") })
+        #expect(several.notices.contains { $0.contains("Several items") && $0.contains("the folder that holds the first one, \"p\"") }, Comment(rawValue: "\(several.notices)"))
         let folder = try planner.plan(.openTerminal(nil), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p")]))
         #expect(folder.notices.isEmpty, "a single folder is exactly what was asked for")
+    }
+
+    @Test func aTildePathOutsideTheHomeFolderSaysItCopiedTheAbsolutePath() throws {
+        let inside = try Planner(facts: machine()).plan(.copyPath(.tilde), context: selection("/Users/tester/code/app/a.txt"))
+        #expect(inside.notices.isEmpty)
+        var outside = machine(files: ["/tmp/loose.txt"], directories: ["/tmp"])
+        outside.homeDirectory = URL(fileURLWithPath: "/Users/tester")
+        let plan = try Planner(facts: outside).plan(.copyPath(.tilde), context: selection("/tmp/loose.txt"))
+        #expect(plan.steps == [.copyToPasteboard("/tmp/loose.txt")])
+        #expect(plan.notices == ["Not inside your home folder, so the absolute path is copied."])
+    }
+
+    @Test func aFileGivenAsTheContainerSaysItsFolderIsUsed() throws {
+        let plan = try Planner(facts: machine()).plan(.openTerminal(nil), context: HereContext(origin: .cli, container: URL(fileURLWithPath: "/Users/tester/code/app/a.txt")))
+        #expect(plan.notices.contains { $0.contains("\"a.txt\" is a file, so its folder is used") }, Comment(rawValue: "\(plan.notices)"))
     }
 
     @Test func gitRelativeOutsideARepositorySaysItCopiedTheAbsolutePath() throws {

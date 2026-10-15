@@ -12,6 +12,9 @@ struct Doctor: AsyncParsableCommand {
     @Flag(help: "Print JSON.")
     var json = false
 
+    @Flag(help: "Print a report for a bug report, as Markdown: the versions of rh and the app, macOS and the processor, the checks, and the counts of the config check. The home folder is shown as ~ and the account name is removed; it holds no text of the config.")
+    var report = false
+
     @Flag(help: "Also test the whole chain a Finder click uses, through the extension. Restarts the extension and may show a permission prompt.")
     var probeExtension = false
 
@@ -35,6 +38,7 @@ struct Doctor: AsyncParsableCommand {
     }
 
     func run() async throws {
+        if report, json { throw ValidationError("--report and --json cannot be combined: the report is Markdown.") }
         let runtime = Runtime()
         // The rows mix this home (config, log, runner script, Services, command link) with what is registered system-wide (the
         // extension), so a trial home says so. On standard error: `--json` keeps standard output a document.
@@ -54,11 +58,49 @@ struct Doctor: AsyncParsableCommand {
         defer { interrupt?.cancel() }
         let checks = await RightHereKit.Doctor(paths: runtime.paths, loaded: runtime.loaded).run(probeExtension: probeExtension, probeLaunch: probeLaunch, launchPlacement: try launchPlacement())
         let failed = checks.contains { $0.status == .fail }
-        if json {
+        if report {
+            Output.print(DoctorReport.markdown(identity: identity(runtime), configCheck: configCheck(runtime), checks: checks, privacy: privacy(runtime)))
+        } else if json {
             try Output.json(Report(ok: !failed, checks: checks))
         } else {
             for line in checks.flatMap({ $0.englishLines() }) { Output.print(line) }
         }
         if failed { throw ExitCode(1) }
+    }
+
+    private func identity(_ runtime: Runtime) -> DoctorReport.Identity {
+        let version = ProcessInfo.processInfo.operatingSystemVersion
+        return DoctorReport.Identity(
+            rhVersion: AppIdentity.version,
+            appVersion: runtime.facts.bundleVersion(bundleID: AppIdentity.hostBundleID),
+            macOS: "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)",
+            architecture: Self.architecture()
+        )
+    }
+
+    static func architecture() -> String {
+        var system = utsname()
+        uname(&system)
+        return withUnsafeBytes(of: system.machine) { raw in String(cString: raw.bindMemory(to: CChar.self).baseAddress!) }
+    }
+
+    /// The home folders that may appear in the report, and the account name: the real ones, and the trial home `RH_HOME` names.
+    private func privacy(_ runtime: Runtime) -> DoctorReport.Privacy {
+        var homes = [runtime.facts.homeDirectory.path]
+        if let entry = getpwuid(getuid()), let directory = entry.pointee.pw_dir { homes.append(String(cString: directory)) }
+        if let override = LiveSystemFacts.homeOverride { homes.append(override.path) }
+        let account = getpwuid(getuid()).flatMap { $0.pointee.pw_name }.map { String(cString: $0) } ?? NSUserName()
+        return DoctorReport.Privacy(homes: homes, account: account)
+    }
+
+    /// The result line of `rh config validate --strict`: counts, because the diagnostics quote the config.
+    private func configCheck(_ runtime: Runtime) -> String {
+        let loaded = ConfigStore.load(paths: runtime.paths, validating: true)
+        guard loaded.fileExists || loaded.localFileExists else { return "no config file" }
+        let result = loaded.resultWithMenuCheck(facts: runtime.facts)
+        if result.diagnostics.isEmpty { return "ok" }
+        let errors = result.diagnostics.filter { $0.severity == .error }.count
+        let warnings = result.diagnostics.count - errors
+        return "\(errors) error\(errors == 1 ? "" : "s"), \(warnings) warning\(warnings == 1 ? "" : "s")"
     }
 }

@@ -283,6 +283,37 @@ struct CLITests {
         #expect(agent.standardOutput.contains("arguments: \"cd /tmp && codex\""))
     }
 
+    /// The value a JSON reader finds in a printed `"..."` literal.
+    private func valueRead(from literal: some StringProtocol) throws -> String? {
+        try (JSONSerialization.jsonObject(with: Data(("[" + literal + "]").utf8)) as? [String])?.first
+    }
+
+    @Test func aDryRunPlanIsNeverCutOffAndEveryValueInItReadsBackAsExactlyThatValue() throws {
+        let config = "[[app]]\nid = \"fakeed\"\nname = \"Fake Editor\"\nbundle_id = \"com.apple.finder\"\nrole = \"editor\"\n"
+        let rh = try RH(config: config); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("it's \"q\" back\\slash dir")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        // A name of 120 characters puts the end of the third path well past the 200 characters the plan used to stop at.
+        let names = ["a b.txt", "it's \"x\".md", "back\\slash.txt", String(repeating: "n", count: 120) + ".txt"]
+        let files = names.map { folder.appendingPathComponent($0) }
+        for file in files { try "x".write(to: file, atomically: true, encoding: .utf8) }
+
+        // open: one target to a line, each a quoted string that is exactly the path, and nothing cut.
+        let open = try rh.run(["run", "open.app.fakeed", "--dry-run"] + files.map(\.path))
+        #expect(open.status == 0, Comment(rawValue: open.standardError))
+        let targets = open.standardOutput.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { $0.hasPrefix("target: ") }
+        #expect(targets.count == files.count, Comment(rawValue: open.standardOutput))
+        for (line, file) in zip(targets, files) {
+            #expect(try valueRead(from: line.dropFirst("target: ".count)) == file.path, Comment(rawValue: line))
+        }
+
+        // copy: the whole text, the paths one to a line, as a string that reads back as the text that would be copied.
+        let copy = try rh.run(["run", "copy-path.absolute", "--dry-run"] + files.map(\.path)).standardOutput
+        #expect(!copy.contains("…"), Comment(rawValue: copy))
+        let text = try #require(copy.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.first { $0.hasPrefix("text: ") })
+        #expect(try valueRead(from: text.dropFirst("text: ".count)) == files.map(\.path).joined(separator: "\n"), Comment(rawValue: copy))
+    }
+
     @Test func agentBypassPermissionsFlagsAndSafeOverride() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let normal = try rh.run(["run", "agent.claude@terminal", "--dry-run", "--container", "/tmp"])
@@ -291,10 +322,10 @@ struct CLITests {
         let bypass = try rh.run(["run", "agent.claude@terminal", "--bypass-permissions", "--dry-run", "--container", "/tmp"])
         #expect(bypass.standardOutput.contains("arguments: \"cd /tmp && claude --dangerously-skip-permissions\""))
 
-        let shortBypass = try rh.run(["run", "agent.agy@terminal", "-y", "--dry-run", "--container", "/tmp"])
+        let shortBypass = try rh.run(["run", "agent.agy@terminal", "--bypass-permissions", "--dry-run", "--container", "/tmp"])
         #expect(shortBypass.standardOutput.contains("arguments: \"cd /tmp && agy --dangerously-skip-permissions\""))
 
-        let withArg = try rh.run(["run", "agent.claude@terminal", "-y", "--arg", "--verbose", "--dry-run", "--container", "/tmp"])
+        let withArg = try rh.run(["run", "agent.claude@terminal", "--bypass-permissions", "--arg", "--verbose", "--dry-run", "--container", "/tmp"])
         #expect(withArg.standardOutput.contains("arguments: \"cd /tmp && claude --dangerously-skip-permissions --verbose\""))
 
         let rhWithBypassConfig = try RH(config: "[general]\nbypass_permissions = true\n"); defer { rhWithBypassConfig.cleanUp() }
@@ -303,6 +334,164 @@ struct CLITests {
 
         let safeOverride = try rhWithBypassConfig.run(["run", "agent.codex@terminal", "--safe", "--dry-run", "--container", "/tmp"])
         #expect(safeOverride.standardOutput.contains("arguments: \"cd /tmp && codex\""))
+    }
+
+    @Test func optionsThatWouldDoNothingAreErrorsAndTheShortBypassFlagIsGone() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        // An action that starts no agent: the options say they do not apply, and nothing is planned.
+        let flagged = try rh.run(["run", "copy-path.absolute", "--bypass-permissions", "--safe", "--arg", "--x", "--dry-run", "/tmp"])
+        #expect(flagged.status != 0, Comment(rawValue: flagged.standardOutput))
+        #expect(flagged.standardError.contains("--bypass-permissions, --safe, --arg can only be used with an AI agent"), Comment(rawValue: flagged.standardError))
+        #expect(!flagged.standardOutput.contains("Copy path"))
+        let branch = try rh.run(["run", "open.terminal@terminal", "--branch", "x", "--dry-run", "--container", "/tmp"])
+        #expect(branch.status != 0 && branch.standardError.contains("--branch can only be used with an AI agent"), Comment(rawValue: branch.standardError))
+        // The one-letter spelling of the bypass flag is not an option: a dash-led word is refused, not read as it was.
+        let short = try rh.run(["run", "agent.claude@terminal", "-y", "--dry-run", "--container", "/tmp"])
+        #expect(short.status != 0, Comment(rawValue: short.standardOutput))
+        #expect(short.standardError.contains("need -- before them"), Comment(rawValue: short.standardError))
+        // A preset keeps its agent's prompts on, so the flag would do nothing: it is refused.
+        let preset = try rh.run(["run", "preset.review", "--bypass-permissions", "--dry-run", "/tmp"])
+        #expect(preset.status != 0 && preset.standardError.contains("does not apply to a preset"), Comment(rawValue: preset.standardError))
+        let together = try rh.run(["run", "agent.claude@terminal", "--bypass-permissions", "--safe", "--dry-run", "--container", "/tmp"])
+        #expect(together.status != 0 && together.standardError.contains("cannot be used together"), Comment(rawValue: together.standardError))
+    }
+
+    @Test func bypassPermissionsReachesTheAgentEvenWhenItsConfigSwitchesThePromptsOff() throws {
+        // A config that says `bypass_permissions = false` for the agent used to swallow `--bypass-permissions` without a word.
+        let rh = try RH(config: "[agent.claude]\nbypass_permissions = false\n[agent.codex]\nbypass_permissions = true\n"); defer { rh.cleanUp() }
+        let claude = try rh.run(["run", "agent.claude@terminal", "--bypass-permissions", "--dry-run", "--container", "/tmp"])
+        #expect(claude.standardOutput.contains("arguments: \"cd /tmp && claude --dangerously-skip-permissions\""), Comment(rawValue: claude.standardOutput))
+        // And `--safe` turns the prompts on for one run, whatever the config says for that agent.
+        let codex = try rh.run(["run", "agent.codex@terminal", "--safe", "--dry-run", "--container", "/tmp"])
+        #expect(codex.standardOutput.contains("arguments: \"cd /tmp && codex\""), Comment(rawValue: codex.standardOutput))
+    }
+
+    @Test func aDryRunThatFailsIsNotWrittenToTheLogAndARealOneIs() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let log = rh.configDirectory.appendingPathComponent("logs/rh.log")
+        #expect(try rh.run(["run", "open.terminal", "--dry-run", "/nonexistent-rh-test-folder"]).status == 1)
+        #expect(!FileManager.default.fileExists(atPath: log.path), "a question answered on the command line is not a failure")
+        #expect(try rh.run(["run", "open.terminal", "/nonexistent-rh-test-folder"]).status == 1)
+        #expect(try String(contentsOf: log, encoding: .utf8).contains("open.terminal:"))
+    }
+
+    @Test func aDashArgumentIsSaidOnceAndAMisspeltCommandIsNotAnsweredWithTheHelp() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let dash = try rh.run(["run", "copy-path.absolute", "-dash.txt"])
+        #expect(dash.status == 64 && dash.standardError.contains("need -- before them"), Comment(rawValue: dash.standardError))
+        #expect(!dash.standardOutput.contains("OVERVIEW"))
+        let misspelt = try rh.run(["runn", "copy-path.absolute"])
+        #expect(misspelt.status == 64 && misspelt.standardError.contains("Did you mean \"run\"?"), Comment(rawValue: misspelt.standardError))
+        let withHelp = try rh.run(["nosuchcmd", "--help"])
+        #expect(withHelp.status == 64 && !withHelp.standardOutput.contains("OVERVIEW"), Comment(rawValue: withHelp.standardOutput))
+        // The spelling the message gives works: the file is planned, not the help printed.
+        let file = rh.configDirectory.appendingPathComponent("-dash.txt")
+        try "x".write(to: file, atomically: true, encoding: .utf8)
+        let fixed = try rh.run(["run", "copy-path.name", "--dry-run", "--", file.path])
+        #expect(fixed.status == 0 && fixed.standardOutput.contains("-dash.txt"), Comment(rawValue: fixed.standardError))
+    }
+
+    /// A git repository with a folder `sub/deeper` and one commit, in the test's own folder. Its worktrees are made under it too.
+    private func repository(_ rh: RH) throws -> URL {
+        let folder = rh.configDirectory.appendingPathComponent("repo")
+        let deeper = folder.appendingPathComponent("sub/deeper")
+        try FileManager.default.createDirectory(at: deeper, withIntermediateDirectories: true)
+        try "readme".write(to: folder.appendingPathComponent("README.md"), atomically: true, encoding: .utf8)
+        try "a".write(to: deeper.appendingPathComponent("a.txt"), atomically: true, encoding: .utf8)
+        _ = try git(["init", "-q"], in: folder)
+        _ = try git(["add", "-A"], in: folder)
+        _ = try git(["commit", "-q", "-m", "initial"], in: folder)
+        return folder
+    }
+
+    private func git(_ arguments: [String], in folder: URL) throws -> String {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+        process.arguments = ["-C", folder.path, "-c", "commit.gpgsign=false", "-c", "user.name=Test", "-c", "user.email=test"] + arguments
+        let out = Pipe()
+        process.standardOutput = out
+        process.standardError = Pipe()
+        try process.run()
+        let data = out.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        return String(decoding: data, as: UTF8.self)
+    }
+
+    /// A terminal that runs `touch` (no window) and one that runs `false`, and an agent called `marker` (which is not installed here).
+    private let worktreeConfig = """
+    [general]
+    agents = ["marker"]
+    [[app]]
+    id = "faketerm"
+    name = "Fake"
+    bundle_id = "com.apple.finder"
+    role = "terminal"
+    run_args = ["/usr/bin/touch", "{dir}/ran-{command}"]
+    [[app]]
+    id = "failterm"
+    name = "Failing"
+    bundle_id = "com.apple.finder"
+    role = "terminal"
+    run_args = ["/usr/bin/false", "{command}"]
+    [agent.marker]
+    name = "marker"
+    command = "marker"
+    """
+
+    @Test func aWorktreeRunStartsTheAgentInTheFolderThatWasNamedNotAtTheRootOfTheWorktree() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let result = try rh.run(["run", "agent.marker@faketerm", "--worktree", "--branch", "feature-x", "--container", repo.appendingPathComponent("sub/deeper").path])
+        #expect(result.status == 0, Comment(rawValue: result.standardError))
+        let made = repo.appendingPathComponent(".right-here/worktrees/feature-x/sub/deeper")
+        #expect(FileManager.default.fileExists(atPath: made.appendingPathComponent("ran-marker").path), "the agent did not start in the folder that was named")
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent("sub/deeper/ran-marker").path), "the repository's own folder was used")
+    }
+
+    @Test func aWorktreeDryRunShowsTheFolderInsideTheWorktreeAndMakesNothing() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let result = try rh.run(["run", "agent.marker@faketerm", "--worktree", "--dry-run", "--container", repo.appendingPathComponent("sub/deeper").path])
+        #expect(result.status == 0, Comment(rawValue: result.standardError))
+        #expect(result.standardOutput.contains(".right-here/worktrees/rh-<auto-branch>/sub/deeper/ran-marker"), Comment(rawValue: result.standardOutput))
+        #expect(result.standardError.contains("would create the worktree"), Comment(rawValue: result.standardError))
+        // The dry run asks the login shell about the agent: the marker is not installed, and the plan says so.
+        #expect(result.standardOutput.contains("marker is not found by your login shell"), Comment(rawValue: result.standardOutput))
+        #expect(try git(["worktree", "list"], in: repo).split(separator: "\n").count == 1, "a dry run made a worktree")
+    }
+
+    @Test func aRunThatFailsAfterItMadeTheWorktreeLeavesNoWorktreeAndNoBranch() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let result = try rh.run(["run", "agent.marker@failterm", "--worktree", "--branch", "feature-y", "--container", repo.appendingPathComponent("sub/deeper").path])
+        #expect(result.status == 1, Comment(rawValue: result.standardError))
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here/worktrees/feature-y").path), "the failed run left its worktree behind")
+        #expect(try git(["branch", "--list", "feature-y"], in: repo).isEmpty, "the failed run left its branch behind")
+        #expect(result.standardError.contains("was removed again"), Comment(rawValue: result.standardError))
+    }
+
+    @Test func aRunRefusedBeforeAnythingIsDoneLeavesNoWorktreeAndNoBranch() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let result = try rh.run(["run", "agent.marker@nosuchterm", "--worktree", "--branch", "feature-z", "--container", repo.appendingPathComponent("sub/deeper").path])
+        #expect(result.status == 1)
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here/worktrees").path), "a refused run made the worktrees folder")
+        #expect(try git(["branch", "--list", "feature-z"], in: repo).isEmpty)
+        #expect(try git(["worktree", "list"], in: repo).split(separator: "\n").count == 1)
+    }
+
+    @Test("the checker knows exactly the options that run and menu have, so a new option cannot slip past it")
+    func theCheckerKnowsTheOptionsOfRunAndMenu() throws {
+        for (command, known) in [("run", InvocationCheck.runOptions), ("menu", InvocationCheck.menuOptions)] {
+            let rh = try RH(); defer { rh.cleanUp() }
+            let help = try rh.run([command, "--help"]).standardOutput
+            // Every word of the help that is an option (a dash, then letters): the ones the help names, prose included.
+            let words = help.split { !($0.isLetter || $0 == "-") }.map(String.init)
+            let named = Set(words.filter { $0.hasPrefix("-") && $0.contains(where: \.isLetter) })
+            let checked = known.flags.union(known.values)
+            #expect(checked.isSubset(of: named), "\(command): the checker knows \(checked.subtracting(named)), which the help does not name")
+            #expect(named.subtracting(checked).isEmpty, "\(command): the help names \(named.subtracting(checked)), which the checker does not know and would refuse")
+        }
     }
 
     @Test func aPresetDryRunShowsTheQuotedPromptAndAHostileNameIsRefused() throws {
@@ -315,12 +504,13 @@ struct CLITests {
 
         let ok = try rh.run(["run", "preset.review", "--dry-run", plain.path])
         #expect(ok.status == 0, Comment(rawValue: ok.standardError))
-        // The dry run shows the argument with its quotes escaped, as a debug string would.
-        #expect(ok.standardOutput.contains(#"claude 'Review @\"it'\''s here.txt\" for bugs"#), Comment(rawValue: ok.standardOutput))
+        // The dry run shows the argument as a JSON string, so the quote of `@"it's here.txt"` is `\"` and each backslash is `\\`
+        // (the shell's own `'\''` is therefore `'\\''`).
+        #expect(ok.standardOutput.contains(#"claude 'Review @\"it'\\''s here.txt\" for bugs"#), Comment(rawValue: ok.standardOutput))
 
         let refused = try rh.run(["run", "preset.review", "--dry-run", hostile.path])
         #expect(refused.status != 0)
-        #expect(refused.standardError.contains("cannot be typed into a terminal"), Comment(rawValue: refused.standardError))
+        #expect(refused.standardError.contains("the file \"two\\nlines.txt\" cannot be named in the prompt of preset \"review\""), Comment(rawValue: refused.standardError))
         #expect(!refused.standardOutput.contains("claude '"))
 
         let noFiles = try rh.run(["run", "preset.review", "--dry-run", "--container", folder.path])
@@ -330,6 +520,36 @@ struct CLITests {
         #expect(actions.contains("preset.review") && actions.contains("preset.tests"))
         let agents = try #require(try rh.run(["agents", "--json"]).json as? [[String: Any]])
         #expect(agents.first { $0["id"] as? String == "claude" }?["promptArgument"] as? String == "positional")
+    }
+
+    @Test func aNewFileTakesItsNameInTheLanguageRhIsGivenAndInEnglishOtherwise() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("notes")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let english = try rh.run(["run", "new-file.md", "--dry-run", "--container", folder.path])
+        #expect(english.standardOutput.contains("/untitled.md"), Comment(rawValue: english.standardOutput))
+        let german = try rh.run(["run", "new-file.md", "--dry-run", "--language", "de-DE", "--language", "en-US", "--container", folder.path])
+        #expect(german.standardOutput.contains("/unbenannt.md"), Comment(rawValue: german.standardOutput))
+    }
+
+    @Test func aRefusalNamesTheFileOrFolderThatIsWrongAndQuotesItOnce() throws {
+        let rh = try RH(config: "[general]\nterminal = \"terminal\"\nagents = [\"claude\"]\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("nl\nfolder")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let file = rh.configDirectory.appendingPathComponent("two\nlines.txt")
+        try "x".write(to: file, atomically: true, encoding: .utf8)
+
+        // Terminal types the folder, so a line break in its name is refused: the message says it is the folder, once quoted.
+        let typed = try rh.run(["run", "agent.claude@terminal", "--dry-run", "--container", folder.path])
+        #expect(typed.status == 1)
+        #expect(typed.standardError.hasPrefix("error: The folder \"\(folder.path)".replacingOccurrences(of: "\n", with: "\\n")), Comment(rawValue: typed.standardError))
+        #expect(!typed.standardError.contains("\"\""), Comment(rawValue: typed.standardError))
+
+        // A file in the prompt of a preset: the file is named, and the prompt (which is fine) is not blamed.
+        let preset = try rh.run(["run", "preset.review@terminal", "--dry-run", file.path])
+        #expect(preset.status == 1)
+        #expect(preset.standardError.contains("the file \"two\\nlines.txt\" cannot be named in the prompt of preset \"review\""), Comment(rawValue: preset.standardError))
+        #expect(!preset.standardError.contains("The prompt of preset"), Comment(rawValue: preset.standardError))
     }
 
     @Test func rhAgentsSaysAnEnabledAgentThatItsShellDoesNotFindIsNotFound() throws {
@@ -710,6 +930,42 @@ struct CLITests {
         #expect(text.contains("Pfad kopieren"))
     }
 
+    @Test func theQuickStartIsTheFirstTopicAndTheMCPGuideNamesEveryTool() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let listing = try rh.run(["docs"]).standardOutput.split(separator: "\n").map(String.init)
+        #expect(listing.first == "Topics:" && listing.dropFirst().first?.hasPrefix("  start") == true, "\(listing.prefix(3))")
+        let start = try rh.run(["docs", "start"]).standardOutput
+        #expect(start.contains("rh setup") && start.contains("rh doctor") && start.contains("rh menu"), Comment(rawValue: start))
+        #expect(!start.contains("rh init") && !start.contains("rh install"), "the quick start names the one command: \(start)")
+        let mcp = try rh.run(["docs", "mcp"])
+        #expect(mcp.status == 0 && mcp.standardOutput.contains("claude mcp add right-here -- rh mcp"), Comment(rawValue: mcp.standardError))
+        for tool in ["right_here_run", "right_here_docs", "right_here_bookmarks", "right_here_worktree"] {
+            #expect(mcp.standardOutput.contains("`\(tool)`"), "docs mcp does not name \(tool)")
+        }
+        let help = try rh.run(["--help"]).standardOutput
+        #expect(help.contains("rh setup") && help.contains("rh doctor") && help.contains("rh docs start"), Comment(rawValue: help))
+    }
+
+    @Test func aDoctorReportHoldsNoHomeFolderNoAccountNameAndNoTextOfTheConfig() throws {
+        // The trial home stands for the person's home: the report must not show it, nor the account name the test runs under.
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let folder = home.appendingPathComponent(".config/right-here")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try "# MARKER-CONFIG-LINE-7731\n[general]\nterminal = \"terminal\"\nmenu = [oops\n".write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        let result = try rh.run(["doctor", "--report"])
+        #expect(result.status == 1, "the config row fails, and the report exits as the doctor does")
+        let report = result.standardOutput
+        #expect(report.hasPrefix("# Right Here bug report"), Comment(rawValue: report))
+        #expect(report.contains("- Config check (`rh config validate --strict`): 1 error"), Comment(rawValue: report))
+        #expect(!report.contains("MARKER-CONFIG-LINE-7731"), "the report holds a line of the config file")
+        #expect(!report.contains(home.path), "the trial home is shown as ~")
+        #expect(!report.contains(NSUserName()), "the account name is in the report")
+        #expect(report.contains("- macOS: "), Comment(rawValue: report))
+        let both = try rh.run(["doctor", "--report", "--json"])
+        #expect(both.status == 64 && both.standardError.contains("cannot be combined"), Comment(rawValue: both.standardError))
+    }
+
     @Test func docsServeTheTopics() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         #expect(try rh.run(["docs", "config"]).standardOutput.contains("general.terminal"))
@@ -933,6 +1189,44 @@ struct CLITests {
             #expect(!bytes.contains(0x1b) && !bytes.contains(0x07), "raw terminal control bytes in: \(output.standardOutput.debugDescription) \(output.standardError.debugDescription)")
         }
         #expect(outputs[0].status == 0 && outputs[2].status == 1, "the commands were meant to run")
+    }
+
+    @Test("the names the config gives are escaped in every list rh prints, bidirectional controls included")
+    func namesFromTheConfigNeverReachTheScreenRaw() throws {
+        // The config refuses a control character in a name, but not an override such as U+202E, which makes a name read
+        // backwards in a terminal: `Evil \u{202E}detseb` shows as `Evil bestedl`. The lists print what the config says.
+        let config = """
+        [general]
+        terminal = "terminal"
+        agents = ["claude", "mine"]
+        [[app]]
+        id = "evil"
+        name = "Evil \\u202Edetseb\\u2066 end"
+        bundle_id = "com.apple.finder"
+        role = "editor"
+        [agent.mine]
+        name = "Mine \\u202Ex"
+        command = "mine"
+        [[new_file.template]]
+        id = "t1"
+        title = "Notes \\u202Eevil"
+        extension = "txt"
+        """
+        let rh = try RH(config: config); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("work")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let controls: Set<Unicode.Scalar> = ["\u{202E}", "\u{2066}", "\u{2069}"]
+        let lists = [["actions"], ["actions", "--all"], ["apps"], ["agents"], ["menu", "--container", folder.path], ["menu", "--explain", "--container", folder.path]]
+        for arguments in lists {
+            let result = try rh.run(arguments)
+            #expect(result.status == 0, Comment(rawValue: "\(arguments): \(result.standardError)"))
+            #expect(!result.standardOutput.unicodeScalars.contains { controls.contains($0) }, "rh \(arguments.joined(separator: " ")) printed a bidirectional control raw: \(result.standardOutput.debugDescription)")
+        }
+        #expect(try rh.run(["apps"]).standardOutput.contains("Evil \\u202edetseb\\u2066 end"))
+        #expect(try rh.run(["actions"]).standardOutput.contains("New Notes \\u202eevil"))
+        #expect(try rh.run(["agents"]).standardOutput.contains("Mine \\u202ex"))
+        // `--json` is for programs and says what the config says, as JSON.
+        #expect(try rh.run(["apps", "--json"]).json != nil)
     }
 
     @Test func aWorkingDirectoryThatWasDeletedIsNoTargetNotTheRelativePathDot() throws {

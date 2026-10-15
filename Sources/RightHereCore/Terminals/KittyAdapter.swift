@@ -5,6 +5,8 @@ import Foundation
 /// against a real kitty (none is installed on the machine this was written on); `rh doctor --probe-launch` checks it.
 public struct KittyAdapter: TerminalAdapter {
     public let terminalID = "kitty"
+    /// The folder is the value of `--directory`, an argument; nothing types it.
+    public var typesTheFolder: Bool { false }
 
     public init() {}
 

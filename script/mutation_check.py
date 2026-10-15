@@ -67,7 +67,7 @@ MUTANTS = [
     ("dot-dot is not recognised", "Sources/RightHereCore/Paths/PathNormalization.swift",
      'current.elementsEqual("..".unicodeScalars)', 'current.elementsEqual("...".unicodeScalars)'),
     ("a timed-out process that ignores SIGTERM is never killed hard", "Sources/RightHereKit/ProcessRunner.swift",
-     "Self.killLeftovers(of: process)", "_ = process"),
+     "try? await Task.sleep(for: .seconds(1))\n                Self.killLeftovers(of: process)", "try? await Task.sleep(for: .seconds(1))\n                _ = process"),
     ("the children of a killed process are left running", "Sources/RightHereKit/ProcessRunner.swift",
      "{ killpg(pid, SIGKILL) }", "{ _ = pid }"),
     ("the Files & Folders button is gone", "Sources/RightHereKit/FailureAlert.swift",
@@ -174,8 +174,8 @@ MUTANTS = [
     ("a .. after a symbolic link is resolved by reading the text", "Sources/RightHereKit/PathHazard.swift",
      "if isSymbolicLink(\"/\" + names.joined(separator: \"/\")) { return true }", "if false { return true }"),
     ("a preset prompt with a newline reaches the terminal", "Sources/RightHereCore/Planner/Planner.swift",
-     "if let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }",
-     "if false, let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }"),
+     "if let problem = PresetTemplate.typingProblem(prompt) {",
+     "if false, let problem = PresetTemplate.typingProblem(prompt) {"),
     ("a preset prompt is not checked for control characters", "Sources/RightHereCore/Presets/AgentPreset.swift",
      "if ShellQuoting.containsControlCharacter(prompt) {", "if false {"),
     ("a preset prompt is typed unquoted", "Sources/RightHereCore/Planner/Planner.swift",
@@ -277,9 +277,10 @@ MUTANTS = [
     ("the preset prompt limit counts Characters, not bytes", "Sources/RightHereCore/Presets/AgentPreset.swift",
      "if prompt.utf8.count > AgentPreset.maxPromptBytes {", "if prompt.count > AgentPreset.maxPromptBytes {"),
     ("a variant's argument is typed unquoted", "Sources/RightHereCore/Planner/AgentLaunchResolution.swift",
-     "words.append(ShellQuoting.quote(argument, for: .posix))", "words.append(argument)"),
+     'variant: variant?.id ?? "", argument: argument)) }\n            words.append(ShellQuoting.quote(argument, for: .posix))',
+     'variant: variant?.id ?? "", argument: argument)) }\n            words.append(argument)'),
     ("a variant's argument with a backslash is typed", "Sources/RightHereCore/Planner/AgentLaunchResolution.swift",
-     'if argument.unicodeScalars.contains("\\\\") { return .failure(', "if false { return .failure("),
+     'if argument.unicodeScalars.contains("\\\\") { return .failure(.variantArgument(', "if false { return .failure(.variantArgument("),
     ("an editor named as a terminal is opened as one", "Sources/RightHereCore/Planner/DefaultApps.swift",
      "guard let app = config.terminalApp(id: id) else { throw PlanError.unknownTerminal(id) }",
      "guard let app = config.app(id: id) else { throw PlanError.unknownTerminal(id) }"),
@@ -294,6 +295,40 @@ MUTANTS = [
     ("validate does not read the shared file on its own, so an error the overlay hides is passed", "Sources/RightHereCore/Config/ConfigLayers.swift",
      "        if case .text = local {\n            for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {",
      "        if false {\n            for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {"),
+    ("a value in a plan is quoted without escaping its control characters", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
+     '''"\\"" + scalarReplacing(["\\\\": "\\\\\\\\", "\\"": "\\\\\\""]).withControlCharactersEscaped + "\\""''',
+     '''"\\"" + scalarReplacing(["\\\\": "\\\\\\\\", "\\"": "\\\\\\""]) + "\\""'''),
+    ("a terminal that types the folder is handed one with a control character", "Sources/RightHereCore/Planner/Planner.swift",
+     "        if adapter.typesTheFolder {\n            do { try ShellQuoting.validateForTyping(directory.path) }",
+     "        if false {\n            do { try ShellQuoting.validateForTyping(directory.path) }"),
+    ("an adapter that says nothing is taken for one that types none of the folder", "Sources/RightHereCore/Terminals/TerminalAdapter.swift",
+     "    public var typesTheFolder: Bool { true }\n}", "    public var typesTheFolder: Bool { false }\n}"),
+    ("rh apps prints a name from the config raw", "Sources/rh/Commands/Actions.swift",
+     "Output.print(line(row.id, row.name.withControlCharactersEscaped, row.role,", "Output.print(line(row.id, row.name, row.role,"),
+    ("rh actions prints a title from the config raw", "Sources/rh/Commands/Actions.swift",
+     "Output.print(id + info.title.withControlCharactersEscaped +", "Output.print(id + info.title +"),
+    ("rh agents prints a name from the config raw", "Sources/rh/Commands/Actions.swift",
+     "Output.column(row.name.withControlCharactersEscaped, 16)", "Output.column(row.name, 16)"),
+    ("rh menu prints a title from the config raw", "Sources/rh/Commands/Actions.swift",
+     'case .action: return pad + node.title.withControlCharactersEscaped + "    ("', 'case .action: return pad + node.title + "    ("'),
+    ("the MCP action list prints titles unfenced", "Sources/RightHereMCP/Tools.swift",
+     '"\\($0.id)  " + Fence.name($0.title)', '"\\($0.id)  " + $0.title'),
+    ("the MCP menu preview prints titles unfenced", "Sources/RightHereMCP/Tools.swift",
+     "json.fencing([\"title\"]).pretty()", "json.pretty()"),
+    ("the MCP catalog prints names unfenced", "Sources/RightHereMCP/Tools.swift",
+     "structured.fencing([\"name\", \"command\", \"bundleID\"]).pretty()", "structured.pretty()"),
+    ("a worktree that existed before this run is discarded", "Sources/RightHereKit/GitWorktree.swift",
+     "        guard created.wasCreated else { return false }", "        guard true else { return false }"),
+    ("a worktree with a change in it is discarded", "Sources/RightHereKit/GitWorktree.swift",
+     "check.status == 0, check.standardOutput.isEmpty else { return false }", "check.status == 0 else { return false }"),
+    ("two runs in one second get the same worktree name", "Sources/RightHereKit/GitWorktree.swift",
+     'return "rh/\\(Int(now.timeIntervalSince1970))-" + String(format: "%08x", random)', 'return "rh/\\(Int(now.timeIntervalSince1970))"'),
+    ("an agent starts at the root of its worktree, not in the folder named", "Sources/rh/Commands/Run.swift",
+     "return URL(fileURLWithPath: worktree.path + path.dropFirst(top.count))", "return worktree"),
+    ("a preset is started with --bypass-permissions or --safe", "Sources/rh/Commands/Run.swift",
+     "if isPreset, bypassPermissions || safe {", "if false, bypassPermissions || safe {"),
+    ("--bypass-permissions, --safe, --arg or --worktree is accepted for an action that starts no agent", "Sources/rh/Commands/Run.swift",
+     "if !launchesAnAgent, !named.isEmpty {", "if false, !launchesAnAgent, !named.isEmpty {"),
     ("worktrees: the repository's own hooks are not switched off", "Sources/RightHereKit/GitWorktree.swift",
      'var arguments = ["-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]', 'var arguments: [String] = []'),
     ("worktrees: the repository's own filters still run", "Sources/RightHereKit/GitWorktree.swift",
@@ -310,6 +345,11 @@ MUTANTS = [
      "public static let lifetime: TimeInterval = 30", "public static let lifetime: TimeInterval = 90"),
     ("the setup window offers to remove a worktree Right Here did not make, and asks git about it", "Sources/RightHereKit/SetupWorktrees.swift",
      "guard row.canBeRemoved else {", "guard true else {"),
+    ("an agent's args are typed unquoted", "Sources/RightHereCore/Planner/AgentLaunchResolution.swift",
+     'argument: argument)) }\n            words.append(ShellQuoting.quote(argument, for: .posix))\n        }\n        return .success(words)',
+     'argument: argument)) }\n            words.append(argument)\n        }\n        return .success(words)'),
+    ("an agent's args with a backslash are typed", "Sources/RightHereCore/Planner/AgentLaunchResolution.swift",
+     'if argument.unicodeScalars.contains("\\\\") { return .failure(.agentArgument(', "if false { return .failure(.agentArgument("),
 ]
 
 
@@ -330,8 +370,10 @@ def failed_tests(output: str) -> set[str]:
 def run_tests(clone: pathlib.Path) -> tuple[str, bool]:
     """`swift test` in the clone: what it printed, and whether it had to be killed for hanging."""
     # Its own session, so that on a hang the test host and every rh it started are stopped together.
+    # A run that is killed can be cut inside a multi-byte character (the checkmarks of the test report are three bytes), so what cannot
+    # be decoded is replaced and not an error: strict decoding crashed this script on the very hang it is there to report.
     process = subprocess.Popen(["swift", "test"], cwd=clone, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                               text=True, start_new_session=True)
+                               text=True, errors="replace", start_new_session=True)
     try:
         output, _ = process.communicate(timeout=900)
         return output, False
@@ -358,8 +400,9 @@ def main() -> int:
                 continue
             path = clone / file
             original = path.read_text(encoding="utf-8")
-            if old not in original:
-                problems.append(f"[{index}] the pattern for \"{name}\" is not in {file} any more; update the entry")
+            occurrences = original.count(old)
+            if occurrences != 1:
+                problems.append(f"[{index}] the pattern for \"{name}\" is in {file} {occurrences} times, not once; make it match exactly once")
                 print(f"[{index}] SKIPPED: {name}", flush=True)
                 continue
             path.write_text(original.replace(old, new, 1), encoding="utf-8")

@@ -36,6 +36,88 @@ public enum Documentation {
     `rh actions` marks an action available when it can run on this machine (the terminal or app is
     installed, the terminal can run commands). It does not check that an agent's own command is
     installed: `rh agents` shows which agent commands your login shell finds.
+
+    ## How to read a plan
+
+    `rh run <action> --dry-run` prints what the action would do and runs nothing. The first line says
+    what it is; each numbered step says what it does, and the lines under it give its values:
+
+    - `open <bundle id>`, `reveal`: a `target:` line for each path, one to a line.
+    - `AppleScript controlling <app>`: an `arguments:` line, the values the script receives, in order. The
+      script itself is in `--json` (`source`); the values are never part of it.
+    - `run "<program>" "<argument>" ...`: the program and each of its arguments.
+    - `copy <n> characters to the clipboard`: a `text:` line with the whole text.
+    - `create "<path>"`: a `contents:` line.
+
+    Every value is a quoted string, as JSON writes one: `\\"` is a quote, `\\\\` a backslash, `\\n` a line break,
+    and a control character is an escape such as `\\u001b`. Nothing is cut short. A `note:` line says what
+    the plan changed or left out: a default app that is not installed and the one used instead, a new file
+    that is selected rather than opened, the agent's command that the login shell did not find. `--json`
+    holds the same plan as data (`steps`, `notices`), for a program or an agent to read.
+
+    ## Starting an agent: options
+
+    - `--worktree` starts the agent in an isolated git worktree of the repository, on a new branch, in the same
+      folder the request names. `--branch <name>` names the branch, or attaches an existing one. The plan is
+      made before the worktree is, so a refused request leaves nothing behind; a run that fails removes the
+      worktree again when nothing in it changed. `rh worktree list`, `rh worktree add <branch>` and
+      `rh worktree remove <name>` manage them: remove refuses uncommitted work unless `--force` is given, and
+      only touches worktrees Right Here made.
+    - `--bypass-permissions` starts the agent with its own flag that switches its permission prompts off (the
+      agent's `bypass_permission_arg`, built in for the agents that have one). `--safe` starts it with the
+      prompts on, whatever the config says. Both are for an agent (`agent.<id>`): a preset keeps its prompts
+      on, since its prompt carries the names of the files.
+    - `--arg <argument>` adds one argument after the agent's command. It can be repeated, and it is for an agent
+      or a preset.
+
+    These options apply to an agent or a preset and are an error for any other action.
+
+    ## Pinned and recent folders
+
+    `rh pin [folder]` keeps a folder in the list `rh pins` prints (`rh unpin <folder>` removes it), and `rh recents`
+    prints the folders used with Right Here (`rh recents --clear` empties the list). They live in the state file
+    next to the config. They are not part of the config, so they are never synced.
+
+    ## Notes
+
+    - With presets belonging to more than one agent, the menu title of a preset gets the agent's name in front
+      (`Codex: Security review`).
+    - A single entry in `copy_path.styles` is not a submenu: its item is on the menu's top level, titled `Copy Path` for
+      the absolute path, and `Copy Path: <style>` for another style (`Copy Path: Path from Home (~)`).
+    - `rh actions` prints the actions that can run on this machine, with no status column; `--all` adds the others, each
+      with the reason it cannot run.
+    - `RH_NO_UI` turns off alerts and stops `rh` from starting `open` or `osascript`. `RH_HOME` moves every
+      per-user path (config, log, runner script, Services, command link) under the folder it names; the login
+      shell that `init`, `agents` and `doctor` start is not moved, so it runs the person's own startup files.
+    - A file outside the folder of a preset's selection is named in its prompt as an absolute `@` mention, quoted
+      (`@"..."`) when its path has a space.
+    """
+
+    /// What a newcomer does, in the order they need it. The first topic `rh docs` lists.
+    public static let start = """
+    # Quick start
+
+    Right Here puts terminals, editors and AI agents in the Finder menu, and runs the same actions from the command line.
+
+    1. Set it up: `rh setup` does the whole job in order, and can be run again at any time. It writes a commented
+       config file (`~/.config/right-here/config.toml`) from what is installed on this Mac, puts the runner script
+       and the `rh` link in place, installs the Quick Actions, registers the Finder extension, and ends with the
+       checks of `rh doctor`. Say what you use with `--terminal`, `--editor` and `--agents` (for example
+       `rh setup --terminal ghostty --editor zed --agents claude,codex`); a config that exists is never rewritten.
+       `rh setup --dry-run` shows what it would do.
+    2. Switch the extension on: the one thing setup cannot do for you. Under System Settings, General, Login Items
+       & Extensions, Finder, switch on Right Here. `rh setup` says when it is still needed.
+    3. See the menu before you use it: `rh menu --container <a folder>`. `--explain` also says what it leaves
+       out and why.
+    4. Check the setup: `rh doctor` gives a line for each thing, and a fix for each problem. `rh doctor --report`
+       writes the same as Markdown, for a bug report.
+    5. Try an action without doing it: `rh actions` lists them, and `rh run <action> --dry-run <path>` shows
+       the plan (`rh docs actions` explains how to read it).
+    6. Then `rh docs config` lists every setting, `rh docs sync` keeps the config on several Macs, and
+       `rh docs troubleshooting` is for when something does not work.
+
+    AI agents that set Right Here up for a person read `rh docs agent-setup`; agents that use it as a tool read
+    `rh docs mcp`.
     """
 
     public static let sync = """
@@ -140,12 +222,17 @@ public enum Documentation {
     /// The topics, in the order they are listed, with a one-line summary each. Every surface that names topics
     /// (`rh docs`, the MCP docs tool) takes them from here.
     public static let topicSummaries: [(name: String, summary: String)] = [
+        ("start", "the first steps, in the order a newcomer needs them"),
+        ("actions", "the action id grammar, how to read a plan, the options that start an agent"),
         ("config", "every setting in config.toml, with defaults and examples"),
         ("sync", "keep the config in sync across Macs: config.local.toml and rh config sync"),
-        ("actions", "the action id grammar"),
         ("agent-setup", "how an AI agent should set up Right Here"),
+        ("mcp", "Right Here as an MCP server for AI agents: setup, the tools, the framing"),
         ("troubleshooting", "the menu does not appear, a click does nothing, permission prompts")
     ]
+
+    /// The topic served by `RightHereMCP` (its tool list is read from the code, which Core cannot see). `Guides` serves every topic.
+    public static let mcpTopic = "mcp"
 
     public static let topics = topicSummaries.map(\.name)
 
@@ -165,6 +252,7 @@ public enum Documentation {
         case "config": return config
         case "actions": return actions
         case "sync": return sync
+        case "start": return start
         default: return guides[topic]
         }
     }

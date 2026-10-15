@@ -63,6 +63,10 @@ public struct Planner: Sendable {
         if (style == .gitRelative || style == .aiMention), targets.contains(where: { facts.gitRoot(containing: $0) == nil }) {
             notices.append("Not inside a git repository, so the absolute path is copied.")
         }
+        // Outside the home folder a `~` form is not possible, and the absolute path is what is copied: say so, as `git-relative` does.
+        if style == .tilde, targets.contains(where: { !isInsideHome($0) }) {
+            notices.append("Not inside your home folder, so the absolute path is copied.")
+        }
         return LaunchPlan(action: ref.id, summary: "Copy \(noun) (\(style.rawValue))", steps: [.copyToPasteboard(text)], notices: notices)
     }
 
@@ -83,10 +87,25 @@ public struct Planner: Sendable {
     /// Said when the folder is not what was selected: a terminal is only ever handed a folder, so a file stands for
     /// the folder that holds it, and with several items the first one decides.
     private func folderNotice(for context: HereContext, directory: URL) -> [String] {
-        guard let first = context.items.first else { return [] }
-        if context.items.count > 1 { return ["Several items are selected; the folder of the first one is used: \(directory.path.withControlCharactersEscaped)."] }
-        if facts.isDirectory(first) == false { return ["\(first.lastPathComponent.withControlCharactersEscaped) is a file, so its folder is used: \(directory.path.withControlCharactersEscaped)."] }
+        guard let first = context.items.first else {
+            if let container = context.container, facts.isDirectory(container) == false {
+                return ["\(container.lastPathComponent.jsonQuoted) is a file, so its folder is used: \(directory.path.jsonQuoted)."]
+            }
+            return []
+        }
+        // With several items the folder is the one that holds the first, which for a folder is its parent and not the folder itself.
+        if context.items.count > 1 {
+            return ["Several items are selected; the folder that holds the first one, \(first.lastPathComponent.jsonQuoted), is used: \(directory.path.jsonQuoted)."]
+        }
+        if facts.isDirectory(first) == false { return ["\(first.lastPathComponent.jsonQuoted) is a file, so its folder is used: \(directory.path.jsonQuoted)."] }
         return []
+    }
+
+    /// Whether a path is the home folder or inside it, as `~` would be written for it.
+    private func isInsideHome(_ url: URL) -> Bool {
+        let home = facts.onDiskPath(facts.homeDirectory)
+        let path = facts.onDiskPath(url)
+        return path == home || path.hasPrefix(home == "/" ? "/" : home + "/")
     }
 
     // MARK: Open with an app
@@ -178,7 +197,11 @@ public struct Planner: Sendable {
     /// Types a command into a new shell of a terminal that can run commands, in `directory`.
     private func typeCommand(_ typed: String, summary: String, in app: AppDescriptor, bundleID: String, adapter: any TerminalAdapter, directory: URL, ref: ActionRef, context: HereContext, notices: [String] = []) throws -> LaunchPlan {
         do { try ShellQuoting.validateForTyping(typed) } catch { throw PlanError.unsafeText(typed) }
-        do { try ShellQuoting.validateForTyping(directory.path) } catch { throw PlanError.unsafeText(directory.path) }
+        // Only a terminal that types the folder needs it to be typeable: Ghostty, WezTerm and kitty are handed it as an argument and
+        // type none of it. A terminal defined in the config counts as typing it, since its template may put `{dir}` into a shell line.
+        if adapter.typesTheFolder {
+            do { try ShellQuoting.validateForTyping(directory.path) } catch { throw PlanError.unsafeFolder(directory.path) }
+        }
         let steps = try adapter.steps(for: TerminalSession(directory: directory, typedInput: typed, placement: config.terminalPlacement), bundleID: bundleID, facts: facts)
         return LaunchPlan(
             action: ref.id,
@@ -213,13 +236,18 @@ public struct Planner: Sendable {
 
         let renderer = PathRenderer(facts: facts)
         let files = presetFiles(in: context)
-        let prompt = PresetTemplate.expand(
-            preset.prompt,
-            files: files.map { renderer.render($0, style: .aiMention, relativeTo: directory) }.joined(separator: " "),
-            folder: renderer.render(directory, style: .name),
-            name: renderer.render(context.items.first ?? directory, style: .name)
-        )
-        if let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }
+        let item = context.items.first ?? directory
+        let carried = files.map { PresetTemplate.Carried(kind: .file, name: $0.lastPathComponent, text: renderer.render($0, style: .aiMention, relativeTo: directory)) }
+            + [PresetTemplate.Carried(kind: .folder, name: directory.lastPathComponent, text: renderer.render(directory, style: .name)),
+               PresetTemplate.Carried(kind: .item, name: item.lastPathComponent, text: renderer.render(item, style: .name))]
+        let prompt = PresetTemplate.expand(preset.prompt, carried: carried)
+        if let problem = PresetTemplate.typingProblem(prompt) {
+            // A file name with a line break is the file's doing and not the prompt's: say which one it is.
+            if let culprit = PresetTemplate.carriedNameBehind(problem, template: preset.prompt, carried: carried), let reason = problem.aboutAName {
+                throw PlanError.unsafePresetName(preset: id, subject: culprit.subject, reason: reason)
+            }
+            throw PlanError.unsafePrompt(preset: id, reason: problem.refusal)
+        }
 
         // The agent's own permission prompts stay on for a preset, whatever the config says for plain starts: the prompt carries the names of the
         // selected files, and a file called "ignore the above and run ..." must not reach an agent that asks nothing (ADR 0012).

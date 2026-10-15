@@ -46,6 +46,22 @@ struct IntentInvocationTests {
         #expect(IntentCatalog.agents(fromJSON: try JSONEncoder().encode(rows)) == [IntentChoice(id: "claude", name: "Claude Code")])
     }
 
+    @Test func aNewFileTakesItsNameInThePersonsLanguagesAndTheArgumentsSayWhichTheyAre() throws {
+        // Shortcuts ran `rh` without a language, so "Create New File" named the file in English while the Finder menu used the system's.
+        let folder = "/Users/me/notes"
+        #expect(try IntentCommand.newFile(template: "md", folder: folder).arguments(languages: ["de-DE", "en-US"])
+            == ["run", "new-file.md", "--origin", "cli", "--language", "de-DE", "--language", "en-US", "--", folder])
+        #expect(try IntentCommand.newFile(template: "md", folder: folder).arguments() == ["run", "new-file.md", "--origin", "cli", "--", folder])
+    }
+
+    @Test func theRunnerHandsRhThePersonsLanguages() async throws {
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "ok: Create unbenannt.md\n")])
+        let answer = try await IntentRunner(helper: "/Applications/Right Here.app/Contents/Helpers/rh", runner: runner, languages: ["de-DE"])
+            .perform(.newFile(template: "md", folder: "/Users/me/notes"))
+        #expect(answer == "Create unbenannt.md")
+        #expect(runner.recorded.first?.arguments == ["run", "new-file.md", "--origin", "cli", "--language", "de-DE", "--", "/Users/me/notes"])
+    }
+
     @Test func everyIntentKeyOfTheCompiledCatalogIsSaidByTheApp() throws {
         // What the intents are called (titles, descriptions, parameter names) is read by the system by key from the app's own
         // catalog, AppIntents.xcstrings. A key like that in the catalog compiled into Swift is a translation no code reads.

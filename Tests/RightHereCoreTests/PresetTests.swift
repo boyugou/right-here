@@ -173,7 +173,7 @@ struct PresetPlannerTests {
 
     // MARK: Refusals
 
-    @Test("a prompt that cannot be typed as one safe word is refused with the preset error", arguments: [
+    @Test("a file whose name cannot be typed in the prompt is named, and the prompt is not blamed", arguments: [
         "new\nline.txt", "carriage\rreturn.txt", "tab\there.txt", "bell\u{7}.txt", "escape\u{1B}[2J.txt", "line\u{2028}separator.txt",
         "back\\slash.txt", "quote \"and space.txt"
     ])
@@ -181,12 +181,44 @@ struct PresetPlannerTests {
         let config = Config(enabledAgents: ["claude"], presets: [review])
         let facts = machine(files: [name])
         do { _ = try Planner(config: config, facts: facts).plan(.preset(id: "review", terminal: nil), context: selection([name])); Issue.record("expected a refusal") } catch let error as PlanError {
-            guard case .unsafePrompt(let preset, _) = error else { Issue.record("expected .unsafePrompt, got \(error)"); return }
+            guard case .unsafePresetName(let preset, let subject, _) = error else { Issue.record("expected .unsafePresetName, got \(error)"); return }
             #expect(preset == "review")
-            #expect(error.errorDescription?.contains("cannot be typed into a terminal") == true)
+            // The file is the one named, by its own name, quoted once.
+            #expect(subject == "the file " + name.jsonQuoted)
+            let message = error.errorDescription ?? ""
+            #expect(message.hasPrefix("the file " + name.jsonQuoted + " cannot be named in the prompt of preset \"review\": "), Comment(rawValue: message))
+            #expect(!message.hasPrefix("The prompt of preset"))
+            #expect(!message.contains("\"\""))
             // Whatever the name held, the message shows it escaped, never as a raw line break.
-            #expect(!(error.errorDescription ?? "").unicodeScalars.contains(where: { $0.value < 0x20 }))
+            #expect(!message.unicodeScalars.contains(where: { $0.value < 0x20 }))
         } catch { Issue.record("\(error)") }
+    }
+
+    @Test func theFileThatIsAtFaultIsTheOneNamedAmongSeveral() {
+        let config = Config(enabledAgents: ["claude"], presets: [review])
+        let facts = machine(files: ["fine.txt", "two\nlines.txt", "also fine.txt"])
+        do { _ = try Planner(config: config, facts: facts).plan(.preset(id: "review", terminal: nil), context: selection(["fine.txt", "two\nlines.txt", "also fine.txt"])); Issue.record("expected a refusal") } catch let error as PlanError {
+            #expect(error == .unsafePresetName(preset: "review", subject: "the file \"two\\nlines.txt\"", reason: "its name has a line break or another control character"))
+        } catch { Issue.record("\(error)") }
+    }
+
+    @Test func aFolderNameThePromptCarriesIsNamedAsTheFolder() {
+        let preset = AgentPreset(id: "p", title: "P", prompt: "Explain {files} in {folder}")
+        let config = Config(enabledAgents: ["claude"], presets: [preset])
+        let facts = FakeSystemFacts(directories: ["/Users/tester/code", "/Users/tester/code/odd\nfolder"], files: ["/Users/tester/code/odd\nfolder/a.txt"],
+                                    applications: ["com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app")])
+        let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/odd\nfolder/a.txt")])
+        do { _ = try Planner(config: config, facts: facts).plan(.preset(id: "p", terminal: nil), context: context); Issue.record("expected a refusal") } catch let error as PlanError {
+            #expect(error == .unsafePresetName(preset: "p", subject: "the folder \"odd\\nfolder\"", reason: "its name has a line break or another control character"))
+        } catch { Issue.record("\(error)") }
+    }
+
+    @Test func aNameThePromptDoesNotCarryIsNeverBlamed() throws {
+        // `{files}` is not in this prompt, so a file with a line break in its name does not reach the terminal.
+        let preset = AgentPreset(id: "p", title: "P", prompt: "Say hello")
+        let config = Config(enabledAgents: ["claude"], presets: [preset])
+        let plan = try Planner(config: config, facts: machine(files: ["two\nlines.txt"])).plan(.preset(id: "p", terminal: nil), context: selection(["two\nlines.txt"]))
+        #expect(!plan.steps.isEmpty)
     }
 
     @Test func aNameThatWouldMakeThePromptStartWithADashIsRefused() {
@@ -194,7 +226,16 @@ struct PresetPlannerTests {
         let config = Config(enabledAgents: ["claude"], presets: [preset])
         let facts = machine(files: ["--version"])
         do { _ = try Planner(config: config, facts: facts).plan(.preset(id: "p", terminal: nil), context: selection(["--version"])); Issue.record("expected a refusal") } catch let error as PlanError {
-            guard case .unsafePrompt = error else { Issue.record("expected .unsafePrompt, got \(error)"); return }
+            #expect(error == .unsafePresetName(preset: "p", subject: "the selected item \"--version\"", reason: "its name would start the prompt with a dash, which the agent would read as an option"))
+        } catch { Issue.record("\(error)") }
+    }
+
+    @Test func aPromptThatIsTheProblemItselfIsStillSaidToBeThePrompt() {
+        // A template with a line break in it (the config refuses one, a Config built by hand does not) has no name to blame.
+        let preset = AgentPreset(id: "p", title: "P", prompt: "line one\nline two {files}")
+        let config = Config(enabledAgents: ["claude"], presets: [preset])
+        do { _ = try Planner(config: config, facts: machine(files: ["a.txt"])).plan(.preset(id: "p", terminal: nil), context: selection(["a.txt"])); Issue.record("expected a refusal") } catch let error as PlanError {
+            #expect(error == .unsafePrompt(preset: "p", reason: "it has a line break or another control character"))
         } catch { Issue.record("\(error)") }
     }
 

@@ -19,10 +19,15 @@ public enum PlanError: Error, Equatable, Sendable {
     case unknownPreset(String, choices: [String])
     /// The prompt of a preset, once filled in, cannot be typed into a terminal as one argument (the reason says why).
     case unsafePrompt(preset: String, reason: String)
+    /// A name the prompt of a preset carries from the selection (`subject` says which: the file, the folder) is what makes
+    /// it impossible to type, so it is named instead of blaming the prompt.
+    case unsafePresetName(preset: String, subject: String, reason: String)
     /// The target exists but cannot do what was asked, for example a terminal that cannot run a command.
     case unsupported(String)
-    /// Text that would be typed into a terminal contains line breaks or control characters.
+    /// Text that would be typed into a terminal (a command line) contains line breaks or control characters.
     case unsafeText(String)
+    /// A folder whose path a terminal would have to type (`cd …`) has a line break or another control character in it.
+    case unsafeFolder(String)
     case nameExhausted
 }
 
@@ -68,8 +73,10 @@ extension PlanError: LocalizedError {
         case .unknownTemplate(let id, let choices): return "Unknown new-file template \"\(id)\"." + Self.hint(id, choices) + " A `[[new_file.template]]` in the config replaces the built-in ones."
         case .unknownPreset(let id, let choices): return "Unknown preset \"\(id)\"." + Self.hint(id, choices) + " A `[[preset]]` in the config adds or replaces one."
         case .unsafePrompt(let preset, let reason): return "The prompt of preset \"\(preset)\" cannot be typed into a terminal: \(reason)."
+        case .unsafePresetName(let preset, let subject, let reason): return "\(subject) cannot be named in the prompt of preset \"\(preset)\": \(reason)."
         case .unsupported(let reason): return reason
-        case .unsafeText(let text): return "\"\(text.debugDescription)\" contains line breaks or control characters and cannot be typed into a terminal."
+        case .unsafeText(let text): return "\(text.jsonQuoted) contains line breaks or control characters and cannot be typed into a terminal."
+        case .unsafeFolder(let path): return "The folder \(path.jsonQuoted) has a line break or another control character in its path, so it cannot be typed into a terminal. Rename it, or use a terminal that is handed the folder, such as Ghostty."
         case .nameExhausted: return "No free file name was found."
         }
     }

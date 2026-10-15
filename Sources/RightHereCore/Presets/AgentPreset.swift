@@ -164,16 +164,109 @@ public enum PresetTemplate {
         }.joined()
     }
 
-    /// Why a prompt cannot be typed into a terminal as one argument, or `nil`. A line break would press Return in the
-    /// middle of it; a backslash is read differently inside single quotes by fish than by the other shells, and no
-    /// quoting is right for every shell (the person's login shell is not what the terminal runs); a leading dash would
-    /// be read by the agent as an option.
-    public static func typingRefusal(_ prompt: String) -> String? {
-        if prompt.allSatisfy(\.isWhitespace) { return "the prompt is empty" }
-        if ShellQuoting.containsControlCharacter(prompt) { return "it has a line break or another control character" }
-        if prompt.unicodeScalars.contains("\\") { return "it has a backslash, which shells do not all read the same way inside quotes" }
-        if prompt.unicodeScalars.first == "-" { return "it starts with a dash, which the agent would read as an option" }
-        if prompt.utf8.count > AgentPreset.maxPromptBytes { return "it is longer than \(AgentPreset.maxPromptBytes) bytes" }
+    /// Why a prompt cannot be typed into a terminal as one argument. A line break would press Return in the middle of it;
+    /// a backslash is read differently inside single quotes by fish than by the other shells, and no quoting is right for
+    /// every shell (the person's login shell is not what the terminal runs); a leading dash would be read by the agent as
+    /// an option.
+    public enum TypingProblem: Sendable, Equatable {
+        case empty, controlCharacter, backslash, leadingDash, tooLong
+
+        /// The sentence about the prompt as a whole.
+        public var refusal: String {
+            switch self {
+            case .empty: return "the prompt is empty"
+            case .controlCharacter: return "it has a line break or another control character"
+            case .backslash: return "it has a backslash, which shells do not all read the same way inside quotes"
+            case .leadingDash: return "it starts with a dash, which the agent would read as an option"
+            case .tooLong: return "it is longer than \(AgentPreset.maxPromptBytes) bytes"
+            }
+        }
+
+        /// The sentence about one name the prompt carries that causes this, or `nil` when no single name does.
+        var aboutAName: String? {
+            switch self {
+            case .controlCharacter: return "its name has a line break or another control character"
+            case .backslash: return "naming it would put a backslash in the prompt (its name has one, or a quote and a space), which shells do not all read the same way inside quotes"
+            case .leadingDash: return "its name would start the prompt with a dash, which the agent would read as an option"
+            case .empty, .tooLong: return nil
+            }
+        }
+    }
+
+    public static func typingProblem(_ prompt: String) -> TypingProblem? {
+        if prompt.allSatisfy(\.isWhitespace) { return .empty }
+        if ShellQuoting.containsControlCharacter(prompt) { return .controlCharacter }
+        if prompt.unicodeScalars.contains("\\") { return .backslash }
+        if prompt.unicodeScalars.first == "-" { return .leadingDash }
+        if prompt.utf8.count > AgentPreset.maxPromptBytes { return .tooLong }
         return nil
+    }
+
+    /// Why a prompt cannot be typed into a terminal as one argument, or `nil`.
+    public static func typingRefusal(_ prompt: String) -> String? {
+        typingProblem(prompt)?.refusal
+    }
+
+    /// A name from the selection that the prompt would carry: what the person calls it, and the text that goes into the prompt.
+    public struct Carried: Sendable, Equatable {
+        public enum Kind: Sendable, Equatable { case file, folder, item }
+
+        public var kind: Kind
+        public var name: String
+        public var text: String
+
+        public init(kind: Kind, name: String, text: String) {
+            self.kind = kind
+            self.name = name
+            self.text = text
+        }
+
+        /// How a message names it: the file, the folder, the selected item.
+        public var subject: String {
+            switch kind {
+            case .file: return "the file " + name.jsonQuoted
+            case .folder: return "the folder " + name.jsonQuoted
+            case .item: return "the selected item " + name.jsonQuoted
+            }
+        }
+    }
+
+    /// The prompt with each placeholder filled from what the selection carries (`{files}` takes every file, one space between).
+    public static func expand(_ template: String, carried: [Carried]) -> String {
+        func text(_ kind: Carried.Kind) -> [String] { carried.filter { $0.kind == kind }.map(\.text) }
+        return expand(template, files: text(.file).joined(separator: " "), folder: text(.folder).first ?? "", name: text(.item).first ?? "")
+    }
+
+    /// The name that makes `template`, filled in, impossible to type, when one does by itself: the first of those the template
+    /// uses whose own text holds the problem (a line break, a backslash) or, for a leading dash, whose text begins the prompt.
+    /// Names the person did not choose to put in the prompt (`{files}` is not in the template) are never blamed.
+    public static func carriedNameBehind(_ problem: TypingProblem, template: String, carried: [Carried]) -> Carried? {
+        let segments = segments(of: template)
+        func used(_ kind: Carried.Kind) -> Bool {
+            segments.contains { segment in
+                switch (segment, kind) {
+                case (.files, .file), (.folder, .folder), (.name, .item): return true
+                default: return false
+                }
+            }
+        }
+        let candidates = carried.filter { used($0.kind) }
+        switch problem {
+        case .controlCharacter:
+            return candidates.first { ShellQuoting.containsControlCharacter($0.text) }
+        case .backslash:
+            return candidates.first { $0.text.unicodeScalars.contains("\\") }
+        case .leadingDash:
+            let first: Carried.Kind?
+            switch segments.first {
+            case .files?: first = .file
+            case .folder?: first = .folder
+            case .name?: first = .item
+            default: first = nil
+            }
+            return candidates.first { $0.kind == first && $0.text.unicodeScalars.first == "-" }
+        case .empty, .tooLong:
+            return nil
+        }
     }
 }

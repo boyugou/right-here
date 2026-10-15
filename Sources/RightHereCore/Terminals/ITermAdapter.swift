@@ -31,7 +31,7 @@ public struct ITermAdapter: TerminalAdapter {
         }
         if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.unsupported(blocker) }
         // The folder is typed after `cd`, so it is held to the same rule as the command.
-        do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeText(directory) }
+        do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeFolder(directory) }
         if directory.unicodeScalars.contains("\\") {
             throw PlanError.unsupported("iTerm types the folder into a shell, and shells disagree about a backslash in a name, so it will not start a command in \(directory). Rename the folder, or use a terminal that is handed the folder, such as Ghostty.")
         }

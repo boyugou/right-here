@@ -377,12 +377,37 @@ struct TerminalAdapterTests {
     @Test func terminalRefusesAFolderItWouldHaveToTypeWithALineBreak() {
         let name = "/Users/tester/two\nlines"
         let session = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude")
-        #expect(throws: PlanError.unsafeText(name)) {
+        #expect(throws: PlanError.unsafeFolder(name)) {
             try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: FakeSystemFacts(directories: [name]))
         }
-        #expect(throws: PlanError.unsafeText(name)) {
+        #expect(throws: PlanError.unsafeFolder(name)) {
             try ITermAdapter().steps(for: session, bundleID: "x", facts: FakeSystemFacts(directories: [name]))
         }
+    }
+
+    @Test func aTerminalThatIsHandedTheFolderTakesAnyNameBecauseNothingTypesIt() throws {
+        let name = "/Users/tester/two\nlines \u{1b}[2J"
+        let machine = FakeSystemFacts(directories: [name], applications: ["x": URL(fileURLWithPath: "/Applications/X.app")])
+        let session = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude")
+        guard case .appleScript(let ghostty)? = try GhosttyAdapter().steps(for: session, bundleID: "x", facts: machine).first else { Issue.record("expected AppleScript"); return }
+        #expect(ghostty.arguments.first == name)
+        // WezTerm and kitty are started through LaunchServices (`open -n -b <id> --args …`), so the folder is the argument after `start --cwd`
+        // and after `--directory`, at the same place in the argument vector of `open`.
+        guard case .run(let wezterm)? = try WezTermAdapter().steps(for: session, bundleID: "x", facts: machine).first else { Issue.record("expected a run step"); return }
+        #expect(wezterm.arguments[6] == name, "\(wezterm.arguments)")
+        guard case .run(let kitty)? = try KittyAdapter().steps(for: session, bundleID: "x", facts: machine).first else { Issue.record("expected a run step"); return }
+        #expect(kitty.arguments[5] == name, "\(kitty.arguments)")
+        // The command is still typed, and still held to the rule.
+        let hostile = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude\nrm -rf ~")
+        #expect(throws: PlanError.unsafeText("claude\nrm -rf ~")) { try GhosttyAdapter().steps(for: hostile, bundleID: "x", facts: machine) }
+    }
+
+    @Test func onlyTheTerminalsThatHandOverTheFolderSayTheyTypeNothingOfIt() {
+        #expect(!GhosttyAdapter().typesTheFolder && !WezTermAdapter().typesTheFolder && !KittyAdapter().typesTheFolder)
+        #expect(!OpenFolderTerminalAdapter(terminalID: "warp", displayName: "Warp").typesTheFolder)
+        #expect(AppleTerminalAdapter().typesTheFolder && ITermAdapter().typesTheFolder)
+        // A terminal the config defines says nothing, and the default is the strict answer: its template may type `{dir}`.
+        #expect(TemplateTerminalAdapter(terminalID: "t", displayName: "T", launch: TerminalLaunch(run: ["/bin/sh", "-c", "cd {dir} && {command}"])).typesTheFolder)
     }
 
     // MARK: Registry

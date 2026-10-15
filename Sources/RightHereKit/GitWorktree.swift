@@ -22,12 +22,16 @@ public struct WorktreeEntry: Sendable, Codable, Equatable {
 public struct WorktreeResult: Sendable, Codable, Equatable {
     public let branch: String
     public let worktreeURL: URL
+    /// The folder was made by this request (not an earlier worktree of the same branch that was found again).
     public let wasCreated: Bool
+    /// The branch was made by this request (not an existing branch that the worktree was attached to).
+    public let branchCreated: Bool
 
-    public init(branch: String, worktreeURL: URL, wasCreated: Bool) {
+    public init(branch: String, worktreeURL: URL, wasCreated: Bool, branchCreated: Bool) {
         self.branch = branch
         self.worktreeURL = worktreeURL
         self.wasCreated = wasCreated
+        self.branchCreated = branchCreated
     }
 }
 
@@ -144,7 +148,7 @@ public enum GitWorktreeManager {
             if let refusal = branchNameRefusal(preferred) { throw WorktreeError.invalidBranch(refusal) }
             branchName = preferred
         } else {
-            branchName = "rh/\(Int(Date().timeIntervalSince1970))"
+            branchName = freshBranchName()
         }
         let worktreesBase = gitRoot.appendingPathComponent(folderName, isDirectory: true).standardizedFileURL
         let worktreeDir = worktreeDirectory(gitRoot: gitRoot, branch: branchName)
@@ -162,7 +166,7 @@ public enum GitWorktreeManager {
             guard entry.branch == branchName else {
                 throw WorktreeError.directoryInTheWay("\(worktreeDir.path.withControlCharactersEscaped) is the worktree of branch \"\((entry.branch ?? "(detached)").withControlCharactersEscaped)\", not \"\(branchName)\". Choose another branch name.")
             }
-            return WorktreeResult(branch: branchName, worktreeURL: worktreeDir, wasCreated: false)
+            return WorktreeResult(branch: branchName, worktreeURL: worktreeDir, wasCreated: false, branchCreated: false)
         }
 
         // Nothing is written in the repository before git has agreed: `git worktree add` makes the folders it needs, and a refused request leaves no trace.
@@ -172,7 +176,7 @@ public enum GitWorktreeManager {
         let addResult = try await runner.run(addStep)
         if addResult.status == 0 {
             keepOutOfGitStatus(gitRoot: gitRoot)
-            return WorktreeResult(branch: branchName, worktreeURL: worktreeDir, wasCreated: true)
+            return WorktreeResult(branch: branchName, worktreeURL: worktreeDir, wasCreated: true, branchCreated: true)
         }
 
         // If branch already exists, attach to existing branch
@@ -180,11 +184,35 @@ public enum GitWorktreeManager {
         let fallbackResult = try await runner.run(fallbackStep)
         if fallbackResult.status == 0 {
             keepOutOfGitStatus(gitRoot: gitRoot)
-            return WorktreeResult(branch: branchName, worktreeURL: worktreeDir, wasCreated: true)
+            return WorktreeResult(branch: branchName, worktreeURL: worktreeDir, wasCreated: true, branchCreated: false)
         }
 
         let err = addResult.standardError.isEmpty ? fallbackResult.standardError : addResult.standardError
         throw ExecutionError.stepFailed(index: 0, step: "git worktree add", message: err.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    /// A branch name nobody has used for a worktree that was not named: the time to the second and eight random hex digits. The time alone
+    /// gave two runs in one second the same folder, and the second run then took the first one's worktree for its own.
+    public static func freshBranchName(now: Date = Date()) -> String {
+        let random = UInt32.random(in: UInt32.min...UInt32.max)
+        return "rh/\(Int(now.timeIntervalSince1970))-" + String(format: "%08x", random)
+    }
+
+    /// Removes a worktree that a run made and then did not use: the run failed, so nothing is wanted from it. Only a worktree this
+    /// request created is ever removed, and only while it has no change (a file that was edited, or made, is kept with its branch).
+    /// The branch goes with it when this request made the branch; `git branch -d` keeps one that has commits nothing else has.
+    /// Returns whether it was removed.
+    @discardableResult
+    public static func discardIfUnchanged(_ created: WorktreeResult, gitRoot: URL, runner: any ProcessRunner = LiveProcessRunner()) async -> Bool {
+        guard created.wasCreated else { return false }
+        let status = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", created.worktreeURL.path, "status", "--porcelain", "--untracked-files=all"])
+        guard let check = try? await runner.run(status, timeout: .seconds(20)), check.status == 0, check.standardOutput.isEmpty else { return false }
+        do {
+            try await removeWorktree(worktreePath: created.worktreeURL.path, gitRoot: gitRoot, deleteBranch: created.branchCreated, force: false, runner: runner)
+            return true
+        } catch {
+            return false
+        }
     }
 
     /// The worktree `target` names (its path, its branch or the last part of its path), among those Right Here created. Anything
