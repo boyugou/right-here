@@ -1,39 +1,60 @@
 import Foundation
 import RightHereCore
 
-/// What the setup window does besides reading the state: runs `rh install`, opens the config, forgets folders, looks at the
+/// What the setup window does besides reading the state: sets Right Here up, opens the config, forgets folders, looks at the
 /// terminal and the Finder extension. Each is `async` and not isolated to an actor, so none holds the window's thread, and each
 /// says what went wrong as a `SetupNotice`, in the words of the process or the system where there are some.
 public struct SetupActions: Sendable {
+    /// What setting Right Here up came to: the report of what it did, and the notice when something failed.
+    public struct SetupResult: Sendable, Equatable {
+        public var report: SetupReport?
+        public var notice: SetupNotice?
+    }
+
     private let facts: any SystemFacts
     private let paths: RHPaths
     private let runner: any ProcessRunner
     private let helperPath: String
+    private let app: URL?
+    private let trialHome: URL?
 
-    /// - Parameter helperPath: The `rh` that ships in the app.
-    public init(facts: any SystemFacts = LiveSystemFacts(), paths: RHPaths? = nil, runner: any ProcessRunner = LiveProcessRunner(), helperPath: String) {
+    /// - Parameters:
+    ///   - helperPath: The `rh` that ships in the app: what the runner script and the Quick Actions run.
+    ///   - app: The app that has the Finder extension (the one that is running).
+    public init(facts: any SystemFacts = LiveSystemFacts(), paths: RHPaths? = nil, runner: any ProcessRunner = LiveProcessRunner(), helperPath: String,
+                app: URL? = nil, trialHome: URL? = LiveSystemFacts.homeOverride) {
         self.facts = facts
         self.paths = paths ?? RHPaths.current(facts: facts)
         self.runner = runner
         self.helperPath = helperPath
+        self.app = app
+        self.trialHome = trialHome
     }
 
-    /// Runs `rh install`: the runner script, the command link, the config file and the Finder extension. `nil` when it worked.
-    public func installOrRepair() async -> SetupNotice? {
+    private var setup: SetupRunner {
+        SetupRunner(facts: facts, paths: paths, runner: runner, rhPath: helperPath, app: app, trialHome: trialHome)
+    }
+
+    /// Sets Right Here up, as `rh setup` does: the config file (made from `choices` and what is installed, only when there is none), the
+    /// runner script, the command link, the Quick Actions and the Finder extension's registration, then the checks. The same code as the
+    /// command line, called here and not spawned. The notice is `nil` when every step worked.
+    public func setUp(_ choices: SetupChoices = SetupChoices()) async -> SetupResult {
         do {
-            return Self.failure(of: try await runner.run(ProcessStep(executable: helperPath, arguments: ["install"]), timeout: .seconds(60)))
+            let report = try await setup.run(.setup(choices: choices))
+            let failure = report.steps.first { $0.outcome == .failed }?.detail?.english()
+            return SetupResult(report: report, notice: report.ok ? nil : .failed(failure ?? "Setup did not finish."))
         } catch {
-            // The system's own wording, in the system language; the install did not run to its end.
-            return .failed(error.localizedDescription)
+            // The system's own wording, in the system language; setup did not start.
+            return SetupResult(report: nil, notice: .failed(error.localizedDescription))
         }
     }
 
-    /// Opens the config file in the default text editor, after `rh init` has made it when there is none. `nil` when it worked.
+    /// Opens the config file in the default text editor, after setup has made it when there is none. `nil` when it worked.
     public func openConfig() async -> SetupNotice? {
         do {
-            if !facts.fileExists(paths.configFile),
-               let failure = Self.failure(of: try await runner.run(ProcessStep(executable: helperPath, arguments: ["init"]), timeout: .seconds(30))) {
-                return failure
+            if !facts.fileExists(paths.configFile) {
+                let report = try await setup.run(SetupRequest(pieces: [.config]))
+                if let failure = report.steps.first(where: { $0.outcome == .failed }) { return .failed(failure.detail?.english() ?? "The config file could not be made.") }
             }
             return Self.failure(of: try await runner.run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", paths.configFile.path])))
         } catch {

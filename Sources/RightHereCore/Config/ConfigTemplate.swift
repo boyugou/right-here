@@ -1,6 +1,6 @@
 import Foundation
 
-/// What `rh init` found on the machine.
+/// What `rh setup` found on the machine, or what the person said.
 public struct DetectedEnvironment: Sendable, Equatable {
     public var terminal: String?
     public var editor: String?

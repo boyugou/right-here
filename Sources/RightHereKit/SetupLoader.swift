@@ -24,6 +24,10 @@ public struct SetupSnapshot: Sendable, Equatable {
     public var menu: [MenuNode]
     public var folders: FolderSnapshot
     public var configFile: URL
+    /// Whether there is a config at all, `config.toml` or the per-machine overlay. Without one the window is on its first run.
+    public var configExists: Bool
+    /// What a person without a config can choose from; `nil` when there is a config.
+    public var offer: SetupOffer?
     /// What the config parser says is wrong with the config, errors and warnings, in its own words.
     public var configProblems: [ConfigDiagnostic]
     /// The program an MCP client starts (`SetupSnippets.mcpCommand`).
@@ -32,11 +36,13 @@ public struct SetupSnapshot: Sendable, Equatable {
     public var home: URL
 
     public init(checks: [DoctorCheck] = [], menu: [MenuNode] = [], folders: FolderSnapshot = FolderSnapshot(), configFile: URL,
-                configProblems: [ConfigDiagnostic] = [], mcpCommand: String = AppIdentity.cliName, home: URL) {
+                configExists: Bool = true, offer: SetupOffer? = nil, configProblems: [ConfigDiagnostic] = [], mcpCommand: String = AppIdentity.cliName, home: URL) {
         self.checks = checks
         self.menu = menu
         self.folders = folders
         self.configFile = configFile
+        self.configExists = configExists
+        self.offer = offer
         self.configProblems = configProblems
         self.mcpCommand = mcpCommand
         self.home = home
@@ -71,10 +77,14 @@ public struct SetupLoader: Sendable {
 
     public func load() async -> SetupSnapshot {
         let loaded = ConfigStore.load(paths: paths)
+        // Without a config the window is on its first run and offers what is installed; the login shell is asked once, for that.
+        let configExists = loaded.fileExists || loaded.localFileExists
+        let offer = configExists ? nil : await SetupOffer.make(facts: facts, runner: runner)
         let checks = await Doctor(facts: facts, paths: paths, loaded: loaded, runner: runner, rhPath: helperPath).run()
         let menu = MenuPreview.folderMenu(loaded.result, facts: facts, folder: facts.homeDirectory, localizer: localizer)
         return SetupSnapshot(
-            checks: checks, menu: menu, folders: await folders(), configFile: loaded.file, configProblems: loaded.result.diagnostics,
+            checks: checks, menu: menu, folders: await folders(), configFile: loaded.file, configExists: configExists, offer: offer,
+            configProblems: loaded.result.diagnostics,
             mcpCommand: SetupSnippets.mcpCommand(home: facts.homeDirectory, helperPath: helperPath), home: facts.homeDirectory)
     }
 

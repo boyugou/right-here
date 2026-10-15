@@ -5,7 +5,7 @@
 """Compile the user-facing guides into Swift, so `rh docs <topic>` and the MCP server can serve them.
 
 The command-line tool lives inside the app bundle and cannot load resource files, so the text of
-docs/TROUBLESHOOTING.md is embedded in Sources/RightHereCore/Documentation.generated.swift.
+docs/TROUBLESHOOTING.md and docs/AGENT_SETUP.md is embedded in Sources/RightHereCore/Documentation.generated.swift.
 
     ./script/compile_docs.py            write the Swift file
     ./script/compile_docs.py --check    fail if the file is out of date
@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-GUIDES = {"troubleshooting": ROOT / "docs" / "TROUBLESHOOTING.md"}
+GUIDES = {"troubleshooting": ROOT / "docs" / "TROUBLESHOOTING.md", "agent-setup": ROOT / "docs" / "AGENT_SETUP.md"}
 OUTPUT = ROOT / "Sources" / "RightHereCore" / "Documentation.generated.swift"
 
 

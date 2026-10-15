@@ -62,7 +62,7 @@ public struct Config: Sendable, Equatable {
     /// Whether a terminal session starts in a new window or a new tab of the front one (Ghostty only).
     public var terminalPlacement: TerminalPlacement
     public var newFile: NewFileSettings
-    /// Agents offered in the menu, in order. Empty until `rh init` detects the installed ones.
+    /// Agents offered in the menu, in order. Empty until `rh setup` finds the installed ones.
     public var enabledAgents: [String]
     /// The entries of the Finder menu, in order; `nil` means the default layout.
     public var menuItems: [String]?

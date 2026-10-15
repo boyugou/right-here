@@ -28,7 +28,7 @@ RH = os.environ.get("RH") or str(ROOT / ".build" / "debug" / "rh")
 # Decision records describe what was true when they were written, so they are left out.
 SOURCES = [
     ROOT / "README.md", ROOT / "CONTRIBUTING.md", ROOT / "SECURITY.md", ROOT / "ROADMAP.md", ROOT / "CHANGELOG.md",
-    ROOT / "docs" / "DESIGN.md", ROOT / "docs" / "INDEX.md", ROOT / "docs" / "TROUBLESHOOTING.md",
+    ROOT / "docs" / "DESIGN.md", ROOT / "docs" / "INDEX.md", ROOT / "docs" / "TROUBLESHOOTING.md", ROOT / "docs" / "AGENT_SETUP.md",
     ROOT / "Sources" / "RightHereCore" / "Documentation.swift",
     *sorted((ROOT / "docs" / "development").glob("*.md")),
     *sorted((ROOT / "plugins").rglob("*.md")),

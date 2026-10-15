@@ -23,10 +23,11 @@ private struct Home {
         try "[general]\n".write(to: paths.configFile, atomically: true, encoding: .utf8)
     }
 
-    /// The facts of this home: the config file is known to exist when it was written.
+    /// The facts of this home: the config file is known to exist when it was written. A trial home, so nothing is registered for the
+    /// whole Mac whatever the test does.
     func actions(_ runner: any ProcessRunner) -> SetupActions {
         let existing = FileManager.default.fileExists(atPath: paths.configFile.path) ? [paths.configFile.path] : []
-        return SetupActions(facts: FakeSystemFacts(homeDirectory: home, files: Set(existing)), paths: paths, runner: runner, helperPath: "/opt/app/rh")
+        return SetupActions(facts: FakeSystemFacts(homeDirectory: home, files: Set(existing)), paths: paths, runner: runner, helperPath: "/opt/app/rh", trialHome: home)
     }
 }
 
@@ -68,29 +69,58 @@ struct SetupNoticeTests {
 
 @Suite("SetupActions")
 struct SetupActionsTests {
-    @Test func aRepairRunsRhInstallAndSaysNothingWhenItWorked() async throws {
+    @Test func settingUpRunsTheSameSetupAsTheCommandLineAndSaysNothingWhenItWorked() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
-        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "installed")])
-        let notice = await machine.actions(runner).installOrRepair()
-        #expect(notice == nil)
-        #expect(runner.recorded == [ProcessStep(executable: "/opt/app/rh", arguments: ["install"])])
+        let result = await machine.actions(FakeProcessRunner()).setUp()
+        #expect(result.notice == nil)
+        let report = try #require(result.report)
+        #expect(report.ok && report.step(.config)?.outcome == .created)
+        #expect(FileManager.default.fileExists(atPath: machine.paths.configFile.path))
+        #expect(Installer(home: machine.home).installedRunnerTarget() == "/opt/app/rh", "the runner script points at the rh inside the app")
     }
 
-    @Test func aFailedRepairSaysWhatRhSaid() async throws {
+    @Test func whatThePersonChoseIsWhatTheConfigSays() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
-        let runner = FakeProcessRunner(results: [ProcessResult(status: 1, standardError: "  error: cannot link ~/.local/bin/rh\n")])
-        #expect(await machine.actions(runner).installOrRepair() == .failed("error: cannot link ~/.local/bin/rh"))
+        let result = await machine.actions(FakeProcessRunner()).setUp(SetupChoices(terminal: "terminal", editor: "zed", agents: ["claude"]))
+        #expect(result.notice == nil)
+        let config = ConfigStore.load(paths: machine.paths).config
+        #expect(config.terminal == "terminal" && config.editor == "zed" && config.enabledAgents == ["claude"])
     }
 
-    @Test func aFailedRepairThatSaidNothingGivesItsExitStatus() async throws {
+    @Test func aSecondSetUpLeavesTheConfigAndSaysItChangedNothing() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
-        let runner = FakeProcessRunner(results: [ProcessResult(status: 7)])
-        #expect(await machine.actions(runner).installOrRepair() == .stopped(status: 7))
+        _ = await machine.actions(FakeProcessRunner()).setUp(SetupChoices(terminal: "terminal", editor: "zed", agents: []))
+        let before = try String(contentsOf: machine.paths.configFile, encoding: .utf8)
+        let again = await machine.actions(FakeProcessRunner()).setUp(SetupChoices(terminal: "ghostty", editor: "vscode", agents: ["claude"]))
+        #expect(try String(contentsOf: machine.paths.configFile, encoding: .utf8) == before, "the window never rewrites a config that is there")
+        #expect(again.report?.steps.allSatisfy { $0.outcome == .unchanged || $0.outcome == .skipped } == true)
+    }
+
+    @Test func aStepThatFailedSaysWhyInItsOwnWords() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        let installer = Installer(home: machine.home)
+        try FileManager.default.createDirectory(at: installer.locations.localBin, withIntermediateDirectories: true)
+        try "mine".write(to: installer.cliLink, atomically: true, encoding: .utf8)
+        let result = await machine.actions(FakeProcessRunner()).setUp()
+        guard case .failed(let text)? = result.notice else { Issue.record("no failure was reported: \(String(describing: result.notice))"); return }
+        #expect(text.contains("left alone"), "\(text)")
+        #expect(result.report?.step(.config)?.outcome == .created, "the other steps still ran")
+    }
+
+    @Test func anAppRunFromTheTemporaryLocationOfADownloadSaysSoAndWritesNothing() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        let translocated = "/private/var/folders/ab/cd/T/AppTranslocation/6F1B/d/Right Here.app/Contents/Helpers/rh"
+        let actions = SetupActions(facts: FakeSystemFacts(homeDirectory: machine.home), paths: machine.paths, runner: FakeProcessRunner(), helperPath: translocated, trialHome: machine.home)
+        let result = await actions.setUp()
+        #expect(result.report == nil)
+        guard case .failed(let text)? = result.notice else { Issue.record("no failure was reported"); return }
+        #expect(text.contains("Move Right Here.app into your Applications folder"))
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
     }
 
     @Test func aProcessThatCannotBeStartedSaysItInTheSystemsWords() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
-        #expect(await machine.actions(BrokenRunner()).installOrRepair() == .failed("The file could not be opened."))
+        try machine.writeConfig()
         #expect(await machine.actions(BrokenRunner()).openConfig() == .failed("The file could not be opened."))
     }
 
@@ -102,19 +132,22 @@ struct SetupActionsTests {
         #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.configFile.path])])
     }
 
-    @Test func aMissingConfigIsMadeByRhInitBeforeItIsOpened() async throws {
+    @Test func aMissingConfigIsMadeBeforeItIsOpened() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
         let runner = FakeProcessRunner()
         #expect(await machine.actions(runner).openConfig() == nil)
-        #expect(runner.recorded.map(\.executable) == ["/opt/app/rh", "/usr/bin/open"])
-        #expect(runner.recorded.first?.arguments == ["init"])
+        #expect(FileManager.default.fileExists(atPath: machine.paths.configFile.path))
+        #expect(runner.recorded.last == ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.configFile.path]))
     }
 
     @Test func aConfigThatCouldNotBeMadeIsNotOpened() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
-        let runner = FakeProcessRunner(results: [ProcessResult(status: 1, standardError: "error: cannot write the config")])
-        #expect(await machine.actions(runner).openConfig() == .failed("error: cannot write the config"))
-        #expect(runner.recorded.map(\.executable) == ["/opt/app/rh"])
+        // A file where the config folder goes: it cannot be made.
+        try FileManager.default.createDirectory(at: machine.paths.configDirectory.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "in the way".write(to: machine.paths.configDirectory, atomically: true, encoding: .utf8)
+        let runner = FakeProcessRunner()
+        guard case .failed? = await machine.actions(runner).openConfig() else { Issue.record("no failure was reported"); return }
+        #expect(!runner.recorded.contains { $0.executable == "/usr/bin/open" })
     }
 
     @Test func anEditorThatCouldNotBeOpenedIsReported() async throws {

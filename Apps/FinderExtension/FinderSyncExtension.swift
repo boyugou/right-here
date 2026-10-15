@@ -253,7 +253,7 @@ final class FinderSyncExtension: FIFinderSync {
                 }
             }
         } catch {
-            log.error("runner script unavailable: \(error.localizedDescription, privacy: .public). Run `rh install --scripts`.")
+            log.error("runner script unavailable: \(error.localizedDescription, privacy: .public). Run `rh setup`.")
             NSSound.beep()
         }
     }

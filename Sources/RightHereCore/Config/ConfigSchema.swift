@@ -96,7 +96,7 @@ public enum ConfigSchema {
                            "Whether to launch AI coding agents with flags that bypass tool approval / permission prompts (for autonomous workflows). Can be overridden per agent under [agent.<id>].",
                            default: "false"),
                 SchemaNode("agents", .stringArray,
-                           "Agents offered in the menu, in order. `rh init` fills this with the agents it finds.",
+                           "Agents offered in the menu, in order. `rh setup` fills this with the agents it finds, or with the ones you name with --agents.",
                            example: "[\"claude\", \"codex\"]; built in: " + KnownAgents.all.map(\.id).joined(separator: ", "),
                            suggested: KnownAgents.all.map(\.id))
             ]),
@@ -111,7 +111,7 @@ public enum ConfigSchema {
                            default: "[\"open-terminal\", \"open-editor\", \"open-with\", \"agents\", \"agents-more\", \"-\", \"new-file\", \"copy-path\"]",
                            suggested: Array(MenuBuilder.groups).sorted() + ["-"])
             ]),
-            SchemaNode("services", .table, "Finder Services (Quick Actions), written by `rh install --services`.", children: [
+            SchemaNode("services", .table, "Finder Services (Quick Actions), written by `rh setup`.", children: [
                 SchemaNode("items", .stringArray,
                            "Action ids to offer. By default: open in terminal and editor, each enabled agent, new Markdown file, and two copy-path forms (absolute and from the git root).",
                            example: "[\"open.terminal\", \"agent.claude\", \"copy-path.absolute\"]")

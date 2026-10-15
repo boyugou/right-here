@@ -169,3 +169,71 @@ struct LaunchProbeAloneTests {
         #expect(runner.recorded.allSatisfy { $0.executable == "/usr/bin/pluginkit" })
     }
 }
+
+@Suite("SetupLoader: the first run")
+struct SetupFirstRunTests {
+    private struct Mac {
+        let home: URL
+        let paths: RHPaths
+
+        init() throws {
+            home = try makeTemporaryDirectory()
+            paths = RHPaths(environment: [:], home: home)
+        }
+
+        func cleanUp() { try? FileManager.default.removeItem(at: home) }
+
+        var facts: FakeSystemFacts {
+            FakeSystemFacts(homeDirectory: home, directories: [home.path], applications: [
+                "com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app"),
+                "com.apple.Terminal": URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app"),
+                "com.microsoft.VSCode": URL(fileURLWithPath: "/Applications/Visual Studio Code.app"),
+                "dev.zed.Zed": URL(fileURLWithPath: "/Applications/Zed.app")
+            ])
+        }
+
+        func loader(_ runner: any ProcessRunner) -> SetupLoader {
+            SetupLoader(facts: facts, paths: paths, runner: runner, helperPath: "/opt/rh/bin/rh", localizer: .english)
+        }
+    }
+
+    @Test func aMacWithNoConfigOffersWhatIsInstalledAndWhatTheLoginShellFound() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        // The offer asks the login shell once, for the agents; then the doctor asks pluginkit.
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "codex\nclaude\n")])
+        let snapshot = await mac.loader(runner).load()
+        #expect(!snapshot.configExists)
+        let offer = try #require(snapshot.offer)
+        #expect(offer.terminals.map(\.id) == ["ghostty", "terminal"], "installed terminals only, the one a click uses first on top")
+        #expect(offer.editors.map(\.id) == ["vscode", "zed"])
+        #expect(offer.agents.map(\.id).prefix(2) == ["claude", "codex"], "the agents that were found come first, in Right Here's order")
+        #expect(offer.agents.filter(\.available).map(\.id) == ["claude", "codex"])
+        #expect(Set(offer.agents.map(\.id)) == Set(KnownAgents.all.map(\.id)), "every agent Right Here knows can be chosen")
+        #expect(offer.detected == DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude", "codex"]))
+    }
+
+    @Test func withAConfigThereIsNothingToOffer() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try FileManager.default.createDirectory(at: mac.paths.configDirectory, withIntermediateDirectories: true)
+        try "[general]\nagents = []\n".write(to: mac.paths.configFile, atomically: true, encoding: .utf8)
+        let runner = FakeProcessRunner()
+        let snapshot = await mac.loader(runner).load()
+        #expect(snapshot.configExists && snapshot.offer == nil)
+        #expect(!runner.recorded.contains { $0.executable == "/bin/zsh" }, "no login shell is started to offer what nobody needs")
+    }
+
+    @Test func aPerMachineOverlayAloneIsAConfig() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try FileManager.default.createDirectory(at: mac.paths.configDirectory, withIntermediateDirectories: true)
+        try "[general]\nterminal = \"terminal\"\n".write(to: mac.paths.localConfigFile, atomically: true, encoding: .utf8)
+        let snapshot = await mac.loader(FakeProcessRunner()).load()
+        #expect(snapshot.configExists && snapshot.offer == nil)
+    }
+
+    @Test func theChoicesAreWhatIsCheckedInTheOrderRightHereListsTheAgents() {
+        let offer = SetupOffer()
+        let choices = offer.choices(terminal: "terminal", editor: nil, agents: ["codex", "claude", "aider"])
+        #expect(choices == SetupChoices(terminal: "terminal", editor: nil, agents: ["claude", "codex", "aider"]))
+        #expect(offer.choices(terminal: nil, editor: nil, agents: []).agents == [], "nothing checked is a choice: no agents")
+    }
+}

@@ -42,7 +42,7 @@ struct Doctor: AsyncParsableCommand {
             Output.error("note: RH_HOME is set, so the config, run log, runner script, Services and command link are looked for under \(home.path), not in your home folder. The Finder extension is checked as it is really registered.")
         }
         // A probe switches the Finder extension off and on again to make it look for its request. Ctrl-C in between
-        // would leave it off (no menu until `rh install --finder`), so an interrupt switches it back on first.
+        // would leave it off (no menu until `rh setup`), so an interrupt switches it back on first.
         let paths = runtime.paths
         let interrupt = (probeExtension || probeLaunch) ? InterruptGuard(paths: paths, reenableExtension: {
             let reenable = Process()

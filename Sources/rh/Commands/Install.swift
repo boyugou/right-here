@@ -5,18 +5,19 @@ import RightHereKit
 
 struct Install: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Connect Finder to rh.",
+        abstract: "Put one piece of the Finder connection in place again.",
         discussion: """
-        Without options everything is installed:
+        `rh setup` does all of this and more, in order, and can be run again at any time. Use this command to redo exactly one piece:
 
           --scripts   the runner script the Finder extension uses to reach rh
           --cli       a link to rh in ~/.local/bin
           --services  Finder Services (Quick Actions) from [services] in the config
           --finder    register and switch on the Finder extension of Right Here.app
 
-        Nothing here needs administrator rights. Run it again at any time; it repairs what is out of date.
-        With RH_HOME set, every per-user path (config, Services, runner script, command link) moves under that \
-        folder, to try an install without touching your own.
+        Name at least one. Nothing here needs administrator rights, and each piece compares before it writes, so running it again \
+        changes only what is out of date. With RH_HOME set, every per-user path (config, Services, runner script, command link) \
+        moves under that folder, to try an install without touching your own; --finder still registers the extension for the \
+        whole Mac, because you asked for it by name.
         """
     )
 
@@ -32,99 +33,31 @@ struct Install: AsyncParsableCommand {
     @Flag(help: "Register and switch on only the Finder extension.")
     var finder = false
 
-    @Flag(name: .customLong("skip-finder"), help: "Install everything except the Finder extension.")
-    var skipFinder = false
-
     func run() async throws {
-        let runtime = Runtime()
-        let everything = !(scripts || cli || services || finder)
-        guard let rhPath = Installer.currentExecutablePath() else {
-            throw Output.fail("error: cannot tell where rh is installed.")
+        var pieces: Set<SetupPiece> = []
+        if scripts { pieces.insert(.runnerScript) }
+        if cli { pieces.insert(.cliLink) }
+        if services { pieces.insert(.services) }
+        if finder { pieces.insert(.finderExtension) }
+        guard !pieces.isEmpty else {
+            throw ValidationError("Name what to install: --scripts, --cli, --services or --finder. To do everything, run `rh setup`.")
         }
-        if InstallError.isTranslocated(rhPath) { throw Output.fail("error: " + InstallError.translocated.localizedDescription) }
-        let installer = Installer(home: runtime.facts.homeDirectory)
-
-        // A step that fails does not stop the others: this is also the repair command.
-        var problems = 0
-        func attempt(_ label: String, _ body: () async throws -> Void) async {
-            do { try await body() } catch {
-                problems += 1
-                Output.error("error: \(label): \(error.localizedDescription)")
-            }
-        }
-
-        if everything || scripts {
-            await attempt("runner script") { Output.print("Runner script: \(try installer.installRunnerScript(rhPath: rhPath).path)") }
-        }
-        if everything || cli {
-            await attempt("command link") {
-                let replaced = installer.existingCLILinkTarget().flatMap { $0 == rhPath ? nil : $0 }
-                let link = try installer.installCLILink(rhPath: rhPath).path
-                Output.print("Command link: \(link)" + (replaced.map { " (replaced a link to \($0))" } ?? ""))
-            }
-        }
-        if everything {
-            await attempt("config file") {
-                let detected = await Detector(facts: runtime.facts).detect()
-                if try ConfigStore.initialize(paths: runtime.paths, detected: detected) == .created {
-                    Output.print("Config file: \(runtime.paths.configFile.path) (new)")
-                }
-            }
-        }
-        if everything || services {
-            await attempt("Finder Services") {
-                // The config may have been created a moment ago, so read it again: the Services follow what is in the file now.
-                let config = ConfigStore.load(paths: runtime.paths).config
-                let specs = ActionRegistry(config: config, facts: runtime.facts, localizer: .system).serviceSpecs(rhPath: rhPath)
-                let written = try installer.installServices(specs)
-                if ProcessInfo.processInfo.environment["RH_HOME"] == nil {
-                    _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
-                }
-                Output.print("Services: \(written.count) installed in \(installer.locations.services.path)")
-            }
-        }
-        // The extension's registration is system-wide, not per home folder, so a trial under RH_HOME leaves it alone.
-        let trialHome = ProcessInfo.processInfo.environment["RH_HOME"] != nil
-        if finder || (everything && !skipFinder && !trialHome) {
-            await attempt("Finder extension") {
-                do {
-                    try await installExtension(rhPath: rhPath, facts: runtime.facts)
-                } catch InstallError.appNotFound where everything {
-                    // A command-line-only install (Homebrew formula) has no app, and Quick Actions still work.
-                    Output.print("Finder extension: skipped, Right Here.app is not installed. Quick Actions work without it.")
-                }
-            }
-        }
-        if problems > 0 {
-            throw Output.fail("Finished with \(problems) problem(s). Run `rh doctor` to see what is still missing.")
-        }
-        Output.print("Done. Run `rh doctor` to check the setup.")
-    }
-
-    private func installExtension(rhPath: String, facts: any SystemFacts) async throws {
-        guard let app = HostApp.locate(rhPath: rhPath, facts: facts) else { throw InstallError.appNotFound }
-        let appex = HostApp.extensionURL(in: app).path
-        guard FileManager.default.fileExists(atPath: appex) else { throw InstallError.extensionMissing(path: appex) }
-        let manager = FinderExtensionManager()
-        // A build folder or an old copy registered under the same identifier makes macOS drop the extension.
-        for stale in await manager.status().paths where stale != appex {
-            try? await manager.unregister(appexPath: stale)
-            Output.print("Removed stale registration: \(stale)")
-        }
-        let registeredAgain = try await manager.registerAndConfirm(appexPath: appex)
-        Output.print("Finder extension: \(appex) (enabled)" + (registeredAgain ? "; the first registration did not stay, so it was registered again" : ""))
+        // The extension's registration is for the whole Mac, which a trial under RH_HOME leaves alone unless it was asked for by name.
+        let runner = try SetupCommandSupport.runner(systemWide: finder ? true : nil)
+        let report = try await SetupCommandSupport.run(SetupRequest(pieces: pieces, strict: true), with: runner)
+        try SetupCommandSupport.finish(report, json: false, withTitle: false)
     }
 }
 
 struct Uninstall: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Remove what `rh install` set up. The config file is kept."
+        abstract: "Remove what `rh setup` set up. The config file is kept."
     )
 
     func run() async throws {
         let runtime = Runtime()
         let installer = Installer(home: runtime.facts.homeDirectory)
-        // As in `install`, a step that fails does not stop the others: what is left behind is reported at the end.
+        // As in `setup`, a step that fails does not stop the others: what is left behind is reported at the end.
         var problems = 0
         func attempt(_ label: String, _ body: () async throws -> Void) async {
             do { try await body() } catch {

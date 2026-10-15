@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Build Right Here.app and install it for the current user: ~/Applications/Right Here.app, the
-# runner script, the rh link in ~/.local/bin and the Finder extension. For daily use on this Mac.
+# Build Right Here.app and install it for the current user: ~/Applications/Right Here.app, then `rh setup`: the config, the
+# runner script, the rh link in ~/.local/bin, the Quick Actions and the Finder extension. For daily use on this Mac.
 
 set -euo pipefail
 
@@ -22,4 +22,4 @@ rm -rf "$DEST"
 mv "$STAGE" "$DEST"
 "$LSREGISTER" -u "$ROOT/dist/Right Here.app" >/dev/null 2>&1 || true
 "$LSREGISTER" -f -R "$DEST"
-"$DEST/Contents/Helpers/rh" install
+"$DEST/Contents/Helpers/rh" setup

@@ -83,8 +83,32 @@ struct SetupSnippetsTests {
     }
 
     @Test func theSetupPromptNamesAGuideThatExists() {
-        #expect(SetupSnippets.setupPrompt.contains("`rh docs agent-setup`"))
+        let prompt = SetupSnippets.setupPrompt()
+        #expect(prompt.contains("`rh docs agent-setup`"))
         #expect(Documentation.topics.contains("agent-setup"))
-        #expect(!SetupSnippets.setupPrompt.contains("\n"))
+        #expect(Documentation.text(for: "agent-setup")?.contains("`rh setup") == true)
+        #expect(!prompt.contains("\n"))
+    }
+
+    @Test func theSetupPromptHasTheAssistantAskFirstAndRunSetupOnce() {
+        let prompt = SetupSnippets.setupPrompt()
+        #expect(prompt.contains("first ask me which terminal, editor and AI agents I use"))
+        #expect(prompt.contains("run `rh setup` once"))
+        #expect(prompt.contains("Do not change System Settings, and do not replace or delete my config file."))
+    }
+
+    @Test func theSetupPromptNamesNoPathOfThePersonsSoNoAssistantEditsAFileItWasNotPointedAt() {
+        for prompt in [SetupSnippets.setupPrompt(), SetupSnippets.setupPrompt(command: "/Applications/Right Here.app/Contents/Helpers/rh")] {
+            #expect(!prompt.contains(".config"), "the prompt names the config file's path: \(prompt)")
+            #expect(!prompt.contains("config.toml"))
+        }
+    }
+
+    @Test func whenRhIsNotOnThePathYetThePromptSaysWhichProgramToRun() {
+        let command = "/Applications/Right Here.app/Contents/Helpers/rh"
+        let prompt = SetupSnippets.setupPrompt(command: command)
+        #expect(prompt.contains("`\(command)`"))
+        #expect(prompt.contains("wherever this says `rh`, run that"))
+        #expect(!SetupSnippets.setupPrompt().contains("command-line tool is"), "with rh on the PATH there is nothing to explain")
     }
 }

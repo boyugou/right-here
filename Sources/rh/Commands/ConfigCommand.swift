@@ -51,7 +51,7 @@ struct ConfigCommand: ParsableCommand {
                 }
             }
             guard printed > 0 else {
-                throw Output.fail("No config file yet at \(runtime.paths.configFile.path). Run `rh init` to create one.")
+                throw Output.fail("No config file yet at \(runtime.paths.configFile.path). Run `rh setup` to create one.")
             }
         }
     }
@@ -102,7 +102,7 @@ struct ConfigCommand: ParsableCommand {
             if json {
                 try Output.json(report)
             } else if !loaded.fileExists && !loaded.localFileExists {
-                Output.print("No config file at \(report.file); defaults apply. Run `rh init` to create one.")
+                Output.print("No config file at \(report.file); defaults apply. Run `rh setup` to create one.")
             } else {
                 if result.diagnostics.isEmpty {
                     Output.print("ok: \(report.file)" + (loaded.localFileExists ? " and \(report.localFile)" : ""))
@@ -128,32 +128,24 @@ struct ConfigCommand: ParsableCommand {
 
 struct Init: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Create the config file, filled in from what is installed.",
-        discussion: "Detects your terminals, editors and agent commands (through your login shell) and writes a commented config. An existing file is kept unless --force is given."
+        abstract: "Create the config file, filled in from what is installed and what you say.",
+        discussion: """
+        Only the config file: `rh setup` does this and connects Finder as well. The terminals, editors and agent commands on this \
+        Mac (the agents through your login shell) are found, and --terminal, --editor and --agents say what you use instead; the \
+        file is written commented, for you to edit. A file that exists is never rewritten: the lines that would make it say what \
+        you asked for are listed instead, and --force replaces it (the old one is saved next to it first).
+        """
     )
 
-    @Flag(help: "Replace an existing config file. The old one is saved next to it first.")
+    @OptionGroup var choices: ChoiceOptions
+
+    @Flag(help: "Replace a config file that exists, after saving it next to itself. Only when you asked to start the config over.")
     var force = false
 
     func run() async throws {
-        let runtime = Runtime()
-        let detected = await Detector(facts: runtime.facts).detect()
-        let outcome = try ConfigStore.initialize(paths: runtime.paths, detected: detected, force: force)
-        switch outcome {
-        case .kept:
-            if let problem = runtime.loaded.fileProblem {
-                // Not read, so it cannot be saved first either: --force would have nothing to keep.
-                Output.print("\(runtime.paths.configFile.path) already exists but was not read (\(problem.message)); kept it. Fix that, or move the file away and run `rh init` again.")
-            } else {
-                Output.print("\(runtime.paths.configFile.path) already exists; kept it. Use --force to replace it (the old file is saved first).")
-            }
-            return
-        case .created:
-            Output.print("Created \(runtime.paths.configFile.path)")
-        case .replaced(let backup):
-            Output.print("Replaced \(runtime.paths.configFile.path); the old file is saved as \(backup.path)")
-        }
-        Output.print("terminal: \(detected.terminal ?? "none found"), editor: \(detected.editor ?? "none found"), agents: \(detected.agents.isEmpty ? "none found" : detected.agents.joined(separator: ", "))")
-        Output.print("Next: `rh menu` to preview the Finder menu, `rh doctor` to check the setup.")
+        let chosen = try choices.choices()
+        let runner = try SetupCommandSupport.runner()
+        let report = try await SetupCommandSupport.run(SetupRequest(pieces: [.config], choices: chosen, force: force), with: runner)
+        try SetupCommandSupport.finish(report, json: false, withTitle: false)
     }
 }

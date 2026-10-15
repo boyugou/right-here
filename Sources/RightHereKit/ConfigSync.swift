@@ -31,7 +31,7 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
         case .badFolder(let reason):
             reason
         case .noLocalConfig(let path):
-            "There is no config file at \(path) to send. Run `rh init` first, or `rh config sync pull` to fetch the synced one."
+            "There is no config file at \(path) to send. Run `rh setup` first, or `rh config sync pull` to fetch the synced one."
         case .refused(.localChanged, _):
             "Not pulling: the local config changed since the last sync, and pulling would overwrite it. Run `rh config sync status`; use `rh config sync push` to send it, or `rh config sync pull --force` to replace it (the old file is saved as config.toml.bak-<date>)."
         case .refused(.remoteChanged, _):

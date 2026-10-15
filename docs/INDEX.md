@@ -20,6 +20,7 @@
   - [0015 The Finder extension stays loaded, and does not keep the Mac awake](decisions/0015-finder-extension-stays-loaded.md)
   - [0016 Agents that skip their permission prompts, and isolated git worktrees](decisions/0016-agent-permissions-and-worktrees.md)
   - [0017 The setup window has six sections](decisions/0017-setup-window-sections.md)
+- [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
 - [`development/RELEASING.md`](development/RELEASING.md): signing, notarizing and publishing a release.

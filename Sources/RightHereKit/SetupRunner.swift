@@ -118,7 +118,7 @@ public struct SetupRunner: Sendable {
             notes.append("This rh runs from a build folder (\(rhPath)), and the runner script and the Quick Actions now point at it: they stop working when that folder is cleaned. For a lasting setup run the rh inside Right Here.app (Right Here.app/Contents/Helpers/rh setup).")
         }
         if editsPending {
-            notes.append("\(paths.configFile.lastPathComponent) already exists, so Right Here left it alone and did not apply your choices. The edits that would make it say so are listed above (and in configEdits with --json); `rh setup --force` would replace the whole file instead, after saving the old one.")
+            notes.append("\(paths.configFile.lastPathComponent) already exists, so Right Here left it alone and did not apply your choices. The edits that would make it say so are listed above (and in configEdits with --json).")
         }
         return notes
     }
@@ -136,7 +136,7 @@ public struct SetupRunner: Sendable {
             if let problem = loaded.fileProblem {
                 report.steps.append(SetupStep(.config, .unchanged, detail: .doctorVerbatim("\(paths.configFile.path) already exists but was not read (\(problem.message)); kept it as it is")))
             } else {
-                report.steps.append(SetupStep(.config, .unchanged, detail: .doctorVerbatim("\(paths.configFile.path) already exists and is yours: it is kept as it is")))
+                report.steps.append(SetupStep(.config, .unchanged, detail: .doctorVerbatim("\(paths.configFile.path); it is yours, so setup never rewrites it")))
             }
             if !request.choices.isEmpty {
                 func text(_ file: URL) -> String? {

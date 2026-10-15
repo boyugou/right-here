@@ -38,42 +38,6 @@ public enum Documentation {
     installed: `rh agents` shows which agent commands your login shell finds.
     """
 
-    public static let agentSetup = """
-    # Setting up Right Here (for AI agents)
-
-    Goal: leave the person with a working Finder menu without making them click through settings.
-
-    1. Run `rh doctor --json`. Fix every entry whose status is "fail" using `fix.text`; `detail.text` says what
-       was found. Each of the two also has a `code` and `args` (the sentence and the values in it, for a program).
-       Entries with status "needs-user" are things only the person can do (for example switching a Finder
-       extension on in System Settings); tell them exactly what the entry says.
-    2. Run `rh init` if there is no config file, then read it. It is TOML with comments.
-    3. Edit `config.toml` to match what the person asked for. `rh docs config` lists every key.
-       Prefer small edits; never delete the person's comments.
-    4. Run `rh config validate --json --strict`. Fix every error and every warning: an unknown key is
-       only a warning because the rest of the file still applies, but it is almost always a typo, and
-       whatever it was meant to set is then silently missing. The `replacement` field of a diagnostic
-       is the likely fix. `--strict` exits with status 1 until the file is clean.
-    5. Run `rh menu --container <a folder>` to preview the menu and confirm it matches the request. Add `--explain` to see
-       what it leaves out or changes and why (an app that is not installed, an agent the overlay disabled).
-    6. To test an action without side effects, use `rh run <action> --dry-run --json`.
-    7. The Finder menu reads the config each time it opens, so menu edits take effect at once. Quick
-       Actions (Services) are files written by `rh install --services`: run it after changing
-       `[services]` or the menu titles, and check `rh doctor` afterwards.
-    8. Only if the person wants agents to start in a terminal, and agrees to a window opening and closing for
-       a second, run `rh doctor --probe-launch`: the Finder extension starts a throwaway terminal session
-       and proves a typed command runs there. The first time, macOS asks whether Right Here may control
-       the terminal; tell the person to click Allow and run it again if it reports "needs-user".
-
-    Rules of thumb:
-    - Agents start in the folder that was right-clicked. The command typed is the agent's own command, so
-      the person's PATH, version managers and aliases apply.
-    - Paths with line breaks or control characters are refused for typed launches.
-    - Use ids from `rh actions`; `rh docs actions` explains the grammar.
-    - When something does not work (no menu, a click that does nothing, a permission prompt), read
-      `rh docs troubleshooting` before guessing.
-    """
-
     public static let sync = """
     # Keep your config in sync
 
@@ -200,7 +164,6 @@ public enum Documentation {
         switch topic {
         case "config": return config
         case "actions": return actions
-        case "agent-setup": return agentSetup
         case "sync": return sync
         default: return guides[topic]
         }

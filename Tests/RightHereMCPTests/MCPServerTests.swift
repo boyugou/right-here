@@ -342,7 +342,7 @@ struct MCPToolTests {
         // The text for the agent is the English the command line prints, with what a check says fenced as data.
         let lines = (result["content"]?.arrayValue?.first?["text"]?.stringValue ?? "").split(separator: "\n").map(String.init)
         let at = try #require(lines.firstIndex { $0.hasPrefix("[warn] Config file: ⟦user⟧none at ") })
-        #expect(lines[at + 1] == "       fix: ⟦user⟧Run `rh init`.⟦/user⟧")
+        #expect(lines[at + 1] == "       fix: ⟦user⟧Run `rh setup`.⟦/user⟧")
     }
 
     @Test func theBookmarksToolReturnsWhatIsPinnedAndRecentAndFencesIt() async throws {

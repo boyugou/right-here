@@ -10,7 +10,7 @@ private struct RH {
     let configDirectory: URL
     let binary: URL
 
-    /// A folder standing in for the home directory (`RH_HOME`), for tests of what `rh install` writes.
+    /// A folder standing in for the home directory (`RH_HOME`), for tests of what `rh setup` writes.
     let home: URL?
 
     /// What the login shell that `rh` starts (to find agent commands) sees as its home: an empty folder, so
@@ -545,7 +545,7 @@ struct CLITests {
     @Test func aFirstInstallWritesEverythingUnderTheTrialHomeAndTheServicesFollowTheNewConfig() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)
-        let install = try rh.run(["install", "--skip-finder"])
+        let install = try rh.run(["setup"])
         #expect(install.status == 0, "\(install.standardError)")
         let manager = FileManager.default
         #expect(manager.fileExists(atPath: home.appendingPathComponent(".config/right-here/config.toml").path))
@@ -554,7 +554,7 @@ struct CLITests {
         let services = try manager.contentsOfDirectory(atPath: home.appendingPathComponent("Library/Services").path).filter { $0.hasPrefix("Right Here - ") }
         #expect(!services.isEmpty)
         // The doctor compares the installed Services with what the config just written asks for. If
-        // they were built from the config as it was before `rh install` created it, agents would be missing.
+        // they were built from the config as it was before `rh setup` created it, agents would be missing.
         let doctor = try #require(try rh.run(["doctor", "--json"]).json as? [String: Any])
         let checks = try #require(doctor["checks"] as? [[String: Any]])
         let servicesCheck = try #require(checks.first { $0["id"] as? String == "services" })
@@ -564,7 +564,7 @@ struct CLITests {
     @Test func uninstallUnderATrialHomeRemovesItsFilesAndLeavesTheSystemWideExtensionAlone() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)
-        #expect(try rh.run(["install", "--skip-finder"]).status == 0)
+        #expect(try rh.run(["setup"]).status == 0)
         let result = try rh.run(["uninstall"])
         #expect(result.status == 0)
         #expect(result.standardOutput.contains("left alone"))
@@ -576,7 +576,7 @@ struct CLITests {
     @Test func uninstallKeepsGoingAfterAFailedStepAndSaysWhatFailed() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)
-        #expect(try rh.run(["install", "--skip-finder"]).status == 0)
+        #expect(try rh.run(["setup"]).status == 0)
         // A runner script that cannot be removed (its folder is read-only) must not keep the Services installed.
         let scripts = home.appendingPathComponent("Library/Application Scripts/com.boyugou.righthere.FinderExtension")
         try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: scripts.path)
@@ -592,7 +592,7 @@ struct CLITests {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)
         let link = home.appendingPathComponent(".local/bin/rh")
-        #expect(try rh.run(["install", "--skip-finder"]).status == 0)
+        #expect(try rh.run(["setup"]).status == 0)
         #expect((try? FileManager.default.destinationOfSymbolicLink(atPath: link.path)) != nil)
         let ours = try rh.run(["uninstall"])
         #expect(ours.standardOutput.contains("Removed the command link"))
@@ -605,14 +605,15 @@ struct CLITests {
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: link.path) == "/bin/ls")
     }
 
-    @Test func aRealFileAtTheCommandLinkMakesInstallReportAProblemButFinishTheRest() throws {
+    @Test func aRealFileAtTheCommandLinkMakesSetupReportAProblemButFinishTheRest() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)
         try FileManager.default.createDirectory(at: home.appendingPathComponent(".local/bin"), withIntermediateDirectories: true)
         try "mine".write(to: home.appendingPathComponent(".local/bin/rh"), atomically: true, encoding: .utf8)
-        let result = try rh.run(["install", "--skip-finder"])
+        let result = try rh.run(["setup"])
         #expect(result.status == 1)
-        #expect(result.standardError.contains("left alone"))
+        #expect(result.standardOutput.contains("Command link: failed") && result.standardOutput.contains("left alone"), "\(result.standardOutput)")
+        #expect(result.standardError.contains("Finished with 1 problem(s)"), "\(result.standardError)")
         #expect(try String(contentsOf: home.appendingPathComponent(".local/bin/rh"), encoding: .utf8) == "mine")
         #expect(FileManager.default.fileExists(atPath: home.appendingPathComponent(".config/right-here/config.toml").path), "the other steps still ran")
     }
@@ -723,7 +724,7 @@ struct CLITests {
         #expect(FileManager.default.fileExists(atPath: rh.configDirectory.appendingPathComponent("config.toml").path))
         #expect(try rh.run(["config", "validate"]).status == 0)
         // A second init keeps the file.
-        #expect(try rh.run(["init"]).standardOutput.contains("already exists"))
+        #expect(try rh.run(["init"]).standardOutput.contains("so setup never rewrites it"))
     }
 
     @Test func mcpFramingSplitsOnLineFeedsOnly() throws {
@@ -1462,5 +1463,133 @@ struct ConfigSyncCLITests {
         #expect(text.contains("sync"))
         let sync = try rh.run(["config", "sync", "--help"]).standardOutput
         for word in ["enable", "status", "pull", "push", "disable"] { #expect(sync.contains(word)) }
+    }
+}
+
+@Suite("rh setup")
+struct SetupCommandTests {
+    private func steps(_ output: RH.Output) throws -> [String: String] {
+        let report = try #require(output.json as? [String: Any], "not one JSON document: \(output.standardOutput.prefix(200))")
+        let steps = try #require(report["steps"] as? [[String: Any]])
+        return Dictionary(uniqueKeysWithValues: steps.compactMap { step in
+            (step["id"] as? String).flatMap { id in (step["outcome"] as? String).map { (id, $0) } }
+        })
+    }
+
+    @Test func aFirstRunMakesEveryPieceUnderTheTrialHomeAndASecondRunChangesNothing() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let first = try rh.run(["setup", "--json"])
+        #expect(first.status == 0, "\(first.standardError)")
+        #expect(try steps(first) == ["config": "created", "runnerScript": "created", "cliLink": "created", "services": "created", "finderExtension": "skipped"])
+        let second = try rh.run(["setup", "--json"])
+        #expect(second.status == 0, "\(second.standardError)")
+        #expect(try steps(second) == ["config": "unchanged", "runnerScript": "unchanged", "cliLink": "unchanged", "services": "unchanged", "finderExtension": "skipped"])
+    }
+
+    @Test func theTextSaysWhatWasDoneAndWhatToRunNext() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let result = try rh.run(["setup"])
+        #expect(result.status == 0, "\(result.standardError)")
+        let lines = result.standardOutput.split(separator: "\n").map(String.init)
+        #expect(lines.first == "Right Here setup")
+        #expect(lines.contains { $0.hasPrefix("  Config file: created (") })
+        #expect(lines.contains { $0.hasPrefix("  Quick Actions: created (") })
+        #expect(lines.contains { $0.hasPrefix("  Finder extension: skipped (RH_HOME is set") })
+        #expect(lines.contains("  rh menu --container ~"))
+        #expect(lines.contains { $0.hasPrefix("note: RH_HOME is set, so this is a trial") })
+    }
+
+    @Test func whatThePersonSaysIsWrittenToTheNewConfigAndItValidatesClean() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let result = try rh.run(["setup", "--terminal", "terminal", "--editor", "zed", "--agents", "claude,codex"])
+        #expect(result.status == 0, "\(result.standardError)")
+        let shown = try rh.run(["config", "show"]).standardOutput
+        #expect(shown.contains("terminal = \"terminal\"") && shown.contains("editor = \"zed\"") && shown.contains("agents = [\"claude\", \"codex\"]"), "\(shown)")
+        #expect(try rh.run(["config", "validate", "--strict"]).status == 0)
+        #expect(result.standardOutput.contains("terminal: Terminal (terminal, you chose it)"))
+    }
+
+    @Test func noAgentsIsSaidWithNone() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        #expect(try rh.run(["setup", "--agents", "none"]).status == 0)
+        let agents = try #require(try rh.run(["agents", "--json"]).json as? [[String: Any]])
+        #expect(agents.allSatisfy { $0["enabled"] as? Bool == false })
+    }
+
+    @Test func aMisspeltChoiceIsRefusedWithTheClosestIdAndNothingIsWritten() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let result = try rh.run(["setup", "--terminal", "ghosty"])
+        #expect(result.status == 64, "status \(result.status)")
+        #expect(result.standardError.contains("Unknown terminal \"ghosty\" (did you mean \"ghostty\"?)"), "\(result.standardError)")
+        #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent(".config/right-here").path))
+        #expect(try rh.run(["setup", "--editor", "ghostty"]).standardError.contains("is a terminal, not an editor"))
+        #expect(try rh.run(["setup", "--agents", "claude,codx"]).standardError.contains("did you mean \"codex\"?"))
+    }
+
+    private static let mine = "# My notes.\n[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n"
+
+    @Test func anExistingConfigIsKeptByteForByteAndTheEditToMakeIsPrinted() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let file = home.appendingPathComponent(".config/right-here/config.toml")
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Self.mine.write(to: file, atomically: true, encoding: .utf8)
+        let result = try rh.run(["setup", "--agents", "claude,codex"])
+        #expect(result.status == 0, "\(result.standardError)")
+        #expect(try String(contentsOf: file, encoding: .utf8) == Self.mine, "setup rewrote a config that was there")
+        #expect(result.standardOutput.contains("In config.toml on line 4, change agents = [\"claude\"] to agents = [\"claude\", \"codex\"]."), "\(result.standardOutput)")
+        let json = try #require(try rh.run(["setup", "--json", "--agents", "claude,codex"]).json as? [String: Any])
+        let edits = try #require(json["configEdits"] as? [[String: Any]])
+        #expect(edits.count == 1 && edits.first?["line"] as? Int == 4 && edits.first?["file"] as? String == "config.toml")
+        #expect(try String(contentsOf: file, encoding: .utf8) == Self.mine)
+    }
+
+    @Test func aDryRunShowsThePlanAndWritesNothing() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let result = try rh.run(["setup", "--dry-run", "--terminal", "terminal"])
+        #expect(result.status == 0, "\(result.standardError)")
+        #expect(result.standardOutput.hasPrefix("Right Here setup (a dry run: nothing was changed)\n"), "\(result.standardOutput)")
+        #expect(result.standardOutput.contains("Config file: would be created"))
+        #expect(result.standardOutput.contains("rh setup --terminal terminal"))
+        let written = try FileManager.default.contentsOfDirectory(atPath: home.path)
+        #expect(written.isEmpty, "a dry run wrote \(written)")
+    }
+
+    @Test func aStepThatFailsIsReportedInTheJSONAndTheStatusIsOne() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        try FileManager.default.createDirectory(at: home.appendingPathComponent(".local/bin"), withIntermediateDirectories: true)
+        try "mine".write(to: home.appendingPathComponent(".local/bin/rh"), atomically: true, encoding: .utf8)
+        let result = try rh.run(["setup", "--json"])
+        #expect(result.status == 1)
+        let report = try #require(result.json as? [String: Any])
+        #expect(report["ok"] as? Bool == false)
+        #expect(try steps(result)["cliLink"] == "failed")
+        #expect(try steps(result)["config"] == "created")
+    }
+
+    @Test func installNamesAPieceAndSendsEveryoneElseToSetup() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let bare = try rh.run(["install"])
+        #expect(bare.status != 0)
+        #expect(bare.standardError.contains("Name what to install") && bare.standardError.contains("`rh setup`"), "\(bare.standardError)")
+    }
+
+    @Test func installDoesOnlyThePieceItWasToldTo() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let result = try rh.run(["install", "--scripts"])
+        #expect(result.status == 0, "\(result.standardError)")
+        #expect(result.standardOutput.hasPrefix("  Runner script: created ("), "\(result.standardOutput)")
+        #expect(FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run").path))
+        #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent(".config").path))
+        #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Services").path))
+    }
+
+    @Test func theConfigCommandsSendSomeoneWithoutAConfigToSetup() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        #expect(try rh.run(["config", "show"]).standardError.contains("Run `rh setup` to create one."))
     }
 }

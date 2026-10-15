@@ -283,7 +283,7 @@ enum Tools {
         ])
         var lines = [loaded.fileExists
                      ? (loaded.result.hasErrors ? "The config has errors." : (loaded.result.diagnostics.isEmpty ? "The config is valid." : "The config is valid, but has warnings; they are usually typos, so fix them."))
-                     : "There is no config file yet; defaults apply. Run `rh init`."]
+                     : "There is no config file yet; defaults apply. Run `rh setup`."]
         // Each problem quotes the config, which is data to the agent reading this (see `Fence`).
         lines += loaded.result.diagnostics.map { Fence.wrap($0.summary(file: loaded.file)) }
         return ToolOutput(text: lines.joined(separator: "\n"), structured: structured)

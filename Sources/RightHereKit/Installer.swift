@@ -13,9 +13,9 @@ public enum InstallError: Error, Equatable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .notALink(let path):
-            return "\(path) exists and is not a link, so it was left alone. Move it away, then run `rh install --cli` again."
+            return "\(path) exists and is not a link, so it was left alone. Move it away, then run `rh setup` again."
         case .appNotFound:
-            return "Right Here.app was not found. Install the app, then run `rh install --finder`."
+            return "Right Here.app was not found. Install the app, then run `rh setup`."
         case .extensionMissing(let path):
             return "\(path) does not exist."
         case .translocated:
@@ -56,7 +56,7 @@ public struct Installer: Sendable {
     }
 
     /// Whether `path` is an `rh` that Right Here would have linked: the helper inside Right Here.app, or the binary
-    /// that is running now (which is what `rh install` links to). A link to anything else was made by somebody
+    /// that is running now (which is what `rh setup` links to). A link to anything else was made by somebody
     /// else, whatever it is called.
     public static func isRightHereBinary(_ path: String) -> Bool {
         let resolved = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
@@ -90,9 +90,9 @@ public struct Installer: Sendable {
     public static func runnerScriptText(rhPath: String) -> String {
         """
         #!/bin/zsh -f
-        # Installed by `rh install`. The Finder extension runs this outside its sandbox.
+        # Installed by `rh setup`. The Finder extension runs this outside its sandbox.
         # Only `run` and `probe` are passed on: the extension has no reason to call anything else, and a
-        # compromised extension should not be able to (rh install, rh uninstall, rh init --force, ...).
+        # compromised extension should not be able to (rh setup, rh install, rh uninstall, rh init --force, ...).
         case "${1:-}" in
           run|probe) ;;
           *) echo "right-here runner: refusing '${1:-}'" >&2; exit 64 ;;
@@ -296,7 +296,7 @@ public struct FinderExtensionManager: Sendable {
 
     /// Registers the extension and checks, once macOS has had a moment to settle, that the registration stayed. Right
     /// after the installed app is replaced, pluginkit was seen dropping the entry again a few seconds later, which left
-    /// Finder without its menu until `rh install --finder` was run by hand. It registers once more when the first did
+    /// Finder without its menu until `rh setup` was run by hand. It registers once more when the first did
     /// not stay.
     /// - Returns: whether it had to register again.
     @discardableResult
