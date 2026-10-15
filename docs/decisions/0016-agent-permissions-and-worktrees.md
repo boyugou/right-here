@@ -20,7 +20,25 @@ character, git's own rules). Removal, from the CLI or over MCP, only ever touche
 copy and never one the person made. Git's refusal for uncommitted work stands unless the person passes `--force` on the command line
 (MCP never forces), and a branch is deleted only with `git branch -d`, which keeps an unmerged one.
 
+**A run plans before it creates anything, and an option that would do nothing is an error.** `rh run --worktree` plans the action against
+the worktree as it will be (`WorktreeFacts`: the same paths below the repository), so a refused request makes no worktree. The worktree is
+made last, the plan is made again for real, and a run that then fails removes the worktree again when this run made it and nothing in it
+changed; a worktree that existed before is never touched. The agent starts in the folder that was named, inside the worktree, not at the
+root of it. A default branch name is the time to the second and eight random hex digits, so two runs in one second get two worktrees.
+`--bypass-permissions`, `--safe`, `--arg`, `--worktree` and `--branch` apply to an agent or a preset and are an error for any other action;
+a preset refuses the two permission flags, since it keeps its prompts on (ADR 0012). `-y` is not an option: `--bypass-permissions` is the
+only spelling.
+
+Evidence: the binary from before the change, run on a fixture repository, failed the dry run ("the worktree does not exist"), left the
+worktree and its branch behind after a failed run, and started the agent at the root of the worktree. The CLI tests in
+`Tests/RightHereCLITests` reproduce each case, and the current binary passes them.
+
 ## Alternatives
+
+- Create the worktree first and remove it when the plan is refused: the repository changes for a request that never runs, and a crash
+  between the two leaves it behind. Planning first against the worktree's paths costs one small facts wrapper.
+- Plan the dry run against the repository folder and print the worktree's path as a note: the plan would not be the one the real run makes,
+  and a dry run could not show the folder the agent starts in.
 
 - Bypass on by default, or one switch for every agent without a per-agent override: too easy to leave on.
 - `git worktree remove --force` and `branch -D` from MCP, as first written: a client that has been told to by a file it read could
