@@ -26,6 +26,17 @@ final class SetupModel {
     private(set) var chosenRepository: URL?
     /// The submenus of the Finder menu that are open, by `MenuPreviewRow.id`.
     private(set) var openSubmenus: Set<String> = []
+    /// What a person with no config file can choose from, and what they have chosen so far. The choices start from what the Mac
+    /// has (`SetupOffer.detected`) once, and are the person's from then on: a refresh does not put them back.
+    private(set) var offer: SetupOffer?
+    var selectedTerminal: String?
+    var selectedEditor: String?
+    var selectedAgents: Set<String> = []
+    /// Setting up (the first-run button) is running.
+    private(set) var isSettingUp = false
+    /// What the last setup did, for the list "What Right Here set up".
+    private(set) var setupReport: SetupReport?
+    @ObservationIgnored private var choicesSeeded = false
     /// The answer of the last launch test: it is kept through refreshes, which read the checks and do not run the probe.
     @ObservationIgnored private var launchResult: DoctorCheck?
     /// Each listing of the worktrees gets a number; only the newest one is shown, so a listing that ends late cannot overwrite it.
@@ -44,13 +55,17 @@ final class SetupModel {
     init() {
         let facts = LiveSystemFacts()
         loader = SetupLoader(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper)
-        actions = SetupActions(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper)
+        actions = SetupActions(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper, app: Bundle.main.bundleURL)
         icons = IconProvider(facts: facts)
         home = facts.homeDirectory
     }
 
     /// The checks as a summary: whether anything is known yet, what is open, whether the first-run card is due.
     var summary: SetupSummary { SetupSummary(checks: checks) }
+
+    /// There is no config file yet, so the window offers the choice of terminal, editor and agents before anything is written. False
+    /// while nothing is known: a window that has not looked yet must not claim a first run.
+    var needsFirstRunChoice: Bool { snapshot.map { !$0.configExists } ?? false }
 
     func check(_ id: CheckID) -> DoctorCheck? {
         checks.first { $0.id == id }
@@ -117,11 +132,30 @@ final class SetupModel {
         }
     }
 
-    /// Runs `rh install`: the runner script, the command link, the config file and the Finder extension, then reads the state.
+    /// Sets Right Here up as `rh setup` does, with what the person chose: the config file (made from the choices, only because there is
+    /// none), the runner script, the command link, the Quick Actions and the Finder extension's registration. The same code as the
+    /// command line, called here. Then the state is read again, and the first-run card waits for the extension to be switched on.
+    func setUp() async {
+        guard !isWorking, let offer else { return }
+        isWorking = true
+        isSettingUp = true
+        notice = nil
+        let result = await actions.setUp(offer.choices(terminal: selectedTerminal, editor: selectedEditor, agents: selectedAgents))
+        setupReport = result.report
+        notice = result.notice
+        isSettingUp = false
+        isWorking = false
+        await refresh()
+    }
+
+    /// Install or Repair: the same setup without choices, for a Mac that has a config. It makes what is missing, changes what is out of
+    /// date and leaves the config alone.
     func repair() async {
         guard !isWorking else { return }
         isWorking = true
-        notice = await actions.installOrRepair()
+        let result = await actions.setUp()
+        setupReport = result.report ?? setupReport
+        notice = result.notice
         isWorking = false
         await refresh()
     }
@@ -155,7 +189,7 @@ final class SetupModel {
     }
 
     func copySetupPrompt() {
-        copy(SetupSnippets.setupPrompt, confirmed: .promptCopied)
+        copy(SetupSnippets.setupPrompt(command: mcpCommand), confirmed: .promptCopied)
     }
 
     func copyMCPConfiguration() {
@@ -252,10 +286,22 @@ final class SetupModel {
         snapshot = loaded
         checks = loaded.checks + (launchResult.map { [$0] } ?? [])
         folders = loaded.folders
+        offer = loaded.offer
+        seedChoices(from: loaded.offer)
         // The ids of the open submenus are positions: a changed menu may have another entry at a position that was open.
         openSubmenus = MenuPreview.keepingOpen(openSubmenus, in: loaded.menu)
         warmIcons(loaded.menu)
         if selectedTab == .worktrees { Task { await refreshWorktrees() } }
+    }
+
+    /// The first time the window is offered what is installed, the choices start from what the Mac has. They stay the person's after
+    /// that, through every refresh.
+    private func seedChoices(from offer: SetupOffer?) {
+        guard let offer, !choicesSeeded else { return }
+        choicesSeeded = true
+        selectedTerminal = offer.detected.terminal ?? offer.terminals.first?.id
+        selectedEditor = offer.detected.editor ?? offer.editors.first?.id
+        selectedAgents = Set(offer.detected.agents)
     }
 
     private func refreshFolders() async {
@@ -298,6 +344,11 @@ final class SetupModel {
         chosenRepository = repository
         worktrees = listing
         selectedTab = tab
+    }
+
+    /// For `--set-up`: the list of what the first setup did, as it is just after it ran.
+    func simulate(setupReport report: SetupReport) {
+        setupReport = report
     }
 
     /// For `--onboarding`: the first-run card, as it is when the Finder extension is off.

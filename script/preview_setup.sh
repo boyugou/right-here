@@ -7,6 +7,8 @@
 #   ./script/preview_setup.sh out.png en --dark             dark mode
 #   ./script/preview_setup.sh out.png en --tab worktrees    one section: overview, menu, checks, ai, worktrees or folders
 #   ./script/preview_setup.sh out.png en --onboarding       the first-run card, as when the Finder extension is off
+#   ./script/preview_setup.sh out.png en --first-run        the very first run: no config file yet, the choice of terminal, editor and agents
+#   ./script/preview_setup.sh out.png en --set-up           just after the first setup: what it did, and the Finder extension still to switch on
 #   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
 #   ./script/preview_setup.sh out.png en --demo --tab folders
 #   ./script/preview_setup.sh out.png en --demo --submenus  the Finder menu with every submenu open
@@ -19,14 +21,14 @@
 # PREVIEW containers (a plain stack instead of a scroll view): the picture shows the whole section.
 #
 # Without --demo and --gallery the checks, folders and the Finder menu are the real ones for this machine, so the picture shows
-# this Mac: its paths, its apps, its last action. --demo and --gallery show canned data and nothing from the machine that renders:
+# this Mac: its paths, its apps, its last action. --demo, --gallery, --first-run and --set-up show canned data and nothing from the machine that renders:
 # the script stops if a canned text names the home folder or the account of that Mac. The icons of the demo menu's apps are the
 # ones of the Mac that renders (an app this Mac does not have gets the system's plain app icon).
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--set-up] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -41,7 +43,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       TAB="${args[$i]:?preview_setup.sh: --tab needs a section}"
       ;;
     --details) TAB="checks" ;;
-    --dark | --onboarding | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
+    --dark | --onboarding | --first-run | --set-up | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -74,7 +76,7 @@ let package = Package(
 )
 PACKAGE
 # The window's own files, the same ones the app compiles.
-for file in SetupView.swift SetupModel.swift SetupPages.swift; do
+for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift; do
   ln -sf "$ROOT/Apps/RightHere/$file" "$PREVIEW/Sources/preview/$file"
 done
 # The Finder menu's own glyphs, which main.swift registers by name (the app finds them in its asset catalog), and the
@@ -195,6 +197,46 @@ func demoChecks() -> [DoctorCheck] {
     return checks
 }
 
+/// What a Mac with nothing set up yet says: no config, nothing connected to Finder.
+func firstRunChecks() -> [DoctorCheck] {
+    let checks = [
+        DoctorCheck(.config, status: .warn, detail: .doctorConfigMissing("~/.config/right-here/config.toml"), fix: .doctorFixRunSetup),
+        DoctorCheck(.terminalDefault, status: .ok, detail: .menuOpenIn("Ghostty")),
+        DoctorCheck(.editorDefault, status: .ok, detail: .menuOpenIn("Visual Studio Code")),
+        DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd(#"agents = ["claude"]"#)),
+        DoctorCheck(.finderRunner, status: .fail, detail: .doctorRunnerMissing, fix: .doctorFixRunSetup),
+        DoctorCheck(.services, status: .warn, detail: .doctorServicesNone, fix: .doctorFixRunSetup),
+        DoctorCheck(.cliLink, status: .warn, detail: .doctorCliMissing("~/.local/bin/rh"), fix: .doctorFixRunSetup),
+        DoctorCheck(.finderExtension, status: .fail, detail: .doctorExtensionNotRegistered, fix: .doctorFixExtensionInstall),
+        DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityNone)
+    ]
+    requireNothingOfThisMac(checks.flatMap { $0.englishLines() })
+    return checks
+}
+
+/// What a first run offers: the terminals and editors of the demo Mac, and every agent Right Here knows, two of them found.
+func demoOffer() -> SetupOffer {
+    let found: Set<String> = ["claude", "codex"]
+    let agents = KnownAgents.all.map { SetupOffer.Option(id: $0.id, name: $0.name, available: found.contains($0.id)) }
+    return SetupOffer(
+        terminals: [.init(id: "ghostty", name: "Ghostty", available: true), .init(id: "terminal", name: "Terminal", available: true)],
+        editors: [.init(id: "vscode", name: "Visual Studio Code", available: true), .init(id: "zed", name: "Zed", available: true),
+                  .init(id: "xcode", name: "Xcode", available: true), .init(id: "textedit", name: "TextEdit", available: true)],
+        agents: agents.filter(\.available) + agents.filter { !$0.available },
+        detected: DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude", "codex"]))
+}
+
+/// What the first setup did on the demo Mac.
+func demoSetupReport() -> SetupReport {
+    SetupReport(steps: [
+        SetupStep(.config, .created, detail: .doctorVerbatim("~/.config/right-here/config.toml")),
+        SetupStep(.runnerScript, .created, detail: .doctorVerbatim("~/Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run")),
+        SetupStep(.cliLink, .created, detail: .doctorVerbatim("~/.local/bin/rh")),
+        SetupStep(.services, .created, detail: .doctorServicesOk("14")),
+        SetupStep(.finderExtension, .created, detail: .doctorVerbatim("\(appContents)/PlugIns/FinderExtension.appex"))
+    ])
+}
+
 /// The folders of the demo: pinned and recent, and the repository they are in.
 let demoPins = ["\(demoHome)/Projects/app", "\(demoHome)/Projects/notes", "\(demoHome)/مستندات/مشروع"]
 let demoRecents = ["\(demoHome)/Projects/web", "\(demoHome)/Downloads", "\(demoHome)/Projects/app/Sources"]
@@ -247,14 +289,14 @@ func gallery() -> [DoctorCheck] {
         #"[agent.claude] command = "claude --dangerously-skip-permissions" (was "claude")"#
     ].joined(separator: "; ")
     var rows: [DoctorCheck] = [
-        DoctorCheck(.config, status: .warn, detail: .doctorConfigMissing(config), notes: [.doctorConfigOverlay("~/.config/right-here/config.local.toml"), .doctorConfigSymlink("config.toml")], fix: .doctorFixConfigInit),
+        DoctorCheck(.config, status: .warn, detail: .doctorConfigMissing(config), notes: [.doctorConfigOverlay("~/.config/right-here/config.local.toml"), .doctorConfigSymlink("config.toml")], fix: .doctorFixRunSetup),
         DoctorCheck(.terminalDefault, status: .fail, detail: .doctorTerminalNone, fix: .doctorFixTerminal),
         DoctorCheck(.editorDefault, status: .ok, detail: .menuOpenIn("Visual Studio Code")),
         DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd(#"agents = ["claude"]"#)),
         DoctorCheck(.finderMenu, status: .warn, detail: .doctorMenuEmpty, notes: [.doctorVerbatim("Agents: none is enabled; general.agents lists none."), .doctorVerbatim("Copy Path: copy_path.styles lists no style.")], fix: .doctorFixMenuEmpty),
         DoctorCheck(.claudeLink, status: .warn, detail: .doctorClaudeLinkMissing(#"launcher = "link""#), fix: .doctorFixClaudeLink),
-        DoctorCheck(.finderRunner, status: .warn, detail: .doctorRunnerStale(target), fix: .doctorFixInstallScripts),
-        DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer("12", "3", "1"), fix: .doctorFixInstallServices),
+        DoctorCheck(.finderRunner, status: .warn, detail: .doctorRunnerStale(target), fix: .doctorFixRunSetup),
+        DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer("12", "3", "1"), fix: .doctorFixRunSetup),
         DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath("~/.local/bin/rh"), fix: .doctorFixCliPath("~/.local/bin")),
         // Ok, so that the window shows the list of checks and not the first-run card (a row that is not ok would show the card).
         DoctorCheck(.finderExtension, status: .ok, detail: .doctorExtensionEnabled("\(appContents)/PlugIns/FinderExtension.appex")),
@@ -280,11 +322,11 @@ func gallery() -> [DoctorCheck] {
         (.ok, .doctorAgentOk("claude", "Claude Code in Last-Used Terminal"), nil),
         (.ok, .doctorClaudeLinkOk, nil),
         (.ok, .doctorRunnerOk(target), nil),
-        (.fail, .doctorRunnerTargetMissing(target), .doctorFixInstallScripts),
-        (.fail, .doctorRunnerMissing, .doctorFixInstallScripts),
-        (.warn, .doctorServicesNone, .doctorFixInstallServices),
+        (.fail, .doctorRunnerTargetMissing(target), .doctorFixRunSetup),
+        (.fail, .doctorRunnerMissing, .doctorFixRunSetup),
+        (.warn, .doctorServicesNone, .doctorFixRunSetup),
         (.ok, .doctorServicesOk("12"), nil),
-        (.warn, .doctorCliMissing("~/.local/bin/rh"), .doctorFixInstallCLI),
+        (.warn, .doctorCliMissing("~/.local/bin/rh"), .doctorFixRunSetup),
         (.warn, .doctorExtensionMultiple("2", "\(target); ~/Library/Developer/Xcode/DerivedData/RightHere/Build/Products/Release/Right Here.app/Contents/PlugIns/FinderExtension.appex"), .doctorFixExtensionClean),
         (.fail, .doctorExtensionNotRegistered, .doctorFixExtensionInstall),
         (.needsUser, .doctorExtensionDisabled, .doctorFixExtensionEnable),
@@ -319,7 +361,10 @@ func render(to path: String) async {
     if flag("--gallery") {
         model.simulate(SetupSnapshot(checks: gallery(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
                                      home: URL(fileURLWithPath: demoHome)), tab: .checks)
-    } else if flag("--demo") {
+    } else if flag("--first-run") {
+        model.simulate(SetupSnapshot(checks: firstRunChecks(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
+                                     configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: .overview)
+    } else if flag("--demo") || flag("--set-up") {
         let facts = demoFacts()
         model.simulate(demoSnapshot(facts), tab: tab, icons: IconProvider(facts: facts), worktrees: await demoWorktrees(), repository: demoRepository)
     } else {
@@ -327,7 +372,8 @@ func render(to path: String) async {
         model.selectedTab = tab
         if tab == .worktrees { await model.refreshWorktrees() }
     }
-    if flag("--onboarding") { model.simulateExtensionOff() }
+    if flag("--onboarding") || flag("--set-up") { model.simulateExtensionOff() }
+    if flag("--set-up") { model.simulate(setupReport: demoSetupReport()) }
     if flag("--submenus") { model.simulate(openSubmenus: allSubmenus(model.snapshot?.menu ?? [])) }
     // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.
     let language = Locale.preferredLanguages.first ?? "en"

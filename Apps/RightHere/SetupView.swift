@@ -198,24 +198,28 @@ struct SetupView: View {
 
             Spacer(minLength: 12)
 
-            Button {
-                Task { await model.openConfig() }
-            } label: {
-                Label(l10n.string(.appOpenConfig), systemImage: "square.and.pencil")
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-            .disabled(model.isWorking)
+            // On the first run the card of the first section is the way in: it makes the config file from what is chosen, and these two
+            // would make it from what was found without asking.
+            if !model.needsFirstRunChoice {
+                Button {
+                    Task { await model.openConfig() }
+                } label: {
+                    Label(l10n.string(.appOpenConfig), systemImage: "square.and.pencil")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(model.isWorking)
 
-            Button {
-                Task { await model.repair() }
-            } label: {
-                Label(l10n.string(.appInstallOrRepair), systemImage: "wrench.and.screwdriver")
+                Button {
+                    Task { await model.repair() }
+                } label: {
+                    Label(l10n.string(.appInstallOrRepair), systemImage: "wrench.and.screwdriver")
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .keyboardShortcut(.defaultAction)
+                .disabled(model.isWorking)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-            .keyboardShortcut(.defaultAction)
-            .disabled(model.isWorking)
         }
     }
 

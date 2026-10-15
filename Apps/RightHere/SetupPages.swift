@@ -105,15 +105,24 @@ struct OverviewPage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            if model.summary.extensionNeedsSetup {
-                FirstRunCard(model: model)
+            if model.needsFirstRunChoice {
+                // No config file yet: what is installed, to choose from, before anything is written.
+                FirstRunChooser(model: model)
             } else {
-                StatusCard(model: model)
-            }
+                if let report = model.setupReport, model.summary.state != .allSet || !report.ok {
+                    SetupDonePanel(report: report, home: model.homePath)
+                }
 
-            HStack(alignment: .top, spacing: 14) {
-                defaultApp(.appCheckTerminal, icon: "terminal", name: model.summary.terminal)
-                defaultApp(.appCheckEditor, icon: "chevron.left.forwardslash.chevron.right", name: model.summary.editor)
+                if model.summary.extensionNeedsSetup {
+                    FirstRunCard(model: model)
+                } else {
+                    StatusCard(model: model)
+                }
+
+                HStack(alignment: .top, spacing: 14) {
+                    defaultApp(.appCheckTerminal, icon: "terminal", name: model.summary.terminal)
+                    defaultApp(.appCheckEditor, icon: "chevron.left.forwardslash.chevron.right", name: model.summary.editor)
+                }
             }
         }
     }
