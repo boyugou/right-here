@@ -322,10 +322,10 @@ struct CLITests {
         let bypass = try rh.run(["run", "agent.claude@terminal", "--bypass-permissions", "--dry-run", "--container", "/tmp"])
         #expect(bypass.standardOutput.contains("arguments: \"cd /tmp && claude --dangerously-skip-permissions\""))
 
-        let shortBypass = try rh.run(["run", "agent.agy@terminal", "-y", "--dry-run", "--container", "/tmp"])
+        let shortBypass = try rh.run(["run", "agent.agy@terminal", "--bypass-permissions", "--dry-run", "--container", "/tmp"])
         #expect(shortBypass.standardOutput.contains("arguments: \"cd /tmp && agy --dangerously-skip-permissions\""))
 
-        let withArg = try rh.run(["run", "agent.claude@terminal", "-y", "--arg", "--verbose", "--dry-run", "--container", "/tmp"])
+        let withArg = try rh.run(["run", "agent.claude@terminal", "--bypass-permissions", "--arg", "--verbose", "--dry-run", "--container", "/tmp"])
         #expect(withArg.standardOutput.contains("arguments: \"cd /tmp && claude --dangerously-skip-permissions --verbose\""))
 
         let rhWithBypassConfig = try RH(config: "[general]\nbypass_permissions = true\n"); defer { rhWithBypassConfig.cleanUp() }
@@ -334,6 +334,75 @@ struct CLITests {
 
         let safeOverride = try rhWithBypassConfig.run(["run", "agent.codex@terminal", "--safe", "--dry-run", "--container", "/tmp"])
         #expect(safeOverride.standardOutput.contains("arguments: \"cd /tmp && codex\""))
+    }
+
+    @Test func optionsThatWouldDoNothingAreErrorsAndTheShortBypassFlagIsGone() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        // An action that starts no agent: the options say they do not apply, and nothing is planned.
+        let flagged = try rh.run(["run", "copy-path.absolute", "--bypass-permissions", "--safe", "--arg", "--x", "--dry-run", "/tmp"])
+        #expect(flagged.status != 0, Comment(rawValue: flagged.standardOutput))
+        #expect(flagged.standardError.contains("--bypass-permissions, --safe, --arg can only be used with an AI agent"), Comment(rawValue: flagged.standardError))
+        #expect(!flagged.standardOutput.contains("Copy path"))
+        let branch = try rh.run(["run", "open.terminal@terminal", "--branch", "x", "--dry-run", "--container", "/tmp"])
+        #expect(branch.status != 0 && branch.standardError.contains("--branch can only be used with an AI agent"), Comment(rawValue: branch.standardError))
+        // The one-letter spelling of the bypass flag is not an option: a dash-led word is refused, not read as it was.
+        let short = try rh.run(["run", "agent.claude@terminal", "-y", "--dry-run", "--container", "/tmp"])
+        #expect(short.status != 0, Comment(rawValue: short.standardOutput))
+        #expect(short.standardError.contains("need -- before them"), Comment(rawValue: short.standardError))
+        // A preset keeps its agent's prompts on, so the flag would do nothing: it is refused.
+        let preset = try rh.run(["run", "preset.review", "--bypass-permissions", "--dry-run", "/tmp"])
+        #expect(preset.status != 0 && preset.standardError.contains("does not apply to a preset"), Comment(rawValue: preset.standardError))
+        let together = try rh.run(["run", "agent.claude@terminal", "--bypass-permissions", "--safe", "--dry-run", "--container", "/tmp"])
+        #expect(together.status != 0 && together.standardError.contains("cannot be used together"), Comment(rawValue: together.standardError))
+    }
+
+    @Test func bypassPermissionsReachesTheAgentEvenWhenItsConfigSwitchesThePromptsOff() throws {
+        // A config that says `bypass_permissions = false` for the agent used to swallow `--bypass-permissions` without a word.
+        let rh = try RH(config: "[agent.claude]\nbypass_permissions = false\n[agent.codex]\nbypass_permissions = true\n"); defer { rh.cleanUp() }
+        let claude = try rh.run(["run", "agent.claude@terminal", "--bypass-permissions", "--dry-run", "--container", "/tmp"])
+        #expect(claude.standardOutput.contains("arguments: \"cd /tmp && claude --dangerously-skip-permissions\""), Comment(rawValue: claude.standardOutput))
+        // And `--safe` turns the prompts on for one run, whatever the config says for that agent.
+        let codex = try rh.run(["run", "agent.codex@terminal", "--safe", "--dry-run", "--container", "/tmp"])
+        #expect(codex.standardOutput.contains("arguments: \"cd /tmp && codex\""), Comment(rawValue: codex.standardOutput))
+    }
+
+    @Test func aDryRunThatFailsIsNotWrittenToTheLogAndARealOneIs() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let log = rh.configDirectory.appendingPathComponent("logs/rh.log")
+        #expect(try rh.run(["run", "open.terminal", "--dry-run", "/nonexistent-rh-test-folder"]).status == 1)
+        #expect(!FileManager.default.fileExists(atPath: log.path), "a question answered on the command line is not a failure")
+        #expect(try rh.run(["run", "open.terminal", "/nonexistent-rh-test-folder"]).status == 1)
+        #expect(try String(contentsOf: log, encoding: .utf8).contains("open.terminal:"))
+    }
+
+    @Test func aDashArgumentIsSaidOnceAndAMisspeltCommandIsNotAnsweredWithTheHelp() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let dash = try rh.run(["run", "copy-path.absolute", "-dash.txt"])
+        #expect(dash.status == 64 && dash.standardError.contains("need -- before them"), Comment(rawValue: dash.standardError))
+        #expect(!dash.standardOutput.contains("OVERVIEW"))
+        let misspelt = try rh.run(["runn", "copy-path.absolute"])
+        #expect(misspelt.status == 64 && misspelt.standardError.contains("Did you mean \"run\"?"), Comment(rawValue: misspelt.standardError))
+        let withHelp = try rh.run(["nosuchcmd", "--help"])
+        #expect(withHelp.status == 64 && !withHelp.standardOutput.contains("OVERVIEW"), Comment(rawValue: withHelp.standardOutput))
+        // The spelling the message gives works: the file is planned, not the help printed.
+        let file = rh.configDirectory.appendingPathComponent("-dash.txt")
+        try "x".write(to: file, atomically: true, encoding: .utf8)
+        let fixed = try rh.run(["run", "copy-path.name", "--dry-run", "--", file.path])
+        #expect(fixed.status == 0 && fixed.standardOutput.contains("-dash.txt"), Comment(rawValue: fixed.standardError))
+    }
+
+    @Test("the checker knows exactly the options that run and menu have, so a new option cannot slip past it")
+    func theCheckerKnowsTheOptionsOfRunAndMenu() throws {
+        for (command, known) in [("run", InvocationCheck.runOptions), ("menu", InvocationCheck.menuOptions)] {
+            let rh = try RH(); defer { rh.cleanUp() }
+            let help = try rh.run([command, "--help"]).standardOutput
+            // Every word of the help that is an option (a dash, then letters): the ones the help names, prose included.
+            let words = help.split { !($0.isLetter || $0 == "-") }.map(String.init)
+            let named = Set(words.filter { $0.hasPrefix("-") && $0.contains(where: \.isLetter) })
+            let checked = known.flags.union(known.values)
+            #expect(checked.isSubset(of: named), "\(command): the checker knows \(checked.subtracting(named)), which the help does not name")
+            #expect(named.subtracting(checked).isEmpty, "\(command): the help names \(named.subtracting(checked)), which the checker does not know and would refuse")
+        }
     }
 
     @Test func aPresetDryRunShowsTheQuotedPromptAndAHostileNameIsRefused() throws {

@@ -24,6 +24,17 @@ struct RH: AsyncParsableCommand {
             FinderCommand.self, MCP.self, Probe.self
         ]
     )
+
+    /// Looks at the command line before ArgumentParser reads it (`InvocationCheck`): a misspelt command, or an argument with a dash that
+    /// would be read as an option, is said in one line with status 64, instead of printing the whole help with status 0.
+    static func main() async {
+        let arguments = Array(CommandLine.arguments.dropFirst())
+        if let problem = InvocationCheck.problem(arguments, commands: configuration.subcommands.map { $0._commandName }) {
+            Output.error("error: " + problem)
+            Darwin.exit(64)
+        }
+        await main(arguments)
+    }
 }
 
 /// Everything a command needs: the live machine and the loaded config.

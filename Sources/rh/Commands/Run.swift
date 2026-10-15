@@ -39,48 +39,42 @@ struct Run: AsyncParsableCommand {
     @Option(name: .customLong("branch"), help: "Branch name for the isolated git worktree (implies --worktree).")
     var branch: String?
 
-    @Flag(name: [.customLong("bypass-permissions"), .customShort("y")], help: "Launch AI agents with bypass permissions / autonomous flags.")
+    @Flag(name: .customLong("bypass-permissions"), help: "Start the AI agent with its permission prompts switched off. For an agent (agent.<id>): a preset keeps its prompts on.")
     var bypassPermissions = false
 
-    @Flag(name: .customLong("safe"), help: "Launch AI agents in safe mode, overriding config bypass_permissions.")
+    @Flag(name: .customLong("safe"), help: "Start the AI agent with its permission prompts on, whatever the config says. For an agent.")
     var safe = false
 
-    @Option(name: .customLong("arg"), parsing: .unconditionalSingleValue, help: "Additional argument to pass to the agent (can be repeated).")
+    @Option(name: .customLong("arg"), parsing: .unconditionalSingleValue, help: "An extra argument for the AI agent, typed after its command (can be repeated). For an agent or a preset.")
     var extraArgs: [String] = []
 
     func run() async throws {
         let runtime = Runtime()
-        var config = runtime.config
-        if bypassPermissions {
-            config.bypassPermissions = true
-        }
-        if safe {
-            config.bypassPermissions = false
-            for id in config.agents.keys {
-                config.agents[id]?.bypassPermissions = false
-            }
-        }
         let ref: ActionRef
         do {
-            ref = try ActionRegistry(config: config, facts: runtime.facts).resolve(action)
+            ref = try ActionRegistry(config: runtime.config, facts: runtime.facts).resolve(action)
         } catch let unknown as UnknownActionID {
             throw ValidationError(unknown.message(next: "Run `rh actions` to list them, or `rh docs actions` for the grammar."))
         }
-        if !extraArgs.isEmpty {
-            switch ref {
-            case .agent(let agentID, _, _):
-                var settings = config.agents[agentID] ?? Config.AgentSettings()
+        try checkOptions(for: ref)
+        var config = runtime.config
+        switch ref {
+        case .agent(let agentID, _, _):
+            // The options are for this run only: they are set on the agent that starts, so a config that switches the prompts off for
+            // this agent does not swallow `--bypass-permissions`.
+            var settings = config.agents[agentID] ?? Config.AgentSettings()
+            if bypassPermissions { settings.bypassPermissions = true }
+            if safe { settings.bypassPermissions = false }
+            settings.args.append(contentsOf: extraArgs)
+            config.agents[agentID] = settings
+        case .preset(let presetID, _):
+            if let preset = config.preset(id: presetID), let agent = config.agent(for: preset) {
+                var settings = config.agents[agent.id] ?? Config.AgentSettings()
                 settings.args.append(contentsOf: extraArgs)
-                config.agents[agentID] = settings
-            case .preset(let presetID, _):
-                if let preset = config.preset(id: presetID), let agent = config.agent(for: preset) {
-                    var settings = config.agents[agent.id] ?? Config.AgentSettings()
-                    settings.args.append(contentsOf: extraArgs)
-                    config.agents[agent.id] = settings
-                }
-            default:
-                break
+                config.agents[agent.id] = settings
             }
+        default:
+            break
         }
         runtime.reportConfigProblems()
         let here = try context.makeContext(facts: runtime.facts)
@@ -143,9 +137,43 @@ struct Run: AsyncParsableCommand {
         }
     }
 
-    /// Logs the failure, shows the alert when asked to, and exits with status 1.
+    /// The options that change how an agent starts apply to an agent (`agent.<id>`) or a preset (`preset.<id>`) and to nothing else. One that
+    /// would do nothing is an error, never silently ignored (`rh run copy-path.absolute --bypass-permissions` used to exit 0).
+    private func checkOptions(for ref: ActionRef) throws {
+        let named = [
+            (bypassPermissions, "--bypass-permissions"), (safe, "--safe"), (!extraArgs.isEmpty, "--arg"),
+            (worktree, "--worktree"), (branch != nil, "--branch")
+        ].filter(\.0).map(\.1)
+        let launchesAnAgent: Bool
+        let isPreset: Bool
+        switch ref {
+        case .agent:
+            launchesAnAgent = true
+            isPreset = false
+        case .preset:
+            launchesAnAgent = true
+            isPreset = true
+        default:
+            launchesAnAgent = false
+            isPreset = false
+        }
+        if !launchesAnAgent, !named.isEmpty {
+            throw ValidationError("\(named.joined(separator: ", ")) can only be used with an AI agent (agent.<id>) or a preset (preset.<id>), and \(action) is neither.")
+        }
+        if bypassPermissions, safe {
+            throw ValidationError("--bypass-permissions and --safe cannot be used together.")
+        }
+        // A preset keeps its agent's prompts on whatever the config says (ADR 0012): the prompt carries the names of the files, so the
+        // permission flag never reaches it, and asking for it, or for --safe, which would change nothing, is an error.
+        if isPreset, bypassPermissions || safe {
+            throw ValidationError("\(bypassPermissions ? "--bypass-permissions" : "--safe") does not apply to a preset: a preset keeps its agent's permission prompts on, since its prompt carries file names. Start the agent itself (agent.<id>) to switch them off.")
+        }
+    }
+
+    /// Logs the failure, shows the alert when asked to, and exits with status 1. A dry run is a question answered on the command line, so
+    /// it is not a failure in the log.
     private func fail(_ error: any Error) async throws -> Never {
-        RunLog.record("\(action): \(error.localizedDescription)")
+        if !dryRun { RunLog.record("\(action): \(error.localizedDescription)") }
         if FailureAlert.shouldShow(requested: alert, dryRun: dryRun) {
             let content = FailureAlert.content(for: error, action: action, localizer: .system)
             await MainActor.run { FailureAlert.show(content) }
