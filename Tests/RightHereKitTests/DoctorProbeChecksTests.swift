@@ -42,7 +42,7 @@ struct DoctorProbeChecksTests {
         let check = Doctor.launchCheck(for: nil)
         #expect(check.status == .fail)
         #expect(check.detail?.english().contains("did not report back") == true)
-        #expect(check.fix?.english().contains("rh install --finder") == true)
+        #expect(check.fix?.english().contains("rh setup") == true)
     }
 
     @Test func theAutomationChainIsOkWhenEveryAppAllowedIt() {
@@ -69,7 +69,7 @@ struct DoctorServicesCheckTests {
     @Test func noServicesIsAWarningWithTheCommand() {
         let check = Doctor.servicesCheck(installed: [], expected: [a])
         #expect(check.status == .warn)
-        #expect(check.fix?.english().contains("rh install --services") == true)
+        #expect(check.fix?.english().contains("rh setup") == true)
     }
 
     @Test func servicesMatchingTheConfigAreOk() {

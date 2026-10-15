@@ -26785,192 +26785,6 @@
         }
       }
     },
-    "doctor.fix.configInit": {
-      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence.",
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "شغّل `rh init`."
-          }
-        },
-        "bn": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh init` চালান।"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Führe `rh init` aus."
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Εκτελέστε `rh init`."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Run `rh init`."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Ejecuta `rh init`."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "‏`rh init` را اجرا کنید."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Exécutez `rh init`."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "הריצו את `rh init`."
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh init` चलाएँ।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Jalankan `rh init`."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Esegui `rh init`."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh init` を実行してください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh init` 명령을 실행하세요."
-          }
-        },
-        "mr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh init` चालवा."
-          }
-        },
-        "ms": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Jalankan `rh init`."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Voer `rh init` uit."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Uruchom `rh init`."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Execute `rh init`."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Rulați `rh init`."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Выполните `rh init`."
-          }
-        },
-        "ta": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh init` ஐ இயக்கவும்."
-          }
-        },
-        "te": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh init` రన్ చేయండి."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "เรียกใช้ `rh init`."
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh init` komutunu çalıştırın."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Виконайте `rh init`."
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "‏`rh init` چلائیں۔"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Chạy `rh init`."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "运行 `rh init`。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "執行 `rh init`。"
-          }
-        }
-      }
-    },
     "doctor.fix.configWarnings": {
       "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence.",
       "extractionState": "manual",
@@ -27536,181 +27350,181 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "شغّل `rh install --finder` لإزالة النسخ القديمة."
+            "value": "شغّل `rh setup` لإزالة النسخ القديمة."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "পুরোনো কপিগুলো সরাতে `rh install --finder` চালান।"
+            "value": "পুরোনো কপিগুলো সরাতে `rh setup` চালান।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führe `rh install --finder` aus, um die veralteten Kopien zu entfernen."
+            "value": "Führe `rh setup` aus, um die veralteten Kopien zu entfernen."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Εκτελέστε `rh install --finder` για να αφαιρέσετε τα παλιά αντίγραφα."
+            "value": "Εκτελέστε `rh setup` για να αφαιρέσετε τα παλιά αντίγραφα."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Run `rh install --finder` to remove the stale copies."
+            "value": "Run `rh setup` to remove the stale copies."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecuta `rh install --finder` para eliminar las copias obsoletas."
+            "value": "Ejecuta `rh setup` para eliminar las copias obsoletas."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏`rh install --finder` را اجرا کنید تا نسخه‌های قدیمی حذف شوند."
+            "value": "‏`rh setup` را اجرا کنید تا نسخه‌های قدیمی حذف شوند."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Exécutez `rh install --finder` pour supprimer les copies obsolètes."
+            "value": "Exécutez `rh setup` pour supprimer les copies obsolètes."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "הריצו את `rh install --finder` כדי להסיר את העותקים הישנים."
+            "value": "הריצו את `rh setup` כדי להסיר את העותקים הישנים."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "पुरानी प्रतियाँ हटाने के लिए `rh install --finder` चलाएँ।"
+            "value": "पुरानी प्रतियाँ हटाने के लिए `rh setup` चलाएँ।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Jalankan `rh install --finder` untuk menghapus salinan lama."
+            "value": "Jalankan `rh setup` untuk menghapus salinan lama."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Esegui `rh install --finder` per rimuovere le copie obsolete."
+            "value": "Esegui `rh setup` per rimuovere le copie obsolete."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` を実行して、古いコピーを削除してください。"
+            "value": "`rh setup` を実行して、古いコピーを削除してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` 명령을 실행해 오래된 복사본을 제거하세요."
+            "value": "`rh setup` 명령을 실행해 오래된 복사본을 제거하세요."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "जुन्या प्रती काढण्यासाठी `rh install --finder` चालवा."
+            "value": "जुन्या प्रती काढण्यासाठी `rh setup` चालवा."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Jalankan `rh install --finder` untuk mengalih keluar salinan usang."
+            "value": "Jalankan `rh setup` untuk mengalih keluar salinan usang."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Voer `rh install --finder` uit om de verouderde kopieën te verwijderen."
+            "value": "Voer `rh setup` uit om de verouderde kopieën te verwijderen."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Uruchom `rh install --finder`, aby usunąć nieaktualne kopie."
+            "value": "Uruchom `rh setup`, aby usunąć nieaktualne kopie."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Execute `rh install --finder` para remover as cópias desatualizadas."
+            "value": "Execute `rh setup` para remover as cópias desatualizadas."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Rulați `rh install --finder` pentru a elimina copiile învechite."
+            "value": "Rulați `rh setup` pentru a elimina copiile învechite."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Выполните `rh install --finder`, чтобы удалить устаревшие копии."
+            "value": "Выполните `rh setup`, чтобы удалить устаревшие копии."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "பழைய நகல்களை நீக்க `rh install --finder` ஐ இயக்கவும்."
+            "value": "பழைய நகல்களை நீக்க `rh setup` ஐ இயக்கவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "పాత కాపీలను తొలగించడానికి `rh install --finder` రన్ చేయండి."
+            "value": "పాత కాపీలను తొలగించడానికి `rh setup` రన్ చేయండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เรียกใช้ `rh install --finder` เพื่อลบสำเนาเก่าออก."
+            "value": "เรียกใช้ `rh setup` เพื่อลบสำเนาเก่าออก."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Eski kopyaları kaldırmak için `rh install --finder` komutunu çalıştırın."
+            "value": "Eski kopyaları kaldırmak için `rh setup` komutunu çalıştırın."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Виконайте `rh install --finder`, щоб видалити застарілі копії."
+            "value": "Виконайте `rh setup`, щоб видалити застарілі копії."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "پرانی کاپیاں ہٹانے کے لیے `rh install --finder` چلائیں۔"
+            "value": "پرانی کاپیاں ہٹانے کے لیے `rh setup` چلائیں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Chạy `rh install --finder` để xóa các bản sao cũ."
+            "value": "Chạy `rh setup` để xóa các bản sao cũ."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "运行 `rh install --finder` 以移除过时的副本。"
+            "value": "运行 `rh setup` 以移除过时的副本。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "執行 `rh install --finder` 以移除過時的副本。"
+            "value": "執行 `rh setup` 以移除過時的副本。"
           }
         }
       }
@@ -27722,181 +27536,181 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "شغّل `rh install --finder`، أو فعّل Right Here في إعدادات النظام › عام › عناصر الدخول والملحقات › Finder."
+            "value": "شغّل `rh setup`، أو فعّل Right Here في إعدادات النظام › عام › عناصر الدخول والملحقات › Finder."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` চালান, অথবা System Settings › General › Login Items & Extensions › Finder-এর অধীনে Right Here চালু করুন।"
+            "value": "`rh setup` চালান, অথবা System Settings › General › Login Items & Extensions › Finder-এর অধীনে Right Here চালু করুন।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führe `rh install --finder` aus, oder aktiviere Right Here unter Systemeinstellungen › Allgemein › Anmeldeobjekte & Erweiterungen › Finder."
+            "value": "Führe `rh setup` aus, oder aktiviere Right Here unter Systemeinstellungen › Allgemein › Anmeldeobjekte & Erweiterungen › Finder."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Εκτελέστε `rh install --finder` ή ενεργοποιήστε το Right Here στις Ρυθμίσεις συστήματος › Γενικά › Στοιχεία εισόδου και επεκτάσεις › Finder."
+            "value": "Εκτελέστε `rh setup` ή ενεργοποιήστε το Right Here στις Ρυθμίσεις συστήματος › Γενικά › Στοιχεία εισόδου και επεκτάσεις › Finder."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Run `rh install --finder`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder."
+            "value": "Run `rh setup`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecuta `rh install --finder` o activa Right Here en Ajustes del Sistema › General › Ítems de inicio y extensiones › Finder."
+            "value": "Ejecuta `rh setup` o activa Right Here en Ajustes del Sistema › General › Ítems de inicio y extensiones › Finder."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏`rh install --finder` را اجرا کنید، یا Right Here را در System Settings › General › Login Items & Extensions › Finder روشن کنید."
+            "value": "‏`rh setup` را اجرا کنید، یا Right Here را در System Settings › General › Login Items & Extensions › Finder روشن کنید."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Exécutez `rh install --finder`, ou activez Right Here dans Réglages Système › Général › Ouverture et extensions › Finder."
+            "value": "Exécutez `rh setup`, ou activez Right Here dans Réglages Système › Général › Ouverture et extensions › Finder."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "הריצו את `rh install --finder`, או הפעילו את Right Here בהגדרות המערכת › כללי › פריטי התחברות והרחבות › Finder."
+            "value": "הריצו את `rh setup`, או הפעילו את Right Here בהגדרות המערכת › כללי › פריטי התחברות והרחבות › Finder."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` चलाएँ, या सिस्टम सेटिंग › सामान्य › लॉगइन आइटम और एक्सटेंशन › Finder में Right Here चालू करें।"
+            "value": "`rh setup` चलाएँ, या सिस्टम सेटिंग › सामान्य › लॉगइन आइटम और एक्सटेंशन › Finder में Right Here चालू करें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Jalankan `rh install --finder`, atau aktifkan Right Here di Pengaturan Sistem › Umum › Item Masuk & Ekstensi › Finder."
+            "value": "Jalankan `rh setup`, atau aktifkan Right Here di Pengaturan Sistem › Umum › Item Masuk & Ekstensi › Finder."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Esegui `rh install --finder`, oppure attiva Right Here in Impostazioni di Sistema › Generali › Elementi login ed estensioni › Finder."
+            "value": "Esegui `rh setup`, oppure attiva Right Here in Impostazioni di Sistema › Generali › Elementi login ed estensioni › Finder."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` を実行するか、システム設定 › 一般 › ログイン項目と機能拡張 › Finder で Right Here をオンにしてください。"
+            "value": "`rh setup` を実行するか、システム設定 › 一般 › ログイン項目と機能拡張 › Finder で Right Here をオンにしてください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` 명령을 실행하거나, 시스템 설정 › 일반 › 로그인 항목 및 확장 프로그램 › Finder에서 Right Here를 켜세요."
+            "value": "`rh setup` 명령을 실행하거나, 시스템 설정 › 일반 › 로그인 항목 및 확장 프로그램 › Finder에서 Right Here를 켜세요."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` चालवा, किंवा System Settings › General › Login Items & Extensions › Finder मध्ये Right Here सुरू करा."
+            "value": "`rh setup` चालवा, किंवा System Settings › General › Login Items & Extensions › Finder मध्ये Right Here सुरू करा."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Jalankan `rh install --finder`, atau hidupkan Right Here dalam Tetapan Sistem › Umum › Item Log Masuk & Sambungan › Finder."
+            "value": "Jalankan `rh setup`, atau hidupkan Right Here dalam Tetapan Sistem › Umum › Item Log Masuk & Sambungan › Finder."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Voer `rh install --finder` uit, of zet Right Here aan in Systeeminstellingen › Algemeen › Inlogonderdelen en extensies › Finder."
+            "value": "Voer `rh setup` uit, of zet Right Here aan in Systeeminstellingen › Algemeen › Inlogonderdelen en extensies › Finder."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Uruchom `rh install --finder` albo włącz Right Here w Ustawieniach systemowych › Ogólne › Rzeczy i rozszerzenia otwierane podczas logowania › Finder."
+            "value": "Uruchom `rh setup` albo włącz Right Here w Ustawieniach systemowych › Ogólne › Rzeczy i rozszerzenia otwierane podczas logowania › Finder."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Execute `rh install --finder` ou ative o Right Here em Ajustes do Sistema › Geral › Itens de Login e Extensões › Finder."
+            "value": "Execute `rh setup` ou ative o Right Here em Ajustes do Sistema › Geral › Itens de Login e Extensões › Finder."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Rulați `rh install --finder` sau activați Right Here în Configurări sistem › General › Lansare la login și extensii › Finder."
+            "value": "Rulați `rh setup` sau activați Right Here în Configurări sistem › General › Lansare la login și extensii › Finder."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Выполните `rh install --finder` или включите Right Here в Системных настройках › Основные › Объекты входа и расширения › Finder."
+            "value": "Выполните `rh setup` или включите Right Here в Системных настройках › Основные › Объекты входа и расширения › Finder."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` ஐ இயக்கவும், அல்லது System Settings › General › Login Items & Extensions › Finder இல் Right Here ஐ இயக்கவும்."
+            "value": "`rh setup` ஐ இயக்கவும், அல்லது System Settings › General › Login Items & Extensions › Finder இல் Right Here ஐ இயக்கவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` రన్ చేయండి, లేదా System Settings › General › Login Items & Extensions › Finder లో Right Here ను ఆన్ చేయండి."
+            "value": "`rh setup` రన్ చేయండి, లేదా System Settings › General › Login Items & Extensions › Finder లో Right Here ను ఆన్ చేయండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เรียกใช้ `rh install --finder` หรือเปิด Right Here ที่การตั้งค่าระบบ › ทั่วไป › รายการเข้าสู่ระบบและส่วนขยาย › Finder."
+            "value": "เรียกใช้ `rh setup` หรือเปิด Right Here ที่การตั้งค่าระบบ › ทั่วไป › รายการเข้าสู่ระบบและส่วนขยาย › Finder."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh install --finder` komutunu çalıştırın veya Sistem Ayarları › Genel › Oturum Açma Öğeleri ve Uzantılar › Finder bölümünde Right Here’ı açın."
+            "value": "`rh setup` komutunu çalıştırın veya Sistem Ayarları › Genel › Oturum Açma Öğeleri ve Uzantılar › Finder bölümünde Right Here’ı açın."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Виконайте `rh install --finder` або увімкніть Right Here в Системних параметрах › Загальні › Автозапуск і розширення › Finder."
+            "value": "Виконайте `rh setup` або увімкніть Right Here в Системних параметрах › Загальні › Автозапуск і розширення › Finder."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏`rh install --finder` چلائیں، یا System Settings › General › Login Items & Extensions › Finder میں Right Here آن کریں۔"
+            "value": "‏`rh setup` چلائیں، یا System Settings › General › Login Items & Extensions › Finder میں Right Here آن کریں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Chạy `rh install --finder`, hoặc bật Right Here trong Cài đặt hệ thống › Cài đặt chung › Mục đăng nhập & Phần mở rộng › Finder."
+            "value": "Chạy `rh setup`, hoặc bật Right Here trong Cài đặt hệ thống › Cài đặt chung › Mục đăng nhập & Phần mở rộng › Finder."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "运行 `rh install --finder`，或在“系统设置” › “通用” › “登录项与扩展” › “访达”中打开 Right Here 的开关。"
+            "value": "运行 `rh setup`，或在“系统设置” › “通用” › “登录项与扩展” › “访达”中打开 Right Here 的开关。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "執行 `rh install --finder`，或在「系統設定」›「一般」›「登入項目與延伸功能」›「Finder」中開啟 Right Here。"
+            "value": "執行 `rh setup`，或在「系統設定」›「一般」›「登入項目與延伸功能」›「Finder」中開啟 Right Here。"
           }
         }
       }
@@ -27908,739 +27722,181 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ثبّت Right Here.app، ثم شغّل `rh install --finder`."
+            "value": "ثبّت Right Here.app، ثم شغّل `rh setup`."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here.app ইনস্টল করুন, তারপর `rh install --finder` চালান।"
+            "value": "Right Here.app ইনস্টল করুন, তারপর `rh setup` চালান।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installiere Right Here.app und führe danach `rh install --finder` aus."
+            "value": "Installiere Right Here.app und führe danach `rh setup` aus."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Εγκαταστήστε το Right Here.app και μετά εκτελέστε `rh install --finder`."
+            "value": "Εγκαταστήστε το Right Here.app και μετά εκτελέστε `rh setup`."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Install Right Here.app, then run `rh install --finder`."
+            "value": "Install Right Here.app, then run `rh setup`."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instala Right Here.app y, después, ejecuta `rh install --finder`."
+            "value": "Instala Right Here.app y, después, ejecuta `rh setup`."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here.app را نصب کنید، سپس `rh install --finder` را اجرا کنید."
+            "value": "‏Right Here.app را نصب کنید، سپس `rh setup` را اجرا کنید."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installez Right Here.app, puis exécutez `rh install --finder`."
+            "value": "Installez Right Here.app, puis exécutez `rh setup`."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "התקינו את Right Here.app, ואז הריצו את `rh install --finder`."
+            "value": "התקינו את Right Here.app, ואז הריצו את `rh setup`."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here.app इंस्टॉल करें, फिर `rh install --finder` चलाएँ।"
+            "value": "Right Here.app इंस्टॉल करें, फिर `rh setup` चलाएँ।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instal Right Here.app, lalu jalankan `rh install --finder`."
+            "value": "Instal Right Here.app, lalu jalankan `rh setup`."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installa Right Here.app, poi esegui `rh install --finder`."
+            "value": "Installa Right Here.app, poi esegui `rh setup`."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here.app をインストールし、`rh install --finder` を実行してください。"
+            "value": "Right Here.app をインストールし、`rh setup` を実行してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here.app을 설치한 다음 `rh install --finder` 명령을 실행하세요."
+            "value": "Right Here.app을 설치한 다음 `rh setup` 명령을 실행하세요."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here.app इन्स्टॉल करा, मग `rh install --finder` चालवा."
+            "value": "Right Here.app इन्स्टॉल करा, मग `rh setup` चालवा."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pasang Right Here.app, kemudian jalankan `rh install --finder`."
+            "value": "Pasang Right Here.app, kemudian jalankan `rh setup`."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Installeer Right Here.app en voer daarna `rh install --finder` uit."
+            "value": "Installeer Right Here.app en voer daarna `rh setup` uit."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Zainstaluj Right Here.app, a następnie uruchom `rh install --finder`."
+            "value": "Zainstaluj Right Here.app, a następnie uruchom `rh setup`."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instale o Right Here.app e, em seguida, execute `rh install --finder`."
+            "value": "Instale o Right Here.app e, em seguida, execute `rh setup`."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Instalați Right Here.app, apoi rulați `rh install --finder`."
+            "value": "Instalați Right Here.app, apoi rulați `rh setup`."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Установите Right Here.app, затем выполните `rh install --finder`."
+            "value": "Установите Right Here.app, затем выполните `rh setup`."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here.app ஐ நிறுவி, பிறகு `rh install --finder` ஐ இயக்கவும்."
+            "value": "Right Here.app ஐ நிறுவி, பிறகு `rh setup` ஐ இயக்கவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here.app ను ఇన్‌స్టాల్ చేసి, తర్వాత `rh install --finder` రన్ చేయండి."
+            "value": "Right Here.app ను ఇన్‌స్టాల్ చేసి, తర్వాత `rh setup` రన్ చేయండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ติดตั้ง Right Here.app แล้วเรียกใช้ `rh install --finder`."
+            "value": "ติดตั้ง Right Here.app แล้วเรียกใช้ `rh setup`."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here.app’i yükleyin, ardından `rh install --finder` komutunu çalıştırın."
+            "value": "Right Here.app’i yükleyin, ardından `rh setup` komutunu çalıştırın."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Встановіть Right Here.app, а потім виконайте `rh install --finder`."
+            "value": "Встановіть Right Here.app, а потім виконайте `rh setup`."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here.app انسٹال کریں، پھر `rh install --finder` چلائیں۔"
+            "value": "‏Right Here.app انسٹال کریں، پھر `rh setup` چلائیں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Cài đặt Right Here.app, rồi chạy `rh install --finder`."
+            "value": "Cài đặt Right Here.app, rồi chạy `rh setup`."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "安装 Right Here.app，然后运行 `rh install --finder`。"
+            "value": "安装 Right Here.app，然后运行 `rh setup`。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "安裝 Right Here.app，然後執行 `rh install --finder`。"
-          }
-        }
-      }
-    },
-    "doctor.fix.installCLI": {
-      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence.",
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "شغّل `rh install --cli`."
-          }
-        },
-        "bn": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --cli` চালান।"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Führe `rh install --cli` aus."
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Εκτελέστε `rh install --cli`."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Run `rh install --cli`."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Ejecuta `rh install --cli`."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "‏`rh install --cli` را اجرا کنید."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Exécutez `rh install --cli`."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "הריצו את `rh install --cli`."
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --cli` चलाएँ।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Jalankan `rh install --cli`."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Esegui `rh install --cli`."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --cli` を実行してください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --cli` 명령을 실행하세요."
-          }
-        },
-        "mr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --cli` चालवा."
-          }
-        },
-        "ms": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Jalankan `rh install --cli`."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Voer `rh install --cli` uit."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Uruchom `rh install --cli`."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Execute `rh install --cli`."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Rulați `rh install --cli`."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Выполните `rh install --cli`."
-          }
-        },
-        "ta": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --cli` ஐ இயக்கவும்."
-          }
-        },
-        "te": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --cli` రన్ చేయండి."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "เรียกใช้ `rh install --cli`."
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --cli` komutunu çalıştırın."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Виконайте `rh install --cli`."
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "‏`rh install --cli` چلائیں۔"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Chạy `rh install --cli`."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "运行 `rh install --cli`。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "執行 `rh install --cli`。"
-          }
-        }
-      }
-    },
-    "doctor.fix.installScripts": {
-      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence.",
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "شغّل `rh install --scripts`."
-          }
-        },
-        "bn": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --scripts` চালান।"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Führe `rh install --scripts` aus."
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Εκτελέστε `rh install --scripts`."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Run `rh install --scripts`."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Ejecuta `rh install --scripts`."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "‏`rh install --scripts` را اجرا کنید."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Exécutez `rh install --scripts`."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "הריצו את `rh install --scripts`."
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --scripts` चलाएँ।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Jalankan `rh install --scripts`."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Esegui `rh install --scripts`."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --scripts` を実行してください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --scripts` 명령을 실행하세요."
-          }
-        },
-        "mr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --scripts` चालवा."
-          }
-        },
-        "ms": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Jalankan `rh install --scripts`."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Voer `rh install --scripts` uit."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Uruchom `rh install --scripts`."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Execute `rh install --scripts`."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Rulați `rh install --scripts`."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Выполните `rh install --scripts`."
-          }
-        },
-        "ta": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --scripts` ஐ இயக்கவும்."
-          }
-        },
-        "te": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --scripts` రన్ చేయండి."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "เรียกใช้ `rh install --scripts`."
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --scripts` komutunu çalıştırın."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Виконайте `rh install --scripts`."
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "‏`rh install --scripts` چلائیں۔"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Chạy `rh install --scripts`."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "运行 `rh install --scripts`。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "執行 `rh install --scripts`。"
-          }
-        }
-      }
-    },
-    "doctor.fix.installServices": {
-      "comment": "Fix line under a check in the setup window's Details list: what the person should do. A sentence.",
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "شغّل `rh install --services`."
-          }
-        },
-        "bn": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --services` চালান।"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Führe `rh install --services` aus."
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Εκτελέστε `rh install --services`."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Run `rh install --services`."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Ejecuta `rh install --services`."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "‏`rh install --services` را اجرا کنید."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Exécutez `rh install --services`."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "הריצו את `rh install --services`."
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --services` चलाएँ।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Jalankan `rh install --services`."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Esegui `rh install --services`."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --services` を実行してください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --services` 명령을 실행하세요."
-          }
-        },
-        "mr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --services` चालवा."
-          }
-        },
-        "ms": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Jalankan `rh install --services`."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Voer `rh install --services` uit."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Uruchom `rh install --services`."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Execute `rh install --services`."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Rulați `rh install --services`."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Выполните `rh install --services`."
-          }
-        },
-        "ta": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --services` ஐ இயக்கவும்."
-          }
-        },
-        "te": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --services` రన్ చేయండి."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "เรียกใช้ `rh install --services`."
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "`rh install --services` komutunu çalıştırın."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Виконайте `rh install --services`."
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "‏`rh install --services` چلائیں۔"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "Chạy `rh install --services`."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "运行 `rh install --services`。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "needs_review",
-            "value": "執行 `rh install --services`。"
+            "value": "安裝 Right Here.app，然後執行 `rh setup`。"
           }
         }
       }
@@ -28827,6 +28083,192 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "執行 `rh menu --explain`，查看每個項目被排除的原因。"
+          }
+        }
+      }
+    },
+    "doctor.fix.runSetup": {
+      "comment": "What the doctor says when something that `rh setup` makes is missing or out of date: the config file, the runner script, the Quick Actions, the command link.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "شغّل `rh setup`."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh setup` চালান।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Führe `rh setup` aus."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Εκτελέστε `rh setup`."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run `rh setup`."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ejecuta `rh setup`."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏`rh setup` را اجرا کنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Exécutez `rh setup`."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "הריצו את `rh setup`."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh setup` चलाएँ।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Jalankan `rh setup`."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Esegui `rh setup`."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh setup` を実行してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh setup` 명령을 실행하세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh setup` चालवा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Jalankan `rh setup`."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Voer `rh setup` uit."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Uruchom `rh setup`."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Execute `rh setup`."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Rulați `rh setup`."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Выполните `rh setup`."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh setup` ஐ இயக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh setup` రన్ చేయండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เรียกใช้ `rh setup`."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`rh setup` komutunu çalıştırın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Виконайте `rh setup`."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏`rh setup` چلائیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Chạy `rh setup`."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "运行 `rh setup`。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "執行 `rh setup`。"
           }
         }
       }

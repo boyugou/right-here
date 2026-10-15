@@ -44,4 +44,40 @@ struct DetectorCommandLookupTests {
         let found = await Detector(facts: facts, runner: EmptyHomeRunner()).commandsFound(["-x", "--version", "ls"])
         #expect(found == ["ls"])
     }
+    @Test func theLoginShellsPathIsAskedForInTheSameStart() async {
+        let facts = await Detector(facts: facts, runner: EmptyHomeRunner()).probe(commands: ["ls", "definitely-not-a-command-xyz"], wantPath: true)
+        #expect(facts.found == ["ls"])
+        let path = facts.path ?? []
+        #expect(path.contains("/usr/bin") && path.contains("/bin"), "\(path)")
+        #expect(!path.contains(""), "an empty entry is not a folder")
+    }
+
+    @Test func thePathCanBeAskedForAlone() async {
+        let facts = await Detector(facts: facts, runner: EmptyHomeRunner()).probe(commands: [], wantPath: true)
+        #expect(facts.found.isEmpty)
+        #expect(facts.path?.contains("/usr/bin") == true)
+    }
+
+    @Test func noPathIsReturnedWhenNoneWasAskedFor() async {
+        let result = await Detector(facts: facts, runner: EmptyHomeRunner()).probe(commands: ["ls"])
+        #expect(result == LoginShellFacts(found: ["ls"], path: nil))
+    }
+
+    @Test func aCommandCalledLikeTheMarkerCannotPassForThePath() async {
+        let forged = "\u{01}rh-path\u{01}/evil"
+        let result = await Detector(facts: facts, runner: EmptyHomeRunner()).probe(commands: [forged, "ls"], wantPath: false)
+        #expect(result.path == nil)
+        #expect(result.found == ["ls"])
+    }
+
+    @Test func startupNoiseBeforeThePathLineIsNotAFolder() {
+        let parsed = Detector.parse("last login: today\nclaude\n\u{01}rh-path\u{01}/a:/b::/c\n")
+        #expect(parsed.path == ["/a", "/b", "/c"])
+        #expect(parsed.found.contains("claude"))
+    }
+
+    @Test func aShellThatPrintsNoPathLineLeavesThePathUnknown() {
+        #expect(Detector.parse("claude\n").path == nil)
+        #expect(Detector.parse("").path == nil)
+    }
 }

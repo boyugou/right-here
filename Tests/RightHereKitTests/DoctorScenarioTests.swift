@@ -49,9 +49,9 @@ private struct Scene {
         try FileManager.default.createSymbolicLink(atPath: installer.cliLink.path, withDestinationPath: target)
     }
 
-    func run() async -> [DoctorCheck] {
+    func run(with runner: FakeProcessRunner? = nil) async -> [DoctorCheck] {
         let facts = FakeSystemFacts(homeDirectory: home, files: files, applications: applications, bundleVersions: bundleVersions, variables: variables)
-        let doctor = Doctor(facts: facts, paths: paths, loaded: ConfigStore.load(paths: paths), runner: FakeProcessRunner(results: answers), rhPath: rhPath)
+        let doctor = Doctor(facts: facts, paths: paths, loaded: ConfigStore.load(paths: paths), runner: runner ?? FakeProcessRunner(results: answers), rhPath: rhPath)
         return await doctor.run()
     }
 }
@@ -84,16 +84,16 @@ struct DoctorScenarioTests {
         scene.answers = [ProcessResult(status: 0)]
         let checks = await scene.run()
         #expect(checks.map(\.id.rawValue) == ["config", "terminal.default", "editor.default", "agents", "claude.link", "finder.runner", "services", "cli.link", "finder.extension", "finder.activity"])
-        #expect(said(checks, "config") == Said(status: .warn, detail: "none at \(scene.paths.configFile.path); defaults apply", fix: "Run `rh init`."))
+        #expect(said(checks, "config") == Said(status: .warn, detail: "none at \(scene.paths.configFile.path); defaults apply", fix: "Run `rh setup`."))
         #expect(said(checks, "terminal.default") == Said(status: .fail, detail: "No terminal is installed.", fix: "Install a terminal or set general.terminal."))
         #expect(said(checks, "editor.default") == Said(status: .warn, detail: "No editor is installed.", fix: "Install an editor or set general.editor."))
         #expect(said(checks, "agents") == Said(status: .warn, detail: "none enabled", fix: "Add agents to general.agents, for example agents = [\"claude\"]."))
         #expect(said(checks, "claude.link") == Said(status: .warn, detail: "handler not installed (only needed for launcher = \"link\")",
                                                     fix: "Start `claude` once and send a prompt; Claude Code registers the handler."))
-        #expect(said(checks, "finder.runner") == Said(status: .fail, detail: "not installed; the Finder menu cannot run actions", fix: "Run `rh install --scripts`."))
-        #expect(said(checks, "services") == Said(status: .warn, detail: "none installed; Quick Actions and keyboard shortcuts are not available", fix: "Run `rh install --services`."))
-        #expect(said(checks, "cli.link") == Said(status: .warn, detail: "no link at \(scene.home.path)/.local/bin/rh", fix: "Run `rh install --cli`."))
-        #expect(said(checks, "finder.extension") == Said(status: .fail, detail: "not registered; Finder shows no Right Here menu", fix: "Install Right Here.app, then run `rh install --finder`."))
+        #expect(said(checks, "finder.runner") == Said(status: .fail, detail: "not installed; the Finder menu cannot run actions", fix: "Run `rh setup`."))
+        #expect(said(checks, "services") == Said(status: .warn, detail: "none installed; Quick Actions and keyboard shortcuts are not available", fix: "Run `rh setup`."))
+        #expect(said(checks, "cli.link") == Said(status: .warn, detail: "no link at \(scene.home.path)/.local/bin/rh", fix: "Run `rh setup`."))
+        #expect(said(checks, "finder.extension") == Said(status: .fail, detail: "not registered; Finder shows no Right Here menu", fix: "Install Right Here.app, then run `rh setup`."))
         #expect(said(checks, "finder.activity") == Said(status: .ok, detail: "none yet; right-click a folder in Finder and choose an action, then run `rh doctor` again", fix: nil))
     }
 
@@ -223,7 +223,7 @@ struct DoctorScenarioTests {
         let target = scene.home.appendingPathComponent("elsewhere/rh").path
         try scene.installRunner(pointingAt: target, exists: exists)
         let runner = said(await scene.run(), "finder.runner")
-        #expect(runner == Said(status: status, detail: detail.replacingOccurrences(of: "{target}", with: target), fix: "Run `rh install --scripts`."))
+        #expect(runner == Said(status: status, detail: detail.replacingOccurrences(of: "{target}", with: target), fix: "Run `rh setup`."))
     }
 
     @Test func theCommandLinkSaysWhenItsFolderIsNotOnThePath() async throws {
@@ -235,12 +235,69 @@ struct DoctorScenarioTests {
         #expect(link == Said(status: .warn, detail: "linked at \(scene.home.path)/.local/bin/rh, but that folder is not on PATH", fix: "Add ~/.local/bin to PATH in your shell profile."))
     }
 
+    /// What the login shell prints for its `PATH`: the line a probe asks for, after whatever the startup files said.
+    private func shellPath(_ folders: [String], noise: String = "") -> ProcessResult {
+        ProcessResult(status: 0, standardOutput: noise + "\u{01}rh-path\u{01}" + folders.joined(separator: ":") + "\n")
+    }
+
+    @Test func aLinkInAFolderThatOnlyTheLoginShellsPathHasIsOnThePath() async throws {
+        // A window of the app, or a program an AI assistant started, has launchd's PATH; the person's terminal has their own.
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.variables = ["PATH": "/usr/bin:/bin"]
+        try scene.linkCLI(to: "/opt/rh/bin/rh")
+        scene.answers = [shellPath(["/opt/homebrew/bin", "\(scene.home.path)/.local/bin", "/usr/bin"], noise: "welcome back\n")]
+        let link = said(await scene.run(), "cli.link")
+        #expect(link == Said(status: .ok, detail: "\(scene.home.path)/.local/bin/rh", fix: nil))
+    }
+
+    @Test func aLinkInAFolderNeitherPathHasIsNotOnThePath() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.variables = ["PATH": "/usr/bin:/bin"]
+        try scene.linkCLI(to: "/opt/rh/bin/rh")
+        scene.answers = [shellPath(["/opt/homebrew/bin", "/usr/bin"])]
+        let link = said(await scene.run(), "cli.link")
+        #expect(link?.status == .warn)
+        #expect(link?.detail == "linked at \(scene.home.path)/.local/bin/rh, but that folder is not on PATH")
+    }
+
+    @Test func thisProcessesOwnPathIsEnoughAndNoShellIsStartedForIt() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.variables = ["PATH": "\(scene.home.path)/.local/bin:/usr/bin"]
+        try scene.linkCLI(to: "/opt/rh/bin/rh")
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: pluginkitEnabled)])
+        let checks = await scene.run(with: runner)
+        #expect(said(checks, "cli.link")?.status == .ok)
+        #expect(runner.recorded.map(\.executable) == ["/usr/bin/pluginkit"], "the login shell was started: \(runner.recorded.map(\.executable))")
+    }
+
+    @Test func withoutALinkTheShellIsNotAskedForAPath() async throws {
+        let scene = try Scene(); defer { scene.cleanUp() }
+        let runner = FakeProcessRunner()
+        _ = await scene.run(with: runner)
+        #expect(runner.recorded.map(\.executable) == ["/usr/bin/pluginkit"], "\(runner.recorded.map(\.executable))")
+    }
+
+    @Test func theAgentCommandsAndThePathComeFromOneStartOfTheLoginShell() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.applications = ["com.mitchellh.ghostty": ghostty]
+        scene.variables = ["PATH": "/usr/bin"]
+        try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
+        try scene.linkCLI(to: "/opt/rh/bin/rh")
+        let runner = FakeProcessRunner(results: [
+            ProcessResult(status: 0, standardOutput: "claude\n\u{01}rh-path\u{01}/usr/bin:\(scene.home.path)/.local/bin\n"),
+            ProcessResult(status: 0, standardOutput: pluginkitEnabled)])
+        let checks = await scene.run(with: runner)
+        #expect(said(checks, "agent.claude")?.status == .ok)
+        #expect(said(checks, "cli.link")?.status == .ok)
+        #expect(runner.recorded.count == 2, "\(runner.recorded.map(\.executable))")
+    }
+
     @Test func aFinderExtensionThatIsSwitchedOffIsForThePersonToFix() async throws {
         var scene = try Scene(); defer { scene.cleanUp() }
         scene.answers = [ProcessResult(status: 0, standardOutput: pluginkitEnabled.replacingOccurrences(of: "+    ", with: "-    "))]
         let extensionCheck = said(await scene.run(), "finder.extension")
         #expect(extensionCheck == Said(status: .needsUser, detail: "registered but switched off",
-                                       fix: "Run `rh install --finder`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder."))
+                                       fix: "Run `rh setup`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder."))
     }
 
     @Test func aFinderExtensionRegisteredFromSeveralPlacesSaysWhere() async throws {
@@ -251,7 +308,7 @@ struct DoctorScenarioTests {
         #expect(extensionCheck == Said(
             status: .warn,
             detail: "enabled, but registered from 2 locations: /Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex; /Users/x/DerivedData/Right Here.app/Contents/PlugIns/FinderExtension.appex",
-            fix: "Run `rh install --finder` to remove the stale copies."))
+            fix: "Run `rh setup` to remove the stale copies."))
     }
 
     @Test func aConfigWithAnErrorSaysWhichAndHowToCheck() async throws {

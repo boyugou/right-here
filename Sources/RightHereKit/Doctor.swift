@@ -41,13 +41,14 @@ public struct Doctor: Sendable {
     ///     runs a typed command, the way an agent launch does. It opens and closes a window.
     public func run(probeExtension: Bool = false, probeLaunch: Bool = false, launchPlacement: TerminalPlacement? = nil) async -> [DoctorCheck] {
         var checks: [DoctorCheck] = []
+        let shell = await loginShellFacts()
         checks.append(configCheck())
         checks += ConfigSync(paths: paths).doctorChecks()
         checks += menuChecks()
-        checks += await agentChecks()
+        checks += agentChecks(shell)
         checks += menuEmptyCheck()
         checks.append(claudeLinkCheck())
-        checks += integrationChecks()
+        checks += integrationChecks(shell)
         checks.append(await Self.extensionCheck(runner: runner))
         checks.append(Self.activityCheck(logFile: paths.logFile))
         if probeLaunch {
@@ -56,6 +57,21 @@ public struct Doctor: Sendable {
             checks.append(await chainCheck())
         }
         return checks
+    }
+
+    /// What the login shell says, in one start of it, and only when there is something to ask: the commands of the enabled agents, and
+    /// the `PATH` of a new terminal window when the command link exists and this process's own `PATH` does not have its folder (a
+    /// graphical app and a program an AI assistant starts have the `PATH` launchd gives them, which says nothing about a terminal).
+    private func loginShellFacts() async -> LoginShellFacts {
+        let commands = loaded.config.enabledAgents.compactMap { loaded.config.agent(id: $0)?.executable }
+        let installer = Installer(home: facts.homeDirectory)
+        let linked = (try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path)) != nil
+        let wantPath = linked && !processPath(contains: installer.locations.localBin)
+        return await Detector(facts: facts, runner: runner).probe(commands: commands, wantPath: wantPath)
+    }
+
+    private func processPath(contains folder: URL) -> Bool {
+        (facts.environment("PATH") ?? "").split(separator: ":").contains { String($0) == folder.path }
     }
 
     /// The launch probe alone, as a check: what `run(probeLaunch:)` adds as its last row. The setup window runs this and
@@ -73,7 +89,7 @@ public struct Doctor: Sendable {
         }
         guard let result else {
             return check(.fail, "the Finder extension did not report back",
-                         fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
+                         fix: "Run `rh setup`, then try again. See ~/Library/Logs/right-here/rh.log.")
         }
         let name = result.application
         switch result.outcome {
@@ -108,7 +124,7 @@ public struct Doctor: Sendable {
             DoctorCheck(.finderChain, status: status, detail: .doctorVerbatim(detail), fix: fix.map(LocalizedMessage.doctorVerbatim))
         }
         guard let results else {
-            return check(.fail, "the Finder extension did not report back", fix: "Run `rh install --finder`, then try again. See ~/Library/Logs/right-here/rh.log.")
+            return check(.fail, "the Finder extension did not report back", fix: "Run `rh setup`, then try again. See ~/Library/Logs/right-here/rh.log.")
         }
         let worst = results.first { $0.outcome != .granted && $0.outcome != .notRunning } ?? results.first
         let summary = results.map { "\($0.application): \($0.outcome.rawValue)" }.joined(separator: ", ")
@@ -126,7 +142,7 @@ public struct Doctor: Sendable {
 
     func configCheck() -> DoctorCheck {
         if !loaded.fileExists && !loaded.localFileExists {
-            return DoctorCheck(.config, status: .warn, detail: .doctorConfigMissing(loaded.file.path), fix: .doctorFixConfigInit)
+            return DoctorCheck(.config, status: .warn, detail: .doctorConfigMissing(loaded.file.path), fix: .doctorFixRunSetup)
         }
         if loaded.result.hasErrors {
             let first = loaded.result.diagnostics.first { $0.severity == .error }
@@ -201,14 +217,13 @@ public struct Doctor: Sendable {
         return .doctorVerbatim(reason)
     }
 
-    private func agentChecks() async -> [DoctorCheck] {
+    private func agentChecks(_ shell: LoginShellFacts) -> [DoctorCheck] {
         let config = loaded.config
         guard !config.enabledAgents.isEmpty else {
             return [DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd(Quoted.agentsExample))]
         }
         let registry = ActionRegistry(config: config, facts: facts)
-        let commands = config.enabledAgents.compactMap { config.agent(id: $0)?.executable }
-        let found = await Detector(facts: facts, runner: runner).commandsFound(commands)
+        let found = shell.found
         var checks: [DoctorCheck] = []
         for id in config.enabledAgents {
             guard let agent = config.agent(id: id) else { continue }
@@ -241,7 +256,7 @@ public struct Doctor: Sendable {
 
     // MARK: Finder integration
 
-    private func integrationChecks() -> [DoctorCheck] {
+    private func integrationChecks(_ shell: LoginShellFacts) -> [DoctorCheck] {
         let installer = Installer(home: facts.homeDirectory)
         var checks: [DoctorCheck] = []
 
@@ -249,14 +264,14 @@ public struct Doctor: Sendable {
             let exists = FileManager.default.isExecutableFile(atPath: target)
             let stale = rhPath.map { $0 != target } ?? false
             if !exists {
-                checks.append(DoctorCheck(.finderRunner, status: .fail, detail: .doctorRunnerTargetMissing(target), fix: .doctorFixInstallScripts))
+                checks.append(DoctorCheck(.finderRunner, status: .fail, detail: .doctorRunnerTargetMissing(target), fix: .doctorFixRunSetup))
             } else if stale {
-                checks.append(DoctorCheck(.finderRunner, status: .warn, detail: .doctorRunnerStale(target), fix: .doctorFixInstallScripts))
+                checks.append(DoctorCheck(.finderRunner, status: .warn, detail: .doctorRunnerStale(target), fix: .doctorFixRunSetup))
             } else {
                 checks.append(DoctorCheck(.finderRunner, status: .ok, detail: .doctorRunnerOk(target)))
             }
         } else {
-            checks.append(DoctorCheck(.finderRunner, status: .fail, detail: .doctorRunnerMissing, fix: .doctorFixInstallScripts))
+            checks.append(DoctorCheck(.finderRunner, status: .fail, detail: .doctorRunnerMissing, fix: .doctorFixRunSetup))
         }
 
         checks.append(Self.servicesCheck(
@@ -265,9 +280,9 @@ public struct Doctor: Sendable {
                 .serviceSpecs(rhPath: rhPath ?? "rh").map(ServiceWorkflow.bundleName(for:)))))
 
         let linked = (try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path)) != nil
-        let onPath = (facts.environment("PATH") ?? "").split(separator: ":").contains { String($0) == installer.locations.localBin.path }
+        let onPath = processPath(contains: installer.locations.localBin) || (shell.path ?? []).contains(installer.locations.localBin.path)
         if !linked {
-            checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliMissing(installer.cliLink.path), fix: .doctorFixInstallCLI))
+            checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliMissing(installer.cliLink.path), fix: .doctorFixRunSetup))
         } else if !onPath {
             checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath(installer.cliLink.path), fix: .doctorFixCliPath(Quoted.localBin)))
         } else {
@@ -293,17 +308,17 @@ public struct Doctor: Sendable {
     }
 
     /// Compares the Services on disk with the ones the config asks for: they are files written by
-    /// `rh install --services`, so editing the config does not change them by itself.
+    /// `rh setup`, so editing the config does not change them by itself.
     static func servicesCheck(installed: Set<String>, expected: Set<String>) -> DoctorCheck {
         if installed.isEmpty {
-            return DoctorCheck(.services, status: .warn, detail: .doctorServicesNone, fix: .doctorFixInstallServices)
+            return DoctorCheck(.services, status: .warn, detail: .doctorServicesNone, fix: .doctorFixRunSetup)
         }
         if installed == expected {
             return DoctorCheck(.services, status: .ok, detail: .doctorServicesOk(String(installed.count)))
         }
         let missing = expected.subtracting(installed).count
         let stale = installed.subtracting(expected).count
-        return DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer(String(installed.count), String(missing), String(stale)), fix: .doctorFixInstallServices)
+        return DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer(String(installed.count), String(missing), String(stale)), fix: .doctorFixRunSetup)
     }
 
     /// What the Finder extension's check says, and nothing else: one `pluginkit` call. The setup window looks again

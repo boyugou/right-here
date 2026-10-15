@@ -289,28 +289,22 @@ extension LocalizedMessage {
     public static func doctorFixCliPath(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixCliPath, [argument1]) }
     /// Run `rh config validate` and fix the errors.
     public static var doctorFixConfigErrors: LocalizedMessage { LocalizedMessage(.doctorFixConfigErrors) }
-    /// Run `rh init`.
-    public static var doctorFixConfigInit: LocalizedMessage { LocalizedMessage(.doctorFixConfigInit) }
     /// Run `rh config validate`; warnings are usually typos, and what they were meant to set is missing.
     public static var doctorFixConfigWarnings: LocalizedMessage { LocalizedMessage(.doctorFixConfigWarnings) }
     /// Install an editor or set general.editor.
     public static var doctorFixEditor: LocalizedMessage { LocalizedMessage(.doctorFixEditor) }
     /// Install it, or change general.editor (remove the setting to use the first installed editor).
     public static var doctorFixEditorFallback: LocalizedMessage { LocalizedMessage(.doctorFixEditorFallback) }
-    /// Run `rh install --finder` to remove the stale copies.
+    /// Run `rh setup` to remove the stale copies.
     public static var doctorFixExtensionClean: LocalizedMessage { LocalizedMessage(.doctorFixExtensionClean) }
-    /// Run `rh install --finder`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder.
+    /// Run `rh setup`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder.
     public static var doctorFixExtensionEnable: LocalizedMessage { LocalizedMessage(.doctorFixExtensionEnable) }
-    /// Install Right Here.app, then run `rh install --finder`.
+    /// Install Right Here.app, then run `rh setup`.
     public static var doctorFixExtensionInstall: LocalizedMessage { LocalizedMessage(.doctorFixExtensionInstall) }
-    /// Run `rh install --cli`.
-    public static var doctorFixInstallCLI: LocalizedMessage { LocalizedMessage(.doctorFixInstallCLI) }
-    /// Run `rh install --scripts`.
-    public static var doctorFixInstallScripts: LocalizedMessage { LocalizedMessage(.doctorFixInstallScripts) }
-    /// Run `rh install --services`.
-    public static var doctorFixInstallServices: LocalizedMessage { LocalizedMessage(.doctorFixInstallServices) }
     /// Run `rh menu --explain` to see why each entry is left out.
     public static var doctorFixMenuEmpty: LocalizedMessage { LocalizedMessage(.doctorFixMenuEmpty) }
+    /// Run `rh setup`.
+    public static var doctorFixRunSetup: LocalizedMessage { LocalizedMessage(.doctorFixRunSetup) }
     /// Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy.
     public static var doctorFixSyncCommands: LocalizedMessage { LocalizedMessage(.doctorFixSyncCommands) }
     /// Compare them (`rh config sync status`), then `rh config sync pull --force` to take the folder's or `push --force` to keep this one; the replaced file is saved first.

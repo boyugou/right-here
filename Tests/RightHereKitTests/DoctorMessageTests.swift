@@ -90,7 +90,7 @@ struct DoctorMessageTests {
     }
 
     @Test func theJSONCarriesTheEnglishTextAndWhatAProgramNeedsToActOnIt() throws {
-        let check = DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer("3", "1", "0"), fix: .doctorFixInstallServices)
+        let check = DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer("3", "1", "0"), fix: .doctorFixRunSetup)
         let json = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(check)) as? [String: Any])
         #expect(json["id"] as? String == "services")
         #expect(json["title"] as? String == "Finder Services")
@@ -100,9 +100,9 @@ struct DoctorMessageTests {
         #expect(detail["args"] as? [String] == ["3", "1", "0"])
         #expect(detail["text"] as? String == "3 installed, but they differ from the config (1 missing, 0 stale)")
         let fix = try #require(json["fix"] as? [String: Any])
-        #expect(fix["code"] as? String == "doctor.fix.installServices")
+        #expect(fix["code"] as? String == "doctor.fix.runSetup")
         #expect(fix["args"] as? [String] == [])
-        #expect(fix["text"] as? String == "Run `rh install --services`.")
+        #expect(fix["text"] as? String == "Run `rh setup`.")
         #expect(json["notes"] == nil, "a check without notes says nothing about them")
     }
 

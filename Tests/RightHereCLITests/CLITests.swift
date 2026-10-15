@@ -457,12 +457,12 @@ struct CLITests {
         #expect(detail["args"] as? [String] == [file])
         #expect(detail["text"] as? String == "none at \(file); defaults apply")
         let fix = try #require(config["fix"] as? [String: Any])
-        #expect(fix["code"] as? String == "doctor.fix.configInit")
-        #expect(fix["text"] as? String == "Run `rh init`.")
+        #expect(fix["code"] as? String == "doctor.fix.runSetup")
+        #expect(fix["text"] as? String == "Run `rh setup`.")
         // The same data, written for a person.
         let lines = try rh.run(["doctor"]).standardOutput.split(separator: "\n").map(String.init)
         let at = try #require(lines.firstIndex(of: "[warn] Config file: none at \(file); defaults apply"))
-        #expect(lines[at + 1] == "       fix: Run `rh init`.")
+        #expect(lines[at + 1] == "       fix: Run `rh setup`.")
     }
 
     // The apps below use a made-up bundle id, so what is installed on the Mac that runs the tests does not change the answers.
