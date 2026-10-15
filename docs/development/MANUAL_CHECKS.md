@@ -9,7 +9,7 @@ Folders under Desktop, Documents and Downloads are privacy-protected: the sandbo
 look at them, and `rh` then treats the path as unreadable rather than as a folder (see
 `docs/DESIGN.md`, section 9).
 
-1. `rh install` and `rh doctor` (everything `[ok]`).
+1. `rh setup` and `rh doctor` (everything `[ok]`).
 2. In Finder, right-click a folder inside Documents, then each of Desktop and Downloads. The Right Here menu
    should appear and "Open in <terminal>" should open a window in that folder.
 3. Right-click a file there and choose a path-copy item; paste it somewhere and compare.
@@ -75,7 +75,7 @@ Needs a real Finder and a terminal that can run commands; nothing here is covere
 Needs a real Finder and the real app window: the tests and `script/preview_setup.sh` render the view, but they never
 open one, and the preview is the same code as the extension's, not Finder's own word.
 
-1. `rh install`, switch the Finder extension on, and relaunch Finder (hold Option, right-click the Finder icon in the
+1. `rh setup`, switch the Finder extension on, and relaunch Finder (hold Option, right-click the Finder icon in the
    Dock, choose Relaunch). Open Right Here and choose "Finder menu" in its sidebar.
 2. Right-click the empty background of a folder window. The entries, their order, the separators, the icons (the
    menu's own glyphs and the apps' icons) and the titles match the window's list. Click a line with a chevron in the

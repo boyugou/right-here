@@ -116,6 +116,15 @@ struct InstallerTests {
         #expect(!installer.servicesAreCurrent(specs), "a changed file is not current")
     }
 
+    /// One test and not a parameterized one: `script/mutation_check.py` reads a failed test by its name.
+    @Test func theRunnerRefusesSetupAndTheOtherCommandsThatChangeTheMachine() throws {
+        for subcommand in ["setup", "install", "uninstall", "init"] {
+            let result = try runRunner([subcommand, "--force"])
+            #expect(result.status == 64, "\(subcommand): status \(result.status)")
+            #expect(!result.called, "the runner started rh for \(subcommand)")
+        }
+    }
+
     @Test func cliLinkIsReplacedWhenItAlreadyExists() throws {
         let home = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: home) }

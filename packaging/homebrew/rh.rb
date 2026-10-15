@@ -1,6 +1,6 @@
 # Homebrew formula for the command-line tool alone, built from source. It covers every action, the
 # MCP server and Quick Actions; the Finder menu needs the app (see right-here.rb). A formula cannot
-# write to $HOME, so the per-user setup is a separate command: `rh install --scripts --cli --services`.
+# write to $HOME, so the per-user setup is a separate command: `rh setup`.
 class Rh < Formula
   desc "Send a folder or Finder selection to terminals, editors and AI agents"
   homepage "https://github.com/boyugou/right-here"
@@ -25,11 +25,12 @@ class Rh < Formula
 
   def caveats
     <<~EOS
-      Set up the Finder side for your user:
+      Set Right Here up for your user (config file, runner script, command link, Quick Actions):
 
-        rh install --scripts --cli --services
+        rh setup
 
-      Then check everything with `rh doctor`. The Finder menu needs the Right Here app.
+      It can be run again at any time, and `rh doctor` checks everything. The Finder menu needs the Right Here app (the cask);
+      Quick Actions work without it.
     EOS
   end
 

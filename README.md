@@ -99,24 +99,25 @@ Add `--dry-run --json` to inspect the exact planned execution before running.
 
 ## Install
 
-### Build from source
-
-A notarized DMG is built with `script/package_dmg.sh` (see `docs/development/RELEASING.md`); downloads will be published with the first public release.
-
-Requires Xcode 26 or later and `xcodegen`:
+A notarized DMG and a Homebrew cask are built by `script/package_dmg.sh` and `packaging/homebrew` (see [`docs/development/RELEASING.md`](docs/development/RELEASING.md)); downloads will be published with the first public release. Until then, build from source (Xcode 26 or later and `xcodegen`):
 
 ```sh
 brew install xcodegen
-./script/install_local.sh     # build, copy to ~/Applications, link rh into ~/.local/bin, enable extension
-rh doctor                     # verify all diagnostics pass
+./script/install_local.sh     # build, copy to ~/Applications, then run `rh setup`
 ```
 
-If `rh doctor` indicates the extension needs activation, toggle Right Here under **System Settings › General › Login Items & Extensions › Finder**.
+Then, in three steps:
+
+1. **Set up.** Open Right Here and press **Set Up** (it asks which terminal, editor and AI agents you use), or run `rh setup` in a terminal. It makes your config file, connects Finder and says what is left for you. Run it again at any time: it only does what is missing, and never rewrites a config that exists.
+2. **Switch the extension on.** System Settings › General › Login Items & Extensions › Finder › Right Here. The app's window opens that page and notices when you switch it on.
+3. **Right-click a folder** in Finder.
+
+Or hand all of it to your AI assistant: **Copy Setup Prompt for AI** in the app, or tell it to run `rh docs agent-setup`.
 
 ## Use
 
 ```sh
-rh init                       # create ~/.config/right-here/config.toml
+rh setup                      # set everything up (--dry-run shows what it would do)
 rh menu                       # preview the Finder menu (--explain shows filtered items)
 rh actions                    # list all actions available in the current directory
 rh run agent.claude           # launch Claude Code in current directory
@@ -209,9 +210,9 @@ The server provides typed tools:
 
 ### Automated Setup via AI
 
-Right Here provides an automated onboarding guide for AI assistants:
-- Run `rh docs agent-setup` for the full agent playbook.
-- In **Right Here.app**, click **Copy Setup Prompt for AI** to have your assistant verify dependencies and configure your system.
+Right Here provides an onboarding guide for AI assistants ([`docs/AGENT_SETUP.md`](docs/AGENT_SETUP.md), also `rh docs agent-setup`). The assistant asks which terminal, editor and AI agents you use, runs `rh setup` once with your answers, tells you what only you can do (such as switching the Finder extension on) and checks the result.
+- In **Right Here.app**, click **Copy Setup Prompt for AI** and paste the prompt into your assistant.
+- Or tell your assistant to run `rh docs agent-setup` and follow it.
 
 ## Safety & App Store Readiness
 

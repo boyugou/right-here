@@ -25,10 +25,11 @@ cask "right-here" do
   ]
 
   caveats <<~EOS
-    Run once to connect Finder (runner script, config, Quick Actions and the Finder extension):
+    Set Right Here up (config file, runner script, Quick Actions and the Finder extension) by opening the app and pressing Set Up, or with:
 
-      rh install
+      rh setup
 
-    Then check everything with `rh doctor`.
+    Then switch on Right Here under System Settings > General > Login Items & Extensions > Finder.
+    `rh setup` can be run again at any time, and `rh doctor` checks everything.
   EOS
 end

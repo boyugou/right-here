@@ -8,33 +8,40 @@ argument-hint: "[what to change]"
 
 What the user wants: $ARGUMENTS
 
-If that is empty, check the setup and fix what is broken.
+Read the playbook first: `right_here_docs` with topic `agent-setup` (the same text as `rh docs agent-setup` in a shell). This is
+its short form; the playbook has the details.
 
-## 1. Read the playbook and check the machine
+## 1. Ask first
 
-Call `right_here_docs` with topic `agent-setup`, then `right_here_doctor`. If the menu is missing or a click does
-nothing, read topic `troubleshooting` before guessing.
+Before anything changes, ask the user which terminal, editor and AI agents they use, in one message, and nothing else. If
+`$ARGUMENTS` already says, use that. `right_here_catalog` lists the ids (`ghostty`, `terminal`, `vscode`, `zed`, `claude`,
+`codex`, ...); an id is exact. "Whatever you find" is an answer: leave that flag out. No agent at all is `--agents none`.
 
-- `fail`: fix it with the `fix` text. Most fixes are `rh` commands; run them in the shell.
-- `needs-user`: only the person can do this (for example, switching on the Finder extension in
-  System Settings). Tell them exactly the step and wait.
-- `warn`: mention it; fix it if it relates to the request.
+## 2. Run setup once, in the shell
 
-## 2. Change the config
+Setting up writes files in the user's home, so it is a shell command and not a tool:
 
-The config is TOML. `right_here_config_validate` returns its path in `file`. Read it, make the smallest
-edit that does what the user asked, and keep their comments. Look up keys with `right_here_docs` topic
-`config`; list known terminals, editors and agents with `right_here_catalog`.
+    rh setup --json --terminal <id> --editor <id> --agents <id,id>
 
-## 3. Check your work
+Leave out a flag the user did not answer. It makes the config only when there is none, installs what Finder needs, runs the
+doctor, and opens no window. To add an agent to a config that exists, give the whole list of agents. If the report's
+`configEdits` is not empty, the existing config was left alone: make exactly those edits to the file each names, keep every
+comment and every other line, then check it with `right_here_config_validate` (`clean` must be true).
 
-1. `right_here_config_validate`. Fix every error and every warning (`clean` must be true): an unknown key
-   is only a warning, but it is almost always a typo and what it was meant to set is silently missing.
-   Each diagnostic's `replacement` is the likely fix.
-2. `right_here_menu` with a folder path, to show the user the menu their config now produces.
-3. For an action you changed, `right_here_run` with `dry_run` to show what it will do.
+## 3. Tell the user what only they can do
 
-Do not run an action for real unless the user asked for it. The one exception worth offering when the
-user starts agents in a terminal: `rh doctor --probe-launch` in the shell. It opens and closes a terminal
-window for a second and proves that the Finder click chain can run a typed command; the first run makes
-macOS ask the user to allow Right Here to control the terminal, so ask before you start it.
+Each `needsUser` entry has a `text` and `how`: give them to the user in your words, with the exact clicks (switching the Finder
+extension on in System Settings, the PATH line, the permission macOS asks for once). Running setup again does not switch the
+extension on, so never run it in a loop.
+
+## 4. Check the result
+
+`right_here_doctor`: no check has the status `fail`; say what a `warn` or `needs-user` says. `right_here_menu` with a folder
+shows the user the menu their config makes. Do not run an action for real unless the user asked. The one thing worth offering when
+they start agents in a terminal is `rh doctor --probe-launch` in the shell: it opens and closes a terminal window for a second and
+macOS may ask for permission, so ask before you start it.
+
+## Never
+
+Change System Settings or the databases behind it; delete, replace or rewrite the user's config or its comments (`rh setup --force`
+only when they asked to start over); edit their shell startup files unless they ask you to; put a secret in the config.
