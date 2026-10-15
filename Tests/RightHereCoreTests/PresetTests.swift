@@ -436,9 +436,9 @@ struct PresetMenuTests {
         #expect(menu(many, selection(names), files: names).flatMap(\.actionIDs).isEmpty)
     }
 
-    @Test func aPresetOnTheDefaultTerminalIsTheSamePresetAsOneWithoutASuffix() {
-        #expect(ActionRef(parsing: "preset.review@default") == .preset(id: "review", terminal: nil))
-        #expect(ActionRef(parsing: "preset.review@default")?.id == "preset.review")
+    @Test func aPresetHasOneSpellingForTheDefaultTerminal() {
+        #expect(ActionRef(parsing: "preset.review") == .preset(id: "review", terminal: nil))
+        #expect(ActionRef(parsing: "preset.review@default") == nil)
     }
 
     @Test(arguments: ["link", "desktop"])
