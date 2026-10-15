@@ -18,6 +18,8 @@ struct ToolDefinition: Sendable {
     var description: String
     var inputSchema: JSONValue
     var readOnly: Bool
+    /// The tool can delete something (a worktree): clients decide how freely to approve a call from this hint.
+    var destructive = false
     var handler: @Sendable (JSONValue, ServerContext) async throws -> ToolOutput
 
     var json: JSONValue {
@@ -28,7 +30,7 @@ struct ToolDefinition: Sendable {
             "inputSchema": inputSchema,
             "annotations": .object([
                 "readOnlyHint": .bool(readOnly),
-                "destructiveHint": .bool(false),
+                "destructiveHint": .bool(destructive),
                 "openWorldHint": .bool(!readOnly)
             ])
         ])
@@ -184,6 +186,7 @@ enum Tools {
                 "delete_branch": boolean("Also delete the branch after removing the worktree (default: false); a branch that is not fully merged is kept.")
             ]),
             readOnly: false,
+            destructive: true,
             handler: worktree
         )
     ]
@@ -333,7 +336,11 @@ enum Tools {
         case "list":
             let list = try await GitWorktreeManager.listWorktrees(in: root, runner: server.runner)
             let json = try JSONValue(encoding: list)
-            return ToolOutput(text: json.pretty(), structured: .object(["worktrees": json]))
+            // Branch names and paths come from whoever wrote the repository: the text for the model fences them like every other name from disk.
+            let lines = list.map { entry in
+                Fence.wrap(entry.path) + (entry.branch.map { " branch " + Fence.wrap($0) } ?? "") + (entry.isRightHere ? " (made by Right Here)" : "")
+            }
+            return ToolOutput(text: lines.isEmpty ? "No worktrees." : lines.joined(separator: "\n"), structured: .object(["worktrees": json]))
         case "create":
             let branch = arguments["branch"]?.stringValue
             let res = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch, runner: server.runner)
