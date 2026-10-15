@@ -391,6 +391,95 @@ struct CLITests {
         #expect(fixed.status == 0 && fixed.standardOutput.contains("-dash.txt"), Comment(rawValue: fixed.standardError))
     }
 
+    /// A git repository with a folder `sub/deeper` and one commit, in the test's own folder. Its worktrees are made under it too.
+    private func repository(_ rh: RH) throws -> URL {
+        let folder = rh.configDirectory.appendingPathComponent("repo")
+        let deeper = folder.appendingPathComponent("sub/deeper")
+        try FileManager.default.createDirectory(at: deeper, withIntermediateDirectories: true)
+        try "readme".write(to: folder.appendingPathComponent("README.md"), atomically: true, encoding: .utf8)
+        try "a".write(to: deeper.appendingPathComponent("a.txt"), atomically: true, encoding: .utf8)
+        _ = try git(["init", "-q"], in: folder)
+        _ = try git(["add", "-A"], in: folder)
+        _ = try git(["commit", "-q", "-m", "initial"], in: folder)
+        return folder
+    }
+
+    private func git(_ arguments: [String], in folder: URL) throws -> String {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+        process.arguments = ["-C", folder.path, "-c", "commit.gpgsign=false", "-c", "user.name=Test", "-c", "user.email=test@example.invalid"] + arguments
+        let out = Pipe()
+        process.standardOutput = out
+        process.standardError = Pipe()
+        try process.run()
+        let data = out.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        return String(decoding: data, as: UTF8.self)
+    }
+
+    /// A terminal that runs `touch` (no window) and one that runs `false`, and an agent called `marker` (which is not installed here).
+    private let worktreeConfig = """
+    [general]
+    agents = ["marker"]
+    [[app]]
+    id = "faketerm"
+    name = "Fake"
+    bundle_id = "com.apple.finder"
+    role = "terminal"
+    run_args = ["/usr/bin/touch", "{dir}/ran-{command}"]
+    [[app]]
+    id = "failterm"
+    name = "Failing"
+    bundle_id = "com.apple.finder"
+    role = "terminal"
+    run_args = ["/usr/bin/false", "{command}"]
+    [agent.marker]
+    name = "marker"
+    command = "marker"
+    """
+
+    @Test func aWorktreeRunStartsTheAgentInTheFolderThatWasNamedNotAtTheRootOfTheWorktree() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let result = try rh.run(["run", "agent.marker@faketerm", "--worktree", "--branch", "feature-x", "--container", repo.appendingPathComponent("sub/deeper").path])
+        #expect(result.status == 0, Comment(rawValue: result.standardError))
+        let made = repo.appendingPathComponent(".right-here/worktrees/feature-x/sub/deeper")
+        #expect(FileManager.default.fileExists(atPath: made.appendingPathComponent("ran-marker").path), "the agent did not start in the folder that was named")
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent("sub/deeper/ran-marker").path), "the repository's own folder was used")
+    }
+
+    @Test func aWorktreeDryRunShowsTheFolderInsideTheWorktreeAndMakesNothing() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let result = try rh.run(["run", "agent.marker@faketerm", "--worktree", "--dry-run", "--container", repo.appendingPathComponent("sub/deeper").path])
+        #expect(result.status == 0, Comment(rawValue: result.standardError))
+        #expect(result.standardOutput.contains(".right-here/worktrees/rh-<auto-branch>/sub/deeper/ran-marker"), Comment(rawValue: result.standardOutput))
+        #expect(result.standardError.contains("would create the worktree"), Comment(rawValue: result.standardError))
+        // The dry run asks the login shell about the agent: the marker is not installed, and the plan says so.
+        #expect(result.standardOutput.contains("marker is not found by your login shell"), Comment(rawValue: result.standardOutput))
+        #expect(try git(["worktree", "list"], in: repo).split(separator: "\n").count == 1, "a dry run made a worktree")
+    }
+
+    @Test func aRunThatFailsAfterItMadeTheWorktreeLeavesNoWorktreeAndNoBranch() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let result = try rh.run(["run", "agent.marker@failterm", "--worktree", "--branch", "feature-y", "--container", repo.appendingPathComponent("sub/deeper").path])
+        #expect(result.status == 1, Comment(rawValue: result.standardError))
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here/worktrees/feature-y").path), "the failed run left its worktree behind")
+        #expect(try git(["branch", "--list", "feature-y"], in: repo).isEmpty, "the failed run left its branch behind")
+        #expect(result.standardError.contains("was removed again"), Comment(rawValue: result.standardError))
+    }
+
+    @Test func aRunRefusedBeforeAnythingIsDoneLeavesNoWorktreeAndNoBranch() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let result = try rh.run(["run", "agent.marker@nosuchterm", "--worktree", "--branch", "feature-z", "--container", repo.appendingPathComponent("sub/deeper").path])
+        #expect(result.status == 1)
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here/worktrees").path), "a refused run made the worktrees folder")
+        #expect(try git(["branch", "--list", "feature-z"], in: repo).isEmpty)
+        #expect(try git(["worktree", "list"], in: repo).split(separator: "\n").count == 1)
+    }
+
     @Test("the checker knows exactly the options that run and menu have, so a new option cannot slip past it")
     func theCheckerKnowsTheOptionsOfRunAndMenu() throws {
         for (command, known) in [("run", InvocationCheck.runOptions), ("menu", InvocationCheck.menuOptions)] {

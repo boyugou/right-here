@@ -165,6 +165,66 @@ struct GitWorktreeSafetyTests {
         #expect(try git(["branch", "--list", "experiment"], in: repository).contains("experiment"))
     }
 
+    @Test func twoRunsInOneSecondGetTwoWorktrees() async throws {
+        // The default name was the time to the second: the second run took the first one's worktree for its own.
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        let first = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: nil)
+        let second = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: nil)
+        #expect(first.wasCreated && second.wasCreated)
+        #expect(first.branch != second.branch && first.worktreeURL != second.worktreeURL)
+        #expect(first.branchCreated && second.branchCreated)
+    }
+
+    @Test func aFreshBranchNameIsAValidBranchAndIsNotTheSameTwice() {
+        let names = (0..<50).map { _ in GitWorktreeManager.freshBranchName() }
+        #expect(Set(names).count == names.count)
+        for name in names {
+            #expect(name.hasPrefix("rh/"))
+            #expect(GitWorktreeManager.branchNameRefusal(name) == nil, "\(name) is not a usable branch name")
+        }
+    }
+
+    @Test func aWorktreeNothingWasDoneInIsRemovedWithTheBranchThisRunMade() async throws {
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        let made = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "unused")
+        #expect(await GitWorktreeManager.discardIfUnchanged(made, gitRoot: repository))
+        #expect(!FileManager.default.fileExists(atPath: made.worktreeURL.path))
+        #expect(!(try git(["branch", "--list", "unused"], in: repository).contains("unused")))
+    }
+
+    @Test func aWorktreeWithAChangeIsKept() async throws {
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        let made = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "edited")
+        try "a new file".write(to: made.worktreeURL.appendingPathComponent("new.txt"), atomically: true, encoding: .utf8)
+        #expect(await GitWorktreeManager.discardIfUnchanged(made, gitRoot: repository) == false)
+        #expect(FileManager.default.fileExists(atPath: made.worktreeURL.appendingPathComponent("new.txt").path))
+        #expect(try git(["branch", "--list", "edited"], in: repository).contains("edited"))
+    }
+
+    @Test func aWorktreeThatExistedBeforeIsNeverRemoved() async throws {
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        _ = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "older")
+        let again = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "older")
+        #expect(!again.wasCreated && !again.branchCreated)
+        #expect(await GitWorktreeManager.discardIfUnchanged(again, gitRoot: repository) == false)
+        #expect(FileManager.default.fileExists(atPath: again.worktreeURL.path))
+    }
+
+    @Test func aBranchThatWasAttachedIsKeptWhenItsWorktreeIsDiscarded() async throws {
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        _ = try git(["branch", "existing"], in: repository)
+        let attached = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "existing")
+        #expect(attached.wasCreated && !attached.branchCreated)
+        #expect(await GitWorktreeManager.discardIfUnchanged(attached, gitRoot: repository))
+        #expect(!FileManager.default.fileExists(atPath: attached.worktreeURL.path))
+        #expect(try git(["branch", "--list", "existing"], in: repository).contains("existing"), "a branch the run did not make is not deleted")
+    }
+
     @Test func aMergedBranchIsDeletedWithItsWorktree() async throws {
         let repository = try makeRepository()
         defer { try? FileManager.default.removeItem(at: repository) }

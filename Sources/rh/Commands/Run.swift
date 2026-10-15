@@ -14,6 +14,7 @@ struct Run: AsyncParsableCommand {
           rh run agent.claude              start Claude Code in the current folder
           rh run agent.claude.continue@ghostty ~/code/project
           rh run new-file.md --container ~/notes
+          rh run agent.claude --worktree ~/code/project/src   start it in a new git worktree, in src
 
         Use --dry-run to see exactly what would happen without doing it.
         """
@@ -33,10 +34,10 @@ struct Run: AsyncParsableCommand {
     @Flag(help: "Show an alert when the action fails. The Finder extension uses this. Never with --dry-run. RH_NO_UI turns alerts off and stops rh from starting open or osascript.")
     var alert = false
 
-    @Flag(name: .customLong("worktree"), help: "Launch the action in an isolated git worktree branch.")
+    @Flag(name: .customLong("worktree"), help: "Start the AI agent in an isolated git worktree of the repository, in the same folder the request names. For an agent or a preset.")
     var worktree = false
 
-    @Option(name: .customLong("branch"), help: "Branch name for the isolated git worktree (implies --worktree).")
+    @Option(name: .customLong("branch"), help: "Branch name for the isolated git worktree (implies --worktree). Without it a new branch is made.")
     var branch: String?
 
     @Flag(name: .customLong("bypass-permissions"), help: "Start the AI agent with its permission prompts switched off. For an agent (agent.<id>): a preset keeps its prompts on.")
@@ -78,45 +79,84 @@ struct Run: AsyncParsableCommand {
         }
         runtime.reportConfigProblems()
         let here = try context.makeContext(facts: runtime.facts)
-
-        let effectiveContext: HereContext
-        if worktree || branch != nil {
-            guard let dir = here.workingDirectory(facts: runtime.facts) else {
-                throw ValidationError("--worktree requires a folder target.")
-            }
-            guard let root = runtime.facts.gitRoot(containing: dir) else {
-                throw ValidationError("--worktree requires a git repository (no git root found for \(dir.path)).")
-            }
-            if let name = branch, let refusal = GitWorktreeManager.branchNameRefusal(name.trimmingCharacters(in: .whitespacesAndNewlines)) {
-                throw ValidationError("Not a usable branch name: \(refusal).")
-            }
-            if dryRun {
-                let targetBranch = branch ?? "rh/<auto-branch>"
-                let previewURL = GitWorktreeManager.worktreeDirectory(gitRoot: root, branch: targetBranch)
-                // Notes go to standard error so that `--json` stays one document on standard output.
-                Output.error("note: --worktree will create or attach branch '\(targetBranch.withControlCharactersEscaped)' at \(previewURL.path.withControlCharactersEscaped)")
-                effectiveContext = HereContext(origin: here.origin, container: previewURL)
-            } else {
-                let res = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch)
-                Output.error("note: isolated worktree ready on branch '\(res.branch.withControlCharactersEscaped)' at \(res.worktreeURL.path.withControlCharactersEscaped)")
-                effectiveContext = HereContext(origin: here.origin, container: res.worktreeURL)
-            }
-        } else {
-            effectiveContext = here
-        }
-
         // Files created from Finder follow the system language; the command line stays English.
-        let localizer: Localizer = effectiveContext.origin == .cli ? .english : .system
+        let localizer: Localizer = here.origin == .cli ? .english : .system
 
+        if worktree || branch != nil {
+            try await runInWorktree(ref, config: config, here: here, localizer: localizer, runtime: runtime)
+            return
+        }
         let plan: LaunchPlan
         do {
-            plan = try Planner(config: config, facts: runtime.facts, localizer: localizer).plan(ref, context: effectiveContext)
+            plan = try Planner(config: config, facts: runtime.facts, localizer: localizer).plan(ref, context: here)
         } catch {
             try await fail(error)
         }
+        try await present(plan, ref: ref, config: config, here: here, runtime: runtime)
+    }
 
+    /// `--worktree`: the action runs in a git worktree of the repository, on a new branch (or the one `--branch` names), in the same
+    /// folder the request names. The plan is made first, against the worktree as it will be, so a refusal creates nothing. The worktree
+    /// is made after that and the plan is made again for real. If the run then fails, a worktree this run made and nothing changed in is
+    /// removed again, and one that existed before is never touched.
+    private func runInWorktree(_ ref: ActionRef, config: Config, here: HereContext, localizer: Localizer, runtime: Runtime) async throws {
+        guard let folder = here.workingDirectory(facts: runtime.facts) else {
+            throw ValidationError("--worktree requires a folder target.")
+        }
+        guard let root = runtime.facts.gitRoot(containing: folder) else {
+            throw ValidationError("--worktree requires a git repository (no git root found for \(folder.path.withControlCharactersEscaped)).")
+        }
+        let name: String
+        if let branch {
+            let trimmed = branch.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let refusal = GitWorktreeManager.branchNameRefusal(trimmed) { throw ValidationError("Not a usable branch name: \(refusal).") }
+            name = trimmed
+        } else {
+            // A dry run cannot know the name a real run gives a new branch, so it shows a placeholder where the name goes.
+            name = dryRun ? "rh/<auto-branch>" : GitWorktreeManager.freshBranchName()
+        }
+        let worktreeURL = GitWorktreeManager.worktreeDirectory(gitRoot: root, branch: name)
+        let inWorktree = try Self.moved(here, folder: folder, from: root, to: worktreeURL)
+
+        let preview: LaunchPlan
+        do {
+            preview = try Planner(config: config, facts: WorktreeFacts(base: runtime.facts, repository: root, worktree: worktreeURL), localizer: localizer)
+                .plan(ref, context: inWorktree)
+        } catch {
+            try await fail(error)
+        }
         if dryRun {
-            if json { try Output.json(plan) } else { Output.print(Self.describe(plan)) }
+            // Notes go to standard error so that `--json` stays one document on standard output.
+            let branchWord = branch == nil ? "a new branch (--branch names one)" : "branch '\(name.withControlCharactersEscaped)'"
+            Output.error("note: --worktree would create the worktree at \(worktreeURL.path.withControlCharactersEscaped) on \(branchWord)")
+            try await present(preview, ref: ref, config: config, here: here, runtime: runtime)
+            return
+        }
+
+        let made: WorktreeResult
+        do {
+            made = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: name)
+        } catch {
+            try await fail(error)
+        }
+        Output.error("note: isolated worktree ready on branch '\(made.branch.withControlCharactersEscaped)' at \(made.worktreeURL.path.withControlCharactersEscaped)")
+        let plan: LaunchPlan
+        do {
+            plan = try Planner(config: config, facts: runtime.facts, localizer: localizer).plan(ref, context: inWorktree)
+        } catch {
+            await discard(made, root: root)
+            try await fail(error)
+        }
+        try await present(plan, ref: ref, config: config, here: here, runtime: runtime, madeWorktree: (made, root))
+    }
+
+    /// A dry run prints the plan, and a real run executes it. A failure is logged, and a worktree this run made for it is removed again when
+    /// nothing in it changed.
+    private func present(_ plan: LaunchPlan, ref: ActionRef, config: Config, here: HereContext, runtime: Runtime, madeWorktree: (WorktreeResult, URL)? = nil) async throws {
+        if dryRun {
+            var shown = plan
+            if let note = await commandNote(for: ref, config: config, facts: runtime.facts) { shown.notices.append(note) }
+            if json { try Output.json(shown) } else { Output.print(Self.describe(shown)) }
             return
         }
         do {
@@ -133,8 +173,47 @@ struct Run: AsyncParsableCommand {
                 Output.print("ok: " + plan.summary)
             }
         } catch {
+            if let madeWorktree { await discard(madeWorktree.0, root: madeWorktree.1) }
             try await fail(error)
         }
+    }
+
+    /// The request moved into a worktree: the folder and every item keep the place they have below the repository's root, so an agent
+    /// starts in the folder that was named (not at the root of the worktree) and a file keeps its folder.
+    static func moved(_ here: HereContext, folder: URL, from root: URL, to worktree: URL) throws -> HereContext {
+        // Compared as the file system resolves the names (`/tmp` is `/private/tmp`, and the root may have been spelled either way), and
+        // written with the worktree's own spelling.
+        let top = root.resolvingSymlinksInPath().path
+        func place(_ url: URL) throws -> URL {
+            let path = url.resolvingSymlinksInPath().path
+            guard path == top || path.hasPrefix(top + "/") else {
+                throw ValidationError("\(path.withControlCharactersEscaped) is outside the git repository \(top.withControlCharactersEscaped), so it has no place in a worktree of it.")
+            }
+            return URL(fileURLWithPath: worktree.path + path.dropFirst(top.count))
+        }
+        return HereContext(origin: here.origin, items: try here.items.map(place), container: try place(folder))
+    }
+
+    /// Removes a worktree this run made, when a failure left nothing changed in it, and says so.
+    private func discard(_ made: WorktreeResult, root: URL) async {
+        if await GitWorktreeManager.discardIfUnchanged(made, gitRoot: root) {
+            Output.error("note: the worktree \(made.worktreeURL.path.withControlCharactersEscaped) was removed again, since the action failed and nothing in it changed.")
+        }
+    }
+
+    /// In a dry run, `rh` asks the login shell whether the agent's command is there, which a real run started from Finder must not do.
+    /// The note says what that would mean: the terminal would say "command not found".
+    private func commandNote(for ref: ActionRef, config: Config, facts: any SystemFacts) async -> String? {
+        let agent: AgentDescriptor?
+        switch ref {
+        case .agent(let id, _, _): agent = config.agent(id: id)
+        case .preset(let id, _): agent = config.preset(id: id).flatMap { config.agent(for: $0) }
+        default: agent = nil
+        }
+        guard let agent else { return nil }
+        let found = await Detector(facts: facts).commandsFound([agent.executable])
+        guard !found.contains(agent.executable) else { return nil }
+        return "\(agent.executable) is not found by your login shell (`rh agents` says so), so starting it would end with \"command not found\" in the terminal."
     }
 
     /// The options that change how an agent starts apply to an agent (`agent.<id>`) or a preset (`preset.<id>`) and to nothing else. One that
