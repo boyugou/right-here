@@ -10,11 +10,13 @@ enum AtomicFile {
 
     /// `beforeRename` runs after the content is on disk and before it replaces the destination; tests use it to
     /// interrupt the write. A failure removes the temporary file and leaves the destination as it was.
-    static func write(_ data: Data, to destination: URL, beforeRename: ((URL) throws -> Void)? = nil) throws {
+    /// `mode` is the permission bits the file ends up with; without it a new file is 0644 and an existing one keeps the bits it has.
+    static func write(_ data: Data, to destination: URL, mode forced: mode_t? = nil, beforeRename: ((URL) throws -> Void)? = nil) throws {
         let folder = destination.deletingLastPathComponent()
         var mode: mode_t = 0o644
         var existing = stat()
         if stat(destination.path, &existing) == 0 { mode = existing.st_mode & 0o777 }
+        if let forced { mode = forced }
         let temporary = folder.appendingPathComponent(".\(destination.lastPathComponent).tmp-\(UUID().uuidString)")
         let descriptor = open(temporary.path, O_WRONLY | O_CREAT | O_EXCL, mode)
         guard descriptor >= 0 else { throw WriteError(description: "cannot create \(temporary.path): \(String(cString: strerror(errno)))") }

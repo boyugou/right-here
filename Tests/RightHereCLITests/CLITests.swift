@@ -110,6 +110,19 @@ struct CLITests {
         #expect(result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: ".").count == 3)
     }
 
+    @Test func aPinIsAnAbsolutePathAndTheFileThatKeepsItIsPrivate() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        // "Sources" is relative to where the tests run (the package folder), which has such a folder.
+        let pinned = try rh.run(["pin", "Sources", "--json"])
+        #expect(pinned.status == 0, "\(pinned.standardError)")
+        let path = try #require((pinned.json as? [String: Any])?["pinned"] as? String)
+        #expect(path.hasPrefix("/") && path.hasSuffix("/Sources"), "pinned \(path)")
+        #expect((try rh.run(["pins", "--json"]).json as? [String]) == [path])
+        let attributes = try FileManager.default.attributesOfItem(atPath: rh.configDirectory.appendingPathComponent("state.toml").path)
+        #expect((attributes[.posixPermissions] as? Int) == 0o600)
+        #expect(try rh.run(["unpin", "Sources"]).standardOutput.hasPrefix("unpinned: /"))
+    }
+
     @Test func helpListsTheMainCommands() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let text = try rh.run(["--help"]).standardOutput

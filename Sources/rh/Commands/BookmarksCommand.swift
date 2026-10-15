@@ -22,23 +22,24 @@ struct ClearResult: Encodable {
 
 struct Pin: ParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Pin a folder for quick access in shortcuts and agent prompts."
+        abstract: "Pin a folder: it is listed by `rh pins`, in the setup window and by the MCP tool right_here_bookmarks."
     )
 
     @Argument(help: "The folder to pin. Default: current directory.")
     var folder: String?
+
+    /// `~` expanded, a relative path resolved against `base`, `.` and `..` removed.
+    static func absolute(_ path: String, from base: URL) -> String {
+        URL(fileURLWithPath: (path as NSString).expandingTildeInPath, relativeTo: base).standardizedFileURL.path
+    }
 
     @Flag(help: "Print JSON.")
     var json = false
 
     func run() throws {
         let runtime = Runtime()
-        let path: String
-        if let folder {
-            path = (folder as NSString).expandingTildeInPath
-        } else {
-            path = runtime.facts.currentDirectory.path
-        }
+        // A pin is an absolute path: `rh pin .` must still name the folder after the shell has moved on.
+        let path = Pin.absolute(folder ?? ".", from: runtime.facts.currentDirectory)
         guard runtime.facts.isDirectory(URL(fileURLWithPath: path)) == true else {
             throw ValidationError("\"\(path)\" is not an existing folder.")
         }
@@ -71,7 +72,7 @@ struct Unpin: ParsableCommand {
 
     func run() throws {
         let runtime = Runtime()
-        let path = (folder as NSString).expandingTildeInPath
+        let path = Pin.absolute(folder, from: runtime.facts.currentDirectory)
         var state = StateStore.load(paths: runtime.paths)
         let removed = state.unpin(path)
         try state.save(paths: runtime.paths)
