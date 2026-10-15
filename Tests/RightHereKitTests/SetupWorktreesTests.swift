@@ -148,14 +148,16 @@ struct WorktreeBrowserTests {
         #expect(!runner.recorded.contains { $0.arguments.contains("--force") })
     }
 
-    @Test(arguments: [0, 3, 4])
-    func aRowTheWindowDoesNotOfferIsRefusedBeforeGitIsAsked(index: Int) async {
-        let runner = FakeProcessRunner()
-        let row = WorktreeBrowser.rows(GitWorktreeManager.parsePorcelain(porcelain, gitRoot: root), in: root)[index]
-        #expect(!row.canBeRemoved)
-        let notice = await WorktreeBrowser(runner: runner).remove(row, in: root)
-        #expect(notice.isProblem)
-        #expect(runner.recorded.isEmpty)
+    /// Not parameterized: the mutation check reads the names of the tests that fail, and a parameterized one is named with its arguments.
+    @Test func aRowTheWindowDoesNotOfferIsRefusedBeforeGitIsAsked() async {
+        for index in [0, 3, 4] {
+            let runner = FakeProcessRunner()
+            let row = WorktreeBrowser.rows(GitWorktreeManager.parsePorcelain(porcelain, gitRoot: root), in: root)[index]
+            #expect(!row.canBeRemoved, "row \(index) is not one Right Here made")
+            let notice = await WorktreeBrowser(runner: runner).remove(row, in: root)
+            #expect(notice.isProblem)
+            #expect(runner.recorded.isEmpty, "git was asked about row \(index)")
+        }
     }
 }
 
