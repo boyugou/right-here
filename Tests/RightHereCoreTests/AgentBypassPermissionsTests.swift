@@ -158,4 +158,11 @@ struct AgentBypassPermissionsTests {
         #expect(try line(result.config, "claude") == "claude --model sonnet-3.7")
         #expect(try line(result.config, "agy") == "agy --dangerously-skip-permissions")
     }
+
+    @Test func aControlCharacterInAnAgentsArgumentsIsAnErrorAndTakesNoEffect() {
+        let result = ConfigParser.parse("[agent.claude]\nargs = [\"--note\", \"a\\u001Bb\"]\nbypass_permission_arg = \"--x\\u0007\"\n")
+        #expect(result.diagnostics.filter { $0.severity == .error }.count == 2, "diagnostics: \(result.diagnostics)")
+        #expect((result.config.agents["claude"]?.args ?? []).isEmpty)
+        #expect(result.config.agents["claude"]?.bypassPermissionArgument == nil)
+    }
 }

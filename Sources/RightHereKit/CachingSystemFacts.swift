@@ -12,7 +12,7 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
     private let bundleVersions = Mutex<[String: (version: String?, stored: Date)]>([:])
     private let directories = Mutex<[String: (isDir: Bool?, stored: Date)]>([:])
 
-    public init(base: any SystemFacts = LiveSystemFacts(), lifetime: TimeInterval = 300) {
+    public init(base: any SystemFacts = LiveSystemFacts(), lifetime: TimeInterval = 30) {
         self.base = base
         self.lifetime = lifetime
     }

@@ -170,8 +170,9 @@ public enum GitWorktreeManager {
         }
 
         // Nothing is written in the repository before git has agreed: `git worktree add` makes the folders it needs, and a refused request leaves no trace.
+        let guards = try await hardening(gitRoot: gitRoot, runner: runner)
         // Try creating with a new branch
-        let addStep = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path, "worktree", "add", "-b", branchName, worktreeDir.path, "HEAD"])
+        let addStep = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path] + guards + ["worktree", "add", "-b", branchName, worktreeDir.path, "HEAD"])
         let addResult = try await runner.run(addStep)
         if addResult.status == 0 {
             keepOutOfGitStatus(gitRoot: gitRoot)
@@ -179,7 +180,7 @@ public enum GitWorktreeManager {
         }
 
         // If branch already exists, attach to existing branch
-        let fallbackStep = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path, "worktree", "add", "--", worktreeDir.path, branchName])
+        let fallbackStep = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path] + guards + ["worktree", "add", "--", worktreeDir.path, branchName])
         let fallbackResult = try await runner.run(fallbackStep)
         if fallbackResult.status == 0 {
             keepOutOfGitStatus(gitRoot: gitRoot)
@@ -254,6 +255,28 @@ public enum GitWorktreeManager {
         if deleted.status == 0 { return WorktreeRemoval(path: entry.path, branchDeleted: true, branchKept: nil) }
         let why = deleted.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
         return WorktreeRemoval(path: entry.path, branchDeleted: false, branchKept: why.isEmpty ? "git kept the branch" : why)
+    }
+
+    /// `git worktree add` runs the repository's own `post-checkout` hook, its `core.fsmonitor` program and the filter drivers its attributes
+    /// select. A worktree is made on request (an MCP client may ask), so those settings of the repository are switched off. Only what the
+    /// repository itself defines: the person's global configuration (Git LFS, say) still applies.
+    static func hardening(gitRoot: URL, runner: any ProcessRunner) async throws -> [String] {
+        var arguments = ["-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
+        let listing = try await runner.run(ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path, "config", "--local", "--name-only", "--get-regexp", "^filter\\."]))
+        // Exit status 1 is "no such setting".
+        guard listing.status == 0 || listing.status == 1 else {
+            throw ExecutionError.stepFailed(index: 0, step: "git config", message: listing.standardError.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        var drivers = Set<String>()
+        for line in listing.standardOutput.split(whereSeparator: \.isNewline) {
+            // `filter.<driver>.<key>`: a driver name may contain dots; a key never does.
+            let body = line.dropFirst("filter.".count)
+            if let dot = body.lastIndex(of: ".") { drivers.insert(String(body[..<dot])) }
+        }
+        for driver in drivers.sorted() {
+            arguments += ["-c", "filter.\(driver).smudge=", "-c", "filter.\(driver).clean=", "-c", "filter.\(driver).process=", "-c", "filter.\(driver).required=false"]
+        }
+        return arguments
     }
 
     /// `.right-here` is Right Here's folder inside the repository: its own copy of the person's work must not show up as untracked

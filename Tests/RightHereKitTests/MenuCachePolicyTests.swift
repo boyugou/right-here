@@ -25,7 +25,7 @@ struct MenuCachePolicyTests {
         #expect(!MenuCachePolicy.canServe(builtAt: built, now: built.addingTimeInterval(-5), sameConfig: true))
     }
 
-    @Test func theMenuLivesShorterThanTheFactsItWasBuiltFrom() {
-        #expect(MenuCachePolicy.lifetime < CachingSystemFacts().lifetimeForTesting)
+    @Test func theMenuAndTheFactsItIsBuiltFromAreFreshWithinAboutAMinute() {
+        #expect(MenuCachePolicy.lifetime + CachingSystemFacts().lifetimeForTesting <= 60)
     }
 }

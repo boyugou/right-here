@@ -20,14 +20,8 @@ public struct RHPaths: Sendable, Equatable {
 
     public var logFile: URL { logDirectory.appendingPathComponent("rh.log") }
 
-    public static let appGroupID = "group.com.boyugou.righthere"
-
-    public static func groupContainerURL() -> URL? {
-        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)
-    }
-
     /// `RH_CONFIG` names the file itself; `RH_CONFIG_DIR` or `XDG_CONFIG_HOME` name its folder;
-    /// otherwise it is `~/.config/right-here/config.toml` (falling back to App Group container in sandboxed builds).
+    /// otherwise it is `~/.config/right-here/config.toml`.
     public init(environment: [String: String], home: URL) {
         self.home = home
         func expanded(_ path: String) -> URL {
@@ -47,10 +41,6 @@ public struct RHPaths: Sendable, Equatable {
             configDirectory = expanded(directory)
         } else if let base = environment["XDG_CONFIG_HOME"], !base.isEmpty {
             configDirectory = expanded(base).appendingPathComponent("right-here")
-        } else if let group = Self.groupContainerURL(),
-                  !FileManager.default.isReadableFile(atPath: home.appendingPathComponent(".config/right-here/config.toml").path),
-                  FileManager.default.fileExists(atPath: group.path) {
-            configDirectory = group.appendingPathComponent("right-here")
         } else {
             configDirectory = home.appendingPathComponent(".config/right-here")
         }

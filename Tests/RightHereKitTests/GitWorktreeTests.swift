@@ -256,4 +256,34 @@ struct GitWorktreeSafetyTests {
         #expect(lines.contains(".right-here"))
         #expect(try git(["status", "--porcelain"], in: repository).isEmpty)
     }
+
+    @Test func theRepositorysOwnHooksAndFiltersDoNotRunWhileAWorktreeIsMade() async throws {
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        let marker = repository.deletingLastPathComponent().appendingPathComponent("ran-\(UUID().uuidString)").path
+        defer { for suffix in [".hook", ".smudge"] { try? FileManager.default.removeItem(atPath: marker + suffix) } }
+        // A filter the repository's own configuration defines, selected by a committed attribute, and a post-checkout hook in its hooks folder.
+        try "* filter=evil\n".write(to: repository.appendingPathComponent(".gitattributes"), atomically: true, encoding: .utf8)
+        _ = try git(["add", ".gitattributes"], in: repository)
+        _ = try git(["commit", "-q", "-m", "attributes"], in: repository)
+        _ = try git(["config", "--local", "filter.evil.smudge", "touch \(marker).smudge"], in: repository)
+        let hook = repository.appendingPathComponent(".git/hooks/post-checkout")
+        try "#!/bin/sh\ntouch \(marker).hook\n".write(to: hook, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: hook.path)
+
+        let made = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "isolated")
+        #expect(made.wasCreated)
+        #expect(!FileManager.default.fileExists(atPath: marker + ".hook"), "the post-checkout hook ran")
+        #expect(!FileManager.default.fileExists(atPath: marker + ".smudge"), "the repository's filter ran")
+        #expect(try String(contentsOf: made.worktreeURL.appendingPathComponent("README.md"), encoding: .utf8) == "initial")
+    }
+
+    @Test func aWorktreeAttachesToAnExistingBranch() async throws {
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        _ = try git(["branch", "existing"], in: repository)
+        let made = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "existing")
+        #expect(made.wasCreated && made.branch == "existing")
+        #expect(FileManager.default.fileExists(atPath: made.worktreeURL.appendingPathComponent("README.md").path))
+    }
 }
