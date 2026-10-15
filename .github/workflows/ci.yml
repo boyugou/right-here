@@ -1,14 +1,11 @@
 name: CI
 
-# CI runs on pull requests and on demand. Run ./script/verify_all.sh locally before pushing.
-# Once the repository is public, a push trigger for main can be enabled by adding:
-#   push:
-#     branches: [main]
+# CI runs on pull requests and on demand (workflow_dispatch) to conserve GitHub Actions credits.
+# Run ./script/verify_all.sh locally before pushing.
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 # The workflow only reads the repository.
 permissions:
