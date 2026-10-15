@@ -312,9 +312,12 @@ struct LocalizationDetailTests {
         var found = 0
         for (key, translations) in Localizations.table.sorted(by: { $0.key < $1.key }) {
             guard let text = translations[language] else { continue }
-            for match in text.matches(of: #/`[^`]*[<>()\[\]{}]`/#) {
+            // The backticks are paired one after the other (the first with the second, the third with the fourth): the text between
+            // two commands is not a command, even when it ends in a bracket as in "... (`rh x`)".
+            for span in text.matches(of: #/`[^`]*`/#) {
+                guard let last = text[span.range].dropFirst().dropLast().last, "<>()[]{}".contains(last) else { continue }
                 found += 1
-                #expect(text[match.range.upperBound...].first == "\u{200E}", "\(language) \(key) has a command that ends in a bracket and no mark after it")
+                #expect(text[span.range.upperBound...].first == "\u{200E}", "\(language) \(key) has a command that ends in a bracket and no mark after it")
             }
         }
         #expect(found > 0, "\(language) has no such command, so this checks nothing")
