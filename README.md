@@ -170,6 +170,7 @@ command = "lazygit"
 - Validate configuration: `rh config validate` (supports `--strict`).
 - Inspect configuration files: `rh config show`.
 - Export schema: `rh config schema`.
+- Agents skip their own permission prompts only when you ask: `bypass_permissions` (off by default). `rh agents`, `rh doctor` and `rh menu --explain` say which agents do, and presets keep their prompts ([ADR 0016](docs/decisions/0016-agent-permissions-and-worktrees.md)).
 - Sync across machines: `rh config sync enable` (uses private folder or iCloud Drive; commands are protected by `--allow-commands`).
 
 ## Connect an AI Assistant
