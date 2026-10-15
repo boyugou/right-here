@@ -111,10 +111,18 @@ extension ConfigBuilder {
             settings.bypassPermissions = bypass
         }
         if let bypassArg = reader.string("bypass_permission_arg") {
-            settings.bypassPermissionArgument = bypassArg
+            if ShellQuoting.containsControlCharacter(bypassArg) {
+                sink.error(reader.path + ["bypass_permission_arg"], "the flag has a line break or control character")
+            } else {
+                settings.bypassPermissionArgument = bypassArg
+            }
         }
         if let extraArgs = reader.stringArray("args") {
-            settings.args = extraArgs
+            if extraArgs.contains(where: ShellQuoting.containsControlCharacter) {
+                sink.error(reader.path + ["args"], "an argument has a line break or control character")
+            } else {
+                settings.args = extraArgs
+            }
         }
 
         if KnownAgents.agent(id: id) != nil {
