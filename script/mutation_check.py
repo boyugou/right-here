@@ -67,7 +67,7 @@ MUTANTS = [
     ("dot-dot is not recognised", "Sources/RightHereCore/Paths/PathNormalization.swift",
      'current.elementsEqual("..".unicodeScalars)', 'current.elementsEqual("...".unicodeScalars)'),
     ("a timed-out process that ignores SIGTERM is never killed hard", "Sources/RightHereKit/ProcessRunner.swift",
-     "Self.killLeftovers(of: process)", "_ = process"),
+     "try? await Task.sleep(for: .seconds(1))\n                Self.killLeftovers(of: process)", "try? await Task.sleep(for: .seconds(1))\n                _ = process"),
     ("the children of a killed process are left running", "Sources/RightHereKit/ProcessRunner.swift",
      "{ killpg(pid, SIGKILL) }", "{ _ = pid }"),
     ("the Files & Folders button is gone", "Sources/RightHereKit/FailureAlert.swift",
@@ -257,9 +257,10 @@ MUTANTS = [
     ("the preset prompt limit counts Characters, not bytes", "Sources/RightHereCore/Presets/AgentPreset.swift",
      "if prompt.utf8.count > AgentPreset.maxPromptBytes {", "if prompt.count > AgentPreset.maxPromptBytes {"),
     ("a variant's argument is typed unquoted", "Sources/RightHereCore/Planner/AgentLaunchResolution.swift",
-     "words.append(ShellQuoting.quote(argument, for: .posix))", "words.append(argument)"),
+     'variant: variant?.id ?? "", argument: argument)) }\n            words.append(ShellQuoting.quote(argument, for: .posix))',
+     'variant: variant?.id ?? "", argument: argument)) }\n            words.append(argument)'),
     ("a variant's argument with a backslash is typed", "Sources/RightHereCore/Planner/AgentLaunchResolution.swift",
-     'if argument.unicodeScalars.contains("\\\\") { return .failure(', "if false { return .failure("),
+     'if argument.unicodeScalars.contains("\\\\") { return .failure(.variantArgument(', "if false { return .failure(.variantArgument("),
     ("an editor named as a terminal is opened as one", "Sources/RightHereCore/Planner/DefaultApps.swift",
      "guard let app = config.terminalApp(id: id) else { throw PlanError.unknownTerminal(id) }",
      "guard let app = config.app(id: id) else { throw PlanError.unknownTerminal(id) }"),
@@ -324,6 +325,11 @@ MUTANTS = [
      "public static let lifetime: TimeInterval = 30", "public static let lifetime: TimeInterval = 90"),
     ("the setup window offers to remove a worktree Right Here did not make, and asks git about it", "Sources/RightHereKit/SetupWorktrees.swift",
      "guard row.canBeRemoved else {", "guard true else {"),
+    ("an agent's args are typed unquoted", "Sources/RightHereCore/Planner/AgentLaunchResolution.swift",
+     'argument: argument)) }\n            words.append(ShellQuoting.quote(argument, for: .posix))\n        }\n        return .success(words)',
+     'argument: argument)) }\n            words.append(argument)\n        }\n        return .success(words)'),
+    ("an agent's args with a backslash are typed", "Sources/RightHereCore/Planner/AgentLaunchResolution.swift",
+     'if argument.unicodeScalars.contains("\\\\") { return .failure(.agentArgument(', "if false { return .failure(.agentArgument("),
 ]
 
 
@@ -374,8 +380,9 @@ def main() -> int:
                 continue
             path = clone / file
             original = path.read_text(encoding="utf-8")
-            if old not in original:
-                problems.append(f"[{index}] the pattern for \"{name}\" is not in {file} any more; update the entry")
+            occurrences = original.count(old)
+            if occurrences != 1:
+                problems.append(f"[{index}] the pattern for \"{name}\" is in {file} {occurrences} times, not once; make it match exactly once")
                 print(f"[{index}] SKIPPED: {name}", flush=True)
                 continue
             path.write_text(original.replace(old, new, 1), encoding="utf-8")

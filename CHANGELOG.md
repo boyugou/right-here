@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased
+
+- The setup window is rebuilt: six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders), every text in the
+  thirty-language catalog, and a check that fails the gate when a view shows a literal. The preview script renders each section
+  (`--tab`). The version comes from one place, `AppIdentity.version`, which `script/verify_version.py` checks against the project, the changelog and
+  the Homebrew files.
+- `rh run`: a plan's text is never cut and every value in it is a JSON-quoted string; a refusal names the file or folder at fault; options that
+  would do nothing (`--bypass-permissions`, `--safe`, `--arg`, `--worktree`, `--branch` on an action that is not an agent) are errors and `-y` is
+  gone; `--worktree --dry-run` plans without creating anything and a failed run leaves no worktree behind; `--language` lets Shortcuts name a new
+  file in the person's language; a misspelt command gets a did-you-mean.
+- Agents: starting with the agent's own permission prompts off is a launch option (`general.bypass_permissions`, `[agent.<id>]
+  bypass_permissions`, `args`), off by default. A preset never gets it. The doctor, `rh agents`, `rh menu --explain` and the plan say when it
+  is on, and the sync guard lists it (ADR 0016).
+- Worktrees: only worktrees that Right Here made are removed, never forced, and a branch is deleted only when merged; branch names are validated;
+  the repository's own hooks, `core.fsmonitor` program and filters do not run while a worktree is made; the MCP worktree tool is annotated as
+  able to delete and its list is fenced.
+- New: `rh doctor --report` (versions, the doctor's rows, counts of the config check; the home folder as `~`), `rh docs start` and `rh docs mcp`
+  (built from the tools), `rh menu --explain`, `rh config show` (every file of the config) and `rh config path --all`.
+- Terminals: WezTerm and kitty start through LaunchServices so that nothing waits for the window (not verified on a real machine);
+  `terminal_placement = "split"` is gone (use `split-right`); `preset.<id>@default` is gone.
+- Finder extension: it no longer keeps the Mac from sleeping, its menu cache lives 30 seconds, and its warm-up no longer races the main
+  thread (ADR 0015).
+- `state.toml` (pinned and recent folders) is readable only by you, and a pin is an absolute path.
+- Packaging: the cask has the checksum of the v0.2.0 DMG; the App Store upload uses an API key and no password; the App Group is gone.
+
 ## 0.2.0 (2026-10-14)
 
 - Finder menu: a prebuilt menu for single folders (the first right-click no longer waits for a build), the extension stays loaded, facts and
