@@ -296,6 +296,18 @@ MUTANTS = [
      "json.fencing([\"title\"]).pretty()", "json.pretty()"),
     ("the MCP catalog prints names unfenced", "Sources/RightHereMCP/Tools.swift",
      "structured.fencing([\"name\", \"command\", \"bundleID\"]).pretty()", "structured.pretty()"),
+    ("a worktree that existed before this run is discarded", "Sources/RightHereKit/GitWorktree.swift",
+     "        guard created.wasCreated else { return false }", "        guard true else { return false }"),
+    ("a worktree with a change in it is discarded", "Sources/RightHereKit/GitWorktree.swift",
+     "check.status == 0, check.standardOutput.isEmpty else { return false }", "check.status == 0 else { return false }"),
+    ("two runs in one second get the same worktree name", "Sources/RightHereKit/GitWorktree.swift",
+     'return "rh/\\(Int(now.timeIntervalSince1970))-" + String(format: "%08x", random)', 'return "rh/\\(Int(now.timeIntervalSince1970))"'),
+    ("an agent starts at the root of its worktree, not in the folder named", "Sources/rh/Commands/Run.swift",
+     "return URL(fileURLWithPath: worktree.path + path.dropFirst(top.count))", "return worktree"),
+    ("a preset is started with --bypass-permissions or --safe", "Sources/rh/Commands/Run.swift",
+     "if isPreset, bypassPermissions || safe {", "if false, bypassPermissions || safe {"),
+    ("--bypass-permissions, --safe, --arg or --worktree is accepted for an action that starts no agent", "Sources/rh/Commands/Run.swift",
+     "if !launchesAnAgent, !named.isEmpty {", "if false, !launchesAnAgent, !named.isEmpty {"),
 ]
 
 
