@@ -76,19 +76,24 @@ Needs a real Finder and the real app window: the tests and `script/preview_setup
 open one, and the preview is the same code as the extension's, not Finder's own word.
 
 1. `rh install`, switch the Finder extension on, and relaunch Finder (hold Option, right-click the Finder icon in the
-   Dock, choose Relaunch). Open Right Here; open "Finder menu" if it is closed.
+   Dock, choose Relaunch). Open Right Here and choose "Finder menu" in its sidebar.
 2. Right-click the empty background of a folder window. The entries, their order, the separators, the icons (the
    menu's own glyphs and the apps' icons) and the titles match the window's list. Click a line with a chevron in the
    window: its entries open in place, indented, and the chevron turns down; open the same submenu in Finder and compare
    its entries and separators. Clicking an entry in the window does nothing.
 3. Change `[menu] items`, or enable another agent, then choose Install or Repair and relaunch Finder: the window and
    the Finder menu both follow the config. An app that is not installed is missing from both.
-4. Put a syntax error in the config and choose Install or Repair: the "Finder menu" section is gone and the config row
-   of Details says why; fix the file and it comes back.
+4. Put a syntax error in the config and choose Install or Repair: the "Finder menu" section says there is no menu to show, and
+   the config row under Checks says why; fix the file and the menu comes back.
 5. In Arabic or Hebrew (System Settings, General, Language & Region; restart the app) the lines mirror: icons on the
    right, the chevron on the left and pointing left. In dark mode the glyphs are light and an app's icon keeps its
    colors.
 6. With VoiceOver, a submenu line reads like "Open With, submenu, collapsed, button" and says "expanded" once opened; an
    entry reads its title only.
-7. The section starts open when everything is set up and closed when a check needs attention (the first-run card, or
-   the list of checks): until you open or close it once, it follows that.
+7. Overview is the first section. While the Finder extension is off it shows the three-step first-run card first; once the
+   extension is on it shows the status and the default terminal and editor. "Finder menu" is always the menu for a folder.
+8. Worktrees: the list is for the repository of the folder you chose with "Choose Folder…", or else the first repository of your
+   pinned and recent folders (the app has no folder of its own to start from). Right Here's worktrees (under
+   `.right-here/worktrees`) have a Remove… button, which asks first and never forces: a worktree with uncommitted work stays,
+   and the window shows what git said. The branch is kept. The main working copy and the worktrees you made by hand have no button.
+9. Folders: Unpin and Clear Recent Folders change `state.toml`; `rh pins` and `rh recents` show the same lists afterwards.

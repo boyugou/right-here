@@ -26,7 +26,7 @@
   diagnostics, a JSON Schema with required keys and patterns, a backup on `rh init --force`.
 - App Intents: native Shortcuts and Spotlight actions (`OpenInTerminalIntent`, `StartAgentIntent`, `NewFileIntent`, `CopyPathIntent`) that execute safely without requiring the Finder extension.
 - Config sync: `rh config sync` (push, pull, status) syncing across Macs through iCloud Drive or any local folder, with `--allow-commands` safety protection for executable templates.
-- Elevated macOS Control Center: 4-tab dashboard (Overview, Finder Menu preview, Diagnostics, AI & MCP) with live system status and interactive 3-step setup.
+- Setup window: six sections (Overview, Finder menu preview, Checks, AI Assistants, Worktrees, Folders) with live status and a 3-step first run.
 - Official Claude Code plugin with dedicated skills (`setup`, `open-here`, `review-changes`).
 
 ## Next

@@ -1,6 +1,6 @@
 # Right Here privacy policy
 
-Effective date: 2026-10-14
+Effective date: 2026-10-15
 
 Right Here sends the folder you picked in Finder to a terminal, an editor or an AI agent on your Mac. It works
 on your Mac and makes no network connections of its own.
@@ -26,6 +26,12 @@ Right Here does not read the contents of your files.
   small state file that records the last synced copy, and backup copies of a settings file that a sync replaced.
   Right Here itself sends nothing over the network: whatever syncs that folder (iCloud Drive, Dropbox and so on)
   handles the copy under its own privacy practices. Sync is off until you enable it.
+- The folders you pinned with `rh pin`, and the folders of the actions you started most recently (up to 20, from Finder, the command
+  line or Shortcuts), in a small file `state.toml` next to the settings file. Only your user account can read it. The Folders section
+  of the setup window lists them. An AI assistant that you connect to Right Here over MCP can read them with the
+  `right_here_bookmarks` tool, and what that assistant reads is handled under its own privacy practices. `rh unpin <folder>`
+  removes a pin, and `rh recents --clear` empties the recent list (the Folders section does both). Config sync does not copy
+  this file.
 - A small local log of recent actions and failures at `~/Library/Logs/right-here/rh.log`. It stays on your Mac, is
   never sent anywhere, and you can delete it at any time. Its size is limited and old entries are rotated out.
 
