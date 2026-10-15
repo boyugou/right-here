@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Finder extension: on macOS 26.5.1 it crashed each time Finder asked it to watch a folder, so the context menu showed none of its
+  entries while every doctor check passed. It no longer overrides the directory-observing methods, which did nothing (ADR 0018).
 - The setup window is rebuilt: six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders), every text in the
   thirty-language catalog, and a check that fails the gate when a view shows a literal. The preview script renders each section
   (`--tab`). The version comes from one place, `AppIdentity.version`, which `script/verify_version.py` checks against the project, the changelog and

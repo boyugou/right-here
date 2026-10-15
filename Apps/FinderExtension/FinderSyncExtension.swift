@@ -37,14 +37,6 @@ final class FinderSyncExtension: FIFinderSync {
         warmupInBackground()
     }
 
-    override func beginObservingDirectory(at url: URL) {
-        super.beginObservingDirectory(at: url)
-    }
-
-    override func endObservingDirectory(at url: URL) {
-        super.endObservingDirectory(at: url)
-    }
-
     /// Fills the icon cache and the folder menus before the first right-click. Only values that are safe to share cross to the
     /// background queue (the facts, the icon cache, the paths); the config cache and the menus belong to the main queue, which gets the
     /// menu nodes back. Reading `configCache` from the background was a data race with `menu(for:)`.
