@@ -475,6 +475,7 @@ struct SetupRunnerTests {
         #expect(lines.first == "Right Here setup")
         #expect(lines.contains { $0.hasPrefix("  Config file: created (") })
         #expect(lines.contains("  terminal: Ghostty (ghostty, found on this Mac)"))
+        #expect(lines.contains { $0.hasPrefix("  agents: ") && $0.contains("found in your login shell") })
         #expect(lines.contains("Only you can do this:"))
         #expect(lines.contains("  rh menu --container ~"))
     }

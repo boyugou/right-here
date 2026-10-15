@@ -206,9 +206,9 @@ public struct SetupReport: Sendable, Equatable, Encodable {
         if let chosen {
             lines.append("")
             lines.append(dryRun ? "The config file would say:" : "The config file says:")
-            lines.append("  terminal: " + (chosen.terminal.map(Self.describe) ?? "none found"))
-            lines.append("  editor: " + (chosen.editor.map(Self.describe) ?? "none found"))
-            lines.append("  agents: " + (chosen.agents.isEmpty ? "none" : chosen.agents.map(Self.describe).joined(separator: ", ")))
+            lines.append("  terminal: " + (chosen.terminal.map { Self.describe($0, foundIn: "found on this Mac") } ?? "none found"))
+            lines.append("  editor: " + (chosen.editor.map { Self.describe($0, foundIn: "found on this Mac") } ?? "none found"))
+            lines.append("  agents: " + (chosen.agents.isEmpty ? "none" : chosen.agents.map { Self.describe($0, foundIn: "found in your login shell") }.joined(separator: ", ")))
         }
         if !configEdits.isEmpty {
             lines.append("")
@@ -248,7 +248,7 @@ public struct SetupReport: Sendable, Equatable, Encodable {
         return lines
     }
 
-    private static func describe(_ pick: Pick) -> String {
-        "\(pick.name) (\(pick.id), " + (pick.source == .you ? "you chose it)" : "found on this Mac)")
+    private static func describe(_ pick: Pick, foundIn: String) -> String {
+        "\(pick.name) (\(pick.id), " + (pick.source == .you ? "you chose it)" : "\(foundIn))")
     }
 }
