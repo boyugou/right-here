@@ -50,6 +50,25 @@ struct MenuBuilderTests {
         #expect(newFile.children.map(\.icon) == [.fileType("txt"), .fileType("md")])
     }
 
+    @Test func explainSaysWhichAgentEntriesStartWithTheirPermissionPromptsOff() throws {
+        var config = Config(enabledAgents: ["claude", "codex"])
+        config.agents["claude"] = .init(bypassPermissions: true)
+        let explained = MenuBuilder(config: config, facts: machine()).explain(for: background)
+        let notes = explained.notes.filter { $0.reason.contains("permission prompts switched off") }
+        #expect(notes.count == 1)
+        #expect(notes.first?.kind == .changed)
+        #expect(notes.first?.entry == "Claude Code Here")
+        #expect(notes.first?.reason.contains("--dangerously-skip-permissions") == true)
+        // The menu itself is the same either way: only the explanation tells.
+        #expect(titles(explained.menu) == titles(MenuBuilder(config: Config(enabledAgents: ["claude", "codex"]), facts: machine()).build(for: background)))
+    }
+
+    @Test func aCopyPathTitleNeverGivesTwoListedEntriesOneTitle() {
+        let config = Config(menuItems: ["copy-path.absolute", "copy-path.name"], copyPathTitle: "Copy")
+        let listed = titles(MenuBuilder(config: config, facts: machine()).build(for: background))
+        #expect(listed.count == 2 && listed[0] == "Copy" && listed[1] != "Copy", "titles: \(listed)")
+    }
+
     @Test func theMoreMenuDoesNotRepeatTheTerminalTheAgentEntryAlreadyUses() throws {
         // cmux is the preferred default for opening a folder but cannot be typed into yet, so "Claude Code Here" runs in
         // Terminal; "Claude Code in Terminal" would be the same action twice.

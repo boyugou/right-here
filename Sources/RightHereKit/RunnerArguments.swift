@@ -21,14 +21,14 @@ public enum RunnerArguments {
     }
 
     /// What the extension runs when `rh doctor` leaves a probe marker. The marker's text picks from a fixed
-    /// list (`launch`, `launch:window`, `launch:tab`); anything else is the harmless automation probe, so
+    /// list (`launch`, and `launch:` followed by the name of a terminal placement); anything else is the harmless automation probe, so
     /// the marker file, which any process of the person's could write, never supplies arguments.
     public static func probe(markerText: String) -> [String] {
-        switch markerText.trimmingCharacters(in: .whitespacesAndNewlines) {
-        case "launch": return ["probe", "launch", "--from-extension"]
-        case "launch:window": return ["probe", "launch", "--from-extension", "--placement", "window"]
-        case "launch:tab": return ["probe", "launch", "--from-extension", "--placement", "tab"]
-        default: return ["probe", "automation", "--from-extension"]
+        let text = markerText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text == "launch" { return ["probe", "launch", "--from-extension"] }
+        if text.hasPrefix("launch:"), let placement = TerminalPlacement(configName: String(text.dropFirst("launch:".count))) {
+            return ["probe", "launch", "--from-extension", "--placement", placement.configName]
         }
+        return ["probe", "automation", "--from-extension"]
     }
 }

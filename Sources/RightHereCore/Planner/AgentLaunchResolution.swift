@@ -25,6 +25,8 @@ struct AgentLaunchResolution: Sendable {
         case terminalCannotRunCommands(String)
         /// An argument of a variant cannot be quoted so that every shell reads it back the same.
         case variantArgument(variant: String, argument: String)
+        /// The same for an argument of `[agent.<id>] args`.
+        case agentArgument(agent: String, argument: String)
 
         var text: String {
             switch self {
@@ -38,6 +40,8 @@ struct AgentLaunchResolution: Sendable {
             case .terminalCannotRunCommands(let text): return text
             case .variantArgument(let variant, let argument):
                 return "The argument \"\(argument)\" of the variant \"\(variant)\" has a backslash, which shells do not all read the same way inside quotes. Put the whole command in the agent's `command`, which is typed as written."
+            case .agentArgument(let agent, let argument):
+                return "The argument \"\(argument)\" in args of [agent.\(agent)] has a backslash, which shells do not all read the same way inside quotes. Put the whole command in the agent's `command`, which is typed as written."
             }
         }
     }
@@ -76,13 +80,28 @@ struct AgentLaunchResolution: Sendable {
     /// and a word that needs no quoting (`--continue`, `resume`) is typed bare, as it always was. An argument with a backslash
     /// is refused: fish reads one inside single quotes differently from the other shells (the reason presets refuse it too),
     /// and the terminal's shell is not necessarily the login shell.
-    static func typedLine(agent: AgentDescriptor, variant: AgentDescriptor.Variant?) -> Result<String, Unavailable> {
+    static func typedLine(agent: AgentDescriptor, variant: AgentDescriptor.Variant?, options: Config.AgentLaunchOptions) -> Result<String, Unavailable> {
         var words = [agent.command]
+        if let flag = options.bypassFlag { words.append(flag) }
+        switch argumentWords(options.arguments, of: agent) {
+        case .success(let quoted): words += quoted
+        case .failure(let why): return .failure(why)
+        }
         for argument in variant?.arguments ?? [] {
             if argument.unicodeScalars.contains("\\") { return .failure(.variantArgument(variant: variant?.id ?? "", argument: argument)) }
             words.append(ShellQuoting.quote(argument, for: .posix))
         }
         return .success(words.joined(separator: " "))
+    }
+
+    /// The person's `args` of an agent as words of the typed line, each quoted when it needs it and refused with a backslash, like a variant's.
+    static func argumentWords(_ arguments: [String], of agent: AgentDescriptor) -> Result<[String], Unavailable> {
+        var words: [String] = []
+        for argument in arguments {
+            if argument.unicodeScalars.contains("\\") { return .failure(.agentArgument(agent: agent.id, argument: argument)) }
+            words.append(ShellQuoting.quote(argument, for: .posix))
+        }
+        return .success(words)
     }
 
     /// The terminal a command is typed into: the named one, or the default for commands.

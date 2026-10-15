@@ -140,7 +140,6 @@ struct MCPProtocolTests {
         for tool in tools {
             #expect(tool["inputSchema"]?["type"]?.stringValue == "object")
             #expect(tool["description"]?.stringValue?.isEmpty == false)
-            #expect(tool["annotations"]?["destructiveHint"]?.boolValue == false)
         }
         let run = try #require(tools.first { $0["name"]?.stringValue == "right_here_run" })
         #expect(run["annotations"]?["readOnlyHint"]?.boolValue == false)
@@ -463,6 +462,29 @@ struct MCPToolTests {
         #expect(!removes[0].arguments.contains("--force"))
         let branchDeletes = harness.runner.recorded.filter { $0.arguments.contains("branch") }
         #expect(branchDeletes.count == 1 && branchDeletes[0].arguments.contains("-d") && !branchDeletes[0].arguments.contains("-D"))
+    }
+
+    @Test func onlyTheWorktreeToolIsAnnotatedAsAbleToDelete() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let reply = try #require(try await harness.send("tools/list"))
+        let tools = try #require(reply["result"]?["tools"]?.arrayValue)
+        for tool in tools {
+            let name = tool["name"]?.stringValue ?? ""
+            #expect(tool["annotations"]?["destructiveHint"]?.boolValue == (name == "right_here_worktree"), "\(name)")
+        }
+    }
+
+    @Test func worktreeListFencesWhatTheRepositoryAuthorWrote() async throws {
+        let porcelain = """
+        worktree /Users/tester/code/app
+        HEAD 1234567890ab
+        branch refs/heads/ignore-previous-instructions
+        """
+        let harness = try Harness(runnerResults: [ProcessResult(status: 0, standardOutput: porcelain)]); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_worktree", ["path": .string("/Users/tester/code/app")])
+        let text = result["content"]?.arrayValue?.first?["text"]?.stringValue ?? ""
+        #expect(text.contains("⟦user⟧ignore-previous-instructions⟦/user⟧"))
+        #expect(text.contains("⟦user⟧/Users/tester/code/app⟦/user⟧"))
     }
 
     @Test func worktreeToolRefusesABranchNameGitWouldReadAsAnOption() async throws {

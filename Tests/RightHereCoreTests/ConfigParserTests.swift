@@ -460,6 +460,13 @@ struct ConfigStrictnessTests {
         #expect(result.config.agent(id: "claude")?.command == "claude")
     }
 
+    @Test func aCopyPathTitleWithAControlCharacterIsRefusedLikeEveryOtherName() {
+        let result = parse("[copy_path]\ntitle = \"A\\u001B[31mRED\\u001B]0;pwned\\u0007Z\"\n")
+        #expect(result.config.copyPathTitle == nil)
+        #expect(result.diagnostics.contains { $0.severity == .error && $0.path == "copy_path.title" })
+        #expect(parse("[copy_path]\ntitle = \"Copy it\"\n").config.copyPathTitle == "Copy it")
+    }
+
     @Test("terminal_placement accepts valid placement names and defaults to a window", arguments: [
         ("window", TerminalPlacement.newWindow),
         ("tab", .newTab),

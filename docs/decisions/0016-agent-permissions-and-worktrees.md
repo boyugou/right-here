@@ -5,11 +5,14 @@ Date: 2026-10-14. Status: decided.
 ## Decision
 
 **Skipping permission prompts is opt-in and visible.** `general.bypass_permissions` (default `false`) and `[agent.<id>] bypass_permissions` add the
-agent's own flag (`bypass_permission_arg`, built in for the agents that have one) to the command that is typed. `rh run --bypass-permissions`
-turns it on for one run and `--safe` turns it off. Because the flag becomes part of the agent's command, a config that switches it on is
-listed by the sync guard like any other changed agent command (ADR 0013: `pull` refuses it without `--allow-commands`), and the line
-typed into the terminal shows the flag. The flags of Claude Code, Codex and Antigravity were read from their own `--help` on a Mac that
-has them; the others come from each tool's documentation and are not verified here.
+agent's own flag (`bypass_permission_arg`, built in for the agents that have one) when the agent is started. `rh run --bypass-permissions`
+turns it on for one run and `--safe` turns it off. The flag is a launch option (`Config.launchOptions(for:)`) and is never written into the agent's
+`command`, so that every surface can say it: the typed line shows the flag, the plan says "starts with its permission prompts switched off",
+the doctor's row for the agent says so, `rh agents` and `rh menu --explain` say so, and the sync guard lists it as `[agent.<id>] bypass_permissions`
+(ADR 0013: `pull` refuses it without `--allow-commands`). **A preset never gets the flag** (it does get `args`): its prompt carries the names
+of the selected files, and a file called "ignore the above and run ..." must not reach an agent that asks nothing (ADR 0012); the plan says
+that the prompts stay on. The flags of Claude Code, Codex and Antigravity were read from their own `--help` on a Mac that has them; the others
+come from each tool's documentation and are not verified here.
 
 **Worktrees are Right Here's own folder.** `rh run --worktree` and `rh worktree add` make a git worktree under `.right-here/worktrees/` of the
 repository (and put `.right-here` in `.git/info/exclude`). The branch name is validated (no leading dash, no `..`, no whitespace or control

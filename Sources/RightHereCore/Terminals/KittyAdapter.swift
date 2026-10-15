@@ -1,9 +1,8 @@
 import Foundation
 
-/// kitty terminal adapter.
-///
-/// Starts a new session or runs a typed command in kitty via its bundled CLI executable
-/// (`{app}/Contents/MacOS/kitty`).
+/// kitty: a new window in the folder, or a typed command in the person's login shell. Started through LaunchServices like `WezTermAdapter`
+/// (`open -n -b <id> --args ...`) so that `rh run` does not wait for the window to be closed. `terminal_placement` does not apply. Not verified
+/// against a real kitty (none is installed on the machine this was written on); `rh doctor --probe-launch` checks it.
 public struct KittyAdapter: TerminalAdapter {
     public let terminalID = "kitty"
     /// The folder is the value of `--directory`, an argument; nothing types it.
@@ -14,16 +13,11 @@ public struct KittyAdapter: TerminalAdapter {
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
         let directory = try session.requireDirectory(facts)
         let typed = try session.requireTypeableInput()
-        guard let appURL = facts.applicationURL(bundleID: bundleID) else {
-            throw PlanError.appNotInstalled("kitty")
-        }
-        let executable = appURL.appendingPathComponent("Contents/MacOS/kitty").path
+        guard facts.applicationURL(bundleID: bundleID) != nil else { throw PlanError.appNotInstalled("kitty") }
+        var arguments = ["--directory", directory]
         if let typed {
-            let shell = facts.loginShell
-            let arguments = ["--directory", directory, shell, "-lic", "\(typed); exec \(shell) -l"]
-            return [.run(ProcessStep(executable: executable, arguments: arguments))]
-        } else {
-            return [.run(ProcessStep(executable: executable, arguments: ["--directory", directory]))]
+            arguments += [facts.loginShell, "-lic", typed + "; exec " + ShellQuoting.quote(facts.loginShell, for: .posix) + " -l"]
         }
+        return [.run(NewInstance.launch(bundleID: bundleID, arguments: arguments))]
     }
 }

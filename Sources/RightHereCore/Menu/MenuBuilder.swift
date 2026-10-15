@@ -98,9 +98,10 @@ public struct MenuBuilder: Sendable {
                 }
                 let info = registry.info(ref, context: context)
                 if info.available {
-                    if case .copyPath(let style) = ref, (style == .absolute || config.copyPathTitle != nil) {
-                        let title = config.copyPathTitle ?? (style == .absolute ? localizer.copyPathGroup : info.title)
-                        nodes.append(.action(info, title: title))
+                    // Only the entry for the plain path carries the group's name; the other styles keep their own, so that
+                    // `copy_path.title` never gives two listed entries one title.
+                    if case .copyPath(.absolute) = ref {
+                        nodes.append(.action(info, title: config.copyPathTitle ?? localizer.copyPathGroup))
                     } else {
                         nodes.append(.action(info))
                     }
@@ -151,6 +152,10 @@ public struct MenuBuilder: Sendable {
                 collector.leftOut(localizer.agentHere(config.agent(id: id)?.name ?? id), "the agent is disabled on this Mac by \(collector.overlayName).")
             }
             if !config.enabledAgents.isEmpty, let found = defaults.substitution(role: .terminal, typing: true) { collector.changed("Agents", found.sentence) }
+            for id in config.enabledAgents {
+                guard let agent = config.agent(id: id), let flag = config.launchOptions(for: agent).bypassFlag else { continue }
+                collector.changed(localizer.agentHere(agent.name), "it starts \(agent.name) with its permission prompts switched off (\(flag)); presets keep them on.")
+            }
         }
         return config.enabledAgents.flatMap { single(.agent(id: $0, variant: nil, launcher: nil), collector) }
     }

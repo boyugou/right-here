@@ -174,4 +174,26 @@ struct GitWorktreeSafetyTests {
         #expect(!FileManager.default.fileExists(atPath: made.worktreeURL.path))
         #expect(!(try git(["branch", "--list", "done"], in: repository).contains("done")))
     }
+
+    @Test func aRefusedCreationLeavesNoTraceInTheRepository() async throws {
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        // The branch name passes the rules, but git refuses it (a branch named like an existing directory of refs): nothing may be left behind.
+        _ = try git(["branch", "taken"], in: repository)
+        await #expect(throws: (any Error).self) { _ = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "taken/inner") }
+        #expect(!FileManager.default.fileExists(atPath: repository.appendingPathComponent(".right-here").path))
+        let exclude = try String(contentsOf: repository.appendingPathComponent(".git/info/exclude"), encoding: .utf8)
+        #expect(!exclude.contains(".right-here"))
+    }
+
+    @Test func theExcludeLineIsAddedEvenWhenAComment_MentionsTheFolder() async throws {
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        let exclude = repository.appendingPathComponent(".git/info/exclude")
+        try "# .right-here is mentioned here, but not ignored\n".write(to: exclude, atomically: true, encoding: .utf8)
+        _ = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "feature")
+        let lines = try String(contentsOf: exclude, encoding: .utf8).split(separator: "\n").map(String.init)
+        #expect(lines.contains(".right-here"))
+        #expect(try git(["status", "--porcelain"], in: repository).isEmpty)
+    }
 }

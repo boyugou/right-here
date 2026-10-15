@@ -70,6 +70,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case copyPathTitleFormat = "copyPath.titleFormat"
     case doctorActivityNone = "doctor.activity.none"
     case doctorActivityRecent = "doctor.activity.recent"
+    case doctorAgentBypass = "doctor.agent.bypass"
     case doctorAgentNotFound = "doctor.agent.notFound"
     case doctorAgentOk = "doctor.agent.ok"
     case doctorAgentsNone = "doctor.agents.none"
@@ -174,7 +175,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
         switch self {
         case .alertPermissionMessage, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAppNotInstalled, .doctorClaudeLinkMissing, .doctorCliMissing, .doctorCliNotOnPath, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorExtensionEnabled, .doctorFixAgentRemove, .doctorFixAgentsAdd, .doctorFixCliPath, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
         case .appStepLabel, .doctorAgentOk, .doctorAppFallback, .doctorExtensionMultiple, .doctorFixAgentLauncher, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
-        case .doctorActivityRecent, .doctorServicesDiffer, .menuAgentVariantIn: 3
+        case .doctorActivityRecent, .doctorAgentBypass, .doctorServicesDiffer, .menuAgentVariantIn: 3
         default: 0
         }
     }

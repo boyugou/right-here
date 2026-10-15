@@ -453,34 +453,72 @@ struct TerminalAdapterTests {
         for id in ["alacritty", "warp", "cmux"] { #expect(drivers[id] == .openFolder, "\(id)") }
     }
 
-    @Test func wezTermAdapterBuildsExecutableRunSteps() throws {
+    @Test func wezTermIsStartedThroughOpenWithItsOwnArguments() throws {
         let wezFacts = FakeSystemFacts(directories: ["/Users/tester/code"], applications: ["com.github.wez.wezterm": URL(fileURLWithPath: "/Applications/WezTerm.app")])
         let plainSession = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"))
         let plainSteps = try WezTermAdapter().steps(for: plainSession, bundleID: "com.github.wez.wezterm", facts: wezFacts)
         guard case .run(let step1)? = plainSteps.first else { Issue.record("expected run step"); return }
-        #expect(step1.executable == "/Applications/WezTerm.app/Contents/MacOS/wezterm")
-        #expect(step1.arguments == ["start", "--cwd", "/Users/tester/code"])
+        #expect(step1.executable == "/usr/bin/open")
+        #expect(step1.arguments == ["-n", "-b", "com.github.wez.wezterm", "--args", "start", "--cwd", "/Users/tester/code"])
 
         let typedSession = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"), typedInput: "claude")
         let typedSteps = try WezTermAdapter().steps(for: typedSession, bundleID: "com.github.wez.wezterm", facts: wezFacts)
         guard case .run(let step2)? = typedSteps.first else { Issue.record("expected run step"); return }
-        #expect(step2.executable == "/Applications/WezTerm.app/Contents/MacOS/wezterm")
-        #expect(step2.arguments == ["start", "--cwd", "/Users/tester/code", "--", "/bin/zsh", "-lic", "claude; exec /bin/zsh -l"])
+        #expect(step2.executable == "/usr/bin/open")
+        #expect(step2.arguments == ["-n", "-b", "com.github.wez.wezterm", "--args", "start", "--cwd", "/Users/tester/code", "--", "/bin/zsh", "-lic", "claude; exec /bin/zsh -l"])
     }
 
-    @Test func kittyAdapterBuildsExecutableRunSteps() throws {
+    @Test func kittyIsStartedThroughOpenWithItsOwnArguments() throws {
         let kittyFacts = FakeSystemFacts(directories: ["/Users/tester/code"], applications: ["net.kovidgoyal.kitty": URL(fileURLWithPath: "/Applications/kitty.app")])
         let plainSession = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"))
         let plainSteps = try KittyAdapter().steps(for: plainSession, bundleID: "net.kovidgoyal.kitty", facts: kittyFacts)
         guard case .run(let step1)? = plainSteps.first else { Issue.record("expected run step"); return }
-        #expect(step1.executable == "/Applications/kitty.app/Contents/MacOS/kitty")
-        #expect(step1.arguments == ["--directory", "/Users/tester/code"])
+        #expect(step1.executable == "/usr/bin/open")
+        #expect(step1.arguments == ["-n", "-b", "net.kovidgoyal.kitty", "--args", "--directory", "/Users/tester/code"])
 
         let typedSession = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"), typedInput: "claude")
         let typedSteps = try KittyAdapter().steps(for: typedSession, bundleID: "net.kovidgoyal.kitty", facts: kittyFacts)
         guard case .run(let step2)? = typedSteps.first else { Issue.record("expected run step"); return }
-        #expect(step2.executable == "/Applications/kitty.app/Contents/MacOS/kitty")
-        #expect(step2.arguments == ["--directory", "/Users/tester/code", "/bin/zsh", "-lic", "claude; exec /bin/zsh -l"])
+        #expect(step2.executable == "/usr/bin/open")
+        #expect(step2.arguments == ["-n", "-b", "net.kovidgoyal.kitty", "--args", "--directory", "/Users/tester/code", "/bin/zsh", "-lic", "claude; exec /bin/zsh -l"])
     }
 }
 
+
+
+@Suite("WezTerm and kitty start through LaunchServices")
+struct ArgumentTerminalTests {
+    private func facts() -> FakeSystemFacts {
+        FakeSystemFacts(directories: ["/Users/tester/my code"], applications: ["com.github.wez.wezterm": URL(fileURLWithPath: "/Applications/WezTerm.app"),
+                                                                              "net.kovidgoyal.kitty": URL(fileURLWithPath: "/Applications/kitty.app")])
+    }
+
+    private func process(_ steps: [Step]) throws -> ProcessStep {
+        guard steps.count == 1, case .run(let step) = steps[0] else { throw PlanError.unsupported("expected one process step, got \(steps)") }
+        return step
+    }
+
+    @Test func weztermIsStartedThroughOpenSoThatNothingWaitsForTheWindow() throws {
+        let session = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/my code"), typedInput: "claude")
+        let step = try process(WezTermAdapter().steps(for: session, bundleID: "com.github.wez.wezterm", facts: facts()))
+        #expect(step.executable == "/usr/bin/open")
+        #expect(Array(step.arguments.prefix(5)) == ["-n", "-b", "com.github.wez.wezterm", "--args", "start"])
+        #expect(step.arguments.contains("/Users/tester/my code"))
+        #expect(step.arguments.last?.hasPrefix("claude; exec ") == true)
+    }
+
+    @Test func kittyIsStartedThroughOpenSoThatNothingWaitsForTheWindow() throws {
+        let session = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/my code"), typedInput: nil)
+        let step = try process(KittyAdapter().steps(for: session, bundleID: "net.kovidgoyal.kitty", facts: facts()))
+        #expect(step.executable == "/usr/bin/open")
+        #expect(step.arguments == ["-n", "-b", "net.kovidgoyal.kitty", "--args", "--directory", "/Users/tester/my code"])
+    }
+
+    @Test func noTerminalBinaryIsRunDirectly() throws {
+        // A step that runs the terminal's own binary lasts as long as its window does.
+        for (adapter, bundle) in [(WezTermAdapter() as any TerminalAdapter, "com.github.wez.wezterm"), (KittyAdapter(), "net.kovidgoyal.kitty")] {
+            let step = try process(adapter.steps(for: TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/my code"), typedInput: "claude"), bundleID: bundle, facts: facts()))
+            #expect(!step.executable.contains("/Contents/MacOS/"))
+        }
+    }
+}

@@ -135,6 +135,8 @@ extension LocalizedMessage {
     public static var doctorActivityNone: LocalizedMessage { LocalizedMessage(.doctorActivityNone) }
     /// %1$@ from the %2$@ menu, %3$@
     public static func doctorActivityRecent(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorActivityRecent, [argument1, argument2, argument3]) }
+    /// `%1$@` found; starts with %2$@ and its permission prompts switched off (`%3$@`)
+    public static func doctorAgentBypass(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentBypass, [argument1, argument2, argument3]) }
     /// `%@` is not found in your login shell
     public static func doctorAgentNotFound(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentNotFound, [argument1]) }
     /// `%1$@` found; starts with %2$@

@@ -16,6 +16,7 @@ extension StateStore {
     public func save(paths: RHPaths) throws {
         try FileManager.default.createDirectory(at: paths.configDirectory, withIntermediateDirectories: true)
         let text = render()
-        try AtomicFile.write(Data(text.utf8), to: paths.stateFile)
+        // Folders the person worked in: readable by them only, like the run log.
+        try AtomicFile.write(Data(text.utf8), to: paths.stateFile, mode: 0o600)
     }
 }

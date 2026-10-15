@@ -31,23 +31,15 @@ rh run agent.claude@<id>               # then for real, in a throwaway folder
 
 ```toml
 [[app]]
-id = "kitty"
-name = "kitty"
-bundle_id = "net.kovidgoyal.kitty"
-role = "terminal"
-open_args = ["{app}/Contents/MacOS/kitty", "--directory", "{dir}"]
-run_args = ["{app}/Contents/MacOS/kitty", "--directory", "{dir}", "{shell}", "-lic", "{command}; exec {shell} -l"]
-
-[[app]]
 id = "alacritty"
 name = "Alacritty"
 bundle_id = "org.alacritty"
 role = "terminal"
-open_args = ["{app}/Contents/MacOS/alacritty", "--working-directory", "{dir}"]
-run_args = ["{app}/Contents/MacOS/alacritty", "--working-directory", "{dir}", "-e", "{shell}", "-lic", "{command}; exec {shell} -l"]
+open_args = ["/usr/bin/open", "-n", "-b", "org.alacritty", "--args", "--working-directory", "{dir}"]
+run_args = ["/usr/bin/open", "-n", "-b", "org.alacritty", "--args", "--working-directory", "{dir}", "-e", "{shell}", "-lic", "{command}; exec {shell} -l"]
 ```
 
-`rh config validate` warns that each entry replaces the built-in one; that is intended, the built-in entries only know how to open the app, not how to start a command. (WezTerm's entry is in `rh docs config`.) Check for each: the window opens in the folder, the command is typed
+`rh config validate` warns that each entry replaces the built-in one; that is intended, the built-in entries only know how to open the app, not how to start a command. (WezTerm and kitty are built in: check them with `rh doctor --probe-launch` and by hand as below.) Check for each: the window opens in the folder, the command is typed
 and runs, a folder named `it's a "test"` works, and closing the agent leaves a usable shell. Report what had to
 change so the docs can carry a verified entry.
 

@@ -194,7 +194,7 @@ public struct ActionRegistry: Sendable {
         }
         if case .failure(let why) = resolution.route {
             unavailable(&info, reason: why.text)
-        } else if variant != nil, case .failure(let why) = AgentLaunchResolution.typedLine(agent: agent, variant: variant) {
+        } else if case .terminal = resolution.launcher, case .failure(let why) = AgentLaunchResolution.typedLine(agent: agent, variant: variant, options: config.launchOptions(for: agent)) {
             unavailable(&info, reason: why.text)
         }
     }
