@@ -418,6 +418,22 @@ struct SetupRunnerTests {
         #expect(need.how.joined().contains("does not switch it on"))
     }
 
+    // MARK: Where rh runs from
+
+    @Test func anRhThatRunsFromABuildFolderSaysThatTheRunnerScriptAndTheQuickActionsPointAtIt() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        let build = "/work/right-here/.build/debug/rh"
+        let report = try await machine.runner(trial: false, rhPath: build).run(.setup())
+        let note = try #require(report.warnings.first { $0.contains("runs from a build folder") })
+        #expect(note.contains(build) && note.contains("Right Here.app/Contents/Helpers/rh setup"), "\(note)")
+        #expect(Installer(home: machine.home).installedRunnerTarget() == build)
+        // The program inside the installed app, and a trial, say nothing of the kind.
+        let installed = try await machine.runner(trial: false, rhPath: "/Applications/Right Here.app/Contents/Helpers/rh").run(.setup())
+        #expect(!installed.warnings.contains { $0.contains("build folder") })
+        let trial = try await machine.runner(trial: true, rhPath: build).run(.setup())
+        #expect(!trial.warnings.contains { $0.contains("build folder") })
+    }
+
     // MARK: What is left for the person
 
     @Test func theLinkNeedsThePathLineUnlessTheTerminalAlreadyHasIt() async throws {
