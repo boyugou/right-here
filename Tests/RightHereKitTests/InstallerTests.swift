@@ -72,12 +72,48 @@ struct InstallerTests {
     }
 
     @Test("the runner refuses everything else, so a compromised extension cannot reconfigure the machine",
-          arguments: ["install", "uninstall", "init", "config", "mcp", "doctor", "--version", "-h", ""])
+          arguments: ["setup", "install", "uninstall", "init", "config", "mcp", "doctor", "--version", "-h", ""])
     func runnerRefusesOtherSubcommands(subcommand: String) throws {
         let result = try runRunner(subcommand.isEmpty ? [] : [subcommand, "--force"])
         #expect(result.status == 64)
         #expect(!result.called, "the runner started rh for \(subcommand.debugDescription)")
         #expect(result.standardError.contains("refusing"))
+    }
+
+    @Test func theRunnerScriptIsCurrentOnlyWhenItIsExactlyWhatWouldBeWritten() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        #expect(!installer.runnerScriptIsCurrent(rhPath: "/opt/rh/bin/rh"))
+        try installer.installRunnerScript(rhPath: "/opt/rh/bin/rh")
+        #expect(installer.runnerScriptIsCurrent(rhPath: "/opt/rh/bin/rh"))
+        #expect(!installer.runnerScriptIsCurrent(rhPath: "/other/rh"))
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: installer.runnerScript.path)
+        #expect(!installer.runnerScriptIsCurrent(rhPath: "/opt/rh/bin/rh"), "a script that cannot be run is not current")
+        try installer.installRunnerScript(rhPath: "/opt/rh/bin/rh")
+        try (Installer.runnerScriptText(rhPath: "/opt/rh/bin/rh") + "# edited\n").write(to: installer.runnerScript, atomically: true, encoding: .utf8)
+        #expect(!installer.runnerScriptIsCurrent(rhPath: "/opt/rh/bin/rh"))
+    }
+
+    private func spec(_ title: String, command: String = "rh run x") -> ServiceSpec {
+        ServiceSpec(title: title, actionID: "open.terminal", input: .folders, command: command)
+    }
+
+    @Test func theServicesAreCurrentOnlyWhenEveryBundleAndBothOfItsFilesAreWhatWouldBeWritten() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let specs = [spec("Open in Ghostty"), spec("Codex Here")]
+        #expect(!installer.servicesAreCurrent(specs))
+        try installer.installServices(specs)
+        #expect(installer.servicesAreCurrent(specs))
+        #expect(installer.servicesAreCurrent(specs + [spec("Open in Ghostty")]), "two actions with one title are one Service")
+        #expect(!installer.servicesAreCurrent([spec("Open in Ghostty")]), "a Service the config no longer asks for is stale")
+        #expect(!installer.servicesAreCurrent(specs + [spec("New Markdown")]), "a Service the config asks for and is missing")
+        #expect(!installer.servicesAreCurrent([spec("Open in Ghostty", command: "rh run y"), spec("Codex Here")]), "a command that points elsewhere")
+        let document = installer.locations.services.appendingPathComponent("Right Here - Codex Here.workflow/Contents/document.wflow")
+        try Data("edited".utf8).write(to: document)
+        #expect(!installer.servicesAreCurrent(specs), "a changed file is not current")
     }
 
     @Test func cliLinkIsReplacedWhenItAlreadyExists() throws {

@@ -102,6 +102,13 @@ public struct Installer: Sendable {
         """
     }
 
+    /// Whether the runner script is what `installRunnerScript(rhPath:)` writes, permissions included: there is nothing to do.
+    public func runnerScriptIsCurrent(rhPath: String) -> Bool {
+        guard let text = try? String(contentsOf: runnerScript, encoding: .utf8), text == Self.runnerScriptText(rhPath: rhPath) else { return false }
+        let mode = (try? fileManager.attributesOfItem(atPath: runnerScript.path))?[.posixPermissions] as? NSNumber
+        return mode?.intValue == 0o755
+    }
+
     @discardableResult
     public func installRunnerScript(rhPath: String) throws -> URL {
         try fileManager.createDirectory(at: locations.applicationScripts, withIntermediateDirectories: true)
@@ -172,6 +179,21 @@ public struct Installer: Sendable {
         let names = (try? fileManager.contentsOfDirectory(atPath: locations.services.path)) ?? []
         return names.filter { $0.hasPrefix(ServiceWorkflow.namePrefix) && $0.hasSuffix(".workflow") }
             .sorted().map { locations.services.appendingPathComponent($0) }
+    }
+
+    /// Whether the Services on disk are exactly the ones `installServices(specs)` would write: the same bundles, with the same
+    /// two files in each. A Service that the config no longer asks for, or one whose command points at another `rh`, is not.
+    public func servicesAreCurrent(_ specs: [ServiceSpec]) -> Bool {
+        var expected: [String: ServiceSpec] = [:]
+        for spec in specs where expected[ServiceWorkflow.bundleName(for: spec)] == nil { expected[ServiceWorkflow.bundleName(for: spec)] = spec }
+        guard Set(installedServices().map(\.lastPathComponent)) == Set(expected.keys) else { return false }
+        for (name, spec) in expected {
+            let contents = locations.services.appendingPathComponent(name).appendingPathComponent("Contents")
+            guard let info = try? Data(contentsOf: contents.appendingPathComponent("Info.plist")),
+                  let document = try? Data(contentsOf: contents.appendingPathComponent("document.wflow")),
+                  info == (try? ServiceWorkflow.infoPlist(for: spec)), document == (try? ServiceWorkflow.workflowDocument(for: spec)) else { return false }
+        }
+        return true
     }
 
     /// Replaces the installed Services with `specs`. Workflows are written fresh each time, so a

@@ -3,20 +3,6 @@ import Foundation
 import RightHereCore
 import RightHereKit
 
-/// Finds the app bundle this `rh` belongs to: the one it sits inside, or else the installed app.
-enum HostApp {
-    static func locate(rhPath: String, facts: any SystemFacts) -> URL? {
-        if let range = rhPath.range(of: ".app/Contents/") {
-            return URL(fileURLWithPath: String(rhPath[..<range.lowerBound]) + ".app")
-        }
-        return facts.applicationURL(bundleID: AppIdentity.hostBundleID)
-    }
-
-    static func extensionURL(in app: URL) -> URL {
-        app.appendingPathComponent("Contents/PlugIns/\(AppIdentity.extensionBundleName)")
-    }
-}
-
 struct Install: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Connect Finder to rh.",
