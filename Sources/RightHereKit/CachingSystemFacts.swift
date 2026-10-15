@@ -17,6 +17,9 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
         self.lifetime = lifetime
     }
 
+    /// How long what is installed is remembered; the menu cache must live shorter (`MenuCachePolicy`).
+    var lifetimeForTesting: TimeInterval { lifetime }
+
     public var homeDirectory: URL { base.homeDirectory }
     public var currentDirectory: URL { base.currentDirectory }
     public var loginShell: String { base.loginShell }

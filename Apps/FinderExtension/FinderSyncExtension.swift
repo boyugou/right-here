@@ -13,7 +13,7 @@ final class FinderSyncExtension: FIFinderSync {
     private lazy var paths = RHPaths.current(facts: facts)
 
     private var configCache: (stamp: ConfigStore.Stamp, loaded: LoadedConfig)?
-    private var cachedFolderMenus: [FinderMenuKind: (stamp: ConfigStore.Stamp, menu: NSMenu)] = [:]
+    private var cachedFolderMenus: [FinderMenuKind: (stamp: ConfigStore.Stamp, builtAt: Date, menu: NSMenu)] = [:]
     private var isWarmingUp = false
     private var activityToken: (any NSObjectProtocol)?
     /// Finder receives a copy of each menu, and only the tag survives the trip back to the action method.
@@ -25,8 +25,11 @@ final class FinderSyncExtension: FIFinderSync {
         super.init()
         ProcessInfo.processInfo.disableAutomaticTermination("Keep Finder Sync Extension responsive")
         ProcessInfo.processInfo.disableSuddenTermination()
+        // Keeps App Nap from slowing the first right-click after a pause. `.userInitiated` and `.latencyCritical` each also hold
+        // a PreventUserIdleSystemSleep assertion (measured with `pmset -g assertions`), which would keep the Mac from ever
+        // sleeping while Finder runs; this option does not (docs/decisions/0015-finder-extension-stays-loaded.md).
         activityToken = ProcessInfo.processInfo.beginActivity(
-            options: [.userInitiated, .latencyCritical],
+            options: [.userInitiatedAllowingIdleSystemSleep],
             reason: "Right Here Finder Sync Menu"
         )
         FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: "/")]
@@ -72,7 +75,7 @@ final class FinderSyncExtension: FIFinderSync {
                 guard let self, !nodes.isEmpty else { return }
                 for kind in [FinderMenuKind.items, .container, .sidebar] {
                     let menu = self.makeMenu(nodes, kind: kind)
-                    self.cachedFolderMenus[kind] = (stamp, menu)
+                    self.cachedFolderMenus[kind] = (stamp, Date(), menu)
                 }
             }
         }
@@ -108,7 +111,7 @@ final class FinderSyncExtension: FIFinderSync {
         let isSingleFolder = context.items.isEmpty || (context.items.count == 1 && facts.isDirectory(context.items[0]) == true)
         let (config, stamp) = currentConfigWithStamp()
 
-        if isSingleFolder, let cached = cachedFolderMenus[kind], cached.stamp == stamp {
+        if isSingleFolder, let cached = cachedFolderMenus[kind], MenuCachePolicy.canServe(builtAt: cached.builtAt, now: Date(), sameConfig: cached.stamp == stamp) {
             log.notice("menu \(kind.rawValue, privacy: .public): \(context.items.count, privacy: .public) items, served from cache in \(String(describing: ContinuousClock.now - started), privacy: .public)")
             return cached.menu.copy() as? NSMenu
         }
@@ -118,7 +121,7 @@ final class FinderSyncExtension: FIFinderSync {
 
         let menu = makeMenu(nodes, kind: kind)
         if isSingleFolder {
-            cachedFolderMenus[kind] = (stamp, menu)
+            cachedFolderMenus[kind] = (stamp, Date(), menu)
         }
         log.notice("menu \(kind.rawValue, privacy: .public): \(context.items.count, privacy: .public) items, built in \(String(describing: ContinuousClock.now - started), privacy: .public)")
         return menu
