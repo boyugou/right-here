@@ -165,13 +165,12 @@ public enum GitWorktreeManager {
             return WorktreeResult(branch: branchName, worktreeURL: worktreeDir, wasCreated: false)
         }
 
-        try? FileManager.default.createDirectory(at: worktreesBase, withIntermediateDirectories: true)
-        keepOutOfGitStatus(gitRoot: gitRoot)
-
+        // Nothing is written in the repository before git has agreed: `git worktree add` makes the folders it needs, and a refused request leaves no trace.
         // Try creating with a new branch
         let addStep = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path, "worktree", "add", "-b", branchName, worktreeDir.path, "HEAD"])
         let addResult = try await runner.run(addStep)
         if addResult.status == 0 {
+            keepOutOfGitStatus(gitRoot: gitRoot)
             return WorktreeResult(branch: branchName, worktreeURL: worktreeDir, wasCreated: true)
         }
 
@@ -179,6 +178,7 @@ public enum GitWorktreeManager {
         let fallbackStep = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path, "worktree", "add", "--", worktreeDir.path, branchName])
         let fallbackResult = try await runner.run(fallbackStep)
         if fallbackResult.status == 0 {
+            keepOutOfGitStatus(gitRoot: gitRoot)
             return WorktreeResult(branch: branchName, worktreeURL: worktreeDir, wasCreated: true)
         }
 
@@ -232,8 +232,12 @@ public enum GitWorktreeManager {
     /// files. Done in the repository's `info/exclude`, which is not committed; a repository whose `.git` is a file (itself a worktree) is left alone.
     private static func keepOutOfGitStatus(gitRoot: URL) {
         let excludeFile = gitRoot.appendingPathComponent(".git/info/exclude")
-        guard FileManager.default.fileExists(atPath: excludeFile.path),
-              let content = try? String(contentsOf: excludeFile, encoding: .utf8), !content.contains(".right-here") else { return }
+        guard FileManager.default.fileExists(atPath: excludeFile.path), let content = try? String(contentsOf: excludeFile, encoding: .utf8) else { return }
+        // A line that says it, not a comment or another name that happens to contain the word.
+        let says = content.split(separator: "\n", omittingEmptySubsequences: true).contains { line in
+            [".right-here", "/.right-here", ".right-here/", "/.right-here/"].contains(line.trimmingCharacters(in: .whitespaces))
+        }
+        guard !says else { return }
         let newContent = content.hasSuffix("\n") ? "\(content).right-here\n" : "\(content)\n.right-here\n"
         try? newContent.write(to: excludeFile, atomically: true, encoding: .utf8)
     }
