@@ -180,8 +180,8 @@ enum Tools {
                 ]),
                 "path": string("Path to the git repository or folder inside it (default: current directory).", maxLength: maxPathLength),
                 "branch": string("Branch name to create or attach to (for create operation).", maxLength: 200),
-                "worktree_path": string("Worktree path to remove (for remove operation).", maxLength: maxPathLength),
-                "delete_branch": boolean("Also delete the branch after removing worktree (default: false).")
+                "worktree_path": string("Worktree to remove (for remove operation): its path, branch or folder name. Only worktrees Right Here created under .right-here/worktrees can be removed, never one with uncommitted work.", maxLength: maxPathLength),
+                "delete_branch": boolean("Also delete the branch after removing the worktree (default: false); a branch that is not fully merged is kept.")
             ]),
             readOnly: false,
             handler: worktree
@@ -338,14 +338,18 @@ enum Tools {
             let branch = arguments["branch"]?.stringValue
             let res = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch, runner: server.runner)
             let json = try JSONValue(encoding: res)
-            return ToolOutput(text: "Prepared worktree at \(res.worktreeURL.path) on branch '\(res.branch)'", structured: json)
+            return ToolOutput(text: "Prepared worktree at " + Fence.wrap(res.worktreeURL.path) + " on branch " + Fence.wrap(res.branch), structured: json)
         case "remove":
             guard let worktreePath = arguments["worktree_path"]?.stringValue else {
                 throw ToolError("worktree_path is required for remove operation.")
             }
             let deleteBranch = arguments["delete_branch"]?.boolValue ?? false
-            try await GitWorktreeManager.removeWorktree(worktreePath: worktreePath, gitRoot: root, deleteBranch: deleteBranch, runner: server.runner)
-            return ToolOutput(text: "Removed worktree at \(worktreePath)", structured: .object(["removed": .bool(true)]))
+            // Never forced: a worktree with uncommitted work is kept and the refusal is the answer. Only worktrees Right Here created are removable.
+            let removal = try await GitWorktreeManager.removeWorktree(worktreePath: worktreePath, gitRoot: root, deleteBranch: deleteBranch, force: false, runner: server.runner)
+            var text = "Removed worktree at " + Fence.wrap(removal.path)
+            if removal.branchDeleted { text += "; its branch was deleted" }
+            if let kept = removal.branchKept { text += "; its branch was kept: " + Fence.wrap(kept) }
+            return ToolOutput(text: text, structured: try JSONValue(encoding: removal))
         default:
             throw ToolError("Unknown operation '\(op)'. Supported operations: list, create, remove.")
         }

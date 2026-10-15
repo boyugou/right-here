@@ -94,17 +94,25 @@ struct WorktreeAdd: AsyncParsableCommand {
 struct WorktreeRemove: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "remove",
-        abstract: "Remove an isolated git worktree."
+        abstract: "Remove a worktree that Right Here created.",
+        discussion: """
+        Only worktrees under .right-here/worktrees in the repository are removed; the main working copy and worktrees you made \
+        yourself are never touched (use `git worktree remove` for those). A worktree with uncommitted work is kept unless \
+        you pass --force, and a branch is deleted only when it is fully merged.
+        """
     )
 
-    @Argument(help: "Worktree path or branch name to remove.")
+    @Argument(help: "Worktree path, branch name or folder name to remove.")
     var target: String
 
     @Option(name: .customLong("folder"), help: "Folder within the git repository (default: current directory).")
     var folder: String?
 
-    @Flag(name: .customLong("delete-branch"), help: "Also delete the branch after removing the worktree.")
+    @Flag(name: .customLong("delete-branch"), help: "Also delete the branch after removing the worktree (only when it is fully merged).")
     var deleteBranch = false
+
+    @Flag(name: .customLong("force"), help: "Remove the worktree even if it has uncommitted changes, which are lost.")
+    var force = false
 
     func run() async throws {
         let runtime = Runtime()
@@ -112,11 +120,9 @@ struct WorktreeRemove: AsyncParsableCommand {
         guard let root = runtime.facts.gitRoot(containing: targetURL) else {
             throw ValidationError("Not inside a git repository.")
         }
-        let list = try await GitWorktreeManager.listWorktrees(in: root)
-        guard let match = list.first(where: { $0.path == target || $0.branch == target || $0.path.hasSuffix("/" + target) }) else {
-            throw ValidationError("No worktree matching '\(target)' found in repository \(root.path).")
-        }
-        try await GitWorktreeManager.removeWorktree(worktreePath: match.path, gitRoot: root, deleteBranch: deleteBranch)
-        Output.print("Removed worktree at \(match.path)")
+        let removal = try await GitWorktreeManager.removeWorktree(worktreePath: target, gitRoot: root, deleteBranch: deleteBranch, force: force)
+        Output.print("Removed worktree at \(removal.path)")
+        if removal.branchDeleted { Output.print("Deleted its branch.") }
+        if let kept = removal.branchKept { Output.print("Kept its branch: \(kept)") }
     }
 }

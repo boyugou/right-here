@@ -93,15 +93,18 @@ struct Run: AsyncParsableCommand {
             guard let root = runtime.facts.gitRoot(containing: dir) else {
                 throw ValidationError("--worktree requires a git repository (no git root found for \(dir.path)).")
             }
+            if let name = branch, let refusal = GitWorktreeManager.branchNameRefusal(name.trimmingCharacters(in: .whitespacesAndNewlines)) {
+                throw ValidationError("Not a usable branch name: \(refusal).")
+            }
             if dryRun {
                 let targetBranch = branch ?? "rh/<auto-branch>"
-                let sanitized = targetBranch.replacingOccurrences(of: "/", with: "-")
-                let previewURL = root.appendingPathComponent(".right-here/worktrees/\(sanitized)")
-                Output.print("note: --worktree will create or attach branch '\(targetBranch)' at \(previewURL.path)")
+                let previewURL = GitWorktreeManager.worktreeDirectory(gitRoot: root, branch: targetBranch)
+                // Notes go to standard error so that `--json` stays one document on standard output.
+                Output.error("note: --worktree will create or attach branch '\(targetBranch.withControlCharactersEscaped)' at \(previewURL.path.withControlCharactersEscaped)")
                 effectiveContext = HereContext(origin: here.origin, container: previewURL)
             } else {
                 let res = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch)
-                Output.print("note: isolated worktree ready on branch '\(res.branch)' at \(res.worktreeURL.path)")
+                Output.error("note: isolated worktree ready on branch '\(res.branch.withControlCharactersEscaped)' at \(res.worktreeURL.path.withControlCharactersEscaped)")
                 effectiveContext = HereContext(origin: here.origin, container: res.worktreeURL)
             }
         } else {

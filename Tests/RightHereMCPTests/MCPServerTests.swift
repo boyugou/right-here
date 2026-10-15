@@ -369,6 +369,54 @@ struct MCPToolTests {
         #expect(worktrees.count == 1)
         #expect(worktrees.first?["branch"]?.stringValue == "main")
     }
+
+    @Test func worktreeToolWillNotRemoveAWorktreeRightHereDidNotCreate() async throws {
+        let porcelain = """
+        worktree /Users/tester/code/app
+        HEAD 1234567890ab
+        branch refs/heads/main
+
+        worktree /Users/tester/code/own-tree
+        HEAD 1234567890ab
+        branch refs/heads/mine
+        """
+        let harness = try Harness(runnerResults: [ProcessResult(status: 0, standardOutput: porcelain)]); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_worktree", ["operation": .string("remove"), "path": .string("/Users/tester/code/app"),
+                                                                    "worktree_path": .string("/Users/tester/code/own-tree"), "delete_branch": .bool(true)])
+        #expect(result["isError"]?.boolValue == true)
+        // Only the listing ran: nothing was removed, nothing was forced, no branch was deleted.
+        #expect(harness.runner.recorded.count == 1)
+        #expect(harness.runner.recorded.allSatisfy { !$0.arguments.contains("remove") && !$0.arguments.contains("--force") && !$0.arguments.contains("-D") })
+    }
+
+    @Test func worktreeToolRemovesOnlyWithoutForce() async throws {
+        let porcelain = """
+        worktree /Users/tester/code/app
+        HEAD 1234567890ab
+        branch refs/heads/main
+
+        worktree /Users/tester/code/app/.right-here/worktrees/feature
+        HEAD 1234567890ab
+        branch refs/heads/feature
+        """
+        let harness = try Harness(runnerResults: [ProcessResult(status: 0, standardOutput: porcelain), ProcessResult(status: 0), ProcessResult(status: 0)])
+        defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_worktree", ["operation": .string("remove"), "path": .string("/Users/tester/code/app"),
+                                                                    "worktree_path": .string("feature"), "delete_branch": .bool(true)])
+        #expect(result["isError"]?.boolValue != true)
+        let removes = harness.runner.recorded.filter { $0.arguments.contains("remove") }
+        #expect(removes.count == 1)
+        #expect(!removes[0].arguments.contains("--force"))
+        let branchDeletes = harness.runner.recorded.filter { $0.arguments.contains("branch") }
+        #expect(branchDeletes.count == 1 && branchDeletes[0].arguments.contains("-d") && !branchDeletes[0].arguments.contains("-D"))
+    }
+
+    @Test func worktreeToolRefusesABranchNameGitWouldReadAsAnOption() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_worktree", ["operation": .string("create"), "path": .string("/Users/tester/code/app"), "branch": .string("--detach")])
+        #expect(result["isError"]?.boolValue == true)
+        #expect(harness.runner.recorded.isEmpty)
+    }
 }
 
 @Suite("MCP hardening")
