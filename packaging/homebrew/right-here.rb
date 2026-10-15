@@ -3,7 +3,7 @@
 # Developer-ID-signed, notarized app; a personal tap does not enforce that.
 cask "right-here" do
   version "0.2.0"
-  sha256 "fe826f381dec4466f9399c3f36081e8f6392fc60ae3fd458b3e3b81ad663d327"
+  sha256 "dcf53afc14acfb6ab0fb2c177a0b85ab9f4f3bd8dcdced7efa83e8e719f7eb81"
 
   url "https://github.com/boyugou/right-here/releases/download/v#{version}/Right-Here-#{version}.dmg"
   name "Right Here"

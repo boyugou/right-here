@@ -5,12 +5,14 @@
 #   ./script/archive_mas.sh --preflight
 #   MAS_APP_SIGN_IDENTITY="<MAS-App-Sign-Identity>" \
 #   MAS_INSTALLER_SIGN_IDENTITY="<MAS-Installer-Sign-Identity>" \
-#   APPLE_ID="APPLE_ACCOUNT_ID" APPLE_APP_PASSWORD="app-specific-password" \
+#   ASC_API_KEY_ID="KEY_ID" ASC_API_ISSUER_ID="ISSUER_UUID" \
 #     ./script/archive_mas.sh --validate
-#   APPLE_ID="APPLE_ACCOUNT_ID" APPLE_APP_PASSWORD="app-specific-password" \
+#   ASC_API_KEY_ID="KEY_ID" ASC_API_ISSUER_ID="ISSUER_UUID" \
 #     ./script/archive_mas.sh --upload
 #
 # Environment variables:
+#   ASC_API_KEY_ID, ASC_API_ISSUER_ID   the App Store Connect API key for --validate and --upload. Its AuthKey_<id>.p8
+#                                file is where altool looks (~/.private_keys or ~/.appstoreconnect/private_keys). No password is used.
 #   MAS_APP_SIGN_IDENTITY         "Apple Distribution: ..." or "3rd Party Mac Developer Application: ..."
 #   MAS_INSTALLER_SIGN_IDENTITY   "3rd Party Mac Developer Installer: ..."
 #   MAS_APP_PROVISIONING_PROFILE  Path to .provisionprofile for com.boyugou.righthere (optional for local ad-hoc)
@@ -148,19 +150,19 @@ package_mas() {
 }
 
 validate_mas() {
-  require_env APPLE_ID
-  require_env APPLE_APP_PASSWORD
+  require_env ASC_API_KEY_ID
+  require_env ASC_API_ISSUER_ID
   [[ -f "$PKG_PATH" ]] || { echo "error: $PKG_PATH not found; run --package first" >&2; exit 1; }
   log "Validating package with Apple App Store Connect: $PKG_PATH"
-  xcrun altool --validate-app -f "$PKG_PATH" -t osx -u "$APPLE_ID" -p "$APPLE_APP_PASSWORD"
+  xcrun altool --validate-app -f "$PKG_PATH" -t osx --apiKey "$ASC_API_KEY_ID" --apiIssuer "$ASC_API_ISSUER_ID"
 }
 
 upload_mas() {
-  require_env APPLE_ID
-  require_env APPLE_APP_PASSWORD
+  require_env ASC_API_KEY_ID
+  require_env ASC_API_ISSUER_ID
   [[ -f "$PKG_PATH" ]] || { echo "error: $PKG_PATH not found; run --package first" >&2; exit 1; }
   log "Uploading package to Apple App Store Connect / TestFlight: $PKG_PATH"
-  xcrun altool --upload-app -f "$PKG_PATH" -t osx -u "$APPLE_ID" -p "$APPLE_APP_PASSWORD"
+  xcrun altool --upload-app -f "$PKG_PATH" -t osx --apiKey "$ASC_API_KEY_ID" --apiIssuer "$ASC_API_ISSUER_ID"
 }
 
 case "${1:-}" in
