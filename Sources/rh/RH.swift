@@ -16,7 +16,7 @@ struct RH: AsyncParsableCommand {
         every action. Run one with `rh run <action> [folder]`, for example `rh run copy-path.absolute ~/Projects`. \
         Everything is also available as JSON (--json) for scripts and agents.
         """,
-        version: RightHereInfo.version,
+        version: AppIdentity.version,
         subcommands: [
             Run.self, Actions.self, MenuCommand.self, Agents.self, Apps.self,
             Pin.self, Unpin.self, Pins.self, Recents.self, WorktreeCommand.self,
@@ -24,10 +24,6 @@ struct RH: AsyncParsableCommand {
             FinderCommand.self, MCP.self, Probe.self
         ]
     )
-}
-
-enum RightHereInfo {
-    static let version = "0.2.0"
 }
 
 /// Everything a command needs: the live machine and the loaded config.

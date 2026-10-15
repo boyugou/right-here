@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 (2026-10-14)
+
+- Finder menu: a prebuilt menu for single folders (the first right-click no longer waits for a build), the extension stays loaded, facts and
+  directory lookups are cached.
+- A built-in iTerm2 adapter (AppleScript, 3.0 and later), more editors detected (Trae, Positron, Fleet, RustRover, CLion, GoLand), a new app icon,
+  a setup window with its action buttons pinned at the bottom.
+- Copy Path: a single configured style gets a short title.
+
 ## 0.1.0 (2026-10-14)
 
 First version, running on macOS 26 and later (Apple silicon).

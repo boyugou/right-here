@@ -2,7 +2,7 @@
 # version and checksum from script/package_dmg.sh. The official cask repository requires a
 # Developer-ID-signed, notarized app; a personal tap does not enforce that.
 cask "right-here" do
-  version "0.1.0"
+  version "0.2.0"
   sha256 "fe826f381dec4466f9399c3f36081e8f6392fc60ae3fd458b3e3b81ad663d327"
 
   url "https://github.com/boyugou/right-here/releases/download/v#{version}/Right-Here-#{version}.dmg"

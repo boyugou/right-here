@@ -46,5 +46,7 @@ jobs:
         run: uv run script/compile_docs.py --check
       - name: "Documentation: commands and links"
         run: uv run script/verify_docs.py
+      - name: Version
+        run: uv run script/verify_version.py
       - name: Public safety
         run: ./script/verify_public_safety.sh
