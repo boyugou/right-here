@@ -24,7 +24,7 @@ struct PathDisplayTests {
     }
 
     @Test func anotherFolderWithTheSameBeginningIsLeftAlone() {
-        #expect(PathDisplay.abbreviatingHome("/Users/testerx/Projects", home: home) == "/Users/testerx/Projects")
+        #expect(PathDisplay.abbreviatingHome("/Users/tester2/Projects", home: home) == "/Users/tester2/Projects")
         #expect(PathDisplay.abbreviatingHome("/Users/tester-old/Projects", home: home) == "/Users/tester-old/Projects")
     }
 
@@ -43,13 +43,13 @@ struct PathDisplayTests {
     }
 
     @Test func anAccountNameWithLettersBeyondAsciiWorks() {
-        #expect(PathDisplay.abbreviatingHome("/Users/jörg/Projekte", home: "/Users/jörg") == "~/Projekte")
-        #expect(PathDisplay.abbreviatingHome("/Users/jörgen/Projekte", home: "/Users/jörg") == "/Users/jörgen/Projekte")
+        #expect(PathDisplay.abbreviatingHome("/Volumes/Büro/Projekte", home: "/Volumes/Büro") == "~/Projekte")
+        #expect(PathDisplay.abbreviatingHome("/Volumes/Büroarbeit/Projekte", home: "/Volumes/Büro") == "/Volumes/Büroarbeit/Projekte")
     }
 
     @Test func aHomeWithRegularExpressionCharactersIsTakenLiterally() {
-        #expect(PathDisplay.abbreviatingHome("/Users/a.b+c/x", home: "/Users/a.b+c") == "~/x")
-        #expect(PathDisplay.abbreviatingHome("/Users/aXb+c/x", home: "/Users/a.b+c") == "/Users/aXb+c/x")
+        #expect(PathDisplay.abbreviatingHome("/Volumes/a.b+c/x", home: "/Volumes/a.b+c") == "~/x")
+        #expect(PathDisplay.abbreviatingHome("/Volumes/aXb+c/x", home: "/Volumes/a.b+c") == "/Volumes/aXb+c/x")
     }
 
     /// The marks a folder adds: a left-to-right mark at its start and on each side of a slash.

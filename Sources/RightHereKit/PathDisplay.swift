@@ -10,8 +10,8 @@ public enum PathDisplay {
     static let popIsolate = "\u{2069}"
 
     /// `text` with every path under `home`, and `home` itself, written from `~`: shorter, and a screenshot of the window does
-    /// not show the account name. For the doctor's sentences, which quote paths. Only a whole path counts: `/Users/ann` is
-    /// not the start of `/Users/anna/x`, and `/Volumes/Backup/Users/ann/x` is another folder than the home.
+    /// not show the account name. For the doctor's sentences, which quote paths. Only a whole path counts: `/Users/tester` is
+    /// not the start of `/Users/tester2/x`, and `/Volumes/Backup/Users/tester/x` is another folder than the home.
     public static func abbreviatingHome(_ text: String, home: String) -> String {
         var home = home
         while home.count > 1, home.hasSuffix("/") { home.removeLast() }

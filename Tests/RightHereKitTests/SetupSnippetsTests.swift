@@ -10,8 +10,8 @@ private func parsed(_ json: String) throws -> [String: Any] {
 @Suite("SetupSnippets")
 struct SetupSnippetsTests {
     @Test("the MCP snippet is JSON that starts rh mcp, whatever the command is called", arguments: [
-        "rh", "/Users/ann/.local/bin/rh", "/Applications/Right Here.app/Contents/Helpers/rh", "/Users/o\"brien/bin/rh", "/Users/back\\slash/rh",
-        "/Users/jörg/Tools/日本語/rh"
+        "rh", "/opt/tools/ann/bin/rh", "/Applications/Right Here.app/Contents/Helpers/rh", "/opt/tools/o\"brien/bin/rh", "/opt/tools/back\\slash/rh",
+        "/opt/tools/日本語/rh"
     ])
     func theMCPSnippetIsValidJSON(command: String) throws {
         let json = try parsed(SetupSnippets.mcpConfiguration(command: command))
