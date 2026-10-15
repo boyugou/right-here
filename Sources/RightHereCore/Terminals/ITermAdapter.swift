@@ -57,7 +57,7 @@ public struct ITermAdapter: TerminalAdapter {
         set line to item 1 of argv
         set placement to item 2 of argv
         tell application id "com.googlecode.iterm2"
-            if (placement is "split" or placement is "split-right") and (count of windows) > 0 then
+            if placement is "split-right" and (count of windows) > 0 then
                 tell current session of current window
                     set newSession to (split vertically with default profile)
                     tell newSession to write text line

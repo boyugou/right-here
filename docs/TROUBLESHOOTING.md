@@ -89,7 +89,7 @@ the folder, or use Ghostty, which is handed the folder and types nothing.
 
 ## The agent opens in a window and I want a tab or split
 
-Set `terminal_placement = "tab"` or `terminal_placement = "split"` (also `"split-right"`, `"split-down"`) under `[general]` (Ghostty and iTerm).
+Set `terminal_placement = "tab"` or `terminal_placement = "split-right"` (or `"split-down"`) under `[general]` (Ghostty and iTerm).
 
 ## Quick Actions are missing or out of date
 

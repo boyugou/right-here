@@ -463,7 +463,6 @@ struct ConfigStrictnessTests {
     @Test("terminal_placement accepts valid placement names and defaults to a window", arguments: [
         ("window", TerminalPlacement.newWindow),
         ("tab", .newTab),
-        ("split", .splitRight),
         ("split-right", .splitRight),
         ("split-down", .splitDown)
     ])

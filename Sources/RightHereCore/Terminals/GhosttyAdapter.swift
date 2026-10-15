@@ -49,7 +49,7 @@ public struct GhosttyAdapter: TerminalAdapter {
             set cfg to new surface configuration
             set initial working directory of cfg to cwd
             if typed is not "" then set initial input of cfg to typed & linefeed
-            if (placement is "split" or placement is "split-right") and (count of windows) > 0 then
+            if placement is "split-right" and (count of windows) > 0 then
                 set currTab to selected tab of front window
                 split (focused terminal of currTab) direction right with configuration cfg
             else if placement is "split-down" and (count of windows) > 0 then

@@ -104,7 +104,7 @@ struct TerminalAdapterTests {
     @Test func placementNamesRoundTrip() {
         #expect(TerminalPlacement(configName: "tab") == .newTab)
         #expect(TerminalPlacement(configName: "window") == .newWindow)
-        #expect(TerminalPlacement(configName: "split") == .splitRight)
+        #expect(TerminalPlacement(configName: "split") == nil)
         #expect(TerminalPlacement(configName: "split-right") == .splitRight)
         #expect(TerminalPlacement(configName: "split-down") == .splitDown)
         #expect(TerminalPlacement(configName: "floating") == nil)

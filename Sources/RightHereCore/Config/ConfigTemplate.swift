@@ -44,7 +44,7 @@ public enum ConfigTemplate {
         # [menu]
         # items = [\(menu)]
 
-        # Where a terminal session starts: "window" (default), "tab", "split-right" (or "split"), or "split-down" (Ghostty & iTerm).
+        # Where a terminal session starts: "window" (default), "tab", "split-right", or "split-down" (Ghostty & iTerm).
         # To change it, add this line to the [general] table above (it does not belong under the tables below):
         #   terminal_placement = "tab"
 

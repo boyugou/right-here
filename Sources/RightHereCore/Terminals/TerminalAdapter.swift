@@ -25,14 +25,14 @@ public enum TerminalPlacement: String, Sendable, Codable, CaseIterable {
     case splitRight
     case splitDown
 
-    /// How the config file spells it: `window`, `tab`, `split`, `split-right`, `split-down`.
-    public static let configNames = ["window", "tab", "split", "split-right", "split-down"]
+    /// How the config file spells it: `window`, `tab`, `split-right`, `split-down`. One spelling each.
+    public static let configNames = ["window", "tab", "split-right", "split-down"]
 
     public init?(configName: String) {
         switch configName {
         case "window": self = .newWindow
         case "tab": self = .newTab
-        case "split", "split-right": self = .splitRight
+        case "split-right": self = .splitRight
         case "split-down": self = .splitDown
         default: return nil
         }
