@@ -175,20 +175,31 @@ public enum ConfigStore {
         case kept
     }
 
-    /// Writes a fresh config file unless one exists. With `force` an existing file is replaced, after
-    /// a copy of it is saved next to it (`config.toml.bak-<date>`), since it may hold hand-made settings.
+    /// Writes a fresh config file unless one exists. The file is created only if nothing has its name, in one step (`link`
+    /// refuses a name that is taken), so two callers that create it at the same moment (the setup window and `rh setup` in a
+    /// terminal) cannot replace each other's file: one creates, the other finds it kept. `beforeCreate` is for tests, which put
+    /// a file in the way at the last moment.
+    ///
+    /// With `force` an existing file is replaced, after a copy of it is saved next to it (`config.toml.bak-<date>`), since it
+    /// may hold hand-made settings.
     @discardableResult
-    public static func initialize(paths: RHPaths, detected: DetectedEnvironment, force: Bool = false, now: Date = Date()) throws -> InitializeOutcome {
-        let exists = FileManager.default.fileExists(atPath: paths.configFile.path)
-        if exists, !force { return .kept }
+    public static func initialize(paths: RHPaths, detected: DetectedEnvironment, force: Bool = false, now: Date = Date(),
+                                  beforeCreate: ((URL) throws -> Void)? = nil) throws -> InitializeOutcome {
         try FileManager.default.createDirectory(at: paths.configDirectory, withIntermediateDirectories: true)
+        let content = Data(ConfigTemplate.render(detected).utf8)
+        guard force else {
+            switch try AtomicFile.createExclusively(content, at: paths.configFile, beforeLink: beforeCreate) {
+            case .created: return .created
+            case .exists: return .kept
+            }
+        }
         var backup: URL?
-        if exists {
+        if FileManager.default.fileExists(atPath: paths.configFile.path) {
             let copy = backupURL(for: paths.configFile, now: now)
             try FileManager.default.copyItem(at: paths.configFile, to: copy)
             backup = copy
         }
-        try ConfigTemplate.render(detected).write(to: paths.configFile, atomically: true, encoding: .utf8)
+        try AtomicFile.write(content, to: paths.configFile)
         return backup.map { .replaced(backup: $0) } ?? .created
     }
 
