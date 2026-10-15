@@ -1,0 +1,65 @@
+import Foundation
+import Testing
+@testable import RightHereKit
+
+@Suite("Setup window: how a path is written")
+struct PathDisplayTests {
+    private let home = "/Users/tester"
+
+    @Test func aPathUnderTheHomeStartsFromATilde() {
+        #expect(PathDisplay.abbreviatingHome("/Users/tester/.config/right-here/config.toml", home: home) == "~/.config/right-here/config.toml")
+    }
+
+    @Test func theHomeFolderItselfIsATilde() {
+        #expect(PathDisplay.abbreviatingHome("/Users/tester", home: home) == "~")
+    }
+
+    @Test func everyPathInASentenceIsAbbreviated() {
+        let text = "linked at /Users/tester/.local/bin/rh, but /Users/tester/.local/bin is not on PATH"
+        #expect(PathDisplay.abbreviatingHome(text, home: home) == "linked at ~/.local/bin/rh, but ~/.local/bin is not on PATH")
+    }
+
+    @Test func aQuotedOrBracketedPathIsAbbreviatedToo() {
+        #expect(PathDisplay.abbreviatingHome("\"/Users/tester/a\" (`/Users/tester/b`)", home: home) == "\"~/a\" (`~/b`)")
+    }
+
+    @Test func anotherFolderWithTheSameBeginningIsLeftAlone() {
+        #expect(PathDisplay.abbreviatingHome("/Users/testerx/Projects", home: home) == "/Users/testerx/Projects")
+        #expect(PathDisplay.abbreviatingHome("/Users/tester-old/Projects", home: home) == "/Users/tester-old/Projects")
+    }
+
+    @Test func aHomeInsideAnotherPathIsAnotherFolder() {
+        // The window used to replace the home wherever it found it, which rewrote a backup disk's copy of the home.
+        #expect(PathDisplay.abbreviatingHome("/Volumes/Backup/Users/tester/Projects", home: home) == "/Volumes/Backup/Users/tester/Projects")
+    }
+
+    @Test func aTrailingSlashOfTheHomeChangesNothing() {
+        #expect(PathDisplay.abbreviatingHome("/Users/tester/x", home: "/Users/tester/") == "~/x")
+    }
+
+    @Test func aHomeThatIsTheRootAbbreviatesNothing() {
+        #expect(PathDisplay.abbreviatingHome("/usr/bin", home: "/") == "/usr/bin")
+        #expect(PathDisplay.abbreviatingHome("/usr/bin", home: "") == "/usr/bin")
+    }
+
+    @Test func anAccountNameWithLettersBeyondAsciiWorks() {
+        #expect(PathDisplay.abbreviatingHome("/Users/jörg/Projekte", home: "/Users/jörg") == "~/Projekte")
+        #expect(PathDisplay.abbreviatingHome("/Users/jörgen/Projekte", home: "/Users/jörg") == "/Users/jörgen/Projekte")
+    }
+
+    @Test func aHomeWithRegularExpressionCharactersIsTakenLiterally() {
+        #expect(PathDisplay.abbreviatingHome("/Users/a.b+c/x", home: "/Users/a.b+c") == "~/x")
+        #expect(PathDisplay.abbreviatingHome("/Users/aXb+c/x", home: "/Users/a.b+c") == "/Users/aXb+c/x")
+    }
+
+    @Test func aFolderInAListIsKeptInOnePieceLeftToRight() {
+        let shown = PathDisplay.folder("/Users/tester/مستندات/مشروع", home: home)
+        #expect(shown.hasPrefix("\u{2066}") && shown.hasSuffix("\u{2069}"))
+        #expect(shown.dropFirst().dropLast() == "~/مستندات/مشروع")
+    }
+
+    @Test func theMarksAreTheOnlyThingAFolderGains() {
+        let path = "/Volumes/Work/app"
+        #expect(PathDisplay.folder(path, home: home).filter { $0 != "\u{2066}" && $0 != "\u{2069}" } == path)
+    }
+}

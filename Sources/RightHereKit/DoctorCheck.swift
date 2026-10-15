@@ -72,4 +72,10 @@ extension Array where Element == DoctorCheck {
     public func replacing(_ check: DoctorCheck) -> [DoctorCheck] {
         map { $0.id == check.id ? check : $0 }
     }
+
+    /// The checks with `check` in the place of the one that has its id, or at the end when there is none: for a row that
+    /// only some runs of the doctor have, such as the launch probe.
+    public func replacingOrAppending(_ check: DoctorCheck) -> [DoctorCheck] {
+        contains { $0.id == check.id } ? replacing(check) : self + [check]
+    }
 }
