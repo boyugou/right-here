@@ -45,20 +45,24 @@ final class FinderSyncExtension: FIFinderSync {
         super.endObservingDirectory(at: url)
     }
 
+    /// Fills the icon cache and the folder menus before the first right-click. Only values that are safe to share cross to the
+    /// background queue (the facts, the icon cache, the paths); the config cache and the menus belong to the main queue, which gets the
+    /// menu nodes back. Reading `configCache` from the background was a data race with `menu(for:)`.
     private func warmupInBackground() {
         guard !isWarmingUp else { return }
         isWarmingUp = true
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            defer {
-                DispatchQueue.main.async { self?.isWarmingUp = false }
-            }
-            guard let self else { return }
-            let (config, stamp) = self.currentConfigWithStamp()
+        let facts = self.facts
+        let icons = self.icons
+        let paths = self.paths
+        let owner = MainThreadOwner(self)
+        DispatchQueue.global(qos: .userInitiated).async {
+            let stamp = ConfigStore.stamp(paths: paths)
+            let config = ConfigStore.load(paths: paths).config
             var iconsToWarm: [Icon] = []
             for app in config.allApps {
-                if let bundleID = app.installedBundleID(facts: self.facts) {
-                    _ = self.facts.displayName(bundleID: bundleID)
-                    _ = self.facts.bundleVersion(bundleID: bundleID)
+                if let bundleID = app.installedBundleID(facts: facts) {
+                    _ = facts.displayName(bundleID: bundleID)
+                    _ = facts.bundleVersion(bundleID: bundleID)
                     iconsToWarm.append(.app(bundleID))
                 }
             }
@@ -68,14 +72,15 @@ final class FinderSyncExtension: FIFinderSync {
             for ext in config.newFile.templates.map(\.fileExtension) where !ext.isEmpty {
                 iconsToWarm.append(.fileType(ext))
             }
-            self.icons.prewarm(iconsToWarm)
+            icons.prewarm(iconsToWarm)
             let folderContext = HereContext(origin: .container, container: URL(fileURLWithPath: "/tmp"))
-            let nodes = MenuBuilder(config: config, facts: self.facts, localizer: .system).build(for: folderContext)
-            DispatchQueue.main.async { [weak self] in
-                guard let self, !nodes.isEmpty else { return }
+            let nodes = MenuBuilder(config: config, facts: facts, localizer: .system).build(for: folderContext)
+            DispatchQueue.main.async {
+                guard let self = owner.object else { return }
+                self.isWarmingUp = false
+                guard !nodes.isEmpty else { return }
                 for kind in [FinderMenuKind.items, .container, .sidebar] {
-                    let menu = self.makeMenu(nodes, kind: kind)
-                    self.cachedFolderMenus[kind] = (stamp, Date(), menu)
+                    self.cachedFolderMenus[kind] = (stamp, Date(), self.makeMenu(nodes, kind: kind))
                 }
             }
         }
