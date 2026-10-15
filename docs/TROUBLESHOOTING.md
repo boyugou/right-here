@@ -14,6 +14,11 @@ throwaway terminal window.
 - The doctor warns that the extension is registered from more than one place (a build folder next to the installed
   app): `rh install --finder` removes the stale copies. macOS drops an extension that is registered twice.
 - It worked until a macOS update: `rh install --finder` registers it again.
+- You switched the extension on and the menu still does not appear: restart Finder (`killall Finder`; Finder reopens its
+  windows). Whether a newly switched-on extension needs that on every macOS version is not verified on the development Mac.
+- You run Right Here from a disk image or from Downloads: `rh install --finder` registers the extension of the copy it runs
+  from, and that place goes away when the image is ejected or the file is moved. Move Right Here.app to Applications and run
+  `rh install --finder` again (not verified on every macOS version).
 
 ## An entry I expect is missing from the menu
 
@@ -32,6 +37,8 @@ row, and `rh config validate` a warning, when the config leaves the menu empty f
   /usr/bin/log show --last 10m --predicate 'subsystem == "com.boyugou.righthere.FinderExtension"'
   ```
 
+- `rh doctor --probe-extension` runs the whole chain a click uses, through the extension. It restarts the extension and may show
+  a permission prompt.
 - A failed action shows an alert and writes a line to `~/Library/Logs/right-here/rh.log`.
 - Try the action from a terminal with `--dry-run` to see exactly what it would do: `rh run agent.claude --dry-run
   --container ~/code/project`.
@@ -70,16 +77,20 @@ later; that is your shell's startup time, and `rh doctor --probe-launch` reports
 
 ## Running an agent in an isolated git worktree
 
-To launch an agent on an isolated branch without dirtying your current branch or working tree, use:
-`rh run agent.agy --worktree` or `rh run agent.claude --worktree --branch experiment-1`. Right Here prepares a clean
-git worktree under `.right-here/worktrees/`, automatically adds `.right-here` to `.git/info/exclude` so git status remains clean,
-and launches the agent directly in the isolated worktree directory. Manage worktrees via `rh worktree list` and `rh worktree remove`.
+To start an agent on an isolated branch without dirtying your current branch or working tree, use:
+`rh run agent.agy --worktree` or `rh run agent.claude --worktree --branch experiment-1`. Right Here makes a git worktree under
+`.right-here/worktrees/` (on a new branch, or on the one `--branch` names), keeps `.right-here` out of `git status` through
+`.git/info/exclude`, and starts the agent in the folder you named, inside that worktree. `--dry-run` shows the plan, with the
+worktree's path, and makes nothing. A run that fails removes the worktree again when nothing in it changed; a request that is
+refused creates nothing. `rh worktree list` and `rh worktree remove` manage them: remove refuses uncommitted work unless you
+pass `--force`, and it only removes worktrees Right Here made.
 
 ## WezTerm or kitty launch questions
 
-Right Here includes native adapters for WezTerm and kitty without requiring manual template configurations.
-Ensure the application is in `/Applications` or on your `PATH`. WezTerm is invoked via `wezterm start --cwd <folder>`
-and kitty via `kitty --directory <folder>`.
+Right Here includes native adapters for WezTerm and kitty without requiring manual template configurations. It finds each
+by its bundle identifier, wherever it is installed, and starts it through LaunchServices (`open -n -b`), so `rh run` does not
+wait for the window to close. Their own command-line arguments (`start --cwd <folder>` for WezTerm, `--directory <folder>` for
+kitty) carry the folder. Neither has been run on the development Mac: `rh doctor --probe-launch` is how to check yours.
 
 ## Terminal says it will not start a command in a folder
 
@@ -106,6 +117,18 @@ error the overlay hides on this Mac is reported for `config.toml`. A key named l
 api_key) is an error in `config.toml`: `push` refuses it, and a synced config must not hold one.
 A config file that is there but cannot be read (no permission, a folder in its place) is an error that names the file and
 the reason, in `rh config validate`, `rh doctor` and `rh init`; it is never taken for a missing config.
+
+A config with a syntax error does not stop `rh`, and it does not stay quiet about it either: each command prints the error on
+standard error and uses the defaults for the whole file (`Defaults apply until it is fixed`). That includes `rh run`, which
+then acts with the defaults: an action that names no terminal plans the default terminal, not the one you set (a dry run exits
+with status 0). The Finder menu uses the defaults too, and it has no standard error to say so. `rh doctor` has a Config file row that fails
+until the file is fixed, so look there first when the menu is not what you set.
+
+## Sending a bug report
+
+Run `rh doctor --report` and send its output as it is. It names the versions of rh, of Right Here.app and of macOS, the
+processor, every doctor line and the counts of the config check. It holds no text of your config file, and the home folder
+(shown as `~`) and the account name are removed from it. (The doctor lines can name an agent or an app you set up.)
 
 ## `rh config sync` will not pull or push
 

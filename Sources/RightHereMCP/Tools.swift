@@ -154,7 +154,7 @@ enum Tools {
         ToolDefinition(
             name: "right_here_docs",
             title: "Read the documentation",
-            description: "Read built-in documentation: config (every setting), actions (the id grammar), agent-setup (how to configure Right Here for a person) or troubleshooting (the menu does not appear, a click does nothing, permission prompts).",
+            description: "Read a built-in guide by topic: " + Documentation.topicSummaries.map { "\($0.name) (\($0.summary))" }.joined(separator: "; ") + ".",
             inputSchema: schema(["topic": .object([
                 "type": .string("string"), "enum": .array(Documentation.topics.map(JSONValue.string)),
                 "description": .string("The topic to read.")
@@ -301,7 +301,7 @@ enum Tools {
     }
 
     private static func docs(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
-        guard let topic = arguments["topic"]?.stringValue, let text = Documentation.text(for: topic) else {
+        guard let topic = arguments["topic"]?.stringValue, let text = Guides.text(for: topic) else {
             throw ToolError("topic must be one of: " + Documentation.topics.joined(separator: ", "))
         }
         return ToolOutput(text: text, structured: nil)

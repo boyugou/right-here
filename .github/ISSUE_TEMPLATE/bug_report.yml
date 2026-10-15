@@ -17,9 +17,8 @@ body:
   - type: textarea
     id: doctor
     attributes:
-      label: Output of `rh doctor --json`
-      description: Paste it as is. It contains no file contents. Remove anything you do not want to share.
-      render: json
+      label: Output of `rh doctor --report`
+      description: Run `rh doctor --report` and paste its output as it is. It holds no text of your config file, and the home folder and the account name are removed.
     validations:
       required: true
   - type: input

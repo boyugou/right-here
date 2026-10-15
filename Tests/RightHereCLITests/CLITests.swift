@@ -929,6 +929,41 @@ struct CLITests {
         #expect(text.contains("Pfad kopieren"))
     }
 
+    @Test func theQuickStartIsTheFirstTopicAndTheMCPGuideNamesEveryTool() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let listing = try rh.run(["docs"]).standardOutput.split(separator: "\n").map(String.init)
+        #expect(listing.first == "Topics:" && listing.dropFirst().first?.hasPrefix("  start") == true, "\(listing.prefix(3))")
+        let start = try rh.run(["docs", "start"]).standardOutput
+        #expect(start.contains("rh install") && start.contains("rh doctor") && start.contains("rh menu"), Comment(rawValue: start))
+        let mcp = try rh.run(["docs", "mcp"])
+        #expect(mcp.status == 0 && mcp.standardOutput.contains("claude mcp add right-here -- rh mcp"), Comment(rawValue: mcp.standardError))
+        for tool in ["right_here_run", "right_here_docs", "right_here_bookmarks", "right_here_worktree"] {
+            #expect(mcp.standardOutput.contains("`\(tool)`"), "docs mcp does not name \(tool)")
+        }
+        let help = try rh.run(["--help"]).standardOutput
+        #expect(help.contains("rh install") && help.contains("rh doctor") && help.contains("rh docs start"), Comment(rawValue: help))
+    }
+
+    @Test func aDoctorReportHoldsNoHomeFolderNoAccountNameAndNoTextOfTheConfig() throws {
+        // The trial home stands for the person's home: the report must not show it, nor the account name the test runs under.
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let folder = home.appendingPathComponent(".config/right-here")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try "# MARKER-CONFIG-LINE-7731\n[general]\nterminal = \"terminal\"\nmenu = [oops\n".write(to: folder.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
+        let result = try rh.run(["doctor", "--report"])
+        #expect(result.status == 1, "the config row fails, and the report exits as the doctor does")
+        let report = result.standardOutput
+        #expect(report.hasPrefix("# Right Here bug report"), Comment(rawValue: report))
+        #expect(report.contains("- Config check (`rh config validate --strict`): 1 error"), Comment(rawValue: report))
+        #expect(!report.contains("MARKER-CONFIG-LINE-7731"), "the report holds a line of the config file")
+        #expect(!report.contains(home.path), "the trial home is shown as ~")
+        #expect(!report.contains(NSUserName()), "the account name is in the report")
+        #expect(report.contains("- macOS: "), Comment(rawValue: report))
+        let both = try rh.run(["doctor", "--report", "--json"])
+        #expect(both.status == 64 && both.standardError.contains("cannot be combined"), Comment(rawValue: both.standardError))
+    }
+
     @Test func docsServeTheTopics() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         #expect(try rh.run(["docs", "config"]).standardOutput.contains("general.terminal"))

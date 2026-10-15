@@ -12,9 +12,10 @@ struct RH: AsyncParsableCommand {
         rh runs actions: copy a path in the form you need, open a folder in a terminal or editor, \
         start an AI agent there, or create a new file. The Finder menu runs the same actions.
 
-        Start with `rh init`, then `rh menu` to preview the Finder menu and `rh actions` to list \
-        every action. Run one with `rh run <action> [folder]`, for example `rh run copy-path.absolute ~/Projects`. \
-        Everything is also available as JSON (--json) for scripts and agents.
+        Start with `rh init` (it writes the config), then `rh install` (it connects Finder), `rh menu` (it previews the Finder menu) \
+        and `rh doctor` (it checks the setup). `rh docs start` has the steps. `rh actions` lists every action; run one with \
+        `rh run <action> [folder]`, for example `rh run copy-path.absolute ~/Projects`. Everything is also available as JSON \
+        (--json) for scripts and agents.
         """,
         version: AppIdentity.version,
         subcommands: [

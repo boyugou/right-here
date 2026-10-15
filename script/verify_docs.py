@@ -29,7 +29,7 @@ RH = os.environ.get("RH") or str(ROOT / ".build" / "debug" / "rh")
 SOURCES = [
     ROOT / "README.md", ROOT / "CONTRIBUTING.md", ROOT / "SECURITY.md", ROOT / "ROADMAP.md", ROOT / "CHANGELOG.md",
     ROOT / "docs" / "DESIGN.md", ROOT / "docs" / "INDEX.md", ROOT / "docs" / "TROUBLESHOOTING.md",
-    ROOT / "Sources" / "RightHereCore" / "Documentation.swift",
+    ROOT / "Sources" / "RightHereCore" / "Documentation.swift", ROOT / "Sources" / "RightHereMCP" / "MCPGuide.swift",
     *sorted((ROOT / "docs" / "development").glob("*.md")),
     *sorted((ROOT / "plugins").rglob("*.md")),
 ]
