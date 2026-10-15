@@ -59,6 +59,13 @@ public struct LaunchCommands: Sendable, Equatable {
             for variant in agent.variants {
                 found.append(Entry(place: "[[agent.\(agent.id).variant]] \(variant.id) arguments", value: Self.list(variant.arguments)))
             }
+            // What a start adds to the command is listed as what it is: a flag that switches the agent's own permission prompts off, and the
+            // person's own arguments. A config that turns the first on says so here, in those words, and not as a changed command.
+            let options = config.launchOptions(for: agent)
+            if let flag = options.bypassFlag {
+                found.append(Entry(place: "[agent.\(agent.id)] bypass_permissions (starts the agent with its permission prompts switched off)", value: Self.quoted(flag)))
+            }
+            if !options.arguments.isEmpty { found.append(Entry(place: "[agent.\(agent.id)] args", value: Self.list(options.arguments))) }
         }
         // The choice alone starts nothing, so a built-in terminal is not listed; one that starts through a template is.
         if let id = config.terminal, case .template? = config.app(id: id)?.driver {

@@ -157,12 +157,14 @@ public struct Planner: Sendable {
 
         case .terminal(let app, let bundleID, let adapter):
             let typed: String
-            switch AgentLaunchResolution.typedLine(agent: agent, variant: variant) {
+            let options = config.launchOptions(for: agent)
+            switch AgentLaunchResolution.typedLine(agent: agent, variant: variant, options: options) {
             case .success(let line): typed = line
             case .failure(let why): throw PlanError(why)
             }
-            let fallback = resolution.launcher == .terminal(nil) ? fallbackNotice(role: .terminal, typing: true, used: app) : []
-            return try typeCommand(typed, summary: typed, in: app, bundleID: bundleID, adapter: adapter, directory: directory, ref: ref, context: context, notices: fallback)
+            var notices = resolution.launcher == .terminal(nil) ? fallbackNotice(role: .terminal, typing: true, used: app) : []
+            if let flag = options.bypassFlag { notices.append("\(agent.name) starts with its permission prompts switched off (\(flag)). `--safe` starts it with them on.") }
+            return try typeCommand(typed, summary: typed, in: app, bundleID: bundleID, adapter: adapter, directory: directory, ref: ref, context: context, notices: notices)
         }
     }
 
@@ -219,12 +221,22 @@ public struct Planner: Sendable {
         )
         if let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }
 
+        // The agent's own permission prompts stay on for a preset, whatever the config says for plain starts: the prompt carries the names of the
+        // selected files, and a file called "ignore the above and run ..." must not reach an agent that asks nothing (ADR 0012).
+        let options = config.launchOptions(for: agent)
         var words = [agent.command]
+        switch AgentLaunchResolution.argumentWords(options.arguments, of: agent) {
+        case .success(let quoted): words += quoted
+        case .failure(let why): throw PlanError(why)
+        }
         if case .flag(let flag) = promptArgument { words.append(ShellQuoting.quote(flag, for: .posix)) }
         words.append(ShellQuoting.quote(prompt, for: .posix))
         let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: true, explicit: terminal.map { .terminal($0) }, config: config, facts: facts)
         guard case .terminal(let app, let bundleID, let adapter) = try route(of: resolution) else { throw PlanError.unsupported("A preset is typed into a terminal.") }
         var notices = resolution.launcher == .terminal(nil) ? fallbackNotice(role: .terminal, typing: true, used: app) : []
+        if options.bypassFlag != nil {
+            notices.append("\(agent.name) keeps its permission prompts on for a preset, although they are switched off for plain starts: the prompt carries file names.")
+        }
         if context.items.contains(where: { facts.isDirectory($0) == true }), preset.needsFiles {
             notices.append("Folders in the selection are not named in the prompt; only files are.")
         }

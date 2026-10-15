@@ -121,6 +121,18 @@ struct DoctorScenarioTests {
         #expect(said(checks, "finder.extension") == Said(status: .ok, detail: "switched on: /Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex", fix: nil))
     }
 
+    @Test func anAgentThatStartsWithItsPermissionPromptsOffSaysSoInItsRow() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.applications = ["com.mitchellh.ghostty": ghostty]
+        scene.bundleVersions = ["com.mitchellh.ghostty": "1.3.1"]
+        scene.answers = [ProcessResult(status: 0, standardOutput: "claude\ncodex\n"), ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
+        try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\", \"codex\"]\n[agent.claude]\nbypass_permissions = true\n")
+        let checks = await scene.run()
+        // A choice the person made is not a warning, but the row never stays silent about it; the other agent's row is as before.
+        #expect(said(checks, "agent.claude") == Said(status: .ok, detail: "`claude` found; starts with Claude Code Here and its permission prompts switched off (`--dangerously-skip-permissions`)", fix: nil))
+        #expect(said(checks, "agent.codex") == Said(status: .ok, detail: "`codex` found; starts with Codex Here", fix: nil))
+    }
+
     @Test func anAgentThatTheLoginShellDoesNotFindSaysSoAndHowToRemoveIt() async throws {
         var scene = try Scene(); defer { scene.cleanUp() }
         scene.applications = ["com.mitchellh.ghostty": ghostty]

@@ -117,8 +117,8 @@ public enum ConfigSchema {
                            example: "[\"open.terminal\", \"agent.claude\", \"copy-path.absolute\"]")
             ]),
             SchemaNode("copy_path", .table, "The \"Copy Path\" submenu.", children: [
-                SchemaNode("title", .string, "Custom menu title for the action or submenu; by default \"Copy Path\" in the system language.",
-                           example: "\"Copy Path\""),
+                SchemaNode("title", .string, "Custom menu title for the Copy Path entry or submenu (on the entry for the plain path when it is listed on its own); by default \"Copy Path\" in the system language.",
+                           example: "\"Copy Path\"", pattern: displayNamePattern),
                 SchemaNode("styles", .stringArray, "Forms offered, in order.",
                            default: "[\"absolute\", \"tilde\", \"git-relative\", \"name\", \"shell-escaped\", \"ai-mention\"]",
                            allowed: PathStyle.allCases.map(\.rawValue))
@@ -153,11 +153,11 @@ public enum ConfigSchema {
                 SchemaNode("role", .string, "terminal: opens a folder; editor and general: open the selection.",
                            default: "\"general\"", allowed: AppDescriptor.Role.allCases.map(\.rawValue)),
                 SchemaNode("open_args", .stringArray,
-                           "Terminals only: the program and arguments that open a folder, instead of handing the folder to the app. `{dir}`, `{shell}` and `{app}` (the installed .app) are replaced inside each element; the first element must be an absolute path or start with `{app}/`. Never write `{dir}` inside a string a shell will read: give it as an argument of its own.",
-                           example: "[\"{app}/Contents/MacOS/wezterm\", \"start\", \"--cwd\", \"{dir}\"]"),
+                           "Terminals only: the program and arguments that open a folder, instead of handing the folder to the app. `{dir}`, `{shell}` and `{app}` (the installed .app) are replaced inside each element; the first element must be an absolute path or start with `{app}/`. Start the app through `/usr/bin/open -n -b <bundle id> --args ...`: a terminal's own binary keeps running as long as its window is open, and `rh run` (and the MCP server, which stops it after two minutes) would wait for it. Never write `{dir}` inside a string a shell will read: give it as an argument of its own.",
+                           example: "[\"/usr/bin/open\", \"-n\", \"-b\", \"org.alacritty\", \"--args\", \"--working-directory\", \"{dir}\"]"),
                 SchemaNode("run_args", .stringArray,
                            "Terminals only: the program and arguments that start a typed command (an agent) in a folder, which lets a terminal without a built-in adapter start agents. As `open_args`, plus `{command}`, which must appear. Not checked on your terminal by Right Here: try it with `rh run agent.claude@<id>` and `--dry-run` first.",
-                           example: "[\"{app}/Contents/MacOS/wezterm\", \"start\", \"--cwd\", \"{dir}\", \"--\", \"{shell}\", \"-lic\", \"{command}; exec {shell} -l\"]")
+                           example: "[\"/usr/bin/open\", \"-n\", \"-b\", \"org.alacritty\", \"--args\", \"--working-directory\", \"{dir}\", \"-e\", \"{shell}\", \"-lic\", \"{command}; exec {shell} -l\"]")
             ]),
             SchemaNode("agent", .tableMap, "AI agents, one table per agent: `[agent.claude]`. Built-in agents are listed by `rh agents`. Any command you want typed into a terminal in the folder works the same way, for example `[agent.lazygit]` with `name = \"lazygit\"` and `command = \"lazygit\"`.",
                        pattern: identifierPattern, children: [

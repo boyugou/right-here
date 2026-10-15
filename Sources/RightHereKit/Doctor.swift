@@ -217,7 +217,12 @@ public struct Doctor: Sendable {
                 checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: action.unavailableReason.map(LocalizedMessage.doctorVerbatim),
                                           fix: .doctorFixAgentLauncher(Quoted.linkLauncher, Quoted.desktop)))
             } else {
-                checks.append(DoctorCheck(.agent(id), title: agent.name, status: .ok, detail: .doctorAgentOk(command, action.title)))
+                // A choice the person made, so not a warning; but never silent: the row says the agent's own permission prompts are off.
+                if let flag = config.launchOptions(for: agent).bypassFlag {
+                    checks.append(DoctorCheck(.agent(id), title: agent.name, status: .ok, detail: .doctorAgentBypass(command, action.title, flag)))
+                } else {
+                    checks.append(DoctorCheck(.agent(id), title: agent.name, status: .ok, detail: .doctorAgentOk(command, action.title)))
+                }
             }
         }
         return checks

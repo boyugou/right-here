@@ -167,24 +167,30 @@ public struct Config: Sendable, Equatable {
             if let promptArgument = settings.promptArgument { agent.promptArgument = promptArgument }
             if let bypassArg = settings.bypassPermissionArgument { agent.bypassPermissionArgument = bypassArg }
         }
-
-        let shouldBypass = settings?.bypassPermissions ?? bypassPermissions
-        if shouldBypass, let flag = agent.bypassPermissionArgument, !flag.isEmpty {
-            let flagWords = flag.split(separator: " ").map(String.init)
-            let cmdWords = agent.command.split(separator: " ").map(String.init)
-            let alreadyPresent = flagWords.allSatisfy { cmdWords.contains($0) }
-            if !alreadyPresent {
-                agent.command += " \(flag)"
-            }
-        }
-
-        if let extraArgs = settings?.args, !extraArgs.isEmpty {
-            for arg in extraArgs {
-                agent.command += " \(ShellQuoting.quote(arg, for: .posix))"
-            }
-        }
-
         return agent
+    }
+
+    /// What starting an agent adds to what its `command` and a variant say. It is kept apart from the command on purpose: the command is what
+    /// the config says the agent is, and these two are what the person asked for this machine: the flag that switches the agent's own
+    /// permission prompts off, and `args`.
+    public struct AgentLaunchOptions: Sendable, Equatable {
+        /// Typed after the command when the agent's permission prompts are switched off (`general.bypass_permissions`, `[agent.<id>]
+        /// bypass_permissions`); `nil` when they are on, when the agent has no such flag, or when the command already carries it.
+        public var bypassFlag: String?
+        /// The person's `[agent.<id>] args`, one argument each.
+        public var arguments: [String]
+
+        public static let none = AgentLaunchOptions(bypassFlag: nil, arguments: [])
+    }
+
+    public func launchOptions(for agent: AgentDescriptor) -> AgentLaunchOptions {
+        let settings = agents[agent.id]
+        var flag: String?
+        if settings?.bypassPermissions ?? bypassPermissions, let configured = agent.bypassPermissionArgument, !configured.isEmpty {
+            let commandWords = Set(agent.command.split(separator: " "))
+            flag = configured.split(separator: " ").allSatisfy(commandWords.contains) ? nil : configured
+        }
+        return AgentLaunchOptions(bypassFlag: flag, arguments: settings?.args ?? [])
     }
 
     public func preset(id: String) -> AgentPreset? {
