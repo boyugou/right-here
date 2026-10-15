@@ -703,9 +703,24 @@ struct PlannerNoticeTests {
         // Names in a notice are quoted like every other value in a plan.
         #expect(file.notices.contains { $0.contains("\"main.swift\" is a file") && $0.contains("\"/p/src\"") })
         let several = try planner.plan(.agent(id: "claude", variant: nil, launcher: .terminal(nil)), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p"), URL(fileURLWithPath: "/q")]))
-        #expect(several.notices.contains { $0.contains("Several items") })
+        #expect(several.notices.contains { $0.contains("Several items") && $0.contains("the folder that holds the first one, \"p\"") }, Comment(rawValue: "\(several.notices)"))
         let folder = try planner.plan(.openTerminal(nil), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p")]))
         #expect(folder.notices.isEmpty, "a single folder is exactly what was asked for")
+    }
+
+    @Test func aTildePathOutsideTheHomeFolderSaysItCopiedTheAbsolutePath() throws {
+        let inside = try Planner(facts: machine()).plan(.copyPath(.tilde), context: selection("/Users/tester/code/app/a.txt"))
+        #expect(inside.notices.isEmpty)
+        var outside = machine(files: ["/tmp/loose.txt"], directories: ["/tmp"])
+        outside.homeDirectory = URL(fileURLWithPath: "/Users/tester")
+        let plan = try Planner(facts: outside).plan(.copyPath(.tilde), context: selection("/tmp/loose.txt"))
+        #expect(plan.steps == [.copyToPasteboard("/tmp/loose.txt")])
+        #expect(plan.notices == ["Not inside your home folder, so the absolute path is copied."])
+    }
+
+    @Test func aFileGivenAsTheContainerSaysItsFolderIsUsed() throws {
+        let plan = try Planner(facts: machine()).plan(.openTerminal(nil), context: HereContext(origin: .cli, container: URL(fileURLWithPath: "/Users/tester/code/app/a.txt")))
+        #expect(plan.notices.contains { $0.contains("\"a.txt\" is a file, so its folder is used") }, Comment(rawValue: "\(plan.notices)"))
     }
 
     @Test func gitRelativeOutsideARepositorySaysItCopiedTheAbsolutePath() throws {

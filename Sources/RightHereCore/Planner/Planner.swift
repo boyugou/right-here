@@ -63,6 +63,10 @@ public struct Planner: Sendable {
         if (style == .gitRelative || style == .aiMention), targets.contains(where: { facts.gitRoot(containing: $0) == nil }) {
             notices.append("Not inside a git repository, so the absolute path is copied.")
         }
+        // Outside the home folder a `~` form is not possible, and the absolute path is what is copied: say so, as `git-relative` does.
+        if style == .tilde, targets.contains(where: { !isInsideHome($0) }) {
+            notices.append("Not inside your home folder, so the absolute path is copied.")
+        }
         return LaunchPlan(action: ref.id, summary: "Copy \(noun) (\(style.rawValue))", steps: [.copyToPasteboard(text)], notices: notices)
     }
 
@@ -83,10 +87,25 @@ public struct Planner: Sendable {
     /// Said when the folder is not what was selected: a terminal is only ever handed a folder, so a file stands for
     /// the folder that holds it, and with several items the first one decides.
     private func folderNotice(for context: HereContext, directory: URL) -> [String] {
-        guard let first = context.items.first else { return [] }
-        if context.items.count > 1 { return ["Several items are selected; the folder of the first one is used: \(directory.path.jsonQuoted)."] }
+        guard let first = context.items.first else {
+            if let container = context.container, facts.isDirectory(container) == false {
+                return ["\(container.lastPathComponent.jsonQuoted) is a file, so its folder is used: \(directory.path.jsonQuoted)."]
+            }
+            return []
+        }
+        // With several items the folder is the one that holds the first, which for a folder is its parent and not the folder itself.
+        if context.items.count > 1 {
+            return ["Several items are selected; the folder that holds the first one, \(first.lastPathComponent.jsonQuoted), is used: \(directory.path.jsonQuoted)."]
+        }
         if facts.isDirectory(first) == false { return ["\(first.lastPathComponent.jsonQuoted) is a file, so its folder is used: \(directory.path.jsonQuoted)."] }
         return []
+    }
+
+    /// Whether a path is the home folder or inside it, as `~` would be written for it.
+    private func isInsideHome(_ url: URL) -> Bool {
+        let home = facts.onDiskPath(facts.homeDirectory)
+        let path = facts.onDiskPath(url)
+        return path == home || path.hasPrefix(home == "/" ? "/" : home + "/")
     }
 
     // MARK: Open with an app
