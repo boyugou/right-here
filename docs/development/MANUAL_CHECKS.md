@@ -97,3 +97,7 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    `.right-here/worktrees`) have a Remove… button, which asks first and never forces: a worktree with uncommitted work stays,
    and the window shows what git said. The branch is kept. The main working copy and the worktrees you made by hand have no button.
 9. Folders: Unpin and Clear Recent Folders change `state.toml`; `rh pins` and `rh recents` show the same lists afterwards.
+10. In Arabic or Hebrew, with a pinned folder whose names are right to left (for example a folder called مستندات): the Folders and
+    Worktrees rows draw the names in reverse order in the preview (`script/preview_setup.sh --demo --tab folders ar`), and the
+    left-to-right marks that are added did not change that. Look at the real window: if the names read in order there, the limit
+    is the preview's; if not, the path rows need another way to be drawn, and this check says so in the decision record.
