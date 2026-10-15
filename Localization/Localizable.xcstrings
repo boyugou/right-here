@@ -2048,187 +2048,187 @@
       }
     },
     "app.aiPromptBody": {
-      "comment": "Text under the heading app.aiPromptTitle, next to the button that copies the prompt. 'config file' as in app.checkConfig.",
+      "comment": "Text under the heading app.aiPromptTitle, next to the button that copies the prompt.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ينسخ موجِّهاً يطلب من مساعدك تشغيل الفحوصات وتكييف ملف الإعدادات مع طريقة عملك."
+            "value": "ينسخ موجِّهاً يجعل مساعدك يسأل عمّا تستخدمه، ثم يُعِدّ Right Here باستخدام `rh setup`."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "একটি প্রম্পট কপি করে, যা আপনার সহকারীকে চেকগুলো চালাতে এবং আপনার কাজের ধরন অনুযায়ী কনফিগারেশন ফাইল মানিয়ে নিতে বলে."
+            "value": "একটি প্রম্পট কপি করে, যাতে আপনার AI সহকারী জিজ্ঞেস করে আপনি কী ব্যবহার করেন এবং তারপর `rh setup` দিয়ে Right Here সেটআপ করে।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Kopiert einen Prompt, der Ihren Assistenten bittet, die Prüfungen auszuführen und die Konfigurationsdatei an Ihre Arbeitsweise anzupassen."
+            "value": "Kopiert einen Prompt, mit dem Ihr Assistent fragt, was Sie verwenden, und Right Here dann mit `rh setup` einrichtet."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Αντιγράφει μια προτροπή που ζητά από τον βοηθό σας να εκτελέσει τους ελέγχους και να προσαρμόσει το αρχείο ρυθμίσεων στον τρόπο που εργάζεστε."
+            "value": "Αντιγράφει μια προτροπή που κάνει τον βοηθό σας να ρωτήσει τι χρησιμοποιείτε και μετά να ρυθμίσει το Right Here με `rh setup`."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copies a prompt that asks your assistant to run the checks and tailor the config file to how you work."
+            "value": "Copies a prompt that has your assistant ask what you use and then set Right Here up with `rh setup`."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copia un prompt que pide a su asistente que ejecute las comprobaciones y ajuste el archivo de configuración a su forma de trabajar."
+            "value": "Copia un prompt que hace que su asistente le pregunte qué usa y después configure Right Here con `rh setup`."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "یک پرامپت را کپی می‌کند که از دستیار شما می‌خواهد بررسی‌ها را اجرا کند و فایل پیکربندی را مطابق روش کار شما تنظیم کند."
+            "value": "یک پرامپت را کپی می‌کند که باعث می‌شود دستیار شما بپرسد از چه چیزهایی استفاده می‌کنید و سپس Right Here را با `rh setup` راه‌اندازی کند."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copie une invite qui demande à votre assistant d’exécuter les vérifications et d’adapter le fichier de configuration à votre façon de travailler."
+            "value": "Copie une invite qui amène votre assistant à demander ce que vous utilisez, puis à configurer Right Here avec `rh setup`."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "מעתיק הנחיה שמבקשת מהעוזר שלכם להריץ את הבדיקות ולהתאים את קובץ הגדרות לאופן שבו אתם עובדים."
+            "value": "מעתיק הנחיה שגורמת לעוזר שלכם לשאול במה אתם משתמשים, ואז להגדיר את Right Here באמצעות `rh setup`."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "एक ऐसा प्रॉम्प्ट कॉपी करता है जो आपके असिस्टेंट से जाँच चलाने और कॉन्फ़िगरेशन फ़ाइल को आपके काम करने के तरीके के अनुसार ढालने के लिए कहता है।"
+            "value": "एक ऐसा प्रॉम्प्ट कॉपी करता है जिससे आपका असिस्टेंट पूछे कि आप क्या इस्तेमाल करते हैं, और फिर `rh setup` से Right Here सेट अप कर दे।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Menyalin prompt yang meminta asisten Anda menjalankan pemeriksaan dan menyesuaikan berkas konfigurasi dengan cara Anda bekerja."
+            "value": "Menyalin prompt yang membuat asisten Anda menanyakan apa yang Anda gunakan, lalu menyiapkan Right Here dengan `rh setup`."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copia un prompt che chiede al tuo assistente di eseguire i controlli e di adattare il file di configurazione al tuo modo di lavorare."
+            "value": "Copia un prompt che chiede al tuo assistente di domandarti cosa usi e poi di configurare Right Here con `rh setup`."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AIアシスタントに、確認を実行して設定ファイルを作業の進め方に合わせて調整するよう頼むプロンプトをコピーします。"
+            "value": "AIアシスタントに、何を使っているかを尋ねてから `rh setup` で Right Here をセットアップするよう頼むプロンプトをコピーします。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI 어시스턴트에게 확인 항목을 실행하고 설정 파일을 사용 방식에 맞게 조정하도록 요청하는 프롬프트를 복사합니다."
+            "value": "AI 어시스턴트가 사용자에게 무엇을 쓰는지 묻고, `rh setup` 명령으로 Right Here를 설정하도록 요청하는 프롬프트를 복사합니다."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "तुमच्या असिस्टंटला तपासण्या चालवण्यास आणि कॉन्फिगरेशन फाइल तुमच्या कामाच्या पद्धतीनुसार जुळवण्यास सांगणारा प्रॉम्प्ट कॉपी करतो."
+            "value": "तुमच्या असिस्टंटला तुम्ही काय वापरता ते विचारण्यास आणि नंतर `rh setup` वापरून Right Here सेटअप करण्यास सांगणारा प्रॉम्प्ट कॉपी करतो."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Menyalin gesaan yang meminta pembantu anda menjalankan semakan dan menyesuaikan fail konfigurasi mengikut cara anda bekerja."
+            "value": "Menyalin gesaan yang meminta pembantu anda bertanya apa yang anda gunakan dan kemudian menyediakan Right Here dengan `rh setup`."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Kopieert een prompt waarmee je assistent de controles uitvoert en het configuratiebestand afstemt op de manier waarop je werkt."
+            "value": "Kopieert een prompt waarmee je assistent eerst vraagt wat je gebruikt en Right Here daarna met `rh setup` instelt."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Kopiuje prompt, który prosi asystenta o uruchomienie kontroli i dostosowanie pliku konfiguracyjnego do sposobu pracy."
+            "value": "Kopiuje prompt, który każe asystentowi zapytać, czego używasz, a potem skonfigurować Right Here za pomocą polecenia `rh setup`."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copia um prompt que pede ao seu assistente para executar as verificações e ajustar o arquivo de configuração ao seu modo de trabalho."
+            "value": "Copia um prompt que faz o seu assistente perguntar o que você usa e depois configurar o Right Here com `rh setup`."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copiază un prompt care îi cere asistentului să ruleze verificările și să adapteze fișierul de configurare la modul de lucru."
+            "value": "Copiază un prompt care îi cere asistentului să vă întrebe ce folosiți și apoi să configureze Right Here cu `rh setup`."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Копирует промпт с просьбой к ассистенту выполнить проверки и подстроить файл конфигурации под ваш стиль работы."
+            "value": "Копирует промпт с просьбой к ассистенту спросить, что вы используете, а затем настроить Right Here командой `rh setup`."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "உங்கள் உதவியாளரிடம் சோதனைகளை இயக்கவும், உள்ளமைவுக் கோப்பை நீங்கள் பணிபுரியும் விதத்திற்கு ஏற்ப மாற்றவும் கேட்கும் ப்ராம்ப்டை நகலெடுக்கிறது."
+            "value": "நீங்கள் எதைப் பயன்படுத்துகிறீர்கள் என்று உங்களிடம் கேட்டு, பின்னர் `rh setup` மூலம் Right Here-ஐ அமைக்கும்படி உங்கள் உதவியாளரிடம் கேட்கும் ப்ராம்ப்டை நகலெடுக்கிறது."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "మీ సహాయకుడిని తనిఖీలను రన్ చేయమని, కాన్ఫిగరేషన్ ఫైల్ను మీరు పనిచేసే విధానానికి అనుగుణంగా మార్చమని అడిగే ప్రాంప్ట్ను కాపీ చేస్తుంది."
+            "value": "మీ సహాయకుడిని మీరు ఏమి ఉపయోగిస్తారో మిమ్మల్ని అడగమని, ఆపై `rh setup` తో Right Here ను సెటప్ చేయమని అడిగే ప్రాంప్ట్ను కాపీ చేస్తుంది."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "คัดลอกพรอมต์ที่ขอให้ผู้ช่วยของคุณเรียกใช้การตรวจสอบ และปรับไฟล์ตั้งค่าให้เข้ากับวิธีที่คุณทำงาน."
+            "value": "คัดลอกพรอมต์ที่ขอให้ผู้ช่วยของคุณถามว่าคุณใช้อะไรบ้าง แล้วตั้งค่า Right Here ด้วย `rh setup`."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Asistanınızdan denetimleri çalıştırmasını ve yapılandırma dosyasını çalışma biçiminize uyacak şekilde düzenlemesini isteyen bir istemi kopyalar."
+            "value": "Asistanınızdan ne kullandığınızı sormasını ve ardından `rh setup` ile Right Here’ı kurmasını isteyen bir istemi kopyalar."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Копіює промпт, який просить вашого асистента виконати перевірки та налаштувати файл конфігурації відповідно до вашого способу роботи."
+            "value": "Копіює промпт, який просить вашого асистента запитати, що ви використовуєте, а потім налаштувати Right Here командою `rh setup`."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ایک پرامپٹ کاپی کرتا ہے جو آپ کے اسسٹنٹ سے کہتا ہے کہ چیکس چلائے اور کنفیگ فائل کو آپ کے کام کرنے کے طریقے کے مطابق بنائے۔"
+            "value": "ایک پرامپٹ کاپی کرتا ہے جو آپ کے اسسٹنٹ سے کہتا ہے کہ آپ سے پوچھے کہ آپ کیا استعمال کرتے ہیں، پھر `rh setup` سے Right Here سیٹ اپ کرے۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Sao chép một lời nhắc yêu cầu trợ lý chạy các kiểm tra và điều chỉnh tệp cấu hình theo cách bạn làm việc."
+            "value": "Sao chép một lời nhắc yêu cầu trợ lý hỏi bạn đang dùng những gì, rồi thiết lập Right Here bằng `rh setup`."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "拷贝一段提示词，请助手运行检查，并根据你的工作方式调整配置文件。"
+            "value": "拷贝一段提示词，请助手询问你使用哪些工具，然后用 `rh setup` 设置 Right Here。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "拷貝一段提示詞，請助理執行檢查，並依你的工作方式調整設定檔。"
+            "value": "拷貝一段提示詞，請助理詢問你使用哪些工具，然後用 `rh setup` 設定 Right Here。"
           }
         }
       }
@@ -13765,6 +13765,2610 @@
         }
       }
     },
+    "app.settingUp": {
+      "comment": "Shown with a spinner while Right Here sets itself up.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "جارٍ الإعداد…"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "সেটআপ হচ্ছে…"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Wird eingerichtet…"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Γίνεται ρύθμιση…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setting up…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurando…"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "در حال راه‌اندازی…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configuration en cours…"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "מגדיר…"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सेट अप हो रहा है…"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menyiapkan…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurazione in corso…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "セットアップ中…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "설정 중…"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सेटअप करत आहे…"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sedang menyediakan…"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bezig met instellen…"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Konfigurowanie…"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurando…"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Se configurează…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Настройка…"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "அமைக்கிறது…"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సెటప్ అవుతోంది…"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "กำลังตั้งค่า…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kuruluyor…"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Налаштовується…"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "سیٹ اپ کیا جا رہا ہے…"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đang thiết lập…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "正在设置…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "正在設定…"
+          }
+        }
+      }
+    },
+    "app.setupAgents": {
+      "comment": "Label of the list of command-line AI coding agents (Claude Code, Codex, ...) in the first-run card.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "وكلاء AI"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI এজেন্ট"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "KI-Agenten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Πράκτορες AI"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI agents"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agentes de IA"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "عامل‌های AI"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agents AI"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "סוכני AI"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI एजेंट"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agen AI"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agenti IA"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AIエージェント"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI 에이전트"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI एजंट"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ejen AI"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI-agenten"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agenci AI"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agentes de AI"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agenți AI"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI-агенты"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI முகவர்கள்"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI ఏజెంట్లు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เอเจนต์ AI"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI ajanları"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI-агенти"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏AI ایجنٹس"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tác tử AI"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI 智能体"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "AI 智慧代理"
+          }
+        }
+      }
+    },
+    "app.setupAgentsHint": {
+      "comment": "Text under app.setupAgents: the checkboxes of the agents that were found are already ticked.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "الوكلاء الذين يعثر عليهم Right Here على هذا Mac مُحدَّدون."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here এই Mac-এ যে এজেন্টগুলো খুঁজে পায়, সেগুলোতে টিক দেওয়া থাকে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Von Right Here auf diesem Mac gefundene Agenten sind angekreuzt."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Οι πράκτορες που βρίσκει το Right Here σε αυτό το Mac είναι επιλεγμένοι."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agents that Right Here finds on this Mac are checked."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Los agentes que Right Here encuentra en este Mac están marcados."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "عامل‌هایی که Right Here در این مک پیدا می‌کند، از پیش علامت‌زده شده‌اند."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Les agents que Right Here trouve sur ce Mac sont déjà cochés."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "הסוכנים ש-Right Here מוצאת ב-Mac הזה מסומנים מראש."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here इस Mac पर जो एजेंट ढूँढता है, वे पहले से चुने हुए हैं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agen yang Right Here temukan di Mac ini sudah dicentang."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Gli agenti trovati da Right Here su questo Mac sono già selezionati."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here がこの Mac で見つけたエージェントには、あらかじめチェックが入っています。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here가 이 Mac에서 찾은 에이전트는 이미 체크되어 있습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here ला या Mac वर सापडलेले एजंट आधीच टिक केलेले असतात."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ejen yang ditemui oleh Right Here pada Mac ini sudah dipilih."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agenten die Right Here op deze Mac vindt, staan al aangevinkt."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agenci znalezieni przez Right Here na tym Macu są już zaznaczeni."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Os agentes encontrados pelo Right Here neste Mac já estão marcados."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agenții găsiți de Right Here pe acest Mac sunt deja bifați."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Агенты, которые Right Here нашёл на вашем Mac, уже отмечены."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here இந்த Mac-இல் கண்டறியும் முகவர்கள் தேர்ந்தெடுக்கப்பட்டிருக்கும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here ఈ Mac లో కనుగొనే ఏజెంట్లు ఎంచుకోబడి ఉంటాయి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เอเจนต์ที่ Right Here พบบน Mac เครื่องนี้ถูกเลือกไว้แล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here’ın bu Mac üzerinde bulduğu ajanlar işaretlenir."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Агенти, які Right Here знаходить на цьому Mac, вибрані."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اس Mac پر Right Here کو جو AI ایجنٹس ملیں، وہ پہلے سے منتخب ہیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Các tác tử AI mà Right Here tìm thấy trên Mac này sẽ được chọn sẵn."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here 在这台 Mac 上找到的 AI 智能体已默认勾选。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here 在這台 Mac 上找到的 AI 智慧代理已預先勾選。"
+          }
+        }
+      }
+    },
+    "app.setupBody": {
+      "comment": "Text under app.setupTitle. 'config file' is translated as in app.checkConfig and app.openConfig.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اختر ما تستخدمه. يُنشئ Right Here ملف الإعداد بناءً على اختياراتك ويربط Finder. يمكنك تغيير اختياراتك لاحقًا بتعديل ملف الإعداد."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "আপনি যা ব্যবহার করেন তা বেছে নিন। সেই পছন্দ থেকে Right Here আপনার কনফিগারেশন ফাইল তৈরি করে এবং Finder-এর সঙ্গে সংযুক্ত করে। কনফিগারেশন ফাইল সম্পাদনা করে পরে আপনি আপনার পছন্দ বদলাতে পারবেন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Wähle aus, was du verwendest. Right Here erstellt daraus deine Konfigurationsdatei und verbindet sich mit dem Finder. Du kannst deine Auswahl später ändern, indem du die Konfigurationsdatei bearbeitest."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Επιλέξτε όσα χρησιμοποιείτε. Το Right Here δημιουργεί από αυτά το αρχείο ρυθμίσεων και συνδέει το Finder. Μπορείτε να αλλάξετε τις επιλογές σας αργότερα, επεξεργαζόμενοι το αρχείο ρυθμίσεων."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose what you use. Right Here writes your config file from it and connects Finder. You can change your choices later by editing the config file."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Elige lo que usas. Right Here crea tu archivo de configuración con esas opciones y conecta el Finder. Puedes cambiar tus opciones más adelante editando el archivo de configuración."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ابزارهایی را که از آن‌ها استفاده می‌کنید انتخاب کنید. Right Here فایل پیکربندی را بر اساس آن می‌نویسد و به Finder وصل می‌شود. بعداً می‌توانید با ویرایش فایل پیکربندی، انتخاب‌هایتان را تغییر دهید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Choisissez ce que vous utilisez. Right Here crée votre fichier de configuration à partir de ces choix et se connecte au Finder. Vous pourrez changer vos choix plus tard en modifiant le fichier de configuration."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "בחרו מה אתם משתמשים בו. Right Here כותבת מהבחירות האלה את קובץ ההגדרות שלכם ומתחברת ל-Finder. תוכלו לשנות את הבחירות שלכם מאוחר יותר בעריכת קובץ ההגדרות."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "आप जो इस्तेमाल करते हैं, वह चुनें। Right Here उन चुनावों से कॉन्फ़िगरेशन फ़ाइल बनाता है और Finder से जुड़ जाता है। बाद में कॉन्फ़िगरेशन फ़ाइल संपादित करके आप अपने चुनाव बदल सकते हैं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pilih yang Anda gunakan. Right Here membuat berkas konfigurasi dari pilihan Anda dan terhubung ke Finder. Nanti Anda dapat mengubah pilihan dengan mengedit berkas konfigurasi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Scegli ciò che usi. Right Here crea con queste scelte il file di configurazione e collega il Finder. Puoi cambiare le scelte in seguito modificando il file di configurazione."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "使うものを選んでください。Right Here は選んだ内容で設定ファイルを作成し、Finder と連携します。設定ファイルを編集すれば、あとから選択を変えられます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "사용하는 항목을 고르세요. Right Here가 선택한 내용으로 설정 파일을 만들고 Finder에 연결합니다. 나중에 설정 파일을 편집해 선택을 바꿀 수 있습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "तुम्ही वापरता ते निवडा. तुमच्या निवडींवरून Right Here कॉन्फिगरेशन फाइल तयार करतो आणि Finder ला जोडतो. नंतर कॉन्फिगरेशन फाइल संपादित करून तुम्ही तुमची निवड बदलू शकता."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pilih apa yang anda gunakan. Right Here mencipta fail konfigurasi berdasarkan pilihan anda dan menyambungkan Finder. Anda boleh menukar pilihan anda kemudian dengan menyunting fail konfigurasi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kies wat je gebruikt. Right Here maakt daarmee je configuratiebestand en koppelt de app aan Finder. Je kunt je keuzes later wijzigen door het configuratiebestand te bewerken."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Wybierz, czego używasz. Right Here zapisze na tej podstawie plik konfiguracji i włączy integrację z Finderem. Swoje wybory możesz później zmienić, edytując plik konfiguracji."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Escolha o que você usa. O Right Here cria o arquivo de configuração com base nisso e ativa a integração com o Finder. Você pode alterar suas escolhas depois, editando o arquivo de configuração."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Alegeți ce folosiți. Right Here creează fișierul de configurare pe baza acestor alegeri și activează integrarea cu Finder. Puteți schimba alegerile mai târziu, editând fișierul de configurare."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Выберите, чем вы пользуетесь. Right Here создаст файл конфигурации на основе вашего выбора и включит интеграцию с Finder. Изменить выбор можно позже, отредактировав файл конфигурации."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "நீங்கள் பயன்படுத்துவதைத் தேர்ந்தெடுக்கவும். அதிலிருந்து Right Here உங்கள் உள்ளமைவுக் கோப்பை எழுதி, Finder-உடன் இணைக்கும். பின்னர் உள்ளமைவுக் கோப்பைத் திருத்துவதன் மூலம் உங்கள் தேர்வுகளை மாற்றலாம்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "మీరు ఉపయోగించేవి ఎంచుకోండి. దాని ఆధారంగా Right Here మీ కాన్ఫిగరేషన్ ఫైల్‌ను రాసి, Finder ను కనెక్ట్ చేస్తుంది. కాన్ఫిగరేషన్ ఫైల్‌ను ఎడిట్ చేయడం ద్వారా తర్వాత మీ ఎంపికలను మార్చుకోవచ్చు."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เลือกสิ่งที่คุณใช้ Right Here จะสร้างไฟล์ตั้งค่าจากตัวเลือกเหล่านั้นและเชื่อมต่อกับ Finder คุณเปลี่ยนตัวเลือกภายหลังได้โดยแก้ไขไฟล์ตั้งค่า."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kullandıklarınızı seçin. Right Here, yapılandırma dosyanızı bu seçimlere göre oluşturur ve Finder ile bağlantı kurar. Seçimlerinizi daha sonra yapılandırma dosyasını düzenleyerek değiştirebilirsiniz."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Оберіть те, чим користуєтеся. Right Here створить файл конфігурації на основі вибору і підключить Finder. Згодом можна змінити вибір, відредагувавши файл конфігурації."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "آپ جو استعمال کرتے ہیں، وہ منتخب کریں۔ Right Here اسی کے مطابق آپ کی کنفیگریشن فائل بناتا ہے اور Finder سے جوڑ دیتا ہے۔ بعد میں کنفیگریشن فائل میں ترمیم کر کے آپ اپنے انتخاب بدل سکتے ہیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Chọn những gì bạn dùng. Right Here sẽ tạo tệp cấu hình từ các lựa chọn này và kết nối với Finder. Sau này, bạn có thể thay đổi lựa chọn bằng cách chỉnh sửa tệp cấu hình."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "请选择你使用的工具。Right Here 会据此生成配置文件，并连接访达。之后你可以编辑配置文件来更改选择。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "請選擇你使用的工具。Right Here 會據此產生設定檔，並連接 Finder。之後你可以編輯設定檔來變更選擇。"
+          }
+        }
+      }
+    },
+    "app.setupButton": {
+      "comment": "Button of the first-run card that sets Right Here up with the choices made above. A verb (imperative), short.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "إعداد"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "সেটআপ করুন"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Einrichten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ρύθμιση"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Up"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurar"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "راه‌اندازی کردن"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurer"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "הגדר"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सेट अप करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Siapkan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configura"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "セットアップ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "설정하기"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सेटअप करा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sediakan"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Stel in"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Skonfiguruj"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurar"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurați"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Настроить"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "அமை"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సెటప్ చేయండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ตั้งค่า"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kur"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Налаштувати"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "سیٹ اپ کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thiết lập"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "设置"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "設定"
+          }
+        }
+      }
+    },
+    "app.setupCommandLink": {
+      "comment": "Name of an item in the list under app.setupDoneTitle: the link that makes the command `rh` available in the terminal.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "أداة سطر الأوامر `rh`"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "কমান্ড-লাইন টুল `rh`"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Befehlszeilenwerkzeug `rh`"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Εργαλείο γραμμής εντολών `rh`"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Command-line tool `rh`"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Herramienta de línea de comandos `rh`"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ابزار خط فرمان `rh`"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Outil de ligne de commande `rh`"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "כלי שורת הפקודה `rh`"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "कमांड-लाइन टूल `rh`"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Alat baris perintah `rh`"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Strumento da riga di comando `rh`"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "コマンドラインツール `rh`"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "명령줄 도구 `rh`"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "कमांड-लाइन टूल `rh`"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Alat baris arahan `rh`"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Opdrachtregelprogramma `rh`"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Narzędzie wiersza poleceń `rh`"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ferramenta de linha de comando `rh`"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Instrument de linie de comandă `rh`"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Инструмент командной строки `rh`"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கட்டளை வரி கருவி `rh`"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "కమాండ్-లైన్ టూల్ `rh`"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เครื่องมือบรรทัดคำสั่ง `rh`"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Komut satırı aracı `rh`"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Інструмент командного рядка `rh`"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "کمانڈ لائن ٹول `rh`"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Công cụ dòng lệnh `rh`"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "命令行工具 `rh`"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "指令列工具 `rh`"
+          }
+        }
+      }
+    },
+    "app.setupCreated": {
+      "comment": "Outcome beside an item in the list under app.setupDoneTitle: it did not exist and was made. One word or short phrase.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تم الإنشاء"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "তৈরি হয়েছে"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Erstellt"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δημιουργήθηκε"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Created"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Creado"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ایجاد شد"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Créé"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "נוצר"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "बनाया गया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dibuat"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Creato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "作成済み"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "생성됨"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "तयार केले"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dicipta"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aangemaakt"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Utworzono"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Criado"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Creat"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Создано"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "உருவாக்கப்பட்டது"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సృష్టించబడింది"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "สร้างแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Oluşturuldu"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Створено"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "بنایا گیا"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đã tạo"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已创建"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已建立"
+          }
+        }
+      }
+    },
+    "app.setupDoneTitle": {
+      "comment": "Heading of the list of what the first setup did: the config file, the Quick Actions and so on.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ما أعدّه Right Here"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here যা সেটআপ করেছে"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Was Right Here eingerichtet hat"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Τι ρύθμισε το Right Here"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What Right Here set up"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Lo que Right Here configuró"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "آنچه Right Here راه‌اندازی کرد"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ce que Right Here a configuré"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "מה ש-Right Here הגדירה"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here ने जो सेट अप किया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yang disiapkan Right Here"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cosa ha configurato Right Here"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here がセットアップした内容"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here가 설정한 내용"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here ने सेटअप केलेल्या गोष्टी"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Perkara yang disediakan oleh Right Here"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Wat Right Here heeft ingesteld"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Co Right Here skonfigurował"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "O que o Right Here configurou"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ce a configurat Right Here"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Что настроил Right Here"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here அமைத்தவை"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here సెటప్ చేసినవి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "สิ่งที่ Right Here ตั้งค่าไว้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here’ın kurdukları"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Що налаштував Right Here"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Right Here نے جو سیٹ اپ کیا"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Những gì Right Here đã thiết lập"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here 已设置的内容"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here 已設定的內容"
+          }
+        }
+      }
+    },
+    "app.setupFailed": {
+      "comment": "Outcome beside an item in the list under app.setupDoneTitle: it could not be done; the line next to it says why.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فشل"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ব্যর্থ হয়েছে"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fehlgeschlagen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Απέτυχε"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Error"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ناموفق"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Échec"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "נכשל"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "विफल"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Gagal"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Non riuscito"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "失敗"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "실패"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "अयशस्वी"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Gagal"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mislukt"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nie powiodło się"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Falhou"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Eșuat"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ошибка"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "தோல்வியடைந்தது"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "విఫలమైంది"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ล้มเหลว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Başarısız"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не вдалося"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ناکام"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thất bại"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "失败"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "失敗"
+          }
+        }
+      }
+    },
+    "app.setupNotFound": {
+      "comment": "Small note beside the name of an AI agent whose command was not found on this Mac.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "غير موجود"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "পাওয়া যায়নি"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nicht gefunden"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δεν βρέθηκε"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not found"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "No encontrado"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پیدا نشد"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Introuvable"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לא נמצא"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "नहीं मिला"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tidak ditemukan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Non trovato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "見つかりません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "찾을 수 없음"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सापडला नाही"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tidak ditemui"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Niet gevonden"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nie znaleziono"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Não encontrado"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nu a fost găsit"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не найден"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கிடைக்கவில்லை"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "కనుగొనబడలేదు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ไม่พบ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bulunamadı"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не знайдено"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "نہیں ملا"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Không tìm thấy"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "未找到"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "找不到"
+          }
+        }
+      }
+    },
+    "app.setupSkipped": {
+      "comment": "Outcome beside an item in the list under app.setupDoneTitle: it was left out on purpose; the line next to it says why.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تم التخطّي"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "বাদ দেওয়া হয়েছে"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Übersprungen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Παραλείφθηκε"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipped"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Omitido"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "صرف‌نظر شد"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ignoré"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "דולג"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "छोड़ा गया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dilewati"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Saltato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "スキップ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "건너뜀"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "वगळले"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dilangkau"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Overgeslagen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pominięto"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ignorado"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Omis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Пропущено"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "தவிர்க்கப்பட்டது"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "దాటవేయబడింది"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ข้ามแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Atlandı"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Пропущено"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "چھوڑا گیا"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đã bỏ qua"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已跳过"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已略過"
+          }
+        }
+      }
+    },
+    "app.setupTitle": {
+      "comment": "Title of the card that the setup window shows on the very first run, before any config file exists.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "إعداد Right Here"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here সেটআপ করুন"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here einrichten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ρυθμίστε το Right Here"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up Right Here"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurar Right Here"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "راه‌اندازی Right Here"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configuration de Right Here"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "הגדרת Right Here"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here सेट अप करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Siapkan Right Here"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configura Right Here"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here をセットアップ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here 설정하기"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here सेटअप करा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sediakan Right Here"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here instellen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Konfiguracja Right Here"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configure o Right Here"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurare Right Here"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Настройка Right Here"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here-ஐ அமைக்கவும்"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here ను సెటప్ చేయండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ตั้งค่า Right Here"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here’ı kurun"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Налаштуйте Right Here"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Right Here کو سیٹ اپ کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thiết lập Right Here"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "设置 Right Here"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "設定 Right Here"
+          }
+        }
+      }
+    },
+    "app.setupUnchanged": {
+      "comment": "Outcome beside an item in the list under app.setupDoneTitle: it was there and right, so nothing was done.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "موجود بالفعل"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "আগে থেকেই আছে"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bereits vorhanden"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Υπάρχει ήδη"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already in place"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ya en su sitio"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "از قبل برقرار است"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Déjà en place"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "כבר מוגדר"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "पहले से मौजूद"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sudah ada"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Già a posto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "すでに設定済み"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "이미 설정됨"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "आधीच योग्य आहे"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sudah sedia ada"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Al ingesteld"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bez zmian"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Já configurado"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Deja configurat"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Уже настроено"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ஏற்கனவே உள்ளது"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఇప్పటికే ఉంది"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "มีอยู่แล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Zaten yerinde"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Уже на місці"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پہلے سے موجود"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đã có sẵn"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已就绪"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已就緒"
+          }
+        }
+      }
+    },
+    "app.setupUpdated": {
+      "comment": "Outcome beside an item in the list under app.setupDoneTitle: it existed and was changed to be right.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تم التحديث"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "আপডেট হয়েছে"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aktualisiert"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ενημερώθηκε"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Actualizado"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "به‌روزرسانی شد"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mis à jour"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "עודכן"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "अपडेट किया गया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Diperbarui"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aggiornato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "更新済み"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "업데이트됨"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "अपडेट केले"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dikemas kini"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bijgewerkt"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Zaktualizowano"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Atualizado"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Actualizat"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Обновлено"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "புதுப்பிக்கப்பட்டது"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "అప్‌డేట్ చేయబడింది"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "อัปเดตแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Güncellendi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Оновлено"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اپ ڈیٹ کیا گیا"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đã cập nhật"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已更新"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已更新"
+          }
+        }
+      }
+    },
     "app.showChecks": {
       "comment": "Button in the setup window that opens the Checks section. 'Checks' is the name of that section (app.tabChecks); use the same word.",
       "extractionState": "manual",
@@ -14882,187 +17486,187 @@
       }
     },
     "app.stepOneBody": {
-      "comment": "Step 1 text; a short list of the found terminal and editor is shown under it.",
+      "comment": "Text of step 1 of the first-run card, under the title app.stepOneTitle; below it the terminal and the editor are named. 'config file' as in app.checkConfig.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "عثر Right Here على هذه التطبيقات على جهاز Mac. لتغييرها، عدّل ملف الإعداد."
+            "value": "يفتح Right Here هذه التطبيقات افتراضيًا. لتغييرها، عدّل ملف الإعداد."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here আপনার Mac-এ এগুলো পেয়েছে। পরিবর্তন করতে কনফিগ ফাইল সম্পাদনা করুন।"
+            "value": "Right Here এগুলো ডিফল্ট হিসেবে খোলে। পরিবর্তন করতে কনফিগারেশন ফাইল সম্পাদনা করুন।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here hat diese auf deinem Mac gefunden. Bearbeite zum Ändern die Konfigurationsdatei."
+            "value": "Right Here öffnet diese standardmäßig. Bearbeite zum Ändern die Konfigurationsdatei."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Το Right Here βρήκε τα παρακάτω στο Mac σας. Για να τα αλλάξετε, επεξεργαστείτε το αρχείο ρυθμίσεων."
+            "value": "Το Right Here ανοίγει τα παρακάτω από προεπιλογή. Για να τα αλλάξετε, επεξεργαστείτε το αρχείο ρυθμίσεων."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Right Here found these on your Mac. To change them, edit the config file."
+            "value": "Right Here opens these by default. To change them, edit the config file."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here encontró estos en tu Mac. Para cambiarlos, edita el archivo de configuración."
+            "value": "Right Here los abre de forma predeterminada. Para cambiarlos, edita el archivo de configuración."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here این‌ها را در مک شما پیدا کرد. برای تغییر آن‌ها، فایل پیکربندی را ویرایش کنید."
+            "value": "‏Right Here این‌ها را به‌طور پیش‌فرض باز می‌کند. برای تغییر آن‌ها، فایل پیکربندی را ویرایش کنید."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here a trouvé ceux-ci sur votre Mac. Pour les modifier, changez le fichier de configuration."
+            "value": "Right Here les ouvre par défaut. Pour les modifier, changez le fichier de configuration."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here מצאה את אלה ב-Mac שלכם. כדי לשנות אותם, ערכו את קובץ ההגדרות."
+            "value": "‏Right Here פותחת אותם כברירת מחדל. כדי לשנות אותם, ערכו את קובץ ההגדרות."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here को आपके Mac पर ये मिले। इन्हें बदलने के लिए कॉन्फ़िग फ़ाइल संपादित करें।"
+            "value": "Right Here इन्हें डिफ़ॉल्ट रूप से खोलता है। इन्हें बदलने के लिए कॉन्फ़िगरेशन फ़ाइल संपादित करें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here menemukan aplikasi berikut di Mac Anda. Untuk mengubahnya, edit file konfigurasi."
+            "value": "Right Here membuka keduanya secara bawaan. Untuk mengubahnya, edit berkas konfigurasi."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here ha trovato questi sul Mac. Per modificarli, cambia il file di configurazione."
+            "value": "Right Here apre questi per impostazione predefinita. Per cambiarli, modifica il file di configurazione."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here がこの Mac で見つけたアプリです。変更するには設定ファイルを編集してください。"
+            "value": "Right Here は次のアプリを既定で開きます。変更するには、設定ファイルを編集してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here가 이 Mac에서 찾은 항목입니다. 변경하려면 설정 파일을 편집하세요."
+            "value": "Right Here는 다음 앱을 기본으로 엽니다. 변경하려면 설정 파일을 편집하세요."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here ला तुमच्या Mac वर हे सापडले. ते बदलण्यासाठी कॉन्फिग फाइल संपादित करा."
+            "value": "Right Here डीफॉल्टनुसार हे उघडतो. ते बदलण्यासाठी कॉन्फिगरेशन फाइल संपादित करा."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here menemui yang berikut pada Mac anda. Untuk menukarnya, sunting fail konfigurasi."
+            "value": "Right Here membuka yang berikut secara lalai. Untuk menukarnya, sunting fail konfigurasi."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here heeft deze op de Mac gevonden. Pas het configuratiebestand aan om ze te wijzigen."
+            "value": "Right Here opent deze standaard. Pas het configuratiebestand aan om ze te wijzigen."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here znalazł je na tym Macu. Aby je zmienić, edytuj plik konfiguracyjny."
+            "value": "Right Here domyślnie je otwiera. Aby je zmienić, edytuj plik konfiguracji."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "O Right Here encontrou estes no seu Mac. Para alterá-los, edite o arquivo de configuração."
+            "value": "O Right Here abre estes por padrão. Para alterá-los, edite o arquivo de configuração."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here le-a găsit pe acestea pe Mac. Pentru a le schimba, editați fișierul de configurare."
+            "value": "Right Here le deschide implicit. Pentru a le schimba, editați fișierul de configurare."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here нашёл их на вашем Mac. Чтобы изменить выбор, отредактируйте файл конфигурации."
+            "value": "Right Here открывает их по умолчанию. Чтобы изменить выбор, отредактируйте файл конфигурации."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here உங்கள் Mac-இல் இவற்றைக் கண்டறிந்தது. இவற்றை மாற்ற, கட்டமைப்பு கோப்பைத் திருத்தவும்."
+            "value": "Right Here இவற்றை இயல்புநிலையாகத் திறக்கும். இவற்றை மாற்ற, உள்ளமைவுக் கோப்பைத் திருத்தவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here మీ Mac లో వీటిని కనుగొంది. వాటిని మార్చడానికి కాన్ఫిగ్ ఫైల్‌ను ఎడిట్ చేయండి."
+            "value": "Right Here వీటిని డిఫాల్ట్‌గా తెరుస్తుంది. వాటిని మార్చడానికి కాన్ఫిగరేషన్ ఫైల్‌ను ఎడిట్ చేయండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here พบรายการเหล่านี้บน Mac ของคุณ หากต้องการเปลี่ยน ให้แก้ไขไฟล์การตั้งค่า"
+            "value": "Right Here จะเปิดสิ่งเหล่านี้เป็นค่าเริ่มต้น หากต้องการเปลี่ยน ให้แก้ไขไฟล์ตั้งค่า"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here, Mac'inizde şunları buldu. Bunları değiştirmek için yapılandırma dosyasını düzenleyin."
+            "value": "Right Here bunları varsayılan olarak açar. Bunları değiştirmek için yapılandırma dosyasını düzenleyin."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here знайшов їх на вашому Mac. Щоб змінити вибір, відредагуйте файл конфігурації."
+            "value": "Right Here відкриває їх за замовчуванням. Щоб змінити вибір, відредагуйте файл конфігурації."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here کو آپ کے Mac پر یہ ملے۔ انہیں تبدیل کرنے کے لیے کنفیگ فائل میں ترمیم کریں۔"
+            "value": "‏Right Here ڈیفالٹ طور پر انہی سے کھولتا ہے۔ انہیں تبدیل کرنے کے لیے کنفیگریشن فائل میں ترمیم کریں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here đã tìm thấy các ứng dụng sau trên Mac của bạn. Để thay đổi, hãy chỉnh sửa tệp cấu hình."
+            "value": "Right Here mở bằng các ứng dụng này theo mặc định. Để thay đổi, hãy chỉnh sửa tệp cấu hình."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here 在你的 Mac 上找到了以下应用。如需更改，请编辑配置文件。"
+            "value": "Right Here 默认使用这些应用打开。如需更改，请编辑配置文件。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here 在你的 Mac 上找到了這些 App。如要變更，請編輯設定檔。"
+            "value": "Right Here 預設以這些 App 開啟。如要變更，請編輯設定檔。"
           }
         }
       }

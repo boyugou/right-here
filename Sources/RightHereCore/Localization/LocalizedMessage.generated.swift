@@ -23,7 +23,7 @@ extension LocalizedMessage {
     public static var appAiPluginBody: LocalizedMessage { LocalizedMessage(.appAiPluginBody) }
     /// Claude Code plugin
     public static var appAiPluginTitle: LocalizedMessage { LocalizedMessage(.appAiPluginTitle) }
-    /// Copies a prompt that asks your assistant to run the checks and tailor the config file to how you work.
+    /// Copies a prompt that has your assistant ask what you use and then set Right Here up with `rh setup`.
     public static var appAiPromptBody: LocalizedMessage { LocalizedMessage(.appAiPromptBody) }
     /// Let an AI assistant set it up
     public static var appAiPromptTitle: LocalizedMessage { LocalizedMessage(.appAiPromptTitle) }
@@ -149,6 +149,34 @@ extension LocalizedMessage {
     public static func appRemoveWorktreeNamed(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appRemoveWorktreeNamed, [argument1]) }
     /// Remove this worktree?
     public static var appRemoveWorktreeTitle: LocalizedMessage { LocalizedMessage(.appRemoveWorktreeTitle) }
+    /// Setting up…
+    public static var appSettingUp: LocalizedMessage { LocalizedMessage(.appSettingUp) }
+    /// AI agents
+    public static var appSetupAgents: LocalizedMessage { LocalizedMessage(.appSetupAgents) }
+    /// Agents that Right Here finds on this Mac are checked.
+    public static var appSetupAgentsHint: LocalizedMessage { LocalizedMessage(.appSetupAgentsHint) }
+    /// Choose what you use. Right Here writes your config file from it and connects Finder. You can change your choices later by editing the config file.
+    public static var appSetupBody: LocalizedMessage { LocalizedMessage(.appSetupBody) }
+    /// Set Up
+    public static var appSetupButton: LocalizedMessage { LocalizedMessage(.appSetupButton) }
+    /// Command-line tool `rh`
+    public static var appSetupCommandLink: LocalizedMessage { LocalizedMessage(.appSetupCommandLink) }
+    /// Created
+    public static var appSetupCreated: LocalizedMessage { LocalizedMessage(.appSetupCreated) }
+    /// What Right Here set up
+    public static var appSetupDoneTitle: LocalizedMessage { LocalizedMessage(.appSetupDoneTitle) }
+    /// Failed
+    public static var appSetupFailed: LocalizedMessage { LocalizedMessage(.appSetupFailed) }
+    /// Not found
+    public static var appSetupNotFound: LocalizedMessage { LocalizedMessage(.appSetupNotFound) }
+    /// Skipped
+    public static var appSetupSkipped: LocalizedMessage { LocalizedMessage(.appSetupSkipped) }
+    /// Set up Right Here
+    public static var appSetupTitle: LocalizedMessage { LocalizedMessage(.appSetupTitle) }
+    /// Already in place
+    public static var appSetupUnchanged: LocalizedMessage { LocalizedMessage(.appSetupUnchanged) }
+    /// Updated
+    public static var appSetupUpdated: LocalizedMessage { LocalizedMessage(.appSetupUpdated) }
     /// Show Checks
     public static var appShowChecks: LocalizedMessage { LocalizedMessage(.appShowChecks) }
     /// Needs your action
@@ -161,7 +189,7 @@ extension LocalizedMessage {
     public static var appStatusWarning: LocalizedMessage { LocalizedMessage(.appStatusWarning) }
     /// Step %1$@: %2$@
     public static func appStepLabel(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.appStepLabel, [argument1, argument2]) }
-    /// Right Here found these on your Mac. To change them, edit the config file.
+    /// Right Here opens these by default. To change them, edit the config file.
     public static var appStepOneBody: LocalizedMessage { LocalizedMessage(.appStepOneBody) }
     /// Pick your terminal and editor
     public static var appStepOneTitle: LocalizedMessage { LocalizedMessage(.appStepOneTitle) }
