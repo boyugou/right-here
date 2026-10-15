@@ -95,7 +95,7 @@ struct Probe: AsyncParsableCommand {
         @Argument(help: "A terminal id from `rh apps`. Default: the default terminal.")
         var terminal: String?
 
-        @Option(help: "Start the session in a new \"window\", \"tab\", or \"split\". Default: general.terminal_placement.")
+        @Option(help: "Start the session in a new \"window\", \"tab\", \"split-right\" or \"split-down\". Default: general.terminal_placement.")
         var placement: String?
 
         @Flag(help: "Print JSON.")

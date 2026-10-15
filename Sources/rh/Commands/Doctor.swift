@@ -18,7 +18,7 @@ struct Doctor: AsyncParsableCommand {
     @Flag(help: "Go further: have the extension start a throwaway terminal session that runs a typed command, as an agent launch does. A window opens and closes.")
     var probeLaunch = false
 
-    @Option(help: "With --probe-launch: start the session in a \"window\", \"tab\", or \"split\" instead of what general.terminal_placement says.")
+    @Option(help: "With --probe-launch: start the session in a \"window\", \"tab\", \"split-right\" or \"split-down\" instead of what general.terminal_placement says.")
     var placement: String?
 
     struct Report: Encodable {
