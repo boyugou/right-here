@@ -391,10 +391,12 @@ struct TerminalAdapterTests {
         let session = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude")
         guard case .appleScript(let ghostty)? = try GhosttyAdapter().steps(for: session, bundleID: "x", facts: machine).first else { Issue.record("expected AppleScript"); return }
         #expect(ghostty.arguments.first == name)
+        // WezTerm and kitty are started through LaunchServices (`open -n -b <id> --args …`), so the folder is the argument after `start --cwd`
+        // and after `--directory`, at the same place in the argument vector of `open`.
         guard case .run(let wezterm)? = try WezTermAdapter().steps(for: session, bundleID: "x", facts: machine).first else { Issue.record("expected a run step"); return }
-        #expect(wezterm.arguments[2] == name)
+        #expect(wezterm.arguments[6] == name, "\(wezterm.arguments)")
         guard case .run(let kitty)? = try KittyAdapter().steps(for: session, bundleID: "x", facts: machine).first else { Issue.record("expected a run step"); return }
-        #expect(kitty.arguments[1] == name)
+        #expect(kitty.arguments[5] == name, "\(kitty.arguments)")
         // The command is still typed, and still held to the rule.
         let hostile = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude\nrm -rf ~")
         #expect(throws: PlanError.unsafeText("claude\nrm -rf ~")) { try GhosttyAdapter().steps(for: hostile, bundleID: "x", facts: machine) }
