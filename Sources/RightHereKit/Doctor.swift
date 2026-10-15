@@ -58,7 +58,10 @@ public struct Doctor: Sendable {
         return checks
     }
 
-    private func launchCheck(placement: TerminalPlacement?) async -> DoctorCheck {
+    /// The launch probe alone, as a check: what `run(probeLaunch:)` adds as its last row. The setup window runs this and
+    /// puts the row in the list it has, instead of running the whole doctor again (which asks the login shell for the
+    /// agents' commands once more) for a row that is only about the terminal.
+    public func launchCheck(placement: TerminalPlacement? = nil) async -> DoctorCheck {
         Self.launchCheck(for: await ExtensionProbe(paths: paths, facts: facts, runner: runner).runLaunch(placement: placement))
     }
 

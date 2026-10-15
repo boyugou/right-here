@@ -30,7 +30,7 @@ private enum Bundled {
 
     static func path(of file: IntentFile) throws -> String {
         guard let url = file.fileURL, url.isFileURL else {
-            throw IntentFailure(text: Localizer.system.render(.intentFailed("no file location")))
+            throw IntentFailure(text: Localizer.system.render(.intentFailed(Localizer.system.render(.intentNoFileLocation))))
         }
         return url.path
     }

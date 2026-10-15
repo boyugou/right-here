@@ -322,6 +322,8 @@ MUTANTS = [
      "if extraArgs.contains(where: ShellQuoting.containsControlCharacter) {", "if false {"),
     ("the menu cache lives for a minute and a half", "Sources/RightHereKit/MenuCachePolicy.swift",
      "public static let lifetime: TimeInterval = 30", "public static let lifetime: TimeInterval = 90"),
+    ("the setup window offers to remove a worktree Right Here did not make, and asks git about it", "Sources/RightHereKit/SetupWorktrees.swift",
+     "guard row.canBeRemoved else {", "guard true else {"),
 ]
 
 

@@ -15,8 +15,24 @@ extension LocalizedMessage {
     public static var alertPermissionTitle: LocalizedMessage { LocalizedMessage(.alertPermissionTitle) }
     /// the app
     public static var alertTheApp: LocalizedMessage { LocalizedMessage(.alertTheApp) }
+    /// Add this to the MCP settings of an AI assistant such as Claude Desktop or Cursor, so that it can use Right Here.
+    public static var appAiMCPBody: LocalizedMessage { LocalizedMessage(.appAiMCPBody) }
+    /// Connect an MCP client
+    public static var appAiMCPTitle: LocalizedMessage { LocalizedMessage(.appAiMCPTitle) }
+    /// Run these two commands in Claude Code to add Right Here's skills and tools.
+    public static var appAiPluginBody: LocalizedMessage { LocalizedMessage(.appAiPluginBody) }
+    /// Claude Code plugin
+    public static var appAiPluginTitle: LocalizedMessage { LocalizedMessage(.appAiPluginTitle) }
+    /// Copies a prompt that asks your assistant to run the checks and tailor the config file to how you work.
+    public static var appAiPromptBody: LocalizedMessage { LocalizedMessage(.appAiPromptBody) }
+    /// Let an AI assistant set it up
+    public static var appAiPromptTitle: LocalizedMessage { LocalizedMessage(.appAiPromptTitle) }
     /// Everything is set up.
     public static var appAllSet: LocalizedMessage { LocalizedMessage(.appAllSet) }
+    /// Right-click a folder in Finder to send it to your terminal, editor or AI agent.
+    public static var appAllSetHint: LocalizedMessage { LocalizedMessage(.appAllSetHint) }
+    /// Cancel
+    public static var appCancel: LocalizedMessage { LocalizedMessage(.appCancel) }
     /// Agents
     public static var appCheckAgents: LocalizedMessage { LocalizedMessage(.appCheckAgents) }
     /// rh on your PATH
@@ -53,34 +69,88 @@ extension LocalizedMessage {
     public static var appCheckSyncRemote: LocalizedMessage { LocalizedMessage(.appCheckSyncRemote) }
     /// Default terminal
     public static var appCheckTerminal: LocalizedMessage { LocalizedMessage(.appCheckTerminal) }
+    /// Checking your setup…
+    public static var appChecking: LocalizedMessage { LocalizedMessage(.appChecking) }
+    /// Choose a folder in a git repository to list its worktrees.
+    public static var appChooseFolderMessage: LocalizedMessage { LocalizedMessage(.appChooseFolderMessage) }
+    /// Choose
+    public static var appChooseFolderPrompt: LocalizedMessage { LocalizedMessage(.appChooseFolderPrompt) }
+    /// Clear Recent Folders
+    public static var appClearRecents: LocalizedMessage { LocalizedMessage(.appClearRecents) }
+    /// It did not finish (exit status %@).
+    public static func appCommandStopped(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appCommandStopped, [argument1]) }
+    /// Copy MCP Configuration
+    public static var appCopyMCPConfig: LocalizedMessage { LocalizedMessage(.appCopyMCPConfig) }
+    /// Copy Plugin Commands
+    public static var appCopyPluginCommands: LocalizedMessage { LocalizedMessage(.appCopyPluginCommands) }
     /// Copy Setup Prompt for AI
     public static var appCopySetupPrompt: LocalizedMessage { LocalizedMessage(.appCopySetupPrompt) }
-    /// Details
-    public static var appDetails: LocalizedMessage { LocalizedMessage(.appDetails) }
     /// Finder Extension Settings
     public static var appExtensionSettings: LocalizedMessage { LocalizedMessage(.appExtensionSettings) }
+    /// Right Here remembers these folders on this Mac only, in a file next to your config. An AI assistant that you connect through MCP can read them.
+    public static var appFoldersNote: LocalizedMessage { LocalizedMessage(.appFoldersNote) }
     /// Install or Repair
     public static var appInstallOrRepair: LocalizedMessage { LocalizedMessage(.appInstallOrRepair) }
+    /// Loading…
+    public static var appLoading: LocalizedMessage { LocalizedMessage(.appLoading) }
+    /// MCP configuration copied. Paste it into your assistant's MCP settings.
+    public static var appMcpCopied: LocalizedMessage { LocalizedMessage(.appMcpCopied) }
     /// This is the menu for a folder. Items for selected files appear when you select files.
     public static var appMenuCaption: LocalizedMessage { LocalizedMessage(.appMenuCaption) }
+    /// There is no menu to show right now. The reason is listed under Checks.
+    public static var appMenuEmpty: LocalizedMessage { LocalizedMessage(.appMenuEmpty) }
     /// Submenu, collapsed
     public static var appMenuSubmenuCollapsed: LocalizedMessage { LocalizedMessage(.appMenuSubmenuCollapsed) }
     /// Submenu, expanded
     public static var appMenuSubmenuExpanded: LocalizedMessage { LocalizedMessage(.appMenuSubmenuExpanded) }
     /// Finder menu
     public static var appMenuTitle: LocalizedMessage { LocalizedMessage(.appMenuTitle) }
+    /// Needing attention: %@
+    public static func appNeedAttentionCount(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appNeedAttentionCount, [argument1]) }
     /// Some checks need your attention.
     public static var appNeedsAttention: LocalizedMessage { LocalizedMessage(.appNeedsAttention) }
+    /// No pinned folders. Pin one with `rh pin <folder>`.
+    public static var appNoPinned: LocalizedMessage { LocalizedMessage(.appNoPinned) }
+    /// No recent folders yet. Right Here lists the folders it has sent somewhere.
+    public static var appNoRecents: LocalizedMessage { LocalizedMessage(.appNoRecents) }
+    /// None found
+    public static var appNoneFound: LocalizedMessage { LocalizedMessage(.appNoneFound) }
+    /// %@ is not in a git repository.
+    public static func appNotARepository(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appNotARepository, [argument1]) }
     /// Set up in three steps
     public static var appOnboardTitle: LocalizedMessage { LocalizedMessage(.appOnboardTitle) }
+    /// Open Checks to see what to do.
+    public static var appOpenChecksHint: LocalizedMessage { LocalizedMessage(.appOpenChecksHint) }
     /// Open Config
     public static var appOpenConfig: LocalizedMessage { LocalizedMessage(.appOpenConfig) }
+    /// Pinned folders
+    public static var appPinnedFolders: LocalizedMessage { LocalizedMessage(.appPinnedFolders) }
+    /// Plugin commands copied. Paste them into Claude Code.
+    public static var appPluginCopied: LocalizedMessage { LocalizedMessage(.appPluginCopied) }
     /// Setup prompt copied. Paste it into your AI assistant.
     public static var appPromptCopied: LocalizedMessage { LocalizedMessage(.appPromptCopied) }
     /// Quick Actions work without the extension: right-click a file or folder and choose Quick Actions. For a keyboard shortcut, go to System Settings › Keyboard › Keyboard Shortcuts › Services.
     public static var appQuickActionsBody: LocalizedMessage { LocalizedMessage(.appQuickActionsBody) }
     /// Menu not showing? Use Quick Actions
     public static var appQuickActionsTitle: LocalizedMessage { LocalizedMessage(.appQuickActionsTitle) }
+    /// Recent folders
+    public static var appRecentFolders: LocalizedMessage { LocalizedMessage(.appRecentFolders) }
+    /// Refresh
+    public static var appRefresh: LocalizedMessage { LocalizedMessage(.appRefresh) }
+    /// Refreshing…
+    public static var appRefreshing: LocalizedMessage { LocalizedMessage(.appRefreshing) }
+    /// Remove…
+    public static var appRemoveWorktree: LocalizedMessage { LocalizedMessage(.appRemoveWorktree) }
+    /// Remove Worktree
+    public static var appRemoveWorktreeConfirm: LocalizedMessage { LocalizedMessage(.appRemoveWorktreeConfirm) }
+    /// %@ is deleted from your disk. Its branch is kept, and git refuses if the worktree has changes that are not committed.
+    public static func appRemoveWorktreeMessage(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appRemoveWorktreeMessage, [argument1]) }
+    /// Remove %@
+    public static func appRemoveWorktreeNamed(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appRemoveWorktreeNamed, [argument1]) }
+    /// Remove this worktree?
+    public static var appRemoveWorktreeTitle: LocalizedMessage { LocalizedMessage(.appRemoveWorktreeTitle) }
+    /// Show Checks
+    public static var appShowChecks: LocalizedMessage { LocalizedMessage(.appShowChecks) }
     /// Needs your action
     public static var appStatusNeedsYou: LocalizedMessage { LocalizedMessage(.appStatusNeedsYou) }
     /// OK
@@ -105,10 +175,44 @@ extension LocalizedMessage {
     public static var appStepTwoTitle: LocalizedMessage { LocalizedMessage(.appStepTwoTitle) }
     /// Send a folder or selection to your terminals, editors and AI agents.
     public static var appSubtitle: LocalizedMessage { LocalizedMessage(.appSubtitle) }
+    /// AI Assistants
+    public static var appTabAI: LocalizedMessage { LocalizedMessage(.appTabAI) }
+    /// Checks
+    public static var appTabChecks: LocalizedMessage { LocalizedMessage(.appTabChecks) }
+    /// Folders
+    public static var appTabFolders: LocalizedMessage { LocalizedMessage(.appTabFolders) }
+    /// Overview
+    public static var appTabOverview: LocalizedMessage { LocalizedMessage(.appTabOverview) }
+    /// Worktrees
+    public static var appTabWorktrees: LocalizedMessage { LocalizedMessage(.appTabWorktrees) }
     /// Test Terminal Launch
     public static var appTestLaunch: LocalizedMessage { LocalizedMessage(.appTestLaunch) }
     /// Opening a test window in your terminal…
     public static var appTesting: LocalizedMessage { LocalizedMessage(.appTesting) }
+    /// Unpin
+    public static var appUnpin: LocalizedMessage { LocalizedMessage(.appUnpin) }
+    /// Unpin %@
+    public static func appUnpinFolder(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appUnpinFolder, [argument1]) }
+    /// Version %@
+    public static func appVersion(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appVersion, [argument1]) }
+    /// Detached HEAD
+    public static var appWorktreeDetached: LocalizedMessage { LocalizedMessage(.appWorktreeDetached) }
+    /// Made by Right Here
+    public static var appWorktreeMadeHere: LocalizedMessage { LocalizedMessage(.appWorktreeMadeHere) }
+    /// Main working copy
+    public static var appWorktreeMain: LocalizedMessage { LocalizedMessage(.appWorktreeMain) }
+    /// Right Here did not remove this worktree: it is not one Right Here made, so it is left alone.
+    public static var appWorktreeNotRemovable: LocalizedMessage { LocalizedMessage(.appWorktreeNotRemovable) }
+    /// Removed the worktree %@.
+    public static func appWorktreeRemoved(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appWorktreeRemoved, [argument1]) }
+    /// Choose Folder…
+    public static var appWorktreesChoose: LocalizedMessage { LocalizedMessage(.appWorktreesChoose) }
+    /// Separate checkouts that `rh run --worktree` makes, so that an agent can work on a branch of its own.
+    public static var appWorktreesIntro: LocalizedMessage { LocalizedMessage(.appWorktreesIntro) }
+    /// No git repository to show yet. Pin a folder that is in one, or choose a folder.
+    public static var appWorktreesNoRepository: LocalizedMessage { LocalizedMessage(.appWorktreesNoRepository) }
+    /// Repository
+    public static var appWorktreesRepository: LocalizedMessage { LocalizedMessage(.appWorktreesRepository) }
     /// Full Path
     public static var copyPathAbsolute: LocalizedMessage { LocalizedMessage(.copyPathAbsolute) }
     /// @ Mention for AI
@@ -293,6 +397,8 @@ extension LocalizedMessage {
     public static func intentDone(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.intentDone, [argument1]) }
     /// Right Here could not do that: %@
     public static func intentFailed(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.intentFailed, [argument1]) }
+    /// the item has no file location
+    public static var intentNoFileLocation: LocalizedMessage { LocalizedMessage(.intentNoFileLocation) }
     /// %@ in Desktop App
     public static func menuAgentDesktop(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.menuAgentDesktop, [argument1]) }
     /// %@ Here

@@ -2,41 +2,55 @@
 #
 # Render the setup window to a PNG without a screen, for looking at layout and translations.
 #
-#   ./script/preview_setup.sh out.png                    English, light, the checks of this Mac
-#   ./script/preview_setup.sh out.png de                 German
-#   ./script/preview_setup.sh out.png en --dark          dark mode
-#   ./script/preview_setup.sh out.png en --onboarding    the first-run card, as when the Finder extension is off
-#   ./script/preview_setup.sh out.png en --demo          a healthy setup, with the Finder menu open, that is the same on every Mac (screenshots)
-#   ./script/preview_setup.sh out.png en --demo --details  the same, with the list of checks open too
-#   ./script/preview_setup.sh out.png en --demo --submenus  the same, with every submenu of the Finder menu open
-#   ./script/preview_setup.sh out.png en --onboarding --demo  the first-run card on those checks (the Finder menu is closed under it)
-#   ./script/preview_setup.sh out.png de --gallery       every sentence the doctor can say, as rows of the list
+#   ./script/preview_setup.sh out.png                       English, light, the first section (Overview), the state of this Mac
+#   ./script/preview_setup.sh out.png de                    German
+#   ./script/preview_setup.sh out.png en --dark             dark mode
+#   ./script/preview_setup.sh out.png en --tab worktrees    one section: overview, menu, checks, ai, worktrees or folders
+#   ./script/preview_setup.sh out.png en --onboarding       the first-run card, as when the Finder extension is off
+#   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
+#   ./script/preview_setup.sh out.png en --demo --tab folders
+#   ./script/preview_setup.sh out.png en --demo --submenus  the Finder menu with every submenu open
+#   ./script/preview_setup.sh out.png de --gallery          every sentence the doctor can say, as rows of the checks
+#   ./script/preview_setup.sh out.png ar --minimum --large-text  the smallest window, with large text
+#   --details is --tab checks.
 #
-# It builds a throwaway package under .build/preview that links the app's own view files and the
-# package libraries, then renders SetupView with ImageRenderer.
+# It builds a throwaway package under .build/preview that links the app's own window files and the package libraries, then
+# renders SetupView with ImageRenderer. ImageRenderer draws nothing inside a ScrollView, so the window is compiled with its
+# PREVIEW containers (a plain stack instead of a scroll view): the picture shows the whole section.
 #
-# Without --demo and --gallery the checks and the Finder menu are the real ones for this machine, so the picture shows
-# this Mac: its paths, its last action, its apps. --demo and --gallery show canned checks and nothing from the machine
-# that renders: no real path (they are written as the window writes them, `~/...`), no real last action, no real agent
-# or terminal. --demo also shows a canned Finder menu (a fixed home folder, a fixed set of installed apps and a fixed
-# config); the icons of those apps are the ones of the Mac that renders, because an icon is read from the installed app
-# (an app this Mac does not have gets the system's plain app icon). --gallery has no menu, so it shows none.
+# Without --demo and --gallery the checks, folders and the Finder menu are the real ones for this machine, so the picture shows
+# this Mac: its paths, its apps, its last action. --demo and --gallery show canned data and nothing from the machine that renders:
+# the script stops if a canned text names the home folder or the account of that Mac. The icons of the demo menu's apps are the
+# ones of the Mac that renders (an app this Mac does not have gets the system's plain app icon).
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--dark] [--onboarding] [--demo] [--details] [--submenus] [--gallery]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
+TAB="overview"
 FLAGS=()
-for argument in "${@:2}"; do
+args=("${@:2}")
+for ((i = 0; i < ${#args[@]}; i++)); do
+  argument="${args[$i]}"
   case "$argument" in
-    --dark | --onboarding | --demo | --details | --submenus | --gallery) FLAGS+=("$argument") ;;
+    --tab)
+      i=$((i + 1))
+      TAB="${args[$i]:?preview_setup.sh: --tab needs a section}"
+      ;;
+    --details) TAB="checks" ;;
+    --dark | --onboarding | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
 done
+case "$TAB" in
+  overview | menu | checks | ai | worktrees | folders) ;;
+  *) echo "preview_setup.sh: no section \"$TAB\" (overview, menu, checks, ai, worktrees, folders)" >&2; exit 2 ;;
+esac
+FLAGS+=(--tab "$TAB")
 PREVIEW="$ROOT/.build/preview"
 # SwiftPM names a path dependency after its folder, which is not "right-here" in a worktree or a renamed clone.
 PKG="$(basename "$ROOT")"
@@ -59,8 +73,10 @@ let package = Package(
     ]
 )
 PACKAGE
-ln -sf "$ROOT/Apps/RightHere/SetupView.swift" "$PREVIEW/Sources/preview/SetupView.swift"
-ln -sf "$ROOT/Apps/RightHere/SetupModel.swift" "$PREVIEW/Sources/preview/SetupModel.swift"
+# The window's own files, the same ones the app compiles.
+for file in SetupView.swift SetupModel.swift SetupPages.swift; do
+  ln -sf "$ROOT/Apps/RightHere/$file" "$PREVIEW/Sources/preview/$file"
+done
 # The Finder menu's own glyphs, which main.swift registers by name (the app finds them in its asset catalog), and the
 # icon the window's header shows (this executable has none of its own).
 ln -sfn "$ROOT/Apps/FinderExtension/Assets.xcassets" "$PREVIEW/Assets.xcassets"
@@ -87,8 +103,19 @@ import RightHereCore
 import RightHereKit
 import SwiftUI
 
+/// The arguments of this run: `--tab` takes the name of a section after it.
+let arguments = CommandLine.arguments
+func flag(_ name: String) -> Bool { arguments.contains(name) }
+func value(of name: String) -> String? {
+    guard let index = arguments.firstIndex(of: name), index + 1 < arguments.count else { return nil }
+    return arguments[index + 1]
+}
+
 /// Where Right Here.app is installed; a fixed place, not one of this Mac's.
 let appContents = "/Applications/Right Here.app/Contents"
+/// The home folder and the repository of the demo: fixed, and not this Mac's.
+let demoHome = "/Users/tester"
+let demoRepository = URL(fileURLWithPath: "\(demoHome)/Projects/app")
 
 /// What a check that was a minute ago reads as, in the language of the window and from a fixed pair of dates.
 func ago(_ seconds: Double) -> String {
@@ -99,36 +126,26 @@ func ago(_ seconds: Double) -> String {
     return formatter.localizedString(for: now.addingTimeInterval(-seconds), relativeTo: now)
 }
 
-/// Stops, loudly, if canned checks name something of the Mac that renders them: its home folder or its account.
-func requireNothingOfThisMac(_ checks: [DoctorCheck]) -> [DoctorCheck] {
-    let text = checks.flatMap { $0.englishLines() }.joined(separator: "\n")
+/// Stops, loudly, if a canned text names something of the Mac that renders it: its home folder or its account.
+func requireNothingOfThisMac(_ texts: [String]) {
+    let text = texts.joined(separator: "\n")
     for own in [NSHomeDirectory(), NSUserName()] where own.count >= 4 && text.contains(own) {
-        FileHandle.standardError.write(Data("the canned checks say \"\(own)\", which belongs to this Mac\n".utf8))
+        FileHandle.standardError.write(Data("the canned text says \"\(own)\", which belongs to this Mac\n".utf8))
         exit(1)
     }
-    return checks
 }
 
-/// Stops, loudly, if a canned menu names something of the Mac that renders it, in any of its entries.
-func requireNothingOfThisMac(_ menu: [MenuNode]) -> [MenuNode] {
-    func titles(_ nodes: [MenuNode]) -> [String] { nodes.flatMap { [$0.title] + titles($0.children) } }
-    let text = titles(menu).joined(separator: "\n")
-    for own in [NSHomeDirectory(), NSUserName()] where own.count >= 4 && text.contains(own) {
-        FileHandle.standardError.write(Data("the canned menu says \"\(own)\", which belongs to this Mac\n".utf8))
-        exit(1)
-    }
-    return menu
+func menuTitles(_ nodes: [MenuNode]) -> [String] {
+    nodes.flatMap { [$0.title] + menuTitles($0.children) }
 }
 
-/// The Mac of the demo: a fixed home folder and a fixed set of installed apps (no agent's desktop app, so an agent's entry
-/// has the terminal glyph on every Mac). The icon of an app that is "installed" comes from the Mac that renders: the app's
-/// real icon when it has the app, the plain app icon when it has not.
+/// The app's icons of the demo: the apps this demo says are installed, read from the Mac that renders (the apps' own icons).
 func demoFacts() -> FakeSystemFacts {
     let live = LiveSystemFacts()
     let installed = ["com.mitchellh.ghostty", "com.apple.Terminal", "com.microsoft.VSCode", "dev.zed.Zed", "com.apple.dt.Xcode", "com.apple.TextEdit"]
     return FakeSystemFacts(
-        homeDirectory: URL(fileURLWithPath: "/Users/tester"),
-        directories: ["/Users/tester"],
+        homeDirectory: URL(fileURLWithPath: demoHome),
+        directories: [demoHome],
         applications: Dictionary(uniqueKeysWithValues: installed.map { ($0, live.applicationURL(bundleID: $0) ?? URL(fileURLWithPath: ProcessInfo.processInfo.environment["PREVIEW_GENERIC_APP"] ?? "/")) })
     )
 }
@@ -136,14 +153,14 @@ func demoFacts() -> FakeSystemFacts {
 /// The Finder menu of the demo Mac: the default layout, for the terminal, editor and agents of the demo's checks.
 func demoMenu(_ facts: FakeSystemFacts) -> [MenuNode] {
     let config = Config(terminal: "ghostty", editor: "vscode", enabledAgents: ["claude", "codex"])
-    return requireNothingOfThisMac(MenuPreview.folderMenu(ConfigLoadResult(config: config, diagnostics: []), facts: facts, folder: facts.homeDirectory, localizer: .system))
+    let menu = MenuPreview.folderMenu(ConfigLoadResult(config: config, diagnostics: []), facts: facts, folder: facts.homeDirectory, localizer: .system)
+    requireNothingOfThisMac(menuTitles(menu))
+    return menu
 }
 
 /// Every submenu of a menu, for --submenus.
 func allSubmenus(_ nodes: [MenuNode]) -> Set<String> {
-    var open = Set<String>()
-    while let next = MenuPreview.rows(nodes, expanded: open).first(where: { $0.hasChildren && !$0.isExpanded }) { open.insert(next.id) }
-    return open
+    MenuPreview.submenuIDs(nodes)
 }
 
 /// The Finder menu's own glyphs. The app finds them in its asset catalog (Apps/FinderExtension/Assets.xcassets, which
@@ -159,9 +176,9 @@ func registerMenuGlyphs() {
     }
 }
 
-/// A healthy setup, the same on every Mac: what the website's screenshots show.
-func demo() -> [DoctorCheck] {
-    requireNothingOfThisMac([
+/// A healthy setup, the same on every Mac: the checks the website's screenshots show.
+func demoChecks() -> [DoctorCheck] {
+    let checks = [
         DoctorCheck(.config, status: .ok, detail: .doctorVerbatim("~/.config/right-here/config.toml")),
         DoctorCheck(.terminalDefault, status: .ok, detail: .menuOpenIn("Ghostty")),
         DoctorCheck(.editorDefault, status: .ok, detail: .menuOpenIn("Visual Studio Code")),
@@ -173,10 +190,52 @@ func demo() -> [DoctorCheck] {
         DoctorCheck(.cliLink, status: .ok, detail: .doctorVerbatim("~/.local/bin/rh")),
         DoctorCheck(.finderExtension, status: .ok, detail: .doctorExtensionEnabled("\(appContents)/PlugIns/FinderExtension.appex")),
         DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityRecent("agent.claude", "container", ago(300)))
-    ])
+    ]
+    requireNothingOfThisMac(checks.flatMap { $0.englishLines() })
+    return checks
 }
 
-/// One row for each way the doctor can answer, with long values, so the details list can be checked for text that does not fit.
+/// The folders of the demo: pinned and recent, and the repository they are in.
+let demoPins = ["\(demoHome)/Projects/app", "\(demoHome)/Projects/notes", "\(demoHome)/مستندات/مشروع"]
+let demoRecents = ["\(demoHome)/Projects/web", "\(demoHome)/Downloads", "\(demoHome)/Projects/app/Sources"]
+
+/// `git worktree list --porcelain` of the demo repository: its main working copy, and two worktrees Right Here made for agents.
+let demoPorcelain = """
+worktree \(demoHome)/Projects/app
+HEAD 1f2e3d4c5b6a
+branch refs/heads/main
+
+worktree \(demoHome)/Projects/app/.right-here/worktrees/rh-1760000000
+HEAD 9a8b7c6d5e4f
+branch refs/heads/rh/1760000000
+
+worktree \(demoHome)/Projects/app/.right-here/worktrees/fix-login
+HEAD 5e4d3c2b1a09
+branch refs/heads/fix/login
+
+"""
+
+/// The worktrees of the demo, read through the same code the window uses, with git's answer given.
+func demoWorktrees() async -> WorktreeListing {
+    let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: demoPorcelain)])
+    let listing = await WorktreeBrowser(runner: runner).list(in: demoRepository)
+    if case .loaded(let rows) = listing {
+        requireNothingOfThisMac(rows.map { $0.entry.path })
+    }
+    return listing
+}
+
+/// Everything the window shows in the demo: a healthy setup, the Finder menu, the folders and the repository.
+func demoSnapshot(_ facts: FakeSystemFacts) -> SetupSnapshot {
+    let folders = FolderSnapshot(pins: demoPins, recents: demoRecents, repositories: [demoRepository])
+    requireNothingOfThisMac(demoPins + demoRecents + [demoRepository.path])
+    return SetupSnapshot(
+        checks: demoChecks(), menu: demoMenu(facts), folders: folders,
+        configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"), configProblems: [], mcpCommand: "rh",
+        home: URL(fileURLWithPath: demoHome))
+}
+
+/// One row for each way the doctor can answer, with long values, so the list of checks can be checked for text that does not fit.
 /// A row has the id and title of a check; the second kind of row is an agent's, which keeps the ids unique.
 func gallery() -> [DoctorCheck] {
     let config = "~/.config/right-here/config.toml"
@@ -230,6 +289,7 @@ func gallery() -> [DoctorCheck] {
         (.fail, .doctorExtensionNotRegistered, .doctorFixExtensionInstall),
         (.needsUser, .doctorExtensionDisabled, .doctorFixExtensionEnable),
         (.ok, .doctorActivityNone, nil),
+        (.ok, .doctorAgentBypass("claude", "Claude Code in Last-Used Terminal", "--dangerously-skip-permissions"), nil),
         (.warn, .doctorSyncStateUnreadable("~/.config/right-here/sync.toml"), .doctorFixSyncReenable),
         (.warn, .doctorSyncRemoteMissing, .doctorFixSyncPush),
         (.ok, .doctorSyncRemoteValid, nil),
@@ -246,33 +306,43 @@ func gallery() -> [DoctorCheck] {
     for key in LocalizationKey.allCases where key.rawValue.hasPrefix("doctor.") && !said.contains(key) {
         FileHandle.standardError.write(Data("the gallery has no row for \(key.rawValue)\n".utf8))
     }
-    return requireNothingOfThisMac(rows)
+    requireNothingOfThisMac(rows.flatMap { $0.englishLines() })
+    return rows
 }
 
+/// The window as the person sees it at the moment of the picture: the section the flags ask for, with the data they ask for.
 @MainActor
-func render(dark: Bool, to path: String) async {
-    let flags = Set(CommandLine.arguments)
+func render(to path: String) async {
     let model = SetupModel()
     registerMenuGlyphs()
-    if flags.contains("--gallery") {
-        model.simulate(checks: gallery(), opensDetails: true)
-    } else if flags.contains("--demo") {
-        model.simulate(checks: demo(), opensDetails: flags.contains("--details"))
+    let tab = SetupTab(rawValue: value(of: "--tab") ?? "overview") ?? .overview
+    if flag("--gallery") {
+        model.simulate(SetupSnapshot(checks: gallery(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
+                                     home: URL(fileURLWithPath: demoHome)), tab: .checks)
+    } else if flag("--demo") {
         let facts = demoFacts()
-        model.simulate(menu: demoMenu(facts), icons: IconProvider(facts: facts))
+        model.simulate(demoSnapshot(facts), tab: tab, icons: IconProvider(facts: facts), worktrees: await demoWorktrees(), repository: demoRepository)
     } else {
         await model.refresh()
+        model.selectedTab = tab
+        if tab == .worktrees { await model.refreshWorktrees() }
     }
-    if flags.contains("--onboarding") { model.simulateExtensionOff() }
-    if flags.contains("--submenus") { model.simulate(openSubmenus: allSubmenus(model.menu)) }
+    if flag("--onboarding") { model.simulateExtensionOff() }
+    if flag("--submenus") { model.simulate(openSubmenus: allSubmenus(model.snapshot?.menu ?? [])) }
     // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.
     let language = Locale.preferredLanguages.first ?? "en"
     let rightToLeft = Locale.Language(identifier: language).characterDirection == .rightToLeft
-    let view = SetupView(model: model)
+    // The width of the window: its default, or its smallest. The text wraps at that width, as it does in the window; without a width
+    // the picture would be as wide as the longest line.
+    let width: CGFloat = flag("--minimum") ? 800 : 860
+    let window = SetupView(model: model)
+        .frame(width: width, height: flag("--minimum") ? 560 : nil, alignment: .topLeading)
         .background(Color(nsColor: .windowBackgroundColor))
-        .environment(\.colorScheme, dark ? .dark : .light)
+        .environment(\.colorScheme, flag("--dark") ? .dark : .light)
         .environment(\.layoutDirection, rightToLeft ? .rightToLeft : .leftToRight)
-    let renderer = ImageRenderer(content: view)
+    let sized: AnyView = flag("--minimum") ? AnyView(window.clipped()) : AnyView(window)
+    let scaled: AnyView = flag("--large-text") ? AnyView(sized.environment(\.dynamicTypeSize, .accessibility2)) : sized
+    let renderer = ImageRenderer(content: scaled)
     renderer.scale = 2
     guard let image = renderer.nsImage, let tiff = image.tiffRepresentation,
           let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) else {
@@ -282,7 +352,6 @@ func render(dark: Bool, to path: String) async {
     print("wrote \(path) (\(Int(image.size.width)) x \(Int(image.size.height)) pt)")
 }
 
-let arguments = CommandLine.arguments
 MainActor.assumeIsolated {
     // The header shows the app's icon, which this executable does not have: the checked-in source of the real one stands in.
     guard let icon = NSImage(contentsOfFile: "icon-1024.png") else {
@@ -291,7 +360,7 @@ MainActor.assumeIsolated {
     }
     NSApplication.shared.applicationIconImage = icon
     Task { @MainActor in
-        await render(dark: arguments.contains("--dark"), to: arguments[1])
+        await render(to: arguments[1])
         exit(0)
     }
     RunLoop.main.run()
