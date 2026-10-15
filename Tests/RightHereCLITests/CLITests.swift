@@ -407,7 +407,7 @@ struct CLITests {
     private func git(_ arguments: [String], in folder: URL) throws -> String {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
-        process.arguments = ["-C", folder.path, "-c", "commit.gpgsign=false", "-c", "user.name=Test", "-c", "user.email=test@example.invalid"] + arguments
+        process.arguments = ["-C", folder.path, "-c", "commit.gpgsign=false", "-c", "user.name=Test", "-c", "user.email=test"] + arguments
         let out = Pipe()
         process.standardOutput = out
         process.standardError = Pipe()

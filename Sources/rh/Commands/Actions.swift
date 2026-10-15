@@ -6,7 +6,7 @@ import RightHereKit
 struct Actions: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "List the actions rh can run.",
-        discussion: "Each row is an action id for `rh run`, with whether it can run on this machine."
+        discussion: "Each row is an action id for `rh run`. The plain list shows the actions that can run on this machine; --all adds the others, each with the reason it cannot run."
     )
 
     @Flag(help: "Print JSON.")

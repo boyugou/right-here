@@ -225,6 +225,24 @@ struct GitWorktreeSafetyTests {
         #expect(try git(["branch", "--list", "existing"], in: repository).contains("existing"), "a branch the run did not make is not deleted")
     }
 
+    @Test func aWorktreeWithAChangeIsNotDiscardedEvenBeforeGitIsAskedToRemoveIt() async {
+        // git itself refuses to remove a worktree with untracked files, which hides a missing check here: so the rule is tested
+        // with a runner that reports a change, and expects that nothing is removed (only the status is asked).
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "?? new.txt\n")])
+        let made = WorktreeResult(branch: "x", worktreeURL: URL(fileURLWithPath: "/tmp/rh-wt"), wasCreated: true, branchCreated: true)
+        let removed = await GitWorktreeManager.discardIfUnchanged(made, gitRoot: URL(fileURLWithPath: "/tmp/rh-repo"), runner: runner)
+        #expect(removed == false)
+        #expect(runner.recorded.count == 1, "only the status was asked; nothing was removed")
+        #expect(runner.recorded.first?.arguments.contains("status") == true)
+    }
+
+    @Test func aWorktreeThisRunDidNotMakeIsNotDiscardedAndGitIsNotAsked() async {
+        let runner = FakeProcessRunner()
+        let existing = WorktreeResult(branch: "x", worktreeURL: URL(fileURLWithPath: "/tmp/rh-wt"), wasCreated: false, branchCreated: false)
+        #expect(await GitWorktreeManager.discardIfUnchanged(existing, gitRoot: URL(fileURLWithPath: "/tmp/rh-repo"), runner: runner) == false)
+        #expect(runner.recorded.isEmpty)
+    }
+
     @Test func aMergedBranchIsDeletedWithItsWorktree() async throws {
         let repository = try makeRepository()
         defer { try? FileManager.default.removeItem(at: repository) }

@@ -82,14 +82,15 @@ public enum Documentation {
 
     - With presets belonging to more than one agent, the menu title of a preset gets the agent's name in front
       (`Codex: Security review`).
-    - With a single entry in `copy_path.styles`, the Copy Path submenu is not a submenu: its one item is shown as
-      `Copy Path: Full Path`.
-    - `rh actions --help` promises whether an action can run; the plain list shows only the actions that cannot
-      (with the reason), and `--all` shows every action.
+    - A single entry in `copy_path.styles` is not a submenu: its item is on the menu's top level, titled `Copy Path` for
+      the absolute path, and `Copy Path: <style>` for another style (`Copy Path: Path from Home (~)`).
+    - `rh actions` prints the actions that can run on this machine, with no status column; `--all` adds the others, each
+      with the reason it cannot run.
     - `RH_NO_UI` turns off alerts and stops `rh` from starting `open` or `osascript`. `RH_HOME` moves every
       per-user path (config, log, runner script, Services, command link) under the folder it names; the login
       shell that `init`, `agents` and `doctor` start is not moved, so it runs the person's own startup files.
-    - A file outside the folder of a preset's selection is named in its prompt by an absolute `@"..."` mention.
+    - A file outside the folder of a preset's selection is named in its prompt as an absolute `@` mention, quoted
+      (`@"..."`) when its path has a space.
     """
 
     /// What a newcomer does, in the order they need it. The first topic `rh docs` lists.

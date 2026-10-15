@@ -21,9 +21,10 @@ throwaway terminal window.
 - It worked until a macOS update: `rh install --finder` registers it again.
 - You switched the extension on and the menu still does not appear: restart Finder (`killall Finder`; Finder reopens its
   windows). Whether a newly switched-on extension needs that on every macOS version is not verified on the development Mac.
-- You run Right Here from a disk image or from Downloads: `rh install --finder` registers the extension of the copy it runs
-  from, and that place goes away when the image is ejected or the file is moved. Move Right Here.app to Applications and run
-  `rh install --finder` again (not verified on every macOS version).
+- You run Right Here from a disk image or from Downloads: `rh install --finder` registers the extension of the Right Here.app
+  that holds the `rh` it runs from, and an `rh` that is not inside an app takes the one macOS finds by its identifier. The
+  registration is by that path, so once the image is ejected or the file is moved, the path it names no longer exists. Move
+  Right Here.app to Applications and run `rh install --finder` from there.
 
 ## An entry I expect is missing from the menu
 

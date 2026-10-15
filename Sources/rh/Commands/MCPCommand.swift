@@ -12,8 +12,7 @@ struct MCP: AsyncParsableCommand {
 
           claude mcp add right-here -- rh mcp
 
-        The server exposes the same actions as `rh`: run an action, list actions, preview the menu, \
-        read what is selected in Finder, check the setup, validate the config and read the docs.
+        The server offers the same actions as `rh`, as tools: `rh docs mcp` lists them, with the framing and the setup for other clients.
         """
     )
 
