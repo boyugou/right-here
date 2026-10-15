@@ -49,6 +49,9 @@ struct Run: AsyncParsableCommand {
     @Option(name: .customLong("arg"), parsing: .unconditionalSingleValue, help: "An extra argument for the AI agent, typed after its command (can be repeated). For an agent or a preset.")
     var extraArgs: [String] = []
 
+    @Option(name: .customLong("language"), help: "The language a new file's name is made in, most preferred first (repeat the option). Without it the command line uses English and a request from Finder uses the system's languages. Languages the app does not have fall back to English.")
+    var languages: [String] = []
+
     func run() async throws {
         let runtime = Runtime()
         let ref: ActionRef
@@ -79,8 +82,8 @@ struct Run: AsyncParsableCommand {
         }
         runtime.reportConfigProblems()
         let here = try context.makeContext(facts: runtime.facts)
-        // Files created from Finder follow the system language; the command line stays English.
-        let localizer: Localizer = here.origin == .cli ? .english : .system
+        // Files created from Finder follow the system language, and the command line stays English unless it is given a language.
+        let localizer: Localizer = !languages.isEmpty ? Localizer(languages: languages) : (here.origin == .cli ? .english : .system)
 
         if worktree || branch != nil {
             try await runInWorktree(ref, config: config, here: here, localizer: localizer, runtime: runtime)

@@ -522,6 +522,16 @@ struct CLITests {
         #expect(agents.first { $0["id"] as? String == "claude" }?["promptArgument"] as? String == "positional")
     }
 
+    @Test func aNewFileTakesItsNameInTheLanguageRhIsGivenAndInEnglishOtherwise() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("notes")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let english = try rh.run(["run", "new-file.md", "--dry-run", "--container", folder.path])
+        #expect(english.standardOutput.contains("/untitled.md"), Comment(rawValue: english.standardOutput))
+        let german = try rh.run(["run", "new-file.md", "--dry-run", "--language", "de-DE", "--language", "en-US", "--container", folder.path])
+        #expect(german.standardOutput.contains("/unbenannt.md"), Comment(rawValue: german.standardOutput))
+    }
+
     @Test func aRefusalNamesTheFileOrFolderThatIsWrongAndQuotesItOnce() throws {
         let rh = try RH(config: "[general]\nterminal = \"terminal\"\nagents = [\"claude\"]\n"); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("nl\nfolder")

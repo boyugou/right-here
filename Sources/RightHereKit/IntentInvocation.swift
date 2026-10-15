@@ -22,24 +22,25 @@ public enum IntentCommand: Sendable, Equatable {
         }
     }
 
-    /// The argument vector for `rh`, or an error when an id is not a plain word or a path is not absolute.
-    public func arguments() throws -> [String] {
+    /// The argument vector for `rh`, or an error when an id is not a plain word or a path is not absolute. `languages` are the person's
+    /// preferred languages, most preferred first: a new file takes its name in the first one the app has, as a file made from Finder does.
+    public func arguments(languages: [String] = []) throws -> [String] {
         switch self {
         case .openTerminal(let folder):
-            return try Self.run("open.terminal", path: folder)
+            return try Self.run("open.terminal", path: folder, languages: languages)
         case .startAgent(let agent, let folder):
-            return try Self.run("agent." + Self.word(agent), path: folder)
+            return try Self.run("agent." + Self.word(agent), path: folder, languages: languages)
         case .newFile(let template, let folder):
-            return try Self.run("new-file." + Self.word(template), path: folder)
+            return try Self.run("new-file." + Self.word(template), path: folder, languages: languages)
         case .copyPath(let style, let path):
-            return try Self.run("copy-path." + style.rawValue, path: path)
+            return try Self.run("copy-path." + style.rawValue, path: path, languages: languages)
         }
     }
 
-    private static func run(_ action: String, path: String) throws -> [String] {
+    private static func run(_ action: String, path: String, languages: [String]) throws -> [String] {
         guard ActionRef(parsing: action) != nil else { throw Invalid.notAnActionID(action) }
         guard path.hasPrefix("/"), !path.contains("\0") else { throw Invalid.notAbsolute(path) }
-        return ["run", action, "--origin", "cli", "--", path]
+        return ["run", action, "--origin", "cli"] + languages.flatMap { ["--language", $0] } + ["--", path]
     }
 
     /// An id from the config goes into an action id only when `ActionRef` reads it back as one word.
@@ -88,16 +89,21 @@ public struct IntentRunner: Sendable {
     public let helper: String
     public let runner: any ProcessRunner
     public let timeout: Duration
+    /// The person's preferred languages, handed to `rh` so that what it names follows the system language as the Finder menu's does.
+    public let languages: [String]
 
-    public init(helper: String, runner: any ProcessRunner = LiveProcessRunner(), timeout: Duration = .seconds(60)) {
+    public init(
+        helper: String, runner: any ProcessRunner = LiveProcessRunner(), timeout: Duration = .seconds(60), languages: [String] = Locale.preferredLanguages
+    ) {
         self.helper = helper
         self.runner = runner
         self.timeout = timeout
+        self.languages = languages
     }
 
     /// Runs the command; returns rh's one-line answer (`ok: ...`) or throws `Failure` with rh's own error text.
     public func perform(_ command: IntentCommand) async throws -> String {
-        let result = try await runner.run(ProcessStep(executable: helper, arguments: try command.arguments()), timeout: timeout)
+        let result = try await runner.run(ProcessStep(executable: helper, arguments: try command.arguments(languages: languages)), timeout: timeout)
         return try Self.interpret(result)
     }
 
