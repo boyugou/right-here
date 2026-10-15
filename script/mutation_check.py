@@ -274,6 +274,20 @@ MUTANTS = [
     ("validate does not read the shared file on its own, so an error the overlay hides is passed", "Sources/RightHereCore/Config/ConfigLayers.swift",
      "        if case .text = local {\n            for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {",
      "        if false {\n            for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {"),
+    ("worktrees: the repository's own hooks are not switched off", "Sources/RightHereKit/GitWorktree.swift",
+     'var arguments = ["-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]', 'var arguments: [String] = []'),
+    ("worktrees: the repository's own filters still run", "Sources/RightHereKit/GitWorktree.swift",
+     'arguments += ["-c", "filter.\\(driver).smudge=", "-c", "filter.\\(driver).clean=", "-c", "filter.\\(driver).process=", "-c", "filter.\\(driver).required=false"]',
+     'arguments += []'),
+    ("worktrees: a worktree the person made can be removed", "Sources/RightHereKit/GitWorktree.swift",
+     "let managed = named.filter { resolved($0.path).hasPrefix(base) }", "let managed = named"),
+    ("a preset takes the second spelling of the default terminal", "Sources/RightHereCore/Actions/ActionRef.swift",
+     "guard case .valid(let terminal) = Self.terminalSuffix(suffix), terminal != AgentLauncher.defaultWord else { return nil }",
+     "guard case .valid(let terminal) = Self.terminalSuffix(suffix) else { return nil }"),
+    ("a control character in an agent's args is typed", "Sources/RightHereCore/Config/ConfigBuilder+Agents.swift",
+     "if extraArgs.contains(where: ShellQuoting.containsControlCharacter) {", "if false {"),
+    ("the menu cache lives for a minute and a half", "Sources/RightHereKit/MenuCachePolicy.swift",
+     "public static let lifetime: TimeInterval = 30", "public static let lifetime: TimeInterval = 90"),
 ]
 
 
