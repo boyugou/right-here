@@ -282,6 +282,20 @@ MUTANTS = [
      "        if false {\n            do { try ShellQuoting.validateForTyping(directory.path) }"),
     ("an adapter that says nothing is taken for one that types none of the folder", "Sources/RightHereCore/Terminals/TerminalAdapter.swift",
      "    public var typesTheFolder: Bool { true }\n}", "    public var typesTheFolder: Bool { false }\n}"),
+    ("rh apps prints a name from the config raw", "Sources/rh/Commands/Actions.swift",
+     "Output.print(line(row.id, row.name.withControlCharactersEscaped, row.role,", "Output.print(line(row.id, row.name, row.role,"),
+    ("rh actions prints a title from the config raw", "Sources/rh/Commands/Actions.swift",
+     "Output.print(id + info.title.withControlCharactersEscaped +", "Output.print(id + info.title +"),
+    ("rh agents prints a name from the config raw", "Sources/rh/Commands/Actions.swift",
+     "Output.column(row.name.withControlCharactersEscaped, 16)", "Output.column(row.name, 16)"),
+    ("rh menu prints a title from the config raw", "Sources/rh/Commands/Actions.swift",
+     'case .action: return pad + node.title.withControlCharactersEscaped + "    ("', 'case .action: return pad + node.title + "    ("'),
+    ("the MCP action list prints titles unfenced", "Sources/RightHereMCP/Tools.swift",
+     '"\\($0.id)  " + Fence.name($0.title)', '"\\($0.id)  " + $0.title'),
+    ("the MCP menu preview prints titles unfenced", "Sources/RightHereMCP/Tools.swift",
+     "json.fencing([\"title\"]).pretty()", "json.pretty()"),
+    ("the MCP catalog prints names unfenced", "Sources/RightHereMCP/Tools.swift",
+     "structured.fencing([\"name\", \"command\", \"bundleID\"]).pretty()", "structured.pretty()"),
 ]
 
 

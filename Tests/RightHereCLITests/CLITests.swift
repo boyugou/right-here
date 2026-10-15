@@ -973,6 +973,44 @@ struct CLITests {
         #expect(outputs[0].status == 0 && outputs[2].status == 1, "the commands were meant to run")
     }
 
+    @Test("the names the config gives are escaped in every list rh prints, bidirectional controls included")
+    func namesFromTheConfigNeverReachTheScreenRaw() throws {
+        // The config refuses a control character in a name, but not an override such as U+202E, which makes a name read
+        // backwards in a terminal: `Evil \u{202E}detseb` shows as `Evil bestedl`. The lists print what the config says.
+        let config = """
+        [general]
+        terminal = "terminal"
+        agents = ["claude", "mine"]
+        [[app]]
+        id = "evil"
+        name = "Evil \\u202Edetseb\\u2066 end"
+        bundle_id = "com.apple.finder"
+        role = "editor"
+        [agent.mine]
+        name = "Mine \\u202Ex"
+        command = "mine"
+        [[new_file.template]]
+        id = "t1"
+        title = "Notes \\u202Eevil"
+        extension = "txt"
+        """
+        let rh = try RH(config: config); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("work")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let controls: Set<Unicode.Scalar> = ["\u{202E}", "\u{2066}", "\u{2069}"]
+        let lists = [["actions"], ["actions", "--all"], ["apps"], ["agents"], ["menu", "--container", folder.path], ["menu", "--explain", "--container", folder.path]]
+        for arguments in lists {
+            let result = try rh.run(arguments)
+            #expect(result.status == 0, Comment(rawValue: "\(arguments): \(result.standardError)"))
+            #expect(!result.standardOutput.unicodeScalars.contains { controls.contains($0) }, "rh \(arguments.joined(separator: " ")) printed a bidirectional control raw: \(result.standardOutput.debugDescription)")
+        }
+        #expect(try rh.run(["apps"]).standardOutput.contains("Evil \\u202edetseb\\u2066 end"))
+        #expect(try rh.run(["actions"]).standardOutput.contains("New Notes \\u202eevil"))
+        #expect(try rh.run(["agents"]).standardOutput.contains("Mine \\u202ex"))
+        // `--json` is for programs and says what the config says, as JSON.
+        #expect(try rh.run(["apps", "--json"]).json != nil)
+    }
+
     @Test func aWorkingDirectoryThatWasDeletedIsNoTargetNotTheRelativePathDot() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let doomed = rh.configDirectory.appendingPathComponent("doomed")

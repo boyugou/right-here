@@ -244,7 +244,7 @@ enum Tools {
         let config = server.loadConfig().config
         let all = arguments["include_unavailable"]?.boolValue == true
         let infos = ActionRegistry(config: config, facts: server.facts).catalog().filter { all || $0.available }
-        let lines = infos.map { "\($0.id)  \($0.title)" + ($0.available ? "" : "  [unavailable: \($0.unavailableReason ?? "")]") }
+        let lines = infos.map { "\($0.id)  " + Fence.name($0.title) + ($0.available ? "" : "  [unavailable: " + Fence.name($0.unavailableReason ?? "") + "]") }
         return ToolOutput(text: lines.joined(separator: "\n"), structured: .object(["actions": try JSONValue(encoding: infos)]))
     }
 
@@ -252,7 +252,7 @@ enum Tools {
         let config = server.loadConfig().config
         let nodes = MenuBuilder(config: config, facts: server.facts).build(for: try context(from: arguments, facts: server.facts))
         let json = try JSONValue(encoding: nodes)
-        return ToolOutput(text: json.pretty(), structured: .object(["menu": json]))
+        return ToolOutput(text: json.fencing(["title"]).pretty(), structured: .object(["menu": json]))
     }
 
     private static func finderSelection(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
@@ -294,7 +294,7 @@ enum Tools {
             "apps": try JSONValue(encoding: config.appRows(facts: server.facts)),
             "agents": try JSONValue(encoding: config.agentRows())
         ])
-        return ToolOutput(text: structured.pretty(), structured: structured)
+        return ToolOutput(text: structured.fencing(["name", "command", "bundleID"]).pretty(), structured: structured)
     }
 
     private static func docs(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {

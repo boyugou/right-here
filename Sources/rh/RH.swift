@@ -58,6 +58,13 @@ enum Output {
         FileHandle.standardError.write(Data((text + "\n").utf8))
     }
 
+    /// The text padded with spaces to a column `width` characters wide. `String.padding(toLength:)` cuts a longer text off,
+    /// which dropped the end of a long name or id (and an escaped name is longer than it looks); here it is kept whole and
+    /// two spaces keep it apart from the next column.
+    static func column(_ text: String, _ width: Int) -> String {
+        text.count >= width ? text + "  " : text + String(repeating: " ", count: width - text.count)
+    }
+
     /// Prints the message to standard error and returns the exit status to throw.
     static func fail(_ message: String) -> ExitCode {
         error(message)

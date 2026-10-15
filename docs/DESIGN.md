@@ -297,8 +297,11 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    config problem quotes from the config (a key, a value, an id): `ConfigDiagnostic` stores its text escaped, since a
    config can arrive from the sync folder and an escape sequence in a key name must not act on a terminal. The names
    and titles a config gives to apps, agents, templates, variants and presets are refused when they hold a control
-   character (an error, the entry is left out), so such text reaches no terminal through `rh actions`, `rh menu` or
-   `rh apps` either.
+   character (an error, the entry is left out), and `rh actions`, `rh menu`, `rh apps` and `rh agents` print them with
+   such characters as escapes in any case, which also covers the controls that reorder text (U+202E and the like: the
+   config check lets them through, and a name can be made to read backwards). The MCP tools that list them
+   (`right_here_actions`, `right_here_menu`, `right_here_catalog`) mark them as data in their text, like the doctor does,
+   and keep the structured data plain.
 7. A config is more than settings: terminal templates (`open_args`, `run_args`), agent commands, variant arguments and
    first-prompt flags decide which program a click starts, and a terminal listed as another kind of app is handed
    files, which it runs (item 0). The sync folder can be written by things this Mac does not

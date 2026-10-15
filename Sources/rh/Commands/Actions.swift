@@ -23,10 +23,12 @@ struct Actions: ParsableCommand {
             try Output.json(infos)
             return
         }
+        // Titles and reasons are what the config named things (an app, a template), and a name can hold a control that acts on a
+        // terminal, so they are printed with such characters as escapes.
         let width = (infos.map(\.id.count).max() ?? 0) + 2
         for info in infos {
-            let id = info.id.padding(toLength: width, withPad: " ", startingAt: 0)
-            Output.print(id + info.title + (info.available ? "" : "   [unavailable: \(info.unavailableReason ?? "")]"))
+            let id = Output.column(info.id, width)
+            Output.print(id + info.title.withControlCharactersEscaped + (info.available ? "" : "   [unavailable: \((info.unavailableReason ?? "").withControlCharactersEscaped)]"))
         }
     }
 }
@@ -130,8 +132,8 @@ struct MenuCommand: ParsableCommand {
         return nodes.map { node in
             switch node.kind {
             case .separator: return pad + "-----"
-            case .action: return pad + node.title + "    (" + (node.actionID ?? "") + ")"
-            case .submenu: return pad + node.title + " >\n" + render(node.children, indent: indent + 1)
+            case .action: return pad + node.title.withControlCharactersEscaped + "    (" + (node.actionID ?? "") + ")"
+            case .submenu: return pad + node.title.withControlCharactersEscaped + " >\n" + render(node.children, indent: indent + 1)
             }
         }.joined(separator: "\n")
     }
@@ -152,7 +154,7 @@ struct Agents: AsyncParsableCommand {
             return
         }
         for row in rows {
-            Output.print("\(row.id.padding(toLength: 12, withPad: " ", startingAt: 0))\(row.name.padding(toLength: 16, withPad: " ", startingAt: 0))\(row.stateText)")
+            Output.print(Output.column(row.id, 12) + Output.column(row.name.withControlCharactersEscaped, 16) + row.stateText)
         }
     }
 }
@@ -171,10 +173,9 @@ struct Apps: ParsableCommand {
             return
         }
         func line(_ id: String, _ name: String, _ role: String, _ state: String) -> String {
-            id.padding(toLength: 16, withPad: " ", startingAt: 0) + name.padding(toLength: 22, withPad: " ", startingAt: 0)
-                + role.padding(toLength: 10, withPad: " ", startingAt: 0) + state
+            Output.column(id, 16) + Output.column(name, 22) + Output.column(role, 10) + state
         }
         Output.print(line("ID", "NAME", "ROLE", "INSTALLED"))
-        for row in rows { Output.print(line(row.id, row.name, row.role, row.installed ? "installed" : "-")) }
+        for row in rows { Output.print(line(row.id, row.name.withControlCharactersEscaped, row.role, row.installed ? "installed" : "-")) }
     }
 }
