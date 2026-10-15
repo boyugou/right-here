@@ -274,6 +274,9 @@ MUTANTS = [
     ("validate does not read the shared file on its own, so an error the overlay hides is passed", "Sources/RightHereCore/Config/ConfigLayers.swift",
      "        if case .text = local {\n            for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {",
      "        if false {\n            for error in ConfigParser.parse(baseText).diagnostics where error.severity == .error {"),
+    ("a value in a plan is quoted without escaping its control characters", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
+     '''"\\"" + scalarReplacing(["\\\\": "\\\\\\\\", "\\"": "\\\\\\""]).withControlCharactersEscaped + "\\""''',
+     '''"\\"" + scalarReplacing(["\\\\": "\\\\\\\\", "\\"": "\\\\\\""]) + "\\""'''),
 ]
 
 

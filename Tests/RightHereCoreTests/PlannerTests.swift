@@ -657,7 +657,8 @@ struct PlannerNoticeTests {
     @Test func aFileSaysItsFolderIsUsedAndSeveralItemsSayTheFirstDecides() throws {
         let planner = Planner(facts: facts())
         let file = try planner.plan(.openTerminal(nil), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p/src/main.swift")]))
-        #expect(file.notices.contains { $0.contains("main.swift is a file") && $0.contains("/p/src") })
+        // Names in a notice are quoted like every other value in a plan.
+        #expect(file.notices.contains { $0.contains("\"main.swift\" is a file") && $0.contains("\"/p/src\"") })
         let several = try planner.plan(.agent(id: "claude", variant: nil, launcher: .terminal(nil)), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p"), URL(fileURLWithPath: "/q")]))
         #expect(several.notices.contains { $0.contains("Several items") })
         let folder = try planner.plan(.openTerminal(nil), context: HereContext(origin: .items, items: [URL(fileURLWithPath: "/p")]))

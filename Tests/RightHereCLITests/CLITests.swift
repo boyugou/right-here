@@ -270,6 +270,37 @@ struct CLITests {
         #expect(agent.standardOutput.contains("arguments: \"cd /tmp && codex\""))
     }
 
+    /// The value a JSON reader finds in a printed `"..."` literal.
+    private func valueRead(from literal: some StringProtocol) throws -> String? {
+        try (JSONSerialization.jsonObject(with: Data(("[" + literal + "]").utf8)) as? [String])?.first
+    }
+
+    @Test func aDryRunPlanIsNeverCutOffAndEveryValueInItReadsBackAsExactlyThatValue() throws {
+        let config = "[[app]]\nid = \"fakeed\"\nname = \"Fake Editor\"\nbundle_id = \"com.apple.finder\"\nrole = \"editor\"\n"
+        let rh = try RH(config: config); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("it's \"q\" back\\slash dir")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        // A name of 120 characters puts the end of the third path well past the 200 characters the plan used to stop at.
+        let names = ["a b.txt", "it's \"x\".md", "back\\slash.txt", String(repeating: "n", count: 120) + ".txt"]
+        let files = names.map { folder.appendingPathComponent($0) }
+        for file in files { try "x".write(to: file, atomically: true, encoding: .utf8) }
+
+        // open: one target to a line, each a quoted string that is exactly the path, and nothing cut.
+        let open = try rh.run(["run", "open.app.fakeed", "--dry-run"] + files.map(\.path))
+        #expect(open.status == 0, Comment(rawValue: open.standardError))
+        let targets = open.standardOutput.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { $0.hasPrefix("target: ") }
+        #expect(targets.count == files.count, Comment(rawValue: open.standardOutput))
+        for (line, file) in zip(targets, files) {
+            #expect(try valueRead(from: line.dropFirst("target: ".count)) == file.path, Comment(rawValue: line))
+        }
+
+        // copy: the whole text, the paths one to a line, as a string that reads back as the text that would be copied.
+        let copy = try rh.run(["run", "copy-path.absolute", "--dry-run"] + files.map(\.path)).standardOutput
+        #expect(!copy.contains("…"), Comment(rawValue: copy))
+        let text = try #require(copy.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.first { $0.hasPrefix("text: ") })
+        #expect(try valueRead(from: text.dropFirst("text: ".count)) == files.map(\.path).joined(separator: "\n"), Comment(rawValue: copy))
+    }
+
     @Test func agentBypassPermissionsFlagsAndSafeOverride() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let normal = try rh.run(["run", "agent.claude@terminal", "--dry-run", "--container", "/tmp"])
@@ -302,8 +333,9 @@ struct CLITests {
 
         let ok = try rh.run(["run", "preset.review", "--dry-run", plain.path])
         #expect(ok.status == 0, Comment(rawValue: ok.standardError))
-        // The dry run shows the argument with its quotes escaped, as a debug string would.
-        #expect(ok.standardOutput.contains(#"claude 'Review @\"it'\''s here.txt\" for bugs"#), Comment(rawValue: ok.standardOutput))
+        // The dry run shows the argument as a JSON string, so the quote of `@"it's here.txt"` is `\"` and each backslash is `\\`
+        // (the shell's own `'\''` is therefore `'\\''`).
+        #expect(ok.standardOutput.contains(#"claude 'Review @\"it'\\''s here.txt\" for bugs"#), Comment(rawValue: ok.standardOutput))
 
         let refused = try rh.run(["run", "preset.review", "--dry-run", hostile.path])
         #expect(refused.status != 0)

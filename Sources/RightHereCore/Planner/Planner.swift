@@ -84,8 +84,8 @@ public struct Planner: Sendable {
     /// the folder that holds it, and with several items the first one decides.
     private func folderNotice(for context: HereContext, directory: URL) -> [String] {
         guard let first = context.items.first else { return [] }
-        if context.items.count > 1 { return ["Several items are selected; the folder of the first one is used: \(directory.path.withControlCharactersEscaped)."] }
-        if facts.isDirectory(first) == false { return ["\(first.lastPathComponent.withControlCharactersEscaped) is a file, so its folder is used: \(directory.path.withControlCharactersEscaped)."] }
+        if context.items.count > 1 { return ["Several items are selected; the folder of the first one is used: \(directory.path.jsonQuoted)."] }
+        if facts.isDirectory(first) == false { return ["\(first.lastPathComponent.jsonQuoted) is a file, so its folder is used: \(directory.path.jsonQuoted)."] }
         return []
     }
 

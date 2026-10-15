@@ -60,5 +60,14 @@ extension String {
         }
         return result
     }
+
+    /// The text as a JSON string literal, for printing a value where it must read back as exactly that text: in double
+    /// quotes, `\` and `"` escaped, control characters, separators and bidirectional controls written as `\n`, `\t` or
+    /// `\uXXXX` (so it cannot act on a terminal), everything else, non-ASCII included, as it is. A plan prints every
+    /// path, argument and text this way. `JSONEncoder` is not used for it: it leaves U+0080 to U+009F raw, and a C1
+    /// control such as U+009B is a control sequence introducer to some terminals.
+    public var jsonQuoted: String {
+        "\"" + scalarReplacing(["\\": "\\\\", "\"": "\\\""]).withControlCharactersEscaped + "\""
+    }
 }
 
