@@ -20,6 +20,27 @@ run_args = ["/bin/sh", "-c", "{command}"]
 
 @Suite("LaunchCommands: what a config can make Right Here start")
 struct LaunchCommandsTests {
+    @Test func aConfigThatSwitchesPermissionPromptsOffIsListedAsWhatItStarts() {
+        // A synced config that sets `bypass_permissions` changes how every agent starts: that has to reach the person as a changed command,
+        // because the agent's command is what is compared.
+        let everywhere = lines("[general]\nbypass_permissions = true\nagents = [\"claude\", \"codex\"]\n")
+        #expect(everywhere.contains { $0.contains("[agent.claude] command") && $0.contains("--dangerously-skip-permissions") && $0.contains("(was \"claude\")") })
+        #expect(everywhere.contains { $0.contains("[agent.codex] command") && $0.contains("--dangerously-bypass-approvals-and-sandbox") })
+
+        let oneAgent = lines("[agent.claude]\nbypass_permissions = true\n")
+        #expect(oneAgent.contains { $0.contains("[agent.claude] command") && $0.contains("--dangerously-skip-permissions") })
+        #expect(!oneAgent.contains { $0.contains("[agent.codex]") })
+
+        let extra = lines("[agent.claude]\nargs = [\"--add-dir\", \"/\"]\n")
+        #expect(extra.contains { $0.contains("[agent.claude] command") && $0.contains("--add-dir") })
+
+        let custom = lines("[agent.claude]\nbypass_permissions = true\nbypass_permission_arg = \"--whatever\"\n")
+        #expect(custom.contains { $0.contains("[agent.claude] command") && $0.contains("--whatever") })
+
+        // And it stays quiet when nothing changed.
+        #expect(lines("[general]\nbypass_permissions = true\n", over: "[general]\nbypass_permissions = true\n").isEmpty)
+    }
+
     @Test func aConfigWithNothingCustomStartsNothingOfItsOwn() {
         #expect(LaunchCommands(configText: "").custom.isEmpty)
         #expect(LaunchCommands(configText: "[general]\nterminal = \"ghostty\"\neditor = \"vscode\"\nagents = [\"claude\", \"codex\"]\n[menu]\nitems = [\"open.terminal\"]\n").custom.isEmpty)

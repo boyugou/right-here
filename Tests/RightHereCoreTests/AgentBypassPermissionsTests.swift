@@ -4,7 +4,10 @@ import Testing
 
 @Suite("AgentBypassPermissions")
 struct AgentBypassPermissionsTests {
-    @Test func knownAgentsHaveVerifiedBypassFlags() {
+    /// The flags of Claude Code, Codex and Antigravity were read from their own `--help` on a Mac that has them. The others come from each
+    /// tool's documentation and have not been run here: a wrong one makes that tool refuse the unknown option, nothing worse, and the
+    /// config can replace any of them (`bypass_permission_arg`).
+    @Test func theBuiltInBypassFlagsAreTheOnesDocumented() {
         #expect(KnownAgents.agy.bypassPermissionArgument == "--dangerously-skip-permissions")
         #expect(KnownAgents.claude.bypassPermissionArgument == "--dangerously-skip-permissions")
         #expect(KnownAgents.codex.bypassPermissionArgument == "--dangerously-bypass-approvals-and-sandbox")
