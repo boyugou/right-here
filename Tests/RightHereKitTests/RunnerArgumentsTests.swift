@@ -45,11 +45,23 @@ struct RunnerArgumentsTests {
         #expect(!RunnerArguments.run(actionID: "reveal", context: context).contains("--container"))
     }
 
+    @Test func everyPlacementHasALaunchProbeMarkerThatReachesTheLaunchProbe() {
+        // What `rh doctor --probe-launch --placement <p>` leaves must be what the extension runs, for every placement there is.
+        for placement in TerminalPlacement.allCases {
+            let arguments = RunnerArguments.probe(markerText: ExtensionProbe.markerText(placement: placement))
+            #expect(arguments == ["probe", "launch", "--from-extension", "--placement", placement.configName], "\(placement)")
+        }
+    }
+
     @Test("a probe marker only ever picks from a fixed list", arguments: [
         ("launch", ["probe", "launch", "--from-extension"]),
         (" launch\n", ["probe", "launch", "--from-extension"]),
         ("launch:window", ["probe", "launch", "--from-extension", "--placement", "window"]),
         ("launch:tab", ["probe", "launch", "--from-extension", "--placement", "tab"]),
+        ("launch:split-right", ["probe", "launch", "--from-extension", "--placement", "split-right"]),
+        ("launch:split-down", ["probe", "launch", "--from-extension", "--placement", "split-down"]),
+        ("launch:split", ["probe", "automation", "--from-extension"]),
+        ("launch:floating", ["probe", "automation", "--from-extension"]),
         ("automation", ["probe", "automation", "--from-extension"]),
         ("", ["probe", "automation", "--from-extension"])
     ])
