@@ -269,8 +269,11 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    from the rest (csh and tcsh also expand `!` inside single quotes, which in a new session only makes the `cd`
    fail, so nothing runs).
    Paths are cut at slash scalars, as the kernel cuts them, so a combining mark cannot hide a `..`.
-2. Text typed into a terminal is read as keystrokes, so a path with a line break or any control character
-   is refused for typed launches. Deep links percent-encode everything but unreserved characters. A preset's
+2. Text typed into a terminal is read as keystrokes, so a command line with a line break or any control character
+   is refused for typed launches, and so is a folder whose path has one when the terminal types the folder (`cd …`):
+   Terminal, iTerm and a terminal defined in the config, whose template may put `{dir}` into a shell line (an adapter
+   that says nothing about it is held to that rule). Ghostty, WezTerm and kitty are handed the folder as an argument
+   and type none of it, so they take any folder name. Deep links percent-encode everything but unreserved characters. A preset's
    prompt (a template plus file names) is typed as one single-quoted word, and the expanded text is refused when it
    has a control character, a backslash (fish and the other shells read it differently inside quotes), a leading
    dash (the agent would read an option) or more files than `max_files`; see

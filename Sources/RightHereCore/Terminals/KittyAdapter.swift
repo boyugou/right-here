@@ -6,6 +6,8 @@ import Foundation
 /// (`{app}/Contents/MacOS/kitty`).
 public struct KittyAdapter: TerminalAdapter {
     public let terminalID = "kitty"
+    /// The folder is the value of `--directory`, an argument; nothing types it.
+    public var typesTheFolder: Bool { false }
 
     public init() {}
 

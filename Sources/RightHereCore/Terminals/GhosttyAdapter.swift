@@ -8,6 +8,8 @@ import Foundation
 /// PATH, version managers and aliases apply, and the shell stays open afterwards.
 public struct GhosttyAdapter: TerminalAdapter {
     public let terminalID = "ghostty"
+    /// The folder is an argument of the script (the new surface's working directory); nothing types it.
+    public var typesTheFolder: Bool { false }
 
     /// The first release with an AppleScript dictionary.
     static let firstScriptableVersion = AppVersion("1.3")!

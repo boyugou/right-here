@@ -154,8 +154,8 @@ MUTANTS = [
     ("a .. after a symbolic link is resolved by reading the text", "Sources/RightHereKit/PathHazard.swift",
      "if isSymbolicLink(\"/\" + names.joined(separator: \"/\")) { return true }", "if false { return true }"),
     ("a preset prompt with a newline reaches the terminal", "Sources/RightHereCore/Planner/Planner.swift",
-     "if let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }",
-     "if false, let reason = PresetTemplate.typingRefusal(prompt) { throw PlanError.unsafePrompt(preset: id, reason: reason) }"),
+     "if let problem = PresetTemplate.typingProblem(prompt) {",
+     "if false, let problem = PresetTemplate.typingProblem(prompt) {"),
     ("a preset prompt is not checked for control characters", "Sources/RightHereCore/Presets/AgentPreset.swift",
      "if ShellQuoting.containsControlCharacter(prompt) {", "if false {"),
     ("a preset prompt is typed unquoted", "Sources/RightHereCore/Planner/Planner.swift",
@@ -277,6 +277,11 @@ MUTANTS = [
     ("a value in a plan is quoted without escaping its control characters", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
      '''"\\"" + scalarReplacing(["\\\\": "\\\\\\\\", "\\"": "\\\\\\""]).withControlCharactersEscaped + "\\""''',
      '''"\\"" + scalarReplacing(["\\\\": "\\\\\\\\", "\\"": "\\\\\\""]) + "\\""'''),
+    ("a terminal that types the folder is handed one with a control character", "Sources/RightHereCore/Planner/Planner.swift",
+     "        if adapter.typesTheFolder {\n            do { try ShellQuoting.validateForTyping(directory.path) }",
+     "        if false {\n            do { try ShellQuoting.validateForTyping(directory.path) }"),
+    ("an adapter that says nothing is taken for one that types none of the folder", "Sources/RightHereCore/Terminals/TerminalAdapter.swift",
+     "    public var typesTheFolder: Bool { true }\n}", "    public var typesTheFolder: Bool { false }\n}"),
 ]
 
 

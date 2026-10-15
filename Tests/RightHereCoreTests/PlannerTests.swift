@@ -424,9 +424,52 @@ struct PlannerTests {
 
     @Test func typedLaunchRejectsAPathWithALineBreak() {
         let facts = machine(directories: ["/Users/tester/bad\nname"])
-        #expect(throws: PlanError.unsafeText("/Users/tester/bad\nname")) {
+        #expect(throws: PlanError.unsafeFolder("/Users/tester/bad\nname")) {
             try Planner(facts: facts).plan(.agent(id: "claude", variant: nil, launcher: .terminal("terminal")), context: folder("/Users/tester/bad\nname"))
         }
+    }
+
+    @Test func ghosttyIsNotRefusedForAFolderNameItNeverTypes() throws {
+        // `agent.claude@ghostty` used to be refused for a folder with a line break in its name, which Ghostty is handed as the
+        // working directory of the new surface and types nothing of; the command it does type has none.
+        let name = "/Users/tester/bad\nname"
+        let plan = try Planner(facts: machine(directories: [name])).plan(.agent(id: "claude", variant: nil, launcher: .terminal("ghostty")), context: folder(name))
+        guard case .appleScript(let step)? = plan.steps.first else { Issue.record("expected AppleScript"); return }
+        #expect(step.arguments == [name, "claude", "window"])
+    }
+
+    @Test("a terminal that types the folder still refuses a name with a control character", arguments: ["terminal", "iterm"])
+    func terminalsThatTypeTheFolderRefuseIt(terminal: String) {
+        let name = "/Users/tester/bad\u{1b}[2Jname"
+        let facts = machine(installed: ["com.apple.Terminal", "com.googlecode.iterm2"], directories: [name])
+        #expect(throws: PlanError.unsafeFolder(name)) {
+            try Planner(facts: facts).plan(.agent(id: "claude", variant: nil, launcher: .terminal(terminal)), context: folder(name))
+        }
+    }
+
+    @Test func aTerminalTheConfigDefinesIsHeldToTheStrictRuleBecauseItsTemplateMayTypeTheFolder() {
+        let text = """
+        [[app]]
+        id = "shellterm"
+        name = "Shell Term"
+        bundle_id = "com.example.shellterm"
+        role = "terminal"
+        run_args = ["/bin/sh", "-c", "cd {dir} && {command}"]
+        """
+        let config = ConfigParser.parse(text).config
+        let name = "/Users/tester/bad\nname"
+        let facts = machine(installed: ["com.example.shellterm"], directories: [name])
+        #expect(throws: PlanError.unsafeFolder(name)) {
+            try Planner(config: config, facts: facts).plan(.agent(id: "claude", variant: nil, launcher: .terminal("shellterm")), context: folder(name))
+        }
+    }
+
+    @Test func theRefusalsNameWhatIsWrongWithoutDoubledQuotes() {
+        let folder = PlanError.unsafeFolder("/Users/tester/two\nlines").errorDescription ?? ""
+        #expect(folder == "The folder \"/Users/tester/two\\nlines\" has a line break or another control character in its path, so it cannot be typed into a terminal. Rename it, or use a terminal that is handed the folder, such as Ghostty.")
+        let text = PlanError.unsafeText("claude\nrm").errorDescription ?? ""
+        #expect(text == "\"claude\\nrm\" contains line breaks or control characters and cannot be typed into a terminal.")
+        for message in [folder, text] { #expect(!message.contains("\"\""), Comment(rawValue: message)) }
     }
 
     @Test func linkLaunchAcceptsAPathWithALineBreakBecauseItIsPercentEncoded() throws {

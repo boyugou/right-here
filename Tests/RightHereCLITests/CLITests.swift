@@ -339,7 +339,7 @@ struct CLITests {
 
         let refused = try rh.run(["run", "preset.review", "--dry-run", hostile.path])
         #expect(refused.status != 0)
-        #expect(refused.standardError.contains("cannot be typed into a terminal"), Comment(rawValue: refused.standardError))
+        #expect(refused.standardError.contains("the file \"two\\nlines.txt\" cannot be named in the prompt of preset \"review\""), Comment(rawValue: refused.standardError))
         #expect(!refused.standardOutput.contains("claude '"))
 
         let noFiles = try rh.run(["run", "preset.review", "--dry-run", "--container", folder.path])
@@ -349,6 +349,26 @@ struct CLITests {
         #expect(actions.contains("preset.review") && actions.contains("preset.tests"))
         let agents = try #require(try rh.run(["agents", "--json"]).json as? [[String: Any]])
         #expect(agents.first { $0["id"] as? String == "claude" }?["promptArgument"] as? String == "positional")
+    }
+
+    @Test func aRefusalNamesTheFileOrFolderThatIsWrongAndQuotesItOnce() throws {
+        let rh = try RH(config: "[general]\nterminal = \"terminal\"\nagents = [\"claude\"]\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("nl\nfolder")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let file = rh.configDirectory.appendingPathComponent("two\nlines.txt")
+        try "x".write(to: file, atomically: true, encoding: .utf8)
+
+        // Terminal types the folder, so a line break in its name is refused: the message says it is the folder, once quoted.
+        let typed = try rh.run(["run", "agent.claude@terminal", "--dry-run", "--container", folder.path])
+        #expect(typed.status == 1)
+        #expect(typed.standardError.hasPrefix("error: The folder \"\(folder.path)".replacingOccurrences(of: "\n", with: "\\n")), Comment(rawValue: typed.standardError))
+        #expect(!typed.standardError.contains("\"\""), Comment(rawValue: typed.standardError))
+
+        // A file in the prompt of a preset: the file is named, and the prompt (which is fine) is not blamed.
+        let preset = try rh.run(["run", "preset.review@terminal", "--dry-run", file.path])
+        #expect(preset.status == 1)
+        #expect(preset.standardError.contains("the file \"two\\nlines.txt\" cannot be named in the prompt of preset \"review\""), Comment(rawValue: preset.standardError))
+        #expect(!preset.standardError.contains("The prompt of preset"), Comment(rawValue: preset.standardError))
     }
 
     @Test func rhAgentsSaysAnEnabledAgentThatItsShellDoesNotFindIsNotFound() throws {

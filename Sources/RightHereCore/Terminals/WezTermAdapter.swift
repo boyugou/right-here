@@ -6,6 +6,8 @@ import Foundation
 /// (`{app}/Contents/MacOS/wezterm`).
 public struct WezTermAdapter: TerminalAdapter {
     public let terminalID = "wezterm"
+    /// The folder is the value of `--cwd`, an argument; nothing types it.
+    public var typesTheFolder: Bool { false }
 
     public init() {}
 

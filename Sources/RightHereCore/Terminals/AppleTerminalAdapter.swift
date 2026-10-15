@@ -14,7 +14,7 @@ public struct AppleTerminalAdapter: TerminalAdapter {
             return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
         }
         // The folder is typed after `cd`, so it is held to the same rule as the command.
-        do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeText(directory) }
+        do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeFolder(directory) }
         // The line is read by whichever shell the Terminal profile starts: the account's login shell unless
         // the profile names a command, and nothing here can tell which. POSIX single quotes are read the same
         // way by sh, bash, zsh, dash, ksh and fish (the tests run the first five, and fish where installed)
