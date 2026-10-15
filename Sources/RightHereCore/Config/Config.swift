@@ -29,12 +29,29 @@ public struct Config: Sendable, Equatable {
         public var variants: [AgentDescriptor.Variant]
         /// Replaces how the command takes a first prompt (see `AgentPreset`).
         public var promptArgument: PromptArgument?
+        /// Whether to bypass tool permission / confirmation prompts. `nil` inherits general.bypass_permissions.
+        public var bypassPermissions: Bool?
+        /// Custom argument or flag to bypass permission confirmations for this agent.
+        public var bypassPermissionArgument: String?
+        /// Additional arguments to pass when launching this agent.
+        public var args: [String]
 
-        public init(launcher: AgentLauncher? = nil, command: String? = nil, variants: [AgentDescriptor.Variant] = [], promptArgument: PromptArgument? = nil) {
+        public init(
+            launcher: AgentLauncher? = nil,
+            command: String? = nil,
+            variants: [AgentDescriptor.Variant] = [],
+            promptArgument: PromptArgument? = nil,
+            bypassPermissions: Bool? = nil,
+            bypassPermissionArgument: String? = nil,
+            args: [String] = []
+        ) {
             self.launcher = launcher
             self.command = command
             self.variants = variants
             self.promptArgument = promptArgument
+            self.bypassPermissions = bypassPermissions
+            self.bypassPermissionArgument = bypassPermissionArgument
+            self.args = args
         }
     }
 
@@ -57,6 +74,8 @@ public struct Config: Sendable, Equatable {
     public var serviceItems: [String]?
     /// Settings per agent id. Agents that are absent use their built-in descriptor.
     public var agents: [String: AgentSettings]
+    /// Whether to launch AI agents with bypass permissions / autonomous flags.
+    public var bypassPermissions: Bool
     /// Applications added by the user, alongside the built-in ones.
     public var apps: [AppDescriptor]
     /// Built-in applications the per-machine overlay removed with `disabled`: they are neither offered nor found by id.
@@ -80,7 +99,8 @@ public struct Config: Sendable, Equatable {
         apps: [AppDescriptor] = [],
         disabledApps: Set<String> = [],
         customAgents: [AgentDescriptor] = [],
-        presets: [AgentPreset] = AgentPreset.builtIn
+        presets: [AgentPreset] = AgentPreset.builtIn,
+        bypassPermissions: Bool = false
     ) {
         self.terminal = terminal
         self.editor = editor
@@ -96,6 +116,7 @@ public struct Config: Sendable, Equatable {
         self.disabledApps = disabledApps
         self.customAgents = customAgents
         self.presets = presets
+        self.bypassPermissions = bypassPermissions
     }
 
     public static let `default` = Config()
@@ -139,11 +160,30 @@ public struct Config: Sendable, Equatable {
 
     public func agent(id: String) -> AgentDescriptor? {
         guard var agent = customAgents.first(where: { $0.id == id }) ?? KnownAgents.agent(id: id) else { return nil }
-        if let settings = agents[id] {
+        let settings = agents[id]
+        if let settings {
             if let command = settings.command { agent.command = command }
             agent.variants += settings.variants
             if let promptArgument = settings.promptArgument { agent.promptArgument = promptArgument }
+            if let bypassArg = settings.bypassPermissionArgument { agent.bypassPermissionArgument = bypassArg }
         }
+
+        let shouldBypass = settings?.bypassPermissions ?? bypassPermissions
+        if shouldBypass, let flag = agent.bypassPermissionArgument, !flag.isEmpty {
+            let flagWords = flag.split(separator: " ").map(String.init)
+            let cmdWords = agent.command.split(separator: " ").map(String.init)
+            let alreadyPresent = flagWords.allSatisfy { cmdWords.contains($0) }
+            if !alreadyPresent {
+                agent.command += " \(flag)"
+            }
+        }
+
+        if let extraArgs = settings?.args, !extraArgs.isEmpty {
+            for arg in extraArgs {
+                agent.command += " \(ShellQuoting.quote(arg, for: .posix))"
+            }
+        }
+
         return agent
     }
 

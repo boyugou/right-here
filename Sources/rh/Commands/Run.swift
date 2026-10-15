@@ -39,13 +39,48 @@ struct Run: AsyncParsableCommand {
     @Option(name: .customLong("branch"), help: "Branch name for the isolated git worktree (implies --worktree).")
     var branch: String?
 
+    @Flag(name: [.customLong("bypass-permissions"), .customShort("y")], help: "Launch AI agents with bypass permissions / autonomous flags.")
+    var bypassPermissions = false
+
+    @Flag(name: .customLong("safe"), help: "Launch AI agents in safe mode, overriding config bypass_permissions.")
+    var safe = false
+
+    @Option(name: .customLong("arg"), parsing: .unconditionalSingleValue, help: "Additional argument to pass to the agent (can be repeated).")
+    var extraArgs: [String] = []
+
     func run() async throws {
         let runtime = Runtime()
+        var config = runtime.config
+        if bypassPermissions {
+            config.bypassPermissions = true
+        }
+        if safe {
+            config.bypassPermissions = false
+            for id in config.agents.keys {
+                config.agents[id]?.bypassPermissions = false
+            }
+        }
         let ref: ActionRef
         do {
-            ref = try ActionRegistry(config: runtime.config, facts: runtime.facts).resolve(action)
+            ref = try ActionRegistry(config: config, facts: runtime.facts).resolve(action)
         } catch let unknown as UnknownActionID {
             throw ValidationError(unknown.message(next: "Run `rh actions` to list them, or `rh docs actions` for the grammar."))
+        }
+        if !extraArgs.isEmpty {
+            switch ref {
+            case .agent(let agentID, _, _):
+                var settings = config.agents[agentID] ?? Config.AgentSettings()
+                settings.args.append(contentsOf: extraArgs)
+                config.agents[agentID] = settings
+            case .preset(let presetID, _):
+                if let preset = config.preset(id: presetID), let agent = config.agent(for: preset) {
+                    var settings = config.agents[agent.id] ?? Config.AgentSettings()
+                    settings.args.append(contentsOf: extraArgs)
+                    config.agents[agent.id] = settings
+                }
+            default:
+                break
+            }
         }
         runtime.reportConfigProblems()
         let here = try context.makeContext(facts: runtime.facts)
@@ -78,7 +113,7 @@ struct Run: AsyncParsableCommand {
 
         let plan: LaunchPlan
         do {
-            plan = try Planner(config: runtime.config, facts: runtime.facts, localizer: localizer).plan(ref, context: effectiveContext)
+            plan = try Planner(config: config, facts: runtime.facts, localizer: localizer).plan(ref, context: effectiveContext)
         } catch {
             try await fail(error)
         }

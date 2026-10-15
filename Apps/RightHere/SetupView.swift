@@ -453,17 +453,17 @@ struct SetupView: View {
     private var aiTab: some View {
         VStack(alignment: .leading, spacing: 20) {
             // Agents Showcase
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Supported AI Agents")
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Supported AI Agents & Harnesses")
                     .font(.headline.weight(.semibold))
-                Text("Launch coding agents in your authenticated login shell with PATH, nvm, and aliases.")
+                Text("Launch coding agents in your authenticated login shell with PATH, nvm, and aliases:")
                     .font(.callout)
                     .foregroundStyle(.secondary)
 
-                HStack(spacing: 12) {
-                    agentCard("Claude Code", command: "claude", icon: "brain.head.profile", instruction: "CLAUDE.md")
-                    agentCard("Codex", command: "codex", icon: "terminal", instruction: "AGENTS.md")
-                    agentCard("Antigravity", command: "agy", icon: "sparkles", instruction: "AGENTS.md")
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 155), spacing: 10)], spacing: 10) {
+                    ForEach(model.knownAgents) { agent in
+                        agentCard(agent)
+                    }
                 }
             }
 
@@ -521,22 +521,41 @@ struct SetupView: View {
         }
     }
 
-    private func agentCard(_ name: String, command: String, icon: String, instruction: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundStyle(Color.accentColor)
-                Text(name)
-                    .font(.body.weight(.semibold))
+    private func agentCard(_ agent: AgentDescriptor) -> some View {
+        let iconName: String = {
+            switch agent.id {
+            case "claude": return "brain.head.profile"
+            case "codex": return "terminal"
+            case "agy": return "sparkles"
+            case "gemini": return "sparkle"
+            case "opencode": return "chevron.left.forwardslash.chevron.right"
+            case "kimi": return "moon.stars"
+            case "muse": return "music.note.list"
+            case "goose": return "bird"
+            case "copilot": return "airplane"
+            case "cody": return "curlybraces"
+            default: return "command"
             }
-            Text("`\(command)`")
+        }()
+
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Image(systemName: iconName)
+                    .foregroundStyle(Color.accentColor)
+                Text(agent.name)
+                    .font(.body.weight(.semibold))
+                    .lineLimit(1)
+            }
+            Text(agent.command)
                 .font(.system(size: 11, design: .monospaced))
                 .foregroundStyle(.secondary)
-            Text("Guides: \(instruction)")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+            if let guide = agent.instructionFile {
+                Text(guide)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
         }
-        .padding(12)
+        .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))

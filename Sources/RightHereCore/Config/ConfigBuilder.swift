@@ -46,6 +46,9 @@ struct ConfigBuilder {
         if let placement = table.checkAllowed(table.string("terminal_placement"), key: "terminal_placement", allowed: TerminalPlacement.configNames) {
             config.terminalPlacement = TerminalPlacement(configName: placement) ?? .newWindow
         }
+        if let bypass = table.boolean("bypass_permissions") {
+            config.bypassPermissions = bypass
+        }
         general.terminal = table.string("terminal")
         general.editor = table.string("editor")
         general.agents = table.stringArray("agents") ?? []

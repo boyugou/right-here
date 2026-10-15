@@ -36,6 +36,8 @@ final class SetupModel {
     private(set) var configValid = true
     private(set) var configDiagnostics: [String] = []
 
+    var knownAgents: [AgentDescriptor] { KnownAgents.all }
+
     private let facts = LiveSystemFacts()
     private var icons = IconProvider(facts: LiveSystemFacts())
 

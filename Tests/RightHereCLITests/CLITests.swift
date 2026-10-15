@@ -270,6 +270,28 @@ struct CLITests {
         #expect(agent.standardOutput.contains("arguments: \"cd /tmp && codex\""))
     }
 
+    @Test func agentBypassPermissionsFlagsAndSafeOverride() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let normal = try rh.run(["run", "agent.claude@terminal", "--dry-run", "--container", "/tmp"])
+        #expect(normal.standardOutput.contains("arguments: \"cd /tmp && claude\""))
+
+        let bypass = try rh.run(["run", "agent.claude@terminal", "--bypass-permissions", "--dry-run", "--container", "/tmp"])
+        #expect(bypass.standardOutput.contains("arguments: \"cd /tmp && claude --dangerously-skip-permissions\""))
+
+        let shortBypass = try rh.run(["run", "agent.agy@terminal", "-y", "--dry-run", "--container", "/tmp"])
+        #expect(shortBypass.standardOutput.contains("arguments: \"cd /tmp && agy --dangerously-skip-permissions\""))
+
+        let withArg = try rh.run(["run", "agent.claude@terminal", "-y", "--arg", "--verbose", "--dry-run", "--container", "/tmp"])
+        #expect(withArg.standardOutput.contains("arguments: \"cd /tmp && claude --dangerously-skip-permissions --verbose\""))
+
+        let rhWithBypassConfig = try RH(config: "[general]\nbypass_permissions = true\n"); defer { rhWithBypassConfig.cleanUp() }
+        let configBypass = try rhWithBypassConfig.run(["run", "agent.codex@terminal", "--dry-run", "--container", "/tmp"])
+        #expect(configBypass.standardOutput.contains("arguments: \"cd /tmp && codex --dangerously-bypass-approvals-and-sandbox\""))
+
+        let safeOverride = try rhWithBypassConfig.run(["run", "agent.codex@terminal", "--safe", "--dry-run", "--container", "/tmp"])
+        #expect(safeOverride.standardOutput.contains("arguments: \"cd /tmp && codex\""))
+    }
+
     @Test func aPresetDryRunShowsTheQuotedPromptAndAHostileNameIsRefused() throws {
         let rh = try RH(config: "[general]\nterminal = \"terminal\"\nagents = [\"claude\"]\n"); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("work")

@@ -26,6 +26,14 @@ struct ConfigReader {
         }
     }
 
+    func boolean(_ key: String) -> Bool? {
+        guard table.contains(key: key) else { return nil }
+        do { return try table.bool(forKey: key) } catch {
+            sink.error(path + [key], "expected a boolean, found \(found(key, after: error))")
+            return nil
+        }
+    }
+
     func stringArray(_ key: String) -> [String]? {
         guard table.contains(key: key) else { return nil }
         guard let array = try? table.array(forKey: key) else {

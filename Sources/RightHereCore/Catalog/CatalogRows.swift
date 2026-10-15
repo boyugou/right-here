@@ -22,6 +22,8 @@ public struct AgentRow: Sendable, Equatable, Codable {
     public var desktopLink: Bool
     /// How the command takes a first prompt (`positional` or a flag); `nil` when it is not known, which keeps presets away.
     public var promptArgument: String?
+    /// The flag this agent uses to bypass tool confirmation prompts, if known.
+    public var bypassPermissionArgument: String?
 
     /// How `rh agents` words the row, not part of its JSON: whether the agent is on, and what the login shell found. An agent
     /// that is on but not found still has its entry in the menu, which cannot look (that takes a shell); only this says so.
@@ -47,7 +49,8 @@ extension Config {
                 enabled: enabledAgents.contains(agent.id),
                 foundInShell: found.map { $0.contains(agent.executable) },
                 variants: agent.variants.map(\.id), terminalLink: agent.terminalLink != nil, desktopLink: agent.desktopLink != nil,
-                promptArgument: agent.promptArgument?.configValue
+                promptArgument: agent.promptArgument?.configValue,
+                bypassPermissionArgument: agent.bypassPermissionArgument
             )
         }
     }

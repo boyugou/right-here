@@ -50,6 +50,8 @@ public struct AgentDescriptor: Sendable, Equatable, Identifiable {
     public var instructionFile: String?
     /// How the command takes a first prompt, for presets; `nil` when that is not known (and presets are not offered).
     public var promptArgument: PromptArgument?
+    /// The argument flag this agent uses to bypass tool confirmation prompts or run autonomously, if known.
+    public var bypassPermissionArgument: String?
 
     /// The program the command starts: its first word, which is what is looked up in the login shell's PATH.
     public var executable: String {
@@ -65,7 +67,8 @@ public struct AgentDescriptor: Sendable, Equatable, Identifiable {
         terminalLink: Link? = nil,
         desktopLink: Link? = nil,
         instructionFile: String? = nil,
-        promptArgument: PromptArgument? = nil
+        promptArgument: PromptArgument? = nil,
+        bypassPermissionArgument: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -76,11 +79,14 @@ public struct AgentDescriptor: Sendable, Equatable, Identifiable {
         self.desktopLink = desktopLink
         self.instructionFile = instructionFile
         self.promptArgument = promptArgument
+        self.bypassPermissionArgument = bypassPermissionArgument
     }
 }
 
 public enum KnownAgents {
-    public static let all: [AgentDescriptor] = [claude, codex, gemini, agy, opencode, aider, amp]
+    public static let all: [AgentDescriptor] = [
+        claude, codex, agy, gemini, opencode, kimi, muse, goose, copilot, cody, aider, amp
+    ]
 
     public static let agy = AgentDescriptor(
         id: "agy",
@@ -91,7 +97,8 @@ public enum KnownAgents {
         ],
         iconBundleID: "com.google.antigravity",
         instructionFile: "AGENTS.md",
-        promptArgument: .flag("-i")
+        promptArgument: .flag("-i"),
+        bypassPermissionArgument: "--dangerously-skip-permissions"
     )
 
     public static let claude = AgentDescriptor(
@@ -106,7 +113,8 @@ public enum KnownAgents {
         terminalLink: .init(template: "claude-cli://open?cwd={dir}", promptParameter: "q"),
         desktopLink: .init(template: "claude://code/new?folder={dir}"),
         instructionFile: "CLAUDE.md",
-        promptArgument: .positional
+        promptArgument: .positional,
+        bypassPermissionArgument: "--dangerously-skip-permissions"
     )
 
     public static let codex = AgentDescriptor(
@@ -120,7 +128,8 @@ public enum KnownAgents {
         iconBundleID: "com.openai.codex",
         desktopLink: .init(template: "codex://threads/new?path={dir}"),
         instructionFile: "AGENTS.md",
-        promptArgument: .positional
+        promptArgument: .positional,
+        bypassPermissionArgument: "--dangerously-bypass-approvals-and-sandbox"
     )
 
     public static let gemini = AgentDescriptor(
@@ -128,16 +137,71 @@ public enum KnownAgents {
         name: "Gemini CLI",
         command: "gemini",
         variants: [.init(id: "resume", title: "Resume Latest Session", arguments: ["--resume", "latest"], titleKey: .variantResumeLatest)],
-        instructionFile: "GEMINI.md"
+        instructionFile: "GEMINI.md",
+        bypassPermissionArgument: "-y"
     )
+
     public static let opencode = AgentDescriptor(
         id: "opencode",
         name: "opencode",
         command: "opencode",
         variants: [.init(id: "continue", title: "Continue Last Session", arguments: ["--continue"], titleKey: .variantContinue)],
-        instructionFile: "AGENTS.md"
+        instructionFile: "AGENTS.md",
+        bypassPermissionArgument: "--auto"
     )
-    public static let aider = AgentDescriptor(id: "aider", name: "aider", command: "aider")
+
+    public static let kimi = AgentDescriptor(
+        id: "kimi",
+        name: "Kimi Code",
+        command: "kimi",
+        variants: [.init(id: "continue", title: "Continue Last Session", arguments: ["--continue"], titleKey: .variantContinue)],
+        instructionFile: "KIMI.md",
+        promptArgument: .flag("-p"),
+        bypassPermissionArgument: "--auto-approve"
+    )
+
+    public static let muse = AgentDescriptor(
+        id: "muse",
+        name: "Muse Code",
+        command: "muse",
+        variants: [.init(id: "continue", title: "Continue Last Session", arguments: ["--continue"], titleKey: .variantContinue)],
+        instructionFile: "MUSE.md",
+        promptArgument: .positional,
+        bypassPermissionArgument: "--auto-approve"
+    )
+
+    public static let goose = AgentDescriptor(
+        id: "goose",
+        name: "Goose",
+        command: "goose",
+        variants: [.init(id: "resume", title: "Resume a Session…", arguments: ["session", "resume"], titleKey: .variantResume)],
+        instructionFile: "GOOSE.md",
+        promptArgument: .positional
+    )
+
+    public static let copilot = AgentDescriptor(
+        id: "copilot",
+        name: "GitHub Copilot",
+        command: "copilot",
+        instructionFile: "AGENTS.md",
+        promptArgument: .positional,
+        bypassPermissionArgument: "--allow-all"
+    )
+
+    public static let cody = AgentDescriptor(
+        id: "cody",
+        name: "Cody",
+        command: "cody",
+        instructionFile: "AGENTS.md",
+        promptArgument: .positional
+    )
+
+    public static let aider = AgentDescriptor(
+        id: "aider",
+        name: "aider",
+        command: "aider",
+        bypassPermissionArgument: "--yes-always"
+    )
     public static let amp = AgentDescriptor(id: "amp", name: "Amp", command: "amp", instructionFile: "AGENTS.md")
 
     public static func agent(id: String) -> AgentDescriptor? {

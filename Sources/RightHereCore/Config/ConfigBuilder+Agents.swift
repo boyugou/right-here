@@ -107,6 +107,15 @@ extension ConfigBuilder {
                 sink.error(reader.path + ["prompt_arg"], "\"\(word)\" is not \"positional\" or a flag such as \"--prompt\"")
             }
         }
+        if let bypass = reader.boolean("bypass_permissions") {
+            settings.bypassPermissions = bypass
+        }
+        if let bypassArg = reader.string("bypass_permission_arg") {
+            settings.bypassPermissionArgument = bypassArg
+        }
+        if let extraArgs = reader.stringArray("args") {
+            settings.args = extraArgs
+        }
 
         if KnownAgents.agent(id: id) != nil {
             settings.command = command
