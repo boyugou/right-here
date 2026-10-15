@@ -21,7 +21,9 @@
   catalogs the app reads are resources of its target in project.yml;
 - Localization/AppShortcuts.xcstrings (the spoken phrases of the Shortcuts actions) keeps the ${applicationName}
   placeholder;
-- Localization/InfoPlist.xcstrings (the permission-prompt text in the app and the extension) is complete too.
+- Localization/InfoPlist.xcstrings (the permission-prompt text in the app and the extension) is complete too;
+- the SwiftUI views in Apps/ show no literal text: what a view shows is a catalog entry or `Text(verbatim:)` for a name or a
+  command (script/swiftui_literals.py; it checks itself on a fixture before it looks at the code).
 
     ./script/verify_localizations.py
     ./script/verify_localizations.py --missing de     list what a language still lacks, in every catalog
@@ -33,6 +35,7 @@ import sys
 from localization_lib import (
     CATALOGS, LETTERS, ROOT, SWIFT_DIRECTORY, arity, case_name, languages, read_catalog, source_language, translation_problems,
 )
+from swiftui_literals import find_literals, self_test as literal_self_test
 
 KEYS_FILE = SWIFT_DIRECTORY / "LocalizationKey.generated.swift"
 MESSAGES_FILE = SWIFT_DIRECTORY / "LocalizedMessage.generated.swift"
@@ -150,6 +153,16 @@ def check_generated_keys(strings: dict, problems: list[str]) -> None:
         problems.append(f"LocalizedMessage.{name} is not a LocalizationKey")
 
 
+def check_swiftui_literals(problems: list[str]) -> None:
+    """A view in Apps/ shows a literal text (`Text("Overview")`, `Button("Remove")`, `.help("…")`) instead of a catalog entry: the text
+    would be English in every language, and the build would not say so."""
+    problems += literal_self_test()
+    for path in sorted((ROOT / "Apps").rglob("*.swift")):
+        for finding in find_literals(path.read_text(encoding="utf-8")):
+            problems.append(f'{path.relative_to(ROOT)}:{finding.line}: {finding.call}("{finding.text}") shows a literal text; write it as a catalog '
+                            f'entry through Localizer, or as Text(verbatim:) when it is a name or a command')
+
+
 def main() -> int:
     if "--missing" in sys.argv:
         code = sys.argv[sys.argv.index("--missing") + 1]
@@ -166,6 +179,7 @@ def main() -> int:
     check_generated_keys(strings, problems)
     check_languages("Localizable.xcstrings", catalog, problems)
     check_texts(strings, problems)
+    check_swiftui_literals(problems)
 
     # What the App Intents are called: written on screen like the strings of the code, but read by the app from its bundle.
     intents = read_catalog("AppIntents.xcstrings")
