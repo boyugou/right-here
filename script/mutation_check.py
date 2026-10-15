@@ -342,8 +342,10 @@ def failed_tests(output: str) -> set[str]:
 def run_tests(clone: pathlib.Path) -> tuple[str, bool]:
     """`swift test` in the clone: what it printed, and whether it had to be killed for hanging."""
     # Its own session, so that on a hang the test host and every rh it started are stopped together.
+    # A run that is killed can be cut inside a multi-byte character (the checkmarks of the test report are three bytes), so what cannot
+    # be decoded is replaced and not an error: strict decoding crashed this script on the very hang it is there to report.
     process = subprocess.Popen(["swift", "test"], cwd=clone, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                               text=True, start_new_session=True)
+                               text=True, errors="replace", start_new_session=True)
     try:
         output, _ = process.communicate(timeout=900)
         return output, False
