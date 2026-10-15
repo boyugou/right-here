@@ -45,4 +45,24 @@ public enum MenuPreview {
         append(nodes, level: 0, path: [])
         return rows
     }
+
+    /// The ids of every submenu with entries in it, at any depth: the only lines that can be open. The ids are positions, so
+    /// when the menu changes an open submenu keeps its id but may name another entry; `keepingOpen` drops the ones that are gone.
+    public static func submenuIDs(_ nodes: [MenuNode]) -> Set<String> {
+        var ids = Set<String>()
+        func collect(_ nodes: [MenuNode], path: [Int]) {
+            for (index, node) in nodes.enumerated() where node.kind == .submenu && !node.children.isEmpty {
+                let position = path + [index]
+                ids.insert(position.map(String.init).joined(separator: "."))
+                collect(node.children, path: position)
+            }
+        }
+        collect(nodes, path: [])
+        return ids
+    }
+
+    /// The submenus of `open` that the menu still has.
+    public static func keepingOpen(_ open: Set<String>, in nodes: [MenuNode]) -> Set<String> {
+        open.intersection(submenuIDs(nodes))
+    }
 }

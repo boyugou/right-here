@@ -52,14 +52,22 @@ struct PathDisplayTests {
         #expect(PathDisplay.abbreviatingHome("/Users/aXb+c/x", home: "/Users/a.b+c") == "/Users/aXb+c/x")
     }
 
+    /// The marks a folder adds: a left-to-right mark at its start and on each side of a slash.
+    private func withoutMarks(_ text: String) -> String {
+        text.filter { $0 != "\u{200E}" }
+    }
+
     @Test func aFolderInAListIsKeptInOnePieceLeftToRight() {
         let shown = PathDisplay.folder("/Users/tester/مستندات/مشروع", home: home)
-        #expect(shown.hasPrefix("\u{2066}") && shown.hasSuffix("\u{2069}"))
-        #expect(shown.dropFirst().dropLast() == "~/مستندات/مشروع")
+        #expect(shown.hasPrefix("\u{200E}"))
+        // A left-to-right mark on each side of every slash: the names between them keep their order.
+        #expect(shown.contains("/\u{200E}مستندات\u{200E}/") || shown.contains("\u{200E}/\u{200E}مستندات"))
+        #expect(withoutMarks(shown) == "~/مستندات/مشروع")
     }
 
     @Test func theMarksAreTheOnlyThingAFolderGains() {
         let path = "/Volumes/Work/app"
-        #expect(PathDisplay.folder(path, home: home).filter { $0 != "\u{2066}" && $0 != "\u{2069}" } == path)
+        #expect(withoutMarks(PathDisplay.folder(path, home: home)) == path)
+        #expect(withoutMarks(PathDisplay.folder("", home: home)) == "")
     }
 }

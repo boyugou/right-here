@@ -74,8 +74,8 @@ struct SetupLoaderTests {
         #expect(snapshot.checks.first?.id == .config)
         #expect(snapshot.checks.first { $0.id == .terminalDefault }?.openedApp == "Ghostty")
         #expect(snapshot.checks.first { $0.id == .finderExtension }?.status == .ok)
-        #expect(snapshot.pins == ["/Users/tester/Projects/app"])
-        #expect(snapshot.recents == ["/Users/tester/Projects/web", "/Users/tester/Notes"])
+        #expect(snapshot.folders.pins == ["/Users/tester/Projects/app"])
+        #expect(snapshot.folders.recents == ["/Users/tester/Projects/web", "/Users/tester/Notes"])
         #expect(snapshot.configFile == machine.paths.configFile)
         #expect(snapshot.configProblems.isEmpty)
         #expect(!snapshot.configHasErrors)
@@ -88,7 +88,7 @@ struct SetupLoaderTests {
         let machine = try Machine(); defer { machine.cleanUp() }
         let snapshot = await machine.loader(runner: FakeProcessRunner()).load()
         #expect(!snapshot.checks.isEmpty)
-        #expect(snapshot.pins.isEmpty && snapshot.recents.isEmpty)
+        #expect(snapshot.folders.pins.isEmpty && snapshot.folders.recents.isEmpty)
         #expect(snapshot.configProblems.isEmpty)
     }
 

@@ -6,6 +6,7 @@ public enum PathDisplay {
     /// to left. Without it a path that starts with an Arabic or Hebrew folder name takes the direction of that name and is
     /// laid out right to left, the slashes ending up on the wrong side of the names.
     static let leftToRightIsolate = "\u{2066}"
+    static let leftToRightMark = "\u{200E}"
     static let popIsolate = "\u{2069}"
 
     /// `text` with every path under `home`, and `home` itself, written from `~`: shorter, and a screenshot of the window does
@@ -21,9 +22,17 @@ public enum PathDisplay {
         return text.replacingOccurrences(of: pattern, with: "~", options: .regularExpression)
     }
 
-    /// A whole path as a row of a list shows it: under `~` where it can be, and in one piece left to right. The marks that do
-    /// that are invisible and not part of the path, so this is for text that is shown, not for text that is copied.
+    /// A whole path as a row of a list shows it: under `~` where it can be, and in one piece left to right. In a right-to-left
+    /// window the slashes between names are the neutral characters that decide the order: between two right-to-left names they
+    /// take their direction, and the names come out in reverse. A left-to-right mark on each side of a slash makes it strong, so
+    /// every name keeps its place. The marks are invisible and are not part of the path, so this is for text that is shown and
+    /// never for text that is copied.
     public static func folder(_ path: String, home: String) -> String {
-        leftToRightIsolate + abbreviatingHome(path, home: home) + popIsolate
+        let separated = abbreviatingHome(path, home: home)
+            .split(separator: "/", omittingEmptySubsequences: false)
+            .joined(separator: leftToRightMark + "/" + leftToRightMark)
+        // A mark, not an isolate, at the start: the direction of a line is taken from its first strong character outside any isolate,
+        // and an isolate hides every character of the path from that choice.
+        return leftToRightMark + separated
     }
 }
