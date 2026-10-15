@@ -1,4 +1,5 @@
 import AppKit
+import RightHereCore
 import SwiftUI
 
 /// The window is only for setup and status; the Finder extension runs without the app. Closing the
@@ -13,7 +14,7 @@ struct RightHereApp: App {
     @State private var model = SetupModel()
 
     var body: some Scene {
-        Window("Right Here", id: "main") {
+        Window(AppIdentity.productName, id: "main") {
             SetupView(model: model)
         }
         .windowResizability(.contentMinSize)

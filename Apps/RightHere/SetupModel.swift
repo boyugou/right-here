@@ -4,168 +4,73 @@ import Observation
 import RightHereCore
 import RightHereKit
 
-enum SetupTab: String, CaseIterable, Identifiable {
-    case overview = "overview"
-    case menu = "menu"
-    case ai = "ai"
-    case worktrees = "worktrees"
-    case bookmarks = "bookmarks"
-    case diagnostics = "diagnostics"
-    case config = "config"
-
-    var id: String { rawValue }
-}
-
-/// What the setup window shows and does. All the work is done by the same code `rh` uses.
+/// What the setup window shows and does. The reads, the actions and the git work are asked of RightHereKit, which runs them off
+/// the main actor; this class keeps the answers and asks again when it has to. A refresh that is asked for while one runs joins
+/// it (RefreshLoop), so the answers arrive in the order they were asked for, and a poll never overwrites a newer answer.
 @MainActor
 @Observable
 final class SetupModel {
     var selectedTab: SetupTab = .overview
+
+    private(set) var snapshot: SetupSnapshot?
     private(set) var checks: [DoctorCheck] = []
+    private(set) var folders = FolderSnapshot()
+    private(set) var isRefreshing = false
+    /// An install, a repair, a launch test or a change to the folders is running: the buttons that would start another are off.
     private(set) var isWorking = false
-    private(set) var message: String?
-    /// The Finder menu for a folder, built the way the Finder extension builds it; nothing when the config has errors.
-    private(set) var menu: [MenuNode] = []
-    /// The submenus of the menu preview that are open, by `MenuPreviewRow.id`.
+    private(set) var isTestingLaunch = false
+    /// What happened last: a confirmation, or why an action did not work. The next action replaces it.
+    private(set) var notice: SetupNotice?
+    private(set) var worktrees: WorktreeListing = .idle
+    /// The repository the worktrees tab lists when the person chose one; otherwise the first repository of the folders.
+    private(set) var chosenRepository: URL?
+    /// The submenus of the Finder menu that are open, by `MenuPreviewRow.id`.
     private(set) var openSubmenus: Set<String> = []
+    /// The answer of the last launch test: it is kept through refreshes, which read the checks and do not run the probe.
+    @ObservationIgnored private var launchResult: DoctorCheck?
+    /// Each listing of the worktrees gets a number; only the newest one is shown, so a listing that ends late cannot overwrite it.
+    @ObservationIgnored private var worktreeRequest = 0
 
-    private(set) var pins: [String] = []
-    private(set) var recents: [String] = []
-    private(set) var worktrees: [WorktreeEntry] = []
-    private(set) var configContent: String = ""
-    private(set) var configValid = true
-    private(set) var configDiagnostics: [String] = []
-
-    var knownAgents: [AgentDescriptor] { KnownAgents.all }
-
-    private let facts = LiveSystemFacts()
-    private var icons = IconProvider(facts: LiveSystemFacts())
+    private let loader: SetupLoader
+    private let actions: SetupActions
+    private let browser = WorktreeBrowser()
+    private let home: URL
+    @ObservationIgnored private var icons: IconProvider
+    @ObservationIgnored private var loop: RefreshLoop<SetupSnapshot>?
 
     /// The `rh` that ships inside this app.
-    private var helper: URL {
-        Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/rh")
+    private static let helper = Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/rh").path
+
+    init() {
+        let facts = LiveSystemFacts()
+        loader = SetupLoader(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper)
+        actions = SetupActions(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper)
+        icons = IconProvider(facts: facts)
+        home = facts.homeDirectory
     }
 
-    private var paths: RHPaths { RHPaths.current(facts: facts) }
-
-    /// Whether any check is anything but ok, warnings included.
-    var needsAttention: Bool {
-        checks.contains { $0.status != .ok }
-    }
-
-    /// The Finder extension is the one thing the first-run card waits for.
-    var extensionNeedsSetup: Bool {
-        checks.contains { $0.id == .finderExtension && $0.status != .ok }
-    }
-
-    /// Default terminal name from checks or config.
-    var defaultTerminalName: String {
-        if let detail = check(.terminalDefault)?.detail {
-            let rendered = Localizer.system.render(detail)
-            let cleaned = rendered
-                .replacingOccurrences(of: "Open in ", with: "")
-                .replacingOccurrences(of: "Öffnen in ", with: "")
-                .replacingOccurrences(of: "Ouvrir dans ", with: "")
-            if !cleaned.isEmpty { return cleaned }
-        }
-        return "Ghostty"
-    }
-
-    /// Default editor name from checks or config.
-    var defaultEditorName: String {
-        if let detail = check(.editorDefault)?.detail {
-            let rendered = Localizer.system.render(detail)
-            let cleaned = rendered
-                .replacingOccurrences(of: "Open in ", with: "")
-                .replacingOccurrences(of: "Öffnen in ", with: "")
-                .replacingOccurrences(of: "Ouvrir dans ", with: "")
-            if !cleaned.isEmpty { return cleaned }
-        }
-        return "Visual Studio Code"
-    }
-
-    /// Count of checks by status.
-    var doctorStats: (ok: Int, warn: Int, fail: Int, needsUser: Int) {
-        var ok = 0, warn = 0, fail = 0, needsUser = 0
-        for check in checks {
-            switch check.status {
-            case .ok: ok += 1
-            case .warn: warn += 1
-            case .fail: fail += 1
-            case .needsUser: needsUser += 1
-            }
-        }
-        return (ok, warn, fail, needsUser)
-    }
-
-    /// Whether the details list starts open: when something needs attention, except under the first-run card.
-    var detailsStartOpen: Bool {
-        #if PREVIEW
-        if previewOpensDetails { return true }
-        #endif
-        return needsAttention && !extensionNeedsSetup
-    }
-
-    #if PREVIEW
-    private var simulated = false
-    private var previewOpensDetails = false
-
-    /// For `script/preview_setup.sh --onboarding`: shows the first-run card on a machine where the extension is on.
-    func simulateExtensionOff() {
-        checks = checks.map { check in
-            var copy = check
-            if check.id == .finderExtension { copy.status = .needsUser }
-            return copy
-        }
-        selectedTab = .overview
-    }
-
-    /// For `script/preview_setup.sh --demo` and `--gallery`: shows these checks and nothing this machine says, now or
-    /// later: a refresh is ignored from here on.
-    func simulate(checks: [DoctorCheck], opensDetails: Bool = false) {
-        self.checks = checks
-        simulated = true
-        previewOpensDetails = opensDetails
-        if opensDetails {
-            selectedTab = .diagnostics
-        }
-    }
-
-    /// For `script/preview_setup.sh --demo`: this menu, drawn with the icons of these facts.
-    func simulate(menu: [MenuNode], icons: IconProvider) {
-        self.menu = menu
-        self.icons = icons
-        if !previewOpensDetails {
-            selectedTab = .menu
-        }
-    }
-
-    /// For `script/preview_setup.sh --submenus`: these submenus of the menu preview start open.
-    func simulate(openSubmenus ids: Set<String>) {
-        openSubmenus = ids
-        selectedTab = .menu
-    }
-
-    /// An app's icon comes as a 16-bit extended-range image, and `ImageRenderer` renders the whole picture in extended
-    /// range as soon as it meets one, which washes out every color in it. An icon drawn into the renderer's own context
-    /// keeps the picture as it is on screen.
-    private static func drawnInTheRenderer(_ image: NSImage) -> NSImage {
-        guard !image.isTemplate else { return image }
-        return NSImage(size: image.size, flipped: false) { rect in
-            image.draw(in: rect)
-            return true
-        }
-    }
-    #endif
+    /// The checks as a summary: whether anything is known yet, what is open, whether the first-run card is due.
+    var summary: SetupSummary { SetupSummary(checks: checks) }
 
     func check(_ id: CheckID) -> DoctorCheck? {
         checks.first { $0.id == id }
     }
 
-    /// The lines of the menu preview that can be seen now.
+    /// The lines of the Finder menu preview that can be seen now.
     var menuRows: [MenuPreviewRow] {
-        MenuPreview.rows(menu, expanded: openSubmenus)
+        MenuPreview.rows(snapshot?.menu ?? [], expanded: openSubmenus)
     }
+
+    /// The home folder the paths of the window are written from `~` against: the snapshot's, which is the demo's in a preview.
+    var homePath: String { snapshot?.home.path ?? home.path }
+
+    /// The program an MCP client starts (`SetupSnippets.mcpCommand`).
+    var mcpCommand: String { snapshot?.mcpCommand ?? AppIdentity.cliName }
+
+    /// The repository the worktrees tab lists now, if there is one.
+    var repository: URL? { chosenRepository ?? folders.repositories.first }
+
+    var repositories: [URL] { folders.repositories }
 
     func image(for icon: Icon?) -> NSImage? {
         let image = icons.image(for: icon)
@@ -180,187 +85,245 @@ final class SetupModel {
         if !openSubmenus.insert(id).inserted { openSubmenus.remove(id) }
     }
 
-    /// While the extension is not switched on, looks at it every two seconds, so the card turns green by itself
-    /// after the person flips the switch in System Settings. A look is the extension's check alone (one `pluginkit`
-    /// call), not the whole doctor; when the extension is on, one full refresh follows. It stops as soon as the
-    /// extension is ok, and when the caller's task is cancelled (the window closed). It stays out of the way of work
-    /// the person started.
-    func watchExtension() async {
-        while extensionNeedsSetup, !Task.isCancelled {
-            try? await Task.sleep(for: .seconds(2))
-            if !isWorking, !Task.isCancelled, await refreshExtension() { await refresh(quiet: true) }
-        }
+    func select(_ tab: SetupTab) {
+        selectedTab = tab
+        if tab == .worktrees { Task { await refreshWorktrees() } }
     }
 
-    /// Looks at the Finder extension alone and puts the answer in the extension's place in `checks`.
-    /// - Returns: whether the extension is ok.
-    private func refreshExtension() async -> Bool {
-        #if PREVIEW
-        if simulated { return false }
-        #endif
-        let check = await Doctor.extensionCheck(runner: LiveProcessRunner())
-        // Work the person started meanwhile ends in a full refresh of its own, which is newer than this look; and a
-        // look that was cut short by the window closing says nothing.
-        guard !isWorking, !Task.isCancelled else { return false }
-        checks = checks.replacing(check)
-        return check.status == .ok
-    }
-
-    /// - Parameter quiet: Do not show the busy state (buttons stay enabled); used by the refresh after a background look.
-    func refresh(quiet: Bool = false) async {
+    /// Reads the whole state again. A call while a read runs waits for it and is answered by one read after it.
+    func refresh() async {
         #if PREVIEW
         if simulated { return }
         #endif
-        if !quiet { isWorking = true }
-        defer { if !quiet { isWorking = false } }
-        let loaded = ConfigStore.load(paths: paths)
-        let doctor = Doctor(facts: facts, paths: paths, loaded: loaded, rhPath: helper.path)
-        checks = await doctor.run()
-        refreshMenu()
-        refreshBookmarks()
-        await refreshWorktrees()
-        refreshConfigState(loaded: loaded)
+        await refreshLoop().refresh()
     }
 
-    /// The preview follows the config and the installed apps as they are now, in the language of the system.
-    private func refreshMenu() {
-        menu = MenuPreview.folderMenu(ConfigStore.load(paths: paths).result, facts: facts, folder: facts.homeDirectory, localizer: .system)
-    }
-
-    func refreshBookmarks() {
-        let store = StateStore.load(paths: paths)
-        pins = store.pins
-        recents = store.recents
-    }
-
-    func pinFolder(_ path: String) {
-        var store = StateStore.load(paths: paths)
-        if store.pin(path) {
-            try? store.save(paths: paths)
-            refreshBookmarks()
+    /// While the Finder extension is not switched on, looks at it every two seconds, so the first-run card turns into the status
+    /// by itself once the person flips the switch in System Settings. A look is one `pluginkit` call, not the whole doctor; when the
+    /// extension is on, one full refresh follows. It stops when the extension is ok or the window closes, and it stays out of the
+    /// way of work the person started.
+    func watchExtension() async {
+        while summary.extensionNeedsSetup, !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(2))
+            #if PREVIEW
+            if simulated { return }
+            #endif
+            guard !Task.isCancelled, !isWorking, !isRefreshing else { continue }
+            let check = await actions.extensionCheck()
+            // A refresh that is running, or that the person started meanwhile, has a newer look at the extension than this one.
+            guard !Task.isCancelled, !isWorking, !isRefreshing else { continue }
+            checks = checks.replacing(check)
+            if check.status == .ok { await refresh() }
         }
     }
 
-    func unpinFolder(_ path: String) {
-        var store = StateStore.load(paths: paths)
-        if store.unpin(path) {
-            try? store.save(paths: paths)
-            refreshBookmarks()
-        }
-    }
-
-    func clearRecents() {
-        var store = StateStore.load(paths: paths)
-        store.clearRecents()
-        try? store.save(paths: paths)
-        refreshBookmarks()
-    }
-
-    func refreshWorktrees() async {
-        guard let gitRoot = facts.gitRoot(containing: facts.currentDirectory) else {
-            worktrees = []
-            return
-        }
-        worktrees = (try? await GitWorktreeManager.listWorktrees(in: gitRoot)) ?? []
-    }
-
-    func removeWorktree(_ path: String) async {
-        guard let gitRoot = facts.gitRoot(containing: facts.currentDirectory) else { return }
-        try? await GitWorktreeManager.removeWorktree(worktreePath: path, gitRoot: gitRoot, deleteBranch: true)
-        await refreshWorktrees()
-    }
-
-    func refreshConfigState(loaded: LoadedConfig) {
-        configValid = !loaded.result.hasErrors
-        configDiagnostics = loaded.result.diagnostics.map { $0.summary(file: loaded.file) }
-        configContent = (try? String(contentsOf: paths.configFile, encoding: .utf8)) ?? "# No config.toml created yet. Run `rh init`."
-    }
-
-    /// Runs `rh install`: runner script, command link, config file and the Finder extension.
-    func installOrRepair() async {
+    /// Runs `rh install`: the runner script, the command link, the config file and the Finder extension, then reads the state.
+    func repair() async {
+        guard !isWorking else { return }
         isWorking = true
-        message = nil
-        do {
-            let result = try await LiveProcessRunner().run(ProcessStep(executable: helper.path, arguments: ["install"]), timeout: .seconds(60))
-            if result.status != 0 {
-                let text = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
-                message = text.isEmpty ? "rh install exited with status \(result.status)" : text
-            }
-        } catch {
-            // The system's own wording, in the system language; the install did not run to its end.
-            message = error.localizedDescription
-        }
+        notice = await actions.installOrRepair()
         isWorking = false
         await refresh()
     }
 
-    /// Has the Finder extension start a throwaway terminal session that runs a typed command, the
-    /// way a menu click starts an agent, and shows what the doctor makes of it. A window opens and
-    /// closes; the first time, macOS asks whether Right Here may control the terminal.
-    func testTerminalLaunch() async {
+    /// Has the Finder extension start a throwaway terminal session that runs a typed command, the way a menu click starts an
+    /// agent, and puts the answer in the list of checks. A window opens and closes; the first time, macOS asks whether Right Here
+    /// may control the terminal. Only that one check is asked again, not the whole doctor.
+    func testLaunch() async {
+        guard !isWorking, !isRefreshing else { return }
         isWorking = true
-        message = Localizer.system.string(.appTesting)
-        let doctor = Doctor(facts: facts, paths: paths, loaded: ConfigStore.load(paths: paths), rhPath: helper.path)
-        checks = await doctor.run(probeLaunch: true)
-        message = nil
+        isTestingLaunch = true
+        notice = nil
+        let check = await actions.launchCheck()
+        launchResult = check
+        checks = checks.replacingOrAppending(check)
+        isTestingLaunch = false
         isWorking = false
+    }
+
+    /// Opens the config file. A refresh follows only when the file was missing, which the checks say: the file made now is the
+    /// one the config check is waiting for, and a refresh runs the login shell, which is not needed otherwise.
+    func openConfig() async {
+        guard !isWorking else { return }
+        let wasMissing = check(.config)?.detail?.key == .doctorConfigMissing
+        notice = await actions.openConfig()
+        if notice == nil, wasMissing { await refresh() }
     }
 
     func showExtensionSettings() {
         FIFinderSyncController.showExtensionManagementInterface()
     }
 
-    func openConfig() async {
-        do {
-            if !FileManager.default.fileExists(atPath: paths.configFile.path) {
-                let created = try await LiveProcessRunner().run(ProcessStep(executable: helper.path, arguments: ["init"]), timeout: .seconds(30))
-                if created.status != 0 {
-                    let text = created.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
-                    message = text.isEmpty ? "rh init exited with status \(created.status)" : text
-                    return
-                }
-            }
-            let opened = try await LiveProcessRunner().run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", paths.configFile.path]))
-            if opened.status != 0 {
-                let text = opened.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
-                message = text.isEmpty ? "open exited with status \(opened.status)" : text
-            }
-        } catch {
-            message = error.localizedDescription
-        }
-    }
-
     func copySetupPrompt() {
-        let prompt = """
-        Set up Right Here for me. Run `rh docs agent-setup` and follow it: run `rh doctor --json` and fix \
-        whatever fails, then tailor ~/.config/right-here/config.toml to how I work, check it with \
-        `rh config validate`, and show me the result with `rh menu`.
-        """
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(prompt, forType: .string)
-        message = Localizer.system.string(.appPromptCopied)
+        copy(SetupSnippets.setupPrompt, confirmed: .promptCopied)
     }
 
-    func copyClaudePluginCommand() {
-        let cmd = "/plugin marketplace add boyugou/right-here\n/plugin install right-here@right-here"
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(cmd, forType: .string)
-        message = "Plugin install command copied"
+    func copyMCPConfiguration() {
+        copy(SetupSnippets.mcpConfiguration(command: mcpCommand), confirmed: .mcpConfigurationCopied)
     }
 
-    func copyMCPConfig() {
-        let config = """
-        {
-          "mcpServers": {
-            "right-here": {
-              "command": "rh",
-              "args": ["mcp"]
-            }
-          }
+    func copyPluginCommands() {
+        copy(SetupSnippets.pluginCommands, confirmed: .pluginCommandsCopied)
+    }
+
+    /// Changes the folders only while no read of the state is running: a read that started before the change could finish after
+    /// it and put the old list back. The buttons that do this are off meanwhile.
+    func unpin(_ folder: String) async {
+        guard !isWorking, !isRefreshing else { return }
+        isWorking = true
+        notice = await actions.unpin(folder)
+        isWorking = false
+        await refreshFolders()
+    }
+
+    func clearRecents() async {
+        guard !isWorking, !isRefreshing else { return }
+        isWorking = true
+        notice = await actions.clearRecents()
+        isWorking = false
+        await refreshFolders()
+    }
+
+    /// Lists the worktrees of the repository the tab shows. A repository chosen meanwhile has its own list coming; this one is dropped.
+    func refreshWorktrees() async {
+        #if PREVIEW
+        if simulated { return }
+        #endif
+        worktreeRequest += 1
+        let request = worktreeRequest
+        guard let repository else {
+            worktrees = .idle
+            return
         }
-        """
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(config, forType: .string)
-        message = "MCP configuration copied"
+        worktrees = .loading
+        let listing = await browser.list(in: repository)
+        // Newer than this listing: a later request, or a repository chosen meanwhile.
+        guard request == worktreeRequest, self.repository == repository else { return }
+        worktrees = listing
     }
+
+    /// Lets the person pick a folder; the git repository it is in is the one the worktrees tab lists.
+    func chooseRepository() async {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.message = Localizer.system.string(.appChooseFolderMessage)
+        panel.prompt = Localizer.system.string(.appChooseFolderPrompt)
+        guard panel.runModal() == .OK, let folder = panel.url else { return }
+        guard let root = await actions.repository(containing: folder) else {
+            notice = .notARepository(PathDisplay.abbreviatingHome(folder.path, home: homePath))
+            return
+        }
+        selectRepository(root)
+    }
+
+    func selectRepository(_ root: URL) {
+        chosenRepository = root
+        Task { await refreshWorktrees() }
+    }
+
+    /// Removes a worktree Right Here made, after the person confirmed it. Git decides whether that is safe (uncommitted work is
+    /// refused, and its refusal is what the window shows); the branch stays.
+    func remove(_ row: WorktreeRow) async {
+        guard let repository, !isWorking else { return }
+        isWorking = true
+        let result = await browser.remove(row, in: repository)
+        if case .worktreeRemoved(let path) = result {
+            notice = .worktreeRemoved(PathDisplay.abbreviatingHome(path, home: homePath))
+        } else {
+            notice = result
+        }
+        isWorking = false
+        await refreshWorktrees()
+    }
+
+    private func refreshLoop() -> RefreshLoop<SetupSnapshot> {
+        if let loop { return loop }
+        let made = RefreshLoop<SetupSnapshot>(
+            load: { [loader] in await loader.load() },
+            apply: { [weak self] loaded in self?.apply(loaded) },
+            busyChanged: { [weak self] busy in self?.isRefreshing = busy })
+        loop = made
+        return made
+    }
+
+    private func apply(_ loaded: SetupSnapshot) {
+        snapshot = loaded
+        checks = loaded.checks + (launchResult.map { [$0] } ?? [])
+        folders = loaded.folders
+        // The ids of the open submenus are positions: a changed menu may have another entry at a position that was open.
+        openSubmenus = MenuPreview.keepingOpen(openSubmenus, in: loaded.menu)
+        warmIcons(loaded.menu)
+        if selectedTab == .worktrees { Task { await refreshWorktrees() } }
+    }
+
+    private func refreshFolders() async {
+        #if PREVIEW
+        if simulated { return }
+        #endif
+        folders = await loader.folders()
+        if selectedTab == .worktrees { await refreshWorktrees() }
+    }
+
+    private func copy(_ text: String, confirmed: SetupNotice) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        notice = confirmed
+    }
+
+    /// The icons of the menu are read from the apps on disk, which takes a moment for each; they are read off the main actor so
+    /// that opening the menu does not wait for them.
+    private func warmIcons(_ menu: [MenuNode]) {
+        let provider = icons
+        let wanted = Self.icons(in: menu)
+        Task.detached { provider.prewarm(wanted) }
+    }
+
+    private static func icons(in nodes: [MenuNode]) -> [Icon] {
+        nodes.flatMap { node in (node.icon.map { [$0] } ?? []) + icons(in: node.children) }
+    }
+
+    #if PREVIEW
+    /// For `script/preview_setup.sh`: the window shows what it is given and nothing this Mac says, now or later (a refresh is
+    /// ignored from here on).
+    @ObservationIgnored private var simulated = false
+
+    func simulate(_ demo: SetupSnapshot, tab: SetupTab, icons provider: IconProvider? = nil, worktrees listing: WorktreeListing = .idle,
+                  repository: URL? = nil) {
+        simulated = true
+        if let provider { icons = provider }
+        apply(demo)
+        folders = demo.folders
+        chosenRepository = repository
+        worktrees = listing
+        selectedTab = tab
+    }
+
+    /// For `--onboarding`: the first-run card, as it is when the Finder extension is off.
+    func simulateExtensionOff() {
+        checks = checks.map { check in
+            var copy = check
+            if check.id == .finderExtension { copy.status = .needsUser }
+            return copy
+        }
+    }
+
+    /// For `--submenus`: these submenus of the Finder menu start open.
+    func simulate(openSubmenus ids: Set<String>) {
+        openSubmenus = ids
+        selectedTab = .menu
+    }
+
+    /// An app's icon comes as a 16-bit extended-range image, and `ImageRenderer` renders the whole picture in extended range as soon
+    /// as it meets one, which washes out every color in it. An icon drawn into the renderer's own context keeps the picture as it is
+    /// on screen.
+    private static func drawnInTheRenderer(_ image: NSImage) -> NSImage {
+        guard !image.isTemplate else { return image }
+        return NSImage(size: image.size, flipped: false) { rect in
+            image.draw(in: rect)
+            return true
+        }
+    }
+    #endif
 }

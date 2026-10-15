@@ -85,8 +85,6 @@ extension LocalizedMessage {
     public static var appCopyPluginCommands: LocalizedMessage { LocalizedMessage(.appCopyPluginCommands) }
     /// Copy Setup Prompt for AI
     public static var appCopySetupPrompt: LocalizedMessage { LocalizedMessage(.appCopySetupPrompt) }
-    /// Details
-    public static var appDetails: LocalizedMessage { LocalizedMessage(.appDetails) }
     /// Finder Extension Settings
     public static var appExtensionSettings: LocalizedMessage { LocalizedMessage(.appExtensionSettings) }
     /// Right Here remembers these folders on this Mac only, in a file next to your config. An AI assistant that you connect through MCP can read them.
