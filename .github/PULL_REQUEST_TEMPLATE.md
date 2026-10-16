@@ -4,7 +4,7 @@
 
 ## Checklist
 
-- [ ] `./script/verify_all.sh` passes
+- [ ] `./script/verify_all.sh` passes (it needs a full Xcode and `uv`; if you cannot run it, say so and a maintainer will)
 - [ ] A bug fix comes with a test that fails on the old code
 - [ ] User-visible strings are in `Localization/Localizable.xcstrings` in all thirty languages, and
       `script/verify_localizations.py` passes

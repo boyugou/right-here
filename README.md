@@ -13,7 +13,7 @@ The open-source action layer for macOS: send folders and selections to terminals
 [![MCP Server](https://img.shields.io/badge/MCP-Server%20(stdio)-6B57D2?style=flat-square)](.)
 [![Languages](https://img.shields.io/badge/languages-30%20locales-orange?style=flat-square)](.)
 
-[Website](https://boyugou.github.io/right-here/) · [Install](#install) · [CLI Usage](#use) · [Connect AI Assistant](#connect-an-ai-assistant) · [Architecture](#how-it-works) · [Documentation](docs/INDEX.md)
+[Website](https://boyugou.github.io/right-here/) · [Install](#install) · [CLI Usage](#use) · [Connect AI Assistant](#connect-an-ai-assistant) · [Architecture](#how-it-works) · [Documentation](docs/INDEX.md) · [Changelog](CHANGELOG.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
 
 <br>
 
@@ -30,6 +30,15 @@ The open-source action layer for macOS: send folders and selections to terminals
   </tr>
 </table>
 
+<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/setup-dark.png">
+  <img src="docs/images/setup-light.png" alt="The Right Here setup window: a sidebar of six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders) and a preview of the Finder menu for a folder: Open in Ghostty, Open in Visual Studio Code, Claude Code Here, Codex Here, New File and Copy Path." width="640">
+</picture>
+
+<sub>The setup window with example data, rendered without a screen from the app's own view.</sub>
+
 </div>
 
 ---
@@ -44,6 +53,8 @@ Developers use contextual right-clicks in Finder or the native macOS workspace a
 - **One set of actions.** Anything in the Finder menu can be previewed, tested and run with `rh run <action>` or over MCP.
 - **Local-first configuration.** Configured via standard TOML with JSON Schema validation (`rh config schema`) and optional multi-device sync without third-party servers.
 - **Native.** Apple silicon, macOS 26 or later, Dark Mode, and 30 languages including right-to-left ones (machine-translated, awaiting native-speaker review).
+
+**Status: beta.** The core, the command line, the Quick Actions, the MCP server and the plugin are tested with fakes and through real shells. What needs a real Finder and real terminals is not yet confirmed everywhere ([`docs/development/MANUAL_CHECKS.md`](docs/development/MANUAL_CHECKS.md) lists it): the 0.2.0 Finder extension crashed on macOS 26.5.1, the fix is in `main` and not yet confirmed on that system ([ADR 0019](docs/decisions/0019-no-swift-override-of-directory-observing.md)), and only Ghostty and Terminal were tried as terminals.
 
 ## How it works
 
@@ -187,13 +198,15 @@ Install the official Right Here plugin in Claude Code for contextual workspace a
 
 ### Model Context Protocol (MCP)
 
-To connect Claude Desktop, Cursor, Zed, Windsurf, or Antigravity, add `rh mcp` as a stdio server:
+To connect Claude Desktop, Cursor, Zed, Windsurf, or Antigravity, add `rh mcp` as a stdio server. These apps start it with the `PATH` that macOS gives
+a program launched from the Dock, where a bare `rh` is not found, so give the full path of `rh`: the link that `rh setup` makes in `~/.local/bin` (write it out, as in the example: JSON does not expand `~`) or the copy
+inside the app. The app's **AI Assistants** section has a **Copy MCP Configuration** button that writes the snippet with the right path for this Mac.
 
 ```json
 {
   "mcpServers": {
     "right-here": {
-      "command": "rh",
+      "command": "/Users/you/.local/bin/rh",
       "args": ["mcp"]
     }
   }

@@ -1,6 +1,7 @@
 # Homebrew cask for the app (Finder extension, rh inside). Copy to a tap's Casks folder and fill in the
 # version and checksum from script/package_dmg.sh. The official cask repository requires a
 # Developer-ID-signed, notarized app; a personal tap does not enforce that.
+# The release this downloads from is private until the first public release, so `brew install` works only for people with access to it.
 cask "right-here" do
   version "0.2.0"
   sha256 "dcf53afc14acfb6ab0fb2c177a0b85ab9f4f3bd8dcdced7efa83e8e719f7eb81"

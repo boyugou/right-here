@@ -9,7 +9,8 @@ Supported versions: the latest release.
 ## Reporting a problem
 
 Please report a vulnerability privately, through GitHub's "Report a vulnerability" button on the repository's
-Security tab, rather than in a public issue. Include the macOS version, the command or Finder action, and the
+Security tab, rather than in a public issue. (While the repository is private, only people with access to it can see that tab;
+tell the maintainer who invited you and do not post details anywhere public.) Include the macOS version, the command or Finder action, and the
 file name or config that triggers it. A file name that makes a copied path run a command, an action that opens
 or runs the wrong thing, an MCP call that does more than its arguments say, a `rh config sync pull` that takes
 a terminal template or an agent command from the sync folder without `--allow-commands`, and a file in the sync folder

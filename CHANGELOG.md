@@ -2,45 +2,55 @@
 
 ## Unreleased
 
-- Finder extension: on macOS 26.5.1 it crashed each time Finder asked it to watch a folder, so the context menu showed none of its
-  entries while every doctor check passed. It no longer overrides the directory-observing methods, which did nothing (ADR 0019).
-  `rh doctor` now warns when the extension has crashed since it was installed, and names the newest crash report.
-- The check for the `rh` link no longer tells a person to put `~/.local/bin` on their PATH when a new terminal already has it (issue 5: the setup window and
-  a program an AI assistant starts have launchd's PATH, which says nothing about a terminal). It asks the login shell, reads the folder however it is spelled
-  (trailing slash, `.` part, symbolic link), and says "did not say" instead of "not on PATH" when the shell gives no answer. The row for the Services
-  workflows is called Quick Actions, as the rest of the window says, and the AI Assistants section shows `rh setup` as code, without its backticks.
-- New: `rh setup` puts everything in place in one command and can be run again at any time: the config file, the runner script, the `rh` link, the
+Everything since 0.2.0.
+
+### Added
+
+- `rh setup` puts everything in place in one command and can be run again at any time: the config file, the runner script, the `rh` link, the
   Quick Actions and the Finder extension, then the checks, and it says what only you can do. `--terminal`, `--editor` and `--agents` say what you
   use instead of editing TOML (also on `rh init`), `--dry-run` shows the plan and `--json` is the report for an AI agent. A config that exists is
-  never rewritten: the report lists the edit to make. `rh install` now repairs one named piece, the doctor's fixes say `rh setup`, and the setup
-  window's first run offers what is installed and runs the same setup (ADR 0018).
+  never rewritten: the report lists the edit to make. The setup window's first run offers what is installed and runs the same setup (ADR 0018).
 - `rh docs agent-setup` is a procedure for an AI agent (ask the person first, look with a dry run, make the edits an existing config needs, run
   setup once, tell the person what only they can do, check, hand back), and the prompt the app copies and the plugin's setup skill follow it. It
-  was tried with cold agents on three personas (`docs/development/SETUP_EVALUATION.md`); what they found is fixed: a trial lists the PATH line and the
-  permission prompt, a dry run counts the Quick Actions of the config it would write, and the doctor warns about Claude Code's link handler only
-  where something starts Claude Code through the link.
-- The setup window is rebuilt: six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders), every text in the
-  thirty-language catalog, and a check that fails the gate when a view shows a literal. The preview script renders each section
-  (`--tab`). The version comes from one place, `AppIdentity.version`, which `script/verify_version.py` checks against the project, the changelog and
-  the Homebrew files.
+  was tried with cold agents on three personas (`docs/development/SETUP_EVALUATION.md`). `rh docs start` and `rh docs mcp` are new guides.
+- Isolated git worktrees for agents: `rh worktree list|add|remove`, `rh run --worktree` and `--branch`, and the MCP tool `right_here_worktree`
+  (ADR 0016). Worktrees are made under `.right-here/worktrees`; Right Here removes only the ones it made, the MCP tool never forces a removal, and a
+  branch is deleted only when it is merged.
+- Pinned and recent folders: `rh pin`, `rh unpin`, `rh pins`, `rh recents`, the MCP tool `right_here_bookmarks` and the setup window's Folders
+  section. They live in `state.toml`, readable only by you; a pin is an absolute path.
+- Agents: Antigravity (`agy`), Kimi Code, Muse Code, Goose, GitHub Copilot and Cody are built in (twelve in all). Starting an agent with its own
+  permission prompts off is a launch option (`general.bypass_permissions`, `[agent.<id>] bypass_permissions`, `args`; `rh run --bypass-permissions`,
+  `--safe`, `--arg`), off by default and never for a preset. The doctor, `rh agents`, `rh menu --explain` and the plan say when it is on, and the sync
+  guard lists it.
+- Terminals: WezTerm and kitty adapters (not verified on a real machine) and split placements for Ghostty and iTerm2
+  (`terminal_placement = "split-right"` and `"split-down"`).
+- `rh doctor --report` (versions, the doctor's rows, the home folder as `~`), `rh run --language` (so Shortcuts names a new file in the person's language),
+  and a warning from `rh doctor` when the Finder extension has crashed since it was installed, with the newest crash report's name.
+- The setup window is rebuilt: six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders), every text in the thirty-language
+  catalog, and a check that fails the gate when a view shows a literal. The preview script renders each section (`--tab`).
+
+### Changed
+
+- `rh install` now repairs one named piece (`--skip-finder` is gone), and the doctor's fixes say `rh setup`.
 - `rh run`: a plan's text is never cut and every value in it is a JSON-quoted string; a refusal names the file or folder at fault; options that
-  would do nothing (`--bypass-permissions`, `--safe`, `--arg`, `--worktree`, `--branch` on an action that is not an agent) are errors and `-y` is
-  gone; `--worktree --dry-run` plans without creating anything and a failed run leaves no worktree behind; `--language` lets Shortcuts name a new
-  file in the person's language; a misspelt command gets a did-you-mean.
-- Agents: starting with the agent's own permission prompts off is a launch option (`general.bypass_permissions`, `[agent.<id>]
-  bypass_permissions`, `args`), off by default. A preset never gets it. The doctor, `rh agents`, `rh menu --explain` and the plan say when it
-  is on, and the sync guard lists it (ADR 0016).
-- Worktrees: only worktrees that Right Here made are removed, never forced, and a branch is deleted only when merged; branch names are validated;
-  the repository's own hooks, `core.fsmonitor` program and filters do not run while a worktree is made; the MCP worktree tool is annotated as
-  able to delete and its list is fenced.
-- New: `rh doctor --report` (versions, the doctor's rows, counts of the config check; the home folder as `~`), `rh docs start` and `rh docs mcp`
-  (built from the tools), `rh menu --explain`, `rh config show` (every file of the config) and `rh config path --all`.
-- Terminals: WezTerm and kitty start through LaunchServices so that nothing waits for the window (not verified on a real machine);
-  `terminal_placement = "split"` is gone (use `split-right`); `preset.<id>@default` is gone.
-- Finder extension: it no longer keeps the Mac from sleeping, its menu cache lives 30 seconds, and its warm-up no longer races the main
-  thread (ADR 0015).
-- `state.toml` (pinned and recent folders) is readable only by you, and a pin is an absolute path.
-- Packaging: the cask has the checksum of the v0.2.0 DMG; the App Store upload uses an API key and no password; the App Group is gone.
+  would do nothing (`--bypass-permissions`, `--safe`, `--arg`, `--worktree`, `--branch` on an action that is not an agent) are errors;
+  `--worktree --dry-run` plans without creating anything and a failed run leaves no worktree behind; a misspelt command gets a did-you-mean.
+- The doctor's row for the Services workflows is called Quick Actions, as the rest of the window says. The Claude Code link handler is warned
+  about only where something starts Claude Code through the link.
+- The version comes from one place, `AppIdentity.version`, which `script/verify_version.py` checks against the project, the changelog and the
+  Homebrew files. The cask has the checksum of the v0.2.0 DMG; the App Store upload uses an API key and no password; the App Group is gone.
+
+### Fixed
+
+- Finder extension: on macOS 26.5.1 it crashed each time Finder asked it to watch a folder, so the context menu showed none of its entries while
+  every doctor check passed. It no longer overrides the directory-observing methods, which did nothing (ADR 0019); that this fixes it has not yet
+  been confirmed on 26.5.1.
+- Finder extension: it no longer keeps the Mac from sleeping, its menu cache expires after 30 seconds (it never did), and its warm-up no longer
+  races the main thread (ADR 0015).
+- The check for the `rh` link no longer tells a person to put `~/.local/bin` on their PATH when a new terminal already has it (issue 5: the setup
+  window and a program an AI assistant starts have launchd's PATH, which says nothing about a terminal). It asks the login shell, reads the folder
+  however it is spelled (trailing slash, `.` part, symbolic link), and says "did not say" instead of "not on PATH" when the shell gives no answer.
+- The AI Assistants section shows `rh setup` as code, without its backticks.
 
 ## 0.2.0 (2026-10-14)
 
