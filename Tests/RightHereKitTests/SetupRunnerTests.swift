@@ -801,6 +801,29 @@ struct SetupRunnerTests {
         }
     }
 
+    @Test func theSetupWindowHasSomethingToSayOfAReportWhenAChoiceCouldNotBeAppliedOrThereIsAWarningOrAStepFailed() async throws {
+        // A first run that went well is one calm line. The window shows the list of what setup did only when there is more than that: an
+        // agent that ran `rh setup` while the chooser was open made the config, so the picks were left out, and nothing in the window said so.
+        let calm = try Machine(); defer { calm.cleanUp() }
+        let first = try await calm.runner(trial: false).run(.setup())
+        #expect(first.ok && first.warnings.isEmpty && first.configEdits.isEmpty && !first.hasNews)
+
+        let kept = try Machine(); defer { kept.cleanUp() }
+        try kept.writeConfig(Self.mine)
+        let notApplied = try await kept.runner(trial: false).run(.setup(choices: SetupChoices(agents: ["claude", "codex"])))
+        #expect(notApplied.ok && !notApplied.configEdits.isEmpty && notApplied.hasNews)
+        #expect(notApplied.english().contains(SetupReport.editsHeading), "the window and the text say the same before the edits")
+
+        let warned = try Machine(); defer { warned.cleanUp() }
+        let alacritty = try await warned.runner(trial: false).run(.setup(choices: SetupChoices(terminal: "alacritty", agents: ["claude"])))
+        #expect(alacritty.ok && !alacritty.warnings.isEmpty && alacritty.hasNews)
+
+        let broken = try Machine(); defer { broken.cleanUp() }
+        try broken.writeConfig(Self.broken)
+        let failed = try await broken.runner(trial: false).run(.setup())
+        #expect(!failed.ok && failed.hasNews)
+    }
+
     @Test func theTextNamesWhatWasDoneWhatWasChosenAndWhatToRunNext() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         let lines = try await machine.runner(trial: false).run(.setup()).english()

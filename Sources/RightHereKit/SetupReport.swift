@@ -180,6 +180,14 @@ public struct SetupReport: Sendable, Equatable, Encodable {
         steps.first { $0.piece == piece }
     }
 
+    /// Whether there is more to say of this report than that every step worked: a step failed, there is a warning, or what the person chose
+    /// could not be applied (the config was there, so setup left it alone and listed the edits). The setup window shows the list of what
+    /// setup did only when this is so, or when the checks are not all ok.
+    public var hasNews: Bool { !ok || !warnings.isEmpty || !configEdits.isEmpty }
+
+    /// What stands before the edits in the text, and in the setup window.
+    public static let editsHeading = "The config file was left as it is, so this was not applied. To apply it, make exactly these edits and nothing else:"
+
     private enum CodingKeys: String, CodingKey {
         case ok, dryRun, trialHome, steps, chosen, configEdits, warnings, needsUser, next, checks
     }
@@ -238,7 +246,7 @@ public struct SetupReport: Sendable, Equatable, Encodable {
         }
         if !configEdits.isEmpty {
             lines.append("")
-            lines.append("The config file was left as it is, so this was not applied. To apply it, make exactly these edits and nothing else:")
+            lines.append(Self.editsHeading)
             lines += configEdits.map { "  " + $0.instruction }
         }
         if !warnings.isEmpty {

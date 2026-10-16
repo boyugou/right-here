@@ -178,7 +178,9 @@ struct FirstRunChooser: View {
 }
 
 /// What the first setup did: each thing it put in place, with a mark. The way it came out is said only when it is not simply "created",
-/// and the reason when a step was skipped or failed, so that a setup that went well is one calm line.
+/// and the reason when a step was skipped or failed, so that a setup that went well is one calm line. What the person chose that could
+/// not be applied (the config was there, and a config is never rewritten) is said with the edits that would apply it, and every warning of
+/// the report is said: both are English as the command line says them, since they are the report's own sentences.
 struct SetupDonePanel: View {
     let report: SetupReport
     let home: String
@@ -206,10 +208,40 @@ struct SetupDonePanel: View {
                     }
                 }
             }
+            if !report.configEdits.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    note(SetupReport.editsHeading, symbol: "pencil.line", color: .accentColor)
+                    ForEach(Array(report.configEdits.enumerated()), id: \.offset) { _, edit in
+                        Text(DoctorText.styled(l10n.render(.doctorVerbatim(edit.instruction), isolatingValues: true), home: home))
+                            .font(.callout)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                            .padding(.leading, 22)
+                    }
+                }
+            }
+            ForEach(Array(report.warnings.enumerated()), id: \.offset) { _, warning in
+                note(warning, symbol: "exclamationmark.triangle.fill", color: .orange)
+            }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .panel()
+    }
+}
+
+extension SetupDonePanel {
+    /// A sentence of the report beside a mark, as it is: the report's own words, not the catalog's.
+    private func note(_ text: String, symbol: String, color: Color) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Image(systemName: symbol)
+                .foregroundStyle(color)
+                .accessibilityHidden(true)
+            Text(DoctorText.styled(l10n.render(.doctorVerbatim(text), isolatingValues: true), home: home))
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+                .textSelection(.enabled)
+        }
     }
 }
 

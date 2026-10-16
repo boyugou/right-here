@@ -428,6 +428,8 @@ MUTANTS = [
      "try Self.replace(destination, with: bundle)", "try removeIfThere(destination); try fileManager.moveItem(at: bundle, to: destination)"),
     ("a Quick Action that is there is not replaced by one of its name", "Sources/RightHereKit/Installer.swift",
      "if renamex_np(bundle.path, destination.path, UInt32(RENAME_SWAP)) == 0 { return }", "if false { return }"),
+    ("the setup window has nothing to say of a setup that could not apply what was chosen, or that has a warning", "Sources/RightHereKit/SetupReport.swift",
+     "public var hasNews: Bool { !ok || !warnings.isEmpty || !configEdits.isEmpty }", "public var hasNews: Bool { !ok }"),
     ("the Claude Code link handler is checked where nothing starts Claude Code through the link", "Sources/RightHereKit/Doctor.swift",
      "if claudeLinkIsOffered() { checks.append(claudeLinkCheck()) }", "checks.append(claudeLinkCheck())"),
     ("a pinned or recent folder in the state file may be a relative path", "Sources/RightHereCore/Config/StateStore.swift",
