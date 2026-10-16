@@ -19,7 +19,7 @@ throwaway terminal window.
   shortcuts in System Settings, Keyboard, Keyboard Shortcuts, Services.
 - The doctor warns that the extension is registered from more than one place (a build folder next to the installed
   app): `rh install --finder` removes the stale copies. macOS drops an extension that is registered twice.
-- It worked until a macOS update: `rh install --finder` registers it again.
+- It worked until a macOS update, or until you replaced the app with a newer one: run `rh setup` (or `rh install --finder`), which registers the extension again.
 - You switched the extension on and the menu still does not appear: restart Finder (`killall Finder`; Finder reopens its
   windows). Whether a newly switched-on extension needs that on every macOS version is not verified on the development Mac.
 - You run Right Here from a disk image or from Downloads: `rh install --finder` registers the extension of the Right Here.app
