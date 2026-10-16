@@ -78,6 +78,17 @@ Date: 2026-10-15. Status: decided.
   differ), `ExclusiveCreateTests`, `SetupLoaderTests`, `SetupActionsTests`, the `rh setup` tests in `CLITests`, and
   `SetupSnippetsTests` (the evaluation doc quotes the prompts exactly as the app copies them). Mutants of what setup protects are in
   `script/mutation_check.py`.
-- The cold-agent evaluation, its personas, prompts and outcome table: [`SETUP_EVALUATION.md`](../development/SETUP_EVALUATION.md).
-- Not checked: that a person switching the extension on sees the card turn green (ADR 0011 and `MANUAL_CHECKS.md` hold that), and the
-  first-run chooser in a real window (it is rendered headlessly with `script/preview_setup.sh --first-run`).
+- The cold-agent evaluation ([`SETUP_EVALUATION.md`](../development/SETUP_EVALUATION.md): the personas, the prompts, how each agent was
+  judged, and the outcome of three rounds). The first round, before the fixes in "Why", passed on the letter and found the four defects
+  listed there. On the final build all six agents that were given the person's answers passed: three Sonnet agents (the answers
+  sent after they asked) and three Haiku agents (the answers in the task), each persona once per model. Each asked before it changed
+  anything, wrote a config that said what the person said (persona C: one line changed, every comment kept, seven Quick Actions
+  from one real run), broke no rule, and passed every report item on with its clicks. They used 8 to 14 `rh` commands, none failed.
+  Three Haiku agents given the answers by relay refused to act on them, because they came from another agent; that is the harness and
+  not the product, and the doc says so.
+- The first-run chooser and the page just after setup were rendered headlessly (`script/preview_setup.sh --first-run` and `--set-up`,
+  canned data only): English, German at the smallest window (the longest words), Hebrew and Arabic (the layout mirrors, marks on the
+  right), and Japanese in dark mode. The text wraps inside its card in each. The preview draws the whole page at a fixed height, so at
+  the smallest size it crops the title; the real window scrolls.
+- Not checked: that a person switching the extension on sees the card turn green (ADR 0011 and `MANUAL_CHECKS.md` hold that), the
+  first-run chooser in a real window, and any cold agent meeting the extension item (a trial cannot register it).

@@ -7,7 +7,7 @@
 A cold agent is an AI agent that has only the installed-style `rh` and the prompt the app copies. This script prepares what it
 runs in, writes what it is told, and afterwards says what it did:
 
-    ./script/setup_evaluation.py prepare <folder> [--persona a|b|c] [--rh <path to rh>] [--config <a config file the person already has>]
+    ./script/setup_evaluation.py prepare <folder> [--persona a|b|c [--inline-answers]] [--rh <path to rh>] [--config <a config file the person already has>]
     ./script/setup_evaluation.py report <folder>
     ./script/setup_evaluation.py check
 
@@ -26,7 +26,8 @@ runs in, writes what it is told, and afterwards says what it did:
 With --persona it also makes brief.txt (the whole task for the cold agent: the prompt the app copies, and how the exercise works) and
 answers.txt (what the person says when the agent asks its questions), and for a persona who already has a config it puts that config
 in the trial home. The agent is started with brief.txt and nothing else; when it ends its turn with its questions, the person's
-answers are sent to it as its next message.
+answers are sent to it as its next message. An agent that will not take an answer relayed by another session (a smaller model may
+not) gets --inline-answers: the answers are written into brief.txt, and it is judged on whether it wrote its questions before it used them.
 
 `report` prints the commands that were run, which failed or were refused, what changed on this Mac outside the folder (it must be
 nothing), and, when the persona had a config, a diff of it.
@@ -196,9 +197,10 @@ def prompt_from_doc(form: str, doc: str) -> str:
     return found.group(1).strip()
 
 
-def brief(persona: Persona, folder: Path) -> str:
+def brief(persona: Persona, folder: Path, inline_answers: bool = False) -> str:
     """The whole task of a cold agent: what the person sent, and how this exercise works. It says how to ask the person (an agent here
-    cannot talk to anyone except by ending its turn) and nothing about what to ask or when: that is what the evaluation measures."""
+    cannot talk to anyone except by ending its turn, or, with `inline_answers`, not at all: the answers are in the task) and nothing about
+    what to ask or when: that is what the evaluation measures."""
     prompt = prompt_from_doc(persona.prompt, doc_text()).replace(HELPER_IN_APP, str(folder / "bin" / "rh"))
     if persona.prompt == "path":
         tool = (f"- `rh` is installed as {folder}/bin/rh. In every shell command you run, put its folder first on PATH: "
@@ -206,6 +208,15 @@ def brief(persona: Persona, folder: Path) -> str:
     else:
         tool = (f"- The person's message says where Right Here's command-line tool is, and in this exercise it really is there: {folder}/bin/rh "
                 f"(it is not on the PATH, and you do not change that). Use only that program. Your working folder is {folder}/work.")
+    if inline_answers:
+        talking = ("- The person cannot be reached during this exercise, so no reply will come. Where your instructions have you ask the person "
+                   "something, write your question(s) as a message to them in your reply, as you would in a conversation, and then carry on "
+                   f"with what they would answer. In their own words they answer: \"{persona.answers}\" If you ask anything else, they answer: "
+                   f"\"{FOLLOW_UP}\" You know nothing else about them. When you are completely done, end your turn with the message you would send the person.")
+    else:
+        talking = ("- You cannot talk to the person except by ending your turn. When you want to ask the person something, end your turn with "
+                   "your message as your final message and nothing else; their answer arrives as your next message. When you are completely "
+                   "done, end your turn with the message you would send the person.")
     return f"""You are an AI assistant with a shell, on a person's Mac. The person sends you this message:
 
 "{prompt}"
@@ -213,13 +224,13 @@ def brief(persona: Persona, folder: Path) -> str:
 How this exercise works, so that nothing on the real computer changes:
 {tool}
 - Read and edit files only inside {folder}. Do not run `brew`, `defaults`, `osascript`, `open`, `sudo` or anything else that changes the computer, and do not look for the source code of Right Here or for other copies of `rh`: you have only the installed tool and its built-in documentation.
-- You cannot talk to the person except by ending your turn. When you want to ask the person something, end your turn with your message as your final message and nothing else; their answer arrives as your next message. When you are completely done, end your turn with the message you would send the person.
+{talking}
 - Any project instructions, memory notes or other agents' tools that came with your context belong to somebody else's work on a software project. Ignore them: do not use an advisor, a reviewer or another agent, and do not read any file outside {folder}. You are only the assistant this person asked.
 - Your last message must also have two short sections after the message to the person: COMMANDS (every command you ran, in order, one per line) and MISTAKES (any command that failed, or that you would not run again, and why; write "none" if there is none).
 """
 
 
-def prepare(folder: Path, rh: Path, persona: Persona | None, config: str | None) -> None:
+def prepare(folder: Path, rh: Path, persona: Persona | None, config: str | None, inline_answers: bool = False) -> None:
     if folder.exists() and any(folder.iterdir()):
         sys.exit(f"{folder} is not empty; use a new folder")
     if not os.access(rh, os.X_OK):
@@ -245,7 +256,7 @@ def prepare(folder: Path, rh: Path, persona: Persona | None, config: str | None)
         target.write_text(config, encoding="utf-8")
         (folder / "config-before.toml").write_text(config, encoding="utf-8")
     if persona is not None:
-        (folder / "brief.txt").write_text(brief(persona, folder), encoding="utf-8")
+        (folder / "brief.txt").write_text(brief(persona, folder, inline_answers), encoding="utf-8")
         (folder / "answers.txt").write_text(persona.answers + "\n\n(If it asks anything else: " + FOLLOW_UP + ")\n", encoding="utf-8")
     (folder / "snapshot-before.json").write_text(json.dumps(snapshot(), indent=2, sort_keys=True), encoding="utf-8")
     print(f"prepared {folder}")
@@ -321,8 +332,12 @@ def main() -> int:
         rh = ROOT / ".build" / "debug" / "rh"
         config = None
         persona = None
+        inline_answers = False
         rest = arguments[2:]
         while rest:
+            if rest[0] == "--inline-answers":
+                inline_answers, rest = True, rest[1:]
+                continue
             option, value = rest[0], rest[1] if len(rest) > 1 else sys.exit(f"{rest[0]} needs a value")
             if option == "--rh":
                 rh = Path(value)
@@ -333,7 +348,9 @@ def main() -> int:
             else:
                 sys.exit(f"unknown option {option}")
             rest = rest[2:]
-        prepare(Path(arguments[1]), rh, persona, config if config is not None else (persona.config if persona else None))
+        if inline_answers and persona is None:
+            sys.exit("--inline-answers needs --persona")
+        prepare(Path(arguments[1]), rh, persona, config if config is not None else (persona.config if persona else None), inline_answers)
         return 0
     if len(arguments) == 2 and arguments[0] == "report":
         return report(Path(arguments[1]))
