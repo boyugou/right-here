@@ -50,5 +50,10 @@ jobs:
         run: uv run script/setup_evaluation.py check
       - name: Version
         run: uv run script/verify_version.py
+      - name: Wording of macOS's own labels
+        # Reads the names this runner's macOS ships for the Settings panes and two Finder menu items, and compares ours; it depends on the
+        # macOS version, so it is not part of verify_all.sh. It does not fail the run: it says where a version differs.
+        continue-on-error: true
+        run: ./script/verify_macos_wording.py
       - name: Public safety
         run: ./script/verify_public_safety.sh
