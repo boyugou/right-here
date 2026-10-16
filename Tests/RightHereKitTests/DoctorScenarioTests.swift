@@ -294,8 +294,10 @@ struct DoctorScenarioTests {
         try FileManager.default.createSymbolicLink(at: scene.home.appendingPathComponent(".local"), withDestinationURL: real)
         scene.variables = ["PATH": "/usr/bin:" + real.appendingPathComponent("bin").path]
         try scene.linkCLI(to: "/opt/rh/bin/rh")
-        scene.answers = [ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
-        #expect(said(await scene.run(), "cli.link")?.status == .ok)
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: pluginkitEnabled)])
+        let link = said(await scene.run(with: runner), "cli.link")
+        #expect(link == Said(status: .ok, detail: "\(scene.home.path)/.local/bin/rh", fix: nil), "the row said: \(String(describing: link))")
+        #expect(runner.recorded.map(\.executable) == ["/usr/bin/pluginkit"], "the shell was asked although this process's PATH has the folder")
     }
 
     @Test("an entry that is not an absolute folder, or another folder, is not the link's folder", arguments: [
