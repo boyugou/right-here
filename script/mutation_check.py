@@ -149,7 +149,7 @@ MUTANTS = [
      'if resolved.contains("/Right Here.app/Contents/Helpers/") { return true }', "return true"),
     ("a config that is there is replaced when setup is run without --force", "Sources/RightHereKit/ConfigStore.swift",
      "switch try AtomicFile.createExclusively(content, at: paths.configFile, beforeLink: beforeCreate) {",
-     "switch { () throws -> AtomicFile.Creation in try AtomicFile.write(content, to: paths.configFile); return .created }() {"),
+     "switch try { () throws -> AtomicFile.Creation in try AtomicFile.write(content, to: paths.configFile); return .created }() {"),
     ("the config is created with a rename that replaces a file that appeared meanwhile", "Sources/RightHereKit/AtomicFile.swift",
      "if link(temporary.path, destination.path) == 0 { return .created }", "if rename(temporary.path, destination.path) == 0 { return .created }"),
     ("a trial under RH_HOME registers the Finder extension for the whole Mac", "Sources/RightHereKit/SetupRunner.swift",
