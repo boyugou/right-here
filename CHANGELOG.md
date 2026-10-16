@@ -5,6 +5,10 @@
 - Finder extension: on macOS 26.5.1 it crashed each time Finder asked it to watch a folder, so the context menu showed none of its
   entries while every doctor check passed. It no longer overrides the directory-observing methods, which did nothing (ADR 0019).
   `rh doctor` now warns when the extension has crashed since it was installed, and names the newest crash report.
+- The check for the `rh` link no longer tells a person to put `~/.local/bin` on their PATH when a new terminal already has it (issue 5: the setup window and
+  a program an AI assistant starts have launchd's PATH, which says nothing about a terminal). It asks the login shell, reads the folder however it is spelled
+  (trailing slash, `.` part, symbolic link), and says "did not say" instead of "not on PATH" when the shell gives no answer. The row for the Services
+  workflows is called Quick Actions, as the rest of the window says, and the AI Assistants section shows `rh setup` as code, without its backticks.
 - New: `rh setup` puts everything in place in one command and can be run again at any time: the config file, the runner script, the `rh` link, the
   Quick Actions and the Finder extension, then the checks, and it says what only you can do. `--terminal`, `--editor` and `--agents` say what you
   use instead of editing TOML (also on `rh init`), `--dry-run` shows the plan and `--json` is the report for an AI agent. A config that exists is
