@@ -17,7 +17,7 @@ extension StateStore {
     /// one that came second lost the change of the first (20 `rh pin` started together kept 12). The file is written only when `change`
     /// changed something. `Busy` when another program holds the lock for longer than `timeout`, which is for one read and one write.
     @discardableResult
-    public static func update<Result>(paths: RHPaths, timeout: Duration = .seconds(5), _ change: (inout StateStore) throws -> Result) throws -> Result {
+    public static func update<Value>(paths: RHPaths, timeout: Duration = .seconds(5), _ change: (inout StateStore) throws -> Value) throws -> Value {
         let lock = try FileLock.acquireNow(paths.stateLockFile, timeout: timeout)
         defer { lock.release() }
         var state = load(paths: paths)

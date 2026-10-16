@@ -26,10 +26,10 @@ Before anything changes, ask the person three questions, in one message, and wai
 
 `rh apps` and `rh agents` change nothing, so run them first to offer real choices (`rh agents` asks the person's login shell once which
 agent commands it finds, so their shell startup files run; a dry run of setup does the same when you leave a choice out): the first
-column is the id, and Terminal.app is always there. Ask nothing else: the rest has defaults. "Whatever you find" is a good answer; then leave that flag out and Right Here uses
-what is installed. An id is exact (`ghostty`, `vscode`, `claude`, `codex`), and a misspelt one is refused with the closest id. If they
-use no agent, the answer is `--agents none`. If they name an app that is not on this Mac yet, write it anyway: the checks say it is
-not installed, and which app is used until it is.
+column is the id, and Terminal.app is always there. Ask nothing else: the rest has defaults. "Whatever you find" is a good answer; then
+leave that flag out and Right Here uses what is installed. An id is exact (`ghostty`, `vscode`, `claude`, `codex`), and a misspelt one is
+refused with the closest id. If they use no agent, the answer is `--agents none`. If they name an app that is not on this Mac yet, write
+it anyway: the checks say it is not installed, and which app is used until it is.
 
 ## 2. Look before you change
 
