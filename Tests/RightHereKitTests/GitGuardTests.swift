@@ -257,6 +257,14 @@ private final class Lab {
     }
 
     func clear(_ name: String) { try? FileManager.default.removeItem(at: outside.appendingPathComponent("\(name).ran")) }
+
+    /// Makes the files of a worktree look as if they were written after its index: git compares such a file with the index by reading it (through the clean filter), which it
+    /// otherwise does only for a file whose date is in the second of the index's own, and a test must not depend on how fast the checkout was.
+    func makeLookRecentlyWritten(_ worktree: URL) throws {
+        for name in try FileManager.default.contentsOfDirectory(atPath: worktree.path) where name != ".git" {
+            try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(3600)], ofItemAtPath: worktree.appendingPathComponent(name).path)
+        }
+    }
 }
 
 private struct LabError: Error, CustomStringConvertible {
@@ -480,6 +488,7 @@ struct GitGuardRepositoryTests {
         // Defined for those worktrees only (`git worktree remove` runs its status there, with their configuration): not in the main folder's.
         try lab.git(["config", "--local", "extensions.worktreeConfig", "true"])
         for worktree in [made, control] {
+            try lab.makeLookRecentlyWritten(worktree.worktreeURL)
             let path = try lab.git(["rev-parse", "--git-path", "config.worktree"], in: worktree.worktreeURL).trimmingCharacters(in: .whitespacesAndNewlines)
             try "[filter \"evil\"]\n\tclean = \(filter.path)\n".write(to: URL(fileURLWithPath: path, relativeTo: worktree.worktreeURL), atomically: true, encoding: .utf8)
         }
@@ -502,6 +511,8 @@ struct GitGuardRepositoryTests {
         let made = try await GitWorktreeManager.prepareWorktree(gitRoot: lab.repository, branch: "unused", runner: lab.runner)
         let control = try await GitWorktreeManager.prepareWorktree(gitRoot: lab.repository, branch: "control", runner: lab.runner)
         #expect(!filter.ran(), "set up: creating the worktrees ran nothing")
+        try lab.makeLookRecentlyWritten(made.worktreeURL)
+        try lab.makeLookRecentlyWritten(control.worktreeURL)
 
         #expect(await GitWorktreeManager.discardIfUnchanged(made, gitRoot: lab.repository, runner: lab.runner))
         #expect(!filter.ran(), "the `git status` of `discardIfUnchanged` ran the repository's clean filter")
