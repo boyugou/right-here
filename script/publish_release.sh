@@ -10,6 +10,7 @@
 #   NOTARY_PROFILE   the notarytool keychain profile (xcrun notarytool store-credentials ...). Required for a real run.
 #   RELEASE_TITLE    what follows "v<version>: " in the release's title. Default: "Right Here <version>".
 #   SUPERSEDES       an older tag whose release notes get a "superseded" banner pointing here (for example v0.2.0).
+#   SUPERSEDES_NOTE  one more sentence for that banner: what is wrong with the older build.
 #
 # It refuses to run unless the working tree is clean, HEAD is main and is what origin/main has, `verify_version.py` agrees, the top numbered
 # section of CHANGELOG.md is this version and is not empty, neither the tag nor a release of that name exists, and `gh` is signed in.
@@ -80,7 +81,7 @@ if [[ -n "${SUPERSEDES:-}" ]]; then
   log "Marking $SUPERSEDES as superseded"
   OLD="$(mktemp -t right-here-old-notes)"
   gh release view "$SUPERSEDES" --json body -q .body > "$OLD"
-  BANNER="> **Superseded by [$TAG]($(gh repo view --json url -q .url)/releases/tag/$TAG).** Download that one: it has everything below, and the fixes listed in its notes."
+  BANNER="> **Superseded by [$TAG]($(gh repo view --json url -q .url)/releases/tag/$TAG).** Download that one: it has everything below, and the fixes listed in its notes.${SUPERSEDES_NOTE:+ $SUPERSEDES_NOTE}"
   if ! grep -qF "Superseded by" "$OLD"; then
     { printf '%s\n\n' "$BANNER"; cat "$OLD"; } > "$OLD.new"
     gh release edit "$SUPERSEDES" --notes-file "$OLD.new" --latest=false
