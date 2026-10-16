@@ -12,8 +12,8 @@ throwaway terminal window.
   `~/Library/Logs/DiagnosticReports/FinderExtension-<date>.ips`, and a crashing extension leaves Finder's menu without
   Right Here's entries while it is registered and switched on. Version 0.2.0 crashed this way on macOS 26.5.1 every time Finder asked
   it to watch a folder (ADR 0019); a build with that fix does not. Install a current build, then look again: if the warning
-  stays, the newest report names the code that crashed, and it is what to attach to a bug report. Only `rh doctor` can say
-  this: the setup window may not read that folder.
+  stays, the newest report names the code that crashed, and it is what to attach to a bug report. `rh doctor` and the
+  setup window of the direct download both say this (the Mac App Store edition's window cannot read that folder).
 - You are inside iCloud Drive (including a Desktop or Documents folder that syncs with iCloud). Finder does not
   show extension menus there; use the Quick Actions instead (right-click, Quick Actions), or give them keyboard
   shortcuts in System Settings, Keyboard, Keyboard Shortcuts, Services.

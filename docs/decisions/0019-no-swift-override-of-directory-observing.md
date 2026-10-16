@@ -34,8 +34,9 @@ The report also showed why the doctor stayed green: it asks `pluginkit` whether 
 launch probe runs the chain a click uses, and neither does what Finder asks of an extension by itself (watching a folder). `rh doctor`
 now reads the crash reports macOS keeps for the extension (`FinderExtension-*.ips` in `~/Library/Logs/DiagnosticReports`), counts those
 written since the installed copy's code was written and within the last seven days, and turns the Finder extension row into a warning that
-names the newest one. The setup window is sandboxed and may not read that folder, so only the command line has the row; it is English in every
-language for that reason (`doctor.verbatim`). A report is a file for a person to attach to a bug report, not a sentence to translate.
+names the newest one. The row is English in every language (`doctor.verbatim`): a report is a file for a person to attach to a bug report, not a sentence
+to translate. The window of the direct download shows it too; the Mac App Store edition's window is sandboxed, cannot read that folder
+and leaves the row as it is.
 
 ## Alternatives
 

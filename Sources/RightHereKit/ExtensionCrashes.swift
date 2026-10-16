@@ -4,7 +4,7 @@ import Foundation
 ///
 /// A crashing extension looks healthy to `pluginkit` (registered, switched on) and to the launch probe, which does not do what Finder asks of an
 /// extension by itself, such as watching a folder. The person sees a context menu without Right Here's entries and every check ok (ADR 0019), so
-/// the doctor looks at what macOS wrote down. The setup window cannot read that folder (it is sandboxed) and leaves the row as it is.
+/// the doctor looks at what macOS wrote down. The window of the Mac App Store edition is sandboxed, cannot read that folder and leaves the row as it is.
 public struct ExtensionCrashes: Sendable, Equatable {
     public var count: Int
     public var latest: Date

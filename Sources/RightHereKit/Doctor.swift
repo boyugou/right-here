@@ -339,7 +339,7 @@ public struct Doctor: Sendable {
     /// every two seconds while its first-run card waits for the extension to be switched on, and the whole doctor
     /// would read the config and ask a login shell for the agents' commands each time.
     /// - Parameter crashReports: where macOS writes crash reports. Given, a switched-on extension that crashed since it was installed is a warning:
-    ///   it is registered and enabled, and still shows no menu (ADR 0019). Left out, as the setup window does, only `pluginkit` is asked.
+    ///   it is registered and enabled, and still shows no menu (ADR 0019). Left out, as the setup window's look every two seconds does while its first-run card waits, only `pluginkit` is asked.
     public static func extensionCheck(runner: any ProcessRunner = LiveProcessRunner(), crashReports: URL? = nil, now: Date = Date()) async -> DoctorCheck {
         let status = await FinderExtensionManager(runner: runner).status()
         switch status.state {
