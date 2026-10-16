@@ -763,6 +763,9 @@ def run_tests(clone: pathlib.Path) -> tuple[str, bool]:
         return output, False
     except subprocess.TimeoutExpired:
         os.killpg(process.pid, signal.SIGKILL)
+        # The test helper that SwiftPM starts is in a process group of its own, so the group above does not reach it: it was found four hours later, orphaned, still holding the
+        # clone. Everything in the session goes.
+        subprocess.run(["pkill", "-KILL", "-s", str(process.pid)], check=False)
         output, _ = process.communicate()
         return output, True
 
