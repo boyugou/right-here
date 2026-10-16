@@ -26,7 +26,7 @@
   ran the prompt once and exited, so it has no first-prompt flag, and its approvals flag is spelled `--yolo`; Goose is started with `goose session` (a bare `goose` prints its help) and
   has no prompt, continue or bypass entry; Muse Code, whose documentation names none of them (`--auto-approve` does not exist), has only its command; Cody is no longer built in
   (its free and pro plans ended in 2025 and its command line is a one-shot chat); the first run looks an agent up by the first word of its command. Presets are offered for five
-  agents (Claude Code, Codex, Antigravity, Gemini CLI, GitHub Copilot). The `instructionFile` field of an agent, which nothing read, is gone.
+  agents (Claude Code, Codex, Antigravity, Gemini CLI, GitHub Copilot); GitHub Copilot and Kimi Code get the continue and resume entries their documentation names. The `instructionFile` field of an agent, which nothing read, is gone.
 - The privacy policy says what the app does: it also reads the Finder selection when you or an AI assistant ask for it (`rh finder`, the MCP tool), sends Apple events to Finder then,
   starts your login shell to look for agent commands, and looks for its own extension's crash reports; its paragraph on the source code no longer says the code is public.
   `rh docs sync`, the design notes and ADR 0013 list what the sync guard lists (an agent's `args` and `bypass_permissions` too); the playbook for AI agents says the command

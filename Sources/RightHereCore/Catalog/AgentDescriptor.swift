@@ -146,7 +146,10 @@ public enum KnownAgents {
         id: "kimi",
         name: "Kimi Code",
         command: "kimi",
-        variants: [.init(id: "continue", title: "Continue Last Session", arguments: ["--continue"], titleKey: .variantContinue)],
+        variants: [
+            .init(id: "continue", title: "Continue Last Session", arguments: ["--continue"], titleKey: .variantContinue),
+            .init(id: "resume", title: "Resume a Session…", arguments: ["--resume"], titleKey: .variantResume)
+        ],
         bypassPermissionArgument: "--yolo"
     )
 
@@ -166,6 +169,10 @@ public enum KnownAgents {
         id: "copilot",
         name: "GitHub Copilot",
         command: "copilot",
+        variants: [
+            .init(id: "continue", title: "Continue Last Session", arguments: ["--continue"], titleKey: .variantContinue),
+            .init(id: "resume", title: "Resume a Session…", arguments: ["--resume"], titleKey: .variantResume)
+        ],
         promptArgument: .flag("-i"),
         bypassPermissionArgument: "--allow-all"
     )

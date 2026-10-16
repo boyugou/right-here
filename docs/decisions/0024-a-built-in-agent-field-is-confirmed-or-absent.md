@@ -26,6 +26,7 @@ Gemini CLI's `-y` is documented as deprecated for `--approval-mode=yolo`; the co
   from a third party's capture of `muse --help`); Cody left the catalog (its free and pro plans ended in July 2025, and its command line is an experimental, enterprise-only, one-shot
   chat, not a session in a folder). Antigravity's `-i` stays: the audit could only find it in a third party's list, and `agy --help` here says
   "-i: Short alias for --prompt-interactive: Run an initial prompt interactively and continue the session" (and `-p`, `--print` and `--prompt` run once and exit).
+- **What the documentation names is added:** GitHub Copilot gets `--continue` and `--resume`, Kimi Code `--resume` (the "Continue Last Session" and "Resume a Session…" entries of More Agent Options).
 - **`instructionFile` is gone**: nothing read it.
 - **A command with an argument of its own is looked up by its first word** everywhere, the first run's detection included (`AgentDescriptor.executable`; the doctor and `rh agents` already did).
 - **Codex's flag is `--dangerously-bypass-approvals-and-sandbox`, and it does what it says:** the documentation says it also runs without sandboxing. `bypass_permissions` is worded as the

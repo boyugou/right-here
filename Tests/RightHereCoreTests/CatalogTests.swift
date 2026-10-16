@@ -86,6 +86,22 @@ struct CatalogTests {
         for word in AgentLauncher.configNames { #expect(ActionRef(parsing: "agent.claude@\(word)") != nil) }
     }
 
+    /// The arguments that continue or resume a session, from each tool's own documentation (ADR 0024); Goose and Muse Code have none here
+    /// because what their documentation says about resuming is not consistent or could not be read.
+    @Test func theBuiltInContinueAndResumeArgumentsAreTheDocumentedOnes() {
+        func variants(_ id: String) -> [String: [String]] {
+            Dictionary(uniqueKeysWithValues: (KnownAgents.agent(id: id)?.variants ?? []).map { ($0.id, $0.arguments) })
+        }
+        #expect(variants("claude") == ["continue": ["--continue"], "resume": ["--resume"]])
+        #expect(variants("codex") == ["last": ["resume", "--last"], "resume": ["resume"]])
+        #expect(variants("agy") == ["continue": ["--continue"]])
+        #expect(variants("gemini") == ["resume": ["--resume", "latest"]])
+        #expect(variants("opencode") == ["continue": ["--continue"]])
+        #expect(variants("kimi") == ["continue": ["--continue"], "resume": ["--resume"]])
+        #expect(variants("copilot") == ["continue": ["--continue"], "resume": ["--resume"]])
+        for id in ["goose", "muse", "aider", "amp"] { #expect(variants(id).isEmpty, "\(id)") }
+    }
+
     @Test func allAgentsAppliesTheConfigsCommandOverride() {
         var config = Config()
         config.agents["claude"] = .init(command: "claude --model opus")
