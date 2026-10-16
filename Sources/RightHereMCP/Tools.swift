@@ -342,6 +342,13 @@ enum Tools {
             }
             return ToolOutput(text: lines.isEmpty ? "No worktrees." : lines.joined(separator: "\n"), structured: .object(["worktrees": json]))
         case "create":
+            // Charged before git starts, so a refused call writes nothing: a loop of them would otherwise fill the disk with checkouts.
+            switch await server.launchLimiter.allow(cost: LaunchCost.worktree) {
+            case .allowed:
+                break
+            case .tooLarge, .tooMany:
+                throw ToolError("Too many worktrees and windows were created by tool calls in the last minute. Ask the person before making more.")
+            }
             let branch = arguments["branch"]?.stringValue
             let res = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch, runner: server.runner)
             let json = try JSONValue(encoding: res)

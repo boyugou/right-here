@@ -375,6 +375,8 @@ MUTANTS = [
      'path.hasPrefix("/") ? (path as NSString).standardizingPath : nil', "(path as NSString).standardizingPath"),
     ("a state file may hold any number of recent folders", "Sources/RightHereCore/Config/StateStore.swift",
      'Array(folders(in: table, key: "recents").prefix(maxRecents))', 'folders(in: table, key: "recents")'),
+    ("the MCP tool makes worktrees without the launch budget", "Sources/RightHereMCP/Tools.swift",
+     "switch await server.launchLimiter.allow(cost: LaunchCost.worktree) {", "switch await server.launchLimiter.allow(cost: 0) {"),
 ]
 
 

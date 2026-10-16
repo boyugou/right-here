@@ -23,7 +23,8 @@ private struct Harness {
     let configDirectory: URL
 
     init(config: String? = nil, runnerResults: [ProcessResult] = [], files: Set<String> = [], directories: Set<String> = [],
-         bundleVersions: [String: String] = [:], hangingRunner: Duration? = nil, limits: MCPServer.Limits = MCPServer.Limits()) throws {
+         bundleVersions: [String: String] = [:], hangingRunner: Duration? = nil, limits: MCPServer.Limits = MCPServer.Limits(),
+         launchBudget: Int? = nil) throws {
         configDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("rh-mcp-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
         if let config { try config.write(to: configDirectory.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8) }
@@ -39,9 +40,9 @@ private struct Harness {
         )
         let paths = RHPaths(environment: ["RH_CONFIG_DIR": configDirectory.path], home: URL(fileURLWithPath: "/Users/tester"))
         if let limit = hangingRunner {
-            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: WaitsForAPrompt(wait: limit), pasteboard: pasteboard, rhPath: nil, executionLimit: limit), limits: limits)
+            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: WaitsForAPrompt(wait: limit), pasteboard: pasteboard, rhPath: nil, executionLimit: limit, launchBudget: launchBudget), limits: limits)
         } else {
-            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: runner, pasteboard: pasteboard, rhPath: nil), limits: limits)
+            server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: runner, pasteboard: pasteboard, rhPath: nil, launchBudget: launchBudget), limits: limits)
         }
     }
 
@@ -608,6 +609,18 @@ struct MCPHardeningTests {
         }
         #expect(refused == 4, "eight launches should fit in a minute and the rest should not")
         #expect(harness.runner.recorded.count == 8)
+    }
+
+    @Test func creatingAWorktreeIsChargedBeforeGitStartsButListingIsFree() async throws {
+        // Two units cannot pay for a worktree (a command's three), so nothing runs: not git, not a write.
+        let harness = try Harness(launchBudget: 2); defer { harness.cleanUp() }
+        let refused = try await harness.call("right_here_worktree", ["operation": .string("create"), "path": .string("/Users/tester/code/app"), "branch": .string("agent-1")])
+        #expect(refused["isError"]?.boolValue == true)
+        #expect(text(refused).contains("Too many worktrees"))
+        #expect(harness.runner.recorded.isEmpty)
+        let listed = try await harness.call("right_here_worktree", ["path": .string("/Users/tester/code/app")])
+        #expect(listed["isError"]?.boolValue != true)
+        #expect(harness.runner.recorded.count == 1, "only the listing ran")
     }
 
     @Test func manyDocumentsCostOneEachSoABulkOpenCannotFloodTheScreen() async throws {

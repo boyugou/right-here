@@ -12,7 +12,7 @@ public struct ServerContext: Sendable {
     /// How long a started action may run before it is stopped. An Apple event can wait on a permission prompt
     /// nobody answers, and each such call would keep one of the server's few request slots for good.
     public var executionLimit: Duration
-    /// Limits how many windows and files tool calls may open or create: an agent that has been talked
+    /// Limits how many windows, files and worktrees tool calls may open or create: an agent that has been talked
     /// into it could otherwise open hundreds.
     let launchLimiter: LaunchLimiter
 
@@ -22,7 +22,8 @@ public struct ServerContext: Sendable {
         runner: any ProcessRunner,
         pasteboard: any PasteboardWriting,
         rhPath: String?,
-        executionLimit: Duration = .seconds(120)
+        executionLimit: Duration = .seconds(120),
+        launchBudget: Int? = nil
     ) {
         self.facts = facts
         self.paths = paths
@@ -30,7 +31,7 @@ public struct ServerContext: Sendable {
         self.pasteboard = pasteboard
         self.rhPath = rhPath
         self.executionLimit = executionLimit
-        self.launchLimiter = LaunchLimiter()
+        self.launchLimiter = LaunchLimiter(budget: launchBudget ?? LaunchLimiter.defaultBudget)
     }
 
     public static func live() -> ServerContext {
@@ -460,6 +461,8 @@ actor LaunchLimiter {
 /// agent) costs three, because it also starts a shell or an app. Copying to the clipboard is free.
 enum LaunchCost {
     static let command = 3
+    /// A new worktree checks out the whole repository beside the one the person works in, and starts git: as dear as a command.
+    static let worktree = command
 
     static func of(_ plan: LaunchPlan) -> Int {
         plan.steps.reduce(0) { total, step in
