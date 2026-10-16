@@ -2,7 +2,8 @@ import Foundation
 import Testing
 @testable import RightHereCore
 
-private let facts = FakeSystemFacts(directories: ["/Users/tester/my code"], files: ["/Users/tester/run-me.command"])
+// The terminal `x` is installed, so the only thing that can refuse a request for it is the request itself: a test of "a file is refused" is not satisfied by "the app is not there".
+private let facts = FakeSystemFacts(directories: ["/Users/tester/my code"], files: ["/Users/tester/run-me.command"], applications: ["x": URL(fileURLWithPath: "/Applications/X.app")])
 private let directory = URL(fileURLWithPath: "/Users/tester/my code")
 
 @Suite("Terminal adapters")
