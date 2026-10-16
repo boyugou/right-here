@@ -94,7 +94,10 @@ mkdir -p "$MOUNT"
 hdiutil attach "$DMG" -readonly -nobrowse -mountpoint "$MOUNT" >/dev/null
 codesign --verify --deep --strict "$MOUNT/$APP_NAME"
 "$MOUNT/$APP_NAME/Contents/Helpers/rh" --version >&2
-diskutil eject "$MOUNT" >/dev/null
+# A volume that was just mounted can stay busy for a moment (an indexer, a verification still letting go of a file), and a failed
+# eject here ended a release run before its checksum was written: detach a few times, then force it.
+for _ in 1 2 3 4 5; do hdiutil detach "$MOUNT" >/dev/null 2>&1 && break; sleep 2; done
+hdiutil detach "$MOUNT" -force >/dev/null 2>&1 || true
 if [[ "$NOTARIZED" == 1 ]]; then
   xcrun stapler validate "$DMG"
   spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
