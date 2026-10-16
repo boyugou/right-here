@@ -111,3 +111,15 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     show` has what you chose, "What Right Here set up" lists the pieces, and the three-step card waits for the Finder extension, as in
     item 7. Open the window again with a config in place: the chooser is gone, and nothing rewrites the file (compare it byte for
     byte). `script/preview_setup.sh --first-run` shows the card without a screen; this check is the real window, once.
+12. The first run's failure paths, in the real window (each is rendered and tested with a made-up Mac; a person has not seen them):
+    - Open the app from the mounted disk image without moving it: the first thing on Overview is the orange card "Move Right Here to your Applications folder
+      first", and Set Up and Install or Repair are off. Drag the app to Applications, eject, open it from there: the card is gone.
+    - With a file where the config folder goes (`touch ~/.config/right-here` after moving the folder away), press Set Up: "What Right Here set up" appears above
+      the chooser with the config step in red, and the page scrolls to it. Put things back and press Set Up again.
+    - With a login shell whose startup file takes more than ten seconds (`sleep 12` in `~/.zshrc`, removed afterwards): the chooser says the shell did not say
+      which agents are installed, and no agent is checked.
+    - With VoiceOver on, press Set Up: the result is read ("Everything is set up." or "Some checks need your attention."), and the sections are headings.
+13. Shortcuts: run a Right Here action (for example Open in Terminal) from the Shortcuts app while Right Here is not running. The action must happen and no setup
+    window may be left open afterwards. The window's scene is `.defaultLaunchBehavior(.presented)` (`Apps/RightHere/RightHereApp.swift`) and the app quits when its last
+    window closes; if a window appears and stays for every shortcut, that is the cause and the scene needs another launch behavior (the intents run in the app's own
+    process). Not tried on a real Mac yet.
