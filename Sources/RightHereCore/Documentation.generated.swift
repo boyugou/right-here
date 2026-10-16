@@ -144,6 +144,10 @@ place refuses for the same reason. A `rh` that is not inside an app (Homebrew's,
 
 - `rh doctor` says the extension is switched off or not registered: run `rh install --finder`, or switch on
   Right Here in System Settings, General, Login Items & Extensions, Finder (the app's window has a button).
+- `rh doctor` says "not registered" right after you updated, and `rh setup` does not change it: two copies of Right Here.app are on the Mac (Finder's "Keep Both" when you dragged the
+  new app over the old one, or an old copy you renamed), and macOS then registers neither. List them with
+  `mdfind 'kMDItemCFBundleIdentifier == "com.boyugou.righthere"'`, move all but the one in Applications to the Trash, and run `rh setup` again (measured here: with the old app renamed
+  beside the new one `rh setup` said "already in place" and `pluginkit` knew no extension; with the copy gone, `rh setup` registered it and every check was ok).
 - `rh doctor` warns that "this build of it crashed N times in the last week": macOS keeps a report for each, as
   `~/Library/Logs/DiagnosticReports/FinderExtension-<date>.ips`, and a crashing extension leaves Finder's menu without
   Right Here's entries while it is registered and switched on. Version 0.2.0 crashed this way on macOS 26.5.1 every time Finder asked
