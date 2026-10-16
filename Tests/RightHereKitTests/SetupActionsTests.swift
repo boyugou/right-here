@@ -107,6 +107,23 @@ struct SetupActionsTests {
         #expect(result.report?.step(.config)?.outcome == .created, "the other steps still ran")
     }
 
+    @Test func aConfigThatDoesNotParseIsAFailureTheWindowSaysAndNeverASuccess() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)
+        let text = "[general\nterminal = \"ghostty\"\n"
+        try text.write(to: machine.paths.configFile, atomically: true, encoding: .utf8)
+        // The first-run button (with what the person chose) and Install or Repair (without) read the same report.
+        for choices in [SetupChoices(terminal: "terminal", editor: "zed", agents: []), SetupChoices()] {
+            let result = await machine.actions(FakeProcessRunner()).setUp(choices)
+            let report = try #require(result.report)
+            #expect(!report.ok && report.step(.config)?.outcome == .failed && report.step(.services)?.outcome == .skipped)
+            guard case .failed(let said)? = result.notice else { Issue.record("no failure was reported: \(String(describing: result.notice))"); return }
+            #expect(said.contains("line 1: TOML syntax error") && said.contains(machine.paths.configFile.path), "\(said)")
+            #expect(result.notice?.isProblem == true)
+            #expect(try String(contentsOf: machine.paths.configFile, encoding: .utf8) == text)
+        }
+    }
+
     @Test func anAppRunFromTheTemporaryLocationOfADownloadSaysSoAndWritesNothing() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
         let translocated = "/private/var/folders/ab/cd/T/AppTranslocation/6F1B/d/Right Here.app/Contents/Helpers/rh"

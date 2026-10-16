@@ -82,6 +82,8 @@ public struct SetupNeed: Sendable, Equatable, Encodable {
         case path
         /// Click Allow when macOS asks whether Right Here may control the terminal.
         case automation
+        /// Fix the config file, which cannot be used (it is not TOML, cannot be read, or is a link to nowhere): setup never rewrites a config.
+        case config
     }
 
     public var id: Kind

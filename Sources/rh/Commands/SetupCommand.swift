@@ -71,7 +71,9 @@ struct Setup: AsyncParsableCommand {
 
         The config file is created from what is installed on this Mac. Say what you use with --terminal, --editor and --agents; \
         that is written only when the file is created. A config that exists is never rewritten: setup lists the line to change \
-        instead, and --force is the one way to replace the file (the old one is saved next to it first).
+        instead, and --force is the one way to replace the file (the old one is saved next to it first). A config that exists \
+        but cannot be used (it is not TOML, cannot be read, or is a link to a file that is not there) fails that step and is \
+        named with its line; no Quick Actions are made from it and no edits are listed for it.
 
         Setup opens no window and no terminal, and never changes System Settings. --dry-run shows what it would do and changes nothing. \
         With RH_HOME set, every per-user path moves under that folder and what is registered for the whole Mac (the Finder \

@@ -1601,7 +1601,7 @@ struct ConfigSyncCLITests {
         let config = try #require(checks.first { $0["id"] as? String == "config" })
         #expect(config["status"] as? String == "fail" && ((config["detail"] as? [String: Any])?["text"] as? String)?.contains("Permission denied") == true, "\(config)")
         let initialized = try rh.run(["init"])
-        #expect(initialized.standardOutput.contains("already exists but was not read") && initialized.standardOutput.contains("Permission denied"), "\(initialized.standardOutput)")
+        #expect(initialized.status == 1 && initialized.standardOutput.contains("Config file: failed") && initialized.standardOutput.contains("cannot be used") && initialized.standardOutput.contains("Permission denied"), "\(initialized.standardOutput)")
         #expect(!initialized.standardOutput.contains("Use --force"), "--force cannot save a file it cannot read: \(initialized.standardOutput)")
     }
 
@@ -1889,6 +1889,33 @@ struct SetupCommandTests {
         #expect(result.standardOutput.contains("rh setup --terminal terminal"))
         let written = try FileManager.default.contentsOfDirectory(atPath: home.path)
         #expect(written.isEmpty, "a dry run wrote \(written)")
+    }
+
+    /// A config that does not parse, on line 2.
+    private static let notToml = "# mine\n[general\nterminal = \"ghostty\"\n"
+
+    @Test func aConfigThatDoesNotParseIsAFailureOfSetupAndNothingIsListedOrMadeFromIt() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let file = home.appendingPathComponent(".config/right-here/config.toml")
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Self.notToml.write(to: file, atomically: true, encoding: .utf8)
+        for arguments in [["setup", "--dry-run", "--json", "--terminal", "terminal", "--editor", "zed", "--agents", "claude"], ["setup", "--json", "--terminal", "terminal", "--editor", "zed", "--agents", "claude"]] {
+            let result = try rh.run(arguments)
+            let dry = arguments.contains("--dry-run")
+            #expect(result.status == 1, "\(arguments): \(result.standardError)")
+            let report = try #require(result.json as? [String: Any])
+            #expect(report["ok"] as? Bool == false, "\(arguments)")
+            let words = try steps(result)
+            #expect(words["config"] == (dry ? "would-fail" : "failed") && words["services"] == "skipped", "\(words)")
+            #expect(words["runnerScript"] == (dry ? "would-create" : "created"), "the steps that do not depend on the config still run: \(words)")
+            #expect((report["configEdits"] as? [Any])?.isEmpty == true, "edits for text that is not TOML: \(String(describing: report["configEdits"]))")
+            let needs = try #require(report["needsUser"] as? [[String: Any]])
+            #expect(needs.first?["id"] as? String == "config", "\(needs)")
+            #expect((needs.first?["text"] as? String)?.contains("line 2") == true && (needs.first?["text"] as? String)?.contains("left it as it is") == true)
+            #expect(try String(contentsOf: file, encoding: .utf8) == Self.notToml, "a config was rewritten")
+            #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Services").path), "Quick Actions were made from the defaults")
+        }
     }
 
     @Test func theStepsOfADryRunSayInTheJSONWhatWouldBeDoneNotThatItWasDone() throws {

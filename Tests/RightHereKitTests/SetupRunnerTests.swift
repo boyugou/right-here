@@ -330,14 +330,191 @@ struct SetupRunnerTests {
         #expect(report.configEdits.isEmpty)
     }
 
-    @Test func aConfigThatCannotBeReadIsKeptAndSaidSo() async throws {
+    // MARK: A config that cannot be used
+
+    /// What is in the config file of a person whose config does not parse: a table header that is never closed, on line 2.
+    private static let broken = "# mine\n[general\nterminal = \"ghostty\"\n"
+
+    private func writeBytes(_ data: Data, to file: URL) throws {
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try data.write(to: file)
+    }
+
+    @Test func aConfigThatDoesNotParseFailsTheConfigStepAndNothingIsMadeOrListedFromIt() async throws {
+        let machine = try Machine(shellOutput: "claude\ncodex\n"); defer { machine.cleanUp() }
+        try machine.writeConfig(Self.broken)
+        let report = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "terminal", editor: "zed", agents: ["claude", "codex"])))
+        #expect(!report.ok)
+        // The other steps are not the config's: they still run.
+        #expect(outcomes(report) == ["config": .failed, "runnerScript": .created, "cliLink": .created, "services": .skipped, "finderExtension": .skipped])
+        let detail = try #require(report.step(.config)?.detail?.english())
+        #expect(detail.contains(machine.paths.configFile.path) && detail.contains("line 2: TOML syntax error: table header not closed"), "\(detail)")
+        #expect(detail.hasSuffix("so setup left it as it is and made nothing from it"), "\(detail)")
+        #expect(machine.configText == Self.broken, "a config is never rewritten")
+        #expect(report.configEdits.isEmpty, "edits computed from the defaults for a text that is not TOML: \(report.configEdits.map(\.instruction))")
+        #expect(report.chosen == nil)
+        #expect(Installer(home: machine.home).installedServices().isEmpty, "Quick Actions were made from the defaults")
+        #expect(report.step(.services)?.detail?.english().contains("cannot be used") == true)
+        // What the person is told: what and where, that setup left it alone, and that they decide.
+        let need = try #require(report.needsUser.first)
+        #expect(need.id == .config)
+        #expect(need.text.contains(machine.paths.configFile.path) && need.text.contains("line 2") && need.text.contains("left it as it is"), "\(need.text)")
+        #expect(need.how.joined().contains("never rewrites") && need.how.joined().contains("tell an AI agent that it may"), "\(need.how)")
+        #expect(report.next.map(\.command) == ["rh config validate --strict", "rh setup --terminal terminal --editor zed --agents claude,codex --dry-run"], "\(report.next.map(\.command))")
+        // Nothing the doctor would say about the defaults is passed on as if it were the person's.
+        #expect(report.checks?.first { $0.id == .config }?.status == .fail)
+        #expect(!report.needsUser.contains { $0.id == .automation })
+    }
+
+    @Test func aDryRunSaysTheSameOfAConfigThatDoesNotParseAndWritesNothing() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig(Self.broken)
+        let report = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "terminal"), dryRun: true))
+        #expect(!report.ok && report.checks == nil)
+        #expect(outcomes(report)["config"] == .failed && outcomes(report)["services"] == .skipped)
+        #expect(report.configEdits.isEmpty)
+        #expect(report.needsUser.first?.id == .config)
+        #expect(report.next.map(\.command) == ["rh config validate --strict", "rh setup --terminal terminal --dry-run"])
+        #expect(!FileManager.default.fileExists(atPath: Installer(home: machine.home).runnerScript.path))
+        #expect(machine.configText == Self.broken)
+    }
+
+    @Test func theQuickActionsThatAreThereStayWhenTheConfigStopsParsing() async throws {
+        let machine = try Machine(shellOutput: "claude\n"); defer { machine.cleanUp() }
+        _ = try await machine.runner().run(.setup())
+        let installer = Installer(home: machine.home)
+        let before = installer.installedServices().map(\.lastPathComponent)
+        #expect(!before.isEmpty)
+        try machine.writeConfig("[general\n" + machine.configText)
+        let again = try await machine.runner().run(.setup())
+        #expect(outcomes(again)["services"] == .skipped)
+        #expect(installer.installedServices().map(\.lastPathComponent) == before, "the person's Quick Actions were replaced by ones made from the defaults")
+    }
+
+    @Test func oneInstallNamedByItselfFailsWhenItsConfigCannotBeUsed() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig(Self.broken)
+        let report = try await machine.runner().run(SetupRequest(pieces: [.services], strict: true))
+        #expect(outcomes(report) == ["services": .failed] && !report.ok)
+        #expect(report.step(.services)?.detail?.english().contains("line 2: TOML syntax error") == true)
+        #expect(Installer(home: machine.home).installedServices().isEmpty)
+        // A piece that does not depend on the config does not say anything about it.
+        let scripts = try await machine.runner().run(SetupRequest(pieces: [.runnerScript], strict: true))
+        #expect(scripts.ok && scripts.needsUser.isEmpty)
+    }
+
+    @Test func anOverlayThatDoesNotParseIsNamedAndTheConfigCannotBeUsedEither() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig(Self.mine, local: "[general\n")
+        let report = try await machine.runner().run(.setup(choices: SetupChoices(agents: ["claude", "codex"])))
+        #expect(outcomes(report)["config"] == .failed && outcomes(report)["services"] == .skipped)
+        let detail = try #require(report.step(.config)?.detail?.english())
+        #expect(detail.contains(machine.paths.localConfigFile.path) && detail.contains("line 1"), "\(detail)")
+        #expect(report.configEdits.isEmpty)
+        #expect(report.needsUser.first?.text.contains("config.local.toml") == true)
+        // The file that could be read says Ghostty and an agent, but it is not the whole config, so what the config asks for is not worked out from it.
+        #expect(!report.needsUser.contains { $0.id == .automation }, "\(report.needsUser.map(\.id))")
+    }
+
+    @Test func startingTheConfigOverDoesNotMendAnOverlayThatDoesNotParse() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig(Self.mine, local: "[general\n")
+        let report = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "terminal"), force: true))
+        #expect(outcomes(report)["config"] == .updated)
+        // The step that cannot be done says so, since the config step did not.
+        #expect(outcomes(report)["services"] == .failed && !report.ok)
+        #expect(report.step(.services)?.detail?.english().contains(machine.paths.localConfigFile.path) == true)
+        #expect(report.needsUser.first?.id == .config)
+    }
+
+    @Test func forceReplacesAConfigThatDoesNotParseAfterSavingIt() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig(Self.broken)
+        let report = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "terminal", editor: "zed", agents: []), force: true))
+        #expect(report.ok && outcomes(report)["config"] == .updated && outcomes(report)["services"] == .created)
+        let backups = try FileManager.default.contentsOfDirectory(atPath: machine.paths.configDirectory.path).filter { $0.hasPrefix("config.toml.bak-") }
+        #expect(backups.count == 1)
+        #expect(try String(contentsOf: machine.paths.configDirectory.appendingPathComponent(backups[0]), encoding: .utf8) == Self.broken)
+        #expect(ConfigParser.parse(machine.configText).diagnostics.isEmpty)
+    }
+
+    @Test("a config that is there and cannot be read as one is a failure, whatever the reason", arguments: [
+        ("a file that is not UTF-8", Data([0xff, 0xfe, 0x00, 0x41]), "not valid UTF-8"),
+        ("a file past the size limit", Data(repeating: 0x23, count: ConfigParser.maxBytes + 100), "a config is a few kilobytes"),
+    ])
+    func aConfigThatCannotBeReadAsATextIsAFailure(_ what: String, _ bytes: Data, _ said: String) async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try writeBytes(bytes, to: machine.paths.configFile)
+        let report = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "terminal")))
+        #expect(outcomes(report)["config"] == .failed && outcomes(report)["services"] == .skipped, "\(what)")
+        #expect(report.step(.config)?.detail?.english().contains(said) == true, "\(what): \(report.step(.config)?.detail?.english() ?? "")")
+        #expect(report.configEdits.isEmpty)
+        #expect(try Data(contentsOf: machine.paths.configFile) == bytes, "\(what): the file was changed")
+    }
+
+    @Test func aConfigThatCannotBeReadIsAFailureAndStaysAsItIs() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         try machine.writeConfig(Self.mine)
         try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: machine.paths.configFile.path)
         defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: machine.paths.configFile.path) }
         let report = try await machine.runner().run(.setup())
+        #expect(outcomes(report)["config"] == .failed && !report.ok)
+        #expect(report.step(.config)?.detail?.english().contains("cannot read") == true, "\(report.step(.config)?.detail?.english() ?? "")")
+        #expect(outcomes(report)["services"] == .skipped)
+    }
+
+    @Test func aConfigThatIsALinkToNowhereIsAFailureThatNamesTheLinkAndMakesNothingThroughIt() async throws {
+        // A dotfiles manager links the config to a repository that is not on this Mac yet.
+        let machine = try Machine(); defer { machine.cleanUp() }
+        let target = machine.home.appendingPathComponent("dotfiles/config.toml")
+        try FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(atPath: machine.paths.configFile.path, withDestinationPath: target.path)
+        let report = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "terminal", agents: [])))
+        #expect(outcomes(report)["config"] == .failed && outcomes(report)["services"] == .skipped && !report.ok)
+        let detail = try #require(report.step(.config)?.detail?.english())
+        #expect(detail.contains("is a link to \(target.path), which does not exist"), "\(detail)")
+        #expect(!FileManager.default.fileExists(atPath: target.path) && !FileManager.default.fileExists(atPath: target.deletingLastPathComponent().path), "something was made through the link")
+        #expect((try? FileManager.default.destinationOfSymbolicLink(atPath: machine.paths.configFile.path)) == target.path, "the link was replaced")
+        #expect(report.needsUser.first?.id == .config)
+        // Starting over is the person's to ask for, and replaces the link.
+        let forced = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "terminal", agents: []), force: true))
+        #expect(forced.ok && ConfigParser.parse(machine.configText).config.terminal == "terminal")
+    }
+
+    @Test func aConfigThatAppearsWhileSetupMakesItsOwnIsKeptAndWhatTheChoicesNeedIsListed() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        // The login shell is asked before the config is written; another setup puts its own config there at that moment.
+        let racing = ScriptedRunner { step in
+            if step.executable == "/bin/zsh" {
+                try? FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)
+                try? Self.mine.write(to: machine.paths.configFile, atomically: true, encoding: .utf8)
+            }
+            return ProcessResult(status: 0, standardOutput: step.executable == "/bin/zsh" ? "claude\n" : "")
+        }
+        let runner = SetupRunner(facts: machine.facts, paths: machine.paths, runner: racing, rhPath: machine.rh, app: machine.app, trialHome: machine.home, localizer: .english, settle: .zero)
+        let report = try await runner.run(.setup(choices: SetupChoices(terminal: "terminal")))
         #expect(outcomes(report)["config"] == .unchanged)
-        #expect(report.step(.config)?.detail?.english().contains("was not read") == true, "\(report.step(.config)?.detail?.english() ?? "")")
+        #expect(report.step(.config)?.detail?.english().contains("made a moment ago by something else") == true)
+        #expect(machine.configText == Self.mine)
+        #expect(report.chosen == nil)
+        // What the person chose is not in the config that stayed, so the report lists the edit instead of dropping the choice.
+        #expect(report.configEdits.map(\.key) == ["general.terminal"], "\(report.configEdits.map(\.instruction))")
+        #expect(report.warnings.contains { $0.contains("already exists, so Right Here left it alone") })
+    }
+
+    @Test func aConfigThatAppearsWhileSetupMakesItsOwnAndDoesNotParseIsAFailure() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        let racing = ScriptedRunner { step in
+            if step.executable == "/bin/zsh" {
+                try? FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)
+                try? Self.broken.write(to: machine.paths.configFile, atomically: true, encoding: .utf8)
+            }
+            return ProcessResult(status: 0, standardOutput: step.executable == "/bin/zsh" ? "claude\n" : "")
+        }
+        let runner = SetupRunner(facts: machine.facts, paths: machine.paths, runner: racing, rhPath: machine.rh, app: machine.app, trialHome: machine.home, localizer: .english, settle: .zero)
+        let report = try await runner.run(.setup(choices: SetupChoices(terminal: "terminal")))
+        #expect(outcomes(report)["config"] == .failed && outcomes(report)["services"] == .skipped && !report.ok)
+        #expect(machine.configText == Self.broken)
     }
 
     // MARK: Dry run
@@ -575,6 +752,13 @@ struct SetupRunnerTests {
         #expect(lines.contains { $0.hasPrefix("  agents: ") && $0.contains("found in your login shell") })
         #expect(lines.contains("Only you can do this:"))
         #expect(lines.contains("  rh menu --container ~"))
+    }
+
+    @Test func whatTheConfigWouldAskForIsNotDerivedFromAConfigThatCannotBeUsed() {
+        let config = ConfigParser.parse("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n").config
+        let facts = FakeSystemFacts(homeDirectory: URL(fileURLWithPath: "/Users/tester"), applications: ["com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app")])
+        #expect(SetupAdvice.needsUser(checks: [], config: config, facts: facts).map(\.id) == [.automation])
+        #expect(SetupAdvice.needsUser(checks: [], config: nil, facts: facts).isEmpty)
     }
 
     @Test func eachShellGetsTheLineItReads() {

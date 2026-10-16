@@ -36,6 +36,12 @@ make the edits yourself, now, before step 3 (`rh config path` says where the fil
 
 To add an agent to a config that exists, give the whole list in `--agents`: the agents already enabled (`rh agents`) and the new one.
 
+If the config step says it `would-fail` (or, in step 4, `failed`), the file is there but cannot be used: it is not TOML, it cannot be
+read, or it is a link to a file that is not there. `configEdits` is empty then, on purpose, and no Quick Actions are made from it.
+The step and the `config` entry of `needsUser` say which file, which line and what is wrong. Stop and tell the person that, and that
+setup never rewrites a config; fix it only if they agree, with the smallest edit that makes `rh config validate --strict` say ok
+(every comment kept), then start again with the dry run.
+
 ## 3. Run setup once
 
     rh setup --json --terminal <id> --editor <id> --agents <id,id>
@@ -62,6 +68,8 @@ for them.
 
 - `finderExtension`: switch on Right Here in System Settings › General › Login Items & Extensions › Finder. The Finder menu then
   appears within a few seconds. Running setup again does not switch it on.
+- `config`: their config file cannot be used (step 2). Say which file, which line and what is wrong, in your words. It is theirs to
+  fix, or to let you fix with the smallest edit that makes it parse; then run the dry run of step 2 again.
 - `path`: add the line `how` gives to their shell's startup file, and open a new terminal window. Do not edit the startup file
   yourself; if they ask you to, add that one line and nothing else.
 - `automation`: the first time an agent starts in their terminal, macOS asks whether Right Here may control it. They click Allow.
@@ -79,8 +87,9 @@ for them.
 ## 7. Never
 
 - Never change System Settings or the databases behind it (`defaults`, `tccutil`, `sqlite3`, `pluginkit` by hand).
-- Never delete, replace or rewrite the person's config or its comments. `rh setup --force` replaces the file (the old one is saved
-  next to it): use it only when the person asked to start the config over.
+- Never delete, replace or rewrite the person's config or its comments. The edits you make to it are the listed `configEdits` of
+  step 2 and, when it does not parse and the person agrees, the smallest edit that makes it parse; nothing else. `rh setup --force`
+  replaces the file (the old one is saved next to it): use it only when the person asked to start the config over.
 - Never run `rh setup` or `rh install --finder` again, or in a loop, to make the extension switch on: it only registers it.
 - Never put a secret in the config or in a command.
 - Never run `rh doctor --probe-launch` or `--probe-extension` without asking, and never run `rh finder`.

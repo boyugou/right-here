@@ -27,6 +27,11 @@ Leave out a flag the user did not answer. It changes nothing. If `configEdits` i
 setup never rewrites: make exactly those edits to the file each names, now, keep every comment and every other line, then check it
 with `right_here_config_validate` (`clean` must be true). To add an agent to a config that exists, give the whole list of agents.
 
+If the config step says it `would-fail` (or `failed`), the file is there but cannot be used: it does not parse, cannot be read, or is a
+link to nowhere. `configEdits` is empty then, and no Quick Actions are made from it. Tell the user which file, which line and what is
+wrong (the `config` entry of `needsUser` has them), and that setup never rewrites a config; fix it only if they agree, with the smallest
+edit that makes `right_here_config_validate` say `ok`, then start again with the dry run.
+
 ## 3. Run setup once
 
     rh setup --json --terminal <id> --editor <id> --agents <id,id>
@@ -49,5 +54,7 @@ macOS may ask for permission, so ask before you start it.
 
 ## Never
 
-Change System Settings or the databases behind it; delete, replace or rewrite the user's config or its comments (`rh setup --force`
-only when they asked to start over); edit their shell startup files unless they ask you to; put a secret in the config.
+Change System Settings or the databases behind it; delete, replace or rewrite the user's config or its comments (the listed
+`configEdits`, and with their agreement the smallest edit that makes a config that does not parse parse, are the only edits;
+`rh setup --force` only when they asked to start over); edit their shell startup files unless they ask you to; put a secret in the
+config.
