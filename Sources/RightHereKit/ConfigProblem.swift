@@ -16,10 +16,7 @@ struct ConfigProblem: Sendable, Equatable {
     init?(_ result: ConfigLoadResult, paths: RHPaths) {
         for file in [paths.configFile, paths.localConfigFile] {
             let isOverlay = file == paths.localConfigFile
-            // `ConfigStore` reads a link that points nowhere as no file at all, so the entry is looked for as it is, not through the link.
-            var status = stat()
-            if lstat(file.path, &status) == 0, !FileManager.default.fileExists(atPath: file.path) {
-                let target = (try? FileManager.default.destinationOfSymbolicLink(atPath: file.path)) ?? ""
+            if let target = Self.danglingTarget(of: file) {
                 self.init(file: file, reason: "it is a link to \(target.withControlCharactersEscaped), which does not exist")
                 return
             }
@@ -30,6 +27,14 @@ struct ConfigProblem: Sendable, Equatable {
             }
         }
         return nil
+    }
+
+    /// Where `file` points, when it is a link to a file that is not there. `ConfigStore` reads such a link as no file at all, so the entry is
+    /// looked for as it is, not through the link.
+    static func danglingTarget(of file: URL) -> String? {
+        var status = stat()
+        guard lstat(file.path, &status) == 0, !FileManager.default.fileExists(atPath: file.path) else { return nil }
+        return (try? FileManager.default.destinationOfSymbolicLink(atPath: file.path)) ?? ""
     }
 
     init(file: URL, reason: String) {
