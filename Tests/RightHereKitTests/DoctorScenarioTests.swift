@@ -95,23 +95,31 @@ struct DoctorScenarioTests {
         #expect(said(checks, "finder.activity") == Said(status: .ok, detail: "none yet; right-click a folder in Finder and choose an action, then run `rh doctor` again", fix: nil))
     }
 
-    @Test func theClaudeCodeLinkHandlerIsCheckedOnlyForAPersonWhoHasClaudeCodeEnabled() async throws {
-        // All three agents of the cold-agent evaluation told their person about this warning, one of them a person who had said
-        // that they use no agent: a handler for a tool that is not enabled is nobody's business.
-        var withClaude = try Scene(); defer { withClaude.cleanUp() }
-        withClaude.applications = ["com.mitchellh.ghostty": ghostty]
-        withClaude.answers = [ProcessResult(status: 0, standardOutput: "claude\n"), ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
-        try withClaude.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
-        #expect(said(await withClaude.run(), "claude.link") == Said(status: .warn, detail: "handler not installed (only needed for launcher = \"link\")",
-                                                                    fix: "Start `claude` once and send a prompt; Claude Code registers the handler."))
-
-        for agents in ["[\"codex\"]", "[]"] {
-            var without = try Scene(); defer { without.cleanUp() }
-            without.applications = ["com.mitchellh.ghostty": ghostty]
-            without.answers = [ProcessResult(status: 0, standardOutput: "codex\n"), ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
-            try without.writeConfig("[general]\nterminal = \"ghostty\"\nagents = \(agents)\n")
-            #expect(said(await without.run(), "claude.link") == nil, "agents = \(agents)")
+    @Test func theClaudeCodeLinkHandlerIsCheckedOnlyWhereSomethingStartsClaudeCodeThroughIt() async throws {
+        // All three agents of the cold-agent evaluation told their person about this warning, one of them a person who had said that
+        // they use no agent and one whose own menu has no entry that uses the link: a handler nothing needs is nobody's business.
+        func claudeLink(_ config: String, shell: String = "claude\n") async throws -> Said? {
+            var scene = try Scene(); defer { scene.cleanUp() }
+            scene.applications = ["com.mitchellh.ghostty": ghostty]
+            scene.answers = [ProcessResult(status: 0, standardOutput: shell), ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
+            try scene.writeConfig(config)
+            return said(await scene.run(), "claude.link")
         }
+        let general = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n"
+        let ownMenu = "[menu]\nitems = [\"open-terminal\", \"agents\"]\n"
+
+        // The default menu has the entry (More Agent Options), so the warning stays.
+        #expect(try await claudeLink(general) == Said(status: .warn, detail: "handler not installed (only needed for launcher = \"link\")",
+                                                      fix: "Start `claude` once and send a prompt; Claude Code registers the handler."))
+        // Where nothing uses the link there is no row: no Claude Code, none at all, or a menu of the person's own.
+        for agents in ["[\"codex\"]", "[]"] {
+            #expect(try await claudeLink("[general]\nterminal = \"ghostty\"\nagents = \(agents)\n", shell: "codex\n") == nil, "agents = \(agents)")
+        }
+        #expect(try await claudeLink(general + ownMenu) == nil, "a menu without More Agent Options never offers the link")
+        // Each way of reaching the link brings the row back.
+        #expect(try await claudeLink(general + ownMenu + "[agent.claude]\nlauncher = \"link\"\n")?.status == .warn, "the agent starts through the link")
+        #expect(try await claudeLink(general + ownMenu + "[services]\nitems = [\"agent.claude@link\"]\n")?.status == .warn, "a Quick Action uses the link")
+        #expect(try await claudeLink(general + "[menu]\nitems = [\"agents-more\"]\n")?.status == .warn, "the menu has More Agent Options")
     }
 
     @Test func aWorkingMachineIsAllOkAndNamesWhatItFound() async throws {

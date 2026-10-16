@@ -47,9 +47,7 @@ public struct Doctor: Sendable {
         checks += menuChecks()
         checks += agentChecks(shell)
         checks += menuEmptyCheck()
-        // The terminal link is Claude Code's own way in (the menu entry that uses launcher = "link"): it is only a question for a person
-        // who has Claude Code enabled. A warning about it for anyone else, with a fix that starts a tool they do not use, is noise.
-        if loaded.config.enabledAgents.contains("claude") { checks.append(claudeLinkCheck()) }
+        if claudeLinkIsOffered() { checks.append(claudeLinkCheck()) }
         checks += integrationChecks(shell)
         checks.append(await Self.extensionCheck(runner: runner))
         checks.append(Self.activityCheck(logFile: paths.logFile))
@@ -246,6 +244,20 @@ public struct Doctor: Sendable {
             }
         }
         return checks
+    }
+
+    /// The terminal link is Claude Code's own way in, and a handler that is not there matters only where something starts Claude Code
+    /// through it: the agent's `launcher = "link"` (which the plain Claude Code entries then follow), the menu's entry for it (under
+    /// More Agent Options), or a Quick Action for it. A warning for a person who has no such entry (no Claude Code at all, or a menu
+    /// of their own without it), with a fix that starts a tool they may not use, is noise that an AI agent then repeats to them.
+    private func claudeLinkIsOffered() -> Bool {
+        let config = loaded.config
+        guard config.enabledAgents.contains("claude") else { return false }
+        if config.agents["claude"]?.launcher == .terminalLink { return true }
+        let link = "agent.claude@\(AgentLauncher.linkWord)"
+        let folder = HereContext(origin: .container, container: facts.homeDirectory)
+        return MenuBuilder(config: config, facts: facts).build(for: folder).contains { $0.actionIDs.contains(link) }
+            || (config.serviceItems ?? []).contains(link)
     }
 
     private func claudeLinkCheck() -> DoctorCheck {

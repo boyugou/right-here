@@ -369,8 +369,8 @@ MUTANTS = [
      'if true { return [SetupNext(rerun, why: "The same without --dry-run: it makes the changes above.")] }'),
     ("setup runs from a translocated copy of the app, whose folder disappears when the app quits", "Sources/RightHereKit/SetupRunner.swift",
      "if InstallError.isTranslocated(rhPath) { throw InstallError.translocated }", "if false { throw InstallError.translocated }"),
-    ("the Claude Code link handler is checked for a person who has not enabled Claude Code", "Sources/RightHereKit/Doctor.swift",
-     'if loaded.config.enabledAgents.contains("claude") { checks.append(claudeLinkCheck()) }', "checks.append(claudeLinkCheck())"),
+    ("the Claude Code link handler is checked where nothing starts Claude Code through the link", "Sources/RightHereKit/Doctor.swift",
+     "if claudeLinkIsOffered() { checks.append(claudeLinkCheck()) }", "checks.append(claudeLinkCheck())"),
 ]
 
 
