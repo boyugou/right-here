@@ -60,7 +60,7 @@ Everything since 0.2.0.
 - `rh doctor --report`, for a public issue, held what the config says (an agent's command, an app's name, the text of an error, the sync folder). It now holds none of it
   and says what it holds; its block closes whatever a crash report's name holds. `rh setup` and `rh doctor` fence what the config names in every sentence an AI agent
   passes on (ADR 0020), and names that something else wrote (a crash report, a folder, a worktree, git's words) are shown with the characters that draw nothing as
-  escapes, in every line `rh` prints and in its JSON.
+  escapes, in every line `rh` prints, in its JSON and in the setup window's list of worktrees.
 - The doctor counts the extension's crash reports by the UUID of the code that crashed and not by the date the code was written, so a crash of the copy that was
   replaced is not held against the new one.
 
