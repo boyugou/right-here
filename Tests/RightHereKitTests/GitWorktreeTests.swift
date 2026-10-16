@@ -22,7 +22,7 @@ struct GitWorktreeTests {
         worktree /Users/tester/repo/bare-tree
         bare
         """
-        let entries = GitWorktreeManager.parsePorcelain(output, gitRoot: root)
+        let entries = GitWorktreeManager.parsePorcelain(porcelainZ(output), gitRoot: root)
         #expect(entries.count == 4)
 
         #expect(entries[0].path == "/Users/tester/repo")
@@ -227,13 +227,13 @@ struct GitWorktreeSafetyTests {
 
     @Test func aWorktreeWithAChangeIsNotDiscardedEvenBeforeGitIsAskedToRemoveIt() async {
         // git itself refuses to remove a worktree with untracked files, which hides a missing check here: so the rule is tested
-        // with a runner that reports a change, and expects that nothing is removed (only the status is asked).
-        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "?? new.txt\n")])
+        // with a runner that reports a change, and expects that nothing is removed (only the drivers and the status are asked).
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 1), ProcessResult(status: 0, standardOutput: "?? new.txt\n")])
         let made = WorktreeResult(branch: "x", worktreeURL: URL(fileURLWithPath: "/tmp/rh-wt"), wasCreated: true, branchCreated: true)
         let removed = await GitWorktreeManager.discardIfUnchanged(made, gitRoot: URL(fileURLWithPath: "/tmp/rh-repo"), runner: runner)
         #expect(removed == false)
-        #expect(runner.recorded.count == 1, "only the status was asked; nothing was removed")
-        #expect(runner.recorded.first?.arguments.contains("status") == true)
+        #expect(runner.recorded.count == 2, "only the drivers and the status were asked; nothing was removed")
+        #expect(runner.recorded.last?.arguments.contains("status") == true)
     }
 
     @Test func aWorktreeThisRunDidNotMakeIsNotDiscardedAndGitIsNotAsked() async {

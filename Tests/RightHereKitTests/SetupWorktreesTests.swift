@@ -5,9 +5,16 @@ import RightHereCore
 
 private let root = URL(fileURLWithPath: "/work/app")
 
+/// What every git command carries when the repository defines no filter driver (the whole of `GitGuardTests.swift` is about it).
+private let guardedGit: [String: String] = [
+    "GIT_NO_LAZY_FETCH": "1", "GIT_CONFIG_COUNT": "2",
+    "GIT_CONFIG_KEY_0": "core.hooksPath", "GIT_CONFIG_VALUE_0": "/dev/null",
+    "GIT_CONFIG_KEY_1": "core.fsmonitor", "GIT_CONFIG_VALUE_1": "false"
+]
+
 /// `git worktree list --porcelain` for a repository with its main working copy, two worktrees Right Here made, one the
 /// person made by hand next to it, and the main working copy of another repository's branch named like Right Here's.
-private let porcelain = """
+private let porcelain = porcelainZ("""
 worktree /work/app
 HEAD aaaa
 branch refs/heads/main
@@ -27,7 +34,7 @@ branch refs/heads/rh/hotfix
 worktree /work/app-detached
 HEAD eeee
 detached
-"""
+""")
 
 @Suite("WorktreeRepositories")
 struct WorktreeRepositoriesTests {
@@ -111,7 +118,7 @@ struct WorktreeBrowserTests {
         let listing = await WorktreeBrowser(runner: runner).list(in: root)
         guard case .loaded(let rows) = listing else { Issue.record("not loaded: \(listing)"); return }
         #expect(rows.count == 5)
-        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/git", arguments: ["-C", "/work/app", "worktree", "list", "--porcelain"])])
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/git", arguments: ["--no-pager", "-C", "/work/app", "worktree", "list", "--porcelain", "-z"], environment: guardedGit)])
     }
 
     @Test func gitThatSaysNoIsShownInItsWords() async {
@@ -124,13 +131,16 @@ struct WorktreeBrowserTests {
     @Test func aRemovalAsksGitToRemoveThatWorktreeAndNothingElse() async throws {
         // The window used to run `git worktree remove --force` and then `git branch -D` for whatever row it was given.
         let target = "/work/app/.right-here/worktrees/rh-1760000000"
-        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: porcelain), ProcessResult(status: 0)])
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: porcelain), ProcessResult(status: 1), ProcessResult(status: 0)])
         let browser = WorktreeBrowser(runner: runner)
         let row = try #require(WorktreeBrowser.rows(GitWorktreeManager.parsePorcelain(porcelain, gitRoot: root), in: root).first { $0.id == target })
         let notice = await browser.remove(row, in: root)
         #expect(notice == .worktreeRemoved(target))
         let arguments = runner.recorded.map(\.arguments)
-        #expect(arguments == [["-C", "/work/app", "worktree", "list", "--porcelain"], ["-C", "/work/app", "worktree", "remove", "--", target]])
+        // The list, the drivers the repository defines (none here), and the removal of that worktree.
+        #expect(arguments == [["--no-pager", "-C", "/work/app", "worktree", "list", "--porcelain", "-z"],
+                              ["--no-pager", "-C", "/work/app", "config", "-z", "--show-scope", "--name-only", "--get-regexp", "^(filter|hook)\\."],
+                              ["--no-pager", "-C", "/work/app", "worktree", "remove", "--", target]])
         #expect(!arguments.joined().contains("--force"))
         #expect(!arguments.contains { $0.contains("branch") })
     }
@@ -138,13 +148,13 @@ struct WorktreeBrowserTests {
     @Test func gitsRefusalForUncommittedWorkIsTheNoticeAndNothingIsRetriedWithForce() async throws {
         let target = "/work/app/.right-here/worktrees/fix-login"
         let refusal = "fatal: '\(target)' contains modified or untracked files, use --force to delete it"
-        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: porcelain), ProcessResult(status: 128, standardError: refusal)])
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: porcelain), ProcessResult(status: 1), ProcessResult(status: 128, standardError: refusal)])
         let row = try #require(WorktreeBrowser.rows(GitWorktreeManager.parsePorcelain(porcelain, gitRoot: root), in: root).first { $0.id == target })
         let notice = await WorktreeBrowser(runner: runner).remove(row, in: root)
         guard case .failed(let message) = notice else { Issue.record("not a failure: \(notice)"); return }
         #expect(message.contains("contains modified or untracked files"))
         #expect(message.contains("never discarded without --force"))
-        #expect(runner.recorded.count == 2, "git was asked to remove once and not again")
+        #expect(runner.recorded.filter { $0.arguments.contains("remove") }.count == 1, "git was asked to remove once and not again")
         #expect(!runner.recorded.contains { $0.arguments.contains("--force") })
     }
 

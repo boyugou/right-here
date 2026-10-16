@@ -100,20 +100,24 @@ public enum GitWorktreeManager {
     }
 
     public static func listWorktrees(in gitRoot: URL, runner: any ProcessRunner = LiveProcessRunner()) async throws -> [WorktreeEntry] {
-        let step = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path, "worktree", "list", "--porcelain"])
-        let result = try await runner.run(step)
+        // `-z`: without it a folder name with a line break in it reads as more lines of the list, and forges a worktree.
+        let step = GitCommand.step(["worktree", "list", "--porcelain", "-z"], in: gitRoot.path, blanking: GitCommand.Defined())
+        let result = try await runner.run(step, timeout: GitCommand.reading)
+        try GitCommand.requireFinished(result, "git worktree list")
         guard result.status == 0 else {
             throw ExecutionError.stepFailed(index: 0, step: "git worktree list", message: result.standardError)
         }
         return parsePorcelain(result.standardOutput, gitRoot: gitRoot)
     }
 
+    /// What `git worktree list --porcelain -z` prints: the lines of a worktree (`worktree <path>`, `HEAD <id>`, `branch <ref>`, `bare`, `detached`,
+    /// `locked`, `prunable`), each ended by a NUL, and an empty line (a second NUL) after the last one of each worktree.
     public static func parsePorcelain(_ text: String, gitRoot: URL) -> [WorktreeEntry] {
         var entries: [WorktreeEntry] = []
-        let blocks = text.components(separatedBy: "\n\n")
         let rhPrefix = gitRoot.appendingPathComponent(folderName).standardizedFileURL.path
-        for block in blocks {
-            let lines = block.split(separator: "\n").map(String.init)
+        var lines: [String] = []
+        func finish() {
+            defer { lines = [] }
             var path = ""
             var head = ""
             var branch: String? = nil
@@ -126,7 +130,7 @@ public enum GitWorktreeManager {
                     head = String(line.dropFirst("HEAD ".count))
                 } else if line.hasPrefix("branch ") {
                     let ref = String(line.dropFirst("branch ".count))
-                    branch = ref.replacingOccurrences(of: "refs/heads/", with: "")
+                    branch = ref.hasPrefix("refs/heads/") ? String(ref.dropFirst("refs/heads/".count)) : ref
                 } else if line == "bare" {
                     isBare = true
                 } else if line == "detached" {
@@ -139,6 +143,10 @@ public enum GitWorktreeManager {
                 entries.append(WorktreeEntry(path: standardPath, head: head, branch: branch, isBare: isBare, isDetached: isDetached, isRightHere: isRightHere))
             }
         }
+        for field in text.unicodeScalars.split(separator: "\0", omittingEmptySubsequences: false) {
+            if field.isEmpty { finish() } else { lines.append(String(String.UnicodeScalarView(field))) }
+        }
+        finish()
         return entries
     }
 
@@ -170,9 +178,10 @@ public enum GitWorktreeManager {
         }
 
         // Nothing is written in the repository before git has agreed: `git worktree add` makes the folders it needs, and a refused request leaves no trace.
-        let guards = try await hardening(gitRoot: gitRoot, runner: runner)
+        // The repository's own hooks and filters are switched off for it: checking out a worktree runs the hooks and applies the filters to every file its attributes select.
+        let defined = try await GitCommand.defined(in: gitRoot.path, runner: runner)
         // Try creating with a new branch
-        let addStep = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path] + guards + ["worktree", "add", "-b", branchName, worktreeDir.path, "HEAD"])
+        let addStep = GitCommand.step(["worktree", "add", "-b", branchName, worktreeDir.path, "HEAD"], in: gitRoot.path, blanking: defined)
         let addResult = try await runner.run(addStep)
         if addResult.status == 0 {
             keepOutOfGitStatus(gitRoot: gitRoot)
@@ -180,7 +189,7 @@ public enum GitWorktreeManager {
         }
 
         // If branch already exists, attach to existing branch
-        let fallbackStep = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path] + guards + ["worktree", "add", "--", worktreeDir.path, branchName])
+        let fallbackStep = GitCommand.step(["worktree", "add", "--", worktreeDir.path, branchName], in: gitRoot.path, blanking: defined)
         let fallbackResult = try await runner.run(fallbackStep)
         if fallbackResult.status == 0 {
             keepOutOfGitStatus(gitRoot: gitRoot)
@@ -205,8 +214,10 @@ public enum GitWorktreeManager {
     @discardableResult
     public static func discardIfUnchanged(_ created: WorktreeResult, gitRoot: URL, runner: any ProcessRunner = LiveProcessRunner()) async -> Bool {
         guard created.wasCreated else { return false }
-        let status = ProcessStep(executable: "/usr/bin/git", arguments: ["-C", created.worktreeURL.path, "status", "--porcelain", "--untracked-files=all"])
-        guard let check = try? await runner.run(status, timeout: .seconds(20)), check.status == 0, check.standardOutput.isEmpty else { return false }
+        // `git status` compares the files with the index, which runs the clean filter of every file whose dates say it may have changed.
+        guard let defined = try? await GitCommand.defined(in: created.worktreeURL.path, runner: runner) else { return false }
+        let status = GitCommand.step(["status", "--porcelain", "--untracked-files=all"], in: created.worktreeURL.path, blanking: defined)
+        guard let check = try? await runner.run(status, timeout: GitCommand.reading), check.status == 0, check.standardOutput.isEmpty else { return false }
         do {
             try await removeWorktree(worktreePath: created.worktreeURL.path, gitRoot: gitRoot, deleteBranch: created.branchCreated, force: false, runner: runner)
             return true
@@ -239,10 +250,14 @@ public enum GitWorktreeManager {
         worktreePath: String, gitRoot: URL, deleteBranch: Bool = false, force: Bool = false, runner: any ProcessRunner = LiveProcessRunner()
     ) async throws -> WorktreeRemoval {
         let entry = try resolveManaged(worktreePath, in: try await listWorktrees(in: gitRoot, runner: runner), gitRoot: gitRoot)
-        var arguments = ["-C", gitRoot.path, "worktree", "remove"]
+        // `git worktree remove` runs a `git status` of its own inside the worktree, with that worktree's configuration (its `config.worktree` is not the
+        // main folder's), so what the repository defines is looked for in both places.
+        var defined = try await GitCommand.defined(in: gitRoot.path, runner: runner)
+        if FileManager.default.fileExists(atPath: entry.path) { defined = defined.merging(try await GitCommand.defined(in: entry.path, runner: runner)) }
+        var arguments = ["worktree", "remove"]
         if force { arguments.append("--force") }
         arguments += ["--", entry.path]
-        let removed = try await runner.run(ProcessStep(executable: "/usr/bin/git", arguments: arguments))
+        let removed = try await runner.run(GitCommand.step(arguments, in: gitRoot.path, blanking: defined))
         guard removed.status == 0 else {
             let detail = removed.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
             let hint = force ? "" : " Uncommitted work is never discarded without --force."
@@ -251,32 +266,11 @@ public enum GitWorktreeManager {
         guard deleteBranch, let branch = entry.branch else {
             return WorktreeRemoval(path: entry.path, branchDeleted: false, branchKept: nil)
         }
-        let deleted = try await runner.run(ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path, "branch", "-d", "--", branch]))
+        let deleted = try await runner.run(GitCommand.step(["branch", "-d", "--", branch], in: gitRoot.path, blanking: defined), timeout: GitCommand.reading)
+        try GitCommand.requireFinished(deleted, "git branch -d")
         if deleted.status == 0 { return WorktreeRemoval(path: entry.path, branchDeleted: true, branchKept: nil) }
         let why = deleted.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
         return WorktreeRemoval(path: entry.path, branchDeleted: false, branchKept: why.isEmpty ? "git kept the branch" : why)
-    }
-
-    /// `git worktree add` runs the repository's own `post-checkout` hook, its `core.fsmonitor` program and the filter drivers its attributes
-    /// select. A worktree is made on request (an MCP client may ask), so those settings of the repository are switched off. Only what the
-    /// repository itself defines: the person's global configuration (Git LFS, say) still applies.
-    static func hardening(gitRoot: URL, runner: any ProcessRunner) async throws -> [String] {
-        var arguments = ["-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
-        let listing = try await runner.run(ProcessStep(executable: "/usr/bin/git", arguments: ["-C", gitRoot.path, "config", "--local", "--name-only", "--get-regexp", "^filter\\."]))
-        // Exit status 1 is "no such setting".
-        guard listing.status == 0 || listing.status == 1 else {
-            throw ExecutionError.stepFailed(index: 0, step: "git config", message: listing.standardError.trimmingCharacters(in: .whitespacesAndNewlines))
-        }
-        var drivers = Set<String>()
-        for line in listing.standardOutput.split(whereSeparator: \.isNewline) {
-            // `filter.<driver>.<key>`: a driver name may contain dots; a key never does.
-            let body = line.dropFirst("filter.".count)
-            if let dot = body.lastIndex(of: ".") { drivers.insert(String(body[..<dot])) }
-        }
-        for driver in drivers.sorted() {
-            arguments += ["-c", "filter.\(driver).smudge=", "-c", "filter.\(driver).clean=", "-c", "filter.\(driver).process=", "-c", "filter.\(driver).required=false"]
-        }
-        return arguments
     }
 
     /// `.right-here` is Right Here's folder inside the repository: its own copy of the person's work must not show up as untracked

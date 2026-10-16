@@ -241,7 +241,7 @@ func demoSetupReport() -> SetupReport {
 let demoPins = ["\(demoHome)/Projects/app", "\(demoHome)/Projects/notes", "\(demoHome)/مستندات/مشروع"]
 let demoRecents = ["\(demoHome)/Projects/web", "\(demoHome)/Downloads", "\(demoHome)/Projects/app/Sources"]
 
-/// `git worktree list --porcelain` of the demo repository: its main working copy, and two worktrees Right Here made for agents.
+/// `git worktree list --porcelain -z` of the demo repository: its main working copy, and two worktrees Right Here made for agents (every line ends with a NUL).
 let demoPorcelain = """
 worktree \(demoHome)/Projects/app
 HEAD 1f2e3d4c5b6a
@@ -255,7 +255,7 @@ worktree \(demoHome)/Projects/app/.right-here/worktrees/fix-login
 HEAD 5e4d3c2b1a09
 branch refs/heads/fix/login
 
-"""
+""".replacingOccurrences(of: "\n", with: "\0")
 
 /// The worktrees of the demo, read through the same code the window uses, with git's answer given.
 func demoWorktrees() async -> WorktreeListing {

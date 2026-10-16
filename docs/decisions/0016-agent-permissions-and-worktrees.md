@@ -33,6 +33,45 @@ Evidence: the binary from before the change, run on a fixture repository, failed
 worktree and its branch behind after a failed run, and started the agent at the root of the worktree. The CLI tests in
 `Tests/RightHereCLITests` reproduce each case, and the current binary passes them.
 
+## What git may start
+
+A repository is whatever somebody sent (an archive, a copy, a clone of a stranger's project), and its own files can make git start programs. Every
+git command Right Here runs in a repository is built by one function (`GitCommand.step`), so that a new command cannot leave a guard out, and
+`defined(in:)` finds what the repository's configuration defines. Measured with git 2.54.0 (Apple Git-157) in throwaway repositories whose
+configuration names a program that records that it ran (`GitGuardTests`, each with a control that the same repository does start it for a git without
+the guards):
+
+| Command | What the repository's own files started |
+|---|---|
+| `worktree list`, `config`, `rev-parse` | nothing |
+| `worktree add -b` | the hooks `reference-transaction` (several times), `post-index-change` and `post-checkout`; the `core.fsmonitor` program; the `smudge` and `process` filters of every file the attributes select; a lazy fetch from the promisor remote of a partial clone, which starts `ext::<program>` (when `protocol.ext.allow=always` is in the repository's config), `core.sshCommand` or a credential helper |
+| `status` in the new worktree | `core.fsmonitor`, `post-index-change`, the `clean` filters |
+| `worktree remove` | the same, from the `git status` it runs inside the worktree with that worktree's configuration (`config.worktree`) |
+| `branch -d` | `reference-transaction` |
+
+Git 2.54 also runs a hook that is a command named in the configuration (`hook.<name>.event`, `hook.<name>.command`), and `core.hooksPath=/dev/null`
+does not stop it; `hook.<name>.enabled=false` does, for every name found in any file or scope.
+
+**Decision.** Every command gets `core.hooksPath=/dev/null`, `core.fsmonitor=false`, `hook.<name>.enabled=false` for each configured hook, the filter
+drivers the repository defines blanked (`smudge`, `clean`, `process`, `required=false`), `GIT_NO_LAZY_FETCH=1` and `--no-pager`. The person's own filters
+(Git LFS in the global configuration) still run; a repository that defines `filter.lfs` itself gets a worktree with pointer files. The settings are
+passed as `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_<n>` and `GIT_CONFIG_VALUE_<n>`, not `-c`: `-c filter.a=b.smudge=` is split at the first equals sign, and git
+lets a repository choose a driver called `a=b` (measured: the marker appeared with `-c`, not with the environment form). The drivers are listed with
+`git config -z --show-scope --name-only --get-regexp '^(filter|hook)\.'`, which reads the files a configuration includes and `config.worktree`
+(`--local` reads neither), and the drivers of every scope but `system`, `global` and `command` are blanked. The list is read by Unicode scalars.
+`worktree list` is read as `--porcelain -z`: without `-z` a folder name with a line break in it adds lines to the list (measured: a worktree's path was replaced
+by the forged one). The commands that only read have a time limit of 20 seconds: a named pipe in `include.path` makes every git command in that repository
+wait (measured), and a request slot of the MCP server, or the setup window, would wait with it.
+
+**Checked and not reachable** (the same repository with `diff.external`, `diff.<driver>.textconv` and `command`, `merge.<driver>.driver`, `core.editor`,
+`sequence.editor`, `core.askPass`, `credential.helper`, `core.pager` with `pager.status`, `pager.branch` and `pager.worktree`, `core.alternateRefsCommand`,
+`gpg.program` with `commit.gpgsign`, `core.sshCommand`, `core.gitProxy`, an `alias.status` and an `alias.worktree`, and a modified and a renamed file in the
+worktree: nothing started for `status`, `worktree add`, `worktree remove`, `worktree list`, `branch -d` or `config` with the guards). A pager needs a terminal and
+the output is a pipe, and `--no-pager` says so. `submodule.recurse=true` with a submodule URL that starts a program does not populate or fetch anything: `worktree add`
+has no `--recurse-submodules`. `safe.directory=*` in a repository's own configuration is ignored (`GIT_TEST_ASSUME_DIFFERENT_OWNER=1` made git refuse it, and
+the same value in the global configuration allowed it), so a repository that somebody else owns is refused by git, not guarded by Right Here. Right Here runs no
+`rev-parse`: `gitRoot` walks the file system.
+
 ## Alternatives
 
 - Create the worktree first and remove it when the plan is refused: the repository changes for a request that never runs, and a crash

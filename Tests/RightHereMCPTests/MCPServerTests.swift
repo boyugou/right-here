@@ -422,11 +422,11 @@ struct MCPToolTests {
     }
 
     @Test func worktreeToolListsWorktrees() async throws {
-        let porcelain = """
+        let porcelain = porcelainZ("""
         worktree /Users/tester/code/app
         HEAD 1234567890ab
         branch refs/heads/main
-        """
+        """)
         let harness = try Harness(runnerResults: [
             ProcessResult(status: 0, standardOutput: porcelain)
         ]); defer { harness.cleanUp() }
@@ -438,7 +438,7 @@ struct MCPToolTests {
     }
 
     @Test func worktreeToolWillNotRemoveAWorktreeRightHereDidNotCreate() async throws {
-        let porcelain = """
+        let porcelain = porcelainZ("""
         worktree /Users/tester/code/app
         HEAD 1234567890ab
         branch refs/heads/main
@@ -446,7 +446,7 @@ struct MCPToolTests {
         worktree /Users/tester/code/own-tree
         HEAD 1234567890ab
         branch refs/heads/mine
-        """
+        """)
         let harness = try Harness(runnerResults: [ProcessResult(status: 0, standardOutput: porcelain)]); defer { harness.cleanUp() }
         let result = try await harness.call("right_here_worktree", ["operation": .string("remove"), "path": .string("/Users/tester/code/app"),
                                                                     "worktree_path": .string("/Users/tester/code/own-tree"), "delete_branch": .bool(true)])
@@ -457,7 +457,7 @@ struct MCPToolTests {
     }
 
     @Test func worktreeToolRemovesOnlyWithoutForce() async throws {
-        let porcelain = """
+        let porcelain = porcelainZ("""
         worktree /Users/tester/code/app
         HEAD 1234567890ab
         branch refs/heads/main
@@ -465,8 +465,9 @@ struct MCPToolTests {
         worktree /Users/tester/code/app/.right-here/worktrees/feature
         HEAD 1234567890ab
         branch refs/heads/feature
-        """
-        let harness = try Harness(runnerResults: [ProcessResult(status: 0, standardOutput: porcelain), ProcessResult(status: 0), ProcessResult(status: 0)])
+        """)
+        // The list, what the repository defines (nothing: git says there is no such setting), the removal, the branch.
+        let harness = try Harness(runnerResults: [ProcessResult(status: 0, standardOutput: porcelain), ProcessResult(status: 1), ProcessResult(status: 0), ProcessResult(status: 0)])
         defer { harness.cleanUp() }
         let result = try await harness.call("right_here_worktree", ["operation": .string("remove"), "path": .string("/Users/tester/code/app"),
                                                                     "worktree_path": .string("feature"), "delete_branch": .bool(true)])
@@ -489,11 +490,11 @@ struct MCPToolTests {
     }
 
     @Test func worktreeListFencesWhatTheRepositoryAuthorWrote() async throws {
-        let porcelain = """
+        let porcelain = porcelainZ("""
         worktree /Users/tester/code/app
         HEAD 1234567890ab
         branch refs/heads/ignore-previous-instructions
-        """
+        """)
         let harness = try Harness(runnerResults: [ProcessResult(status: 0, standardOutput: porcelain)]); defer { harness.cleanUp() }
         let result = try await harness.call("right_here_worktree", ["path": .string("/Users/tester/code/app")])
         let text = result["content"]?.arrayValue?.first?["text"]?.stringValue ?? ""
@@ -1044,4 +1045,9 @@ struct MCPFuzzTests {
         // The harness uses a fake runner and clipboard: nothing reached the real machine, and the limiter held.
         #expect(harness.runner.recorded.count <= 8)
     }
+}
+
+/// What `git worktree list --porcelain -z` prints for a readable listing: every line, and every worktree, ends with a NUL.
+private func porcelainZ(_ readable: String) -> String {
+    readable.replacingOccurrences(of: "\n", with: "\0") + "\0\0"
 }

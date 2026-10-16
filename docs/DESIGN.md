@@ -316,6 +316,11 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    unless `--allow-commands` is passed; that flag is separate from `--force`, and a refusal writes nothing. `status`
    and `enable` show the same list, and every value in it is printed with control characters escaped. Preset prompts
    are text for an agent, not commands, and stay under item 2. See [0013](decisions/0013-config-sync.md), "Trust".
+8. A repository is somebody else's code to git: its hooks (files, and commands named in its configuration), `core.fsmonitor`, filter drivers and a
+   partial clone's promisor remote all start programs. Right Here starts git in a repository only through one function (`GitCommand`), which
+   switches those off for every command it runs (the person's own filters, Git LFS in the global configuration, still apply), keeps the
+   commands that only read to twenty seconds, and reads the list of worktrees NUL-separated; see
+   [0016](decisions/0016-agent-permissions-and-worktrees.md), "What git may start", for what was measured.
 
 An independent review and a cold-start usability test shaped several of these; see
 [0008](decisions/0008-independent-review.md). The Mac App Store question is in [0007](decisions/0007-app-store-edition.md).

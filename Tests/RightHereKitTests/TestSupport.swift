@@ -22,3 +22,8 @@ enum Shell {
         return String(decoding: data, as: UTF8.self)
     }
 }
+
+/// What `git worktree list --porcelain -z` prints for a readable listing (lines, and an empty line between worktrees): every line ends with a NUL.
+func porcelainZ(_ readable: String) -> String {
+    readable.replacingOccurrences(of: "\n", with: "\0") + "\0\0"
+}

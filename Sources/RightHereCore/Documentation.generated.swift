@@ -210,6 +210,11 @@ worktree's path, and makes nothing. A run that fails removes the worktree again 
 refused creates nothing. `rh worktree list` and `rh worktree remove` manage them: remove refuses uncommitted work unless you
 pass `--force`, and it only removes worktrees Right Here made.
 
+A repository can be somebody else's code, so git runs for these commands with the repository's own hooks, filters and file system
+monitor switched off, and without fetching anything a partial clone lacks. Your own git configuration still applies: Git LFS set up
+with `git lfs install` for your account works. A repository that sets LFS up in its own `.git/config` instead gets a worktree
+with LFS pointer files in place of the files.
+
 ## WezTerm or kitty launch questions
 
 Right Here includes native adapters for WezTerm and kitty without requiring manual template configurations. It finds each
