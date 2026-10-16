@@ -18,6 +18,11 @@ look at them, and `rh` then treats the path as unreadable rather than as a folde
 If a protected folder does not work, run `rh doctor --json` and the log shown in `docs/TROUBLESHOOTING.md`, and
 record the result in a decision record.
 
+The runner script checks its arguments (DESIGN section 9, item 3): it passes on only the shapes the extension sends, which the tests run with
+a stand-in `rh` under zsh, sh, bash and dash, but not through a real `NSUserUnixTask`. After step 2, `rh doctor` must show a new "Last action started
+from Finder" and no runner refusal in the Console (the extension logs it as `failed`, with the runner's words, "right-here runner: refusing: ...");
+`rh doctor --probe-launch` sends the launch probe through the same script.
+
 ## 2. Terminals without a built-in adapter
 
 These terminals are not yet tested with Right Here beyond fakes. Each snippet below is a starting point written from the
