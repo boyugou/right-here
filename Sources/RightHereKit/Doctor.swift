@@ -47,7 +47,9 @@ public struct Doctor: Sendable {
         checks += menuChecks()
         checks += agentChecks(shell)
         checks += menuEmptyCheck()
-        checks.append(claudeLinkCheck())
+        // The terminal link is Claude Code's own way in (the menu entry that uses launcher = "link"): it is only a question for a person
+        // who has Claude Code enabled. A warning about it for anyone else, with a fix that starts a tool they do not use, is noise.
+        if loaded.config.enabledAgents.contains("claude") { checks.append(claudeLinkCheck()) }
         checks += integrationChecks(shell)
         checks.append(await Self.extensionCheck(runner: runner))
         checks.append(Self.activityCheck(logFile: paths.logFile))

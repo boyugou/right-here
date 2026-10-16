@@ -83,18 +83,35 @@ struct DoctorScenarioTests {
         var scene = try Scene(); defer { scene.cleanUp() }
         scene.answers = [ProcessResult(status: 0)]
         let checks = await scene.run()
-        #expect(checks.map(\.id.rawValue) == ["config", "terminal.default", "editor.default", "agents", "claude.link", "finder.runner", "services", "cli.link", "finder.extension", "finder.activity"])
+        #expect(checks.map(\.id.rawValue) == ["config", "terminal.default", "editor.default", "agents", "finder.runner", "services", "cli.link", "finder.extension", "finder.activity"])
         #expect(said(checks, "config") == Said(status: .warn, detail: "none at \(scene.paths.configFile.path); defaults apply", fix: "Run `rh setup`."))
         #expect(said(checks, "terminal.default") == Said(status: .fail, detail: "No terminal is installed.", fix: "Install a terminal or set general.terminal."))
         #expect(said(checks, "editor.default") == Said(status: .warn, detail: "No editor is installed.", fix: "Install an editor or set general.editor."))
         #expect(said(checks, "agents") == Said(status: .warn, detail: "none enabled", fix: "Add agents to general.agents, for example agents = [\"claude\"]."))
-        #expect(said(checks, "claude.link") == Said(status: .warn, detail: "handler not installed (only needed for launcher = \"link\")",
-                                                    fix: "Start `claude` once and send a prompt; Claude Code registers the handler."))
         #expect(said(checks, "finder.runner") == Said(status: .fail, detail: "not installed; the Finder menu cannot run actions", fix: "Run `rh setup`."))
         #expect(said(checks, "services") == Said(status: .warn, detail: "none installed; Quick Actions and keyboard shortcuts are not available", fix: "Run `rh setup`."))
         #expect(said(checks, "cli.link") == Said(status: .warn, detail: "no link at \(scene.home.path)/.local/bin/rh", fix: "Run `rh setup`."))
         #expect(said(checks, "finder.extension") == Said(status: .fail, detail: "not registered; Finder shows no Right Here menu", fix: "Install Right Here.app, then run `rh setup`."))
         #expect(said(checks, "finder.activity") == Said(status: .ok, detail: "none yet; right-click a folder in Finder and choose an action, then run `rh doctor` again", fix: nil))
+    }
+
+    @Test func theClaudeCodeLinkHandlerIsCheckedOnlyForAPersonWhoHasClaudeCodeEnabled() async throws {
+        // All three agents of the cold-agent evaluation told their person about this warning, one of them a person who had said
+        // that they use no agent: a handler for a tool that is not enabled is nobody's business.
+        var withClaude = try Scene(); defer { withClaude.cleanUp() }
+        withClaude.applications = ["com.mitchellh.ghostty": ghostty]
+        withClaude.answers = [ProcessResult(status: 0, standardOutput: "claude\n"), ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
+        try withClaude.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
+        #expect(said(await withClaude.run(), "claude.link") == Said(status: .warn, detail: "handler not installed (only needed for launcher = \"link\")",
+                                                                    fix: "Start `claude` once and send a prompt; Claude Code registers the handler."))
+
+        for agents in ["[\"codex\"]", "[]"] {
+            var without = try Scene(); defer { without.cleanUp() }
+            without.applications = ["com.mitchellh.ghostty": ghostty]
+            without.answers = [ProcessResult(status: 0, standardOutput: "codex\n"), ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
+            try without.writeConfig("[general]\nterminal = \"ghostty\"\nagents = \(agents)\n")
+            #expect(said(await without.run(), "claude.link") == nil, "agents = \(agents)")
+        }
     }
 
     @Test func aWorkingMachineIsAllOkAndNamesWhatItFound() async throws {
