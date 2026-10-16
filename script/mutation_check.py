@@ -395,6 +395,10 @@ MUTANTS = [
      "return wanted.contains(url.standardizedFileURL.path) || wanted.contains(url.resolvingSymlinksInPath().path)", "return entry == folder.path"),
     ("a symbolic link on the way makes the folder another one", "Sources/RightHereKit/Doctor.swift",
      "let wanted = Set([folder.standardizedFileURL.path, folder.resolvingSymlinksInPath().path])", "let wanted = Set([folder.standardizedFileURL.path])"),
+    ("the gate takes the xcodebuild shim of the Command Line Tools for a full Xcode", "script/verify_all.sh",
+     "xcodebuild -version >/dev/null 2>&1 && have_xcode=1 || have_xcode=0", "command -v xcodebuild >/dev/null && have_xcode=1 || have_xcode=0"),
+    ("the gate notices a missing uv only after the build and the tests", "script/verify_all.sh",
+     'command -v uv >/dev/null || { echo "error: uv is not installed, and the checks after the tests run on it. Install it with: brew install uv" >&2; exit 1; }', ""),
 ]
 
 

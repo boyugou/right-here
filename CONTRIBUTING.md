@@ -7,14 +7,14 @@ instructions for coding agents; everything a human needs is on this page.
 
 ## Setup
 
-You need macOS 26 or later on Apple silicon, Xcode 26 or later and `xcodegen` (`brew install xcodegen`). Optional
-but useful: `fish`, `dash` and `ksh` (the quoting tests round-trip through every shell found), and `uv` for the
-Python scripts.
+You need macOS 26 or later on Apple silicon, `git`, Xcode 26 or later (the full app: with only the Command Line Tools `swift build`
+works, but not `swift test` or the app build), `xcodegen` (`brew install xcodegen`) and `uv` (`brew install uv`: the gate runs its
+Python checks with it). Optional but useful: `fish`, `dash` and `ksh` (the quoting tests round-trip through every shell found).
 
 ```sh
 swift build                       # the libraries and rh
 swift test                        # unit tests; none touches your home folder, Finder or an installed terminal
-./script/verify_all.sh            # what CI runs, plus the app and extension build: tests, localization catalog,
+./script/verify_all.sh            # what CI runs (it also builds the app and extension): tests, localization catalog,
                                   # config schema, embedded docs, the docs check (commands and links), public-safety check
 ./script/install_local.sh         # build the app and install it for yourself
 ./script/mutation_check.py        # after touching quoting, planning, MCP limits or the probe: do the tests still
@@ -90,10 +90,10 @@ To add a language:
 
 1. Add it to `Localization/languages.json`: its code, its English name, its script (ISO 15924) and `"rtl": true` if it is
    written right to left. That list is the only one; the scripts and the tests read it.
-2. `./script/verify_localizations.py --missing <code>` lists every string the language lacks, in the three catalogs.
+2. `./script/verify_localizations.py --missing <code>` lists every string the language lacks, in the four catalogs.
 3. Write the translations as JSON, `{"key": {"translations": {"<code>": "text"}}}`, one file per catalog, and add them
-   with `./script/merge_translations.py file.json` (add `--catalog InfoPlist.xcstrings` or `AppShortcuts.xcstrings`
-   for the others). It checks each text (placeholders, the commands between backticks, the script of the language),
+   with `./script/merge_translations.py file.json` (add `--catalog AppIntents.xcstrings`, `InfoPlist.xcstrings` or
+   `AppShortcuts.xcstrings` for the others). It checks each text (placeholders, the commands between backticks, the script of the language),
    puts the right-to-left mark where a right-to-left text needs one, marks the texts `needs_review` and writes nothing
    unless every text passes. Keep `%@` and `%1$@` and the text between backticks as they are.
 4. `./script/compile_localizations.py`, then `./script/verify_localizations.py` must pass and `swift test` must stay green.

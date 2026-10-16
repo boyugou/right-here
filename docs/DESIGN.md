@@ -56,7 +56,7 @@ repository must not be able to run commands because it was right-clicked).
 
 | Module | Role |
 |---|---|
-| `RightHereCore` | Pure logic: context, path styles, shell quoting, launch plans, planner, terminal adapters, catalogs, config parser and schema, menu builder. Foundation only; deterministic; fully unit-tested. |
+| `RightHereCore` | Pure logic: context, path styles, shell quoting, launch plans, planner, terminal adapters, catalogs, config parser and schema, menu builder. Foundation, TOMLDecoder (the config parser) and CryptoKit (the sync hash) only; deterministic; fully unit-tested. |
 | `RightHereKit` | macOS runtime: real system facts, process runner, plan executor, config store, installer, doctor, extension manager, Finder query, failure alerts. |
 | `RightHereMCP` | The MCP server over the same registry. |
 | `rh` | The command-line tool (swift-argument-parser). |
@@ -87,6 +87,12 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 11 | Independent review and a cold-start usability test follow large changes; findings are reproduced first and each fix has a test that fails without it. | [0008](decisions/0008-independent-review.md) |
 | 12 | Prompt presets (`[[preset]]`, `preset.<id>`) type the agent command with a quoted, validated prompt; they are sent when the agent starts, not left in the prompt box. | [0012](decisions/0012-agent-presets.md) |
 | 13 | The config can be shared between Macs by copying it through a plain folder (`rh config sync`), with a never-synced per-machine overlay `config.local.toml`; no symlink, no CloudKit. | [0013](decisions/0013-config-sync.md) |
+| 14 | An agent launch is resolved once, by one function that the planner, the menu and `rh agents` share. | [0014](decisions/0014-agent-launch-resolution.md) |
+| 15 | The Finder extension stays loaded and holds no assertion that keeps the Mac awake. | [0015](decisions/0015-finder-extension-stays-loaded.md) |
+| 16 | An agent's permission prompts are skipped only by an explicit per-agent launch option, never by a preset; worktrees live under `.right-here/worktrees` and are never removed by force. | [0016](decisions/0016-agent-permissions-and-worktrees.md) |
+| 17 | The setup window has six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders). | [0017](decisions/0017-setup-window-sections.md) |
+| 18 | One idempotent `rh setup`, flags instead of editing the config, and a playbook for AI agents measured with cold agents. | [0018](decisions/0018-setup.md) |
+| 19 | The Finder extension does not override the directory-observing methods, and the doctor reads its crash reports. | [0019](decisions/0019-no-swift-override-of-directory-observing.md) |
 
 ## 5. Platform facts
 
@@ -321,7 +327,7 @@ An independent review and a cold-start usability test shaped several of these; s
   `rh docs agent-setup` is the playbook an agent follows to set Right Here up for someone.
 - The app has a "Copy Setup Prompt for AI" button.
 - Agents can start agents: `rh run agent.codex --container <dir>`.
-- `rh mcp` is an MCP server over the same registry (eight tools, including what is selected in Finder),
+- `rh mcp` is an MCP server over the same registry (ten tools, including what is selected in Finder),
   and `plugins/right-here` is a Claude Code plugin that starts it and adds skills for setup, opening
   things, and showing the files an agent changed in Finder. File names, and what the doctor and the config check quote
   from the config, are fenced as data in tool output.

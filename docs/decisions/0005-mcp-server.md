@@ -6,9 +6,9 @@ Date: 2026-10-11. Status: accepted.
 
 `rh mcp` is a Model Context Protocol server over standard input and output. It is implemented in
 this repository (`RightHereMCP`, about 400 lines) rather than with the official Swift SDK, and
-exposes eight tools over the same registry the CLI uses: run an action, list actions, preview the
+exposes ten tools over the same registry the CLI uses (eight at first): run an action, list actions, preview the
 menu, read the Finder selection, check the setup, validate the config, list apps and agents, read
-the docs. A Claude Code plugin (`plugins/right-here`) starts it and adds skills.
+the docs, read the pinned and recent folders, manage git worktrees. A Claude Code plugin (`plugins/right-here`) starts it and adds skills.
 
 ## Why not the SDK
 

@@ -1,10 +1,15 @@
 # Building, installing, testing
 
-Requirements: macOS 26 or later on Apple silicon, Xcode 26 or later, `xcodegen`
-(`brew install xcodegen`).
+Requirements: macOS 26 or later on Apple silicon, `git`, Xcode 26 or later (the full app, not only the Command Line Tools),
+`xcodegen` (`brew install xcodegen`) and `uv` (`brew install uv`, runs the checks of `./script/verify_all.sh`). Optional: `fish`, `dash`
+and `ksh`, which the quoting tests also round-trip through when they are installed.
+
+With only the Command Line Tools you can read and edit the code and run `swift build`; `swift test`, the app build and the gate
+need Xcode (Swift Testing and `xcodebuild`; a contributor with only the Command Line Tools found that `swift test` could not run).
+Say so in the pull request, and a maintainer runs the gate.
 
 ```sh
-swift build                # the libraries and rh
+swift build                # the libraries and rh (run it as .build/debug/rh; a trial: RH_HOME=/tmp/trial .build/debug/rh setup)
 swift test                 # all unit tests; no test touches your home directory or Finder
 ./script/build_app.sh      # dist/Right Here.app: app, Finder extension and rh (Contents/Helpers/rh)
 ./script/install_local.sh  # build, copy to ~/Applications, run `rh setup`
