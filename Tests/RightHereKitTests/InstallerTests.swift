@@ -191,8 +191,13 @@ struct InstallerTests {
             ["run", "agent.claude", "--origin", "items", "--", "/tmp/a"],
             ["run", "--alert=agent.claude", "--origin", "items", "--", "/tmp/a"],
             ["run", "--origin", "items", "--alert", "agent.claude", "--", "/tmp/a"],
+            // a word of its own where --alert or --origin goes: the command is rebuilt from the checked parts, so what is there could only be dropped, but it is not what is sent
+            ["run", "--bypass-permissions", "agent.claude", "--origin", "items", "--", "/tmp/a"],
+            ["run", "--alert", "agent.claude", "--bypass-permissions", "items", "--", "/tmp/a"],
+            ["run", "-x", "agent.claude", "-y", "items", "--", "/tmp/a"],
             // probe
             ["probe"], ["probe", "automation"], ["probe", "launch"], ["probe", "automation", "--from-extension", "--log"], ["probe", "automation", "--from-extension", "--json"],
+            ["probe", "automation", "--json"], ["probe", "automation", "--log"], ["probe", "launch", "--json"], ["probe", "launch", "--from-extension-x"], ["probe", "launch", "x"],
             ["probe", "automation", "x", "--from-extension"], ["probe", "automation", "Ghostty", "--from-extension"], ["probe", "launch", "--from-extension", "--placement"],
             ["probe", "launch", "--from-extension", "--placement", "floating"], ["probe", "launch", "--from-extension", "--placement", "tab", "--json"],
             ["probe", "launch", "--from-extension", "--placement", ""], ["probe", "launch", "--from-extension", "tab"], ["probe", "launch", "--placement", "tab", "--from-extension"],
