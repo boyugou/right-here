@@ -106,6 +106,8 @@ struct Pins: ParsableCommand {
             for pin in state.pins {
                 Output.print(pin)
             }
+            // On standard error, so a script that reads the folders gets nothing and a person at a terminal is told why.
+            if state.pins.isEmpty { Output.error("No pinned folders yet. Pin one with `rh pin <folder>`.") }
         }
     }
 }
@@ -140,6 +142,7 @@ struct Recents: ParsableCommand {
             for recent in state.recents {
                 Output.print(recent)
             }
+            if state.recents.isEmpty { Output.error("No recent folders yet. They are remembered when an action starts from Finder or with `rh run`.") }
         }
     }
 }

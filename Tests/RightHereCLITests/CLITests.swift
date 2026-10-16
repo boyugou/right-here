@@ -123,6 +123,19 @@ struct CLITests {
         #expect(try rh.run(["unpin", "Sources"]).standardOutput.hasPrefix("unpinned: /"))
     }
 
+    @Test func anEmptyListOfPinsOrRecentsSaysWhyOnStandardErrorOnly() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        for command in ["pins", "recents"] {
+            let text = try rh.run([command])
+            #expect(text.status == 0)
+            #expect(text.standardOutput.isEmpty, "a script that reads the list gets text: \(text.standardOutput)")
+            #expect(text.standardError.contains("No \(command == "pins" ? "pinned" : "recent") folders yet"), Comment(rawValue: text.standardError))
+            let json = try rh.run([command, "--json"])
+            #expect((json.json as? [String]) == [], "\(json.standardOutput)")
+            #expect(json.standardError.isEmpty, Comment(rawValue: json.standardError))
+        }
+    }
+
     @Test func helpListsTheMainCommands() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let text = try rh.run(["--help"]).standardOutput
