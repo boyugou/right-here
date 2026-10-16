@@ -4,17 +4,19 @@ import Testing
 
 @Suite("AgentBypassPermissions")
 struct AgentBypassPermissionsTests {
-    /// The flags of Claude Code, Codex and Antigravity were read from their own `--help` on a Mac that has them. The others come from each
-    /// tool's documentation and have not been run here: a wrong one makes that tool refuse the unknown option, nothing worse, and the
-    /// config can replace any of them (`bypass_permission_arg`).
+    /// The flags of Claude Code, Codex and Antigravity were read from their own `--help` on a Mac that has them. The others were checked against
+    /// each tool's own documentation on 2026-10-16 (ADR 0024): Gemini CLI's `-y` is documented as deprecated for `--approval-mode=yolo`, and
+    /// Muse Code has no flag that its own documentation names, so it has none here. The config can set or replace any of them
+    /// (`bypass_permission_arg`).
     @Test func theBuiltInBypassFlagsAreTheOnesDocumented() {
         #expect(KnownAgents.agy.bypassPermissionArgument == "--dangerously-skip-permissions")
         #expect(KnownAgents.claude.bypassPermissionArgument == "--dangerously-skip-permissions")
         #expect(KnownAgents.codex.bypassPermissionArgument == "--dangerously-bypass-approvals-and-sandbox")
-        #expect(KnownAgents.gemini.bypassPermissionArgument == "-y")
+        #expect(KnownAgents.gemini.bypassPermissionArgument == "--approval-mode=yolo")
         #expect(KnownAgents.opencode.bypassPermissionArgument == "--auto")
-        #expect(KnownAgents.kimi.bypassPermissionArgument == "--auto-approve")
-        #expect(KnownAgents.muse.bypassPermissionArgument == "--auto-approve")
+        #expect(KnownAgents.kimi.bypassPermissionArgument == "--yolo")
+        #expect(KnownAgents.muse.bypassPermissionArgument == nil, "nothing in the tool's own documentation names a flag")
+        #expect(KnownAgents.goose.bypassPermissionArgument == nil)
         #expect(KnownAgents.aider.bypassPermissionArgument == "--yes-always")
         #expect(KnownAgents.copilot.bypassPermissionArgument == "--allow-all")
     }
@@ -42,7 +44,7 @@ struct AgentBypassPermissionsTests {
         #expect(try line(config, "claude") == "claude --dangerously-skip-permissions")
         #expect(try line(config, "agy") == "agy --dangerously-skip-permissions")
         #expect(try line(config, "codex") == "codex --dangerously-bypass-approvals-and-sandbox")
-        #expect(try line(config, "gemini") == "gemini -y")
+        #expect(try line(config, "gemini") == "gemini --approval-mode=yolo")
     }
 
     @Test func permissionPromptsAreOnByDefault() throws {

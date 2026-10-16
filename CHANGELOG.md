@@ -21,6 +21,17 @@
 - The setup evaluation has a fifth persona (a config with such a name) and a fifth round, on 0.3.1; the troubleshooting guide has entries for the window that says to move
   the app and for a login shell that says nothing about the agents.
 
+- The catalog of built-in agents was read against each tool's own documentation (ADR 0024) and what was wrong is corrected: Gemini CLI starts on a first prompt with `-i` and
+  skips its approvals with `--approval-mode=yolo` (its `-y` is documented as deprecated); GitHub Copilot takes its prompt with `-i`; Kimi Code's `-p`
+  ran the prompt once and exited, so it has no first-prompt flag, and its approvals flag is spelled `--yolo`; Goose is started with `goose session` (a bare `goose` prints its help) and
+  has no prompt, continue or bypass entry; Muse Code, whose documentation names none of them (`--auto-approve` does not exist), has only its command; Cody is no longer built in
+  (its free and pro plans ended in 2025 and its command line is a one-shot chat); the first run looks an agent up by the first word of its command. Presets are offered for five
+  agents (Claude Code, Codex, Antigravity, Gemini CLI, GitHub Copilot). The `instructionFile` field of an agent, which nothing read, is gone.
+- The privacy policy says what the app does: it also reads the Finder selection when you or an AI assistant ask for it (`rh finder`, the MCP tool), sends Apple events to Finder then,
+  starts your login shell to look for agent commands, and looks for its own extension's crash reports; its paragraph on the source code no longer says the code is public.
+  `rh docs sync`, the design notes and ADR 0013 list what the sync guard lists (an agent's `args` and `bypass_permissions` too); the playbook for AI agents says the command
+  link is for your terminal and the runner script is what Finder needs.
+
 - The question put to the login shell (which agents are installed, what is on the `PATH`) no longer loses its first line to a startup file that prints a word without ending the
   line (`printf Welcome` in `.zshrc` or `config.fish`: with fish 4.9 the first agent was read as `Welcomeclaude`, so it was not found), and a word a startup file prints can no
   longer pass for an agent that was asked about only because it was printed.

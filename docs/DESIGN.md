@@ -96,6 +96,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 20 | What the config names (an app, an agent) is data: fenced between ⟦user⟧ marks wherever `rh setup` and `rh doctor` quote it in a sentence an agent passes on. | [0020](decisions/0020-names-from-the-config-are-data.md) |
 | 21 | A process a test started (`RH_NO_UI`) without a trial home (`RH_HOME`) cannot change the real home or the Finder extension's registration. | [0022](decisions/0022-a-test-cannot-change-the-real-home.md) |
 | 22 | The setup window says where the app runs from before it tries, only a first run's Set Up makes a config, and a warning the person may leave is not "needs attention". | [0023](decisions/0023-the-window-says-before-it-tries.md) |
+| 23 | A built-in field of an agent (its prompt flag, its permission flag, its continue arguments) is confirmed by the tool's own documentation or help, or it is not there. | [0024](decisions/0024-a-built-in-agent-field-is-confirmed-or-absent.md) |
 
 ## 5. Platform facts
 
@@ -319,8 +320,8 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    config check lets them through, and a name can be made to read backwards). The MCP tools that list them
    (`right_here_actions`, `right_here_menu`, `right_here_catalog`) mark them as data in their text, like the doctor does,
    and keep the structured data plain.
-7. A config is more than settings: terminal templates (`open_args`, `run_args`), agent commands, variant arguments and
-   first-prompt flags decide which program a click starts, and a terminal listed as another kind of app is handed
+7. A config is more than settings: terminal templates (`open_args`, `run_args`), agent commands, variant arguments,
+   first-prompt flags, an agent's own `args` and its `bypass_permissions` decide which program a click starts, and how, and a terminal listed as another kind of app is handed
    files, which it runs (item 0). The sync folder can be written by things this Mac does not
    control (another machine, a sync service, a shared drive), so a config that arrives through it is untrusted input.
    `rh config sync pull` compares it with the config it replaces and refuses, listing what it would add or change,

@@ -110,6 +110,15 @@ struct DetectorCommandLookupTests {
         try await checkTheProbeAfterAnUnfinishedLine(loginShell: try #require(fishForTheProbe), startupFile: ".config/fish/config.fish")
     }
 
+    @Test func anAgentWhoseCommandCarriesAnArgumentIsFoundByItsFirstWord() async {
+        // Goose's session is `goose session`; the login shell is asked about `goose`.
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "\nclaude\n\ngoose\n\n\u{01}rh-done\u{01}\n")])
+        let (environment, answered) = await Detector(facts: facts, runner: runner).look()
+        #expect(answered)
+        #expect(environment.agents.contains("goose") && environment.agents.contains("claude"), "\(environment.agents)")
+        #expect(runner.recorded.first?.arguments.contains("goose") == true && runner.recorded.first?.arguments.contains("goose session") != true)
+    }
+
     @Test func aShellThatDidNotGetToTheEndOfTheScriptHasNotAnswered() {
         // A startup file that exits, or a shell that was stopped for being slow, prints nothing of the script: "no agent" is then not what it said.
         #expect(!Detector.parse("").answered)

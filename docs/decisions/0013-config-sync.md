@@ -176,8 +176,8 @@ the folder's copy, and the content at the last sync.
 ## Trust: the sync folder can make a click run a program
 
 A config is not only settings. An `[[app]]` with `open_args` or `run_args` names a program that `rh` starts, with the
-folder and the typed command as arguments (`TemplateTerminalAdapter`); an agent's `command`, a variant's `arguments`
-and `prompt_arg` are typed into a terminal. A config that redefines the built-in `terminal` with
+folder and the typed command as arguments (`TemplateTerminalAdapter`); an agent's `command`, a variant's `arguments`,
+`prompt_arg` and `args`, and the flag that `bypass_permissions` adds (ADR 0016), are typed into a terminal. A config that redefines the built-in `terminal` with
 `open_args = ["/usr/bin/id", "-un", "{dir}"]` and `run_args = ["/bin/sh", "-c", "{command}"]` turns the next "Open in
 Terminal" or agent launch into that program. So the sync folder is a code-execution boundary: whatever can write it
 (another machine, a sync service account, a shared drive, a git remote) can plant a config that `pull` copies over

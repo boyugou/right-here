@@ -40,9 +40,10 @@ and `max_files` is at most 50, so a selection is never cut before a preset refus
 
 How an agent takes a first prompt is `prompt_arg` on its `[agent.<id>]` table: `"positional"` or a flag such as
 `"--prompt"`, typed as its own word before the prompt. Claude Code and Codex are built in as positional (both
-`--help` outputs show `[prompt]` as the last argument). The other built-in agents are **not** marked, because the
-CLIs are not installed here and nothing was run to check: presets are not offered for them until the config sets
-`prompt_arg`, and `rh agents --json` shows the field.
+`--help` outputs show `[prompt]` as the last argument). The other built-in agents were first left unmarked, because the CLIs were not
+installed here; the audit of 2026-10-16 (ADR 0024) marked the ones whose own documentation says how: Antigravity, Gemini CLI and
+GitHub Copilot with `-i`. Presets are not offered for the rest until the config sets `prompt_arg`, and
+`rh agents --json` shows the field.
 
 ## What is refused, and why
 

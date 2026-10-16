@@ -125,16 +125,33 @@ struct PresetPlannerTests {
     }
 
     @Test func anAgentNotKnownToTakeAPromptIsRefusedAndItsPresetIsNotOffered() {
-        let preset = AgentPreset(id: "review", title: "Review", agent: "gemini", prompt: "Review {files}")
-        let config = Config(enabledAgents: ["gemini"], presets: [preset])
+        let preset = AgentPreset(id: "review", title: "Review", agent: "aider", prompt: "Review {files}")
+        let config = Config(enabledAgents: ["aider"], presets: [preset])
         let facts = machine(files: ["a.txt"])
         #expect(throws: PlanError.self) { try Planner(config: config, facts: facts).plan(.preset(id: "review", terminal: nil), context: selection(["a.txt"])) }
         let info = ActionRegistry(config: config, facts: facts).info(.preset(id: "review", terminal: nil))
         #expect(!info.available && info.unavailableReason?.contains("prompt_arg") == true)
     }
 
-    @Test func claudeAndCodexTakeTheirPromptAsAnArgument() {
+    /// What starts an interactive session with a first prompt, from each tool's own documentation (ADR 0024); `agy` was also read from its `--help`.
+    /// The tools that have only a flag that runs once and exits (Kimi Code's `-p`), no documented way (Goose, Amp, aider) or no confirmation
+    /// (Muse Code; opencode's `--prompt`, whose documentation does not say whether it submits, and whose positional argument is the project)
+    /// have none here: a preset then says so, and the config can set `prompt_arg`.
+    @Test func theBuiltInPromptArgumentsStartAnInteractiveSession() {
         #expect(KnownAgents.claude.promptArgument == .positional && KnownAgents.codex.promptArgument == .positional)
+        #expect(KnownAgents.agy.promptArgument == .flag("-i"), "agy -p and --prompt are aliases of --print, which runs once")
+        #expect(KnownAgents.gemini.promptArgument == .flag("-i"), "gemini -p runs once")
+        #expect(KnownAgents.copilot.promptArgument == .flag("-i"), "copilot -p runs once")
+        for id in ["opencode", "kimi", "muse", "goose", "aider", "amp"] {
+            #expect(KnownAgents.agent(id: id)?.promptArgument == nil, "\(id)")
+        }
+    }
+
+    @Test func aCommandThatCarriesAnArgumentIsLookedUpByItsFirstWord() {
+        // `goose` alone prints its help; the session is `goose session`.
+        #expect(KnownAgents.goose.command == "goose session")
+        #expect(KnownAgents.goose.executable == "goose")
+        #expect(KnownAgents.all.allSatisfy { $0.executable == $0.command || $0.id == "goose" })
     }
 
     @Test func aPresetUsesTheFirstEnabledAgentUnlessItNamesOne() throws {
@@ -405,16 +422,16 @@ struct PresetConfigTests {
     }
 
     @Test func anAgentThatIsNotEnabledOrCannotTakeAPromptIsAWarning() throws {
-        let result = parse("[general]\nagents = [\"claude\"]\n[[preset]]\nid = \"x\"\ntitle = \"X\"\nagent = \"gemini\"\nprompt = \"Hi\"\n")
+        let result = parse("[general]\nagents = [\"claude\"]\n[[preset]]\nid = \"x\"\ntitle = \"X\"\nagent = \"aider\"\nprompt = \"Hi\"\n")
         let messages = result.diagnostics.filter { $0.severity == .warning }.map(\.message)
         #expect(messages.contains { $0.contains("not in general.agents") } && messages.contains { $0.contains("prompt_arg") })
         #expect(result.config.preset(id: "x") != nil)
     }
 
     @Test func promptArgMakesAnAgentUsable() throws {
-        let result = parse("[general]\nagents = [\"gemini\"]\n[agent.gemini]\nprompt_arg = \"-i\"\n[[preset]]\nid = \"x\"\ntitle = \"X\"\nagent = \"gemini\"\nprompt = \"Hi\"\n")
+        let result = parse("[general]\nagents = [\"amp\"]\n[agent.amp]\nprompt_arg = \"--prompt\"\n[[preset]]\nid = \"x\"\ntitle = \"X\"\nagent = \"amp\"\nprompt = \"Hi\"\n")
         #expect(result.diagnostics == [])
-        #expect(result.config.agent(id: "gemini")?.promptArgument == .flag("-i"))
+        #expect(result.config.agent(id: "amp")?.promptArgument == .flag("--prompt"))
         #expect(firstProblem("[agent.claude]\nprompt_arg = \"not a flag\"\n")?.path == "agent.claude.prompt_arg")
     }
 

@@ -1,6 +1,6 @@
 # Right Here privacy policy
 
-Effective date: 2026-10-15
+Effective date: 2026-10-16
 
 Right Here sends the folder you picked in Finder to a terminal, an editor or an AI agent on your Mac. It works
 on your Mac and makes no network connections of its own.
@@ -12,10 +12,13 @@ network connections, and it does not contain any code that could. The developer 
 
 ## What Right Here reads on your Mac
 
-- The paths of the files and folders you select or right-click in Finder, only at the moment you choose a menu item,
-  to hand them to the app you chose (for example a terminal or an editor).
+- The paths of the files and folders you select or right-click in Finder: when you choose a menu item, to hand them to
+  the app you chose (for example a terminal or an editor), and when you or an AI assistant you connected ask what is
+  selected (`rh finder`, the `right_here_finder_selection` tool).
 - Its own settings file, a plain-text configuration that you can read and edit.
-- Which of the supported apps are installed, to show only the menu items that can work.
+- Which of the supported apps are installed, and which agent commands your login shell finds (Right Here starts that
+  shell the way a new terminal window does), to show only the menu items that can work. `rh doctor` also looks in the
+  folder of crash reports for those of Right Here's own Finder extension.
 
 Right Here does not read the contents of your files.
 
@@ -37,9 +40,9 @@ Right Here does not read the contents of your files.
 
 ## Apple events
 
-To open a window in your terminal or to start a command you chose, Right Here sends Apple events to that terminal.
-macOS asks for your permission the first time, and you can withdraw it in System Settings, Privacy & Security,
-Automation.
+To open a window in your terminal or to start a command you chose, Right Here sends Apple events to that terminal,
+and to Finder when you or an AI assistant ask what is selected. macOS asks for your permission the first time, and
+you can withdraw it in System Settings, Privacy & Security, Automation.
 
 ## Other apps you choose
 
@@ -52,7 +55,7 @@ Right Here collects no personal information from anyone, including children.
 
 ## Open source
 
-The source code is public under the Apache License 2.0, so these statements can be checked:
+The source code is under the Apache License 2.0, so these statements can be checked in it:
 https://github.com/boyugou/right-here
 
 ## Changes and contact

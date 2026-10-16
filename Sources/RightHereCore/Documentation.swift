@@ -195,8 +195,9 @@ public enum Documentation {
     - A config carries programs, and the folder can be written by other Macs, a sync service or a shared drive, so
       `pull` also refuses, and lists them, when the folder's copy would add or change something Right Here starts: a
       terminal template (`open_args`, `run_args`), an agent's `command`, a variant's `arguments` or its `prompt_arg`,
-      a default terminal that starts through a template, or a terminal app given another `role` (it would be handed
-      files, which a terminal runs). Read the list; if it is yours, run
+      its `args` or `bypass_permissions` (permission prompts switched off), a default terminal that starts through a
+      template, or a terminal app given another `role` (it would be handed files, which a terminal runs). Read the
+      list; if it is yours, run
       `rh config sync pull --allow-commands` (a separate flag from `--force`; they combine). `status` and `enable`
       show the same list, `rh doctor` has a row for it, and a first pull on a new Mac asks only about programs of your
       own, never about the built-in apps and agents.

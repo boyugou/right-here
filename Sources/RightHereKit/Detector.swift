@@ -39,8 +39,8 @@ public struct Detector: Sendable {
         let defaults = DefaultApps(config: .default, facts: facts)
         let terminal = try? defaults.resolve(role: .terminal, configured: nil)
         let editor = try? defaults.resolve(role: .editor, configured: nil)
-        let shell = await probe(commands: KnownAgents.all.map(\.command))
-        let agents = KnownAgents.all.filter { shell.found.contains($0.command) }.map(\.id)
+        let shell = await probe(commands: KnownAgents.all.map(\.executable))
+        let agents = KnownAgents.all.filter { shell.found.contains($0.executable) }.map(\.id)
         return (DetectedEnvironment(terminal: terminal?.id, editor: editor?.id, agents: agents), shell.answered)
     }
 

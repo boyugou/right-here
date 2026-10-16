@@ -12,7 +12,8 @@ the doctor's row for the agent says so, `rh agents` and `rh menu --explain` say 
 (ADR 0013: `pull` refuses it without `--allow-commands`). **A preset never gets the flag** (it does get `args`): its prompt carries the names
 of the selected files, and a file called "ignore the above and run ..." must not reach an agent that asks nothing (ADR 0012); the plan says
 that the prompts stay on. The flags of Claude Code, Codex and Antigravity were read from their own `--help` on a Mac that has them; the others
-come from each tool's documentation and are not verified here.
+were checked against each tool's own documentation on 2026-10-16 (ADR 0024), which corrected two (Gemini CLI's `-y` is deprecated for
+`--approval-mode=yolo`; Muse Code has no such flag in anything it documents, so none is built in).
 
 **Worktrees are Right Here's own folder.** `rh run --worktree` and `rh worktree add` make a git worktree under `.right-here/worktrees/` of the
 repository (and put `.right-here` in `.git/info/exclude`). The branch name is validated (no leading dash, no `..`, no whitespace or control

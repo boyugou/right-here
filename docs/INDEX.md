@@ -26,6 +26,7 @@
   - [0021 One setup at a time, the state file in one step, and each Quick Action replaced on its own](decisions/0021-one-setup-at-a-time.md)
   - [0022 A process a test started cannot change the real home](decisions/0022-a-test-cannot-change-the-real-home.md)
   - [0023 What the setup window says before it tries, and what it calls attention](decisions/0023-the-window-says-before-it-tries.md)
+  - [0024 A built-in field of an agent is confirmed by the tool, or it is not there](decisions/0024-a-built-in-agent-field-is-confirmed-or-absent.md)
 - [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.

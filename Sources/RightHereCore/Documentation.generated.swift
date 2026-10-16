@@ -60,7 +60,7 @@ setup never rewrites a config; fix it only if they agree, with the smallest edit
     rh setup --json --terminal <id> --editor <id> --agents <id,id>
 
 Leave out a flag the person did not answer. Setup does everything in order and can be run again: the config file (created only when
-there is none), the runner script and the command link that Finder needs, the Quick Actions and the Finder extension, then the
+there is none), the runner script that Finder needs, the command link for your terminal, the Quick Actions and the Finder extension, then the
 checks of `rh doctor`. It opens no window and never touches System Settings. Exit status 0 means no step failed. The Quick Actions
 are built from the config as it is at that moment, which is why the edits of step 2 come first.
 
