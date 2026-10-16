@@ -37,7 +37,8 @@ of the installed code written within the last seven days, and turns the Finder e
 Whose code crashed is told by the first line of a report, a JSON header with the UUID of the code (`slice_uuid`; measured on the `rh-*.ips` reports of this Mac),
 which is the `LC_UUID` of the installed executable (`MachOUUID` reads every architecture of it; checked against `dwarfdump --uuid` for a universal system
 binary). The first version compared the reports with the date of the executable, and that date is when the code was built: `cp -Rp` and `ditto` keep it
-(measured), so a crash of the copy that was replaced, written between the build and the install, counted against the new one for a week. The date stays as the
+(measured), so a crash of the copy that was replaced, written between the build and the install, counted against the new one for a week. A report is opened without waiting and only a regular file is read (a named pipe with a report's name, which any program of the person's can make in that folder, held the doctor for ever).
+The date stays as the
 rule for a report that has no UUID (a `.crash` file, a header that is not JSON) and when the executable's UUID cannot be read. The row is English in every language (`doctor.verbatim`): a report is a file for a person to attach to a bug report, not a sentence
 to translate. The window of the direct download shows it too; the Mac App Store edition's window is sandboxed, cannot read that folder
 and leaves the row as it is.

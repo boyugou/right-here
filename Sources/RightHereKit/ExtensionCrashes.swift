@@ -43,7 +43,7 @@ public struct ExtensionCrashes: Sendable, Equatable {
 
     /// The `slice_uuid` of the crash report at `url`, from its first line, or `nil` when it has none (a text report, a header that is not JSON).
     static func sliceUUID(ofReportAt url: URL) -> String? {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        guard let handle = MachOUUID.openRegularFile(at: url.path) else { return nil }
         defer { try? handle.close() }
         guard let head = try? handle.read(upToCount: 8192) else { return nil }
         let line = head.split(separator: UInt8(ascii: "\n"), maxSplits: 1, omittingEmptySubsequences: false).first ?? head[...]
@@ -60,18 +60,20 @@ public struct ExtensionCrashes: Sendable, Equatable {
         let start = now.addingTimeInterval(-window)
         let known = buildIDs?.isEmpty == false ? buildIDs : nil
         var reports: [(date: Date, name: String)] = []
+        var matched = false
         for name in names where name.hasPrefix(namePrefix) && reportExtensions.contains((name as NSString).pathExtension) {
             let url = folder.appendingPathComponent(name)
             guard let date = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate, date >= start else { continue }
             if let known, let uuid = sliceUUID(ofReportAt: url) {
                 guard known.contains(uuid) else { continue }
+                matched = true
             } else {
                 guard date >= (installed ?? .distantPast) else { continue }
             }
             reports.append((date, name))
         }
         guard let newest = reports.max(by: { $0.date < $1.date }) else { return nil }
-        return ExtensionCrashes(count: reports.count, latest: newest.date, latestFile: newest.name, matchedByBuild: known != nil)
+        return ExtensionCrashes(count: reports.count, latest: newest.date, latestFile: newest.name, matchedByBuild: matched)
     }
 
     /// What the doctor says: English in every language, as the report is a file name and a count for a person who will attach it to a bug report.

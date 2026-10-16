@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 import RightHereCore
 @testable import RightHereKit
@@ -113,6 +114,40 @@ struct ExtensionCrashesTests {
         try report("FinderExtension-after.crash", uuid: nil, hoursAgo: 3, in: folder)
         let found = try #require(ExtensionCrashes.scan(in: folder, installedAfter: now.addingTimeInterval(-10 * 3600), buildIDs: [current.uuidString.lowercased()], now: now))
         #expect(found.count == 1 && found.latestFile == "FinderExtension-after.crash")
+    }
+
+    /// Any program of the person's can write into the folder of crash reports, and opening a named pipe for reading waits until something writes to it: a pipe named like a report held
+    /// `rh doctor` for ever, and eight such calls of the MCP server held every other request. A report is opened without waiting, and only a regular file is read.
+    @Test func aNamedPipeNamedLikeAReportDoesNotHoldTheDoctor() throws {
+        let folder = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: folder) }
+        let pipe = folder.appendingPathComponent("FinderExtension-2026-10-15-120000.ips")
+        #expect(mkfifo(pipe.path, 0o600) == 0)
+        try FileManager.default.setAttributes([.modificationDate: now.addingTimeInterval(-3600)], ofItemAtPath: pipe.path)
+        let finished = DispatchSemaphore(value: 0)
+        let result = Mutex<ExtensionCrashes?>(nil)
+        Thread.detachNewThread {
+            result.withLock { $0 = ExtensionCrashes.scan(in: folder, installedAfter: nil, buildIDs: [current.uuidString.lowercased()], now: now) }
+            finished.signal()
+        }
+        let waited = finished.wait(timeout: .now() + 10)
+        if waited == .timedOut {
+            // Let the stuck reader go, so that the test process does not keep a thread waiting for ever.
+            let writer = open(pipe.path, O_WRONLY | O_NONBLOCK)
+            if writer >= 0 { close(writer) }
+        }
+        #expect(waited == .success, "the scan waited for a writer on a named pipe")
+        #expect(result.withLock { $0 }?.count == 1, "a file that is not a report with a UUID is judged by its date: \(String(describing: result.withLock { $0 }))")
+    }
+
+    @Test func aReportThatNamesNoUUIDIsNeverSaidToBeOfThisBuild() throws {
+        // The date rule counted it, and `this build of it crashed` would say more than that.
+        let folder = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: folder) }
+        try report("FinderExtension-text.crash", uuid: nil, hoursAgo: 3, in: folder)
+        let found = try #require(ExtensionCrashes.scan(in: folder, installedAfter: nil, buildIDs: [current.uuidString.lowercased()], now: now))
+        #expect(found.count == 1 && !found.matchedByBuild)
+        #expect(found.detail(now: now).contains("since this copy was installed"), Comment(rawValue: found.detail(now: now)))
+        try report("FinderExtension-json.ips", uuid: current, hoursAgo: 2, in: folder)
+        #expect(try #require(ExtensionCrashes.scan(in: folder, installedAfter: nil, buildIDs: [current.uuidString.lowercased()], now: now)).matchedByBuild)
     }
 
     @Test func anExecutableThatCannotBeReadLeavesTheDateAsTheRule() throws {

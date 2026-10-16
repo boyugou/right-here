@@ -8,12 +8,22 @@ enum MachOUUID {
 
     /// The UUIDs, lower case and hyphenated as a crash report writes them, or `nil` for a file that is not a Mach-O file or cannot be read.
     static func uuids(ofFileAt path: String) -> Set<String>? {
-        guard let handle = FileHandle(forReadingAtPath: path) else { return nil }
+        guard let handle = openRegularFile(at: path) else { return nil }
         defer { try? handle.close() }
         return uuids { offset, length in
             guard length >= 0, (try? handle.seek(toOffset: UInt64(offset))) != nil, let data = try? handle.read(upToCount: length), data.count == length else { return nil }
             return data
         }
+    }
+
+    /// A handle on the regular file at `path`, or `nil` for anything else. Opening a named pipe for reading waits until something writes to it, and a folder that other programs
+    /// write into (the crash reports) can hold one named like a report: it is opened without waiting, a link is not followed, and only a regular file is read.
+    static func openRegularFile(at path: String) -> FileHandle? {
+        let descriptor = open(path, O_RDONLY | O_NONBLOCK | O_NOFOLLOW)
+        guard descriptor >= 0 else { return nil }
+        var status = stat()
+        guard fstat(descriptor, &status) == 0, status.st_mode & S_IFMT == S_IFREG else { close(descriptor); return nil }
+        return FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
     }
 
     private static let thin64 = UInt32(0xFEEDFACF)
