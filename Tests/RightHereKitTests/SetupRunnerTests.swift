@@ -637,7 +637,7 @@ struct SetupRunnerTests {
         let need = try #require(report.needsUser.first { $0.id == .finderExtension })
         #expect(need.text.contains("registered, but switched off"))
         #expect(need.how.joined().contains("General › Login Items & Extensions › Finder"))
-        #expect(need.how.joined().contains("does not switch it on"))
+        #expect(need.how.joined().contains("asks macOS to use it") && need.how.joined().contains("does not flip it"), "\(need.how)")
     }
 
     // MARK: Where rh runs from

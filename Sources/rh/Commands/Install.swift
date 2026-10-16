@@ -12,12 +12,15 @@ struct Install: AsyncParsableCommand {
           --scripts   the runner script the Finder extension uses to reach rh
           --cli       a link to rh in ~/.local/bin
           --services  Finder Services (Quick Actions) from [services] in the config
-          --finder    register and switch on the Finder extension of Right Here.app
+          --finder    register the Finder extension of Right Here.app and ask macOS to use it
 
         Name at least one. Nothing here needs administrator rights, and each piece compares before it writes, so running it again \
         changes only what is out of date. With RH_HOME set, every per-user path (config, Services, runner script, command link) \
         moves under that folder, to try an install without touching your own; --finder still registers the extension for the \
         whole Mac, because you asked for it by name.
+
+        --finder registers the extension (`pluginkit -a`) and asks macOS to use it (`pluginkit -e use`). macOS can still leave \
+        the switch in System Settings off, and then it is yours to switch on: `rh doctor` says needs-user for it.
         """
     )
 
@@ -30,7 +33,7 @@ struct Install: AsyncParsableCommand {
     @Flag(help: "Install only the Finder Services (Quick Actions).")
     var services = false
 
-    @Flag(help: "Register and switch on only the Finder extension.")
+    @Flag(help: "Register only the Finder extension, and ask macOS to use it.")
     var finder = false
 
     func run() async throws {

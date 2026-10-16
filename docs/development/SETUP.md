@@ -20,7 +20,7 @@ when there is none (`SIGN_IDENTITY` overrides). It does not notarize.
 
 `rh setup` is the one command that puts everything in place, and it can be run again at any time: it creates the config from
 what it finds (or from `--terminal`, `--editor` and `--agents`; an existing config is never rewritten), writes the runner
-script, links `rh` into `~/.local/bin`, makes the Quick Actions, registers and enables the Finder extension, and ends with the
+script, links `rh` into `~/.local/bin`, makes the Quick Actions, registers the Finder extension and asks macOS to use it, and ends with the
 checks of `rh doctor` and what only you can do (switching the extension on in System Settings). `rh setup --dry-run` shows
 what it would do. `rh install --finder` (or `--scripts`, `--cli`, `--services`) redoes one piece; `rh uninstall` removes it all
 (the config stays). The setup window runs the same code: with no config file it offers the choice of terminal, editor and

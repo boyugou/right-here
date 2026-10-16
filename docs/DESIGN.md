@@ -100,7 +100,8 @@ Verified on macOS 26.x (build as reported by `sw_vers`):
 
 - A Finder Sync extension signed with Developer ID, hardened runtime, sandboxed, with no provisioning
   profile loads. `pluginkit -a <appex>` then `pluginkit -e use -i <id>` makes Finder start it within
-  seconds; Finder does not need a restart. Open and Save panels of other apps host it too.
+  seconds; Finder does not need a restart. Open and Save panels of other apps host it too. On a Mac where the switch in System Settings
+  stays off after that, it is the person's to flip: the doctor says `needs-user`, and `rh setup` does not pretend otherwise.
 - Registering the same extension identifier from two places (an Xcode build folder and the installed
   app) makes launchd remove every running instance. The installer unregisters stale copies.
 - A sandboxed extension finds the real home with `getpwuid`. A `temporary-exception.files.home-relative-path.read-only`

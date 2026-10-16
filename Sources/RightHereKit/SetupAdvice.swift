@@ -21,7 +21,7 @@ enum SetupAdvice {
                 text: "Switch on the Right Here extension for Finder. It is registered, but switched off, and only you can switch it on.",
                 how: [
                     "Open System Settings, then General › Login Items & Extensions › Finder, and switch on Right Here. (In Right Here.app the button Finder Extension Settings opens that page.)",
-                    "Running `rh setup` again does not switch it on: it only registers it. The Finder menu appears within a few seconds of the switch; Finder does not need to be restarted."
+                    "Setup registers the extension and asks macOS to use it, and the switch is still theirs: running `rh setup` again does not flip it. The Finder menu appears within a few seconds of the switch; Finder does not need to be restarted."
                 ]))
         }
 

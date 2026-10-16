@@ -330,7 +330,8 @@ public struct FinderExtensionManager: Sendable {
         return Status(state: state, paths: paths)
     }
 
-    /// Adds the extension inside `app` to the registry and switches it on.
+    /// Adds the extension inside `app` to the registry and asks macOS to use it. The switch in System Settings can still be off, and then it
+    /// is the person's (`status` says `disabled`, the doctor `needs-user`).
     public func register(appexPath: String) async throws {
         try await run(["-a", appexPath])
         try await run(["-e", "use", "-i", AppIdentity.extensionBundleID])
