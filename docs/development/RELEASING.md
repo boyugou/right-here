@@ -2,7 +2,8 @@
 
 1. `./script/verify_all.sh` passes and the working tree is clean.
 2. Raise the version in `Sources/RightHereCore/AppIdentity.swift` (`AppIdentity.version`), `MARKETING_VERSION` in
-   `project.yml`, the top heading of `CHANGELOG.md` and the two files under `packaging/homebrew`;
+   `project.yml`, the top heading of `CHANGELOG.md`, the two files under `packaging/homebrew` and the `version` of
+   `plugins/right-here/.claude-plugin/plugin.json`;
    `./script/verify_version.py` checks that they agree.
 3. Store notarization credentials once per machine (skip this if a notarytool keychain profile for the same team is
    already there; `xcrun notarytool history --keychain-profile <name>` shows whether it works):

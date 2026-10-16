@@ -50,5 +50,6 @@ First release. A configurable Finder menu for opening folders and copying paths.
 Right Here is a Finder Sync extension plus a small setup window. To test: launch the app, then System Settings >
 General > Login Items & Extensions > Added Extensions > enable "Right Here" under Finder. Open a Finder window and
 right-click a folder or the window background; the "Right Here" items appear. Choose "Copy Path" and paste anywhere
-to see the result. The app uses the App Sandbox, no temporary exceptions, no network, no accounts, and sends no
-Apple events. [Adjust to what the spike proves.]
+to see the result. The app uses the App Sandbox, no temporary exceptions, no network and no accounts. It sends Apple events
+only to the terminal the person chose, to open a window there (the `com.apple.security.automation.apple-events` entitlement and the
+`NSAppleEventsUsageDescription` text); macOS asks once the first time. [Adjust to what the spike proves.]

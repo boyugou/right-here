@@ -6,7 +6,7 @@
 
     ./script/verify_version.py
 
-Checks project.yml (MARKETING_VERSION), the top entry of CHANGELOG.md, and the Homebrew formula and cask under packaging/.
+Checks project.yml (MARKETING_VERSION), the top entry of CHANGELOG.md, the Homebrew formula and cask under packaging/ and the Claude Code plugin's manifest.
 """
 import re
 import sys
@@ -28,6 +28,7 @@ expected = {
     "CHANGELOG.md top entry": first(r"^## (\d+\.\d+\.\d+)", "CHANGELOG.md", re.M),
     "packaging/homebrew/right-here.rb version": first(r'^\s*version "([^"]+)"', "packaging/homebrew/right-here.rb", re.M),
     "packaging/homebrew/rh.rb url tag": first(r"/tags/v([0-9.]+)\.tar\.gz", "packaging/homebrew/rh.rb"),
+    "plugins/right-here/.claude-plugin/plugin.json version": first(r'"version":\s*"([^"]+)"', "plugins/right-here/.claude-plugin/plugin.json"),
 }
 wrong = {where: found for where, found in expected.items() if found != version}
 if wrong:
