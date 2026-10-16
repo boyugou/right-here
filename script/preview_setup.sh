@@ -10,6 +10,7 @@
 #   ./script/preview_setup.sh out.png en --first-run        the very first run: no config file yet, the choice of terminal, editor and agents
 #   ./script/preview_setup.sh out.png en --set-up           just after the first setup: what it did, and the Finder extension still to switch on
 #   ./script/preview_setup.sh out.png en --failed-set-up    the first run after a Set Up that did not come out: the chooser, and what went wrong above it
+#   ./script/preview_setup.sh out.png en --first-run --shell-silent  the first run when the login shell said nothing about the agents
 #   ./script/preview_setup.sh out.png en --location         the app runs from a disk image: the card that says to move it, with Set Up off
 #   ./script/preview_setup.sh out.png en --picks-not-applied  after a setup that kept a config that was there: the choices it could not apply, with the edits, and a warning
 #   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
@@ -31,7 +32,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -46,7 +47,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       TAB="${args[$i]:?preview_setup.sh: --tab needs a section}"
       ;;
     --details) TAB="checks" ;;
-    --dark | --onboarding | --first-run | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
+    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -219,14 +220,17 @@ func firstRunChecks() -> [DoctorCheck] {
 
 /// What a first run offers: the terminals and editors of the demo Mac, and every agent Right Here knows, two of them found.
 func demoOffer() -> SetupOffer {
-    let found: Set<String> = ["claude", "codex"]
+    // A login shell that said nothing (--shell-silent) found no agent, and the window says it could not tell.
+    let silent = flag("--shell-silent")
+    let found: Set<String> = silent ? [] : ["claude", "codex"]
     let agents = KnownAgents.all.map { SetupOffer.Option(id: $0.id, name: $0.name, available: found.contains($0.id)) }
     return SetupOffer(
         terminals: [.init(id: "ghostty", name: "Ghostty", available: true), .init(id: "terminal", name: "Terminal", available: true)],
         editors: [.init(id: "vscode", name: "Visual Studio Code", available: true), .init(id: "zed", name: "Zed", available: true),
                   .init(id: "xcode", name: "Xcode", available: true), .init(id: "textedit", name: "TextEdit", available: true)],
         agents: agents.filter(\.available) + agents.filter { !$0.available },
-        detected: DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude", "codex"]))
+        detected: DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: silent ? [] : ["claude", "codex"]),
+        loginShellAnswered: !silent)
 }
 
 /// What the first setup did on the demo Mac.

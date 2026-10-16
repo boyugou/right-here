@@ -181,6 +181,8 @@ extension LocalizedMessage {
     public static var appSetupFailed: LocalizedMessage { LocalizedMessage(.appSetupFailed) }
     /// Not found
     public static var appSetupNotFound: LocalizedMessage { LocalizedMessage(.appSetupNotFound) }
+    /// Your login shell did not say which AI agents are installed, so none is checked. Check the ones you use.
+    public static var appSetupShellSilent: LocalizedMessage { LocalizedMessage(.appSetupShellSilent) }
     /// Skipped
     public static var appSetupSkipped: LocalizedMessage { LocalizedMessage(.appSetupSkipped) }
     /// Set up Right Here

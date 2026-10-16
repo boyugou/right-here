@@ -149,14 +149,17 @@ struct FirstRunChooser: View {
                         }
                     }
                 }
-                choice(.appSetupAgents, hint: .appSetupAgentsHint) {
+                choice(.appSetupAgents, hint: offer.loginShellAnswered ? .appSetupAgentsHint : .appSetupShellSilent) {
                     VStack(alignment: .leading, spacing: 10) {
                         agentChips(offer.agents.filter(\.available))
                         let missing = offer.agents.filter { !$0.available }
                         if !missing.isEmpty {
-                            Text(l10n.string(.appSetupNotFound))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            // A shell that said nothing found none, and "not found" is true only of an agent it could have found.
+                            if offer.loginShellAnswered {
+                                Text(l10n.string(.appSetupNotFound))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             agentChips(missing)
                         }
                     }

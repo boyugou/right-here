@@ -8,10 +8,14 @@ public struct LoginShellFacts: Sendable, Equatable {
     public var found: Set<String>
     /// The folders of its `PATH`, in order; `nil` when it was not asked, or did not answer.
     public var path: [String]?
+    /// Whether the shell ran the script to its end. A startup file that exits, or a shell that takes longer than the limit, leaves this `false`, and what it found is then
+    /// what it did not say, and not what is not there.
+    public var answered: Bool
 
-    public init(found: Set<String> = [], path: [String]? = nil) {
+    public init(found: Set<String> = [], path: [String]? = nil, answered: Bool = false) {
         self.found = found
         self.path = path
+        self.answered = answered
     }
 }
 
@@ -27,12 +31,17 @@ public struct Detector: Sendable {
     }
 
     public func detect() async -> DetectedEnvironment {
+        await look().environment
+    }
+
+    /// What `detect` finds, and whether the login shell answered: an agent that was not found because the shell said nothing is not an agent that is not installed.
+    public func look() async -> (environment: DetectedEnvironment, shellAnswered: Bool) {
         let defaults = DefaultApps(config: .default, facts: facts)
         let terminal = try? defaults.resolve(role: .terminal, configured: nil)
         let editor = try? defaults.resolve(role: .editor, configured: nil)
-        let found = await commandsFound(KnownAgents.all.map(\.command))
-        let agents = KnownAgents.all.filter { found.contains($0.command) }.map(\.id)
-        return DetectedEnvironment(terminal: terminal?.id, editor: editor?.id, agents: agents)
+        let shell = await probe(commands: KnownAgents.all.map(\.command))
+        let agents = KnownAgents.all.filter { shell.found.contains($0.command) }.map(\.id)
+        return (DetectedEnvironment(terminal: terminal?.id, editor: editor?.id, agents: agents), shell.answered)
     }
 
     /// The subset of `commands` that the login shell can resolve. The names travel as arguments of the
@@ -53,10 +62,10 @@ public struct Detector: Sendable {
         switch facts.shellFlavor {
         case .posix:
             script = "for n in \"$@\"; do command -v -- \"$n\" >/dev/null 2>&1 && printf '%s\\n' \"$n\"; done"
-                + (wantPath ? "; printf '\\001rh-path\\001%s\\n' \"$PATH\"" : "")
+                + (wantPath ? "; printf '\\001rh-path\\001%s\\n' \"$PATH\"" : "") + "; printf '\\001rh-done\\001\\n'"
         case .fish:
             script = "for n in $argv; command -v -- $n >/dev/null 2>&1; and echo $n; end"
-                + (wantPath ? "; printf '\\001rh-path\\001%s\\n' (string join : $PATH)" : "")
+                + (wantPath ? "; printf '\\001rh-path\\001%s\\n' (string join : $PATH)" : "") + "; printf '\\001rh-done\\001\\n'"
         }
         // With `-c`, a POSIX shell takes the first operand as `$0`; fish has no such slot.
         let operands = facts.shellFlavor == .posix ? ["rh-detect"] + commands : commands
@@ -66,17 +75,22 @@ public struct Detector: Sendable {
     }
 
     static let pathMarker = "\u{01}rh-path\u{01}"
+    /// The last line of what the script prints: its absence says the shell did not get to the end.
+    static let doneMarker = "\u{01}rh-done\u{01}"
 
     static func parse(_ output: String) -> LoginShellFacts {
         var found: Set<String> = []
         var path: [String]?
+        var answered = false
         for line in output.split(separator: "\n") {
-            if line.hasPrefix(pathMarker) {
+            if line == doneMarker {
+                answered = true
+            } else if line.hasPrefix(pathMarker) {
                 path = line.dropFirst(pathMarker.count).split(separator: ":", omittingEmptySubsequences: true).map(String.init)
             } else {
                 found.insert(line.trimmingCharacters(in: .whitespaces))
             }
         }
-        return LoginShellFacts(found: found, path: path)
+        return LoginShellFacts(found: found, path: path, answered: answered)
     }
 }

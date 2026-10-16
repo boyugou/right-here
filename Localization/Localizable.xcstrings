@@ -8120,7 +8120,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Apăsați pe Instalați sau reparați pentru a elimina copiile învechite."
+            "value": "Faceți clic pe Instalați sau reparați pentru a elimina copiile învechite."
           }
         },
         "ru": {
@@ -8492,7 +8492,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Apăsați pe Instalați sau reparați."
+            "value": "Faceți clic pe Instalați sau reparați."
           }
         },
         "ru": {
@@ -8564,25 +8564,25 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "اضغط «إعداد» في قسم «نظرة عامة»."
+            "value": "اضغط «إعداد» ضمن نظرة عامة."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "“সারসংক্ষেপ” বিভাগে “সেটআপ করুন” চাপ দিন।"
+            "value": "সারসংক্ষেপ-এ “সেটআপ করুন” চাপ দিন।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Drücke im Abschnitt „Übersicht“ auf „Einrichten“."
+            "value": "Drücke in der Übersicht auf „Einrichten“."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Πατήστε «Ρύθμιση» στην ενότητα «Επισκόπηση»."
+            "value": "Πατήστε «Ρύθμιση» στην Επισκόπηση."
           }
         },
         "en": {
@@ -8594,7 +8594,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pulsa «Configurar» en la sección «Resumen»."
+            "value": "Pulsa «Configurar» en Resumen."
           }
         },
         "fa": {
@@ -8678,7 +8678,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "În pagina Prezentare generală, apăsați pe Configurați."
+            "value": "În pagina Prezentare generală, faceți clic pe Configurați."
           }
         },
         "ru": {
@@ -9314,7 +9314,7 @@
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here একটি ডিস্ক ইমেজ বা অস্থায়ী স্থান থেকে চলছে, তাই এটি যা সেটআপ করে তা ওই উৎস সরে গেলে কাজ করা বন্ধ করে দেবে। Right Here.app-কে আপনার অ্যাপ্লিকেশন ফোল্ডারে টেনে আনুন, ডিস্ক ইমেজটি বের করে দিন, এবং সেখান থেকে Right Here খুলুন।"
+            "value": "Right Here একটি ডিস্ক ইমেজ বা অস্থায়ী স্থান থেকে চলছে, তাই এটি যা সেটআপ করে তা ওই উৎস সরে গেলে কাজ করা বন্ধ করে দেবে। Right Here.app-কে আপনার Applications ফোল্ডারে টেনে আনুন, ডিস্ক ইমেজটি বের করে দিন, এবং সেখান থেকে Right Here খুলুন।"
           }
         },
         "de": {
@@ -9326,7 +9326,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Το Right Here εκτελείται από μια εικόνα δίσκου ή από μια προσωρινή τοποθεσία, οπότε ό,τι ρυθμίζει θα σταματήσει να λειτουργεί όταν αυτή η πηγή πάψει να υπάρχει. Σύρετε το Right Here.app στο φάκελο Εφαρμογών, εξαγάγετε την εικόνα δίσκου και ανοίξτε το Right Here από εκεί."
+            "value": "Το Right Here εκτελείται από μια εικόνα δίσκου ή από μια προσωρινή τοποθεσία, οπότε ό,τι ρυθμίζει θα σταματήσει να λειτουργεί όταν αυτή η πηγή πάψει να υπάρχει. Σύρετε το Right Here.app στον φάκελο Εφαρμογών, εξαγάγετε την εικόνα δίσκου και ανοίξτε το Right Here από εκεί."
           }
         },
         "en": {
@@ -9410,7 +9410,7 @@
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here działa z obrazu dysku albo z tymczasowej lokalizacji, więc to, co konfiguruje, przestanie działać, gdy to zniknie. Przeciągnij Right Here.app do folderu Programy, wysuń obraz dysku i otwórz Right Here stamtąd."
+            "value": "Right Here działa z obrazu dysku albo z tymczasowej lokalizacji, więc to, co konfiguruje, przestanie działać, gdy to zniknie. Przeciągnij Right Here.app do folderu Aplikacje, wysuń obraz dysku i otwórz Right Here stamtąd."
           }
         },
         "pt-BR": {
@@ -9446,7 +9446,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here กำลังทำงานจากดิสก์อิมเมจหรือตำแหน่งชั่วคราว ดังนั้นสิ่งที่ตั้งค่าไว้จะหยุดทำงานเมื่อที่นั้นหายไป ลาก Right Here.app ไปวางในโฟลเดอร์แอปพลิเคชันของคุณ นำดิสก์อิมเมจออก แล้วเปิด Right Here จากที่นั่น."
+            "value": "Right Here กำลังทำงานจากดิสก์อิมเมจหรือตำแหน่งชั่วคราว ดังนั้นสิ่งที่ตั้งค่าไว้จะหยุดทำงานเมื่อตำแหน่งนั้นหายไป ลาก Right Here.app ไปวางในโฟลเดอร์แอปพลิเคชันของคุณ นำดิสก์อิมเมจออก แล้วเปิด Right Here จากที่นั่น."
           }
         },
         "tr": {
@@ -9500,7 +9500,7 @@
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "প্রথমে Right Here-কে আপনার অ্যাপ্লিকেশন ফোল্ডারে সরান"
+            "value": "প্রথমে Right Here-কে আপনার Applications ফোল্ডারে সরান"
           }
         },
         "de": {
@@ -9512,7 +9512,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Μετακινήστε πρώτα το Right Here στο φάκελο Εφαρμογών"
+            "value": "Μετακινήστε πρώτα το Right Here στον φάκελο Εφαρμογών"
           }
         },
         "en": {
@@ -9596,7 +9596,7 @@
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Najpierw przenieś Right Here do folderu Programy"
+            "value": "Najpierw przenieś Right Here do folderu Aplikacje"
           }
         },
         "pt-BR": {
@@ -16741,6 +16741,192 @@
         }
       }
     },
+    "app.setupShellSilent": {
+      "comment": "A line under the list of AI agents in the setup window's first-run choice, shown instead of the usual hint when the person's login shell gave no answer (a startup file that exits, a shell that is slow to start). It tells the person that no agent is checked because nobody could tell, and what to do.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "لم تُبيِّن صدفة تسجيل الدخول لديك وكلاء ذكاء اصطناعي مُثبَّتين، فلم يُحدَّد أيٌّ منهم. حدِّد الوكلاء الذين تستخدمهم."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "আপনার লগইন শেল জানায়নি কোন AI এজেন্টগুলো ইনস্টল করা আছে, তাই কোনোটিতেই টিক দেওয়া হয়নি। আপনি যেগুলো ব্যবহার করেন, সেগুলোতে টিক দিন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Deine Login-Shell hat nicht mitgeteilt, welche KI-Agenten installiert sind, deshalb ist keiner angekreuzt. Kreuze die an, die du verwendest."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το κέλυφος σύνδεσης σας δεν ανέφερε ποιοι πράκτορες AI είναι εγκατεστημένοι, οπότε δεν έχει επιλεγεί κανένας. Επιλέξτε αυτούς που χρησιμοποιείτε."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your login shell did not say which AI agents are installed, so none is checked. Check the ones you use."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tu shell de inicio de sesión no indicó qué agentes de IA están instalados, así que ninguno está marcado. Marca los que usas."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پوستهٔ ورود شما نگفت کدام عامل‌های هوش مصنوعی نصب شده‌اند، بنابراین هیچ‌کدام علامت‌زده نشده‌اند. عامل‌هایی را که از آن‌ها استفاده می‌کنید علامت بزنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Votre shell de connexion n’a pas indiqué quels agents IA sont installés, donc aucun n’est coché. Cochez ceux que vous utilisez."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "מעטפת הכניסה שלכם לא ציינה אילו סוכני AI מותקנים, ולכן אף אחד מהם לא מסומן. סמנו את אלה שאתם משתמשים בהם."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "आपके लॉगिन शेल ने यह नहीं बताया कि कौन-से AI एजेंट इंस्टॉल हैं, इसलिए कोई भी चुना नहीं गया है। जिन एजेंटों का आप उपयोग करते हैं, उन्हें चुनें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Shell login Anda tidak menyebutkan agen AI mana yang terinstal, sehingga tidak ada yang dicentang. Centang yang Anda gunakan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "La shell di login non ha indicato quali agenti IA sono installati, quindi nessuno è selezionato. Seleziona quelli che usi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ログインシェルから、インストールされている AIエージェントの情報が得られなかったため、チェックは入っていません。お使いのエージェントにチェックを入れてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "로그인 셸이 설치된 AI 에이전트를 알려 주지 않아 체크된 에이전트가 없습니다. 사용하는 에이전트를 체크하세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "तुमच्या लॉगिन शेलने कोणते AI एजंट इन्स्टॉल केलेले आहेत हे सांगितले नाही, त्यामुळे एकही टिक केलेला नाही. तुम्ही वापरत असलेले एजंट टिक करा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Shell log masuk anda tidak memberitahu ejen AI mana yang dipasang, jadi tiada yang dipilih. Pilih ejen yang anda gunakan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "De loginshell heeft niet aangegeven welke AI-agenten geïnstalleerd zijn, daarom staat er geen enkele aangevinkt. Vink de agenten aan die in gebruik zijn."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Powłoka logowania nie podała, którzy agenci AI są zainstalowani, dlatego żaden nie jest zaznaczony. Zaznacz tych, z których korzystasz."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "O shell de login não informou quais agentes de IA estão instalados, por isso nenhum está marcado. Marque os que você usa."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Shell-ul de conectare nu a precizat ce agenți AI sunt instalați, așa că niciunul nu este bifat. Bifați agenții pe care îi folosiți."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ваша оболочка входа в систему не сообщила, какие ИИ-агенты установлены, поэтому ни один не отмечен. Отметьте те, которыми вы пользуетесь."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "உங்கள் உள்நுழைவு ஷெல் நிறுவப்பட்டுள்ள AI முகவர்கள் எவை என்பதைத் தெரிவிக்கவில்லை, எனவே எதுவும் தேர்ந்தெடுக்கப்படவில்லை. நீங்கள் பயன்படுத்துபவற்றைத் தேர்ந்தெடுக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "మీ లాగిన్ షెల్ ఏ AI ఏజెంట్లు ఇన్‌స్టాల్ చేయబడ్డాయో తెలియజేయలేదు, కాబట్టి ఏదీ ఎంచుకోబడలేదు. మీరు ఉపయోగించే వాటిని ఎంచుకోండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เชลล์ตอนเข้าสู่ระบบของคุณไม่ได้ระบุว่าเอเจนต์ AI ใดบ้างติดตั้งอยู่ จึงไม่มีเอเจนต์ใดถูกเลือกไว้ โปรดเลือกเอเจนต์ที่คุณใช้งาน."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Giriş kabuğunuz hangi AI ajanlarının yüklü olduğunu bildirmediği için hiçbiri işaretlenmedi. Kullandığınız ajanları işaretleyin."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ваша оболонка входу не повідомила, які ШІ-агенти встановлено, тому жодного не вибрано. Виберіть ті, які ви використовуєте."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "آپ کے لاگ ان شیل نے یہ نہیں بتایا کہ کون سے AI ایجنٹس انسٹال ہیں، اس لیے کوئی بھی پہلے سے منتخب نہیں ہے۔ جنہیں آپ استعمال کرتے ہیں، انہیں منتخب کریں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Shell đăng nhập của bạn không cho biết tác tử AI nào đã được cài đặt, nên không có tác tử nào được chọn sẵn. Hãy chọn những tác tử bạn sử dụng."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "你的登录 Shell 没有说明已安装哪些 AI 智能体，因此没有默认勾选任何智能体。请勾选你使用的 AI 智能体。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "你的登入 Shell 沒有說明已安裝哪些 AI 代理程式，因此沒有預先勾選任何代理程式。請勾選你使用的 AI 代理程式。"
+          }
+        }
+      }
+    },
     "app.setupSkipped": {
       "comment": "Outcome beside an item in the list under app.setupDoneTitle: it was left out on purpose; the line next to it says why.",
       "extractionState": "manual",
@@ -18830,7 +19016,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ترمینال و ویرایشگر خود"
+            "value": "ترمینال و ویرایشگر شما"
           }
         },
         "fr": {
@@ -18848,7 +19034,7 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "अपना टर्मिनल और एडिटर"
+            "value": "आपका टर्मिनल और एडिटर"
           }
         },
         "id": {
@@ -18980,25 +19166,25 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "بعد ذلك، انقر بالزر الأيمن على مجلد في Finder. يتضمن قسم «الفحوصات» أيضاً اختباراً يفتح نافذة طرفية ثم يغلقها."
+            "value": "بعد ذلك، انقر بالزر الأيمن على مجلد في Finder. يوجد ضمن الفحوصات أيضاً اختبار يفتح نافذة طرفية ثم يغلقها."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "এরপর Finder-এ একটি ফোল্ডারে ডান-ক্লিক করুন। “চেক” বিভাগেও একটি পরীক্ষা আছে, যা একটি টার্মিনাল উইন্ডো খোলে এবং আবার বন্ধ করে।"
+            "value": "এরপর Finder-এ একটি ফোল্ডারে ডান-ক্লিক করুন। চেক-এ একটি পরীক্ষাও আছে, যা একটি টার্মিনাল উইন্ডো খোলে এবং আবার বন্ধ করে।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Klicke danach im Finder mit der rechten Maustaste auf einen Ordner. Im Abschnitt „Prüfungen“ gibt es außerdem einen Test, der ein Terminalfenster öffnet und es wieder schließt."
+            "value": "Klicke danach im Finder mit der rechten Maustaste auf einen Ordner. Unter Prüfungen gibt es außerdem einen Test, der ein Terminalfenster öffnet und es wieder schließt."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Στη συνέχεια, κάντε δεξί κλικ σε έναν φάκελο στο Finder. Η ενότητα «Έλεγχοι» έχει επίσης μια δοκιμή που ανοίγει ένα παράθυρο τερματικού και το κλείνει ξανά."
+            "value": "Στη συνέχεια, κάντε δεξί κλικ σε έναν φάκελο στο Finder. Στην ενότητα «Έλεγχοι» υπάρχει επίσης μια δοκιμή που ανοίγει ένα παράθυρο τερματικού και το κλείνει ξανά."
           }
         },
         "en": {
@@ -19010,7 +19196,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Después, haz clic con el botón derecho en una carpeta en el Finder. La sección «Comprobaciones» también tiene una prueba que abre una ventana de terminal y la vuelve a cerrar."
+            "value": "Después, haz clic con el botón derecho en una carpeta en el Finder. En Comprobaciones también hay una prueba que abre una ventana de terminal y la vuelve a cerrar."
           }
         },
         "fa": {
@@ -19028,7 +19214,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "אחר כך, לחצו לחיצה ימנית על תיקייה ב-Finder. בדף הבדיקות יש גם בדיקה שפותחת חלון מסוף וסוגרת אותו שוב."
+            "value": "אחר כך, לחצו לחיצה ימנית על תיקייה ב-Finder. בדף בדיקות יש גם בדיקה שפותחת חלון מסוף וסוגרת אותו שוב."
           }
         },
         "hi": {
@@ -19076,7 +19262,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Klik daarna met de rechtermuisknop op een map in de Finder. Op de pagina Controles staat ook een test die een terminalvenster opent en het weer sluit."
+            "value": "Klik daarna met de rechtermuisknop op een map in Finder. Op de pagina Controles staat ook een test die een terminalvenster opent en het weer sluit."
           }
         },
         "pl": {
@@ -19124,13 +19310,13 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ardından Finder’da bir klasöre sağ tıklayın. Denetimler sayfasında ayrıca terminal penceresini açıp yeniden kapatan bir test de var."
+            "value": "Ardından Finder’da bir klasöre sağ tıklayın. Denetimler sayfasında terminal penceresini açıp yeniden kapatan bir test de var."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Після цього клацніть правою кнопкою миші на папку у Finder. На сторінці «Перевірки» також є тест, який відкриває вікно терміналу та знову закриває його."
+            "value": "Після цього клацніть папку правою кнопкою миші у Finder. На сторінці «Перевірки» також є тест, який відкриває вікно терміналу та знову закриває його."
           }
         },
         "ur": {

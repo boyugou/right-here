@@ -60,7 +60,7 @@ struct DetectorCommandLookupTests {
 
     @Test func noPathIsReturnedWhenNoneWasAskedFor() async {
         let result = await Detector(facts: facts, runner: EmptyHomeRunner()).probe(commands: ["ls"])
-        #expect(result == LoginShellFacts(found: ["ls"], path: nil))
+        #expect(result == LoginShellFacts(found: ["ls"], path: nil, answered: true))
     }
 
     @Test func aCommandCalledLikeTheMarkerCannotPassForThePath() async {
@@ -68,6 +68,14 @@ struct DetectorCommandLookupTests {
         let result = await Detector(facts: facts, runner: EmptyHomeRunner()).probe(commands: [forged, "ls"], wantPath: false)
         #expect(result.path == nil)
         #expect(result.found == ["ls"])
+    }
+
+    @Test func aShellThatDidNotGetToTheEndOfTheScriptHasNotAnswered() {
+        // A startup file that exits, or a shell that was stopped for being slow, prints nothing of the script: "no agent" is then not what it said.
+        #expect(!Detector.parse("").answered)
+        #expect(!Detector.parse("claude\n").answered, "what it printed before it was stopped is not an answer")
+        let whole = Detector.parse("claude\n\u{01}rh-done\u{01}\n")
+        #expect(whole.answered && whole.found == ["claude"], "the marker is not a command")
     }
 
     @Test func startupNoiseBeforeThePathLineIsNotAFolder() {

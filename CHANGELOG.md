@@ -16,6 +16,8 @@
   - The window reads your Mac again when you come back to it (from System Settings, an editor, or a terminal where an AI assistant ran `rh setup`).
   - A command link whose folder is not on PATH is a note on the Checks page, no longer a reason for "Some checks need your attention" after a setup that went well.
   - "What Right Here set up" says the Finder extension is "registered but switched off" while it is.
+  - When the login shell says nothing about which AI agents are installed (a startup file that exits, a shell that is slow to start), the first-run choice says so
+    instead of showing every agent as "not found" and setting up with none.
   - The first page says, before anything is tried, when the app runs from a disk image or another volume, and what to do (the Set Up button waits).
   - Step 3 of the first-run card points to the test on the Checks page instead of a button that could only fail while the extension is off; the test is off until it is on.
   - The fixes on the Checks page say which button to press ("Press Install or Repair.") and not which command to run; a Claude Code terminal link without its

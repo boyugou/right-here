@@ -25,17 +25,21 @@ public struct SetupOffer: Sendable, Equatable {
     /// Every agent Right Here knows, the ones that were found first.
     public var agents: [Option]
     public var detected: DetectedEnvironment
+    /// Whether the login shell said which agents' commands it finds. When it did not (a startup file that exits, a shell that is slow to start), no agent was found
+    /// because nobody could tell, and the window says so.
+    public var loginShellAnswered: Bool
 
-    public init(terminals: [Option] = [], editors: [Option] = [], agents: [Option] = [], detected: DetectedEnvironment = DetectedEnvironment()) {
+    public init(terminals: [Option] = [], editors: [Option] = [], agents: [Option] = [], detected: DetectedEnvironment = DetectedEnvironment(), loginShellAnswered: Bool = true) {
         self.terminals = terminals
         self.editors = editors
         self.agents = agents
         self.detected = detected
+        self.loginShellAnswered = loginShellAnswered
     }
 
     /// Looks at this Mac: LaunchServices for the apps and the login shell, once, for the agents' commands.
     public static func make(facts: any SystemFacts, runner: any ProcessRunner) async -> SetupOffer {
-        let detected = await Detector(facts: facts, runner: runner).detect()
+        let (detected, shellAnswered) = await Detector(facts: facts, runner: runner).look()
         func installed(_ apps: [AppDescriptor]) -> [Option] {
             apps.filter { $0.installedBundleID(facts: facts) != nil }
                 .sorted { ($0.defaultRank ?? Int.max) < ($1.defaultRank ?? Int.max) }
@@ -44,7 +48,7 @@ public struct SetupOffer: Sendable, Equatable {
         let found = Set(detected.agents)
         let agents = KnownAgents.all.map { Option(id: $0.id, name: $0.name, available: found.contains($0.id)) }
         return SetupOffer(terminals: installed(KnownApps.terminals), editors: installed(KnownApps.editors),
-                          agents: agents.filter(\.available) + agents.filter { !$0.available }, detected: detected)
+                          agents: agents.filter(\.available) + agents.filter { !$0.available }, detected: detected, loginShellAnswered: shellAnswered)
     }
 
     /// The choices that make the config: the terminal and editor picked (or none, when the machine has none), the agents checked in the

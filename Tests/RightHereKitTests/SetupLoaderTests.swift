@@ -212,6 +212,17 @@ struct SetupFirstRunTests {
         #expect(offer.detected == DetectedEnvironment(terminal: "ghostty", editor: "vscode", agents: ["claude", "codex"]))
     }
 
+    @Test func theOfferSaysWhetherTheLoginShellAnswered() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        let silent = await mac.loader(FakeProcessRunner(results: [ProcessResult(status: 1)])).load()
+        #expect(silent.offer?.loginShellAnswered == false, "a shell that printed nothing, not even the end of the script, did not say there is no agent")
+        #expect(silent.offer?.agents.allSatisfy { !$0.available } == true)
+        let answered = await mac.loader(FakeProcessRunner(results: [ProcessResult(status: 1, standardOutput: "claude\n\u{01}rh-done\u{01}\n")])).load()
+        #expect(answered.offer?.loginShellAnswered == true)
+        let none = await mac.loader(FakeProcessRunner(results: [ProcessResult(status: 1, standardOutput: "\u{01}rh-done\u{01}\n")])).load()
+        #expect(none.offer?.loginShellAnswered == true && none.offer?.agents.allSatisfy { !$0.available } == true, "a shell that answered that there is none")
+    }
+
     @Test func withAConfigThereIsNothingToOffer() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }
         try FileManager.default.createDirectory(at: mac.paths.configDirectory, withIntermediateDirectories: true)

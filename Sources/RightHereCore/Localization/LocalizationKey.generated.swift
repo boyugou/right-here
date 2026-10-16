@@ -93,6 +93,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appSetupDoneTitle = "app.setupDoneTitle"
     case appSetupFailed = "app.setupFailed"
     case appSetupNotFound = "app.setupNotFound"
+    case appSetupShellSilent = "app.setupShellSilent"
     case appSetupSkipped = "app.setupSkipped"
     case appSetupTitle = "app.setupTitle"
     case appSetupUnchanged = "app.setupUnchanged"
