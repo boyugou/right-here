@@ -21,6 +21,12 @@ public enum Fence {
         fenced(text.escapingControlCharacters(keeping: ["\n"]))
     }
 
+    /// The text with the two marks taken off, for a person who reads it at a terminal. Compared as the characters they are (`.literal`), so a mark followed by a
+    /// combining character, which Swift reads as one `Character`, is found as well.
+    public static func withoutMarks(_ text: String) -> String {
+        text.replacingOccurrences(of: open, with: "", options: .literal).replacingOccurrences(of: close, with: "", options: .literal)
+    }
+
     private static func fenced(_ escaped: String) -> String {
         escaped.isEmpty ? escaped : open + escaped.scalarReplacing(["⟦": "[", "⟧": "]"]) + close
     }

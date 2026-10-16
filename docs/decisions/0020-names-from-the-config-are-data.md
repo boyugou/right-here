@@ -36,6 +36,9 @@ without drawing anything cannot say what the person does not see) and takes the 
 - The sentence of an edit of the config (`configEdits[].instruction`, "change terminal = ... to ...") fences the text of the file it quotes. An agent
   follows that sentence to the letter, and the file's text is the config's.
 - The MCP tools are as they were: the whole text of each row is fenced, and the structured data is plain.
+- A person who runs `rh setup` at a terminal sees names without the marks (`Output.forTheReader` takes them off when standard output is a terminal; amended after the
+  first release, where "⟦user⟧Ghostty⟦/user⟧" was the first thing the command printed to the person it was written for). A pipe, a file and every JSON document keep them: that is
+  where an agent reads. The name inside is still shown with its control characters as escapes.
 
 **What stays as it is.** A field that holds a value holds it as it is, with control characters escaped: `id`, `title`, `name`, `current`, `value`, `command`,
 and the `args` of a message (`{"code": ..., "args": [...], "text": ...}`). The JSON says which field is which, and a program that reads `args` must not find marks in

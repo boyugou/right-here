@@ -404,6 +404,8 @@ MUTANTS = [
      'case .action: return pad + node.title.withControlCharactersEscaped + "    ("', 'case .action: return pad + node.title + "    ("'),
     ("a line that rh prints holds the control characters of a name from a file, a config or git", "Sources/rh/RH.swift",
      'text.escapingControlCharacters(keeping: ["\\n", "\\t"])', "text"),
+    ("a person at a terminal reads the marks that are meant for an AI agent", "Sources/rh/RH.swift",
+     "isTerminal ? Fence.withoutMarks(text) : text", "text"),
     ("the JSON that rh prints holds the characters a terminal acts on as they are", "Sources/rh/RH.swift",
      'as: UTF8.self).escapingControlCharacters(keeping: ["\\n"]))', "as: UTF8.self))"),
     ("an error that rh finds in what was typed, or that a command throws, is printed by ArgumentParser, which does not escape what it quotes", "Sources/rh/RH.swift",

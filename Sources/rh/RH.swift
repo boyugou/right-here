@@ -87,8 +87,15 @@ enum Output {
         text.escapingControlCharacters(keeping: ["\n", "\t"])
     }
 
+    /// A person at a terminal reads the output as it is, so the marks that tell an AI agent which words are data (ADR 0020, `Fence`) are taken off when standard output is a
+    /// terminal: `rh setup` would otherwise print "⟦user⟧Ghostty⟦/user⟧" to the person who runs it first. A pipe, a file and the JSON (`json`) keep them, which is where an agent
+    /// reads. The name inside is still shown with its control characters as escapes.
+    static func forTheReader(_ text: String, isTerminal: Bool = isatty(STDOUT_FILENO) != 0) -> String {
+        isTerminal ? Fence.withoutMarks(text) : text
+    }
+
     static func print(_ text: String) {
-        Swift.print(safe(text))
+        Swift.print(safe(forTheReader(text)))
     }
 
     static func error(_ text: String) {

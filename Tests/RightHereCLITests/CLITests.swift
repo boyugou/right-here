@@ -135,6 +135,20 @@ private struct RH {
     func run(_ arguments: [String], set: [String: String] = [:], unset: [String] = [], inFolder: URL? = nil) throws -> Output {
         try start(arguments, set: set, unset: unset, inFolder: inFolder).finish()
     }
+
+    /// The command as a person runs it: its standard output is a terminal (a pseudo-terminal that `script` makes; no window is involved).
+    func runAtATerminal(_ arguments: [String]) throws -> Output {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/script")
+        process.arguments = ["-q", "/dev/null", binary.path] + arguments
+        process.environment = environment()
+        let out = Pipe(), err = Pipe()
+        process.standardOutput = out
+        process.standardError = err
+        process.standardInput = FileHandle.nullDevice
+        try process.run()
+        return Running(process: process, out: out, err: err, timer: watchdog(process)).finish()
+    }
 }
 
 /// How many times `needle` stands in `text` outside the fences (`⟦user⟧ ... ⟦/user⟧`).
@@ -226,6 +240,24 @@ struct CLITests {
             #expect((json.json as? [String]) == [], "\(json.standardOutput)")
             #expect(json.standardError.isEmpty, Comment(rawValue: json.standardError))
         }
+    }
+
+    @Test func aPersonAtATerminalReadsNamesWithoutTheMarksAndAPipeKeepsThem() throws {
+        let rh = try RH(config: """
+            [general]
+            agents = ["acme"]
+            [agent.acme]
+            name = "Acme Assistant"
+            command = "acme-internal-xyz"
+            """); defer { rh.cleanUp() }
+        let piped = try rh.run(["doctor"]).standardOutput
+        #expect(piped.contains("\(Fence.open)acme-internal-xyz\(Fence.close)"), "an agent that reads a pipe loses the marks: \(piped)")
+        let atATerminal = try rh.runAtATerminal(["doctor"]).standardOutput
+        #expect(atATerminal.contains("acme-internal-xyz"), "the row is missing: \(atATerminal)")
+        #expect(!atATerminal.contains(Fence.open) && !atATerminal.contains(Fence.close), "a person sees the marks: \(atATerminal)")
+        // The JSON is what an agent is told to read, and keeps them whatever the terminal is.
+        let json = try rh.runAtATerminal(["doctor", "--json"]).standardOutput
+        #expect(json.contains(Fence.open), "the JSON lost the marks: \(json.prefix(400))")
     }
 
     @Test func helpListsTheMainCommands() throws {

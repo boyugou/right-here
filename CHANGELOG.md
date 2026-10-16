@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `rh setup` and `rh doctor` no longer print the marks that tell an AI agent which words are data (`⟦user⟧Ghostty⟦/user⟧`) to a person at a terminal; a pipe and the
+  JSON keep them (ADR 0020).
+
 ## 0.3.0 (2026-10-16)
 
 Everything since 0.2.0. The repository and these downloads are private for now: you need access to see the Releases page.
