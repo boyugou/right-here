@@ -188,7 +188,7 @@ func demoChecks() -> [DoctorCheck] {
         DoctorCheck(.agent("codex"), title: "Codex", status: .ok, detail: .doctorAgentOk("codex", "Codex Here")),
         DoctorCheck(.claudeLink, status: .ok, detail: .doctorClaudeLinkOk),
         DoctorCheck(.finderRunner, status: .ok, detail: .doctorRunnerOk("\(appContents)/Helpers/rh")),
-        DoctorCheck(.services, status: .ok, detail: .doctorServicesOk("14")),
+        DoctorCheck(.services, status: .ok, detail: .doctorServicesOk("7")),
         DoctorCheck(.cliLink, status: .ok, detail: .doctorVerbatim("~/.local/bin/rh")),
         DoctorCheck(.finderExtension, status: .ok, detail: .doctorExtensionEnabled("\(appContents)/PlugIns/FinderExtension.appex")),
         DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityRecent("agent.claude", "container", ago(300)))
@@ -232,7 +232,7 @@ func demoSetupReport() -> SetupReport {
         SetupStep(.config, .created, detail: .doctorVerbatim("~/.config/right-here/config.toml")),
         SetupStep(.runnerScript, .created, detail: .doctorVerbatim("~/Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run")),
         SetupStep(.cliLink, .created, detail: .doctorVerbatim("~/.local/bin/rh")),
-        SetupStep(.services, .created, detail: .doctorServicesOk("14")),
+        SetupStep(.services, .created, detail: .doctorServicesOk("7")),
         SetupStep(.finderExtension, .created, detail: .doctorVerbatim("\(appContents)/PlugIns/FinderExtension.appex"))
     ])
 }
