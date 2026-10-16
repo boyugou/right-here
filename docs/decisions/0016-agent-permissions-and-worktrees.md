@@ -68,8 +68,8 @@ wait (measured), and a request slot of the MCP server, or the setup window, woul
 `gpg.program` with `commit.gpgsign`, `core.sshCommand`, `core.gitProxy`, an `alias.status` and an `alias.worktree`, and a modified and a renamed file in the
 worktree: nothing started for `status`, `worktree add`, `worktree remove`, `worktree list`, `branch -d` or `config` with the guards). A pager needs a terminal and
 the output is a pipe, and `--no-pager` says so. `submodule.recurse=true` with a submodule URL that starts a program does not populate or fetch anything: `worktree add`
-has no `--recurse-submodules`. `safe.directory=*` in a repository's own configuration is ignored (`GIT_TEST_ASSUME_DIFFERENT_OWNER=1` made git refuse it, and
-the same value in the global configuration allowed it), so a repository that somebody else owns is refused by git, not guarded by Right Here. Right Here runs no
+has no `--recurse-submodules`. `safe.directory=*` in a repository's own configuration is ignored (with `GIT_TEST_ASSUME_DIFFERENT_OWNER=1` git refused the repository, and
+naming its path in the global configuration allowed it), so a repository that somebody else owns is refused by git, not guarded by Right Here. Right Here runs no
 `rev-parse`: `gitRoot` walks the file system.
 
 ## Alternatives

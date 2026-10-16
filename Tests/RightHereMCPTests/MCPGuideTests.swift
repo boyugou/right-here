@@ -24,6 +24,16 @@ struct MCPGuideTests {
         return try String(contentsOf: root.appendingPathComponent(path), encoding: .utf8)
     }
 
+    /// `rh docs` prints through the one function that shows what a terminal acts on, or what draws nothing, as an escape (a line feed and a tab stay): no guide may hold
+    /// such a character, or the person would read an escape where the text has one.
+    @Test func noGuideHoldsACharacterThatThePrinterWouldShowAsAnEscape() {
+        for topic in Documentation.topics {
+            let text = Guides.text(for: topic) ?? ""
+            #expect(!text.isEmpty, "\(topic)")
+            #expect(text.escapingControlCharacters(keeping: ["\n", "\t"]) == text, "the guide \(topic) holds a control or invisible character")
+        }
+    }
+
     @Test func theGuideListsEveryToolAndNoneThatDoesNotExist() {
         let text = MCPGuide.text
         #expect(namedTools(in: text) == toolNames, "the guide names \(namedTools(in: text).symmetricDifference(toolNames).sorted())")
