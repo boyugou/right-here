@@ -72,7 +72,7 @@ Everything since 0.2.0.
   drivers in an included file or in `config.worktree` (and one whose name has an equals sign), `core.fsmonitor` and hooks for `worktree remove`, `status` and
   `branch -d`, hooks that the configuration names (git 2.54), and a promisor remote's `ext::` transport or `core.sshCommand` during the checkout of a partial
   clone. Every git command goes through one function that switches all of that off, the list of worktrees is read NUL-separated, and the commands that only read
-  stop after twenty seconds (a named pipe in `include.path` held them for ever). The Finder extension's runner script passes on only the shapes the extension sends,
+  stop after twenty seconds (a named pipe in `include.path` held them for ever); a repository with a conditional include of its own (`includeIf`) gets no worktree. The Finder extension's runner script passes on only the shapes the extension sends,
   so a compromised extension cannot start an agent with its prompts off or with a prompt of its own (ADR 0016).
 - `rh doctor --report`, for a public issue, held what the config says (an agent's command, an app's name, the text of an error, the sync folder). It now holds none of it
   and says what it holds; its block closes whatever a crash report's name holds. `rh setup` and `rh doctor` fence what the config names in every sentence an AI agent

@@ -49,6 +49,11 @@ the guards):
 | `worktree remove` | the same, from the `git status` it runs inside the worktree with that worktree's configuration (`config.worktree`) |
 | `branch -d` | `reference-transaction` |
 
+A conditional include (`includeIf "onbranch:rh/**"`, `includeIf "gitdir:..."`) in the repository's own configuration brings in a file only where its condition holds, and the new worktree has its
+own branch and git directory, so a filter or hook defined there cannot be looked for before the worktree exists (a review made `onbranch:rh/**` match the branch of the new worktree, and the
+filter and the hooks ran): such a repository gets no worktree (`WorktreeError.conditionalInclude`). A conditional include of the person's own configuration (an identity for a folder) is theirs and
+does not matter.
+
 Git 2.54 also runs a hook that is a command named in the configuration (`hook.<name>.event`, `hook.<name>.command`), and `core.hooksPath=/dev/null`
 does not stop it; `hook.<name>.enabled=false` does, for every name found in any file or scope.
 
