@@ -93,7 +93,7 @@ struct DoctorMessageTests {
         let check = DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer("3", "1", "0"), fix: .doctorFixRunSetup)
         let json = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(check)) as? [String: Any])
         #expect(json["id"] as? String == "services")
-        #expect(json["title"] as? String == "Finder Services")
+        #expect(json["title"] as? String == "Quick Actions")
         #expect(json["status"] as? String == "warn")
         let detail = try #require(json["detail"] as? [String: Any])
         #expect(detail["code"] as? String == "doctor.services.differ")

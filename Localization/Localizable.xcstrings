@@ -5030,181 +5030,181 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "خدمات Finder"
+            "value": "الإجراءات السريعة"
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder সার্ভিস"
+            "value": "Quick Actions"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder-Dienste"
+            "value": "Schnellaktionen"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Υπηρεσίες του Finder"
+            "value": "Γρήγορες ενέργειες"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Finder Services"
+            "value": "Quick Actions"
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Servicios del Finder"
+            "value": "Acciones rápidas"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "سرویس‌های Finder"
+            "value": "‏Quick Actions"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Services du Finder"
+            "value": "Actions rapides"
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "שירותי Finder"
+            "value": "פעולות מהירות"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder सेवाएँ"
+            "value": "Quick Actions"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Layanan Finder"
+            "value": "Tindakan Cepat"
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Servizi del Finder"
+            "value": "Azioni rapide"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder のサービス"
+            "value": "クイックアクション"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder 서비스"
+            "value": "빠른 동작"
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder Services"
+            "value": "Quick Actions"
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Perkhidmatan Finder"
+            "value": "Tindakan Pantas"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder-voorzieningen"
+            "value": "Snelle acties"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Usługi Findera"
+            "value": "Szybkie czynności"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Serviços do Finder"
+            "value": "Ações Rápidas"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Servicii Finder"
+            "value": "Acțiuni rapide"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Службы Finder"
+            "value": "Быстрые действия"
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder சேவைகள்"
+            "value": "Quick Actions"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder సేవలు"
+            "value": "Quick Actions"
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "บริการของ Finder"
+            "value": "การดำเนินการด่วน"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder Servisleri"
+            "value": "Hızlı Eylemler"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Служби Finder"
+            "value": "Швидкі дії"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Finder سروسز"
+            "value": "‏Quick Actions"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Dịch vụ của Finder"
+            "value": "Thao tác nhanh"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "访达服务"
+            "value": "快速操作"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder 服務"
+            "value": "快速動作"
           }
         }
       }

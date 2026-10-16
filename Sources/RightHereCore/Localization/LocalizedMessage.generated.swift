@@ -55,7 +55,7 @@ extension LocalizedMessage {
     public static var appCheckMenu: LocalizedMessage { LocalizedMessage(.appCheckMenu) }
     /// Finder runner script
     public static var appCheckRunner: LocalizedMessage { LocalizedMessage(.appCheckRunner) }
-    /// Finder Services
+    /// Quick Actions
     public static var appCheckServices: LocalizedMessage { LocalizedMessage(.appCheckServices) }
     /// Config sync
     public static var appCheckSync: LocalizedMessage { LocalizedMessage(.appCheckSync) }
