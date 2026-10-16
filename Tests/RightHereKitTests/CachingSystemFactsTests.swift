@@ -19,6 +19,16 @@ struct CachingSystemFactsTests {
         #expect(copied.unicodeScalars.contains("\u{e9}") && !copied.unicodeScalars.contains("\u{301}"), "Copy Path from the extension decomposed the name: \(copied)")
     }
 
+    @Test func theTableOfFoldersStaysBoundedForAProcessThatNeverQuits() {
+        let cached = CachingSystemFacts(base: FakeSystemFacts(directories: ["/Volumes/Work/proj"]))
+        for number in 0..<(CachingSystemFacts.maxDirectories * 3) {
+            _ = cached.isDirectory(URL(fileURLWithPath: "/Volumes/Work/folder-\(number)"))
+        }
+        #expect(cached.cachedDirectoryCountForTesting <= CachingSystemFacts.maxDirectories)
+        #expect(cached.cachedDirectoryCountForTesting > 0)
+        #expect(cached.isDirectory(URL(fileURLWithPath: "/Volumes/Work/proj")) == true, "an answer is still given after the table was emptied")
+    }
+
     @Test func everyFactComesFromTheWrappedFacts() {
         let folder = URL(fileURLWithPath: "/Volumes/Work/proj")
         let facts = FakeSystemFacts(

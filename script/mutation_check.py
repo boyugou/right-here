@@ -377,6 +377,8 @@ MUTANTS = [
      'Array(folders(in: table, key: "recents").prefix(maxRecents))', 'folders(in: table, key: "recents")'),
     ("the MCP tool makes worktrees without the launch budget", "Sources/RightHereMCP/Tools.swift",
      "switch await server.launchLimiter.allow(cost: LaunchCost.worktree) {", "switch await server.launchLimiter.allow(cost: 0) {"),
+    ("the extension remembers every folder it was ever asked about", "Sources/RightHereKit/CachingSystemFacts.swift",
+     "if cache.count >= Self.maxDirectories {\n                cache = cache.filter", "if false {\n                cache = cache.filter"),
 ]
 
 

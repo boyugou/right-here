@@ -23,14 +23,26 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
     public var homeDirectory: URL { base.homeDirectory }
     public var currentDirectory: URL { base.currentDirectory }
     public var loginShell: String { base.loginShell }
+    /// The folders remembered at most. The key is a path from the Finder and the extension stays loaded for as long as the Mac is on
+    /// (ADR 0015), so without a bound the table would grow with every folder the person ever right-clicked.
+    static let maxDirectories = 512
+    var cachedDirectoryCountForTesting: Int { directories.withLock { $0.count } }
+
     public func isDirectory(_ url: URL) -> Bool? {
         let key = url.path
         let now = Date()
-        if let cached = directories.withLock({ $0[key] }), now.timeIntervalSince(cached.stored) < min(lifetime, 30) {
+        let directoryLifetime = min(lifetime, 30)
+        if let cached = directories.withLock({ $0[key] }), now.timeIntervalSince(cached.stored) < directoryLifetime {
             return cached.isDir
         }
         let isDir = base.isDirectory(url)
-        directories.withLock { $0[key] = (isDir, now) }
+        directories.withLock { cache in
+            if cache.count >= Self.maxDirectories {
+                cache = cache.filter { now.timeIntervalSince($0.value.stored) < directoryLifetime }
+                if cache.count >= Self.maxDirectories { cache.removeAll() }
+            }
+            cache[key] = (isDir, now)
+        }
         return isDir
     }
     public func fileExists(_ url: URL) -> Bool { base.fileExists(url) }
