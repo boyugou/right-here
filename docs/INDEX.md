@@ -21,6 +21,7 @@
   - [0016 Agents that skip their permission prompts, and isolated git worktrees](decisions/0016-agent-permissions-and-worktrees.md)
   - [0017 The setup window has six sections](decisions/0017-setup-window-sections.md)
   - [0018 One setup command, a playbook for AI agents, and cold agents as the test](decisions/0018-setup.md)
+  - [0019 The Finder extension does not override the directory-observing methods](decisions/0019-no-swift-override-of-directory-observing.md)
 - [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
