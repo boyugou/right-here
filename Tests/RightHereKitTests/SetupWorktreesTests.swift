@@ -102,6 +102,21 @@ struct WorktreeRowsTests {
         #expect(!hotfix.canBeRemoved)
     }
 
+    @Test func aBranchNameThatTurnsTheTextAroundOrDrawsNothingIsWrittenAsEscapesInTheWindow() throws {
+        // Git accepts these in a branch name (it refuses control characters below U+0020, DEL and a few punctuation marks); after U+202E the rest is drawn backwards.
+        let forged = "feature/\u{202E}exe.doc"
+        let tagged = "main" + String(UnicodeScalar(0xE0041)!)
+        let entries = [
+            WorktreeEntry(path: "/work/app", head: "a", branch: "main"), WorktreeEntry(path: "/work/app/.right-here/worktrees/x", head: "b", branch: forged),
+            WorktreeEntry(path: "/work/y", head: "c", branch: tagged), WorktreeEntry(path: "/work/z", head: "d", branch: nil, isDetached: true),
+            WorktreeEntry(path: "/work/w", head: "e", branch: "fix/größe-שלום")
+        ]
+        let titles = WorktreeBrowser.rows(entries, in: root).map(\.branchTitle)
+        #expect(titles == ["main", "feature/\\u202eexe.doc", "main\\udb40\\udc41", nil, "fix/größe-שלום"])
+        // What removal and the actions use is not touched.
+        #expect(WorktreeBrowser.rows(entries, in: root)[1].entry.branch == forged)
+    }
+
     @Test func aRowKeepsWhatGitSaid() {
         let detached = rows()[4]
         #expect(detached.entry.isDetached)

@@ -12,6 +12,10 @@ public struct WorktreeRow: Sendable, Equatable, Identifiable {
 
     public var id: String { entry.path }
 
+    /// The branch as the window writes it. A name that git accepts can hold characters that draw nothing or turn the text after them around
+    /// (U+202E), so that one branch reads as another; those are shown as escapes. The branch itself, which removal and the actions use, is `entry.branch`.
+    public var branchTitle: String? { entry.branch?.withControlCharactersEscaped }
+
     public init(entry: WorktreeEntry, isMainWorkingCopy: Bool, canBeRemoved: Bool) {
         self.entry = entry
         self.isMainWorkingCopy = isMainWorkingCopy

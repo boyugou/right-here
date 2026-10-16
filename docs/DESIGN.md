@@ -307,7 +307,7 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    characters that spell ASCII, the zero-width space, the byte order mark, a joiner that joins nothing, a run of variation selectors:
    a name that shows as `report.txt` must not carry a sentence for an agent), and the log is private and capped. The values of every
    English sentence the doctor says (on the command line, in `--json` and in the MCP tool) are escaped the same way, whoever builds the sentence,
-   and so is every line `rh` prints (line feeds and tabs stay) and every JSON it prints (as JSON escapes, which read back as the same text). So does what a
+   and so is every line `rh` prints (line feeds and tabs stay) and every JSON it prints (as JSON escapes, which read back as the same text), and the branch names that the setup window lists for a repository's worktrees (git accepts U+202E in one). So does what a
    config problem quotes from the config (a key, a value, an id): `ConfigDiagnostic` stores its text escaped, since a
    config can arrive from the sync folder and an escape sequence in a key name must not act on a terminal. The names
    and titles a config gives to apps, agents, templates, variants and presets are refused when they hold a control

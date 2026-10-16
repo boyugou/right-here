@@ -674,7 +674,7 @@ struct WorktreeLine: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    Text(verbatim: row.entry.branch ?? l10n.string(.appWorktreeDetached))
+                    Text(verbatim: row.branchTitle ?? l10n.string(.appWorktreeDetached))
                         .font(.body.weight(.semibold))
                         .lineLimit(1)
                     if row.isMainWorkingCopy {
