@@ -6,6 +6,14 @@
 
 Everything since 0.2.0. The repository and these downloads are private for now: you need access to see the Releases page.
 
+### Highlights
+
+- **Set it up in one step.** `rh setup`, or the app's first run (press Set Up), makes the config from what is installed, connects Finder and says what is left for you;
+  or hand it to your AI assistant: **Copy Setup Prompt for AI** in the app, or `rh docs agent-setup`.
+- **If 0.2.0 gave you trouble:** the setup window no longer says `~/.local/bin` is missing from your PATH when your terminal has it, and the Finder extension no longer
+  overrides the methods that crashed on macOS 26.5.1 (not yet confirmed there; `rh doctor` now tells you if it still crashes).
+- **Agents in isolated git worktrees**, pinned and recent folders, six more built-in agents, and many hardening fixes from two independent reviews.
+
 ### Added
 
 - `rh setup` puts everything in place in one command and can be run again at any time: the config file, the runner script, the `rh` link, the
