@@ -101,12 +101,17 @@ public enum ConfigEdits {
         let disabled = tree.compactMap { value -> String? in if case .string(let id) = value { return id } else { return nil } }
         let off = ids.filter(disabled.contains)
         guard !off.isEmpty else { return nil }
-        let value = "[" + disabled.filter { !off.contains($0) }.map(quoted).joined(separator: ", ") + "]"
+        // What the file holds is its text, which can have come through the sync folder: the ids that stay are shown with control and invisible characters as escapes,
+        // and the sentence fences them (and the list as it stands) when one is not an id, as `change` does for the text it quotes (ADR 0020).
+        let kept = disabled.filter { !off.contains($0) }
+        let value = "[" + kept.map { quoted($0.withControlCharactersEscaped) }.joined(separator: ", ") + "]"
+        let shownValue = kept.allSatisfy(IDRule.isValid) ? value : Fence.wrap(value)
+        let shownCurrent = current.split(separator: "\n", omittingEmptySubsequences: false).map { String($0).withControlCharactersEscaped }.joined(separator: "\n")
         let line = outline.lines["disabled"]
         let located = line.map { " on line \($0)" } ?? ""
         let names = off.joined(separator: ", ")
-        let what = current.contains("\n") ? "change the list that starts there (it runs over several lines) to disabled = \(value)" : "change disabled = \(current) to disabled = \(value)"
-        return ConfigEdit(file: file.name, key: "disabled", kind: .change, line: line, current: current, value: value,
+        let what = current.contains("\n") ? "change the list that starts there (it runs over several lines) to disabled = \(shownValue)" : "change disabled = \(Fence.wrap(shownCurrent)) to disabled = \(shownValue)"
+        return ConfigEdit(file: file.name, key: "disabled", kind: .change, line: line, current: shownCurrent, value: value,
                           instruction: "In \(file.name)\(located), \(what): the list turns \(names) off on this Mac, so the setting in the other file does not reach it here.")
     }
 
