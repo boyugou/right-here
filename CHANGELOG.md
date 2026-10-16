@@ -42,6 +42,23 @@ Everything since 0.2.0.
 
 ### Fixed
 
+- `rh setup` and a config it cannot use: a config that does not parse, cannot be read, or is a link to a file that is not there made setup say
+  "ok" (the edits were worked out from the defaults, the Quick Actions were made from them, and the person's choices were dropped). The config
+  step now fails and names the file and the line, no edits are listed and no Quick Actions are made, the other steps run, the status is 1, and
+  the report tells an AI agent to leave it to the person (or to let the agent make the smallest edit that makes it parse).
+- `rh setup --dry-run --json` said `created` and "created (...)" for what it only planned; a step's outcome in a dry run is `would-create`,
+  `would-update` or `would-fail`, and its text is the dry-run wording.
+- The edits `rh setup` lists for an existing config work when they are made to the letter: a `[general]` written inline is changed in place (it
+  was said to lack keys it has), a file without a `[general]` table gets one edit for the whole table (three edits made three tables, which is a
+  syntax error that threw the whole config away), and a setting that a `disabled` list in `config.local.toml` turns off is traced to that list.
+- Two setups at once (the setup window and a terminal, or an AI agent's) took away each other's Quick Actions and one of them failed: setups take
+  turns now, and each Quick Action is replaced in one step (ADR 0021). Twenty `rh pin` at once kept twelve; the state file is changed in one step.
+- An empty `RH_HOME`, `RH_CONFIG`, `RH_CONFIG_DIR` or `RH_LOG_DIR` is refused (status 64) and no longer means "not set": `RH_HOME=$TRIAL rh setup`
+  with `$TRIAL` unset was a setup of the real home, and `rh uninstall` took the same value for a trial and removed the real home's files.
+- `rh worktree list|add|remove` and `rh run --worktree` refuse a folder that does not exist and name it (a typo was replaced by the repository
+  around it, and `rh worktree add --folder <typo>` made a worktree and a branch); a misspelt subcommand that is taken for a folder says so
+  (`Did you mean "rh worktree add"?`).
+- The setup window shows the edits that apply what the person chose when a config was there already, and the report's warnings; it showed neither.
 - Finder extension: on macOS 26.5.1 it crashed each time Finder asked it to watch a folder, so the context menu showed none of its entries while
   every doctor check passed. It no longer overrides the directory-observing methods, which did nothing (ADR 0019); that this fixes it has not yet
   been confirmed on 26.5.1.

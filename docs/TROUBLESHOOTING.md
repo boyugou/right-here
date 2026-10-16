@@ -27,6 +27,22 @@ throwaway terminal window.
   registration is by that path, so once the image is ejected or the file is moved, the path it names no longer exists. Move
   Right Here.app to Applications and run `rh install --finder` from there.
 
+## `rh setup` fails on my config file
+
+`rh setup` never rewrites a config. When the file is there and cannot be used, the config step fails and names the file and the line:
+the text is not TOML (a table header that is never closed, a value that is not quoted), the file cannot be read (permissions, too large,
+not UTF-8), or `config.toml` (or `config.local.toml`) is a link to a file that is not there, as a dotfiles manager makes before its
+repository is cloned. No Quick Actions are made from it and no edits are listed for it, the other steps still run, and the status is 1.
+Fix the line (`rh config validate` says what is wrong), or restore the file the link points to, and run `rh setup` again. To start the
+config over, `rh setup --force` saves the old file next to it first.
+
+## `rh setup` says another setup is running
+
+Setups take turns, so that the setup window, `rh setup` in a terminal and an AI agent's setup cannot undo each other's Quick Actions. A
+second one waits for the first and then finds everything in place; after two minutes it stops with this message. Wait for the other one
+to finish (the setup window shows its progress), or end it, and run `rh setup` again. The lock is `.setup.lock` in the config folder;
+it is let go when its holder ends, so there is nothing to delete.
+
 ## An entry I expect is missing from the menu
 
 `rh menu --container <folder> --explain` prints the menu and then what it leaves out or changes, each with its reason:

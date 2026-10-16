@@ -20,7 +20,7 @@ when there is none (`SIGN_IDENTITY` overrides). It does not notarize.
 
 `rh setup` is the one command that puts everything in place, and it can be run again at any time: it creates the config from
 what it finds (or from `--terminal`, `--editor` and `--agents`; an existing config is never rewritten), writes the runner
-script, links `rh` into `~/.local/bin`, makes the Quick Actions, registers and enables the Finder extension, and ends with the
+script, links `rh` into `~/.local/bin`, makes the Quick Actions, registers the Finder extension and asks macOS to use it, and ends with the
 checks of `rh doctor` and what only you can do (switching the extension on in System Settings). `rh setup --dry-run` shows
 what it would do. `rh install --finder` (or `--scripts`, `--cli`, `--services`) redoes one piece; `rh uninstall` removes it all
 (the config stays). The setup window runs the same code: with no config file it offers the choice of terminal, editor and
@@ -38,9 +38,11 @@ agents first.
 - Try a setup without touching your own: `RH_HOME=/tmp/trial rh setup` writes the config,
   runner script, command link and Services under that folder (the Finder extension's registration is
   system-wide, so a trial leaves it alone). `rh uninstall` under the same `RH_HOME` undoes it. `rh doctor` under it says
-  so on standard error, since its rows mix that home's files with the real extension registration.
+  so on standard error, since its rows mix that home's files with the real extension registration. An empty `RH_HOME` (or
+  `RH_CONFIG`, `RH_CONFIG_DIR`, `RH_LOG_DIR`) is refused with status 64, because it is what `RH_HOME=$TRIAL rh setup` becomes when
+  `$TRIAL` is not set, and "not set" would be your real home.
 - Changed setup, its report, a sentence of the doctor or the agent playbook (`docs/AGENT_SETUP.md`)? Run the cold-agent
-  evaluation (`docs/development/SETUP_EVALUATION.md`): fresh AI agents set Right Here up for three personas in a sandbox that cannot
+  evaluation (`docs/development/SETUP_EVALUATION.md`): fresh AI agents set Right Here up for four personas in a sandbox that cannot
   touch your Mac.
 - Test an action without side effects with `rh run <id> --dry-run`.
 - Point a command at a throwaway config with `RH_CONFIG_DIR=/tmp/x`.

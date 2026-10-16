@@ -24,13 +24,31 @@ struct WorktreeCommand: AsyncParsableCommand {
     )
 }
 
+/// The repository that holds the folder a worktree command was given, or the current folder when it was given none.
+enum WorktreeTarget {
+    static func gitRoot(_ folder: String?, facts: any SystemFacts) throws -> URL {
+        let target = folder.map { URL(fileURLWithPath: $0) } ?? facts.currentDirectory
+        // A folder that is not there is a typo, and a typo is reported and never replaced by the repository around it (docs/DESIGN.md, 9.0).
+        // `rh worktree ad` is the folder "ad" of `rh worktree list`, so a word like a subcommand's name is said to be a likely mistake.
+        if let folder, facts.itemState(target) == .missing {
+            let names = WorktreeCommand.configuration.subcommands.map { $0._commandName }
+            let hint = InvocationCheck.subcommandHint(for: folder, of: "worktree", in: names).map { " " + $0 } ?? ""
+            throw Output.fail("error: \(target.path.withControlCharactersEscaped) does not exist." + hint)
+        }
+        guard let root = facts.gitRoot(containing: target) else {
+            throw ValidationError("Not inside a git repository.")
+        }
+        return root
+    }
+}
+
 struct WorktreeList: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "list",
         abstract: "List active git worktrees."
     )
 
-    @Argument(help: "Folder within the git repository (default: current directory).")
+    @Argument(help: "Folder within the git repository (default: current directory). One that does not exist is refused.")
     var folder: String?
 
     @Flag(help: "Print output as JSON.")
@@ -38,10 +56,7 @@ struct WorktreeList: AsyncParsableCommand {
 
     func run() async throws {
         let runtime = Runtime()
-        let targetURL = folder.map { URL(fileURLWithPath: $0) } ?? runtime.facts.currentDirectory
-        guard let root = runtime.facts.gitRoot(containing: targetURL) else {
-            throw ValidationError("Not inside a git repository.")
-        }
+        let root = try WorktreeTarget.gitRoot(folder, facts: runtime.facts)
         let list = try await GitWorktreeManager.listWorktrees(in: root)
         if json {
             try Output.json(list)
@@ -70,7 +85,7 @@ struct WorktreeAdd: AsyncParsableCommand {
     @Argument(help: "Branch name to create or attach to.")
     var branch: String
 
-    @Option(name: .customLong("folder"), help: "Folder within the git repository (default: current directory).")
+    @Option(name: .customLong("folder"), help: "Folder within the git repository (default: current directory). One that does not exist is refused.")
     var folder: String?
 
     @Flag(help: "Print output as JSON.")
@@ -78,10 +93,7 @@ struct WorktreeAdd: AsyncParsableCommand {
 
     func run() async throws {
         let runtime = Runtime()
-        let targetURL = folder.map { URL(fileURLWithPath: $0) } ?? runtime.facts.currentDirectory
-        guard let root = runtime.facts.gitRoot(containing: targetURL) else {
-            throw ValidationError("Not inside a git repository.")
-        }
+        let root = try WorktreeTarget.gitRoot(folder, facts: runtime.facts)
         let result = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch)
         if json {
             try Output.json(result)
@@ -105,7 +117,7 @@ struct WorktreeRemove: AsyncParsableCommand {
     @Argument(help: "Worktree path, branch name or folder name to remove.")
     var target: String
 
-    @Option(name: .customLong("folder"), help: "Folder within the git repository (default: current directory).")
+    @Option(name: .customLong("folder"), help: "Folder within the git repository (default: current directory). One that does not exist is refused.")
     var folder: String?
 
     @Flag(name: .customLong("delete-branch"), help: "Also delete the branch after removing the worktree (only when it is fully merged).")
@@ -116,10 +128,7 @@ struct WorktreeRemove: AsyncParsableCommand {
 
     func run() async throws {
         let runtime = Runtime()
-        let targetURL = folder.map { URL(fileURLWithPath: $0) } ?? runtime.facts.currentDirectory
-        guard let root = runtime.facts.gitRoot(containing: targetURL) else {
-            throw ValidationError("Not inside a git repository.")
-        }
+        let root = try WorktreeTarget.gitRoot(folder, facts: runtime.facts)
         let removal = try await GitWorktreeManager.removeWorktree(worktreePath: target, gitRoot: root, deleteBranch: deleteBranch, force: force)
         Output.print("Removed worktree at \(removal.path.withControlCharactersEscaped)")
         if removal.branchDeleted { Output.print("Deleted its branch.") }

@@ -456,6 +456,17 @@ struct MCPToolTests {
         #expect(worktrees.first?["branch"]?.stringValue == "main")
     }
 
+    @Test("the worktree tool names a path that is not there, for every operation, and starts nothing", arguments: ["list", "create", "remove"])
+    func worktreeToolRefusesAPathThatIsNotThere(operation: String) async throws {
+        // `path` is the folder in the repository: a typo used to be replaced by the repository around it, and `create` made a worktree there.
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let result = try await harness.call("right_here_worktree", ["operation": .string(operation), "path": .string("/Users/tester/code/app/typo"), "worktree_path": .string("feature")])
+        #expect(result["isError"]?.boolValue == true)
+        #expect((result["content"]?.arrayValue?.first?["text"]?.stringValue ?? "").contains("/Users/tester/code/app/typo"), "\(result)")
+        #expect((result["content"]?.arrayValue?.first?["text"]?.stringValue ?? "").contains("does not exist"), "\(result)")
+        #expect(harness.runner.recorded.isEmpty, "git was started for a folder that is not there")
+    }
+
     @Test func worktreeToolWillNotRemoveAWorktreeRightHereDidNotCreate() async throws {
         let porcelain = porcelainZ("""
         worktree /Users/tester/code/app

@@ -9,6 +9,7 @@
 #   ./script/preview_setup.sh out.png en --onboarding       the first-run card, as when the Finder extension is off
 #   ./script/preview_setup.sh out.png en --first-run        the very first run: no config file yet, the choice of terminal, editor and agents
 #   ./script/preview_setup.sh out.png en --set-up           just after the first setup: what it did, and the Finder extension still to switch on
+#   ./script/preview_setup.sh out.png en --picks-not-applied  after a setup that kept a config that was there: the choices it could not apply, with the edits, and a warning
 #   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
 #   ./script/preview_setup.sh out.png en --demo --tab folders
 #   ./script/preview_setup.sh out.png en --demo --submenus  the Finder menu with every submenu open
@@ -28,7 +29,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--set-up] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -43,7 +44,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       TAB="${args[$i]:?preview_setup.sh: --tab needs a section}"
       ;;
     --details) TAB="checks" ;;
-    --dark | --onboarding | --first-run | --set-up | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
+    --dark | --onboarding | --first-run | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -237,6 +238,23 @@ func demoSetupReport() -> SetupReport {
     ])
 }
 
+/// A setup that found a config that was there: it was kept, the choices could not be applied, and what would apply them is listed.
+func demoKeptConfigReport() -> SetupReport {
+    let kept = "# My own notes.\nversion = 1\n\n[general]\nterminal = \"ghostty\"\neditor = \"vscode\"\nagents = [\"claude\"]\n"
+    return SetupReport(
+        steps: [
+            SetupStep(.config, .unchanged, detail: .doctorVerbatim("~/.config/right-here/config.toml; it is yours, so setup never rewrites it")),
+            SetupStep(.runnerScript, .unchanged, detail: .doctorVerbatim("~/Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run")),
+            SetupStep(.cliLink, .unchanged, detail: .doctorVerbatim("~/.local/bin/rh")),
+            SetupStep(.services, .unchanged, detail: .doctorServicesOk("7")),
+            SetupStep(.finderExtension, .unchanged, detail: .doctorVerbatim("\(appContents)/PlugIns/FinderExtension.appex"))
+        ],
+        configEdits: ConfigEdits.needed(for: SetupChoices(agents: ["claude", "codex"]), config: ConfigParser.parse(kept).config, base: kept, local: nil),
+        warnings: [
+            "config.toml already exists, so Right Here left it alone and did not apply your choices. The edits that would make it say so are listed above (and in configEdits with --json)."
+        ])
+}
+
 /// The folders of the demo: pinned and recent, and the repository they are in.
 let demoPins = ["\(demoHome)/Projects/app", "\(demoHome)/Projects/notes", "\(demoHome)/مستندات/مشروع"]
 let demoRecents = ["\(demoHome)/Projects/web", "\(demoHome)/Downloads", "\(demoHome)/Projects/app/Sources"]
@@ -364,7 +382,7 @@ func render(to path: String) async {
     } else if flag("--first-run") {
         model.simulate(SetupSnapshot(checks: firstRunChecks(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
                                      configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: .overview)
-    } else if flag("--demo") || flag("--set-up") {
+    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") {
         let facts = demoFacts()
         model.simulate(demoSnapshot(facts), tab: tab, icons: IconProvider(facts: facts), worktrees: await demoWorktrees(), repository: demoRepository)
     } else {
@@ -374,6 +392,7 @@ func render(to path: String) async {
     }
     if flag("--onboarding") || flag("--set-up") { model.simulateExtensionOff() }
     if flag("--set-up") { model.simulate(setupReport: demoSetupReport()) }
+    if flag("--picks-not-applied") { model.simulate(setupReport: demoKeptConfigReport()) }
     if flag("--submenus") { model.simulate(openSubmenus: allSubmenus(model.snapshot?.menu ?? [])) }
     // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.
     let language = Locale.preferredLanguages.first ?? "en"

@@ -153,7 +153,7 @@ struct TOMLOutline {
                 var next = skipSpaces(key.end)
                 guard next < bytes.count, bytes[next] == UInt8(ascii: "=") else { return }
                 next = skipSpaces(next + 1)
-                guard let end = scanValue(next, depth: 0) else { return }
+                guard let end = scanValue(next, depth: 0, path: table + key.segments) else { return }
                 record(table + key.segments, at: start, value: next..<end)
                 index = skipSpaces(end)
                 guard isLineEnd(index) else { return }
@@ -236,17 +236,19 @@ struct TOMLOutline {
     }
 
     /// One value, which may be an array or an inline table of more values: where it ends. `nil` when it cannot be followed
-    /// (the library says why), or when it is not closed, which is recorded as the problem.
-    private mutating func scanValue(_ start: Int, depth: Int, inside noun: String? = nil) -> Int? {
+    /// (the library says why), or when it is not closed, which is recorded as the problem. `path` is where the value is when it is
+    /// the value of a key, so that the keys of an inline table are known as the keys of a table (`general = { terminal = "x" }` has
+    /// `general.terminal`); a table inside an array has none.
+    private mutating func scanValue(_ start: Int, depth: Int, inside noun: String? = nil, path: [String]? = nil) -> Int? {
         guard start < bytes.count, depth <= ConfigParser.maxNesting else { return nil }
         switch bytes[start] {
         case UInt8(ascii: "\""), UInt8(ascii: "'"):
             let string = TOMLScan.skipString(bytes, at: start)
             return string.terminated ? string.end : nil
         case UInt8(ascii: "["):
-            return scanContainer(start, depth: depth, close: UInt8(ascii: "]"))
+            return scanContainer(start, depth: depth, close: UInt8(ascii: "]"), path: nil)
         case UInt8(ascii: "{"):
-            return scanContainer(start, depth: depth, close: UInt8(ascii: "}"))
+            return scanContainer(start, depth: depth, close: UInt8(ascii: "}"), path: path)
         default:
             // A number, a date, a boolean, or text that is none of those: up to what ends a value.
             var end = start
@@ -265,7 +267,7 @@ struct TOMLOutline {
 
     /// An array (`close` is `]`) or an inline table (`}`): items separated by commas, with line breaks and comments allowed
     /// between them. The mistakes found here are the ones the library reports as an "internal error" at some other place.
-    private mutating func scanContainer(_ start: Int, depth: Int, close: UInt8) -> Int? {
+    private mutating func scanContainer(_ start: Int, depth: Int, close: UInt8, path: [String]?) -> Int? {
         let isArray = close == UInt8(ascii: "]")
         let noun = isArray ? "array" : "inline table"
         let closer = isArray ? "]" : "}"
@@ -299,14 +301,20 @@ struct TOMLOutline {
                 }
                 return nil
             }
+            var entry: (segments: [String], start: Int)?
             if !isArray {
                 // `key = value`
+                let keyStart = index
                 guard let key = readKey(at: index) else { return nil }
                 let equals = skipSpaces(key.end)
                 guard equals < bytes.count, bytes[equals] == UInt8(ascii: "=") else { return nil }
                 index = skipSpaces(equals + 1)
+                entry = (key.segments, keyStart)
             }
-            guard let end = scanValue(index, depth: depth + 1, inside: noun) else { return nil }
+            let valueStart = index
+            let entryPath = path.flatMap { path in entry.map { path + $0.segments } }
+            guard let end = scanValue(index, depth: depth + 1, inside: noun, path: entryPath) else { return nil }
+            if let entryPath, let entry { record(entryPath, at: entry.start, value: valueStart..<end) }
             lastItemEnd = end - 1
             wantsItem = false
             index = end

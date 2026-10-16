@@ -57,6 +57,7 @@ public struct SetupRunner: Sendable {
     private let systemWide: Bool
     private let localizer: Localizer
     private let settle: Duration
+    private let lockTimeout: Duration
 
     /// - Parameters:
     ///   - rhPath: The `rh` that the runner script and the Quick Actions run: the one inside Right Here.app for the app, the running
@@ -64,8 +65,11 @@ public struct SetupRunner: Sendable {
     ///   - app: The Right Here.app that has the Finder extension: the one that holds `rhPath`, or the installed one; `nil` when there is none.
     ///   - trialHome: The folder `RH_HOME` names, when it is set.
     ///   - systemWide: Whether what is registered for the whole Mac may be changed. By default, when there is no trial home.
+    ///   - lockTimeout: How long a setup waits for another one that is running (the setup window, `rh setup` in a terminal, an AI agent's)
+    ///     before it gives up. A full run takes seconds: the extension is registered and given three to settle, and the doctor starts the login shell.
     public init(facts: any SystemFacts = LiveSystemFacts(), paths: RHPaths? = nil, runner: any ProcessRunner = LiveProcessRunner(), rhPath: String, app: URL?,
-                trialHome: URL? = LiveSystemFacts.homeOverride, systemWide: Bool? = nil, localizer: Localizer = .system, settle: Duration = .seconds(3)) {
+                trialHome: URL? = LiveSystemFacts.homeOverride, systemWide: Bool? = nil, localizer: Localizer = .system, settle: Duration = .seconds(3),
+                lockTimeout: Duration = .seconds(120)) {
         self.facts = facts
         self.paths = paths ?? RHPaths.current(facts: facts)
         self.runner = runner
@@ -75,37 +79,50 @@ public struct SetupRunner: Sendable {
         self.systemWide = systemWide ?? (trialHome == nil)
         self.localizer = localizer
         self.settle = settle
+        self.lockTimeout = lockTimeout
     }
 
     public func run(_ request: SetupRequest) async throws -> SetupReport {
         // The runner script and the Services would point into a folder that disappears when the app quits.
         if InstallError.isTranslocated(rhPath) { throw InstallError.translocated }
+        // One setup at a time: a second one waits its turn and then finds everything in place, which it says. A dry run writes nothing, so
+        // it neither waits nor makes the lock file (and the folder of it).
+        var turn: FileLock?
+        if !request.dryRun {
+            do { turn = try await FileLock.acquire(paths.setupLockFile, timeout: lockTimeout) } catch is FileLock.Busy { throw InstallError.anotherSetupIsRunning }
+        }
+        defer { turn?.release() }
         let installer = Installer(home: facts.homeDirectory)
         var report = SetupReport(dryRun: request.dryRun, trialHome: trialHome?.path)
 
         // What a dry run would have written: the Quick Actions of the plan are counted from it, not from a file that is not there yet.
-        var planned: Config?
+        var planned: ConfigLoadResult?
         for piece in SetupPiece.allCases where request.pieces.contains(piece) {
             switch piece {
             case .config: planned = await configStep(request, into: &report)
             case .runnerScript: report.steps.append(runnerScriptStep(installer, dryRun: request.dryRun))
             case .cliLink: report.steps.append(cliLinkStep(installer, dryRun: request.dryRun))
-            case .services: report.steps.append(await servicesStep(installer, dryRun: request.dryRun, planned: planned))
+            case .services:
+                report.steps.append(await servicesStep(installer, dryRun: request.dryRun, planned: planned, configReported: report.step(.config)?.outcome == .failed))
             case .finderExtension: report.steps.append(await finderExtensionStep(strict: request.strict, dryRun: request.dryRun))
             }
         }
 
         let loaded = ConfigStore.load(paths: paths)
+        // A config that cannot be used is the first thing left for the person, and nothing is derived from it: what the config says would be
+        // the defaults, which is not what the person has.
+        let problem = request.pieces.isDisjoint(with: [.config, .services]) ? nil : ConfigProblem(planned ?? loaded.result, paths: paths)
+        if let problem { report.needsUser.append(SetupAdvice.configNeed(problem, command: request.englishCommand)) }
         if request.checkup, !request.dryRun {
             var rows = await Doctor(facts: facts, paths: paths, loaded: loaded, runner: runner, rhPath: rhPath).run()
             // What a trial says about the Finder extension is what this Mac says, not what the trial did.
             if !systemWide { rows.removeAll { $0.id == .finderExtension } }
             report.checks = rows
-            report.needsUser = SetupAdvice.needsUser(checks: rows, config: loaded.config, facts: facts)
+            report.needsUser += SetupAdvice.needsUser(checks: rows, config: problem == nil ? loaded.config : nil, facts: facts)
         }
         report.warnings += notes(editsPending: !report.configEdits.isEmpty)
         report.next = request.checkup ? SetupAdvice.next(configEdits: report.configEdits, needs: report.needsUser, checked: !request.dryRun,
-                                                         rerun: request.dryRun ? request.englishCommand : nil) : []
+                                                         rerun: request.dryRun ? request.englishCommand : nil, command: request.englishCommand) : []
         return report
     }
 
@@ -114,7 +131,7 @@ public struct SetupRunner: Sendable {
     private func notes(editsPending: Bool) -> [String] {
         var notes: [String] = []
         if let trialHome, !systemWide {
-            notes.append("RH_HOME is set, so this is a trial: the config, the runner script, the command link and the Quick Actions are under \(trialHome.path), and the Finder extension, which is registered for the whole Mac, was neither changed nor checked.")
+            notes.append("RH_HOME is set, so this is a trial: the config, the runner script, the command link and the Quick Actions are under \(trialHome.path), and the Finder extension, which is registered for the whole Mac, was neither changed nor checked. The commands under Next act on this trial only while RH_HOME is set for them too.")
         }
         if systemWide, HostApp.isBuildProduct(rhPath) {
             notes.append("This rh runs from a build folder (\(rhPath)), and the runner script and the Quick Actions now point at it: they stop working when that folder is cleaned. For a lasting setup run the rh inside Right Here.app (Right Here.app/Contents/Helpers/rh setup).")
@@ -132,23 +149,10 @@ public struct SetupRunner: Sendable {
     }
 
     /// - Returns: In a dry run that would write a config, the config it would write; otherwise `nil`, and what depends on the config reads the file.
-    private func configStep(_ request: SetupRequest, into report: inout SetupReport) async -> Config? {
+    private func configStep(_ request: SetupRequest, into report: inout SetupReport) async -> ConfigLoadResult? {
         let exists = entryExists(paths.configFile)
         if exists, !request.force {
-            let loaded = ConfigStore.load(paths: paths)
-            if let problem = loaded.fileProblem {
-                report.steps.append(SetupStep(.config, .unchanged, detail: .doctorVerbatim("\(paths.configFile.path) already exists but was not read (\(problem.message)); kept it as it is")))
-            } else {
-                report.steps.append(SetupStep(.config, .unchanged, detail: .doctorVerbatim("\(paths.configFile.path); it is yours, so setup never rewrites it")))
-            }
-            if !request.choices.isEmpty {
-                func text(_ file: URL) -> String? {
-                    if case .text(let text) = ConfigStore.text(of: file) { return text }
-                    return nil
-                }
-                report.configEdits = ConfigEdits.needed(for: request.choices, config: loaded.config, base: text(paths.configFile), local: text(paths.localConfigFile),
-                                                        baseName: paths.configFile.lastPathComponent, localName: paths.localConfigFile.lastPathComponent)
-            }
+            existingConfigStep(request, into: &report, madeJustNow: false)
             return nil
         }
 
@@ -171,9 +175,10 @@ public struct SetupRunner: Sendable {
             case .replaced(let backup):
                 report.steps.append(SetupStep(.config, .updated, detail: .doctorVerbatim("\(paths.configFile.path); the old file is saved as \(backup.path)")))
             case .kept:
-                // A config appeared between the check and the write (the setup window, or another terminal): it is the one that stays.
-                report.steps.append(SetupStep(.config, .unchanged, detail: .doctorVerbatim("\(paths.configFile.path) was made a moment ago by something else: it is kept")))
+                // A config appeared between the check and the write (the setup window, or another terminal): it is the one that stays, and
+                // it is read like any config that was there: what the person chose is not in it, so the edits are listed.
                 report.chosen = nil
+                existingConfigStep(request, into: &report, madeJustNow: true)
             }
         } catch {
             report.steps.append(SetupStep(.config, .failed, detail: .doctorVerbatim(error.localizedDescription)))
@@ -182,15 +187,34 @@ public struct SetupRunner: Sendable {
         return nil
     }
 
+    /// A config that is there is the person's, so setup never rewrites it. The step says whether it can be used at all (it fails when it
+    /// cannot, and nothing is computed from it), and otherwise what would make it say what was asked for.
+    private func existingConfigStep(_ request: SetupRequest, into report: inout SetupReport, madeJustNow: Bool) {
+        let loaded = ConfigStore.load(paths: paths)
+        if let problem = ConfigProblem(loaded.result, paths: paths) {
+            report.steps.append(SetupStep(.config, .failed, detail: .doctorVerbatim("\(problem.sentence), so setup left it as it is and made nothing from it")))
+            return
+        }
+        let detail = madeJustNow ? "\(paths.configFile.path) was made a moment ago by something else: it is kept" : "\(paths.configFile.path); it is yours, so setup never rewrites it"
+        report.steps.append(SetupStep(.config, .unchanged, detail: .doctorVerbatim(detail)))
+        guard !request.choices.isEmpty else { return }
+        func text(_ file: URL) -> String? {
+            if case .text(let text) = ConfigStore.text(of: file) { return text }
+            return nil
+        }
+        report.configEdits = ConfigEdits.needed(for: request.choices, config: loaded.config, base: text(paths.configFile), local: text(paths.localConfigFile),
+                                                baseName: paths.configFile.lastPathComponent, localName: paths.localConfigFile.lastPathComponent)
+    }
+
     /// The config that a run with these choices would create, with the per-machine overlay on top as it is read now.
-    private func plannedConfig(_ written: DetectedEnvironment) -> Config {
+    private func plannedConfig(_ written: DetectedEnvironment) -> ConfigLoadResult {
         let local: ConfigSource
         switch ConfigStore.text(of: paths.localConfigFile) {
         case .absent: local = .absent
         case .text(let text): local = .text(text)
         case .problem(let message): local = .unreadable(ConfigDiagnostic(severity: .error, path: "", message: message))
         }
-        return ConfigLayers.load(base: .text(ConfigTemplate.render(written)), local: local, overlayName: paths.localConfigFile.lastPathComponent).config
+        return ConfigLayers.load(base: .text(ConfigTemplate.render(written)), local: local, overlayName: paths.localConfigFile.lastPathComponent)
     }
 
     private func chosen(_ written: DetectedEnvironment, choices: SetupChoices) -> SetupReport.Chosen {
@@ -235,9 +259,19 @@ public struct SetupRunner: Sendable {
         }
     }
 
-    private func servicesStep(_ installer: Installer, dryRun: Bool, planned: Config?) async -> SetupStep {
+    private func servicesStep(_ installer: Installer, dryRun: Bool, planned: ConfigLoadResult?, configReported: Bool) async -> SetupStep {
         // The Services follow the config as it is now, which this very run may have just created, or, in a dry run, would create.
-        let config = planned ?? ConfigStore.load(paths: paths).config
+        let loaded = planned ?? ConfigStore.load(paths: paths).result
+        // Made from a config that cannot be used they would be the defaults', and they would replace the person's: the ones that are there stay.
+        // When the config step has said so already, this one is left out; when it has not (one piece asked for by name, or the per-machine
+        // overlay is what cannot be used), it is the step that cannot be done.
+        if let problem = ConfigProblem(loaded, paths: paths) {
+            if configReported {
+                return SetupStep(.services, .skipped, detail: .doctorVerbatim("they are made from the config, which cannot be used (see the config file above); the ones that are there were left as they are"))
+            }
+            return SetupStep(.services, .failed, detail: .doctorVerbatim("they are made from the config, and \(problem.sentence); the ones that are there were left as they are"))
+        }
+        let config = loaded.config
         let specs = ActionRegistry(config: config, facts: facts, localizer: localizer).serviceSpecs(rhPath: rhPath)
         let names = Set(specs.map(ServiceWorkflow.bundleName(for:))).count
         let detail = LocalizedMessage.doctorServicesOk(String(names))

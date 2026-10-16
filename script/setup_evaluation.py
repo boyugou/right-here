@@ -7,7 +7,7 @@
 A cold agent is an AI agent that has only the installed-style `rh` and the prompt the app copies. This script prepares what it
 runs in, writes what it is told, and afterwards says what it did:
 
-    ./script/setup_evaluation.py prepare <folder> [--persona a|b|c [--inline-answers]] [--rh <path to rh>] [--config <a config file the person already has>]
+    ./script/setup_evaluation.py prepare <folder> [--persona a|b|c|d [--inline-answers]] [--rh <path to rh>] [--config <a config file the person already has>]
     ./script/setup_evaluation.py report <folder>
     ./script/setup_evaluation.py check
 
@@ -84,6 +84,25 @@ prompt = "Review {files} for anything that would stop us from shipping. Do not m
 """
 
 
+# The config of persona D: edited by hand yesterday, and the header of the [general] table lost its closing bracket (line 4), so the file
+# is not TOML and Right Here uses the defaults until it is fixed.
+CONFIG_D = """# Right Here: my config.
+version = 1
+
+[general
+terminal = "ghostty"
+editor = "vscode"
+agents = ["claude"]
+
+# My menu, which I like as it is.
+[menu]
+items = ["open.terminal", "agents", "-", "copy-path.absolute"]
+"""
+
+# What persona D says when the agent has told them what is wrong with the file and asks whether it may fix it.
+FOLLOW_UP_D = "Yes, please fix only what is broken, and keep my comments and my menu as they are."
+
+
 @dataclass(frozen=True)
 class Persona:
     title: str
@@ -91,6 +110,7 @@ class Persona:
     answers: str
     prompt: str
     config: str | None = None
+    follow_up: str = FOLLOW_UP
 
 
 PERSONAS = {
@@ -111,6 +131,11 @@ PERSONAS = {
         answers="I'm happy with my terminal and my editor as they are. I've started using Codex as well, so please add it next to Claude Code. "
                 "Please leave the rest of my config, and my comments, as they are.",
         prompt="path", config=CONFIG_C),
+    "d": Persona(
+        title="A config that does not parse",
+        story="Edited the config by hand yesterday, and a bracket is missing, which they do not know. Wants Zed as the editor and Codex added.",
+        answers="I use Ghostty and Zed, and Claude Code and Codex. I edited my config by hand yesterday and I think something is not right with it.",
+        prompt="path", config=CONFIG_D, follow_up=FOLLOW_UP_D),
 }
 
 WRAPPER = """#!/bin/bash
@@ -213,7 +238,7 @@ def brief(persona: Persona, folder: Path, inline_answers: bool = False) -> str:
         talking = ("- The person cannot be reached during this exercise, so no reply will come. Where your instructions have you ask the person "
                    "something, write your question(s) as a message to them in your reply, as you would in a conversation, and then carry on "
                    f"with what they would answer. In their own words they answer: \"{persona.answers}\" If you ask anything else, they answer: "
-                   f"\"{FOLLOW_UP}\" You know nothing else about them. When you are completely done, end your turn with the message you would send the person.")
+                   f"\"{persona.follow_up}\" You know nothing else about them. When you are completely done, end your turn with the message you would send the person.")
     else:
         talking = ("- You cannot talk to the person except by ending your turn. When you want to ask the person something, end your turn with "
                    "your message as your final message and nothing else; their answer arrives as your next message. When you are completely "
@@ -258,7 +283,7 @@ def prepare(folder: Path, rh: Path, persona: Persona | None, config: str | None,
         (folder / "config-before.toml").write_text(config, encoding="utf-8")
     if persona is not None:
         (folder / "brief.txt").write_text(brief(persona, folder, inline_answers), encoding="utf-8")
-        (folder / "answers.txt").write_text(persona.answers + "\n\n(If it asks anything else: " + FOLLOW_UP + ")\n", encoding="utf-8")
+        (folder / "answers.txt").write_text(persona.answers + "\n\n(If it asks anything else: " + persona.follow_up + ")\n", encoding="utf-8")
     (folder / "snapshot-before.json").write_text(json.dumps(snapshot(), indent=2, sort_keys=True), encoding="utf-8")
     print(f"prepared {folder}")
     print(f"  the agent runs:  {folder / 'bin' / 'rh'}   (put {folder / 'bin'} first on PATH)")
@@ -316,8 +341,8 @@ def check() -> int:
             problems.append(f"persona {key.upper()}: the doc does not hold the person's config as the script has it")
         if persona.title not in doc:
             problems.append(f"persona {key.upper()}: the doc does not name it \"{persona.title}\"")
-    if FOLLOW_UP not in doc:
-        problems.append(f"the doc does not say what the person answers to anything else: {FOLLOW_UP}")
+        if persona.follow_up not in doc:
+            problems.append(f"persona {key.upper()}: the doc does not say what the person answers to anything else: {persona.follow_up}")
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1

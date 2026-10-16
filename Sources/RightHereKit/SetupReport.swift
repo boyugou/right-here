@@ -22,8 +22,8 @@ public enum SetupPiece: String, CaseIterable, Sendable, Encodable {
 }
 
 /// What one piece came to.
-public struct SetupStep: Sendable, Equatable, Encodable {
-    public enum Outcome: String, Sendable, Encodable {
+public struct SetupStep: Sendable, Equatable {
+    public enum Outcome: String, Sendable {
         /// It was not there and was made.
         case created
         /// It was there and was changed to be right.
@@ -34,6 +34,18 @@ public struct SetupStep: Sendable, Equatable, Encodable {
         case skipped
         /// It could not be done; the detail says why.
         case failed
+
+        /// The word of the report's JSON. A dry run does nothing, so what it would do is not said as if it had been done: `would-create`,
+        /// `would-update` and `would-fail`. What was not going to change anything (`unchanged`, `skipped`) is true of a dry run as it is.
+        public func word(dryRun: Bool) -> String {
+            guard dryRun else { return rawValue }
+            switch self {
+            case .created: return "would-create"
+            case .updated: return "would-update"
+            case .failed: return "would-fail"
+            case .unchanged, .skipped: return rawValue
+            }
+        }
     }
 
     public var piece: SetupPiece
@@ -54,22 +66,10 @@ public struct SetupStep: Sendable, Equatable, Encodable {
         case .created: word = dryRun ? "would be created" : "created"
         case .updated: word = dryRun ? "would be updated" : "updated"
         case .unchanged: word = "already in place"
-        case .skipped: word = dryRun ? "would be skipped" : "skipped"
+        case .skipped: word = "skipped"
         case .failed: word = dryRun ? "would fail" : "failed"
         }
         return "\(piece.englishTitle): \(word)" + (detail.map { " (\($0.english()))" } ?? "")
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case id, outcome, detail, text
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(piece, forKey: .id)
-        try container.encode(outcome, forKey: .outcome)
-        try container.encodeIfPresent(detail, forKey: .detail)
-        try container.encode(english(), forKey: .text)
     }
 }
 
@@ -82,6 +82,8 @@ public struct SetupNeed: Sendable, Equatable, Encodable {
         case path
         /// Click Allow when macOS asks whether Right Here may control the terminal.
         case automation
+        /// Fix the config file, which cannot be used (it is not TOML, cannot be read, or is a link to nowhere): setup never rewrites a config.
+        case config
     }
 
     public var id: Kind
@@ -144,8 +146,8 @@ public struct SetupReport: Sendable, Equatable, Encodable {
         }
     }
 
-    /// No step failed. (A check of the doctor that is not ok is not a failure of setup: it is in `checks`, and what the person has to do
-    /// about it is in `needsUser`.)
+    /// No step failed; in a dry run, none would. (A check of the doctor that is not ok is not a failure of setup: it is in `checks`, and what
+    /// the person has to do about it is in `needsUser`.)
     public var ok: Bool { !steps.contains { $0.outcome == .failed } }
     public var dryRun: Bool
     /// The folder `RH_HOME` names, when this was a trial.
@@ -178,8 +180,40 @@ public struct SetupReport: Sendable, Equatable, Encodable {
         steps.first { $0.piece == piece }
     }
 
+    /// Whether there is more to say of this report than that every step worked: a step failed, there is a warning, or what the person chose
+    /// could not be applied (the config was there, so setup left it alone and listed the edits). The setup window shows the list of what
+    /// setup did only when this is so, or when the checks are not all ok.
+    public var hasNews: Bool { !ok || !warnings.isEmpty || !configEdits.isEmpty }
+
+    /// What stands before the edits in the text, and in the setup window.
+    public static let editsHeading = "The config file was left as it is, so this was not applied. To apply it, make exactly these edits and nothing else:"
+
     private enum CodingKeys: String, CodingKey {
         case ok, dryRun, trialHome, steps, chosen, configEdits, warnings, needsUser, next, checks
+    }
+
+    /// A step as the JSON has it. Whether it was done is the report's to say, not the step's: in a dry run the outcome and the text are
+    /// the ones of what would be done, so a program that reads a step cannot take a plan for a result.
+    private struct StepJSON: Encodable {
+        var step: SetupStep
+        var dryRun: Bool
+
+        init(_ step: SetupStep, dryRun: Bool) {
+            self.step = step
+            self.dryRun = dryRun
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case id, outcome, detail, text
+        }
+
+        func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(step.piece, forKey: .id)
+            try container.encode(step.outcome.word(dryRun: dryRun), forKey: .outcome)
+            try container.encodeIfPresent(step.detail, forKey: .detail)
+            try container.encode(step.english(dryRun: dryRun), forKey: .text)
+        }
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -187,7 +221,7 @@ public struct SetupReport: Sendable, Equatable, Encodable {
         try container.encode(ok, forKey: .ok)
         try container.encode(dryRun, forKey: .dryRun)
         try container.encodeIfPresent(trialHome, forKey: .trialHome)
-        try container.encode(steps, forKey: .steps)
+        try container.encode(steps.map { StepJSON($0, dryRun: dryRun) }, forKey: .steps)
         try container.encodeIfPresent(chosen, forKey: .chosen)
         try container.encode(configEdits, forKey: .configEdits)
         try container.encode(warnings, forKey: .warnings)
@@ -212,7 +246,7 @@ public struct SetupReport: Sendable, Equatable, Encodable {
         }
         if !configEdits.isEmpty {
             lines.append("")
-            lines.append("The config file was left as it is, so this was not applied. To apply it, make exactly these edits and nothing else:")
+            lines.append(Self.editsHeading)
             lines += configEdits.map { "  " + $0.instruction }
         }
         if !warnings.isEmpty {

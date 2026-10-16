@@ -43,9 +43,7 @@ struct Pin: ParsableCommand {
         guard runtime.facts.isDirectory(URL(fileURLWithPath: path)) == true else {
             throw ValidationError("\"\(path.withControlCharactersEscaped)\" is not an existing folder.")
         }
-        var state = StateStore.load(paths: runtime.paths)
-        let added = state.pin(path)
-        try state.save(paths: runtime.paths)
+        let added = try StateStore.update(paths: runtime.paths) { $0.pin(path) }
 
         if json {
             try Output.json(PinResult(ok: true, pinned: path, alreadyPinned: !added))
@@ -73,9 +71,7 @@ struct Unpin: ParsableCommand {
     func run() throws {
         let runtime = Runtime()
         let path = Pin.absolute(folder, from: runtime.facts.currentDirectory)
-        var state = StateStore.load(paths: runtime.paths)
-        let removed = state.unpin(path)
-        try state.save(paths: runtime.paths)
+        let removed = try StateStore.update(paths: runtime.paths) { $0.unpin(path) }
 
         if json {
             try Output.json(UnpinResult(ok: true, unpinned: path, wasPinned: removed))
@@ -126,10 +122,8 @@ struct Recents: ParsableCommand {
 
     func run() throws {
         let runtime = Runtime()
-        var state = StateStore.load(paths: runtime.paths)
         if clear {
-            state.clearRecents()
-            try state.save(paths: runtime.paths)
+            try StateStore.update(paths: runtime.paths) { $0.clearRecents() }
             if json {
                 try Output.json(ClearResult(ok: true, cleared: true))
             } else {
@@ -137,6 +131,7 @@ struct Recents: ParsableCommand {
             }
             return
         }
+        let state = StateStore.load(paths: runtime.paths)
         if json {
             try Output.json(state.recents)
         } else {

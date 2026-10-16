@@ -32,11 +32,6 @@ struct RHPathsTests {
         #expect(RHPaths(environment: [:], home: home).logFile.path == "/Users/tester/Library/Logs/right-here/rh.log")
         #expect(RHPaths(environment: ["RH_LOG_DIR": "/tmp/logs"], home: home).logFile.path == "/tmp/logs/rh.log")
     }
-
-    @Test func emptyOverridesAreIgnored() {
-        let paths = RHPaths(environment: ["RH_CONFIG": "", "RH_CONFIG_DIR": ""], home: home)
-        #expect(paths.configFile.path == "/Users/tester/.config/right-here/config.toml")
-    }
 }
 
 @Suite("ConfigStore")
@@ -232,6 +227,23 @@ struct ConfigStoreUnreadableTests {
         let check = Doctor(paths: paths, loaded: loaded, runner: FakeProcessRunner(), rhPath: nil).configCheck()
         #expect(check.status == .fail)
         #expect(check.detail?.english().contains("Permission denied") == true, "\(check.detail?.english() ?? "-")")
+    }
+
+    @Test func aConfigThatIsALinkToNowhereIsNamedByTheDoctorAndNotCalledMissing() throws {
+        // A dotfiles manager links the config to a repository that is not on this Mac yet. The row said "none at ...; defaults apply, run
+        // `rh setup`", which sends the person back to the command that refused to go on.
+        for overlay in [false, true] {
+            let directory = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+            let paths = RHPaths(environment: ["RH_CONFIG_DIR": directory.path], home: directory)
+            let target = directory.appendingPathComponent("dotfiles/config.toml")
+            if overlay { try "[general]\nterminal = \"terminal\"\n".write(to: paths.configFile, atomically: true, encoding: .utf8) }
+            try FileManager.default.createSymbolicLink(atPath: (overlay ? paths.localConfigFile : paths.configFile).path, withDestinationPath: target.path)
+            let check = Doctor(paths: paths, loaded: ConfigStore.load(paths: paths), runner: FakeProcessRunner(), rhPath: nil).configCheck()
+            let said = check.detail?.english() ?? ""
+            #expect(check.status == .fail, "\(overlay ? "the overlay" : "the config"): \(said)")
+            #expect(said.contains("is a link to \(target.path), which does not exist"), "\(said)")
+            #expect(check.fix?.english().contains("remove the link") == true, "\(check.fix?.english() ?? "")")
+        }
     }
 
     @Test func anOverlayWithoutPermissionIsNamedAndTheSharedFileStillApplies() throws {

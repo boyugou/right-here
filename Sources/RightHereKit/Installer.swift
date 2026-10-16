@@ -9,6 +9,8 @@ public enum InstallError: Error, Equatable, LocalizedError {
     /// The app is running from the temporary copy macOS makes of a downloaded app that was not moved
     /// anywhere yet. The runner script and the Services would point into a folder that disappears.
     case translocated
+    /// Another setup (the setup window, `rh setup` in another terminal, an AI agent's) holds the turn, and did not finish in time.
+    case anotherSetupIsRunning
 
     public var errorDescription: String? {
         switch self {
@@ -20,6 +22,8 @@ public enum InstallError: Error, Equatable, LocalizedError {
             return "\(path) does not exist."
         case .translocated:
             return "Right Here is running from the temporary location macOS uses for a downloaded app. Move Right Here.app into your Applications folder, open it from there, and install again."
+        case .anotherSetupIsRunning:
+            return "Another setup is running (the setup window, `rh setup` in another terminal, or an AI agent's) and did not finish in time, so this one did not start. Wait for it to finish, then run `rh setup` again."
         }
     }
 
@@ -283,24 +287,62 @@ public struct Installer: Sendable {
         for spec in specs {
             let name = ServiceWorkflow.bundleName(for: spec)
             // Two actions with one title (open.terminal and open.terminal@ghostty) make one Service: a second bundle
-            // of that name could not be moved in, and would leave the install half done after the old ones are gone.
+            // of that name could not be put in place, and would leave the install half done.
             guard !staged.contains(where: { $0.name == name }) else { continue }
             let bundle = staging.appendingPathComponent(name)
             try write(spec, bundle)
             staged.append((name, bundle))
         }
-        try removeServices()
+        // Each Service takes the place of the one of its name in one step, so a name is never without its bundle, and two installs at once
+        // (the setup window and `rh setup` in a terminal) cannot make each other fail: whichever comes second swaps in a bundle that is the
+        // same. What the config no longer asks for is removed after the new ones are in.
         var written: [URL] = []
         for (name, bundle) in staged {
             let destination = locations.services.appendingPathComponent(name)
-            try fileManager.moveItem(at: bundle, to: destination)
+            try Self.replace(destination, with: bundle)
             written.append(destination)
         }
+        let kept = Set(staged.map(\.name))
+        for bundle in installedServices() where !kept.contains(bundle.lastPathComponent) { try removeIfThere(bundle) }
         return written
     }
 
+    /// Puts `bundle` where `destination` is, in one step: `RENAME_EXCL` for a name that is free, `RENAME_SWAP` for one that is taken (the old
+    /// one is then at `bundle`, where it goes with the staging folder). A plain `rename` cannot do it, since a folder is not moved onto a
+    /// folder that has files. Where the file system has no swap, the old one is removed and the new one moved in.
+    static func replace(_ destination: URL, with bundle: URL) throws {
+        func fail(_ code: Int32) -> POSIXError { POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO) }
+        // A name that was taken and is free again by the time of the swap (somebody removed it) is tried again.
+        for _ in 0..<5 {
+            if renamex_np(bundle.path, destination.path, UInt32(RENAME_EXCL)) == 0 { return }
+            switch errno {
+            case EEXIST: break
+            case ENOTSUP, EINVAL: return try replaceByRemoving(destination, with: bundle)
+            case let code: throw fail(code)
+            }
+            if renamex_np(bundle.path, destination.path, UInt32(RENAME_SWAP)) == 0 { return }
+            switch errno {
+            case ENOENT: continue
+            case ENOTSUP, EINVAL: return try replaceByRemoving(destination, with: bundle)
+            case let code: throw fail(code)
+            }
+        }
+        throw fail(EBUSY)
+    }
+
+    private static func replaceByRemoving(_ destination: URL, with bundle: URL) throws {
+        let manager = FileManager.default
+        do { try manager.removeItem(at: destination) } catch CocoaError.fileNoSuchFile {}
+        try manager.moveItem(at: bundle, to: destination)
+    }
+
     public func removeServices() throws {
-        for bundle in installedServices() { try fileManager.removeItem(at: bundle) }
+        for bundle in installedServices() { try removeIfThere(bundle) }
+    }
+
+    /// Removes a Service; one that is gone already (another install removed it) is as good.
+    private func removeIfThere(_ bundle: URL) throws {
+        do { try fileManager.removeItem(at: bundle) } catch CocoaError.fileNoSuchFile {}
     }
 
     public func removeRunnerScript() throws {
@@ -350,7 +392,8 @@ public struct FinderExtensionManager: Sendable {
         return Status(state: state, paths: paths)
     }
 
-    /// Adds the extension inside `app` to the registry and switches it on.
+    /// Adds the extension inside `app` to the registry and asks macOS to use it. The switch in System Settings can still be off, and then it
+    /// is the person's (`status` says `disabled`, the doctor `needs-user`).
     public func register(appexPath: String) async throws {
         try await run(["-a", appexPath])
         try await run(["-e", "use", "-i", AppIdentity.extensionBundleID])

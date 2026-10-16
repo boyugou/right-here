@@ -104,6 +104,9 @@ struct Run: AsyncParsableCommand {
     /// removed again, and one that existed before is never touched.
     private func runInWorktree(_ ref: ActionRef, config: Config, here: HereContext, localizer: Localizer, runtime: Runtime) async throws {
         guard let folder = here.workingDirectory(facts: runtime.facts) else {
+            // The same refusals as without --worktree: a folder that is not there is named, and is not replaced by the folder around it.
+            if let missing = here.firstMissingPath(facts: runtime.facts) { try await fail(PlanError.pathNotFound(missing.path)) }
+            if let target = here.unplaceableTarget(facts: runtime.facts), target.reason == .unreadable { try await fail(PlanError.unreadable(target.url.path)) }
             throw ValidationError("--worktree requires a folder target.")
         }
         guard let root = runtime.facts.gitRoot(containing: folder) else {
@@ -166,9 +169,8 @@ struct Run: AsyncParsableCommand {
             let report = try await LiveExecutor().execute(plan)
             RunLog.record(RunLog.Entry(actionID: action, origin: here.origin, itemCount: here.items.count))
             if let dir = here.workingDirectory(facts: runtime.facts) {
-                var state = StateStore.load(paths: runtime.paths)
-                state.recordRecent(dir.path)
-                try? state.save(paths: runtime.paths)
+                // A recent folder is not worth a click that waits: when another program holds the state for longer than this, it is not recorded.
+                try? StateStore.update(paths: runtime.paths, timeout: .milliseconds(500)) { $0.recordRecent(dir.path) }
             }
             if json {
                 try Output.json(RunResult(ok: true, plan: plan, report: report))

@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 import RightHereCore
 @testable import RightHereKit
@@ -558,6 +559,66 @@ struct InstallerAtomicityTests {
         #expect(installer.installedServices().map(\.lastPathComponent) == installed)
         let leftovers = try FileManager.default.contentsOfDirectory(atPath: installer.locations.services.path).filter { $0.hasPrefix(".rh-staging") }
         #expect(leftovers.isEmpty)
+    }
+
+    private func sevenSpecs() -> [ServiceSpec] {
+        ["Open in Ghostty", "Open in Visual Studio Code", "Claude Code Here", "Codex Here", "New Markdown Document", "Copy Absolute Path", "Copy Path From Git Root"]
+            .enumerated().map { ServiceSpec(title: $1, actionID: "open.terminal", input: .folders, command: "echo \($0)") }
+    }
+
+    @Test func twoInstallsAtOnceBothSucceedAndLeaveEveryQuickAction() throws {
+        // The setup window and `rh setup` in a terminal at the same moment: one removed the bundles the other was about to remove or move, and
+        // one of them failed ("couldn't be removed", "couldn't be moved") in 19 of 20 rounds, and could leave some Quick Actions missing.
+        let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let wanted = sevenSpecs()
+        let problems = Mutex<[String]>([])
+        for round in 0..<20 {
+            DispatchQueue.concurrentPerform(iterations: 2) { _ in
+                do { _ = try installer.installServices(wanted) } catch { problems.withLock { $0.append("round \(round): an install failed: \(error.localizedDescription)") } }
+            }
+            if !installer.servicesAreCurrent(wanted) {
+                problems.withLock { $0.append("round \(round): after both ended, \(installer.installedServices().count) of \(wanted.count) Quick Actions are there") }
+            }
+        }
+        #expect(problems.withLock { $0 }.isEmpty, "\(problems.withLock { $0 }.count) of 20 rounds went wrong; the first: \(problems.withLock { $0 }.first ?? "")")
+        let leftovers = try FileManager.default.contentsOfDirectory(atPath: installer.locations.services.path).filter { $0.hasPrefix(".rh-staging") }
+        #expect(leftovers.isEmpty, "\(leftovers)")
+    }
+
+    @Test func aQuickActionIsNeverMissingWhileItIsReplacedByAnInstall() throws {
+        // Removing every bundle and then moving the new ones in left a moment in which Finder had no Quick Actions at all (and a kill in
+        // that moment left none). Each bundle takes the place of the one of its name in one step.
+        let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let wanted = sevenSpecs()
+        try installer.installServices(wanted)
+        let names = Set(installer.installedServices().map(\.lastPathComponent))
+        let installing = Mutex(true)
+        let missing = Mutex<[String]>([])
+        let reader = Thread {
+            while installing.withLock({ $0 }) {
+                let present = Set(installer.installedServices().map(\.lastPathComponent))
+                if present != names { missing.withLock { $0.append("\(names.subtracting(present))") } }
+            }
+        }
+        reader.start()
+        for _ in 0..<60 { try installer.installServices(wanted) }
+        installing.withLock { $0 = false }
+        #expect(missing.withLock { $0 }.isEmpty, "the Quick Actions were not all there \(missing.withLock { $0 }.count) times; the first: \(missing.withLock { $0 }.first ?? "")")
+    }
+
+    @Test func aServiceTheConfigNoLongerAsksForGoesAfterTheNewOnesAreIn() throws {
+        let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let wanted = sevenSpecs()
+        try installer.installServices(wanted)
+        try installer.installServices(Array(wanted.prefix(2)))
+        #expect(installer.installedServices().count == 2)
+        // One that is gone already, which another install removed, is as good as one that was removed.
+        try installer.removeServices()
+        try installer.removeServices()
+        #expect(installer.installedServices().isEmpty)
     }
 
     @Test func replacingTheCommandLinkNeverLeavesItMissingOrADuplicate() throws {

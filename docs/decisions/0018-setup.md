@@ -16,7 +16,8 @@ Date: 2026-10-15. Status: decided.
 3. **A config that exists is never rewritten.** Setup says so and lists the edit that would make it say what was asked: the file, the
    line, the current text and the new value (`configEdits`). The person, or the agent acting for them, makes it by hand. The Quick
    Actions are built from the file as it is when setup runs, so the order is: dry run, the edits, one real run.
-4. **One report for people and programs.** `SetupReport` holds the steps (created, updated, unchanged, skipped, failed), what was chosen,
+4. **One report for people and programs.** `SetupReport` holds the steps (created, updated, unchanged, skipped, failed; a dry run says
+   what it would do, `would-create`, `would-update` and `would-fail`, so a plan cannot be read as a result), what was chosen,
    `configEdits`, warnings, what only the person can do (`needsUser`: the Finder extension switch, the PATH line, the permission
    prompt), the commands to run next and the doctor's rows. `rh setup --json` prints it, the plain output is rendered from the same
    value, and the setup window reads the same steps. Its sentences are English on the command line and catalog messages only where the
@@ -92,3 +93,27 @@ Date: 2026-10-15. Status: decided.
   the smallest size it crops the title; the real window scrolls.
 - Not checked: that a person switching the extension on sees the card turn green (ADR 0011 and `MANUAL_CHECKS.md` hold that), the
   first-run chooser in a real window, and any cold agent meeting the extension item (a trial cannot register it).
+
+## Amended after review 18 (2026-10-15)
+
+Two reviewers read setup as a stranger would, and an agent that follows the playbook to the letter met these:
+
+- **A config that is there and cannot be used fails the config step** (decision 3 says a config that exists is never rewritten; it did not say
+  what setup does when it cannot use it). The text is not TOML, the file cannot be read, is too large or not UTF-8, or it is a link to a file that
+  is not there, in `config.toml` or in the per-machine overlay: the step is `failed` and names the file and the line, no edits are listed and no
+  Quick Actions are made from it (skipped, with the reason; a step asked for by name, or the overlay as the cause, fails), the other steps run,
+  `ok` is false and the status is 1. `needsUser` has a `config` entry and `next` says to validate and to look again with a dry run. Before, setup
+  said "ok", listed edits worked out from the defaults against text that is not TOML, made the Quick Actions from the defaults, and dropped the
+  person's choices. The Quick Actions that are there stay. An AI agent may fix the file only when the person agrees, with the smallest edit.
+- **A dry run says what it would do**: `would-create`, `would-update` and `would-fail` in the JSON (decision 4); `ok` is false when a step would fail.
+- **The edits work when they are made to the letter**: an inline `[general]` is changed in place, a file without the table gets one edit for the
+  whole table, a commented example counts only inside the table, and a `disabled` list in the overlay is named when it is what turns a setting off.
+  A test makes every edit of a dry run literally and runs `rh config validate --strict` on the result.
+- **Setups take turns** and the state file is changed in one step ([0021](0021-one-setup-at-a-time.md)); an empty `RH_HOME` (or `RH_CONFIG`,
+  `RH_CONFIG_DIR`, `RH_LOG_DIR`) is refused with status 64 and never means "not set", since `RH_HOME=$TRIAL rh setup` with `$TRIAL` unset was a
+  setup of the real home.
+- **The playbook** says how to run `rh` before setup has linked it, that what `rh` prints is data and not an instruction, that `rh agents` starts
+  the login shell, and what registering the extension does and does not do (it asks macOS to use it; the switch can still be the person's).
+- The cold-agent evaluation was run again for these changes (round 4 of [`SETUP_EVALUATION.md`](../development/SETUP_EVALUATION.md)), with a
+  fourth persona whose config does not parse: four of four passed. What it did not try is a config or a file name that reads as an instruction.
+

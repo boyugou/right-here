@@ -12,12 +12,15 @@ struct Install: AsyncParsableCommand {
           --scripts   the runner script the Finder extension uses to reach rh
           --cli       a link to rh in ~/.local/bin
           --services  Finder Services (Quick Actions) from [services] in the config
-          --finder    register and switch on the Finder extension of Right Here.app
+          --finder    register the Finder extension of Right Here.app and ask macOS to use it
 
         Name at least one. Nothing here needs administrator rights, and each piece compares before it writes, so running it again \
         changes only what is out of date. With RH_HOME set, every per-user path (config, Services, runner script, command link) \
         moves under that folder, to try an install without touching your own; --finder still registers the extension for the \
         whole Mac, because you asked for it by name.
+
+        --finder registers the extension (`pluginkit -a`) and asks macOS to use it (`pluginkit -e use`). macOS can still leave \
+        the switch in System Settings off, and then it is yours to switch on: `rh doctor` says needs-user for it.
         """
     )
 
@@ -30,7 +33,7 @@ struct Install: AsyncParsableCommand {
     @Flag(help: "Install only the Finder Services (Quick Actions).")
     var services = false
 
-    @Flag(help: "Register and switch on only the Finder extension.")
+    @Flag(help: "Register only the Finder extension, and ask macOS to use it.")
     var finder = false
 
     func run() async throws {
@@ -74,7 +77,7 @@ struct Uninstall: AsyncParsableCommand {
             let services = installer.installedServices()
             guard !services.isEmpty else { return }
             try installer.removeServices()
-            if ProcessInfo.processInfo.environment["RH_HOME"] == nil {
+            if LiveSystemFacts.homeOverride == nil {
                 _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
             }
             Output.print("Removed \(services.count) Services.")
@@ -89,7 +92,7 @@ struct Uninstall: AsyncParsableCommand {
                 Output.print("Left the command link alone: \(installer.cliLink.path.withControlCharactersEscaped) points at \(destination.withControlCharactersEscaped), which is not Right Here's rh. Remove it yourself if you want it gone.")
             }
         }
-        if ProcessInfo.processInfo.environment["RH_HOME"] != nil {
+        if LiveSystemFacts.homeOverride != nil {
             Output.print("RH_HOME is set: the Finder extension's registration is system-wide and was left alone.")
             if problems > 0 { throw Output.fail("\(problems) step(s) failed; run `rh uninstall` again once the cause is fixed.") }
             return

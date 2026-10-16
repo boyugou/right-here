@@ -83,21 +83,57 @@ private struct RH {
         return item
     }
 
-    func run(_ arguments: [String]) throws -> Output {
+    /// An `rh` that was started and may still be running: `finish` waits for it. Its output is read as it comes, so a process that writes a
+    /// lot is never held up by a full pipe.
+    final class Running: @unchecked Sendable {
+        let process: Process
+        private let group = DispatchGroup()
+        private var outData = Data(), errData = Data()
+        private let timer: DispatchWorkItem
+
+        fileprivate init(process: Process, out: Pipe, err: Pipe, timer: DispatchWorkItem) {
+            self.process = process
+            self.timer = timer
+            // Threads of their own: a read that is queued behind the test threads, which wait in `finish`, would never start.
+            for (pipe, isOut) in [(out, true), (err, false)] {
+                group.enter()
+                Thread { [self] in
+                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                    if isOut { outData = data } else { errData = data }
+                    group.leave()
+                }.start()
+            }
+        }
+
+        var isRunning: Bool { process.isRunning }
+
+        func finish() -> Output {
+            group.wait()
+            process.waitUntilExit()
+            timer.cancel()
+            return Output(status: process.terminationStatus, standardOutput: String(decoding: outData, as: UTF8.self), standardError: String(decoding: errData, as: UTF8.self))
+        }
+    }
+
+    /// `set` and `unset` change the environment of this one command, after the harness has made it.
+    func start(_ arguments: [String], set: [String: String] = [:], unset: [String] = [], inFolder: URL? = nil) throws -> Running {
         let process = Process()
         process.executableURL = binary
         process.arguments = arguments
-        process.environment = environment()
+        var environment = environment()
+        for name in unset { environment.removeValue(forKey: name) }
+        for (name, value) in set { environment[name] = value }
+        process.environment = environment
+        if let inFolder { process.currentDirectoryURL = inFolder }
         let out = Pipe(), err = Pipe()
         process.standardOutput = out
         process.standardError = err
         try process.run()
-        let timer = watchdog(process)
-        defer { timer.cancel() }
-        let outData = out.fileHandleForReading.readDataToEndOfFile()
-        let errData = err.fileHandleForReading.readDataToEndOfFile()
-        process.waitUntilExit()
-        return Output(status: process.terminationStatus, standardOutput: String(decoding: outData, as: UTF8.self), standardError: String(decoding: errData, as: UTF8.self))
+        return Running(process: process, out: out, err: err, timer: watchdog(process))
+    }
+
+    func run(_ arguments: [String], set: [String: String] = [:], unset: [String] = [], inFolder: URL? = nil) throws -> Output {
+        try start(arguments, set: set, unset: unset, inFolder: inFolder).finish()
     }
 }
 
@@ -163,6 +199,22 @@ struct CLITests {
         #expect(try rh.run(["unpin", "Sources"]).standardOutput.hasPrefix("unpinned: /"))
     }
 
+    @Test func pinsMadeAtTheSameTimeAreAllKept() throws {
+        // Twenty `rh pin` started together kept twelve: each read the state, added its folder and wrote it back.
+        let rh = try RH(); defer { rh.cleanUp() }
+        let folders = try (0..<20).map { index -> URL in
+            let folder = rh.configDirectory.appendingPathComponent("pin-\(index)")
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            return folder
+        }
+        let running = try folders.map { try rh.start(["pin", $0.path]) }
+        let results = running.map { $0.finish() }
+        #expect(results.allSatisfy { $0.status == 0 }, "\(results.map(\.standardError).filter { !$0.isEmpty })")
+        let pins = try #require(try rh.run(["pins", "--json"]).json as? [String])
+        #expect(pins.count == 20, "\(20 - pins.count) of 20 pins were lost")
+        #expect(Set(pins.map { URL(fileURLWithPath: $0).lastPathComponent }) == Set(folders.map(\.lastPathComponent)))
+    }
+
     @Test func anEmptyListOfPinsOrRecentsSaysWhyOnStandardErrorOnly() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         for command in ["pins", "recents"] {
@@ -189,6 +241,28 @@ struct CLITests {
         let path = try rh.run(["config", "path"]).standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
         #expect(path.hasSuffix("/config.toml"))
         #expect(path.contains("rh-cli-"))
+    }
+
+    @Test("a variable that moves Right Here's files and is set to nothing is refused before anything is done, not read as \"not set\"", arguments: RHEnvironment.names)
+    func aVariableSetToNothingIsRefused(name: String) throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        // Only a command that reads nothing of the real home: `RH_HOME=` read as "not set" is the real home, which `rh uninstall` takes for a
+        // trial (so no test runs it) and `rh setup` for a real setup.
+        let result = try rh.run(["config", "path"], set: [name: ""])
+        #expect(result.status == 64, "rh config path with \(name) set to nothing ended with \(result.status) and printed: \(result.standardOutput.prefix(300))")
+        #expect(result.standardOutput.isEmpty, "\(result.standardOutput.prefix(300))")
+        #expect(result.standardError.contains("\(name) is set to nothing"), "\(result.standardError)")
+        #expect(result.standardError.contains("RH_HOME=/tmp/trial"), "the sentence does not say what to do: \(result.standardError)")
+    }
+
+    @Test func aVariableThatIsNotSetIsNoProblemAndAnEmptyXDGOneIsNotSet() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        // The XDG variable is not Right Here's, and the XDG specification reads an empty one as not set.
+        let xdg = try rh.run(["config", "path"], set: ["XDG_CONFIG_HOME": ""])
+        #expect(xdg.status == 0, "\(xdg.standardError)")
+        #expect(xdg.standardOutput.hasPrefix(home.path + "/.config/right-here/"), "\(xdg.standardOutput)")
+        #expect(try rh.run(["config", "path"], unset: ["RH_CONFIG", "RH_LOG_DIR"]).status == 0)
     }
 
     @Test func validatingAValidConfigSucceedsAndAnInvalidOneFails() throws {
@@ -531,6 +605,58 @@ struct CLITests {
         #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here/worktrees").path), "a refused run made the worktrees folder")
         #expect(try git(["branch", "--list", "feature-z"], in: repo).isEmpty)
         #expect(try git(["worktree", "list"], in: repo).split(separator: "\n").count == 1)
+    }
+
+    @Test func theWorktreeCommandsRefuseAFolderThatDoesNotExistAndMakeNothing() throws {
+        // docs/DESIGN.md 9.0: a typo is reported and never replaced by the folder around it. The repository around a folder that is not there
+        // used to be used: `rh worktree add --folder <typo>` made a worktree and a branch in it.
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let missing = repo.appendingPathComponent("no/such/folder").path
+        for arguments in [["worktree", "list", missing], ["worktree", "add", "feature-x", "--folder", missing], ["worktree", "remove", "feature-x", "--folder", missing]] {
+            let result = try rh.run(arguments)
+            #expect(result.status == 1, "rh \(arguments.joined(separator: " ")) ended with \(result.status) and printed: \(result.standardOutput)")
+            #expect(result.standardOutput.isEmpty, Comment(rawValue: result.standardOutput))
+            #expect(result.standardError.contains("\(missing) does not exist."), Comment(rawValue: result.standardError))
+        }
+        #expect(try git(["worktree", "list"], in: repo).split(separator: "\n").count == 1, "a worktree was made for a folder that is not there")
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here").path))
+        #expect(try git(["branch", "--list", "feature-x"], in: repo).isEmpty)
+        // A folder that is there, or a file in the repository, still finds the repository.
+        for folder in [repo.appendingPathComponent("sub").path, repo.appendingPathComponent("README.md").path] {
+            let listed = try rh.run(["worktree", "list", folder])
+            #expect(listed.status == 0 && listed.standardOutput.contains(repo.lastPathComponent), "\(folder): \(listed.standardError)")
+        }
+    }
+
+    @Test func aWordLikeASubcommandThatIsNoFolderIsSaidToBeAMistypedSubcommand() throws {
+        // `rh worktree ad` is `rh worktree list ad`, since listing is what `rh worktree` does: it listed the repository and exited 0.
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        for (typed, meant) in [("ad", "add"), ("lst", "list"), ("remov", "remove"), ("ls", "list")] {
+            let result = try rh.run(["worktree", typed], inFolder: repo)
+            #expect(result.status == 1 && result.standardOutput.isEmpty, "rh worktree \(typed): \(result.standardOutput)")
+            #expect(result.standardError.contains("/\(typed) does not exist. Did you mean \"rh worktree \(meant)\"?"), Comment(rawValue: result.standardError))
+        }
+        // A word with a slash is a path and nothing else, and a folder that is there is a folder whatever its name is.
+        let path = try rh.run(["worktree", "./ad"], inFolder: repo)
+        #expect(path.status == 1 && !path.standardError.contains("Did you mean"), Comment(rawValue: path.standardError))
+        try FileManager.default.createDirectory(at: repo.appendingPathComponent("ad"), withIntermediateDirectories: true)
+        let folder = try rh.run(["worktree", "ad"], inFolder: repo)
+        #expect(folder.status == 0 && folder.standardOutput.contains(repo.lastPathComponent), Comment(rawValue: folder.standardError))
+    }
+
+    @Test func aWorktreeRunNamesAFolderThatIsNotThereAndMakesNothing() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let missing = repo.appendingPathComponent("sub/typo").path
+        let result = try rh.run(["run", "agent.marker@faketerm", "--worktree", "--branch", "feature-q", "--container", missing])
+        #expect(result.status == 1, Comment(rawValue: result.standardError))
+        #expect(result.standardError.contains("\(missing) does not exist."), "it said: \(result.standardError)")
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here").path))
+        #expect(try git(["branch", "--list", "feature-q"], in: repo).isEmpty)
+        let dry = try rh.run(["run", "agent.marker@faketerm", "--worktree", "--dry-run", "--json", "--container", missing])
+        #expect(dry.status == 1 && (dry.json as? [String: Any])?["ok"] as? Bool == false, Comment(rawValue: dry.standardOutput))
     }
 
     @Test("the checker knows exactly the options that run and menu have, so a new option cannot slip past it")
@@ -1729,7 +1855,7 @@ struct ConfigSyncCLITests {
         let config = try #require(checks.first { $0["id"] as? String == "config" })
         #expect(config["status"] as? String == "fail" && ((config["detail"] as? [String: Any])?["text"] as? String)?.contains("Permission denied") == true, "\(config)")
         let initialized = try rh.run(["init"])
-        #expect(initialized.standardOutput.contains("already exists but was not read") && initialized.standardOutput.contains("Permission denied"), "\(initialized.standardOutput)")
+        #expect(initialized.status == 1 && initialized.standardOutput.contains("Config file: failed") && initialized.standardOutput.contains("cannot be used") && initialized.standardOutput.contains("Permission denied"), "\(initialized.standardOutput)")
         #expect(!initialized.standardOutput.contains("Use --force"), "--force cannot save a file it cannot read: \(initialized.standardOutput)")
     }
 
@@ -2007,6 +2133,56 @@ struct SetupCommandTests {
         #expect(try String(contentsOf: file, encoding: .utf8) == Self.mine)
     }
 
+    /// Makes the edits of a report to the config file as they say, one after the other and to the letter.
+    private func applyEdits(of report: [String: Any], to file: URL) throws {
+        var text = try String(contentsOf: file, encoding: .utf8)
+        let edits = try #require(report["configEdits"] as? [[String: Any]])
+        for edit in edits {
+            let value = try #require(edit["value"] as? String)
+            if edit["kind"] as? String == "add", edit["line"] == nil {
+                text += "\n" + value + "\n"
+            } else if edit["kind"] as? String == "change", let line = edit["line"] as? Int, let current = edit["current"] as? String, let key = (edit["key"] as? String)?.split(separator: ".").last {
+                var lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+                let from = try #require(lines[line - 1].range(of: String(key))).upperBound
+                let range = try #require(lines[line - 1].range(of: current, range: from..<lines[line - 1].endIndex))
+                lines[line - 1].replaceSubrange(range, with: value)
+                text = lines.joined(separator: "\n")
+            } else if edit["kind"] as? String == "add", let line = edit["line"] as? Int, let key = (edit["key"] as? String)?.split(separator: ".").last {
+                // "Add the line under [general]", or "replace the commented example".
+                var lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+                let assignment = "\(key) = \(edit["value"] as? String ?? "")"
+                if lines[line - 1].trimmingCharacters(in: .whitespaces).hasPrefix("#") { lines[line - 1] = assignment } else { lines.insert(assignment, at: line) }
+                text = lines.joined(separator: "\n")
+            } else {
+                Issue.record("an edit this test does not know how to make: \(edit)")
+            }
+        }
+        try text.write(to: file, atomically: true, encoding: .utf8)
+    }
+
+    @Test("the edits a dry run lists, made to the letter, leave a config that validate accepts and that says what was asked", arguments: [
+        "[menu]\nitems = [\"open.terminal\", \"-\", \"copy-path.absolute\"]\n",
+        "general = { terminal = \"ghostty\", editor = \"vscode\", agents = [\"claude\"] }\n",
+        "[general]\nterminal = \"ghostty\"\n\n[menu]\nitems = [\"open.terminal\"]\n",
+    ])
+    func theEditsADryRunListsAreOnesThatWorkWhenMadeToTheLetter(config: String) throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let file = home.appendingPathComponent(".config/right-here/config.toml")
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try config.write(to: file, atomically: true, encoding: .utf8)
+        let flags = ["--terminal", "terminal", "--editor", "zed", "--agents", "claude,codex"]
+        let before = try #require(try rh.run(["setup", "--dry-run", "--json"] + flags).json as? [String: Any])
+        #expect((before["configEdits"] as? [Any])?.isEmpty == false)
+        try applyEdits(of: before, to: file)
+        let validated = try rh.run(["config", "validate", "--strict"])
+        #expect(validated.status == 0, "\(validated.standardOutput)\n--- the file:\n\((try? String(contentsOf: file, encoding: .utf8)) ?? "")")
+        let after = try #require(try rh.run(["setup", "--dry-run", "--json"] + flags).json as? [String: Any])
+        #expect((after["configEdits"] as? [Any])?.isEmpty == true, "\(String(describing: after["configEdits"]))")
+        let agents = try #require(try rh.run(["agents", "--json"]).json as? [[String: Any]])
+        #expect(agents.filter { $0["enabled"] as? Bool == true }.compactMap { $0["id"] as? String }.sorted() == ["claude", "codex"])
+    }
+
     @Test func aDryRunShowsThePlanAndWritesNothing() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)
@@ -2017,6 +2193,63 @@ struct SetupCommandTests {
         #expect(result.standardOutput.contains("rh setup --terminal terminal"))
         let written = try FileManager.default.contentsOfDirectory(atPath: home.path)
         #expect(written.isEmpty, "a dry run wrote \(written)")
+    }
+
+    /// A config that does not parse, on line 2.
+    private static let notToml = "# mine\n[general\nterminal = \"ghostty\"\n"
+
+    @Test func aConfigThatDoesNotParseIsAFailureOfSetupAndNothingIsListedOrMadeFromIt() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let file = home.appendingPathComponent(".config/right-here/config.toml")
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Self.notToml.write(to: file, atomically: true, encoding: .utf8)
+        for arguments in [["setup", "--dry-run", "--json", "--terminal", "terminal", "--editor", "zed", "--agents", "claude"], ["setup", "--json", "--terminal", "terminal", "--editor", "zed", "--agents", "claude"]] {
+            let result = try rh.run(arguments)
+            let dry = arguments.contains("--dry-run")
+            #expect(result.status == 1, "\(arguments): \(result.standardError)")
+            let report = try #require(result.json as? [String: Any])
+            #expect(report["ok"] as? Bool == false, "\(arguments)")
+            let words = try steps(result)
+            #expect(words["config"] == (dry ? "would-fail" : "failed") && words["services"] == "skipped", "\(words)")
+            #expect(words["runnerScript"] == (dry ? "would-create" : "created"), "the steps that do not depend on the config still run: \(words)")
+            #expect((report["configEdits"] as? [Any])?.isEmpty == true, "edits for text that is not TOML: \(String(describing: report["configEdits"]))")
+            let needs = try #require(report["needsUser"] as? [[String: Any]])
+            #expect(needs.first?["id"] as? String == "config", "\(needs)")
+            #expect((needs.first?["text"] as? String)?.contains("line 2") == true && (needs.first?["text"] as? String)?.contains("left it as it is") == true)
+            #expect(try String(contentsOf: file, encoding: .utf8) == Self.notToml, "a config was rewritten")
+            #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Services").path), "Quick Actions were made from the defaults")
+        }
+    }
+
+    @Test func theStepsOfADryRunSayInTheJSONWhatWouldBeDoneNotThatItWasDone() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let result = try rh.run(["setup", "--dry-run", "--json", "--terminal", "terminal", "--editor", "textedit", "--agents", "none"])
+        #expect(result.status == 0, "\(result.standardError)")
+        let report = try #require(result.json as? [String: Any])
+        #expect(report["dryRun"] as? Bool == true)
+        let listed = try #require(report["steps"] as? [[String: Any]])
+        let words = try steps(result)
+        #expect(words == ["config": "would-create", "runnerScript": "would-create", "cliLink": "would-create", "services": "would-create", "finderExtension": "skipped"], "\(words)")
+        for step in listed {
+            let text = step["text"] as? String ?? ""
+            #expect(text.contains("would") == (step["outcome"] as? String ?? "").hasPrefix("would-"), "a dry run changed nothing, but a step says: \(text)")
+        }
+        let real = try rh.run(["setup", "--json", "--terminal", "terminal", "--editor", "textedit", "--agents", "none"])
+        #expect(try steps(real).values.sorted() == ["created", "created", "created", "created", "skipped"])
+    }
+
+    @Test func aDryRunThatWouldFailSaysSoWithStatusOneAndDoesNotCallItFinished() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        try FileManager.default.createDirectory(at: home.appendingPathComponent(".local/bin"), withIntermediateDirectories: true)
+        try "mine".write(to: home.appendingPathComponent(".local/bin/rh"), atomically: true, encoding: .utf8)
+        let result = try rh.run(["setup", "--dry-run", "--json"])
+        #expect(result.status == 1, "\(result.standardError)")
+        #expect((result.json as? [String: Any])?["ok"] as? Bool == false)
+        #expect(try steps(result)["cliLink"] == "would-fail")
+        #expect(result.standardError.contains("The dry run found 1 problem(s)") && !result.standardError.contains("Finished"), "\(result.standardError)")
+        #expect(try String(contentsOf: home.appendingPathComponent(".local/bin/rh"), encoding: .utf8) == "mine")
     }
 
     @Test func aStepThatFailsIsReportedInTheJSONAndTheStatusIsOne() throws {
@@ -2030,6 +2263,48 @@ struct SetupCommandTests {
         #expect(report["ok"] as? Bool == false)
         #expect(try steps(result)["cliLink"] == "failed")
         #expect(try steps(result)["config"] == "created")
+    }
+
+    @Test func twoSetupsAtOnceBothSucceedAndLeaveEveryQuickAction() throws {
+        // The setup window and `rh setup` in a terminal (or an agent's) at the same moment: one of them failed ("couldn't be moved to
+        // Services"), and Quick Actions were left missing. Several rounds, since whether they met is a matter of timing.
+        for round in 0..<6 {
+            let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+            let flags = ["setup", "--json", "--terminal", "terminal", "--editor", "textedit", "--agents", "claude"]
+            let first = try rh.start(flags), second = try rh.start(flags)
+            let results = [first.finish(), second.finish()]
+            for result in results {
+                #expect(result.status == 0, "round \(round): \(result.standardError)")
+                #expect((result.json as? [String: Any])?["ok"] as? Bool == true, "round \(round): \(result.standardOutput.prefix(400))")
+            }
+            // Whichever came second found everything in place; a third run changes nothing.
+            let third = try rh.run(flags)
+            #expect(try steps(third) == ["config": "unchanged", "runnerScript": "unchanged", "cliLink": "unchanged", "services": "unchanged", "finderExtension": "skipped"], "round \(round)")
+            let configs = try results.map { try steps($0)["config"] }
+            #expect(configs.filter { $0 == "created" }.count == 1, "round \(round): \(configs)")
+        }
+    }
+
+    @Test func aSetupWaitsForTheLockThatAnotherSetupHoldsAndThenRuns() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let paths = RHPaths(environment: [:], home: home)
+        // Another setup has its turn: the lock is held until it is let go of.
+        let other = try FileLock.acquireNow(paths.setupLockFile, timeout: .seconds(1))
+        defer { other.release() }
+        let waiting = try rh.start(["setup", "--json"])
+        Thread.sleep(forTimeInterval: 1.5)
+        #expect(waiting.isRunning, "rh setup did not wait for the setup that was running")
+        #expect(!FileManager.default.fileExists(atPath: paths.configFile.path) && !FileManager.default.fileExists(atPath: home.appendingPathComponent(".local").path), "it began before its turn")
+        other.release()
+        let result = waiting.finish()
+        #expect(result.status == 0, "\(result.standardError)")
+        #expect(try steps(result) == ["config": "created", "runnerScript": "created", "cliLink": "created", "services": "created", "finderExtension": "skipped"])
+        // A dry run has no turn to wait for.
+        let blocker = try FileLock.acquireNow(paths.setupLockFile, timeout: .seconds(1))
+        defer { blocker.release() }
+        let dry = try rh.run(["setup", "--dry-run", "--json"])
+        #expect(dry.status == 0, "\(dry.standardError)")
     }
 
     @Test func installNamesAPieceAndSendsEveryoneElseToSetup() throws {
@@ -2046,7 +2321,8 @@ struct SetupCommandTests {
         #expect(result.status == 0, "\(result.standardError)")
         #expect(result.standardOutput.hasPrefix("  Runner script: created ("), "\(result.standardOutput)")
         #expect(FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run").path))
-        #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent(".config").path))
+        // The lock that a setup takes (one at a time) is the only thing of the config folder: no config, no Quick Actions.
+        #expect(try FileManager.default.contentsOfDirectory(atPath: home.appendingPathComponent(".config/right-here").path) == [".setup.lock"])
         #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Services").path))
     }
 

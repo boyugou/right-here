@@ -88,7 +88,8 @@ public enum Documentation {
       with the reason it cannot run.
     - `RH_NO_UI` turns off alerts and stops `rh` from starting `open` or `osascript`. `RH_HOME` moves every
       per-user path (config, log, runner script, Services, command link) under the folder it names; the login
-      shell that `init`, `agents` and `doctor` start is not moved, so it runs the person's own startup files.
+      shell that `setup`, `init`, `agents` and `doctor` start (and `run <agent> --dry-run`, to see whether the agent's command is found,
+      and `setup --dry-run` when a choice is left out) is not moved, so it runs the person's own startup files.
     - A file outside the folder of a preset's selection is named in its prompt as an absolute `@` mention, quoted
       (`@"..."`) when its path has a space.
     """

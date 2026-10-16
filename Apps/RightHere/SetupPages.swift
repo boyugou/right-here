@@ -109,7 +109,7 @@ struct OverviewPage: View {
                 // No config file yet: what is installed, to choose from, before anything is written.
                 FirstRunChooser(model: model)
             } else {
-                if let report = model.setupReport, model.summary.state != .allSet || !report.ok {
+                if let report = model.setupReport, model.summary.state != .allSet || report.hasNews {
                     SetupDonePanel(report: report, home: model.homePath)
                 }
 

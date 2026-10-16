@@ -152,6 +152,14 @@ public struct Doctor: Sendable {
     // MARK: Config
 
     func configCheck() -> DoctorCheck {
+        // A link to a file that is not there (a dotfiles manager, before its repository is cloned) reads as no config, and "run `rh setup`" would
+        // say to run what has just refused to go on: the link is named, and what to do about it.
+        for file in [loaded.file, loaded.localFile] {
+            if let target = ConfigProblem.danglingTarget(of: file) {
+                return DoctorCheck(.config, status: .fail, detail: .doctorVerbatim("\(file.path) is a link to \(target.withControlCharactersEscaped), which does not exist. Defaults apply until it does."),
+                                   fix: .doctorVerbatim("Create the file the link points to, or remove the link and run `rh setup`."))
+            }
+        }
         if !loaded.fileExists && !loaded.localFileExists {
             return DoctorCheck(.config, status: .warn, detail: .doctorConfigMissing(loaded.file.path), fix: .doctorFixRunSetup)
         }
