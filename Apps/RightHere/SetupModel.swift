@@ -49,6 +49,7 @@ final class SetupModel {
     private let browser = WorktreeBrowser()
     private let home: URL
     private let pollInterval: Duration
+    private let idleInterval: Duration
     private let windowIsVisible: @MainActor () -> Bool
     private let activationQuietPeriod: Duration
     /// When the state was last read; coming back to the app does not read it again within `activationQuietPeriod`.
@@ -62,11 +63,12 @@ final class SetupModel {
     /// - Parameters:
     ///   - helper: The `rh` inside the app, which tells where the app runs from (`InstallError.problem(runningFrom:)`).
     ///   - pollInterval: How often the Finder extension is looked at while it is not switched on.
+    ///   - idleInterval: How often it is looked at once it is on.
     ///   - windowIsVisible: Whether the window can be seen; the look is skipped while it cannot.
     /// Everything it asks of the Mac comes through these, so that a test gives it a temporary home, a made-up Mac and a runner that answers as scripted.
     ///   - activationQuietPeriod: Coming back to the app reads the state again only when it was last read longer ago than this: each read starts the person's login
     ///     shell, which runs their startup files, and a person who switches between windows must not have those run at every switch.
-    init(loader: SetupLoader, actions: SetupActions, facts: any SystemFacts, helper: String, pollInterval: Duration = .seconds(2),
+    init(loader: SetupLoader, actions: SetupActions, facts: any SystemFacts, helper: String, pollInterval: Duration = .seconds(2), idleInterval: Duration = .seconds(30),
          activationQuietPeriod: Duration = .seconds(20), windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible) {
         self.loader = loader
         self.actions = actions
@@ -74,6 +76,7 @@ final class SetupModel {
         home = facts.homeDirectory
         locationProblem = InstallError.problem(runningFrom: helper)
         self.pollInterval = pollInterval
+        self.idleInterval = idleInterval
         self.activationQuietPeriod = activationQuietPeriod
         self.windowIsVisible = windowIsVisible
     }
@@ -163,22 +166,25 @@ final class SetupModel {
         await refresh()
     }
 
-    /// While the Finder extension is not switched on, looks at it every two seconds, so the first-run card turns into the status
-    /// by itself once the person flips the switch in System Settings. A look is one `pluginkit` call, not the whole doctor; when the
-    /// extension is on, one full refresh follows. It stops when the extension is ok or the window closes, and it stays out of the
-    /// way of work the person started.
+    /// Looks at the Finder extension for as long as the window is there: every two seconds while it is not switched on, so that the first-run card turns into the
+    /// status by itself once the person flips the switch in System Settings, and every half minute once it is on, so that switching it off again (or a repair that
+    /// macOS did not keep) is noticed. A look is one `pluginkit` call, not the whole doctor; when the extension has just come on, one full refresh follows. It skips
+    /// a look while the window cannot be seen, and while work the person started runs. It ends when the window is closed (the task is cancelled).
     func watchExtension() async {
-        while summary.extensionNeedsSetup, !Task.isCancelled {
-            try? await Task.sleep(for: pollInterval)
+        while !Task.isCancelled {
+            let waiting = summary.extensionNeedsSetup
+            try? await Task.sleep(for: waiting ? pollInterval : idleInterval)
             #if PREVIEW
             if simulated { return }
             #endif
             guard !Task.isCancelled, !isWorking, !isRefreshing, windowIsVisible() else { continue }
+            // Before the first look has ended nothing is known, and the first look reads the extension itself.
+            guard snapshot != nil else { continue }
             let check = await actions.extensionCheck()
             // A refresh that is running, or that the person started meanwhile, has a newer look at the extension than this one.
             guard !Task.isCancelled, !isWorking, !isRefreshing else { continue }
             checks = checks.replacing(check)
-            if check.status == .ok { await refresh() }
+            if waiting, check.status == .ok { await refresh() }
         }
     }
 
@@ -343,8 +349,9 @@ final class SetupModel {
         snapshot = loaded
         lastRead = .now
         checks = loaded.checks + (launchResult.map { [$0] } ?? [])
-        // A setup that failed is shown until a read finds nothing left to look at: somebody else (an AI assistant, `rh setup` in a terminal) may have put it right.
-        if let report = setupReport, !report.ok, !isWorking, SetupSummary(checks: checks).state == .allSet { setupReport = nil }
+        // A setup that failed is shown until the next read that is not the one it ends with: the Checks say the same, and somebody else (an AI assistant, `rh setup` in a
+        // terminal) may have put it right meanwhile.
+        if let report = setupReport, !report.ok, !isWorking { setupReport = nil }
         folders = loaded.folders
         offer = loaded.offer
         seedChoices(from: loaded.offer)

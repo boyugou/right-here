@@ -18,7 +18,8 @@ private final class ScriptedMac: ProcessRunner, Sendable {
 
     var calls: [ProcessStep] { state.withLock { $0.calls } }
     var pluginkitLooks: Int { calls.filter { $0.executable == "/usr/bin/pluginkit" && $0.arguments.first == "-m" }.count }
-    func switchExtensionOn() { state.withLock { $0.extensionOn = true } }
+    func switchExtensionOn() { switchExtension(on: true) }
+    func switchExtension(on: Bool) { state.withLock { $0.extensionOn = on } }
 
     func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
         let on = state.withLock { state -> Bool in
@@ -50,7 +51,8 @@ private struct Mac {
 
     static let inTheApplicationsFolder = "/Applications/Right Here.app/Contents/Helpers/rh"
 
-    init(helper: String = Mac.inTheApplicationsFolder, visible: Bool = true, pollInterval: Duration = .milliseconds(10), activationQuietPeriod: Duration = .zero) throws {
+    init(helper: String = Mac.inTheApplicationsFolder, visible: Bool = true, pollInterval: Duration = .milliseconds(10), idleInterval: Duration = .milliseconds(10),
+         activationQuietPeriod: Duration = .zero) throws {
         home = try makeTemporaryDirectory()
         paths = RHPaths(environment: [:], home: home)
         let facts = FakeSystemFacts(homeDirectory: home, directories: [home.path], applications: [
@@ -63,7 +65,8 @@ private struct Mac {
         model = SetupModel(
             loader: SetupLoader(facts: facts, paths: paths, runner: runner, helperPath: helper, localizer: .english),
             actions: SetupActions(facts: facts, paths: paths, runner: runner, helperPath: helper, app: nil, trialHome: home),
-            facts: facts, helper: helper, pollInterval: pollInterval, activationQuietPeriod: activationQuietPeriod, windowIsVisible: { flag.isOn })
+            facts: facts, helper: helper, pollInterval: pollInterval, idleInterval: idleInterval,
+            activationQuietPeriod: activationQuietPeriod, windowIsVisible: { flag.isOn })
     }
 
     func cleanUp() { try? FileManager.default.removeItem(at: home) }
@@ -226,18 +229,19 @@ struct SetupModelRefreshTests {
         #expect(mac.runner.calls.count > after, "the refresh button always reads")
     }
 
-    @Test func aFailedSetupIsNotShownAfterSomebodyElsePutEverythingRight() async throws {
+    @Test func aFailedSetupIsShownUntilTheNextReadOfItsOwnAndNoLonger() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }
         await mac.model.refresh()
         try FileManager.default.createDirectory(at: mac.paths.configDirectory.deletingLastPathComponent(), withIntermediateDirectories: true)
         try "in the way".write(to: mac.paths.configDirectory, atomically: true, encoding: .utf8)
         await mac.model.setUp()
-        #expect(mac.model.setupReport?.ok == false)
-        // An AI assistant (or `rh setup` in a terminal) puts it right, and the next read finds nothing left to look at.
-        let ok = [DoctorCheck(.config, status: .ok), DoctorCheck(.finderExtension, status: .ok)]
-        mac.model.apply(SetupSnapshot(checks: ok, configFile: mac.paths.configFile, configExists: true, home: mac.home))
-        #expect(mac.model.setupReport == nil, "the red marks of a setup that no longer matters stayed above \"Everything is set up\"")
-        #expect(mac.model.summary.state == .allSet)
+        #expect(mac.model.setupReport?.step(.config)?.outcome == .failed, "the read that the setup ends with must not take its answer away")
+        // An AI assistant (or `rh setup` in a terminal) makes the config meanwhile, and the person comes back to the window.
+        try FileManager.default.removeItem(at: mac.paths.configDirectory)
+        try mac.writeConfig()
+        await mac.model.refreshOnActivation()
+        #expect(mac.model.configIsThere && !mac.model.needsFirstRunChoice)
+        #expect(mac.model.setupReport == nil, "the red mark of a config step that no longer matters stood next to a config that is there")
     }
 
     @Test func aSetupThatWentWellStaysAsTheListOfWhatItDid() async throws {
@@ -263,8 +267,23 @@ struct SetupModelRefreshTests {
         mac.showWindow(true)
         #expect(await mac.eventually { mac.runner.pluginkitLooks > looksBefore }, "it never looked")
         mac.runner.switchExtensionOn()
+        #expect(await mac.eventually { !mac.model.summary.extensionNeedsSetup }, "the first-run card is replaced by the status once the switch is on")
+        watching.cancel()
         await watching.value
-        #expect(!mac.model.summary.extensionNeedsSetup, "the first-run card is replaced by the status once the switch is on")
+    }
+
+    @Test func theExtensionIsLookedAtAgainAfterItWasOnSoSwitchingItOffIsNoticed() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig()
+        mac.runner.switchExtension(on: true)
+        await mac.model.refresh()
+        #expect(!mac.model.summary.extensionNeedsSetup)
+        let watching = Task { await mac.model.watchExtension() }
+        defer { watching.cancel() }
+        let before = mac.runner.pluginkitLooks
+        #expect(await mac.eventually { mac.runner.pluginkitLooks > before }, "once the extension is on nobody looks at it again, so switching it off is never seen")
+        mac.runner.switchExtension(on: false)
+        #expect(await mac.eventually { mac.model.summary.extensionNeedsSetup }, "the first-run card does not come back by itself when the extension is switched off")
     }
 
     @Test func aWindowThatIsClosedStopsTheLook() async throws {
