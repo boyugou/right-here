@@ -110,7 +110,9 @@ Add `--dry-run --json` to inspect the exact planned execution before running.
 
 ## Install
 
-A notarized DMG and a Homebrew cask are built by `script/package_dmg.sh` and `packaging/homebrew` (see [`docs/development/RELEASING.md`](docs/development/RELEASING.md)); downloads will be published with the first public release. Until then, build from source (Xcode 26 or later and `xcodegen`):
+**Download.** Every release on the [Releases page](https://github.com/boyugou/right-here/releases) has a notarized DMG (the repository is private for now, so you need access to see it). Open it, drag Right Here to Applications and open it from there: an app that was just downloaded runs from a temporary copy until it has been moved, and `rh setup` refuses there. A Homebrew cask is in `packaging/homebrew`; how a release is made is in [`docs/development/RELEASING.md`](docs/development/RELEASING.md).
+
+**Or build from source** (Xcode 26 or later and `xcodegen`):
 
 ```sh
 brew install xcodegen

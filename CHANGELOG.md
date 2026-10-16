@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-Everything since 0.2.0.
+## 0.3.0 (2026-10-16)
+
+Everything since 0.2.0. The repository and these downloads are private for now: you need access to see the Releases page.
 
 ### Added
 
@@ -80,6 +82,16 @@ Everything since 0.2.0.
   escapes, in every line `rh` prints, in its JSON and in the setup window's list of worktrees.
 - The doctor counts the extension's crash reports by the UUID of the code that crashed and not by the date the code was written, so a crash of the copy that was
   replaced is not held against the new one.
+
+### Known limits
+
+- Only Ghostty and Terminal have been tried as terminals. iTerm2, WezTerm and kitty are built in and not verified on a real Mac (`rh doctor --probe-launch` checks yours).
+- That removing the directory-observing overrides ends the Finder extension's crash on macOS 26.5.1 is not yet confirmed there. If the menu is still empty,
+  `rh doctor` names the crash report to attach to a bug report.
+- The setup window's first run, and its card updating when the extension is switched on, were rendered and tested but not yet tried by a person in a real window
+  (`docs/development/MANUAL_CHECKS.md`).
+- A few sentences of the setup window that only show in rare cases are English in every language: the edits it lists for an existing config and the report's warnings,
+  a config it cannot use, another setup running, and a config that is a link to nowhere.
 
 ## 0.2.0 (2026-10-14)
 

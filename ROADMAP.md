@@ -17,7 +17,7 @@
 - The app (summary, details, a launch test button) with its icon, and the Finder extension; installer;
   `rh doctor`.
 - Finder Services (Quick Actions) generated from the config; the doctor notices when they drift from it.
-- A notarized, stapled DMG builds with `script/package_dmg.sh` and is attached to the private `v0.2.0` release on GitHub with checksum verification (Apple accepted; Gatekeeper accepts). Downloads open to everyone with the first public release.
+- A notarized, stapled DMG builds with `script/package_dmg.sh` and is attached to each release on GitHub (the latest is `v0.3.0`) with checksum verification (Apple accepted; Gatekeeper accepts). The repository is private, so downloads need access until the first public release.
 - Premium macOS app icon (dark frosted obsidian folder + illuminated cyan-violet targeting reticle with `>_` terminal prompt).
 - Zero-latency Finder extension: prebuilt in-memory `NSMenu` templates, automatic termination prevention, and fact caching.
 - MCP server and the Claude Code plugin (setup, open-here and review-changes skills).
