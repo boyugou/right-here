@@ -1091,7 +1091,7 @@ struct CLITests {
         }
         try git(["init", "-q"])
         try git(["commit", "-q", "--allow-empty", "-m", "initial"])
-        let odd = rh.configDirectory.appendingPathComponent("odd\u{1b}[2J\u{202E}name")
+        let odd = rh.configDirectory.appendingPathComponent("odd\u{1b}[2J\u{202E}name\n/tmp/forged (rh/forged) [rh]")
         try git(["worktree", "add", "-q", "-b", "odd", odd.path])
         for arguments in [["worktree", "list", repo.path], ["worktree", "list", repo.path, "--json"]] {
             let result = try rh.run(arguments)
@@ -1099,6 +1099,10 @@ struct CLITests {
             #expect(result.standardOutput.contains("odd"), "control: the worktree is listed")
             #expect(scalarsATerminalActsOn(result.standardOutput).isEmpty, "rh \(arguments.joined(separator: " ")): \(scalarsATerminalActsOn(result.standardOutput))")
         }
+        // A line feed is the one character the printer keeps, so the name has to be escaped where it stands in a line: one line for each worktree, and none that a folder name wrote.
+        let lines = try rh.run(["worktree", "list", repo.path]).standardOutput.split(separator: "\n").map(String.init)
+        #expect(lines.count == 2, "\(lines)")
+        #expect(!lines.contains { $0.hasPrefix("/tmp/forged") }, "\(lines)")
         let paths = ((try rh.run(["worktree", "list", repo.path, "--json"]).json as? [[String: Any]]) ?? []).compactMap { $0["path"] as? String }
         #expect(paths.contains { $0.contains("\u{1b}[2J\u{202E}name") }, "the JSON holds the path as it is")
     }
