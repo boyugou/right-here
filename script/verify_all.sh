@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Everything CI runs, locally (plus the app build): build, tests, the localization catalog, the config schema, the docs check (commands and links)
-# and the public-safety check.
+# Everything CI runs, locally (plus the app build): build, tests, the localization catalog, the config schema, the docs check (commands and links),
+# the evaluation doc against its harness, and the public-safety check.
 # Nothing here touches your home directory, Finder or installed apps.
 
 set -euo pipefail
@@ -20,5 +20,6 @@ uv run script/verify_localizations.py
 uv run script/verify_config_schema.py
 uv run script/compile_docs.py --check
 uv run script/verify_docs.py
+uv run script/setup_evaluation.py check
 uv run script/verify_version.py
 ./script/verify_public_safety.sh

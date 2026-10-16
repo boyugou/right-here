@@ -20,11 +20,13 @@
   - [0015 The Finder extension stays loaded, and does not keep the Mac awake](decisions/0015-finder-extension-stays-loaded.md)
   - [0016 Agents that skip their permission prompts, and isolated git worktrees](decisions/0016-agent-permissions-and-worktrees.md)
   - [0017 The setup window has six sections](decisions/0017-setup-window-sections.md)
+  - [0018 One setup command, a playbook for AI agents, and cold agents as the test](decisions/0018-setup.md)
 - [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
 - [`development/RELEASING.md`](development/RELEASING.md): signing, notarizing and publishing a release.
 - [`development/MANUAL_CHECKS.md`](development/MANUAL_CHECKS.md): the checks that need a real Finder, real terminals or a native speaker.
+- [`development/SETUP_EVALUATION.md`](development/SETUP_EVALUATION.md): the cold-agent evaluation of `rh setup` and its playbook: personas, prompts, how it is judged, and the outcome of each round.
 - [`development/WEBSITE.md`](development/WEBSITE.md): the `gh-pages` branch, its checks and how to publish it.
 - [`development/UPSTREAM_REPORTS.md`](development/UPSTREAM_REPORTS.md): known upstream issues found in dependencies (not yet filed).
 - [`../ROADMAP.md`](../ROADMAP.md): what works and what is next.

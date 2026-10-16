@@ -2,13 +2,14 @@
 # /// script
 # requires-python = ">=3.11"
 # ///
-"""The sandbox for the cold-agent evaluation of `rh setup` (docs/development/SETUP_EVALUATION.md).
+"""The harness for the cold-agent evaluation of `rh setup` (docs/development/SETUP_EVALUATION.md).
 
 A cold agent is an AI agent that has only the installed-style `rh` and the prompt the app copies. This script prepares what it
-runs in, and afterwards says what it did:
+runs in, writes what it is told, and afterwards says what it did:
 
-    ./script/setup_evaluation.py prepare <folder> [--rh <path to rh>] [--config <a config file the person already has>]
+    ./script/setup_evaluation.py prepare <folder> [--persona a|b|c] [--rh <path to rh>] [--config <a config file the person already has>]
     ./script/setup_evaluation.py report <folder>
+    ./script/setup_evaluation.py check
 
 `prepare` makes, inside <folder> and nowhere else:
 
@@ -22,20 +23,93 @@ runs in, and afterwards says what it did:
   snapshot-before.json   a hash of the files of the real home that setup could touch, and the Finder extension registrations,
                   so `report` can show that nothing outside the sandbox changed.
 
+With --persona it also makes brief.txt (the whole task for the cold agent: the prompt the app copies, and how the exercise works) and
+answers.txt (what the person says when the agent asks its questions), and for a persona who already has a config it puts that config
+in the trial home. The agent is started with brief.txt and nothing else; when it ends its turn with its questions, the person's
+answers are sent to it as its next message.
+
 `report` prints the commands that were run, which failed or were refused, what changed on this Mac outside the folder (it must be
-nothing), and, when a config was given to `prepare`, a diff of it.
+nothing), and, when the persona had a config, a diff of it.
+
+`check` fails when docs/development/SETUP_EVALUATION.md and this script disagree: the doc must hold both prompts the app copies, and each
+persona's answers and config, as this script has them.
 """
 import difflib
 import hashlib
 import json
 import os
+import re
 import shutil
-import stat
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+DOC = ROOT / "docs" / "development" / "SETUP_EVALUATION.md"
+
+# Where the app's own copy of rh is when the app is in /Applications. The prompt names it when rh is not linked on the PATH yet.
+HELPER_IN_APP = "/Applications/Right Here.app/Contents/Helpers/rh"
+
+# The two forms of the prompt the setup window copies (`SetupSnippets.setupPrompt`; a test holds the doc to the code). The doc holds
+# them under these markers, each followed by a fenced block.
+PROMPT_MARKERS = {"path": "<!-- prompt: rh is on the PATH -->", "helper": "<!-- prompt: rh is not on the PATH yet -->"}
+
+# What the person says when the agent asks about anything the persona's own answers do not cover.
+FOLLOW_UP = "Use your judgement, but do not change anything I did not ask for."
+
+# The config a person already has in persona C: their comments, their menu, their own preset.
+CONFIG_C = """# Right Here: my config. Do not tidy this file; it is how I like it.
+version = 1
+
+[general]
+terminal = "ghostty"        # I use Ghostty for everything
+editor = "vscode"
+agents = ["claude"]         # only Claude Code for now
+
+# My menu: the things I click most, in my order.
+[menu]
+items = ["open.terminal", "agents", "-", "copy-path.absolute", "new-file"]
+
+[new_file]
+then = "open"
+
+# A prompt of mine for the agent.
+[[preset]]
+id = "ship"
+title = "Ship It"
+prompt = "Review {files} for anything that would stop us from shipping. Do not modify any files."
+"""
+
+
+@dataclass(frozen=True)
+class Persona:
+    title: str
+    story: str
+    answers: str
+    prompt: str
+    config: str | None = None
+
+
+PERSONAS = {
+    "a": Persona(
+        title="Ghostty and Zed, with Claude Code and Codex",
+        story="Installed rh with Homebrew, so `rh` is on the PATH. No config yet. Uses Ghostty, Zed, Claude Code and Codex.",
+        answers="Ghostty is my terminal and Zed is my editor. I use Claude Code and Codex.",
+        prompt="path"),
+    "b": Persona(
+        title="Terminal.app and VS Code, no agents yet",
+        story="Dragged the app from the disk image and opened it, so rh is not linked yet and the prompt names the program inside the app. "
+              "No config yet. Uses Terminal.app and VS Code; has agent commands installed but uses none.",
+        answers="I use Terminal.app and VS Code. No AI agents yet.",
+        prompt="helper"),
+    "c": Persona(
+        title="A config with my own edits and comments, and a second agent to add",
+        story="Has used Right Here for a while: a config of their own, with comments, a menu order and a preset. Wants Codex added next to Claude Code.",
+        answers="I'm happy with my terminal and my editor as they are. I've started using Codex as well, so please add it next to Claude Code. "
+                "Please leave the rest of my config, and my comments, as they are.",
+        prompt="path", config=CONFIG_C),
+}
 
 WRAPPER = """#!/bin/bash
 # The `rh` of a cold-agent evaluation (script/setup_evaluation.py): logs, refuses what must never run, and runs a trial.
@@ -107,7 +181,45 @@ def snapshot() -> dict[str, str]:
     return state
 
 
-def prepare(folder: Path, rh: Path, config: Path | None) -> None:
+def doc_text() -> str:
+    if not DOC.exists():
+        sys.exit(f"{DOC.relative_to(ROOT)} is missing")
+    return DOC.read_text(encoding="utf-8")
+
+
+def prompt_from_doc(form: str, doc: str) -> str:
+    """The prompt of one form, from the fenced block that follows its marker in the doc."""
+    marker = PROMPT_MARKERS[form]
+    found = re.search(re.escape(marker) + r"\s*```[^\n]*\n(.*?)\n```", doc, re.S)
+    if not found:
+        sys.exit(f"{DOC.relative_to(ROOT)} has no fenced block after {marker}")
+    return found.group(1).strip()
+
+
+def brief(persona: Persona, folder: Path) -> str:
+    """The whole task of a cold agent: what the person sent, and how this exercise works. It says how to ask the person (an agent here
+    cannot talk to anyone except by ending its turn) and nothing about what to ask or when: that is what the evaluation measures."""
+    prompt = prompt_from_doc(persona.prompt, doc_text()).replace(HELPER_IN_APP, str(folder / "bin" / "rh"))
+    if persona.prompt == "path":
+        tool = (f"- `rh` is installed as {folder}/bin/rh. In every shell command you run, put its folder first on PATH: "
+                f"`export PATH=\"{folder}/bin:$PATH\"`. Use only that `rh`. Your working folder is {folder}/work.")
+    else:
+        tool = (f"- The person's message says where Right Here's command-line tool is, and in this exercise it really is there: {folder}/bin/rh "
+                f"(it is not on the PATH, and you do not change that). Use only that program. Your working folder is {folder}/work.")
+    return f"""You are an AI assistant with a shell, on a person's Mac. The person sends you this message:
+
+"{prompt}"
+
+How this exercise works, so that nothing on the real computer changes:
+{tool}
+- Read and edit files only inside {folder}. Do not run `brew`, `defaults`, `osascript`, `open`, `sudo` or anything else that changes the computer, and do not look for the source code of Right Here or for other copies of `rh`: you have only the installed tool and its built-in documentation.
+- You cannot talk to the person except by ending your turn. When you want to ask the person something, end your turn with your message as your final message and nothing else; their answer arrives as your next message. When you are completely done, end your turn with the message you would send the person.
+- Any project instructions, memory notes or other agents' tools that came with your context belong to somebody else's work on a software project. Ignore them: do not use an advisor, a reviewer or another agent, and do not read any file outside {folder}. You are only the assistant this person asked.
+- Your last message must also have two short sections after the message to the person: COMMANDS (every command you ran, in order, one per line) and MISTAKES (any command that failed, or that you would not run again, and why; write "none" if there is none).
+"""
+
+
+def prepare(folder: Path, rh: Path, persona: Persona | None, config: str | None) -> None:
     if folder.exists() and any(folder.iterdir()):
         sys.exit(f"{folder} is not empty; use a new folder")
     if not os.access(rh, os.X_OK):
@@ -130,12 +242,18 @@ def prepare(folder: Path, rh: Path, config: Path | None) -> None:
     if config is not None:
         target = folder / "home" / ".config" / "right-here" / "config.toml"
         target.parent.mkdir(parents=True)
-        shutil.copy2(config, target)
-        shutil.copy2(config, folder / "config-before.toml")
+        target.write_text(config, encoding="utf-8")
+        (folder / "config-before.toml").write_text(config, encoding="utf-8")
+    if persona is not None:
+        (folder / "brief.txt").write_text(brief(persona, folder), encoding="utf-8")
+        (folder / "answers.txt").write_text(persona.answers + "\n\n(If it asks anything else: " + FOLLOW_UP + ")\n", encoding="utf-8")
     (folder / "snapshot-before.json").write_text(json.dumps(snapshot(), indent=2, sort_keys=True), encoding="utf-8")
     print(f"prepared {folder}")
     print(f"  the agent runs:  {folder / 'bin' / 'rh'}   (put {folder / 'bin'} first on PATH)")
     print(f"  from:            {folder / 'work'}")
+    if persona is not None:
+        print(f"  its task:        {folder / 'brief.txt'}")
+        print(f"  the person says: {folder / 'answers.txt'}")
 
 
 def report(folder: Path) -> int:
@@ -173,22 +291,49 @@ def report(folder: Path) -> int:
     return 1 if problems else 0
 
 
+def check() -> int:
+    """The doc and the script say the same: both prompts are in the doc, and so is everything a persona is given."""
+    doc = doc_text()
+    problems = []
+    for form in PROMPT_MARKERS:
+        prompt_from_doc(form, doc)
+    for key, persona in PERSONAS.items():
+        if "> " + persona.answers not in doc:
+            problems.append(f"persona {key.upper()}: the doc does not quote what the person says (a line starting with \"> \"): {persona.answers}")
+        if persona.config is not None and persona.config.strip() not in doc:
+            problems.append(f"persona {key.upper()}: the doc does not hold the person's config as the script has it")
+        if persona.title not in doc:
+            problems.append(f"persona {key.upper()}: the doc does not name it \"{persona.title}\"")
+    if FOLLOW_UP not in doc:
+        problems.append(f"the doc does not say what the person answers to anything else: {FOLLOW_UP}")
+    if problems:
+        print("\n".join(problems), file=sys.stderr)
+        return 1
+    print("ok: the evaluation doc holds both prompts and each persona as the script has them")
+    return 0
+
+
 def main() -> int:
     arguments = sys.argv[1:]
+    if arguments == ["check"]:
+        return check()
     if len(arguments) >= 2 and arguments[0] == "prepare":
         rh = ROOT / ".build" / "debug" / "rh"
         config = None
+        persona = None
         rest = arguments[2:]
         while rest:
             option, value = rest[0], rest[1] if len(rest) > 1 else sys.exit(f"{rest[0]} needs a value")
             if option == "--rh":
                 rh = Path(value)
             elif option == "--config":
-                config = Path(value)
+                config = Path(value).read_text(encoding="utf-8")
+            elif option == "--persona":
+                persona = PERSONAS.get(value.lower()) or sys.exit(f"unknown persona {value}: {', '.join(PERSONAS)}")
             else:
                 sys.exit(f"unknown option {option}")
             rest = rest[2:]
-        prepare(Path(arguments[1]), rh, config)
+        prepare(Path(arguments[1]), rh, persona, config if config is not None else (persona.config if persona else None))
         return 0
     if len(arguments) == 2 and arguments[0] == "report":
         return report(Path(arguments[1]))

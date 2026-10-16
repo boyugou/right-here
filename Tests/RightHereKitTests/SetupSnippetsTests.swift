@@ -82,6 +82,15 @@ struct SetupSnippetsTests {
         #expect(lines == ["/plugin marketplace add boyugou/right-here", "/plugin install \(plugin)@\(name)"])
     }
 
+    @Test func theEvaluationDocQuotesBothFormsOfThePromptExactlyAsTheAppCopiesThem() throws {
+        // `script/setup_evaluation.py` hands a cold agent the prompt from this doc, so what is measured is what a person's app copies.
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let doc = try String(contentsOf: root.appendingPathComponent("docs/development/SETUP_EVALUATION.md"), encoding: .utf8)
+        let inApp = "/Applications/Right Here.app/Contents/Helpers/rh"
+        #expect(doc.contains("<!-- prompt: rh is on the PATH -->\n```text\n" + SetupSnippets.setupPrompt() + "\n```"), "the first prompt differs from the app's")
+        #expect(doc.contains("<!-- prompt: rh is not on the PATH yet -->\n```text\n" + SetupSnippets.setupPrompt(command: inApp) + "\n```"), "the second prompt differs from the app's")
+    }
+
     @Test func theSetupPromptNamesAGuideThatExists() {
         let prompt = SetupSnippets.setupPrompt()
         #expect(prompt.contains("`rh docs agent-setup`"))
