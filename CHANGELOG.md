@@ -27,6 +27,9 @@
   has no prompt, continue or bypass entry; Muse Code, whose documentation names none of them (`--auto-approve` does not exist), has only its command; Cody is no longer built in
   (its free and pro plans ended in 2025 and its command line is a one-shot chat); the first run looks an agent up by the first word of its command. Presets are offered for five
   agents (Claude Code, Codex, Antigravity, Gemini CLI, GitHub Copilot); GitHub Copilot and Kimi Code get the continue and resume entries their documentation names. The `instructionFile` field of an agent, which nothing read, is gone.
+- The permission alert and the Settings paths name System Settings the way macOS writes it in Malay ("Seting Sistem"), Arabic Finder is "فايندر" in Reveal, and the Open With
+  submenu is called what Finder's own is in Traditional Chinese: `script/verify_macos_wording.py` (which CI runs, and which now also reads the Login Items & Extensions and
+  Keyboard Shortcuts paths) found them on macOS 26 and 27.
 - The privacy policy says what the app does: it also reads the Finder selection when you or an AI assistant ask for it (`rh finder`, the MCP tool), sends Apple events to Finder then,
   starts your login shell to look for agent commands, and looks for its own extension's crash reports; its paragraph on the source code no longer says the code is public.
   `rh docs sync`, the design notes and ADR 0013 list what the sync guard lists (an agent's `args` and `bypass_permissions` too); the playbook for AI agents says the command

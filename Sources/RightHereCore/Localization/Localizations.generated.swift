@@ -248,7 +248,7 @@ enum Localizations {
 
     private static let actionReveal: [String: String] = [
         "en": "Reveal in Finder",
-        "ar": "إظهار في Finder",
+        "ar": "إظهار في فايندر",
         "bn": "Finder-এ দেখান",
         "de": "Im Finder zeigen",
         "el": "Εμφάνιση στο Finder",
@@ -361,7 +361,7 @@ enum Localizations {
         "ja": "システム設定を開く",
         "ko": "시스템 설정 열기",
         "mr": "System Settings उघडा",
-        "ms": "Buka Tetapan Sistem",
+        "ms": "Buka Seting Sistem",
         "nl": "Open Systeeminstellingen",
         "pl": "Otwórz Ustawienia systemowe",
         "pt-BR": "Abrir Ajustes do Sistema",
@@ -394,7 +394,7 @@ enum Localizations {
         "ja": "macOSがRight Hereによる%@の制御をブロックしました。システム設定 › プライバシーとセキュリティ › オートメーションで許可してから、もう一度お試しください。",
         "ko": "macOS가 Right Here의 %@ 제어를 차단했습니다. 시스템 설정 › 개인정보 보호 및 보안 › 자동화에서 허용한 다음 다시 시도하세요.",
         "mr": "macOS ने Right Here ला %@ नियंत्रित करण्यापासून रोखले. System Settings › Privacy & Security › Automation मध्ये परवानगी द्या आणि पुन्हा प्रयत्न करा.",
-        "ms": "macOS menghalang Right Here daripada mengawal %@. Benarkan dalam Tetapan Sistem › Privasi & Keselamatan › Automasi, kemudian cuba lagi.",
+        "ms": "macOS menghalang Right Here daripada mengawal %@. Benarkan dalam Seting Sistem › Privasi & Keselamatan › Automasi, kemudian cuba lagi.",
         "nl": "macOS heeft voorkomen dat Right Here %@ bedient. Sta dit toe in Systeeminstellingen › Privacy en beveiliging › Automatisering en probeer het opnieuw.",
         "pl": "macOS zablokował Right Here możliwość sterowania %@. Zezwól na to w Ustawieniach systemowych › Prywatność i ochrona › Automatyzacja, a następnie spróbuj ponownie.",
         "pt-BR": "O macOS impediu o Right Here de controlar %@. Permita em Ajustes do Sistema › Privacidade e Segurança › Automação e tente novamente.",
@@ -1714,7 +1714,7 @@ enum Localizations {
         "ja": "システム設定 › 一般 › ログイン項目と機能拡張 › Finder で Right Here をオンにしてください。",
         "ko": "시스템 설정 › 일반 › 로그인 항목 및 확장 프로그램 › Finder에서 Right Here를 켜세요.",
         "mr": "System Settings › General › Login Items & Extensions › Finder मध्ये Right Here सुरू करा.",
-        "ms": "Hidupkan Right Here dalam Tetapan Sistem › Umum › Item Log Masuk & Sambungan › Finder.",
+        "ms": "Hidupkan Right Here dalam Seting Sistem › Umum › Item Log Masuk & Sambungan › Finder.",
         "nl": "Zet Right Here aan in Systeeminstellingen › Algemeen › Inlogonderdelen en extensies › Finder.",
         "pl": "Włącz Right Here w Ustawieniach systemowych › Ogólne › Rzeczy i rozszerzenia otwierane podczas logowania › Finder.",
         "pt-BR": "Ative o Right Here em Ajustes do Sistema › Geral › Itens de Login e Extensões › Finder.",
@@ -2572,7 +2572,7 @@ enum Localizations {
         "ja": "クイックアクションは Finder 機能拡張がなくても使えます。ファイルまたはフォルダを右クリックして「クイックアクション」を選択します。キーボードショートカットを設定するには、システム設定 › キーボード › キーボードショートカット › サービス を開いてください。",
         "ko": "빠른 동작은 Finder 확장 프로그램 없이도 작동합니다. 파일이나 폴더를 우클릭하고 빠른 동작을 선택하세요. 키보드 단축키를 지정하려면 시스템 설정 › 키보드 › 키보드 단축키 › 서비스로 이동하세요.",
         "mr": "Quick Actions एक्सटेंशनशिवाय चालतात: फाइल किंवा फोल्डरवर उजवे-क्लिक करा आणि Quick Actions निवडा. कीबोर्ड शॉर्टकटसाठी System Settings › Keyboard › Keyboard Shortcuts › Services येथे जा.",
-        "ms": "Tindakan Pantas berfungsi tanpa sambungan: klik kanan pada fail atau folder dan pilih Tindakan Pantas. Untuk pintasan papan kekunci, pergi ke Tetapan Sistem › Papan Kekunci › Pintasan Papan Kekunci › Perkhidmatan.",
+        "ms": "Tindakan Pantas berfungsi tanpa sambungan: klik kanan pada fail atau folder dan pilih Tindakan Pantas. Untuk pintasan papan kekunci, pergi ke Seting Sistem › Papan Kekunci › Pintasan Papan Kekunci › Perkhidmatan.",
         "nl": "Snelle acties werken zonder de extensie: klik met de rechtermuisknop op een bestand of map en kies Snelle acties. Voor een sneltoets ga naar Systeeminstellingen › Toetsenbord › Toetscombinaties › Voorzieningen.",
         "pl": "Szybkie czynności działają bez rozszerzenia: kliknij plik lub folder prawym przyciskiem myszy i wybierz Szybkie czynności. Aby ustawić skrót klawiszowy, przejdź do Ustawienia systemowe › Klawiatura › Skróty klawiszowe › Usługi.",
         "pt-BR": "As Ações Rápidas funcionam sem a extensão: clique com o botão direito em um arquivo ou pasta e escolha Ações Rápidas. Para um atalho de teclado, acesse Ajustes do Sistema › Teclado › Atalhos de Teclado › Serviços.",
@@ -5905,7 +5905,7 @@ enum Localizations {
         "ja": "`rh setup` を実行するか、システム設定 › 一般 › ログイン項目と機能拡張 › Finder で Right Here をオンにしてください。",
         "ko": "`rh setup` 명령을 실행하거나, 시스템 설정 › 일반 › 로그인 항목 및 확장 프로그램 › Finder에서 Right Here를 켜세요.",
         "mr": "`rh setup` चालवा, किंवा System Settings › General › Login Items & Extensions › Finder मध्ये Right Here सुरू करा.",
-        "ms": "Jalankan `rh setup`, atau hidupkan Right Here dalam Tetapan Sistem › Umum › Item Log Masuk & Sambungan › Finder.",
+        "ms": "Jalankan `rh setup`, atau hidupkan Right Here dalam Seting Sistem › Umum › Item Log Masuk & Sambungan › Finder.",
         "nl": "Voer `rh setup` uit, of zet Right Here aan in Systeeminstellingen › Algemeen › Inlogonderdelen en extensies › Finder.",
         "pl": "Uruchom `rh setup` albo włącz Right Here w Ustawieniach systemowych › Ogólne › Rzeczy i rozszerzenia otwierane podczas logowania › Finder.",
         "pt-BR": "Execute `rh setup` ou ative o Right Here em Ajustes do Sistema › Geral › Itens de Login e Extensões › Finder.",
@@ -7305,7 +7305,7 @@ enum Localizations {
         "ur": "اس کے ساتھ کھولیں",
         "vi": "Mở bằng",
         "zh-Hans": "打开方式",
-        "zh-Hant": "打開方式",
+        "zh-Hant": "打開檔案的應用程式",
     ]
 
     private static let groupPresets: [String: String] = [

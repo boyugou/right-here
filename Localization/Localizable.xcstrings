@@ -8,7 +8,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "إظهار في Finder"
+            "value": "إظهار في فايندر"
           }
         },
         "bn": {
@@ -656,7 +656,7 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Buka Tetapan Sistem"
+            "value": "Buka Seting Sistem"
           }
         },
         "nl": {
@@ -842,7 +842,7 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS menghalang Right Here daripada mengawal %@. Benarkan dalam Tetapan Sistem › Privasi & Keselamatan › Automasi, kemudian cuba lagi."
+            "value": "macOS menghalang Right Here daripada mengawal %@. Benarkan dalam Seting Sistem › Privasi & Keselamatan › Automasi, kemudian cuba lagi."
           }
         },
         "nl": {
@@ -8282,7 +8282,7 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Hidupkan Right Here dalam Tetapan Sistem › Umum › Item Log Masuk & Sambungan › Finder."
+            "value": "Hidupkan Right Here dalam Seting Sistem › Umum › Item Log Masuk & Sambungan › Finder."
           }
         },
         "nl": {
@@ -13118,7 +13118,7 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tindakan Pantas berfungsi tanpa sambungan: klik kanan pada fail atau folder dan pilih Tindakan Pantas. Untuk pintasan papan kekunci, pergi ke Tetapan Sistem › Papan Kekunci › Pintasan Papan Kekunci › Perkhidmatan."
+            "value": "Tindakan Pantas berfungsi tanpa sambungan: klik kanan pada fail atau folder dan pilih Tindakan Pantas. Untuk pintasan papan kekunci, pergi ke Seting Sistem › Papan Kekunci › Pintasan Papan Kekunci › Perkhidmatan."
           }
         },
         "nl": {
@@ -31904,7 +31904,7 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Jalankan `rh setup`, atau hidupkan Right Here dalam Tetapan Sistem › Umum › Item Log Masuk & Sambungan › Finder."
+            "value": "Jalankan `rh setup`, atau hidupkan Right Here dalam Seting Sistem › Umum › Item Log Masuk & Sambungan › Finder."
           }
         },
         "nl": {
@@ -39800,7 +39800,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "打開方式"
+            "value": "打開檔案的應用程式"
           }
         }
       }

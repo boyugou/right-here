@@ -80,15 +80,24 @@ def finder_strings(language: str, name: str):
     return None
 
 
+def find_general_pane():
+    """The table that names the General pane: its extension is called GeneralSettings on macOS 27 and something else on macOS 26."""
+    for path in sorted(EXTENSIONS.glob("*.appex/Contents/Resources/InfoPlist.loctable")):
+        table = read_table(path)
+        if table and (table.get("en") or {}).get("CFBundleDisplayName") == "General":
+            return table
+    return None
+
+
 def settings_path_problems(strings: dict, settings: dict, languages: dict) -> list:
     """The Login Items & Extensions path and the Keyboard Shortcuts path, in the strings that quote them."""
-    general = read_table(EXTENSIONS / "GeneralSettings.appex/Contents/Resources/InfoPlist.loctable")
+    general = find_general_pane()
     login = read_table(EXTENSIONS / "LoginItems.appex/Contents/Resources/Localizable.loctable")
     keyboard_info = read_table(EXTENSIONS / "KeyboardSettings.appex/Contents/Resources/InfoPlist.loctable")
     keyboard = read_table(EXTENSIONS / "KeyboardSettings.appex/Contents/Resources/Localizable.loctable")
     shortcuts = read_table(EXTENSIONS / "KeyboardSettings.appex/Contents/Resources/DefaultShortcutsTable.loctable")
     unreadable = [name for name, table in (
-        ("GeneralSettings.appex/Contents/Resources/InfoPlist.loctable", general), ("LoginItems.appex/Contents/Resources/Localizable.loctable", login),
+        ("LoginItems.appex/Contents/Resources/Localizable.loctable", login),
         ("KeyboardSettings.appex/Contents/Resources/InfoPlist.loctable", keyboard_info), ("KeyboardSettings.appex/Contents/Resources/Localizable.loctable", keyboard),
         ("KeyboardSettings.appex/Contents/Resources/DefaultShortcutsTable.loctable", shortcuts)) if not table]
     if unreadable:
@@ -96,7 +105,7 @@ def settings_path_problems(strings: dict, settings: dict, languages: dict) -> li
     paths = {
         "app.fixExtensionEnable": ("System Settings › General › Login Items & Extensions", (
             ("System Settings", lambda l: lookup(settings, l, "CFBundleDisplayName") or lookup(settings, l, "CFBundleName")),
-            ("General", lambda l: lookup(general, l, "CFBundleDisplayName")),
+            ("General", lambda l: lookup(general, l, "CFBundleDisplayName") if general else "General"),
             ("Login Items & Extensions", lambda l: lookup(login, l, "Login Items & Extensions")))),
         "app.quickActionsBody": ("System Settings › Keyboard › Keyboard Shortcuts › Services", (
             ("System Settings", lambda l: lookup(settings, l, "CFBundleDisplayName") or lookup(settings, l, "CFBundleName")),
