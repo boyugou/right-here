@@ -82,9 +82,11 @@ enum Output {
         return ExitCode(1)
     }
 
+    /// JSON is what an AI agent is told to read, so what a check quotes from the config is fenced in its `text` (`DoctorCheck.encode`).
     static func json(_ value: some Encodable) throws {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        encoder.userInfo[.fencesQuotedText] = true
         Swift.print(String(decoding: try encoder.encode(value), as: UTF8.self))
     }
 }

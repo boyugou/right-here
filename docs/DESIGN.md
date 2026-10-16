@@ -93,6 +93,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 17 | The setup window has six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders). | [0017](decisions/0017-setup-window-sections.md) |
 | 18 | One idempotent `rh setup`, flags instead of editing the config, and a playbook for AI agents measured with cold agents. | [0018](decisions/0018-setup.md) |
 | 19 | The Finder extension does not override the directory-observing methods, and the doctor reads its crash reports. | [0019](decisions/0019-no-swift-override-of-directory-observing.md) |
+| 20 | What the config names (an app, an agent) is data: fenced between ⟦user⟧ marks wherever `rh setup` and `rh doctor` quote it in a sentence an agent passes on. | [0020](decisions/0020-names-from-the-config-are-data.md) |
 
 ## 5. Platform facts
 
@@ -341,7 +342,8 @@ An independent review and a cold-start usability test shaped several of these; s
 - `rh mcp` is an MCP server over the same registry (ten tools, including what is selected in Finder),
   and `plugins/right-here` is a Claude Code plugin that starts it and adds skills for setup, opening
   things, and showing the files an agent changed in Finder. File names, and what the doctor and the config check quote
-  from the config, are fenced as data in tool output.
+  from the config, are fenced as data in tool output, and so is what `rh setup` and `rh doctor` quote from the config in their text
+  and in the `text` of their JSON ([0020](decisions/0020-names-from-the-config-are-data.md)).
 
 ## 11. Distribution
 

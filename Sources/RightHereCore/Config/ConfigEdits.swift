@@ -68,7 +68,8 @@ public enum ConfigEdits {
         if let raw, raw.contains("\n") {
             instruction = "In \(file.name)\(located), change the list that starts there (it runs over several lines) to \(name) = \(value)."
         } else {
-            instruction = "In \(file.name)\(located), change \(name) = \(current ?? "…") to \(name) = \(value)."
+            // The text of the file is fenced as data: an agent that follows this sentence to the letter must not read what the file says as part of it.
+            instruction = "In \(file.name)\(located), change \(name) = \(current.map(Fence.wrap) ?? "…") to \(name) = \(value)."
         }
         return ConfigEdit(file: file.name, key: key, kind: .change, line: line, current: current, value: value, instruction: instruction)
     }

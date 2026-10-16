@@ -64,11 +64,11 @@ struct DoctorMessageTests {
         let check = DoctorCheck(.config, status: .warn, detail: .doctorConfigWarnings("2"), notes: [.doctorConfigOverlay("/h/config.local.toml")], fix: .doctorFixConfigWarnings)
         #expect(check.englishLines() == [
             "[warn] Config file: 2 warning(s); run `rh config validate`",
-            "       note: merged with the per-machine overlay /h/config.local.toml",
+            "       note: merged with the per-machine overlay ⟦user⟧/h/config.local.toml⟦/user⟧",
             "       fix: Run `rh config validate`; warnings are usually typos, and what they were meant to set is missing."
         ])
         #expect(DoctorCheck(.agents, status: .ok).englishLines() == ["[ok] Agents"])
-        #expect(DoctorCheck(.agent("codex"), title: "Codex", status: .ok, detail: .doctorAgentOk("codex", "Codex Here")).englishLines() == ["[ok] Codex: `codex` found; starts with Codex Here"])
+        #expect(DoctorCheck(.agent("codex"), title: "Codex", status: .ok, detail: .doctorAgentOk("codex", "Codex Here")).englishLines() == ["[ok] ⟦user⟧Codex⟦/user⟧: `⟦user⟧codex⟦/user⟧` found; starts with ⟦user⟧Codex Here⟦/user⟧"])
     }
 
     @Test func whatMayHaveBeenWrittenByOthersCanBeMarkedWhenItIsPrinted() {
@@ -127,7 +127,9 @@ struct DoctorMessageTests {
     @Test func aProbeKeepsItsEnglishText() {
         let probe = DoctorCheck(.finderLaunch, status: .fail, detail: .doctorVerbatim("Ghostty refused"), fix: .doctorVerbatim("Try again."))
         #expect(probe.title == "Finder click runs a command in the terminal")
-        #expect(probe.englishLines() == ["[fail] Finder click runs a command in the terminal: Ghostty refused", "       fix: Try again."])
+        // What the probe reports names the terminal the config chose, so it is fenced; a row that cannot quote the config is not (the extension's).
+        #expect(probe.englishLines() == ["[fail] Finder click runs a command in the terminal: ⟦user⟧Ghostty refused⟦/user⟧", "       fix: ⟦user⟧Try again.⟦/user⟧"])
+        #expect(DoctorCheck(.finderExtension, status: .warn, detail: .doctorVerbatim("crashed once")).englishLines() == ["[warn] Finder extension: crashed once"])
         #expect(DoctorCheck(.finderChain, status: .ok).title == "Finder click to terminal")
         // What the extension reported is shown as it is in every language.
         let reported = Doctor.launchCheck(for: nil)

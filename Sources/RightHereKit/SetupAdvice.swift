@@ -27,9 +27,12 @@ enum SetupAdvice {
         }
 
         if let terminal = agentTerminalNeedingPermission(config: config, facts: facts) {
+            // The name macOS asks about is the app's own (the dialog names the app, not what the config calls it); the config's name stands in only when the system
+            // has none. Either is text from outside, so the sentence the playbook has an agent pass on fences it (ADR 0020).
+            let name = Fence.wrap(terminal.installedBundleID(facts: facts).flatMap(facts.displayName(bundleID:)) ?? terminal.name)
             needs.append(SetupNeed(
                 .automation,
-                text: "The first time Right Here starts an agent in \(terminal.name), macOS asks whether Right Here may control \(terminal.name). Click Allow.",
+                text: "The first time Right Here starts an agent in \(name), macOS asks whether Right Here may control \(name). Click Allow.",
                 how: [
                     "The question appears once, the first time an agent is started from the Finder menu.",
                     "To see it now, run `rh doctor --probe-launch`: it opens a terminal window for about a second. Run it only if the person agrees."

@@ -270,7 +270,7 @@ struct SetupRunnerTests {
         #expect(report.configEdits.count == 1 && edit.line == 7 && edit.value == "[\"claude\", \"codex\"]")
         #expect(report.warnings.contains { $0.contains("already exists, so Right Here left it alone") })
         #expect(report.next.first?.command == "rh config validate --strict")
-        #expect(report.english().contains { $0.contains("In config.toml on line 7, change agents = [\"claude\"] to agents = [\"claude\", \"codex\"].") })
+        #expect(report.english().contains { $0.contains("In config.toml on line 7, change agents = ⟦user⟧[\"claude\"]⟦/user⟧ to agents = [\"claude\", \"codex\"].") })
     }
 
     @Test func theEditsComeBeforeTheRealRunSoOneRunBuildsEveryQuickAction() async throws {
@@ -505,7 +505,7 @@ struct SetupRunnerTests {
         let machine = try Machine(shellOutput: "claude\n"); defer { machine.cleanUp() }
         let report = try await machine.runner(trial: false).run(.setup())
         let need = try #require(report.needsUser.first { $0.id == .automation })
-        #expect(need.text == "The first time Right Here starts an agent in Ghostty, macOS asks whether Right Here may control Ghostty. Click Allow.")
+        #expect(need.text == "The first time Right Here starts an agent in ⟦user⟧Ghostty⟦/user⟧, macOS asks whether Right Here may control ⟦user⟧Ghostty⟦/user⟧. Click Allow.")
         #expect(report.next.contains { $0.command == "rh doctor --probe-launch" })
     }
 

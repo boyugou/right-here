@@ -39,12 +39,28 @@ public struct DoctorCheck: Sendable, Equatable, Encodable, Identifiable {
         id.titleKey.map { localizer.string($0) } ?? title
     }
 
-    /// The check as the command line and the MCP server print it, in English. `quoting` marks what may have been written
-    /// by somebody else (a config problem, a command, an agent's name): the MCP server fences it for the agent that reads it.
-    public func englishLines(quoting quote: (String) -> String = { $0 }) -> [String] {
-        var lines = ["[\(status.rawValue)] \(id.isAgent ? quote(title) : title)" + (detail.map { ": " + quote($0.english()) } ?? "")]
-        lines += notes.map { "       note: " + quote($0.english()) }
-        if let fix { lines.append("       fix: " + quote(fix.english())) }
+    /// For a row that can quote the config (`CheckID.quotesTheConfig`): which values of which messages are Right Here's own and not the config's text: where it looks for
+    /// the config, the overlay, which of the two files is a link, the sync state's file, and the origin and the age of the last action started from Finder (its id is
+    /// the config's). `rh doctor --report` shows these and leaves every other value out; a report an agent reads fences every other value.
+    static let ownValues: [LocalizationKey: Set<Int>] = [
+        .doctorConfigMissing: [0], .doctorConfigOverlay: [0], .doctorConfigSymlink: [0], .doctorSyncStateUnreadable: [0],
+        .doctorActivityRecent: [1, 2]
+    ]
+
+    /// The check as the command line and the MCP server print it, in English.
+    ///
+    /// What a row that can quote the config (`CheckID.quotesTheConfig`: an app's or an agent's name, a command, the error that quotes a value) says is fenced as
+    /// data, value by value, so that Right Here's own words stay outside the fences (`Fence`, ADR 0020): the config can come through the sync folder, and an AI
+    /// agent that reads this must be able to tell it from the tool's own words. `quote` replaces that for the MCP server, which fences the whole text of every row.
+    public func englishLines(quoting quote: ((String) -> String)? = nil) -> [String] {
+        func said(_ message: LocalizedMessage) -> String {
+            if let quote { return quote(message.english()) }
+            return id.quotesTheConfig ? message.englishMarkingValues(except: Self.ownValues[message.key] ?? []) : message.english()
+        }
+        let name = id.isAgent ? (quote ?? Fence.wrap)(title) : title
+        var lines = ["[\(status.rawValue)] \(name)" + (detail.map { ": " + said($0) } ?? "")]
+        lines += notes.map { "       note: " + said($0) }
+        if let fix { lines.append("       fix: " + said(fix)) }
         return lines
     }
 
@@ -53,15 +69,48 @@ public struct DoctorCheck: Sendable, Equatable, Encodable, Identifiable {
     }
 
     /// `rh doctor --json`: `detail`, `notes` and `fix` are messages that carry their English text, so a person or an AI
-    /// agent reads `text` and a program can act on `code` and `args`.
+    /// agent reads `text` and a program can act on `code` and `args`. With `CodingUserInfoKey.fencesQuotedText` set (the command line's printer sets it), the
+    /// `text` of a row that can quote the config has what it quotes fenced as data; `args` and `title` hold the values as they are.
     public func encode(to encoder: any Encoder) throws {
+        let fencing = encoder.userInfo[.fencesQuotedText] as? Bool == true && id.quotesTheConfig
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id.rawValue, forKey: .id)
         try container.encode(title, forKey: .title)
         try container.encode(status, forKey: .status)
-        try container.encodeIfPresent(detail, forKey: .detail)
-        if !notes.isEmpty { try container.encode(notes, forKey: .notes) }
-        try container.encodeIfPresent(fix, forKey: .fix)
+        try container.encodeIfPresent(detail.map { MessageText($0, fencing: fencing) }, forKey: .detail)
+        if !notes.isEmpty { try container.encode(notes.map { MessageText($0, fencing: fencing) }, forKey: .notes) }
+        try container.encodeIfPresent(fix.map { MessageText($0, fencing: fencing) }, forKey: .fix)
+    }
+}
+
+extension CodingUserInfoKey {
+    /// Set on an encoder whose output an AI agent reads, as the command line's JSON is: what a check quotes from the config is fenced in its `text`. The MCP server's
+    /// structured data does not set it, which keeps that data plain; the text of the MCP result fences it instead.
+    public static let fencesQuotedText: CodingUserInfoKey = {
+        guard let key = CodingUserInfoKey(rawValue: "com.boyugou.righthere.fencesQuotedText") else { fatalError("an empty key") }
+        return key
+    }()
+}
+
+/// A message as `LocalizedMessage` encodes it (`code`, `args`, `text`), with the values in `text` fenced when the row quotes the config.
+private struct MessageText: Encodable {
+    let message: LocalizedMessage
+    let fencing: Bool
+
+    init(_ message: LocalizedMessage, fencing: Bool) {
+        self.message = message
+        self.fencing = fencing
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case code, args, text
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(message.key.rawValue, forKey: .code)
+        try container.encode(message.arguments, forKey: .args)
+        try container.encode(fencing ? message.englishMarkingValues(except: DoctorCheck.ownValues[message.key] ?? []) : message.english(), forKey: .text)
     }
 }
 

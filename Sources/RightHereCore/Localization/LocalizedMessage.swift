@@ -21,6 +21,16 @@ public struct LocalizedMessage: Sendable, Equatable {
         Localizer.english.render(self, escapingValues: true)
     }
 
+    /// The sentence in English with each of its values (a name, a command, a path or a message that something other than Right Here wrote) fenced as data
+    /// (`Fence`), and Right Here's own words outside the fences. A number is not a value in that sense, and neither is a value at one of the `own` positions (the
+    /// message's own file, say). For a report an AI agent is told to pass on.
+    public func englishMarkingValues(except own: Set<Int> = []) -> String {
+        let marked = arguments.enumerated().map { index, value in
+            own.contains(index) || (!value.isEmpty && value.utf8.allSatisfy { $0 >= UInt8(ascii: "0") && $0 <= UInt8(ascii: "9") }) ? value.withControlCharactersEscaped : Fence.wrap(value)
+        }
+        return Localizer.english.render(LocalizedMessage(key, marked))
+    }
+
     /// The sentence with its values left out (shown as `…`), except the numbers and the values at the positions named: Right Here's own
     /// wording and nothing a config or a file put into it. For a report that is pasted where everyone reads it.
     public func english(showingOnly positions: Set<Int> = []) -> String {

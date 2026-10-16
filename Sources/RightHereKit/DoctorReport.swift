@@ -65,17 +65,10 @@ public enum DoctorReport {
         }
     }
 
-    /// What the report says for a value that a row quotes, at these places of these messages: Right Here's own files (where it looks for the config, the
-    /// overlay, which file is a link, the sync state), and the origin and the age of the last action started from Finder, whose id is the config's.
-    private static let valuesShown: [LocalizationKey: Set<Int>] = [
-        .doctorConfigMissing: [0], .doctorConfigOverlay: [0], .doctorConfigSymlink: [0], .doctorSyncStateUnreadable: [0],
-        .doctorActivityRecent: [1, 2]
-    ]
-
     static let notShown = "(not shown: it can quote the config)"
 
     private static func shown(_ message: LocalizedMessage) -> String {
-        message.key == .doctorVerbatim ? notShown : message.english(showingOnly: valuesShown[message.key] ?? [])
+        message.key == .doctorVerbatim ? notShown : message.english(showingOnly: DoctorCheck.ownValues[message.key] ?? [])
     }
 
     /// The lines of one check in the report. A row that cannot hold text from the config is printed as the doctor prints it. One that can (`CheckID.quotesTheConfig`)
