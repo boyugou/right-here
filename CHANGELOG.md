@@ -21,6 +21,10 @@
 - The setup evaluation has a fifth persona (a config with such a name) and a fifth round, on 0.3.1; the troubleshooting guide has entries for the window that says to move
   the app and for a login shell that says nothing about the agents.
 
+- The question put to the login shell (which agents are installed, what is on the `PATH`) no longer loses its first line to a startup file that prints a word without ending the
+  line (`printf Welcome` in `.zshrc` or `config.fish`: with fish 4.9 the first agent was read as `Welcomeclaude`, so it was not found), and a word a startup file prints can no
+  longer pass for an agent that was asked about only because it was printed.
+
 ## 0.3.1 (2026-10-16)
 
 Fixes to the first run in the app, which an independent review read as a person doing a first setup, and to what an AI assistant is told about names from a config.

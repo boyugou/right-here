@@ -60,18 +60,22 @@ public struct Detector: Sendable {
         // nothing a command is called can pass for it. The names never become part of the script.
         let script: String
         switch facts.shellFlavor {
+        // Every line starts with a line feed of its own: a startup file that printed a word without ending the line would otherwise be glued to the first of them.
         case .posix:
-            script = "for n in \"$@\"; do command -v -- \"$n\" >/dev/null 2>&1 && printf '%s\\n' \"$n\"; done"
-                + (wantPath ? "; printf '\\001rh-path\\001%s\\n' \"$PATH\"" : "") + "; printf '\\001rh-done\\001\\n'"
+            script = "for n in \"$@\"; do command -v -- \"$n\" >/dev/null 2>&1 && printf '\\n%s\\n' \"$n\"; done"
+                + (wantPath ? "; printf '\\n\\001rh-path\\001%s\\n' \"$PATH\"" : "") + "; printf '\\n\\001rh-done\\001\\n'"
         case .fish:
-            script = "for n in $argv; command -v -- $n >/dev/null 2>&1; and echo $n; end"
-                + (wantPath ? "; printf '\\001rh-path\\001%s\\n' (string join : $PATH)" : "") + "; printf '\\001rh-done\\001\\n'"
+            script = "for n in $argv; command -v -- $n >/dev/null 2>&1; and printf '\\n%s\\n' $n; end"
+                + (wantPath ? "; printf '\\n\\001rh-path\\001%s\\n' (string join : $PATH)" : "") + "; printf '\\n\\001rh-done\\001\\n'"
         }
         // With `-c`, a POSIX shell takes the first operand as `$0`; fish has no such slot.
         let operands = facts.shellFlavor == .posix ? ["rh-detect"] + commands : commands
         let result = try? await runner.run(ProcessStep(executable: facts.loginShell, arguments: ["-lic", script] + operands), timeout: .seconds(10))
         guard let output = result?.standardOutput else { return LoginShellFacts() }
-        return Self.parse(output)
+        var shell = Self.parse(output)
+        // What the startup files printed is in the output too: only a name that was asked about can be an answer.
+        shell.found.formIntersection(commands)
+        return shell
     }
 
     static let pathMarker = "\u{01}rh-path\u{01}"

@@ -70,6 +70,26 @@ struct DetectorCommandLookupTests {
         #expect(result.found == ["ls"])
     }
 
+    @Test func aStartupFileThatPrintsAnUnfinishedLineDoesNotHideTheAnswer() async throws {
+        // `printf Welcome` ends no line: without a line feed of their own the names and the last line would be glued to it, and a shell that did answer would read as silent.
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("rh-welcome-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: home) }
+        try "printf Welcome\n".write(to: home.appendingPathComponent(".zshrc"), atomically: true, encoding: .utf8)
+        struct Welcome: ProcessRunner {
+            let home: URL
+            func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
+                var step = step
+                step.environment.merge(["HOME": home.path, "ZDOTDIR": home.path, "ENV": "", "BASH_ENV": ""]) { $1 }
+                return try await LiveProcessRunner().run(step, timeout: timeout)
+            }
+        }
+        let shell = await Detector(facts: FakeSystemFacts(loginShell: "/bin/zsh"), runner: Welcome(home: home)).probe(commands: ["ls", "definitely-not-a-command-xyz"], wantPath: true)
+        #expect(shell.found == ["ls"], "the word the startup file printed is not a command that was asked about: \(shell.found)")
+        #expect(shell.answered, "a shell that printed a word before the script was taken for a silent one")
+        #expect(shell.path?.contains("/usr/bin") == true)
+    }
+
     @Test func aShellThatDidNotGetToTheEndOfTheScriptHasNotAnswered() {
         // A startup file that exits, or a shell that was stopped for being slow, prints nothing of the script: "no agent" is then not what it said.
         #expect(!Detector.parse("").answered)
