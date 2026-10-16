@@ -174,7 +174,12 @@ public struct SetupRunner: Sendable {
         var detected = DetectedEnvironment()
         let choices = request.choices
         if choices.terminal == nil || choices.editor == nil || choices.agents == nil {
-            detected = await Detector(facts: facts, runner: runner).detect()
+            let looked = await Detector(facts: facts, runner: runner).look()
+            detected = looked.environment
+            // "Whatever you find" with a shell that found nothing because it said nothing makes a config with no agents, and nobody would know why.
+            if choices.agents == nil, !looked.shellAnswered {
+                report.warnings.append("Your login shell did not say which AI agents are installed (a startup file that exits or waits does that), so none was chosen. Say which you use with --agents, for example --agents claude,codex.")
+            }
         }
         let written = detected.applying(choices)
         report.chosen = chosen(written, choices: choices)

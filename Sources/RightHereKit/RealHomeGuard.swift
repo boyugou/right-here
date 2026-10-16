@@ -9,7 +9,7 @@ public enum RealHomeGuard {
     public struct Refusal: Error, LocalizedError, Equatable {
         public var errorDescription: String? {
             "RH_NO_UI is set, which only a test does, and RH_HOME is not: this would change the real home folder (the runner script, the command link, the Quick Actions) "
-                + "or the Finder extension's registration, which are the person's. A test gives rh a trial home, `RH_HOME=<an empty folder>`, for what it writes."
+                + "or the Finder extension's registration, which are the person's. Unset RH_NO_UI (it is for tests), or give rh a trial home, `RH_HOME=<an empty folder>`, for what it writes."
         }
     }
 

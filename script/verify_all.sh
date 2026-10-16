@@ -27,4 +27,5 @@ uv run script/compile_docs.py --check
 uv run script/verify_docs.py
 uv run script/setup_evaluation.py check
 uv run script/verify_version.py
+uv run script/mutation_check.py --check
 ./script/verify_public_safety.sh

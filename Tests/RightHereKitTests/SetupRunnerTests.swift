@@ -13,6 +13,8 @@ private final class Machine: Sendable {
     let app: URL
     /// What the login shell prints when it is asked which agent commands it finds.
     let shellOutput: String
+    /// Whether the login shell gets to the end of its script (the last line it prints); a startup file that exits does not.
+    let shellAnswers: Bool
 
     private struct State {
         var registered: [String] = []
@@ -22,10 +24,11 @@ private final class Machine: Sendable {
 
     private let state = Mutex(State())
 
-    init(shellOutput: String = "claude\ncodex\n", registered: [String] = [], enabled: Bool = false) throws {
+    init(shellOutput: String = "claude\ncodex\n", shellAnswers: Bool = true, registered: [String] = [], enabled: Bool = false) throws {
         home = try makeTemporaryDirectory()
         paths = RHPaths(environment: [:], home: home)
         self.shellOutput = shellOutput
+        self.shellAnswers = shellAnswers
         rh = home.appendingPathComponent("tools/rh").path
         app = home.appendingPathComponent("Applications/Right Here.app")
         try FileManager.default.createDirectory(at: HostApp.extensionURL(in: app), withIntermediateDirectories: true)
@@ -85,7 +88,7 @@ private final class Machine: Sendable {
         case "/bin/zsh":
             // The detector and the doctor both ask the login shell; the doctor may also ask for the PATH.
             let wantsPath = step.arguments.contains { $0.contains("rh-path") }
-            return ProcessResult(status: 0, standardOutput: shellOutput + (wantsPath ? "\u{01}rh-path\u{01}/usr/bin:/bin\n" : ""))
+            return ProcessResult(status: 0, standardOutput: shellOutput + (wantsPath ? "\u{01}rh-path\u{01}/usr/bin:/bin\n" : "") + (shellAnswers ? "\u{01}rh-done\u{01}\n" : ""))
         default:
             return ProcessResult(status: 0)
         }
@@ -137,6 +140,21 @@ struct SetupRunnerTests {
         #expect(machine.registered.isEmpty)
         #expect(report.trialHome == machine.home.path)
         #expect(report.warnings.contains { $0.hasPrefix("RH_HOME is set, so this is a trial") })
+    }
+
+    @Test func aSetupThatFoundNoAgentBecauseTheLoginShellSaidNothingSaysSo() async throws {
+        let machine = try Machine(shellOutput: "", shellAnswers: false); defer { machine.cleanUp() }
+        let report = try await machine.runner().run(.setup(dryRun: true))
+        #expect(report.warnings.contains { $0.contains("did not say which AI agents are installed") }, "\(report.warnings)")
+        // A person who named the agents has nothing to be told.
+        let named = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "ghostty", editor: "vscode", agents: ["claude"]), dryRun: true))
+        #expect(!named.warnings.contains { $0.contains("did not say which AI agents are installed") })
+    }
+
+    @Test func aShellThatAnsweredAndFoundNothingIsNotSaidToHaveBeenSilent() async throws {
+        let machine = try Machine(shellOutput: ""); defer { machine.cleanUp() }
+        let report = try await machine.runner().run(.setup(dryRun: true))
+        #expect(!report.warnings.contains { $0.contains("did not say which AI agents are installed") }, "\(report.warnings)")
     }
 
     @Test func theConfigIsMadeFromWhatIsInstalledAndTheSetupSaysWhatItFound() async throws {

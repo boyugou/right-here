@@ -334,7 +334,7 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    [0016](decisions/0016-agent-permissions-and-worktrees.md), "What git may start", for what was measured.
 
 9. A test cannot change the real home: `rh` started with `RH_NO_UI` and without `RH_HOME` refuses to write the runner script, the command link or the Quick Actions, and to
-   change the Finder extension's registration (`RealHomeGuard`), and the mutation check stops at the first mutant that changes them; see
+   change the Finder extension's registration (`RealHomeGuard`), and the mutation check stops at the first mutant that changes the runner script, the link or the Quick Actions; see
    [0022](decisions/0022-a-test-cannot-change-the-real-home.md), which says what happened before it.
 
 An independent review and a cold-start usability test shaped several of these; see

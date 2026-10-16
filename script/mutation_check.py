@@ -19,6 +19,7 @@ quoting, planning, the MCP server, the process runner or the Finder probe.
 
     ./script/mutation_check.py              all mutants
     ./script/mutation_check.py --list       what they are
+    ./script/mutation_check.py --check      whether every pattern still matches exactly once in the tree (seconds; the gate runs it)
     ./script/mutation_check.py 3 7          only these
 """
 import os
@@ -420,7 +421,7 @@ MUTANTS = [
     ("the MCP action list prints titles unfenced", "Sources/RightHereMCP/Tools.swift",
      '"\\($0.id)  " + Fence.wrap($0.title)', '"\\($0.id)  " + $0.title'),
     ("the MCP menu preview prints titles unfenced", "Sources/RightHereMCP/Tools.swift",
-     "json.fencing([\"title\"]).pretty()", "json.pretty()"),
+     "json.fencing([\"title\"], kindsNamedByTheConfig: [Icon.Kind.fileType.rawValue]).pretty()", "json.pretty()"),
     ("the MCP catalog prints names unfenced", "Sources/RightHereMCP/Tools.swift",
      "structured.fencing([\"name\", \"command\", \"bundleID\", \"bypassPermissionArgument\"]).pretty()", "structured.pretty()"),
     ("the MCP catalog prints an agent's bypass flag from the config unfenced", "Sources/RightHereMCP/Tools.swift",
@@ -716,6 +717,22 @@ MUTANTS = [
      "if result?.terminatedAfter != nil { return Status(state: .unanswered, paths: []) }", "if result?.terminatedAfter != nil { return Status(state: .notRegistered, paths: []) }"),
     ("nobody looks at the extension once it was on, so switching it off is never seen", "Apps/RightHere/SetupModel.swift",
      "try? await Task.sleep(for: waiting ? pollInterval : idleInterval)", "try? await Task.sleep(for: pollInterval); if !waiting { return }"),
+    ("rh setup makes a config with no agents without saying that the shell said nothing", "Sources/RightHereKit/SetupRunner.swift",
+     "if choices.agents == nil, !looked.shellAnswered {", "if false {"),
+    ("rh setup says the shell was silent when it answered", "Sources/RightHereKit/SetupRunner.swift",
+     "if choices.agents == nil, !looked.shellAnswered {", "if choices.agents == nil {"),
+    ("an old line of the log is taken for the answer of the probe that was just started", "Sources/RightHereKit/ExtensionProbe.swift",
+     "when >= date.addingTimeInterval(-1) else { continue }", "true else { continue }"),
+    ("the answer of one kind of probe is taken for another's", "Sources/RightHereKit/ExtensionProbe.swift",
+     "guard rest.hasPrefix(prefix) else { continue }", ""),
+    ("an app that was not allowed to be controlled is reported as granted", "Sources/RightHereKit/AutomationProbe.swift",
+     'let outcome: Outcome = error.contains("(-1743)") ? .denied :', 'let outcome: Outcome = false ? .denied :'),
+    ("an Apple event that timed out is reported as a failure", "Sources/RightHereKit/AutomationProbe.swift",
+     '(error.contains("(-1712)") || result.terminatedAfter != nil) ? .timedOut : .failed', '.failed'),
+    ("a probe that was stopped by the watchdog is reported as what it printed", "Sources/RightHereKit/AutomationProbe.swift",
+     '(error.contains("(-1712)") || result.terminatedAfter != nil)', '(error.contains("(-1712)"))'),
+    ("an app that is not running is started by the probe", "Sources/RightHereKit/AutomationProbe.swift",
+     "guard facts.isRunning(bundleID: bundleID) else {", "guard true || facts.isRunning(bundleID: bundleID) else {"),
     ("a rh that is not inside an app is refused for the volume it is on", "Sources/RightHereKit/Installer.swift",
      'guard helper.contains(".app/Contents/"), isOnAnotherVolume(helper) else { return nil }', 'guard isOnAnotherVolume(helper) else { return nil }'),
     ("a link in /Volumes to the startup disk counts as another volume", "Sources/RightHereKit/Installer.swift",
@@ -780,7 +797,8 @@ def real_home_fingerprint() -> dict[str, object]:
     `rh` refuses the real home from a test (`RealHomeGuard`); this notices it if that is not enough.
     """
     home = pathlib.Path(pwd.getpwuid(os.getuid()).pw_dir)
-    watched = [home / "Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run", home / ".local/bin/rh", home / "Library/Services"]
+    # Not the folder of the Services itself: its date changes when anything else is installed there, and the run would stop for it.
+    watched = [home / "Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run", home / ".local/bin/rh"]
     watched += sorted((home / "Library/Services").glob("Right Here*")) if (home / "Library/Services").is_dir() else []
     state: dict[str, object] = {}
     for path in watched:
@@ -797,6 +815,24 @@ def main() -> int:
     if arguments == ["--list"]:
         for index, (name, file, _old, _new) in enumerate(MUTANTS):
             print(f"{index:2}  {name}  ({file})")
+        return 0
+    if arguments == ["--check"]:
+        # A line that was changed leaves its entry matching nothing, and a run of two hours skips it: found by a review, a hundred minutes into a run.
+        problems = []
+        for index, (name, file, old, new) in enumerate(MUTANTS):
+            path = ROOT / file
+            if not path.exists():
+                problems.append(f"[{index}] {file} is not there: {name}")
+                continue
+            occurrences = path.read_text(encoding="utf-8").count(old)
+            if occurrences != 1:
+                problems.append(f"[{index}] the pattern for \"{name}\" is in {file} {occurrences} times, not once")
+            if old == new:
+                problems.append(f"[{index}] the pattern for \"{name}\" is the same as its replacement")
+        if problems:
+            print("\n".join(problems), file=sys.stderr)
+            return 1
+        print(f"ok: all {len(MUTANTS)} mutation entries match the tree exactly once")
         return 0
     chosen = {int(a) for a in arguments} if arguments else set(range(len(MUTANTS)))
 
@@ -825,7 +861,8 @@ def main() -> int:
                         break
             finally:
                 path.write_text(original, encoding="utf-8")
-            changed = [name_ for name_, state in real_home_fingerprint().items() if state != home_before.get(name_)]
+            home_after = real_home_fingerprint()
+            changed = sorted(name_ for name_ in home_before.keys() | home_after.keys() if home_before.get(name_) != home_after.get(name_))
             if changed:
                 print(f"[{index}] STOPPED: this mutant (\"{name}\") changed the real home: {', '.join(changed)}.\n"
                       "Repair it with `Right Here.app/Contents/Helpers/rh setup` from the installed app, and make the test that did it give `rh` a trial home (RH_HOME).", file=sys.stderr)

@@ -86,7 +86,8 @@ public enum Documentation {
       the absolute path, and `Copy Path: <style>` for another style (`Copy Path: Path from Home (~)`).
     - `rh actions` prints the actions that can run on this machine, with no status column; `--all` adds the others, each
       with the reason it cannot run.
-    - `RH_NO_UI` turns off alerts and stops `rh` from starting `open` or `osascript`. `RH_HOME` moves every
+    - `RH_NO_UI` turns off alerts and stops `rh` from starting `open` or `osascript`; it is for tests, and with it set and no `RH_HOME` the commands that set up
+      (`setup`, `install`, `uninstall`) refuse to change your real home folder (unset it, or give them an `RH_HOME`). `RH_HOME` moves every
       per-user path (config, log, runner script, Services, command link) under the folder it names; the login
       shell that `setup`, `init`, `agents` and `doctor` start (and `run <agent> --dry-run`, to see whether the agent's command is found,
       and `setup --dry-run` when a choice is left out) is not moved, so it runs the person's own startup files.

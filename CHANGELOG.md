@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `rh setup` without `--agents` says so when the login shell said nothing about the agents (a config with no agents was made without a word); `rh docs` and the refusal of the
+  real-home guard say how to leave `RH_NO_UI` out; the mutation check can be asked `--check` (the gate does) whether every pattern still matches, and no longer stops for a change
+  in the Services folder that is not Right Here's.
+
 - Found by the review of the changes after 0.3.0's review (round 20): Install or Repair on a Mac that has only the per-machine overlay no longer makes `config.toml` from what
   it found; a look at the Finder extension's registration is stopped after twenty seconds and says "pluginkit did not answer" (before, a stuck daemon held the window's first look,
   the doctor and the setup for ever); `rh uninstall` says "Unregistered" only when macOS did; coming back to the window reads the Mac again at most every twenty seconds

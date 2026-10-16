@@ -11,7 +11,7 @@ link `~/.local/bin/rh` and the seven Quick Actions were replaced by ones that po
 stopped working until `rh setup` was run again from the installed app. It was found by chance, in a picture of the Checks page ("the runner script runs …/rh-mutation-…/clone/…, which
 does not exist"), about two hours after it happened.
 
-116 of the 143 command-line tests start `rh` without a trial home. They were safe because the commands they run are refused, or read only. A protection that is removed, or a bug,
+In 116 of the 143 places where the command-line tests start `rh` (the others, 27, give it a trial home) it has none. They were safe because the commands they run are refused, or read only. A protection that is removed, or a bug,
 makes them unsafe, and the mutation check removes protections on purpose.
 
 ## Decision
@@ -22,7 +22,7 @@ unregister or switch off the Finder extension, or restart it for a launch probe 
 means to write has a trial home. The refusal is a sentence that says so.
 
 **The mutation check stops at the first mutant that changes the real home.** Before the run and after each mutant it takes the modification times and link targets of the runner
-script, the command link and the Quick Actions of the account, and stops with the sentence that says how to repair it (`Right Here.app/Contents/Helpers/rh setup`).
+script, the command link and the Quick Actions of the account (not the extension's registration, which `pluginkit` keeps elsewhere), and stops with the sentence that says how to repair it (`Right Here.app/Contents/Helpers/rh setup`).
 
 **What stays as it is.** The tests that start `rh` keep their config folder and log folder as before; nothing about what they check changes. The guard only has an effect where a
 test would have written the real home. A test of the guard itself must not be able to do the damage it guards against, so it is a unit test (the real home is a temporary folder
