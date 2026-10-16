@@ -30,9 +30,13 @@ enum GitCommand {
         var filterDrivers: [String] = []
         /// Hooks named in the configuration (`hook.<name>.command`), wherever it is written.
         var hooks: [String] = []
+        /// The conditions of the conditional includes (`includeIf "<condition>"`) that the repository's own configuration has. What such an include brings in depends on
+        /// the branch checked out and the git directory, which differ in a worktree that does not exist yet, so what is defined there cannot be known from here.
+        var conditionalIncludes: [String] = []
 
         func merging(_ other: Defined) -> Defined {
-            Defined(filterDrivers: Array(Set(filterDrivers).union(other.filterDrivers)).sorted(), hooks: Array(Set(hooks).union(other.hooks)).sorted())
+            Defined(filterDrivers: Array(Set(filterDrivers).union(other.filterDrivers)).sorted(), hooks: Array(Set(hooks).union(other.hooks)).sorted(),
+                    conditionalIncludes: Array(Set(conditionalIncludes).union(other.conditionalIncludes)).sorted())
         }
     }
 
@@ -82,7 +86,7 @@ enum GitCommand {
     /// Unicode scalars: a name may hold an equals sign, a tab, a dot, or start with a combining mark, which would hide the dot before it from a
     /// comparison by `Character`.
     static func defined(in directory: String, runner: any ProcessRunner) async throws -> Defined {
-        let listing = try await runner.run(step(["config", "-z", "--show-scope", "--name-only", "--get-regexp", "^(filter|hook)\\."], in: directory, blanking: Defined()),
+        let listing = try await runner.run(step(["config", "-z", "--show-scope", "--name-only", "--get-regexp", "^(filter|hook|includeif)\\."], in: directory, blanking: Defined()),
                                            timeout: reading)
         try requireFinished(listing, "git config")
         // Exit status 1 is "no such setting".
@@ -92,14 +96,16 @@ enum GitCommand {
         let fields = listing.standardOutput.unicodeScalars.split(separator: "\0", omittingEmptySubsequences: false).map { String(String.UnicodeScalarView($0)) }
         var drivers = Set<String>()
         var hooks = Set<String>()
+        var conditions = Set<String>()
         var index = 0
         while index + 1 < fields.count {
             let (scope, name) = (fields[index], Array(fields[index + 1].unicodeScalars))
             index += 2
             if !ownScopes.contains(scope), let driver = middle(of: name, after: "filter.") { drivers.insert(driver) }
             if let hook = middle(of: name, after: "hook.") { hooks.insert(hook) }
+            if !ownScopes.contains(scope), let condition = middle(of: name, after: "includeif.") { conditions.insert(condition) }
         }
-        return Defined(filterDrivers: drivers.sorted(), hooks: hooks.sorted())
+        return Defined(filterDrivers: drivers.sorted(), hooks: hooks.sorted(), conditionalIncludes: conditions.sorted())
     }
 
     /// `<name>` of `<prefix><name>.<key>`: the key never has a dot, so the last dot ends the name. `nil` for a setting that has no name in it

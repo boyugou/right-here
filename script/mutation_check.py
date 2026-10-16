@@ -469,7 +469,7 @@ MUTANTS = [
     ("git: the drivers are listed without their scope, so a file the configuration includes and config.worktree are missed", "Sources/RightHereKit/GitCommand.swift",
      '"config", "-z", "--show-scope", "--name-only", "--get-regexp"', '"config", "--local", "-z", "--name-only", "--get-regexp"'),
     ("git: the hooks the configuration names are not looked for", "Sources/RightHereKit/GitCommand.swift",
-     '"^(filter|hook)\\\\."', '"^filter\\\\."'),
+     '"^(filter|hook|includeif)\\\\."', '"^filter\\\\."'),
     ("git: a driver in the repository's local or worktree configuration is taken for the person's own", "Sources/RightHereKit/GitCommand.swift",
      'static let ownScopes: Set<String> = ["system", "global", "command"]', 'static let ownScopes: Set<String> = ["system", "global", "command", "local", "worktree"]'),
     ("git: the person's own filters are switched off too", "Sources/RightHereKit/GitCommand.swift",

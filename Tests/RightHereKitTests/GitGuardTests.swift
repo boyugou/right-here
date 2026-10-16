@@ -33,7 +33,7 @@ private func git(_ arguments: [String], environment: [String: String] = guarded)
 }
 
 private func listingOfDefinitions(in directory: String) -> ProcessStep {
-    git(["-C", directory, "config", "-z", "--show-scope", "--name-only", "--get-regexp", "^(filter|hook)\\."])
+    git(["-C", directory, "config", "-z", "--show-scope", "--name-only", "--get-regexp", "^(filter|hook|includeif)\\."])
 }
 
 private let root = URL(fileURLWithPath: "/work/app")
@@ -99,6 +99,19 @@ struct GitGuardCommandTests {
             git(["-C", "/work/app", "worktree", "remove", "--", worktree], environment: guardedAgainstEvil),
             git(["-C", "/work/app", "branch", "-d", "--", "feature"], environment: guardedAgainstEvil)
         ])
+    }
+
+    @Test func aConditionalIncludeOfTheRepositoryIsRefusedBeforeAnythingIsAddedAndThePersonsOwnIsNot() async throws {
+        let refused = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "local\0includeif.onbranch:rh/**.path\0")])
+        await #expect(throws: WorktreeError.conditionalInclude("onbranch:rh/**")) {
+            _ = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: "feature", runner: refused)
+        }
+        #expect(refused.recorded == [listingOfDefinitions(in: "/work/app")], "nothing but the question was asked")
+        // An include of the person's own configuration (an identity for the folder they work in) is theirs, and the same in every worktree.
+        let own = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "global\0includeif.gitdir:~/work/.path\0command\0includeif.onbranch:x.path\0"), ProcessResult(status: 0)])
+        let made = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: "feature", runner: own)
+        #expect(made.wasCreated)
+        #expect(own.recorded.last == git(["-C", "/work/app", "worktree", "add", "-b", "feature", worktree, "HEAD"]))
     }
 
     @Test func aHookTheConfigurationDefinesIsSwitchedOffWhatEverTheScopeAndOnEveryCommandThatCanRunOne() async throws {
@@ -398,6 +411,21 @@ struct GitGuardRepositoryTests {
         let made = try await GitWorktreeManager.prepareWorktree(gitRoot: lab.repository, branch: "isolated", runner: lab.runner)
         #expect(made.wasCreated)
         #expect(!filter.ran(), "the filter that an included file defines ran while the worktree was made")
+    }
+
+    /// What a conditional include brings in is decided by the branch and the git directory of the folder git reads it in: `onbranch:` matches in the new worktree, whose branch it is, and
+    /// not in the repository that `worktree add` runs in, so a filter defined there was never found. The worktree is refused instead.
+    @Test func aConditionalIncludeOfTheRepositoryIsRefusedAndNothingItDefinesRuns() async throws {
+        let lab = try Lab()
+        try lab.makeRepository()
+        let filter = try lab.program("conditional", passingInput: true)
+        try "[filter \"evil\"]\n\tsmudge = \(filter.path)\n".write(to: lab.repository.appendingPathComponent(".git/branch.cfg"), atomically: true, encoding: .utf8)
+        try lab.git(["config", "--local", "includeIf.onbranch:rh/**.path", "branch.cfg"])
+        await #expect(throws: WorktreeError.self) { _ = try await GitWorktreeManager.prepareWorktree(gitRoot: lab.repository, branch: "rh/isolated", runner: lab.runner) }
+        #expect(!filter.ran(), "the filter that a conditional include defines ran while the worktree was made")
+        let attempt = lab.folder.appendingPathComponent("attempt")
+        _ = try? lab.git(["worktree", "add", "-q", "-b", "rh/control", attempt.path])
+        #expect(filter.ran(), "control: git without the guards runs the filter in the worktree it makes")
     }
 
     @Test func aFilterTheWorktreeConfigurationDefinesDoesNotRun() async throws {

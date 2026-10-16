@@ -51,9 +51,12 @@ public enum WorktreeError: Error, Equatable, LocalizedError {
     case notFound(String)
     case notCreatedHere(String)
     case ambiguous(String, [String])
+    case conditionalInclude(String)
 
     public var errorDescription: String? {
         switch self {
+        case .conditionalInclude(let condition):
+            return "The repository's own configuration has a conditional include (includeIf \"\(condition.withControlCharactersEscaped)\"), which can read a file in the new worktree that it does not read here, so Right Here makes no worktree in it."
         case .invalidBranch(let reason): return "Not a usable branch name: \(reason)."
         case .directoryInTheWay(let detail): return detail
         case .notFound(let target): return "No worktree matching \"\(target.withControlCharactersEscaped)\" in this repository."
@@ -180,6 +183,9 @@ public enum GitWorktreeManager {
         // Nothing is written in the repository before git has agreed: `git worktree add` makes the folders it needs, and a refused request leaves no trace.
         // The repository's own hooks and filters are switched off for it: checking out a worktree runs the hooks and applies the filters to every file its attributes select.
         let defined = try await GitCommand.defined(in: gitRoot.path, runner: runner)
+        // What a conditional include (`onbranch:`, `gitdir:`) brings in is decided by the branch and the git directory of the folder git reads it in, and the new worktree has
+        // neither yet: the filters and hooks defined there cannot be looked for from here, so a repository that has such an include of its own gets no worktree.
+        if let condition = defined.conditionalIncludes.first { throw WorktreeError.conditionalInclude(condition) }
         // Try creating with a new branch
         let addStep = GitCommand.step(["worktree", "add", "-b", branchName, worktreeDir.path, "HEAD"], in: gitRoot.path, blanking: defined)
         let addResult = try await runner.run(addStep)

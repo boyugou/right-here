@@ -154,7 +154,7 @@ struct WorktreeBrowserTests {
         let arguments = runner.recorded.map(\.arguments)
         // The list, the drivers the repository defines (none here), and the removal of that worktree.
         #expect(arguments == [["--no-pager", "-C", "/work/app", "worktree", "list", "--porcelain", "-z"],
-                              ["--no-pager", "-C", "/work/app", "config", "-z", "--show-scope", "--name-only", "--get-regexp", "^(filter|hook)\\."],
+                              ["--no-pager", "-C", "/work/app", "config", "-z", "--show-scope", "--name-only", "--get-regexp", "^(filter|hook|includeif)\\."],
                               ["--no-pager", "-C", "/work/app", "worktree", "remove", "--", target]])
         #expect(!arguments.joined().contains("--force"))
         #expect(!arguments.contains { $0.contains("branch") })

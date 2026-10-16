@@ -57,7 +57,7 @@ drivers the repository defines blanked (`smudge`, `clean`, `process`, `required=
 (Git LFS in the global configuration) still run; a repository that defines `filter.lfs` itself gets a worktree with pointer files. The settings are
 passed as `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_<n>` and `GIT_CONFIG_VALUE_<n>`, not `-c`: `-c filter.a=b.smudge=` is split at the first equals sign, and git
 lets a repository choose a driver called `a=b` (measured: the marker appeared with `-c`, not with the environment form). The drivers are listed with
-`git config -z --show-scope --name-only --get-regexp '^(filter|hook)\.'`, which reads the files a configuration includes and `config.worktree`
+`git config -z --show-scope --name-only --get-regexp '^(filter|hook|includeif)\.'`, which reads the files a configuration includes and `config.worktree`
 (`--local` reads neither), and the drivers of every scope but `system`, `global` and `command` are blanked. The list is read by Unicode scalars.
 `worktree list` is read as `--porcelain -z`: without `-z` a folder name with a line break in it adds lines to the list (measured: a worktree's path was replaced
 by the forged one). The commands that only read have a time limit of 20 seconds: a named pipe in `include.path` makes every git command in that repository
