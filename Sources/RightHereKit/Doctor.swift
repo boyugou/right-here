@@ -248,7 +248,10 @@ public struct Doctor: Sendable {
             guard let agent = config.agent(id: id) else { continue }
             let command = agent.executable
             let action = registry.info(.agent(id: id, variant: nil, launcher: nil))
-            if !found.contains(command) {
+            if !found.contains(command), !shell.answered {
+                // The shell was started and did not get to the end (a startup file that exits or waits, an `exec tmux`), so nobody knows.
+                checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: .doctorAgentUnknown(command)))
+            } else if !found.contains(command) {
                 checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: .doctorAgentNotFound(command), fix: .doctorFixAgentRemove(id)))
             } else if !action.available {
                 checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: action.unavailableReason.map(LocalizedMessage.doctorVerbatim),

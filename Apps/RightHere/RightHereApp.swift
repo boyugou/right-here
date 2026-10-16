@@ -13,7 +13,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard ProbeActivity.shared.isSwitching else { return .terminateNow }
         Task { @MainActor in
-            while ProbeActivity.shared.isSwitching { try? await Task.sleep(for: .milliseconds(100)) }
+            // The two `pluginkit` calls are stopped after 30 seconds each, so this ends; the limit is for a bug that would keep the app from ever quitting.
+            for _ in 0..<700 {
+                guard ProbeActivity.shared.isSwitching else { break }
+                try? await Task.sleep(for: .milliseconds(100))
+            }
             sender.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater

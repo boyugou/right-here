@@ -34,7 +34,12 @@ public struct AgentRow: Sendable, Equatable, Codable {
             let state = foundInShell == false ? "enabled, not found" : "enabled"
             return bypassPermissions ? state + ", permission prompts off" : state
         }
-        return foundInShell == true ? "found, not enabled" : "not found"
+        switch foundInShell {
+        case true?: return "found, not enabled"
+        case false?: return "not found"
+        // Nobody asked the shell, or it said nothing: neither is "not found".
+        case nil: return "not enabled"
+        }
     }
 }
 
@@ -46,13 +51,15 @@ extension Config {
         }
     }
 
-    /// - Parameter found: The commands the login shell found among those of the agents, or `nil` when nobody asked it.
-    public func agentRows(found: Set<String>? = nil) -> [AgentRow] {
+    /// - Parameters:
+    ///   - found: The commands the login shell found among those of the agents, or `nil` when nobody asked it.
+    ///   - shellAnswered: Whether the shell got to the end of its answer. When it did not, a command it did not name is unknown and not "not found".
+    public func agentRows(found: Set<String>? = nil, shellAnswered: Bool = true) -> [AgentRow] {
         allAgents.map { agent in
             AgentRow(
                 id: agent.id, name: agent.name, command: agent.command,
                 enabled: enabledAgents.contains(agent.id),
-                foundInShell: found.map { $0.contains(agent.executable) },
+                foundInShell: found.flatMap { $0.contains(agent.executable) ? true : (shellAnswered ? false : nil) },
                 variants: agent.variants.map(\.id), terminalLink: agent.terminalLink != nil, desktopLink: agent.desktopLink != nil,
                 promptArgument: agent.promptArgument?.configValue,
                 bypassPermissionArgument: agent.bypassPermissionArgument,

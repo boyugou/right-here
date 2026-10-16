@@ -234,6 +234,10 @@ PATH and your aliases. If `agy`, `claude`, or `codex` works in a new window of y
 agent commands your login shell finds. If your shell takes a few seconds to start, the agent starts that much
 later; that is your shell's startup time, and `rh doctor --probe-launch` reports how long the round trip took.
 
+- `rh doctor` (and the Checks page) says "your login shell did not say whether it is installed" for an agent, and `rh agents` lists no command as found or not found: the shell was started
+  the way a new terminal window starts it and did not get to the end of its answer, so nothing is known. A startup file that exits (an `exec tmux` or `exec zellij` for every
+  interactive shell is the usual one), waits for a prompt or takes longer than ten seconds does that. Start the multiplexer only when a terminal is attached
+  (`[[ -t 0 ]]` and not already inside it), or move what is slow behind such a check, and look again.
 - The window's first-run choice says "Your login shell did not say which AI agents are installed, so none is checked": the shell was started the way a new terminal
   window starts it and did not get to the end, because a startup file exits or takes longer than ten seconds. No agent was found because nobody could tell, so check the
   ones you use before you press Set Up (or run `rh agents` after making the startup file quick).

@@ -162,11 +162,36 @@ struct DoctorScenarioTests {
         var scene = try Scene(); defer { scene.cleanUp() }
         scene.applications = ["com.mitchellh.ghostty": ghostty]
         scene.bundleVersions = ["com.mitchellh.ghostty": "1.3.1"]
-        scene.answers = [ProcessResult(status: 0), ProcessResult(status: 0)]
+        // The shell got to the end of its script (the last line) and did not name the command: it is not there.
+        scene.answers = [ProcessResult(status: 0, standardOutput: "\u{01}rh-done\u{01}\n"), ProcessResult(status: 0)]
         try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
         let checks = await scene.run()
         #expect(said(checks, "agent.claude") == Said(status: .warn, detail: "`claude` is not found in your login shell", fix: "Install it, or remove \"claude\" from general.agents."))
         #expect(checks.first { $0.id == .agent("claude") }?.title == "Claude Code")
+    }
+
+    @Test func anAgentWhenTheLoginShellSaidNothingIsUnknownAndNotMissing() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.applications = ["com.mitchellh.ghostty": ghostty]
+        scene.bundleVersions = ["com.mitchellh.ghostty": "1.3.1"]
+        // A startup file that exits (an `exec tmux`, a prompt that waits) leaves no last line: nobody knows whether the command is there, so the row does not say it is not,
+        // and does not tell the person to remove it.
+        scene.answers = [ProcessResult(status: 1), ProcessResult(status: 0)]
+        try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
+        let checks = await scene.run()
+        #expect(said(checks, "agent.claude") == Said(status: .warn, detail: "`claude`: your login shell did not say whether it is installed", fix: nil))
+    }
+
+    @Test func anAgentThatTheShellNamedBeforeItWasStoppedIsStillFound() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.applications = ["com.mitchellh.ghostty": ghostty]
+        scene.bundleVersions = ["com.mitchellh.ghostty": "1.3.1"]
+        // What it printed before it stopped is evidence for the commands it names, and for none of the others.
+        scene.answers = [ProcessResult(status: 1, standardOutput: "claude\n"), ProcessResult(status: 0)]
+        try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\", \"codex\"]\n")
+        let checks = await scene.run()
+        #expect(said(checks, "agent.claude")?.status == .ok)
+        #expect(said(checks, "agent.codex")?.detail == "`codex`: your login shell did not say whether it is installed")
     }
 
     @Test func anAgentThatCannotStartSaysWhyAndOffersOtherLaunchers() async throws {

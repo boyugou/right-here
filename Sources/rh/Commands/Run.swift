@@ -216,8 +216,9 @@ struct Run: AsyncParsableCommand {
         default: agent = nil
         }
         guard let agent else { return nil }
-        let found = await Detector(facts: facts).commandsFound([agent.executable])
-        guard !found.contains(agent.executable) else { return nil }
+        let shell = await Detector(facts: facts).probe(commands: [agent.executable])
+        // A shell that said nothing (an `exec tmux` in its startup file, a hang) has not said the command is missing.
+        guard shell.answered, !shell.found.contains(agent.executable) else { return nil }
         return "\(agent.executable) is not found by your login shell (`rh agents` says so), so starting it would end with \"command not found\" in the terminal."
     }
 

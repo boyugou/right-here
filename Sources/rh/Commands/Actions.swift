@@ -147,8 +147,8 @@ struct Agents: AsyncParsableCommand {
 
     func run() async throws {
         let runtime = Runtime()
-        let found = await Detector(facts: runtime.facts).commandsFound(runtime.config.allAgents.map(\.executable))
-        let rows = runtime.config.agentRows(found: found)
+        let shell = await Detector(facts: runtime.facts).probe(commands: runtime.config.allAgents.map(\.executable))
+        let rows = runtime.config.agentRows(found: shell.found, shellAnswered: shell.answered)
         if json {
             try Output.json(rows)
             return

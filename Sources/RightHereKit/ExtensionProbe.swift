@@ -83,7 +83,7 @@ public struct ExtensionProbe: Sendable {
         await activity.switching {
             try? await manager.disable()
             try? await Task.sleep(for: .seconds(1))
-            _ = try? await runner.run(ProcessStep(executable: "/usr/bin/pluginkit", arguments: ["-e", "use", "-i", AppIdentity.extensionBundleID]))
+            _ = try? await runner.run(ProcessStep(executable: "/usr/bin/pluginkit", arguments: ["-e", "use", "-i", AppIdentity.extensionBundleID]), timeout: FinderExtensionManager.changeTimeout)
         }
 
         let deadline = ContinuousClock.now + timeout

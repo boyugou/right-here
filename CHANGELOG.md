@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- A login shell that says nothing (a startup file that exits, such as an `exec tmux`, or one that waits or is slow) is no longer taken for one that did not find the agents:
+  `rh doctor` and the Checks page say "did not say whether it is installed", `rh agents` leaves the command unlisted as found or not found, and the dry-run note of `rh run`
+  does not claim "command not found".
+
 - The playbook for AI agents (`rh docs agent-setup`) and the plugin's setup skill tell an agent to report, and not only to ignore, a name or a message that reads like an
   instruction to it: tried with a cold agent on a config whose terminal's name asks for a forced setup (ADR 0020).
 - The setup evaluation has a fifth persona (a config with such a name) and a fifth round, on 0.3.1; the troubleshooting guide has entries for the window that says to move

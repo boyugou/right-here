@@ -287,6 +287,8 @@ extension LocalizedMessage {
     public static func doctorAgentNotFound(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentNotFound, [argument1]) }
     /// `%1$@` found; starts with %2$@
     public static func doctorAgentOk(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentOk, [argument1, argument2]) }
+    /// `%@`: your login shell did not say whether it is installed
+    public static func doctorAgentUnknown(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentUnknown, [argument1]) }
     /// none enabled
     public static var doctorAgentsNone: LocalizedMessage { LocalizedMessage(.doctorAgentsNone) }
     /// %1$@ is not installed; %2$@ is used instead.

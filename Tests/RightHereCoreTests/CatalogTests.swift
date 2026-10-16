@@ -46,8 +46,23 @@ struct CatalogTests {
         #expect(state("gemini") == "not found")
         #expect(config.agentRows(found: ["gemini"]).first { $0.id == "gemini" }?.stateText == "found, not enabled")
         #expect(config.agentRows().first { $0.id == "codex" }?.stateText == "enabled", "nobody asked the shell, so nothing is claimed")
+        #expect(config.agentRows().first { $0.id == "gemini" }?.stateText == "not enabled", "and no agent is said to be missing")
         // The words are for the command line; the JSON has the two facts.
         #expect(!String(decoding: (try? JSONEncoder().encode(rows.first)) ?? Data(), as: UTF8.self).contains("stateText"))
+    }
+
+    @Test func aShellThatSaidNothingFindsNothingAndSaysNotThatItIsNotThere() {
+        // A command the shell did not name is unknown (nil), not false, when it did not get to the end of its answer; one it did name is found.
+        var config = Config(enabledAgents: ["claude", "codex"])
+        config.agents["codex"] = .init(command: "no-such-command-anywhere")
+        let rows = config.agentRows(found: ["claude"], shellAnswered: false)
+        func row(_ id: String) -> AgentRow? { rows.first { $0.id == id } }
+        #expect(row("claude")?.foundInShell == true)
+        #expect(row("codex")?.foundInShell == nil)
+        #expect(row("codex")?.stateText == "enabled", "an enabled agent that nobody could look for is not said to be missing")
+        #expect(row("gemini")?.foundInShell == nil)
+        #expect(row("gemini")?.stateText == "not enabled", "and neither is one that is not enabled")
+        #expect(config.agentRows(found: ["claude"], shellAnswered: true).first { $0.id == "gemini" }?.foundInShell == false)
     }
 
     @Test func aRowReadsBackAsItWasWritten() throws {

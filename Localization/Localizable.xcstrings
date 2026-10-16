@@ -26599,6 +26599,192 @@
         }
       }
     },
+    "doctor.agent.unknown": {
+      "comment": "Detail line of a check in the setup window's Details list; it follows the check's title (the agent's name), so it is a fragment with no final period. %@ is the command that starts an AI agent, for example claude, in backticks: keep the backticks and the %@. The row appears when the person's login shell was started the way a new terminal window starts it and did not get to the end of its answer (a startup file that exits or waits, for example one that starts tmux), so nobody knows whether the command is installed.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏`%@`: لم تُبيّن صدفة تسجيل الدخول لديك ما إذا كان مُثبّتًا"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: এটি ইনস্টল করা আছে কি না, আপনার লগইন শেল তা জানায়নি"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: deine Login-Shell hat nicht gesagt, ob es installiert ist"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: το κέλυφος εισόδου σας δεν είπε αν είναι εγκατεστημένο"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "`%@`: your login shell did not say whether it is installed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: tu shell de inicio de sesión no indicó si está instalado"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏`%@`: پوستهٔ ورود شما نگفت که آیا پیدا شده است یا نه"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@` : votre shell de connexion n’a pas dit si la commande s’y trouve"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏`%@`: מעטפת הכניסה שלכם לא אמרה אם הפקודה נמצאת"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: आपके लॉगिन शेल ने नहीं बताया कि यह मिला है या नहीं"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: shell login Anda tidak menyebutkan apakah perintah itu ditemukan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: la tua shell di login non ha detto se è stato trovato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`：ログインシェルは、見つかったかどうか答えませんでした"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: 로그인 셸이 찾았는지 알려 주지 않음"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: तुमच्या लॉगिन शेलने ते सापडले आहे की नाही हे सांगितले नाही"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: shell log masuk anda tidak memberitahu sama ada ia ditemui"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: je loginshell heeft niet gezegd of het gevonden is"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: powłoka logowania nie powiedziała, czy zostało znalezione"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: seu shell de login não informou se foi encontrado"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: shell-ul de conectare nu a spus dacă a fost găsit"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: ваша оболочка входа не сообщила, найден ли он"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: உங்கள் login shell இது கிடைக்கிறதா என்று கூறவில்லை"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: మీ login shell అది కనుగొనబడిందో లేదో చెప్పలేదు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: login shell ของคุณไม่ได้บอกว่าพบหรือไม่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: oturum açma kabuğunuz bunun bulunup bulunmadığını söylemedi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: ваша оболонка входу не сказала, чи знайдено цю команду"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏`%@`: آپ کی لاگ ان شیل نے نہیں بتایا کہ وہ انسٹال ہے یا نہیں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`: shell đăng nhập của bạn không cho biết đã được cài đặt hay chưa"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`：你的登录 shell 没有说明它是否已安装"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "`%@`：你的登入 shell 沒有說明它是否已安裝"
+          }
+        }
+      }
+    },
     "doctor.agents.none": {
       "comment": "Detail line of a check in the setup window's Details list; it follows the check's title, so it is a fragment with no final period. No AI agent is enabled in the config.",
       "extractionState": "manual",
