@@ -131,7 +131,7 @@ public struct SetupRunner: Sendable {
     private func notes(editsPending: Bool) -> [String] {
         var notes: [String] = []
         if let trialHome, !systemWide {
-            notes.append("RH_HOME is set, so this is a trial: the config, the runner script, the command link and the Quick Actions are under \(trialHome.path), and the Finder extension, which is registered for the whole Mac, was neither changed nor checked.")
+            notes.append("RH_HOME is set, so this is a trial: the config, the runner script, the command link and the Quick Actions are under \(trialHome.path), and the Finder extension, which is registered for the whole Mac, was neither changed nor checked. The commands under Next act on this trial only while RH_HOME is set for them too.")
         }
         if systemWide, HostApp.isBuildProduct(rhPath) {
             notes.append("This rh runs from a build folder (\(rhPath)), and the runner script and the Quick Actions now point at it: they stop working when that folder is cleaned. For a lasting setup run the rh inside Right Here.app (Right Here.app/Contents/Helpers/rh setup).")

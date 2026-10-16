@@ -35,7 +35,7 @@ enum SetupAdvice {
                 text: "The first time Right Here starts an agent in \(terminal.name), macOS asks whether Right Here may control \(terminal.name). Click Allow.",
                 how: [
                     "The question appears once, the first time an agent is started from the Finder menu.",
-                    "To see it now, run `rh doctor --probe-launch`: it opens a terminal window for about a second. Run it only if the person agrees."
+                    "To see it now, run `rh doctor --probe-launch`: it opens a terminal window for about a second. (An AI agent asks the person before it runs it.)"
                 ]))
         }
         return needs
@@ -111,7 +111,7 @@ enum SetupAdvice {
             next.append(SetupNext("rh doctor", why: "Checks everything again, for example after you have done what is left for you."))
         }
         if needs.contains(where: { $0.id == .automation }) {
-            next.append(SetupNext("rh doctor --probe-launch", why: "Proves that a click can start an agent in the terminal. It opens a terminal window for about a second and macOS may ask for permission, so ask the person first."))
+            next.append(SetupNext("rh doctor --probe-launch", why: "Proves that a click can start an agent in the terminal. It opens a terminal window for about a second and macOS may ask for permission, so an AI agent asks the person first."))
         }
         return next
     }
