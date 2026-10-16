@@ -72,8 +72,8 @@ struct ExtensionCrashesTests {
     }
 
     /// A crash report as macOS writes it: a JSON header on the first line, which names the UUID of the code that crashed, and the report's own JSON after it.
-    private func report(_ name: String, uuid: UUID?, hoursAgo: Double, in folder: URL) throws {
-        let header = uuid.map { "{\"app_name\":\"FinderExtension\",\"slice_uuid\":\"\($0.uuidString.lowercased())\",\"bug_type\":\"309\"}" } ?? "Process: FinderExtension [123]"
+    private func report(_ name: String, uuid: UUID?, hoursAgo: Double, capitals: Bool = false, in folder: URL) throws {
+        let header = uuid.map { "{\"app_name\":\"FinderExtension\",\"slice_uuid\":\"\(capitals ? $0.uuidString : $0.uuidString.lowercased())\",\"bug_type\":\"309\"}" } ?? "Process: FinderExtension [123]"
         let file = folder.appendingPathComponent(name)
         try (header + "\n{\"pid\":123}\n").write(to: file, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.modificationDate: now.addingTimeInterval(-hoursAgo * 3600)], ofItemAtPath: file.path)
@@ -106,6 +106,13 @@ struct ExtensionCrashesTests {
         let found = try #require(ExtensionCrashes.scan(in: folder, installedAfter: ExtensionCrashes.installDate(ofExtensionAt: appex.path), buildIDs: ids, now: now))
         #expect(found.count == 2 && found.latestFile == "FinderExtension-b.ips" && found.matchedByBuild)
         #expect(found.detail(now: now).hasPrefix("switched on, but this build of it crashed 2 times in the last week (the latest "), Comment(rawValue: found.detail(now: now)))
+    }
+
+    @Test func aUUIDWrittenInCapitalsIsTheSameBuild() throws {
+        let folder = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: folder) }
+        try report("FinderExtension-capitals.ips", uuid: current, hoursAgo: 3, capitals: true, in: folder)
+        let found = try #require(ExtensionCrashes.scan(in: folder, installedAfter: nil, buildIDs: [current.uuidString.lowercased()], now: now), "the report was taken for one of another build")
+        #expect(found.count == 1 && found.matchedByBuild)
     }
 
     @Test func aReportWithNoUUIDIsJudgedByTheDateTheCopyArrived() throws {

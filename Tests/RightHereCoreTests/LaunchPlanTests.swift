@@ -31,6 +31,12 @@ struct LaunchPlanTests {
         #expect(pause == #"{"kind":"pause","milliseconds":5}"#)
     }
 
+    @Test func theSummaryShowsWhatAFolderNameDoesToATerminalAsEscapes() {
+        // The folder is whatever somebody called it; every consumer of the plan (the command line, the log, the app) gets the text safe to print.
+        let plan = LaunchPlan(action: "open.app.x", summary: "Open \u{1B}[31mred\u{1B}[0m folder\nforged line", steps: [])
+        #expect(plan.summary == "Open \\u001b[31mred\\u001b[0m folder\\nforged line")
+    }
+
     @Test func unknownKindIsRejected() {
         let data = Data(#"{"kind":"explode"}"#.utf8)
         #expect(throws: DecodingError.self) { try JSONDecoder().decode(Step.self, from: data) }
