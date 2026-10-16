@@ -39,9 +39,9 @@ To update from 0.3.0: drag the app over the old one in Applications, open it and
 ### Changed
 
 - The setup window has a test target for its model (`Sources/AppModel`, `Tests/AppModelTests`), and ADR 0023 says what it says before it tries and what it calls attention.
-- `rh` refuses to change the real home when a test started it (`RH_NO_UI` set) without a trial home (`RH_HOME`) (ADR 0022): a full run of the mutation check had replaced the
-  runner script, command link and Quick Actions of the machine it ran on, through a test that expected a refusal and, with the protection removed, got a setup. The mutation
-  check now also stops at the first mutant that changes the real home.
+- `rh` refuses to change the real home folder (the runner script, the command link, the Quick Actions, the extension's registration) when a test started it (`RH_NO_UI` set)
+  without a trial home (`RH_HOME`), and the mutation check stops at the first mutant that changes it: a full run of that check had once set up the machine it ran on
+  (ADR 0022). It changes nothing for a person who runs `rh`.
 
 ### Known limits
 
