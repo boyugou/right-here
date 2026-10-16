@@ -75,6 +75,9 @@ docs/                    DESIGN.md, decisions/, development/
   control of their terminals. Tests never open windows: CLI tests use a terminal that cannot run commands, and
   everything else uses fake runners. The CLI harness also sets `RH_NO_UI=1`, under which `rh` shows no alert and never starts `open` or
   `osascript`, so no test can put a dialog or window on screen, and puts a watchdog on every `rh` it starts.
+- A test that runs the real `rh` and means to write anything under the home gives it `RH_HOME`; `rh` started with `RH_NO_UI` (the harness) and no `RH_HOME` refuses to change the real home
+  or the extension's registration (`RealHomeGuard`, ADR 0022), and `script/mutation_check.py` stops at the first mutant that changes them. A test of that guard is a unit test with a home it
+  names, never a run of the real `rh` that would do the damage if the guard were gone.
 - A claim about what the file system or the OS guarantees is measured before anything is built on it. Never use
   `unlink` as an exclusive claim (concurrent unlinks of one path can all succeed on APFS); claim with `rename` or
   `O_EXCL` (`ProbeMarker`).

@@ -94,6 +94,8 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 18 | One idempotent `rh setup`, flags instead of editing the config, and a playbook for AI agents measured with cold agents. | [0018](decisions/0018-setup.md) |
 | 19 | The Finder extension does not override the directory-observing methods, and the doctor reads its crash reports. | [0019](decisions/0019-no-swift-override-of-directory-observing.md) |
 | 20 | What the config names (an app, an agent) is data: fenced between ⟦user⟧ marks wherever `rh setup` and `rh doctor` quote it in a sentence an agent passes on. | [0020](decisions/0020-names-from-the-config-are-data.md) |
+| 21 | A process a test started (`RH_NO_UI`) without a trial home (`RH_HOME`) cannot change the real home or the Finder extension's registration. | [0022](decisions/0022-a-test-cannot-change-the-real-home.md) |
+| 22 | The setup window says where the app runs from before it tries, only a first run's Set Up makes a config, and a warning the person may leave is not "needs attention". | [0023](decisions/0023-the-window-says-before-it-tries.md) |
 
 ## 5. Platform facts
 
@@ -330,6 +332,10 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    switches those off for every command it runs (the person's own filters, Git LFS in the global configuration, still apply), keeps the
    commands that only read to twenty seconds, and reads the list of worktrees NUL-separated; see
    [0016](decisions/0016-agent-permissions-and-worktrees.md), "What git may start", for what was measured.
+
+9. A test cannot change the real home: `rh` started with `RH_NO_UI` and without `RH_HOME` refuses to write the runner script, the command link or the Quick Actions, and to
+   change the Finder extension's registration (`RealHomeGuard`), and the mutation check stops at the first mutant that changes them; see
+   [0022](decisions/0022-a-test-cannot-change-the-real-home.md), which says what happened before it.
 
 An independent review and a cold-start usability test shaped several of these; see
 [0008](decisions/0008-independent-review.md). The Mac App Store question is in [0007](decisions/0007-app-store-edition.md).
