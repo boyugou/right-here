@@ -217,6 +217,22 @@ All four passed on the four criteria. The wrapper refused nothing and `report` f
 test: no persona has text in the config or in a file name that reads as an instruction, so the sentence that says what `rh` prints is data
 has not been tried on one; no persona runs setup twice at once; and the extension row cannot appear in a trial.
 
+### Round 5: 0.3.1
+
+The code of commit `1da42cd` (0.3.1: the first-run fixes, the report's note about a config that was left alone without its pointer to `--json`, the
+data marks in what an agent reads). Sonnet, relay, all four personas. No `Sources/` change was aimed at the agents' side of setup, so this is the
+regression run that this document asks for after the report's sentences change.
+
+| Persona | Asked first | Config as asked | Commands | Notes |
+|---------|-------------|-----------------|----------|-------|
+| A | yes | yes: ghostty, zed, claude and codex | 9 (0) | Zed not installed (and said so), the PATH line, the permission prompt and the link-handler warning (its default menu has the entry; "Claude Code Here" does not need it) said as the report says them. |
+| B | yes | yes: terminal, vscode, no agents | 8 (0) | The PATH line from the report, wrapped in a `printf ... >> ~/.zshrc` command to paste. Nothing about a link handler. |
+| C | yes | line 7 only, comments kept | 12 (0) | The edit (by hand, one line) before the real run; `rh config validate --strict` ok; the stale comment mentioned and left alone; told the person the menu has no editor entry. |
+| D | yes | the bracket on line 4, the editor and the agents line; every comment and the menu kept; strict ok | 13 (2) | The two errors are the dry run and the validation of the broken file. The evaluator sent the person's permission to fix ("Yes, please fix only what is broken") together with the first answer, so whether the agent stops and asks before it edits was not tested this time: send it only when the agent has told the person what is wrong. The first three commands ran before the agent changed into the working folder; nothing read it. |
+
+All four passed on the four criteria; the wrapper refused nothing and `report` found nothing changed outside the sandbox. Nothing in the report
+or the playbook needed to change. Still not tried: text in the config or a file name that reads as an instruction, two setups at once, and the extension row.
+
 ### What the rounds found, and what changed
 
 1. **A trial reported nothing for the person to do** (round 1). The PATH line and the permission prompt were left out because a trial
