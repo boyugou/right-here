@@ -194,6 +194,33 @@ struct TOMLOutlineTests {
         #expect(outline.rawValue(of: "general") == nil)
     }
 
+    @Test func theKeysOfAnInlineTableAreKnownAsTheKeysOfATable() throws {
+        let inline = """
+        general = { terminal = "ghostty", agents = ["claude",
+                    "codex"], nested = { deep = 1 }, "quoted" = 'x' }
+        menu = { items = [{ id = "a" }] }
+        """
+        let outline = TOMLOutline(inline)
+        #expect(outline.lines["general"] == 1 && outline.lines["general.terminal"] == 1 && outline.lines["general.agents"] == 1)
+        #expect(outline.lines["general.nested"] == 2 && outline.lines["general.nested.deep"] == 2 && outline.lines["general.quoted"] == 2)
+        #expect(outline.rawValue(of: "general.terminal") == "\"ghostty\"")
+        #expect(outline.rawValue(of: "general.agents") == "[\"claude\",\n            \"codex\"]")
+        #expect(outline.rawValue(of: "general.nested.deep") == "1" && outline.rawValue(of: "general.quoted") == "'x'")
+        #expect(outline.rawValue(of: "general")?.hasPrefix("{ terminal") == true, "the table as a whole is still a value of its key")
+        // A table inside an array has no path of its own.
+        #expect(outline.lines["menu.items.1.id"] == nil && outline.lines["menu.items.id"] == nil && outline.rawValue(of: "menu.items") != nil)
+        // Every key the library reads is in the outline, the keys of an inline table included.
+        let tree = try #require(ConfigParser.readTree(inline).tree)
+        func check(_ value: TOMLValue, path: [String]) {
+            switch value {
+            case .table(let nested): for (key, child) in nested { check(child, path: path + [key]) }
+            case .array: break
+            default: #expect(outline.lines[path.joined(separator: ".")] != nil, "no line for \(path.joined(separator: "."))")
+            }
+        }
+        check(.table(tree), path: [])
+    }
+
     @Test func aTextThatIsFineHasNoProblem() {
         #expect(TOMLOutline(text).problem == nil)
         #expect(TOMLOutline("").problem == nil)

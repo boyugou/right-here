@@ -25,7 +25,9 @@ says "would be". If it lists `configEdits`, the person already has a config file
 make the edits yourself, now, before step 3 (`rh config path` says where the file is):
 
 - Make exactly the listed edits, in the file each names, and nothing else. Each has the `line`, the `current` value and the `value`
-  to write.
+  to write. A file that has no `[general]` table gets one edit for all of it (`key` is `general`, `line` is null, `value` is the
+  whole table): add it at the end of the file, once. When a `disabled` list in `config.local.toml` is what turns an agent off on this
+  Mac, the edit is to that list.
 - Keep every comment and every other line as they are, even a comment your edit made out of date (say so to the person).
 - Then `rh config validate --strict` must say ok. Fix what it says.
 

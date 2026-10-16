@@ -1879,6 +1879,56 @@ struct SetupCommandTests {
         #expect(try String(contentsOf: file, encoding: .utf8) == Self.mine)
     }
 
+    /// Makes the edits of a report to the config file as they say, one after the other and to the letter.
+    private func applyEdits(of report: [String: Any], to file: URL) throws {
+        var text = try String(contentsOf: file, encoding: .utf8)
+        let edits = try #require(report["configEdits"] as? [[String: Any]])
+        for edit in edits {
+            let value = try #require(edit["value"] as? String)
+            if edit["kind"] as? String == "add", edit["line"] == nil {
+                text += "\n" + value + "\n"
+            } else if edit["kind"] as? String == "change", let line = edit["line"] as? Int, let current = edit["current"] as? String, let key = (edit["key"] as? String)?.split(separator: ".").last {
+                var lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+                let from = try #require(lines[line - 1].range(of: String(key))).upperBound
+                let range = try #require(lines[line - 1].range(of: current, range: from..<lines[line - 1].endIndex))
+                lines[line - 1].replaceSubrange(range, with: value)
+                text = lines.joined(separator: "\n")
+            } else if edit["kind"] as? String == "add", let line = edit["line"] as? Int, let key = (edit["key"] as? String)?.split(separator: ".").last {
+                // "Add the line under [general]", or "replace the commented example".
+                var lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+                let assignment = "\(key) = \(edit["value"] as? String ?? "")"
+                if lines[line - 1].trimmingCharacters(in: .whitespaces).hasPrefix("#") { lines[line - 1] = assignment } else { lines.insert(assignment, at: line) }
+                text = lines.joined(separator: "\n")
+            } else {
+                Issue.record("an edit this test does not know how to make: \(edit)")
+            }
+        }
+        try text.write(to: file, atomically: true, encoding: .utf8)
+    }
+
+    @Test("the edits a dry run lists, made to the letter, leave a config that validate accepts and that says what was asked", arguments: [
+        "[menu]\nitems = [\"open.terminal\", \"-\", \"copy-path.absolute\"]\n",
+        "general = { terminal = \"ghostty\", editor = \"vscode\", agents = [\"claude\"] }\n",
+        "[general]\nterminal = \"ghostty\"\n\n[menu]\nitems = [\"open.terminal\"]\n",
+    ])
+    func theEditsADryRunListsAreOnesThatWorkWhenMadeToTheLetter(config: String) throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let file = home.appendingPathComponent(".config/right-here/config.toml")
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try config.write(to: file, atomically: true, encoding: .utf8)
+        let flags = ["--terminal", "terminal", "--editor", "zed", "--agents", "claude,codex"]
+        let before = try #require(try rh.run(["setup", "--dry-run", "--json"] + flags).json as? [String: Any])
+        #expect((before["configEdits"] as? [Any])?.isEmpty == false)
+        try applyEdits(of: before, to: file)
+        let validated = try rh.run(["config", "validate", "--strict"])
+        #expect(validated.status == 0, "\(validated.standardOutput)\n--- the file:\n\((try? String(contentsOf: file, encoding: .utf8)) ?? "")")
+        let after = try #require(try rh.run(["setup", "--dry-run", "--json"] + flags).json as? [String: Any])
+        #expect((after["configEdits"] as? [Any])?.isEmpty == true, "\(String(describing: after["configEdits"]))")
+        let agents = try #require(try rh.run(["agents", "--json"]).json as? [[String: Any]])
+        #expect(agents.filter { $0["enabled"] as? Bool == true }.compactMap { $0["id"] as? String }.sorted() == ["claude", "codex"])
+    }
+
     @Test func aDryRunShowsThePlanAndWritesNothing() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)

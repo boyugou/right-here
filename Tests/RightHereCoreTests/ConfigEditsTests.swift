@@ -6,20 +6,31 @@ import Testing
 /// or to an AI agent that follows it to the letter) really leads to the config that was asked for.
 private func apply(_ edit: ConfigEdit, to text: String) -> String {
     var lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
-    let assignment = "\(edit.key.split(separator: ".").last ?? "") = \(edit.value)"
+    let name = String(edit.key.split(separator: ".").last ?? "")
+    let assignment = "\(name) = \(edit.value)"
     switch (edit.kind, edit.line) {
     case (.change, let line?):
+        // The value that follows the key: an inline table can hold the same text for another key.
         let current = lines[line - 1]
-        let range = current.range(of: edit.current ?? "")!
+        let from = current.range(of: name).map(\.upperBound) ?? current.startIndex
+        let range = current.range(of: edit.current ?? "", range: from..<current.endIndex)!
         lines[line - 1] = current.replacingCharacters(in: range, with: edit.value)
     case (.add, let line?) where lines[line - 1].trimmingCharacters(in: .whitespaces).hasPrefix("#"):
         lines[line - 1] = assignment
     case (.add, let line?):
         lines.insert(assignment, at: line)
+    case (.add, nil) where edit.key == "general":
+        // A table: its text, header first, at the end of the file.
+        lines += [""] + edit.value.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
     case (_, nil):
         lines += ["", "[general]", assignment]
     }
     return lines.joined(separator: "\n")
+}
+
+/// What `rh config validate --strict` accepts: no error and no warning.
+private func isClean(_ text: String) -> Bool {
+    ConfigParser.parse(text).diagnostics.isEmpty
 }
 
 private func needed(_ choices: SetupChoices, base: String?, local: String? = nil) -> (edits: [ConfigEdit], config: Config) {
@@ -113,7 +124,7 @@ struct ConfigEditsTests {
         let base = "version = 1\n\n[menu]\nitems = [\"agents\"]\n"
         let (edits, _) = needed(SetupChoices(agents: ["claude"]), base: base)
         let edit = try #require(edits.first)
-        #expect(edit.line == nil && edit.kind == .add)
+        #expect(edit.line == nil && edit.kind == .add && edit.key == "general" && edit.value == "[general]\nagents = [\"claude\"]")
         #expect(edit.instruction == "In config.toml, add a [general] table at the end of the file with the line agents = [\"claude\"].")
         let result = ConfigParser.parse(apply(edit, to: base))
         #expect(result.diagnostics.isEmpty, "\(result.diagnostics)")
@@ -144,6 +155,106 @@ struct ConfigEditsTests {
         let edit = try #require(edits.first)
         #expect(edit.line == 2 && edit.current?.contains("\n") == true)
         #expect(edit.instruction.contains("the list that starts there (it runs over several lines)"), "\(edit.instruction)")
+    }
+
+    @Test func severalSettingsMissingFromAFileWithoutAGeneralTableAreOneEditAndTheTableIsWrittenOnce() throws {
+        // Three edits that each said "add a [general] table" made three tables when they were made one after the other: a syntax error, and
+        // `rh menu` then fell back to the defaults for the person's whole menu.
+        let base = "[menu]\nitems = [\"open.terminal\", \"-\", \"copy-path.absolute\"]\n"
+        let choices = SetupChoices(terminal: "terminal", editor: "zed", agents: ["claude", "codex"])
+        let (edits, _) = needed(choices, base: base)
+        let edit = try #require(edits.first)
+        #expect(edits.count == 1 && edit.key == "general" && edit.kind == .add && edit.line == nil, "\(edits.map(\.instruction))")
+        #expect(edit.value == "[general]\nterminal = \"terminal\"\neditor = \"zed\"\nagents = [\"claude\", \"codex\"]")
+        #expect(edit.instruction == "In config.toml, add a [general] table at the end of the file with the lines terminal = \"terminal\"; editor = \"zed\"; agents = [\"claude\", \"codex\"] (each on a line of its own).")
+        // Every edit made literally, the one after the other, leaves a config that says what was asked and that validate --strict accepts.
+        var text = base
+        for edit in edits { text = apply(edit, to: text) }
+        #expect(isClean(text), "\(ConfigParser.parse(text).diagnostics.map(\.message))")
+        let config = ConfigParser.parse(text).config
+        #expect(config.terminal == "terminal" && config.editor == "zed" && config.enabledAgents == ["claude", "codex"])
+        #expect(config.menuItems == ["open.terminal", "-", "copy-path.absolute"], "the person's menu is gone")
+        #expect(needed(choices, base: text).edits.isEmpty)
+    }
+
+    @Test func aCommentedExampleThatIsNotInTheGeneralTableIsNotWhereASettingGoes() throws {
+        // Replacing the comment with the setting would put it at the top of the file, outside every table: a key `rh` does not know.
+        let choices = SetupChoices(terminal: "terminal", editor: "zed", agents: ["claude"])
+        let noTable = "# editor = \"vscode\"\n[menu]\nitems = [\"agents\"]\n"
+        let (edits, _) = needed(choices, base: noTable)
+        #expect(edits.map(\.key) == ["general"], "\(edits.map(\.instruction))")
+        var text = noTable
+        for edit in edits { text = apply(edit, to: text) }
+        #expect(isClean(text), "\(ConfigParser.parse(text).diagnostics.map(\.message))")
+        #expect(needed(choices, base: text).edits.isEmpty)
+
+        let above = "# editor = \"vscode\"\n[general]\nterminal = \"ghostty\"\n\n[menu]\n# agents = [\"claude\"]\nitems = [\"agents\"]\n"
+        let (under, _) = needed(choices, base: above)
+        #expect(Set(under.map(\.key)) == ["general.terminal", "general.editor", "general.agents"])
+        for edit in under where edit.kind == .add {
+            #expect(edit.line == 2, "the setting goes under the [general] header, not at a comment outside the table: \(edit.instruction)")
+        }
+        var result = above
+        for edit in under.sorted(by: { ($0.line ?? 0) > ($1.line ?? 0) }) { result = apply(edit, to: result) }
+        #expect(isClean(result), "\(ConfigParser.parse(result).diagnostics.map(\.message))")
+        #expect(needed(choices, base: result).edits.isEmpty)
+    }
+
+    @Test func settingsThatAnInlineGeneralTableAlreadyHasAreChangedInPlaceAndNotAdded() throws {
+        let base = "general = { terminal = \"ghostty\", editor = \"vscode\", agents = [\"claude\"] }\n"
+        let choices = SetupChoices(terminal: "terminal", editor: "zed", agents: ["claude", "codex"])
+        let (edits, _) = needed(choices, base: base)
+        #expect(edits.count == 3, "\(edits.map(\.instruction))")
+        for edit in edits {
+            #expect(edit.kind == .change && edit.line == 1, "the key is in the file, but the report says: \(edit.instruction)")
+            #expect(!edit.instruction.contains("add "), "\(edit.instruction)")
+        }
+        #expect(edits.first { $0.key == "general.terminal" }?.instruction == "In config.toml on line 1, change terminal = \"ghostty\" to terminal = \"terminal\".")
+        #expect(edits.first { $0.key == "general.agents" }?.current == "[\"claude\"]")
+        var text = base
+        for edit in edits { text = apply(edit, to: text) }
+        #expect(text == "general = { terminal = \"terminal\", editor = \"zed\", agents = [\"claude\", \"codex\"] }\n")
+        #expect(isClean(text))
+        #expect(needed(choices, base: text).edits.isEmpty)
+    }
+
+    @Test func aSettingTheInlineTableLacksIsAddedInsideItAndTheOnesItHasAreChanged() throws {
+        let base = "version = 1\ngeneral = {\n  terminal = \"ghostty\", # mine\n  agents = [\"claude\"]\n}\n"
+        let (edits, _) = needed(SetupChoices(terminal: "terminal", editor: "zed"), base: base)
+        let terminal = try #require(edits.first { $0.key == "general.terminal" })
+        #expect(terminal.kind == .change && terminal.line == 3 && terminal.current == "\"ghostty\"", "\(terminal)")
+        let editor = try #require(edits.first { $0.key == "general.editor" })
+        #expect(editor.kind == .add && editor.instruction.contains("written inline on line 2") && editor.instruction.contains("inside it"), "\(editor.instruction)")
+    }
+
+    @Test func theKeysOfAnInlineTableAreOnlyKnownWhereTheyAre() {
+        // A table inside an array has no path of its own, and a key of another table is not a key of this one.
+        let base = "[[preset]]\nid = \"a\"\nx = { terminal = \"nope\" }\n\n[menu]\nitems = [{ editor = \"nope\" }]\n"
+        let (edits, _) = needed(SetupChoices(terminal: "terminal", editor: "zed"), base: base)
+        #expect(edits.map(\.kind) == [.add], "\(edits.map(\.instruction))")
+        #expect(edits.first?.key == "general")
+    }
+
+    @Test func aFileThatSaysWhatWasAskedButAnOverlayTurnsOffIsToldWhichListDoesIt() throws {
+        // The edit used to read "change agents = [claude, codex] to agents = [claude, codex]".
+        let local = "# this Mac\ndisabled = [\"codex\", \"zed\"]\n"
+        let choices = SetupChoices(agents: ["claude", "codex"])
+        let (edits, config) = needed(choices, base: "[general]\nagents = [\"claude\", \"codex\"]\n", local: local)
+        #expect(config.enabledAgents == ["claude"])
+        let edit = try #require(edits.first)
+        #expect(edits.count == 1 && edit.file == "config.local.toml" && edit.key == "disabled" && edit.kind == .change && edit.line == 2, "\(edits.map(\.instruction))")
+        #expect(edit.instruction == "In config.local.toml on line 2, change disabled = [\"codex\", \"zed\"] to disabled = [\"zed\"]: the list turns codex off on this Mac, so the setting in the other file does not reach it here.")
+        let (done, merged) = needed(choices, base: "[general]\nagents = [\"claude\", \"codex\"]\n", local: apply(edit, to: local))
+        #expect(done.isEmpty && merged.enabledAgents == ["claude", "codex"])
+    }
+
+    @Test func aSettingTheFileAlreadySaysAndNothingTurnsOffIsNoEdit() {
+        // The config differs (the agent is unknown here, say), but there is no line to change: no edit that changes nothing.
+        let base = "[general]\nagents = [\"claude\", \"codex\"]\n"
+        let config = ConfigParser.parse("[general]\nagents = [\"claude\"]\n").config
+        #expect(ConfigEdits.needed(for: SetupChoices(agents: ["claude", "codex"]), config: config, base: base, local: nil).isEmpty)
+        // `disabled` in the shared file does nothing, so it is not what is named.
+        #expect(ConfigEdits.needed(for: SetupChoices(agents: ["claude", "codex"]), config: config, base: base + "disabled = [\"codex\"]\n", local: nil).isEmpty)
     }
 
     @Test func aGeneralTableWrittenInlineIsSaidSo() throws {
