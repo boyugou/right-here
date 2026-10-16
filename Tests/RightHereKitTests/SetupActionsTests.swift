@@ -190,6 +190,18 @@ struct SetupActionsTests {
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: machine.paths.configFile.path) == machine.home.appendingPathComponent("dotfiles/config.toml").path)
     }
 
+    @Test func installOrRepairWithOnlyThePerMachineOverlayDoesNotMakeTheBaseConfig() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)
+        try "[general]\n".write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
+        // The window takes the overlay for a config (no first run to offer), so the repair that follows must not make `config.toml` from what it found.
+        let result = await machine.actions(FakeProcessRunner()).repair()
+        let report = try #require(result.report)
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path), "the base config was made without the choice the first run asks for")
+        #expect(report.step(.config)?.outcome == .skipped)
+        #expect(report.step(.runnerScript)?.outcome == .created, "the rest of the repair ran")
+    }
+
     @Test func aMacWithOnlyThePerMachineOverlayHasAConfigTheEditorOpens() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
         try FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)

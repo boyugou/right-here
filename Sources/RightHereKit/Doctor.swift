@@ -369,6 +369,11 @@ public struct Doctor: Sendable {
     public static func extensionCheck(runner: any ProcessRunner = LiveProcessRunner(), crashReports: URL? = nil, now: Date = Date()) async -> DoctorCheck {
         let status = await FinderExtensionManager(runner: runner).status()
         switch status.state {
+        case .unanswered:
+            // A warning and not a failure: nobody knows, so the window does not offer a first run for it, and nothing says the extension is gone.
+            return DoctorCheck(.finderExtension, status: .warn,
+                               detail: .doctorVerbatim("macOS's plug-in daemon (pluginkit) did not answer within \(Int(FinderExtensionManager.lookTimeout.components.seconds)) seconds, so it is not known whether the extension is registered"),
+                               fix: .doctorVerbatim("Try again in a minute; if it keeps happening, restart the Mac."))
         case .notRegistered:
             return DoctorCheck(.finderExtension, status: .fail, detail: .doctorExtensionNotRegistered, fix: .doctorFixExtensionInstall)
         case .disabled:

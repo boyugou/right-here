@@ -410,6 +410,8 @@ public struct FinderExtensionManager: Sendable {
         case enabled
         case disabled
         case notRegistered
+        /// `pluginkit` was stopped for taking too long (its daemon is stuck), so nothing is known.
+        case unanswered
     }
 
     public struct Status: Sendable, Equatable {
@@ -427,11 +429,16 @@ public struct FinderExtensionManager: Sendable {
         self.environment = environment
     }
 
+    /// How long a look at the registration may take. It asks the same daemon as the calls that change it, and a daemon that is stuck made the window's first look,
+    /// the doctor and the setup (which holds the setup lock) wait for ever.
+    static let lookTimeout: Duration = .seconds(20)
+
     public func status() async -> Status {
         let result = try? await runner.run(ProcessStep(
             executable: "/usr/bin/pluginkit",
             arguments: ["-m", "-A", "-D", "-v", "-p", "com.apple.FinderSync", "-i", AppIdentity.extensionBundleID]
-        ))
+        ), timeout: Self.lookTimeout)
+        if result?.terminatedAfter != nil { return Status(state: .unanswered, paths: []) }
         return Self.parse(result?.standardOutput ?? "")
     }
 

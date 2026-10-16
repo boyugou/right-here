@@ -50,6 +50,9 @@ final class SetupModel {
     private let home: URL
     private let pollInterval: Duration
     private let windowIsVisible: @MainActor () -> Bool
+    private let activationQuietPeriod: Duration
+    /// When the state was last read; coming back to the app does not read it again within `activationQuietPeriod`.
+    @ObservationIgnored private var lastRead: ContinuousClock.Instant?
     @ObservationIgnored private var icons: IconProvider
     @ObservationIgnored private var loop: RefreshLoop<SetupSnapshot>?
 
@@ -61,14 +64,17 @@ final class SetupModel {
     ///   - pollInterval: How often the Finder extension is looked at while it is not switched on.
     ///   - windowIsVisible: Whether the window can be seen; the look is skipped while it cannot.
     /// Everything it asks of the Mac comes through these, so that a test gives it a temporary home, a made-up Mac and a runner that answers as scripted.
+    ///   - activationQuietPeriod: Coming back to the app reads the state again only when it was last read longer ago than this: each read starts the person's login
+    ///     shell, which runs their startup files, and a person who switches between windows must not have those run at every switch.
     init(loader: SetupLoader, actions: SetupActions, facts: any SystemFacts, helper: String, pollInterval: Duration = .seconds(2),
-         windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible) {
+         activationQuietPeriod: Duration = .seconds(20), windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible) {
         self.loader = loader
         self.actions = actions
         icons = IconProvider(facts: facts)
         home = facts.homeDirectory
         locationProblem = InstallError.problem(runningFrom: helper)
         self.pollInterval = pollInterval
+        self.activationQuietPeriod = activationQuietPeriod
         self.windowIsVisible = windowIsVisible
     }
 
@@ -153,6 +159,7 @@ final class SetupModel {
     /// person started does; each ends with a read of its own.
     func refreshOnActivation() async {
         guard snapshot != nil, !isWorking, !isRefreshing else { return }
+        if let lastRead, ContinuousClock.now - lastRead < activationQuietPeriod { return }
         await refresh()
     }
 
@@ -331,9 +338,13 @@ final class SetupModel {
         return made
     }
 
-    private func apply(_ loaded: SetupSnapshot) {
+    /// What a read found, shown. A test hands it a snapshot of its own.
+    func apply(_ loaded: SetupSnapshot) {
         snapshot = loaded
+        lastRead = .now
         checks = loaded.checks + (launchResult.map { [$0] } ?? [])
+        // A setup that failed is shown until a read finds nothing left to look at: somebody else (an AI assistant, `rh setup` in a terminal) may have put it right.
+        if let report = setupReport, !report.ok, !isWorking, SetupSummary(checks: checks).state == .allSet { setupReport = nil }
         folders = loaded.folders
         offer = loaded.offer
         seedChoices(from: loaded.offer)

@@ -50,7 +50,7 @@ private struct Mac {
 
     static let inTheApplicationsFolder = "/Applications/Right Here.app/Contents/Helpers/rh"
 
-    init(helper: String = Mac.inTheApplicationsFolder, visible: Bool = true, pollInterval: Duration = .milliseconds(10)) throws {
+    init(helper: String = Mac.inTheApplicationsFolder, visible: Bool = true, pollInterval: Duration = .milliseconds(10), activationQuietPeriod: Duration = .zero) throws {
         home = try makeTemporaryDirectory()
         paths = RHPaths(environment: [:], home: home)
         let facts = FakeSystemFacts(homeDirectory: home, directories: [home.path], applications: [
@@ -63,7 +63,7 @@ private struct Mac {
         model = SetupModel(
             loader: SetupLoader(facts: facts, paths: paths, runner: runner, helperPath: helper, localizer: .english),
             actions: SetupActions(facts: facts, paths: paths, runner: runner, helperPath: helper, app: nil, trialHome: home),
-            facts: facts, helper: helper, pollInterval: pollInterval, windowIsVisible: { flag.isOn })
+            facts: facts, helper: helper, pollInterval: pollInterval, activationQuietPeriod: activationQuietPeriod, windowIsVisible: { flag.isOn })
     }
 
     func cleanUp() { try? FileManager.default.removeItem(at: home) }
@@ -213,6 +213,42 @@ struct SetupModelRefreshTests {
         await mac.model.refreshOnActivation()
         #expect(mac.runner.calls.count > after, "it did not look again")
         #expect(mac.model.configIsThere, "a config made meanwhile, by an AI assistant's setup, is seen")
+    }
+
+    @Test func comingBackToTheAppInQuickSuccessReadsOnlyOnce() async throws {
+        // Each read starts the person's login shell, which runs their startup files: switching between windows must not run them at every switch.
+        let mac = try Mac(activationQuietPeriod: .seconds(60)); defer { mac.cleanUp() }
+        await mac.model.refresh()
+        let after = mac.runner.calls.count
+        for _ in 0..<5 { await mac.model.refreshOnActivation() }
+        #expect(mac.runner.calls.count == after, "a read that is seconds old was read again")
+        await mac.model.refresh()
+        #expect(mac.runner.calls.count > after, "the refresh button always reads")
+    }
+
+    @Test func aFailedSetupIsNotShownAfterSomebodyElsePutEverythingRight() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        await mac.model.refresh()
+        try FileManager.default.createDirectory(at: mac.paths.configDirectory.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "in the way".write(to: mac.paths.configDirectory, atomically: true, encoding: .utf8)
+        await mac.model.setUp()
+        #expect(mac.model.setupReport?.ok == false)
+        // An AI assistant (or `rh setup` in a terminal) puts it right, and the next read finds nothing left to look at.
+        let ok = [DoctorCheck(.config, status: .ok), DoctorCheck(.finderExtension, status: .ok)]
+        mac.model.apply(SetupSnapshot(checks: ok, configFile: mac.paths.configFile, configExists: true, home: mac.home))
+        #expect(mac.model.setupReport == nil, "the red marks of a setup that no longer matters stayed above \"Everything is set up\"")
+        #expect(mac.model.summary.state == .allSet)
+    }
+
+    @Test func aSetupThatWentWellStaysAsTheListOfWhatItDid() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        await mac.model.refresh()
+        await mac.model.setUp()
+        let report = try #require(mac.model.setupReport)
+        #expect(report.ok)
+        let ok = [DoctorCheck(.config, status: .ok), DoctorCheck(.finderExtension, status: .ok)]
+        mac.model.apply(SetupSnapshot(checks: ok, configFile: mac.paths.configFile, configExists: true, home: mac.home))
+        #expect(mac.model.setupReport == report)
     }
 
     @Test func theExtensionIsLookedAtOnlyWhileTheWindowCanBeSeenAndTheLookStopsWhenItIsOn() async throws {

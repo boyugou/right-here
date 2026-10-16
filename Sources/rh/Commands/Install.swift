@@ -100,8 +100,13 @@ struct Uninstall: AsyncParsableCommand {
         let manager = FinderExtensionManager()
         for path in await manager.status().paths {
             try? await manager.disable()
-            try? await manager.unregister(appexPath: path)
-            Output.print("Unregistered the Finder extension: \(path.withControlCharactersEscaped)")
+            do {
+                try await manager.unregister(appexPath: path)
+                Output.print("Unregistered the Finder extension: \(path.withControlCharactersEscaped)")
+            } catch {
+                problems += 1
+                Output.error("error: the Finder extension \(path.withControlCharactersEscaped) is still registered: \(error.localizedDescription)")
+            }
         }
         if problems > 0 { throw Output.fail("\(problems) step(s) failed; run `rh uninstall` again once the cause is fixed.") }
     }

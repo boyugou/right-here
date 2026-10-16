@@ -14,14 +14,24 @@ public struct SetupRequest: Sendable, Equatable {
     public var checkup: Bool
     /// A piece that cannot be done is a failure (a command of its own, `rh install --finder`) and not a skip (setup as a whole).
     public var strict: Bool
+    /// Whether the config may be made when there is none. The first run makes it from the person's choices; Install or Repair does not, so that a config is never
+    /// made from what was found without the choice being asked for.
+    public var createsConfig: Bool
 
-    public init(pieces: Set<SetupPiece>, choices: SetupChoices = SetupChoices(), force: Bool = false, dryRun: Bool = false, checkup: Bool = false, strict: Bool = false) {
+    public init(pieces: Set<SetupPiece>, choices: SetupChoices = SetupChoices(), force: Bool = false, dryRun: Bool = false, checkup: Bool = false, strict: Bool = false,
+                createsConfig: Bool = true) {
         self.pieces = pieces
         self.choices = choices
         self.force = force
         self.dryRun = dryRun
         self.checkup = checkup
         self.strict = strict
+        self.createsConfig = createsConfig
+    }
+
+    /// Install or Repair: every piece, then the doctor, and no config made.
+    public static func repair() -> SetupRequest {
+        SetupRequest(pieces: Set(SetupPiece.allCases), checkup: true, createsConfig: false)
     }
 
     /// `rh setup`, and the setup window: every piece, then the doctor.
@@ -153,6 +163,11 @@ public struct SetupRunner: Sendable {
         let exists = entryExists(paths.configFile)
         if exists, !request.force {
             existingConfigStep(request, into: &report, madeJustNow: false)
+            return nil
+        }
+        // Only the per-machine overlay is there, or nothing: a repair does not make the base config from what it found.
+        if !exists, !request.createsConfig {
+            report.steps.append(SetupStep(.config, .skipped, detail: .doctorVerbatim("there is no \(paths.configFile.lastPathComponent); the first run's Set Up makes it from your choices")))
             return nil
         }
 

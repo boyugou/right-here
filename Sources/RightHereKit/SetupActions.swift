@@ -42,8 +42,12 @@ public struct SetupActions: Sendable {
     /// runner script, the command link, the Quick Actions and the Finder extension's registration, then the checks. The same code as the
     /// command line, called here and not spawned. The notice is `nil` when every step worked.
     public func setUp(_ choices: SetupChoices = SetupChoices()) async -> SetupResult {
+        await run(.setup(choices: choices))
+    }
+
+    private func run(_ request: SetupRequest) async -> SetupResult {
         do {
-            let report = try await setup.run(.setup(choices: choices))
+            let report = try await setup.run(request)
             let failure = report.steps.first { $0.outcome == .failed }?.detail?.english()
             return SetupResult(report: report, notice: report.ok ? nil : .failed(failure ?? "Setup did not finish."))
         } catch {
@@ -57,7 +61,7 @@ public struct SetupActions: Sendable {
     /// have chosen, and the window that is not sure yet whether there is one (it has not looked) must not make it.
     public func repair() async -> SetupResult {
         guard existingConfigFile != nil else { return SetupResult(report: nil, notice: .failed(Self.noConfigYet)) }
-        return await setUp()
+        return await run(.repair())
     }
 
     /// Opens the config file in the default text editor. A Mac with no config is told to choose first and press Set Up, which makes the file

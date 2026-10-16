@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Found by the review of the changes after 0.3.0's review (round 20): Install or Repair on a Mac that has only the per-machine overlay no longer makes `config.toml` from what
+  it found; a look at the Finder extension's registration is stopped after twenty seconds and says "pluginkit did not answer" (before, a stuck daemon held the window's first look,
+  the doctor and the setup for ever); `rh uninstall` says "Unregistered" only when macOS did; coming back to the window reads the Mac again at most every twenty seconds
+  (each read starts your login shell); a failed setup is no longer shown above "Everything is set up" once somebody else has put things right.
+
 - A login shell that says nothing (a startup file that exits, such as an `exec tmux`, or one that waits or is slow) is no longer taken for one that did not find the agents:
   `rh doctor` and the Checks page say "did not say whether it is installed", `rh agents` leaves the command unlisted as found or not found, and the dry-run note of `rh run`
   does not claim "command not found".

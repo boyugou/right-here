@@ -52,6 +52,14 @@ struct ExtensionProbeTests {
         #expect(!FileManager.default.fileExists(atPath: ProbeMarker.url(in: RHPaths(environment: [:], home: home)).path), "and no request was left for the extension")
     }
 
+    @Test func aLookAtTheRegistrationThatNeverComesBackIsUnknownAndNotMissing() async {
+        let status = await FinderExtensionManager(runner: StuckRunner()).status()
+        #expect(status.state == .unanswered && status.paths.isEmpty)
+        let check = await Doctor.extensionCheck(runner: StuckRunner())
+        #expect(check.status == .warn, "a failure would be a first run for the window, and the extension may be fine")
+        #expect(check.detail?.english().contains("did not answer within 20 seconds") == true)
+    }
+
     @Test func aPluginkitCallThatNeverComesBackIsStoppedAndSaysSo() async {
         let manager = FinderExtensionManager(runner: StuckRunner())
         await #expect(throws: ExecutionError.timedOut(step: "pluginkit -a /Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex", seconds: 30)) {

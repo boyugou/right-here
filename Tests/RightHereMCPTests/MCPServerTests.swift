@@ -939,7 +939,7 @@ struct MCPServingTests {
         #expect(all.filter { $0.reply["result"]?["isError"]?.boolValue == true }.count == limits.outstanding, "the rest ran, and ended as tool errors")
     }
 
-    @Test func theDoctorRunsUnderTheSameTimeLimitAsAnAction() async throws {
+    @Test func theDoctorRunsNoProcessWithoutATimeLimitOfTheServersAtMost() async throws {
         // A pluginkit that never answers would otherwise keep a request slot for good.
         let recorder = RecordsLimits()
         let facts = FakeSystemFacts()
@@ -948,7 +948,8 @@ struct MCPServingTests {
         let reply = await server.handle(#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"right_here_doctor","arguments":{}}}"#)
         #expect(reply != nil)
         #expect(!recorder.limits.isEmpty, "the doctor ran no process at all, so there is nothing to check")
-        #expect(recorder.limits.allSatisfy { $0 == .seconds(42) }, "a process ran without the limit: \(recorder.limits)")
+        // A process that has a limit of its own keeps it (a look at the registration stops after twenty seconds); every other one gets the server's.
+        #expect(recorder.limits.allSatisfy { ($0 ?? .seconds(1_000_000)) <= .seconds(42) }, "a process ran without the limit, or beyond it: \(recorder.limits)")
     }
 
     @Test func aClientThatHasGoneIsReportedToTheCallerInsteadOfEndingTheProcess() async throws {
