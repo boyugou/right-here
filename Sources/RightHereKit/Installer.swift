@@ -69,6 +69,9 @@ public struct Installer: Sendable {
     }
 
     public let locations: Locations
+    private let home: URL
+    private let environment: [String: String]
+    private let realHome: URL
     private var fileManager: FileManager { .default }
 
     /// The path of the running `rh` to write into the runner script and the Services. Symlinks are
@@ -96,8 +99,19 @@ public struct Installer: Sendable {
         return target == URL(fileURLWithPath: resolved).resolvingSymlinksInPath().path ? alias : resolved
     }
 
-    public init(home: URL) {
+    /// - Parameters:
+    ///   - environment: What `RealHomeGuard` reads; the process's, but for a test of the guard.
+    ///   - realHome: The home it protects; the account's, but for a test of the guard.
+    public init(home: URL, environment: [String: String] = ProcessInfo.processInfo.environment, realHome: URL = LiveSystemFacts.realHomeDirectory) {
+        self.home = home
+        self.environment = environment
+        self.realHome = realHome
         locations = Locations(home: home)
+    }
+
+    /// Asked before anything is written or removed under the home (`RealHomeGuard`).
+    private func refuseUnderTest() throws {
+        try RealHomeGuard.check(home: home, environment: environment, realHome: realHome)
     }
 
     public var runnerScript: URL {
@@ -197,6 +211,7 @@ public struct Installer: Sendable {
 
     @discardableResult
     public func installRunnerScript(rhPath: String) throws -> URL {
+        try refuseUnderTest()
         try fileManager.createDirectory(at: locations.applicationScripts, withIntermediateDirectories: true)
         let text = Self.runnerScriptText(rhPath: rhPath)
         try text.write(to: runnerScript, atomically: true, encoding: .utf8)
@@ -213,6 +228,7 @@ public struct Installer: Sendable {
     /// name belongs to the person, so it is refused rather than deleted.
     @discardableResult
     public func installCLILink(rhPath: String) throws -> URL {
+        try refuseUnderTest()
         try fileManager.createDirectory(at: locations.localBin, withIntermediateDirectories: true)
         let isLink = (try? fileManager.destinationOfSymbolicLink(atPath: cliLink.path)) != nil
         if !isLink, fileManager.fileExists(atPath: cliLink.path) { throw InstallError.notALink(path: cliLink.path) }
@@ -298,6 +314,7 @@ public struct Installer: Sendable {
     }
 
     func installServices(_ specs: [ServiceSpec], write: (ServiceSpec, URL) throws -> Void) throws -> [URL] {
+        try refuseUnderTest()
         try fileManager.createDirectory(at: locations.services, withIntermediateDirectories: true)
         // A name that does not start with the prefix, so nothing treats a half-written staging folder as installed.
         let staging = locations.services.appendingPathComponent(".rh-staging-\(UUID().uuidString)")
@@ -357,6 +374,7 @@ public struct Installer: Sendable {
     }
 
     public func removeServices() throws {
+        try refuseUnderTest()
         for bundle in installedServices() { try removeIfThere(bundle) }
     }
 
@@ -366,7 +384,23 @@ public struct Installer: Sendable {
     }
 
     public func removeRunnerScript() throws {
+        try refuseUnderTest()
         if fileManager.fileExists(atPath: runnerScript.path) { try fileManager.removeItem(at: runnerScript) }
+    }
+
+    public enum LinkRemoval: Equatable, Sendable {
+        case absent
+        case removed(destination: String)
+        /// `rh` is a short name other tools use too: a link to something that is not Right Here's is not ours to delete.
+        case foreign(destination: String)
+    }
+
+    public func removeCLILink() throws -> LinkRemoval {
+        try refuseUnderTest()
+        guard let destination = try? fileManager.destinationOfSymbolicLink(atPath: cliLink.path) else { return .absent }
+        guard Self.isRightHereBinary(destination) else { return .foreign(destination: destination) }
+        try fileManager.removeItem(at: cliLink)
+        return .removed(destination: destination)
     }
 }
 
@@ -385,9 +419,12 @@ public struct FinderExtensionManager: Sendable {
     }
 
     private let runner: any ProcessRunner
+    private let environment: [String: String]
 
-    public init(runner: any ProcessRunner = LiveProcessRunner()) {
+    /// - Parameter environment: What `RealHomeGuard` reads; the process's, but for a test of the guard.
+    public init(runner: any ProcessRunner = LiveProcessRunner(), environment: [String: String] = ProcessInfo.processInfo.environment) {
         self.runner = runner
+        self.environment = environment
     }
 
     public func status() async -> Status {
@@ -449,6 +486,7 @@ public struct FinderExtensionManager: Sendable {
     static let changeTimeout: Duration = .seconds(30)
 
     private func run(_ arguments: [String]) async throws {
+        try RealHomeGuard.checkSystemWide(environment: environment)
         let step = "pluginkit " + arguments.joined(separator: " ")
         let result = try await runner.run(ProcessStep(executable: "/usr/bin/pluginkit", arguments: arguments), timeout: Self.changeTimeout)
         if result.terminatedAfter != nil { throw ExecutionError.timedOut(step: step, seconds: Int(Self.changeTimeout.components.seconds)) }

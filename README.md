@@ -127,7 +127,7 @@ Then, in three steps:
 
 Or hand all of it to your AI assistant: **Copy Setup Prompt for AI** in the app, or tell it to run `rh docs agent-setup`.
 
-**Updating.** Download the newer DMG from the Releases page, drag the app over the old one in Applications, open it and press **Set Up** again (or run `rh setup`): it repairs what a new copy of the app leaves out of date, registers the Finder extension again, and never rewrites your config. The Releases page says what each version changed.
+**Updating.** Download the newer DMG from the Releases page, drag the app over the old one in Applications, open it and press **Install or Repair** (or run `rh setup`): it repairs what a new copy of the app leaves out of date, registers the Finder extension again, and never rewrites your config. The Releases page says what each version changed.
 
 ## Use
 

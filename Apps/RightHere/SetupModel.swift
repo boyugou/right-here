@@ -36,6 +36,8 @@ final class SetupModel {
     private(set) var isSettingUp = false
     /// What the last setup did, for the list "What Right Here set up".
     private(set) var setupReport: SetupReport?
+    /// How many times a setup or a repair has come back with an answer: the page scrolls to the answer when this changes.
+    private(set) var setupAttempt = 0
     @ObservationIgnored private var choicesSeeded = false
     /// The answer of the last launch test: it is kept through refreshes, which read the checks and do not run the probe.
     @ObservationIgnored private var launchResult: DoctorCheck?
@@ -58,6 +60,7 @@ final class SetupModel {
         actions = SetupActions(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper, app: Bundle.main.bundleURL)
         icons = IconProvider(facts: facts)
         home = facts.homeDirectory
+        locationProblem = InstallError.problem(runningFrom: Self.helper)
     }
 
     /// The checks as a summary: whether anything is known yet, what is open, whether the first-run card is due.
@@ -66,6 +69,10 @@ final class SetupModel {
     /// There is no config file yet, so the window offers the choice of terminal, editor and agents before anything is written. False
     /// while nothing is known: a window that has not looked yet must not claim a first run.
     var needsFirstRunChoice: Bool { snapshot.map { !$0.configExists } ?? false }
+
+    /// Why the app cannot set anything up from where it runs (a disk image, another volume, the temporary copy macOS makes of a downloaded
+    /// app), or `nil`. Said on the first page before anything is tried; what a setup writes would point into a folder that goes away.
+    private(set) var locationProblem: InstallError?
 
     /// The first look has ended and found a config file: what Install or Repair and Open Config act on. Before that the window does not know
     /// whether this is a first run (the look starts the login shell, which takes seconds), and on a first run the config is made from the
@@ -118,6 +125,12 @@ final class SetupModel {
         await refreshLoop().refresh()
     }
 
+    /// Whether the window can be seen: not minimized, hidden or covered. A window beside System Settings is on screen while the app is not the active one,
+    /// which is where the person is when they switch the extension on.
+    private var windowIsOnScreen: Bool {
+        NSApplication.shared.windows.contains { $0.isVisible && $0.occlusionState.contains(.visible) }
+    }
+
     /// Reads the state again when the app comes to the front: the person may be back from System Settings, from the editor of the config or from a
     /// terminal where an AI assistant ran `rh setup`, and what the window shows is old. Not while the first look runs, or while something the
     /// person started does; each ends with a read of its own.
@@ -136,7 +149,7 @@ final class SetupModel {
             #if PREVIEW
             if simulated { return }
             #endif
-            guard !Task.isCancelled, !isWorking, !isRefreshing else { continue }
+            guard !Task.isCancelled, !isWorking, !isRefreshing, windowIsOnScreen else { continue }
             let check = await actions.extensionCheck()
             // A refresh that is running, or that the person started meanwhile, has a newer look at the extension than this one.
             guard !Task.isCancelled, !isWorking, !isRefreshing else { continue }
@@ -149,28 +162,34 @@ final class SetupModel {
     /// none), the runner script, the command link, the Quick Actions and the Finder extension's registration. The same code as the
     /// command line, called here. Then the state is read again, and the first-run card waits for the extension to be switched on.
     func setUp() async {
-        guard !isWorking, let offer else { return }
+        guard !isWorking, locationProblem == nil, let offer else { return }
         isWorking = true
         isSettingUp = true
-        notice = nil
+        say(nil)
         let result = await actions.setUp(offer.choices(terminal: selectedTerminal, editor: selectedEditor, agents: selectedAgents))
         setupReport = result.report
-        notice = result.notice
+        setupAttempt += 1
+        say(result.notice)
         isSettingUp = false
-        isWorking = false
+        // Still working while the state is read again: the chooser is drawn until that read says there is a config, and its button must not
+        // start the whole setup a second time.
         await refresh()
+        isWorking = false
+        announceState(unless: result.notice)
     }
 
     /// Install or Repair: the same setup without choices, for a Mac that has a config. It makes what is missing, changes what is out of
     /// date and leaves the config alone.
     func repair() async {
-        guard !isWorking else { return }
+        guard !isWorking, locationProblem == nil else { return }
         isWorking = true
         let result = await actions.repair()
         setupReport = result.report ?? setupReport
-        notice = result.notice
-        isWorking = false
+        setupAttempt += 1
+        say(result.notice)
         await refresh()
+        isWorking = false
+        announceState(unless: result.notice)
     }
 
     /// Has the Finder extension start a throwaway terminal session that runs a typed command, the way a menu click starts an
@@ -180,18 +199,21 @@ final class SetupModel {
         guard !isWorking, !isRefreshing else { return }
         isWorking = true
         isTestingLaunch = true
-        notice = nil
+        say(nil)
         let check = await actions.launchCheck()
         launchResult = check
         checks = checks.replacingOrAppending(check)
         isTestingLaunch = false
         isWorking = false
+        if let detail = check.detail { announce(Localizer.system.render(detail)) }
     }
 
     /// Opens the config file. It does not make one: a Mac without a config chooses first.
     func openConfig() async {
         guard !isWorking else { return }
-        notice = await actions.openConfig()
+        isWorking = true
+        say(await actions.openConfig())
+        isWorking = false
     }
 
     func showExtensionSettings() {
@@ -215,7 +237,7 @@ final class SetupModel {
     func unpin(_ folder: String) async {
         guard !isWorking, !isRefreshing else { return }
         isWorking = true
-        notice = await actions.unpin(folder)
+        say(await actions.unpin(folder))
         isWorking = false
         await refreshFolders()
     }
@@ -223,7 +245,7 @@ final class SetupModel {
     func clearRecents() async {
         guard !isWorking, !isRefreshing else { return }
         isWorking = true
-        notice = await actions.clearRecents()
+        say(await actions.clearRecents())
         isWorking = false
         await refreshFolders()
     }
@@ -256,7 +278,7 @@ final class SetupModel {
         panel.prompt = Localizer.system.string(.appChooseFolderPrompt)
         guard panel.runModal() == .OK, let folder = panel.url else { return }
         guard let root = await actions.repository(containing: folder) else {
-            notice = .notARepository(PathDisplay.abbreviatingHome(folder.path, home: homePath))
+            say(.notARepository(PathDisplay.abbreviatingHome(folder.path, home: homePath)))
             return
         }
         selectRepository(root)
@@ -274,9 +296,9 @@ final class SetupModel {
         isWorking = true
         let result = await browser.remove(row, in: repository)
         if case .worktreeRemoved(let path) = result {
-            notice = .worktreeRemoved(PathDisplay.abbreviatingHome(path, home: homePath))
+            say(.worktreeRemoved(PathDisplay.abbreviatingHome(path, home: homePath)))
         } else {
-            notice = result
+            say(result)
         }
         isWorking = false
         await refreshWorktrees()
@@ -325,7 +347,26 @@ final class SetupModel {
     private func copy(_ text: String, confirmed: SetupNotice) {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
-        notice = confirmed
+        say(confirmed)
+    }
+
+    /// Shows what happened, and says it to VoiceOver: the notice is a line in the corner of the sidebar, which a person who cannot see it would never find.
+    private func say(_ new: SetupNotice?) {
+        notice = new
+        if let new { announce(Localizer.system.render(new.message)) }
+    }
+
+    /// How the setup stands after a setup or a repair that raised no notice of its own, said aloud: "Everything is set up." or "Some checks need your attention."
+    private func announceState(unless notice: SetupNotice?) {
+        guard notice == nil, summary.state != .checking else { return }
+        announce(Localizer.system.string(statusTitle(summary.state)))
+    }
+
+    private func announce(_ text: String) {
+        #if !PREVIEW
+        NSAccessibility.post(element: NSApplication.shared, notification: .announcementRequested,
+                             userInfo: [.announcement: text, .priority: NSAccessibilityPriorityLevel.high.rawValue])
+        #endif
     }
 
     /// The icons of the menu are read from the apps on disk, which takes a moment for each; they are read off the main actor so
@@ -359,6 +400,11 @@ final class SetupModel {
     /// For `--set-up`: the list of what the first setup did, as it is just after it ran.
     func simulate(setupReport report: SetupReport) {
         setupReport = report
+    }
+
+    /// For `--location`: the app runs from a disk image.
+    func simulateLocationProblem() {
+        locationProblem = .onAnotherVolume(path: "/Volumes/Right Here/Right Here.app/Contents/Helpers/rh")
     }
 
     /// For `--onboarding`: the first-run card, as it is when the Finder extension is off.

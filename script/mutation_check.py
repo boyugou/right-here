@@ -23,6 +23,7 @@ quoting, planning, the MCP server, the process runner or the Finder probe.
 """
 import os
 import pathlib
+import pwd
 import re
 import signal
 import subprocess
@@ -659,6 +660,18 @@ MUTANTS = [
      "        await activity.switching {\n            try? await manager.disable()", "        do {\n            try? await manager.disable()"),
     ("a pluginkit call that never comes back holds the setup", "Sources/RightHereKit/Installer.swift",
      "if result.terminatedAfter != nil { throw ExecutionError.timedOut(", "if false { throw ExecutionError.timedOut("),
+    ("a test changes the real home as soon as a protection it is for is gone", "Sources/RightHereKit/Installer.swift",
+     "        try RealHomeGuard.check(home: home, environment: environment, realHome: realHome)\n", ""),
+    ("a test that has no trial home is not told so", "Sources/RightHereKit/RealHomeGuard.swift",
+     'environment["RH_NO_UI"] != nil && RHEnvironment.path("RH_HOME", in: environment) == nil', "false"),
+    ("a test that has a trial home is refused as well", "Sources/RightHereKit/RealHomeGuard.swift",
+     'environment["RH_NO_UI"] != nil && RHEnvironment.path("RH_HOME", in: environment) == nil', 'environment["RH_NO_UI"] != nil'),
+    ("a test that writes under another home than the real one is refused", "Sources/RightHereKit/RealHomeGuard.swift",
+     "home.resolvingSymlinksInPath().path == realHome.resolvingSymlinksInPath().path else { return }", "true else { return }"),
+    ("a test registers the Finder extension for the whole Mac", "Sources/RightHereKit/Installer.swift",
+     "        try RealHomeGuard.checkSystemWide(environment: environment)\n        let step = ", "        let step = "),
+    ("a test restarts the Finder extension for the whole Mac", "Sources/RightHereKit/ExtensionProbe.swift",
+     "        guard (try? RealHomeGuard.checkSystemWide(environment: environment)) != nil else { return nil }\n", ""),
     ("a rh that is not inside an app is refused for the volume it is on", "Sources/RightHereKit/Installer.swift",
      'guard helper.contains(".app/Contents/"), isOnAnotherVolume(helper) else { return nil }', 'guard isOnAnotherVolume(helper) else { return nil }'),
     ("a link in /Volumes to the startup disk counts as another volume", "Sources/RightHereKit/Installer.swift",
@@ -712,6 +725,26 @@ def run_tests(clone: pathlib.Path) -> tuple[str, bool]:
         return output, True
 
 
+def real_home_fingerprint() -> dict[str, object]:
+    """What a setup that reached the real home would change: the runner script, the command link and the Quick Actions of this account.
+
+    A mutant removes the protection a test is for and runs the test, so a test that expects `rh setup` to be refused can, under a mutant, be the one that
+    sets up the real home (once it replaced the real runner script with one that pointed into the throwaway clone). The tests give `rh` a trial home and
+    `rh` refuses the real home from a test (`RealHomeGuard`); this notices it if that is not enough.
+    """
+    home = pathlib.Path(pwd.getpwuid(os.getuid()).pw_dir)
+    watched = [home / "Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run", home / ".local/bin/rh", home / "Library/Services"]
+    watched += sorted((home / "Library/Services").glob("Right Here*")) if (home / "Library/Services").is_dir() else []
+    state: dict[str, object] = {}
+    for path in watched:
+        try:
+            info = path.lstat()
+            state[str(path)] = (info.st_mtime_ns, os.readlink(path) if path.is_symlink() else None)
+        except OSError:
+            state[str(path)] = None
+    return state
+
+
 def main() -> int:
     arguments = sys.argv[1:]
     if arguments == ["--list"]:
@@ -721,6 +754,7 @@ def main() -> int:
     chosen = {int(a) for a in arguments} if arguments else set(range(len(MUTANTS)))
 
     problems: list[str] = []
+    home_before = real_home_fingerprint()
     with tempfile.TemporaryDirectory(prefix="rh-mutation-") as folder:
         clone = pathlib.Path(folder) / "clone"
         subprocess.run(["git", "clone", "--quiet", "--local", str(ROOT), str(clone)], check=True)
@@ -744,6 +778,11 @@ def main() -> int:
                         break
             finally:
                 path.write_text(original, encoding="utf-8")
+            changed = [name_ for name_, state in real_home_fingerprint().items() if state != home_before.get(name_)]
+            if changed:
+                print(f"[{index}] STOPPED: this mutant (\"{name}\") changed the real home: {', '.join(changed)}.\n"
+                      "Repair it with `Right Here.app/Contents/Helpers/rh setup` from the installed app, and make the test that did it give `rh` a trial home (RH_HOME).", file=sys.stderr)
+                return 2
             killers = sorted(failed_tests(output) - LOAD_SENSITIVE)
             if hung:
                 status = "HUNG"

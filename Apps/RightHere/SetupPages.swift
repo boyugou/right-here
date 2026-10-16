@@ -104,34 +104,47 @@ struct OverviewPage: View {
     let model: SetupModel
     private let l10n = Localizer.system
 
+    private static let resultID = "setup-result"
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            if model.needsFirstRunChoice {
-                // No config file yet: what is installed, to choose from, before anything is written.
-                FirstRunChooser(model: model)
-                // A Set Up that did not come out leaves no config, so the chooser stays: what went wrong is said here, where the person is
-                // looking, and not only in the footnote of the sidebar. A refusal that started nothing (the app runs from a disk image) has
-                // no report, only the notice.
-                if let report = model.setupReport {
-                    SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
-                } else if let notice = model.notice, notice.isProblem {
-                    NoticeLine(notice: notice, font: .callout)
+        ScrollViewReader { proxy in
+            VStack(alignment: .leading, spacing: 20) {
+                if model.locationProblem != nil {
+                    LocationCard()
                 }
-            } else {
-                if let report = model.setupReport, model.summary.state != .allSet || report.hasNews {
-                    SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
-                }
-
-                if model.summary.extensionNeedsSetup {
-                    FirstRunCard(model: model)
+                if model.needsFirstRunChoice {
+                    // A Set Up that did not come out leaves no config, so the chooser stays: what went wrong is said above it, where the person is
+                    // looking, and not only in the footnote of the sidebar. A refusal that started nothing has no report, only the notice.
+                    if let report = model.setupReport {
+                        SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
+                            .id(Self.resultID)
+                    } else if let notice = model.notice, notice.isProblem {
+                        NoticeLine(notice: notice, font: .callout)
+                            .id(Self.resultID)
+                    }
+                    // No config file yet: what is installed, to choose from, before anything is written.
+                    FirstRunChooser(model: model)
                 } else {
-                    StatusCard(model: model)
-                }
+                    if let report = model.setupReport, model.summary.state != .allSet || report.hasNews {
+                        SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
+                            .id(Self.resultID)
+                    }
 
-                HStack(alignment: .top, spacing: 14) {
-                    defaultApp(.appCheckTerminal, icon: "terminal", name: model.summary.terminal)
-                    defaultApp(.appCheckEditor, icon: "chevron.left.forwardslash.chevron.right", name: model.summary.editor)
+                    if model.summary.extensionNeedsSetup {
+                        FirstRunCard(model: model)
+                    } else {
+                        StatusCard(model: model)
+                    }
+
+                    HStack(alignment: .top, spacing: 14) {
+                        defaultApp(.appCheckTerminal, icon: "terminal", name: model.summary.terminal)
+                        defaultApp(.appCheckEditor, icon: "chevron.left.forwardslash.chevron.right", name: model.summary.editor)
+                    }
                 }
+            }
+            // The button that was pressed may be far down the page; the answer is at the top.
+            .onChange(of: model.setupAttempt) {
+                proxy.scrollTo(Self.resultID, anchor: .top)
             }
         }
     }
@@ -178,6 +191,7 @@ struct StatusCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(l10n.string(statusTitle(state)))
                     .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
                 if state == .allSet {
                     Text(l10n.string(.appAllSetHint))
                         .font(.callout)
@@ -235,6 +249,7 @@ struct FirstRunCard: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(l10n.string(.appOnboardTitle))
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
 
             step(1, title: .appStepOneTitle, body: .appStepOneBody,
                  done: model.check(.terminalDefault)?.status == .ok && model.check(.editorDefault)?.status == .ok) {
@@ -259,10 +274,9 @@ struct FirstRunCard: View {
             }
 
             step(3, title: .appStepThreeTitle, body: .appStepThreeBody, done: false) {
-                Button(l10n.string(.appTestLaunch)) { Task { await model.testLaunch() } }
+                Button(l10n.string(.appShowChecks)) { model.select(.checks) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
-                    .disabled(model.isWorking || model.isRefreshing)
             }
 
             Divider()
@@ -315,6 +329,7 @@ struct FirstRunCard: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(l10n.render(.appStepLabel(number.formatted(), l10n.string(title))))
+        .accessibilityValue(done ? l10n.string(.appStatusOK) : "")
     }
 }
 
@@ -429,7 +444,8 @@ struct ChecksPage: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
-                .disabled(model.isWorking || model.isRefreshing)
+                // The test goes through the extension: with it off it would wait its 75 seconds and say the extension did not answer.
+                .disabled(model.isWorking || model.isRefreshing || model.summary.extensionNeedsSetup)
             }
 
             if model.isTestingLaunch {
@@ -441,7 +457,7 @@ struct ChecksPage: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(model.checks.enumerated()), id: \.element.id) { index, check in
-                        CheckRow(check: check, home: model.homePath)
+                        CheckRow(check: check, home: model.homePath, firstRun: model.needsFirstRunChoice)
                         if index < model.checks.count - 1 {
                             Divider()
                                 .padding(.horizontal, 14)
@@ -458,6 +474,8 @@ struct ChecksPage: View {
 struct CheckRow: View {
     let check: DoctorCheck
     let home: String
+    /// There is no config file yet: the way in is the Set Up button of the first page, not Install or Repair.
+    let firstRun: Bool
     private let l10n = Localizer.system
 
     var body: some View {
@@ -476,7 +494,7 @@ struct CheckRow: View {
                     line(note, .secondary)
                 }
                 if let fix = check.fix {
-                    line(fix, .primary)
+                    line(inTheWindow(fix), .primary)
                 }
             }
             Spacer(minLength: 0)
@@ -486,6 +504,16 @@ struct CheckRow: View {
         // One stop for VoiceOver per check (title, detail and fix read together) instead of three.
         .accessibilityElement(children: .combine)
         .accessibilityValue(l10n.string(statusKey))
+    }
+
+    /// The fixes of the doctor are written for a terminal ("Run `rh setup`"); in the window the same thing is a button, and the person has no command to run.
+    private func inTheWindow(_ fix: LocalizedMessage) -> LocalizedMessage {
+        switch fix.key {
+        case .doctorFixRunSetup, .doctorFixExtensionInstall: firstRun ? .appFixSetUp : .appFixRepair
+        case .doctorFixExtensionClean: firstRun ? .appFixSetUp : .appFixExtensionClean
+        case .doctorFixExtensionEnable: .appFixExtensionEnable
+        default: fix
+        }
     }
 
     /// One line of what the doctor says, in the system language, as long as it needs to be. A path or a command in a right-to-left

@@ -81,6 +81,36 @@ struct ChoiceChip: View {
     }
 }
 
+/// The app runs from a disk image, another volume or the temporary copy macOS makes of a download. Said before anything is tried, with what to do: the
+/// buttons that would set up are off until the app is somewhere that stays.
+struct LocationCard: View {
+    private let l10n = Localizer.system
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.title3)
+                .foregroundStyle(Color.orange)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(l10n.string(.appLocationTitle))
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                Text(l10n.string(.appLocationBody))
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.orange.opacity(0.5), lineWidth: 1.5))
+        .accessibilityElement(children: .combine)
+    }
+}
+
 /// The card of a first run: the terminals and editors installed on this Mac, the agents Right Here knows (the ones found are checked),
 /// and the button that sets everything up with what is chosen. It is shown only while there is no config file: the choice is written
 /// because the file does not exist yet, and nothing here ever changes a file that is there.
@@ -93,6 +123,7 @@ struct FirstRunChooser: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(l10n.string(.appSetupTitle))
                     .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
                 Text(l10n.string(.appSetupBody))
                     .font(.callout)
                     .foregroundStyle(.secondary)
@@ -138,7 +169,7 @@ struct FirstRunChooser: View {
                 Button(l10n.string(.appSetupButton)) { Task { await model.setUp() } }
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
-                    .disabled(model.isWorking || model.offer == nil)
+                    .disabled(model.isWorking || model.offer == nil || model.locationProblem != nil)
                 if model.isSettingUp {
                     ProgressRow(message: .appSettingUp)
                 }
@@ -193,6 +224,7 @@ struct SetupDonePanel: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(l10n.string(.appSetupDoneTitle))
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
             FlowLayout(spacing: 16) {
                 ForEach(Array(report.steps.enumerated()), id: \.offset) { _, step in
                     SetupStepMark(step: step, home: home, extensionIsOn: extensionIsOn)
@@ -215,7 +247,7 @@ struct SetupDonePanel: View {
                 VStack(alignment: .leading, spacing: 4) {
                     note(SetupReport.editsHeading, symbol: "pencil.line", color: .accentColor)
                     ForEach(Array(report.configEdits.enumerated()), id: \.offset) { _, edit in
-                        Text(DoctorText.styled(l10n.render(.doctorVerbatim(edit.instruction), isolatingValues: true), home: home))
+                        Text(DoctorText.styled(l10n.render(.doctorVerbatim(Fence.withoutMarks(edit.instruction)), isolatingValues: true), home: home))
                             .font(.callout)
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
@@ -240,7 +272,7 @@ extension SetupDonePanel {
             Image(systemName: symbol)
                 .foregroundStyle(color)
                 .accessibilityHidden(true)
-            Text(DoctorText.styled(l10n.render(.doctorVerbatim(text), isolatingValues: true), home: home))
+            Text(DoctorText.styled(l10n.render(.doctorVerbatim(Fence.withoutMarks(text)), isolatingValues: true), home: home))
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)

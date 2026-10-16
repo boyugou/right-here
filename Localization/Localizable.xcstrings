@@ -7999,6 +7999,750 @@
         }
       }
     },
+    "app.fixExtensionClean": {
+      "comment": "What to do when the Finder extension is registered from more than one place. Based on the existing translation of the older sentence (`similar`, which says to run `rh setup`): keep its wording for the stale copies, and name the button Install or Repair with its existing translation (glossary) in place of the command.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اضغط «تثبيت أو إصلاح» لإزالة النسخ القديمة."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "পুরোনো কপিগুলো সরাতে “ইনস্টল বা মেরামত করুন” চাপ দিন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Drücke „Installieren oder reparieren“, um die veralteten Kopien zu entfernen."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Πατήστε «Εγκατάσταση ή επισκευή» για να αφαιρέσετε τα παλιά αντίγραφα."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press Install or Repair to remove the stale copies."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pulsa «Instalar o reparar» para eliminar las copias obsoletas."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "نصب یا تعمیر را بزنید تا نسخه‌های قدیمی حذف شوند."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Appuyez sur Installer ou réparer pour supprimer les copies obsolètes."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לחצו על התקן או תקן כדי להסיר את העותקים הישנים."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "पुरानी प्रतियाँ हटाने के लिए इंस्टॉल या मरम्मत करें बटन दबाएँ।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tekan Instal atau Perbaiki untuk menghapus salinan lama."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Premi Installa o ripara per rimuovere le copie obsolete."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "「インストールまたは修復」を押して、古いコピーを削除してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "설치 또는 복구를 눌러 오래된 복사본을 제거하세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "जुन्या प्रती काढण्यासाठी इन्स्टॉल किंवा दुरुस्त करा दाबा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tekan Pasang atau Baiki untuk mengalih keluar salinan usang."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Klik op Installeer of repareer om de verouderde kopieën te verwijderen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kliknij Zainstaluj lub napraw, aby usunąć nieaktualne kopie."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Clique em Instalar ou Reparar para remover as cópias desatualizadas."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Apăsați pe Instalați sau reparați pentru a elimina copiile învechite."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Нажмите «Установить или восстановить», чтобы удалить устаревшие копии."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "பழைய நகல்களை நீக்க நிறுவு அல்லது சரிசெய் பொத்தானை அழுத்தவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "పాత కాపీలను తొలగించడానికి ఇన్‌స్టాల్ లేదా మరమ్మతు చేయండి బటన్‌ను నొక్కండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "กดปุ่มติดตั้งหรือซ่อมแซมเพื่อลบสำเนาเก่าออก."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Eski kopyaları kaldırmak için Yükle veya Onar düğmesine basın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Натисніть «Встановити або відновити», щоб видалити застарілі копії."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پرانی کاپیاں ہٹانے کے لیے انسٹال یا مرمت کریں دبائیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nhấn Cài đặt hoặc sửa chữa để xóa các bản sao cũ."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "点按“安装或修复”以移除过时的副本。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "點按「安裝或修復」以移除過時的副本。"
+          }
+        }
+      }
+    },
+    "app.fixExtensionEnable": {
+      "comment": "What to do when the Finder extension is registered but switched off. The existing translation of the older, longer sentence (given as `similar`) has the same second half: reuse its wording of the System Settings path exactly and drop its first clause (the one about running `rh setup`).",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فعّل Right Here في إعدادات النظام › عام › عناصر تسجيل الدخول والامتدادات › Finder."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "System Settings › General › Login Items & Extensions › Finder-এর অধীনে Right Here চালু করুন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aktiviere Right Here unter Systemeinstellungen › Allgemein › Anmeldeobjekte & Erweiterungen › Finder."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ενεργοποιήστε το Right Here στις Ρυθμίσεις συστήματος › Γενικά › Στοιχεία εισόδου και επεκτάσεις › Finder."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch on Right Here in System Settings › General › Login Items & Extensions › Finder."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Activa Right Here en Ajustes del Sistema › General › Ítems de inicio y extensiones › Finder."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Right Here را در System Settings › General › Login Items & Extensions › Finder روشن کنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Activez Right Here dans Réglages Système › Général › Ouverture et extensions › Finder."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "הפעילו את Right Here בהגדרות המערכת › כללי › פריטי התחברות והרחבות › Finder."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सिस्टम सेटिंग › सामान्य › लॉगइन आइटम और एक्सटेंशन › Finder में Right Here चालू करें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aktifkan Right Here di Pengaturan Sistem › Umum › Item Masuk & Ekstensi › Finder."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Attiva Right Here in Impostazioni di Sistema › Generali › Elementi login ed estensioni › Finder."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "システム設定 › 一般 › ログイン項目と機能拡張 › Finder で Right Here をオンにしてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "시스템 설정 › 일반 › 로그인 항목 및 확장 프로그램 › Finder에서 Right Here를 켜세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "System Settings › General › Login Items & Extensions › Finder मध्ये Right Here सुरू करा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Hidupkan Right Here dalam Tetapan Sistem › Umum › Item Log Masuk & Sambungan › Finder."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Zet Right Here aan in Systeeminstellingen › Algemeen › Inlogonderdelen en extensies › Finder."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Włącz Right Here w Ustawieniach systemowych › Ogólne › Rzeczy i rozszerzenia otwierane podczas logowania › Finder."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ative o Right Here em Ajustes do Sistema › Geral › Itens de Login e Extensões › Finder."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Activați Right Here în Configurări sistem › General › Lansare la login și extensii › Finder."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Включите Right Here в Системных настройках › Основные › Объекты входа и расширения › Finder."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "System Settings › General › Login Items & Extensions › Finder இல் Right Here ஐ இயக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "System Settings › General › Login Items & Extensions › Finder లో Right Here ను ఆన్ చేయండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เปิด Right Here ที่การตั้งค่าระบบ › ทั่วไป › รายการเข้าสู่ระบบและส่วนขยาย › Finder."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sistem Ayarları › Genel › Oturum Açma Öğeleri ve Uzantılar › Finder bölümünde Right Here’ı açın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Увімкніть Right Here в Системних параметрах › Загальні › Автозапуск і розширення › Finder."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏System Settings › General › Login Items & Extensions › Finder میں Right Here آن کریں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bật Right Here trong Cài đặt hệ thống › Cài đặt chung › Mục đăng nhập & Phần mở rộng › Finder."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "在“系统设置” › “通用” › “登录项与扩展” › “访达”中打开 Right Here 的开关。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "在「系統設定」›「一般」›「登入項目與延伸功能」›「Finder」中開啟 Right Here。"
+          }
+        }
+      }
+    },
+    "app.fixRepair": {
+      "comment": "What to do about a check in the setup window: it names the button Install or Repair at the top of the window. Use the existing translation of that button's title exactly (given in the glossary). A short sentence.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اضغط «تثبيت أو إصلاح»."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "“ইনস্টল বা মেরামত করুন” চাপ দিন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Drücke „Installieren oder reparieren“."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Πατήστε «Εγκατάσταση ή επισκευή»."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press Install or Repair."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pulsa «Instalar o reparar»."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "نصب یا تعمیر را بزنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Appuyez sur Installer ou réparer."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לחצו על התקן או תקן."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "इंस्टॉल या मरम्मत करें बटन दबाएँ।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tekan Instal atau Perbaiki."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Premi Installa o ripara."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "「インストールまたは修復」を押してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "설치 또는 복구를 누르세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "इन्स्टॉल किंवा दुरुस्त करा दाबा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tekan Pasang atau Baiki."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Klik op Installeer of repareer."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kliknij Zainstaluj lub napraw."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Clique em Instalar ou Reparar."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Apăsați pe Instalați sau reparați."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Нажмите «Установить или восстановить»."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "நிறுவு அல்லது சரிசெய் பொத்தானை அழுத்தவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఇన్‌స్టాల్ లేదా మరమ్మతు చేయండి బటన్‌ను నొక్కండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "กดปุ่มติดตั้งหรือซ่อมแซม."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yükle veya Onar düğmesine basın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Натисніть «Встановити або відновити»."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "انسٹال یا مرمت کریں دبائیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nhấn Cài đặt hoặc sửa chữa."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "点按“安装或修复”。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "點按「安裝或修復」。"
+          }
+        }
+      }
+    },
+    "app.fixSetUp": {
+      "comment": "What to do about a check before the first setup: it names the button Set Up and the Overview section of the window. Use the existing translations of both (given in the glossary). A short sentence.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اضغط «إعداد» في قسم «نظرة عامة»."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "“সারসংক্ষেপ” বিভাগে “সেটআপ করুন” চাপ দিন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Drücke im Abschnitt „Übersicht“ auf „Einrichten“."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Πατήστε «Ρύθμιση» στην ενότητα «Επισκόπηση»."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press Set Up on the Overview page."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pulsa «Configurar» en la sección «Resumen»."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "راه‌اندازی کردن را در صفحه‌ی نمای کلی بزنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Appuyez sur Configurer dans la page Vue d’ensemble."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לחצו על הגדר בדף סקירה כללית."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सारांश पेज पर सेट अप करें बटन दबाएँ।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tekan Siapkan di halaman Ringkasan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Premi Configura nella pagina Panoramica."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "「概要」ページで「セットアップ」を押してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "개요 페이지에서 설정하기를 누르세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "आढावा पेजवर सेटअप करा दाबा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tekan Sediakan pada halaman Gambaran Keseluruhan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Klik op Stel in op de pagina Overzicht."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kliknij Skonfiguruj na stronie Przegląd."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Clique em Configurar na página Visão geral."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "În pagina Prezentare generală, apăsați pe Configurați."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "На странице «Обзор» нажмите «Настроить»."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "மேலோட்டம் பக்கத்தில் அமை பொத்தானை அழுத்தவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "అవలోకనం పేజీలో సెటప్ చేయండి బటన్‌ను నొక్కండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "กดปุ่มตั้งค่าในหน้าภาพรวม."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Genel Bakış sayfasındaki Kur düğmesine basın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Натисніть «Налаштувати» на сторінці «Огляд»."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "جائزہ میں سیٹ اپ کریں دبائیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nhấn Thiết lập trong phần Tổng quan."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "在“概览”中点按“设置”。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "在「概覽」中點按「設定」。"
+          }
+        }
+      }
+    },
     "app.foldersNote": {
       "comment": "Text at the top of the Folders section of the setup window: where the pinned and the recent folders are kept, and who can read them. 'MCP' stays as it is.",
       "extractionState": "manual",
@@ -8553,6 +9297,378 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "正在載入…"
+          }
+        }
+      }
+    },
+    "app.locationBody": {
+      "comment": "Body of that warning card: why, and the three things to do. `Right Here.app` is the file name and stays in Latin script as written.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "يعمل Right Here من صورة قرص أو من موقع مؤقت، لذلك يتوقف عن العمل كل ما يُعدّه حين يزول ذلك المصدر. اسحب Right Here.app إلى مجلد التطبيقات، وأخرِج صورة القرص، ثم افتح Right Here من هناك."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here একটি ডিস্ক ইমেজ বা অস্থায়ী স্থান থেকে চলছে, তাই এটি যা সেটআপ করে তা ওই উৎস সরে গেলে কাজ করা বন্ধ করে দেবে। Right Here.app-কে আপনার অ্যাপ্লিকেশন ফোল্ডারে টেনে আনুন, ডিস্ক ইমেজটি বের করে দিন, এবং সেখান থেকে Right Here খুলুন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here wird von einem Disk-Image oder einem temporären Ort aus ausgeführt. Was es einrichtet, würde deshalb nicht mehr funktionieren, sobald das Disk-Image oder der temporäre Ort verschwindet. Ziehe Right Here.app in deinen Ordner „Programme“, wirf das Disk-Image aus und öffne Right Here dann von dort."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το Right Here εκτελείται από μια εικόνα δίσκου ή από μια προσωρινή τοποθεσία, οπότε ό,τι ρυθμίζει θα σταματήσει να λειτουργεί όταν αυτή η πηγή πάψει να υπάρχει. Σύρετε το Right Here.app στο φάκελο Εφαρμογών, εξαγάγετε την εικόνα δίσκου και ανοίξτε το Right Here από εκεί."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right Here is running from a disk image or a temporary location, so what it sets up would stop working once that goes away. Drag Right Here.app into your Applications folder, eject the disk image, and open Right Here from there."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here se está ejecutando desde una imagen de disco o una ubicación temporal, así que lo que configura dejaría de funcionar cuando eso desaparezca. Arrastra Right Here.app a tu carpeta Aplicaciones, expulsa la imagen de disco y abre Right Here desde allí."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Right Here از یک تصویر دیسک یا یک مکان موقت اجرا می‌شود، و آنچه راه‌اندازی می‌کند پس از ناپدید شدن آن از کار می‌افتد. Right Here.app را به پوشه‌ی برنامه‌ها بکشید، تصویر دیسک را خارج کنید و Right Here را از همان‌جا باز کنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here est lancé depuis une image disque ou un emplacement temporaire, donc ce qu’il configure cesserait de fonctionner dès que cela disparaîtrait. Faites glisser Right Here.app dans votre dossier Applications, éjectez l’image disque, puis ouvrez Right Here depuis ce dossier."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Right Here פועל מתוך תמונת דיסק או ממיקום זמני, ולכן מה שהוא מגדיר יפסיק לעבוד ברגע שזה ייעלם. גררו את Right Here.app לתיקיית היישומים שלכם, הוציאו את תמונת הדיסק, ופתחו את Right Here משם."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here डिस्क इमेज या किसी अस्थायी स्थान से चल रहा है, इसलिए यह जो कुछ सेट अप करता है, वह उसके हटते ही काम करना बंद कर देगा। Right Here.app को अपने एप्लिकेशन फ़ोल्डर में खींचें, डिस्क इमेज को बाहर निकालें, और वहाँ से Right Here खोलें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here dijalankan dari image disk atau lokasi sementara, sehingga semua yang disiapkannya akan berhenti berfungsi begitu hal itu hilang. Seret Right Here.app ke folder Aplikasi Anda, keluarkan image disk, lalu buka Right Here dari sana."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here è in esecuzione da un’immagine disco o da una posizione temporanea, quindi ciò che configura smetterebbe di funzionare quando quella posizione scompare. Trascina Right Here.app nella cartella Applicazioni, espelli l’immagine disco e apri Right Here da lì."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here はディスクイメージまたは一時的な場所から実行されているため、Right Here がセットアップする内容は、その場所がなくなると動作しなくなります。Right Here.app を「アプリケーション」フォルダにドラッグし、ディスクイメージを取り出してから、そこから Right Here を開いてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here는 디스크 이미지나 임시 위치에서 실행 중이므로, Right Here가 설정하는 내용은 그 위치가 사라지면 작동을 멈춥니다. Right Here.app을 응용 프로그램 폴더로 끌어다 놓고, 디스크 이미지를 꺼낸 다음, 거기서 Right Here를 여세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here डिस्क इमेज किंवा तात्पुरत्या जागेतून चालू आहे, त्यामुळे Right Here जे सेटअप करते ते ती जागा नाहीशी झाल्यावर काम करणे थांबेल. Right Here.app ला तुमच्या Applications फोल्डरमध्ये ड्रॅग करा, डिस्क इमेज बाहेर काढा आणि तिथून Right Here उघडा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here sedang berjalan dari imej cakera atau lokasi sementara, jadi apa yang disediakannya akan berhenti berfungsi sebaik sahaja lokasi itu hilang. Seret Right Here.app ke dalam folder Aplikasi anda, keluarkan imej cakera, dan buka Right Here dari sana."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here wordt uitgevoerd vanaf een schijfkopie of een tijdelijke locatie, dus wat het instelt, werkt niet meer zodra die verdwijnt. Sleep Right Here.app naar de map Apps, werp de schijfkopie uit en open Right Here vanaf daar."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here działa z obrazu dysku albo z tymczasowej lokalizacji, więc to, co konfiguruje, przestanie działać, gdy to zniknie. Przeciągnij Right Here.app do folderu Programy, wysuń obraz dysku i otwórz Right Here stamtąd."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "O Right Here está sendo executado a partir de uma imagem de disco ou de um local temporário, então o que ele configura deixaria de funcionar assim que isso desaparecesse. Arraste o Right Here.app para a pasta Aplicativos, ejete a imagem de disco e abra o Right Here de lá."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here rulează dintr-o imagine de disc sau dintr-o locație temporară, deci ceea ce configurează nu va mai funcționa după ce aceasta dispare. Trageți Right Here.app în dosarul Aplicații, ejectați imaginea de disc și deschideți Right Here de acolo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Приложение Right Here запущено из образа диска или временного расположения, поэтому то, что оно настраивает, перестанет работать, когда это исчезнет. Перетащите Right Here.app в папку «Программы», извлеките образ диска и откройте Right Here оттуда."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here ஒரு டிஸ்க் படத்திலிருந்தோ அல்லது தற்காலிக இடத்திலிருந்தோ இயங்குகிறது; அதனால், அது அமைப்பவை அந்த இடம் மறைந்ததும் வேலை செய்யாமல் போய்விடும். Right Here.app ஐ உங்கள் Applications கோப்புறைக்கு இழுத்து விடவும், டிஸ்க் படத்தை வெளியேற்றவும், பிறகு அங்கிருந்து Right Here ஐத் திறக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here ఒక డిస్క్ ఇమేజ్ లేదా తాత్కాలిక స్థానం నుండి రన్ అవుతోంది, కాబట్టి అది సెటప్ చేసేవి ఆ స్థానం పోయాక పనిచేయడం ఆగిపోతాయి. Right Here.app ను మీ Applications ఫోల్డర్‌లోకి లాగి వదలండి, డిస్క్ ఇమేజ్‌ను ఎజెక్ట్ చేయండి, ఆపై అక్కడి నుండి Right Here ను తెరవండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here กำลังทำงานจากดิสก์อิมเมจหรือตำแหน่งชั่วคราว ดังนั้นสิ่งที่ตั้งค่าไว้จะหยุดทำงานเมื่อที่นั้นหายไป ลาก Right Here.app ไปวางในโฟลเดอร์แอปพลิเคชันของคุณ นำดิสก์อิมเมจออก แล้วเปิด Right Here จากที่นั่น."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here bir disk görüntüsünden veya geçici bir konumdan çalışıyor; bu yüzden kurduğu şeyler, o konum ortadan kalktığında çalışmaz hâle gelir. Right Here.app’ı Uygulamalar klasörüne sürükleyin, disk görüntüsünü çıkarın ve Right Here’ı oradan açın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here запущено з образу диска або з тимчасового розташування, тому те, що він налаштовує, перестане працювати, щойно це зникне. Перетягніть Right Here.app до папки «Програми», вилучіть образ диска та відкрийте Right Here звідти."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Right Here ڈسک امیج یا عارضی مقام سے چل رہی ہے، اس لیے جب وہ مقام نہیں رہے گا تو جو کچھ یہ سیٹ اپ کرتی ہے وہ کام کرنا بند کر دے گا۔ Right Here.app کو اپنے ایپلیکیشنز فولڈر میں گھسیٹ کر ڈالیں، ڈسک امیج کو نکال دیں، اور وہاں سے Right Here کھولیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here đang chạy từ một ảnh đĩa hoặc một vị trí tạm thời, nên những gì nó thiết lập sẽ ngừng hoạt động khi vị trí đó biến mất. Kéo Right Here.app vào thư mục Ứng dụng của bạn, đẩy ảnh đĩa ra, rồi mở Right Here từ đó."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here 正在从磁盘映像或临时位置运行，因此一旦该位置消失，它所设置的内容就会失效。请将 Right Here.app 拖到“应用程序”文件夹，推出磁盘映像，然后从那里打开 Right Here。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here 正從磁碟映像或暫時位置執行，因此一旦該位置消失，它所設定的內容就會失效。請將 Right Here.app 拖到「應用程式」資料夾，推出磁碟映像，然後從那裡打開 Right Here。"
+          }
+        }
+      }
+    },
+    "app.locationTitle": {
+      "comment": "Title of a warning card at the top of the setup window, shown when the app runs from a disk image, another volume or the temporary copy macOS makes of a downloaded app. A short imperative sentence, no final period.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "انقل Right Here إلى مجلد التطبيقات أولاً"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "প্রথমে Right Here-কে আপনার অ্যাপ্লিকেশন ফোল্ডারে সরান"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Verschiebe Right Here zuerst in deinen Ordner „Programme“"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Μετακινήστε πρώτα το Right Here στο φάκελο Εφαρμογών"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Right Here to your Applications folder first"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mueve primero Right Here a tu carpeta Aplicaciones"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ابتدا Right Here را به پوشه‌ی برنامه‌ها منتقل کنید"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Déplacez d’abord Right Here dans votre dossier Applications"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "העבירו תחילה את Right Here לתיקיית היישומים שלכם"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सबसे पहले Right Here को अपने एप्लिकेशन फ़ोल्डर में ले जाएँ"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pindahkan Right Here ke folder Aplikasi Anda terlebih dahulu"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sposta prima Right Here nella cartella Applicazioni"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "まず Right Here を「アプリケーション」フォルダに移動してください"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "먼저 Right Here를 응용 프로그램 폴더로 옮기세요"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "प्रथम Right Here ला तुमच्या Applications फोल्डरमध्ये हलवा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Alihkan Right Here ke folder Aplikasi anda terlebih dahulu"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Verplaats Right Here eerst naar de map Apps"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Najpierw przenieś Right Here do folderu Programy"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mova o Right Here para a pasta Aplicativos primeiro"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mutați mai întâi Right Here în dosarul Aplicații"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Сначала переместите Right Here в папку «Программы»"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "முதலில் Right Here ஐ உங்கள் Applications கோப்புறைக்கு நகர்த்தவும்"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ముందుగా Right Here ను మీ Applications ఫోల్డర్‌కు తరలించండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ย้าย Right Here ไปยังโฟลเดอร์แอปพลิเคชันก่อน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Önce Right Here’ı Uygulamalar klasörüne taşıyın"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Спершу перемістіть Right Here до папки «Програми»"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پہلے Right Here کو اپنے ایپلیکیشنز فولڈر میں منتقل کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Chuyển Right Here vào thư mục Ứng dụng trước"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "请先将 Right Here 移到“应用程序”文件夹"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "請先將 Right Here 移到「應用程式」資料夾"
           }
         }
       }
@@ -17678,181 +18794,181 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "اختر الطرفية والمحرر"
+            "value": "الطرفية والمحرر"
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "আপনার টার্মিনাল ও এডিটর বেছে নিন"
+            "value": "আপনার টার্মিনাল ও এডিটর"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Terminal und Editor auswählen"
+            "value": "Terminal und Editor"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Επιλέξτε το τερματικό και τον επεξεργαστή σας"
+            "value": "Το τερματικό και ο επεξεργαστής σας"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pick your terminal and editor"
+            "value": "Your terminal and editor"
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Elegir terminal y editor"
+            "value": "Terminal y editor"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ترمینال و ویرایشگر خود را انتخاب کنید"
+            "value": "ترمینال و ویرایشگر خود"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Choisir le terminal et l'éditeur"
+            "value": "Votre terminal et votre éditeur"
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "בחרו מסוף ועורך"
+            "value": "המסוף והעורך שלכם"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "अपना टर्मिनल और एडिटर चुनें"
+            "value": "अपना टर्मिनल और एडिटर"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pilih terminal dan editor Anda"
+            "value": "Terminal dan editor Anda"
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Scegli terminale ed editor"
+            "value": "Il tuo terminale ed editor"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ターミナルとエディタを選択"
+            "value": "お使いのターミナルとエディタ"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "터미널과 편집기 선택"
+            "value": "내 터미널과 편집기"
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "तुमचे टर्मिनल आणि एडिटर निवडा"
+            "value": "तुमचे टर्मिनल आणि एडिटर"
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pilih terminal dan editor anda"
+            "value": "Terminal dan editor anda"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Terminal en editor kiezen"
+            "value": "Jouw terminal en editor"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Wybierz terminal i edytor"
+            "value": "Twój terminal i edytor"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Escolha seu terminal e editor"
+            "value": "Seu terminal e editor"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Alegeți terminalul și editorul"
+            "value": "Terminalul și editorul dumneavoastră"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Выберите терминал и редактор"
+            "value": "Ваш терминал и редактор"
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "உங்கள் டெர்மினலையும் எடிட்டரையும் தேர்ந்தெடுக்கவும்"
+            "value": "உங்கள் டெர்மினலும் எடிட்டரும்"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "మీ టెర్మినల్ మరియు ఎడిటర్‌ను ఎంచుకోండి"
+            "value": "మీ టెర్మినల్ మరియు ఎడిటర్"
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เลือกเทอร์มินัลและโปรแกรมแก้ไข"
+            "value": "เทอร์มินัลและโปรแกรมแก้ไขของคุณ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Terminalinizi ve düzenleyicinizi seçin"
+            "value": "Terminaliniz ve düzenleyiciniz"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Оберіть термінал і редактор"
+            "value": "Ваш термінал і редактор"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "اپنا ٹرمینل اور ایڈیٹر منتخب کریں"
+            "value": "اپنا ٹرمینل اور ایڈیٹر"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Chọn terminal và trình soạn thảo"
+            "value": "Terminal và trình soạn thảo của bạn"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "选择终端和编辑器"
+            "value": "你的终端和编辑器"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "選擇終端機和編輯器"
+            "value": "你的終端機和編輯器"
           }
         }
       }
@@ -17864,181 +18980,181 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "يفتح نافذة طرفية في مجلد تجريبي ثم يغلقها."
+            "value": "بعد ذلك، انقر بالزر الأيمن على مجلد في Finder. يتضمن قسم «الفحوصات» أيضاً اختباراً يفتح نافذة طرفية ثم يغلقها."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "একটি পরীক্ষার ফোল্ডারে টার্মিনাল উইন্ডো খোলে এবং আবার বন্ধ করে।"
+            "value": "এরপর Finder-এ একটি ফোল্ডারে ডান-ক্লিক করুন। “চেক” বিভাগেও একটি পরীক্ষা আছে, যা একটি টার্মিনাল উইন্ডো খোলে এবং আবার বন্ধ করে।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Öffnet ein Terminalfenster in einem Testordner und schließt es wieder."
+            "value": "Klicke danach im Finder mit der rechten Maustaste auf einen Ordner. Im Abschnitt „Prüfungen“ gibt es außerdem einen Test, der ein Terminalfenster öffnet und es wieder schließt."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ανοίγει ένα παράθυρο τερματικού σε έναν φάκελο δοκιμής και το κλείνει ξανά."
+            "value": "Στη συνέχεια, κάντε δεξί κλικ σε έναν φάκελο στο Finder. Η ενότητα «Έλεγχοι» έχει επίσης μια δοκιμή που ανοίγει ένα παράθυρο τερματικού και το κλείνει ξανά."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Opens a terminal window in a test folder and closes it again."
+            "value": "After that, right-click a folder in Finder. The Checks page also has a test that opens a terminal window and closes it again."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abre una ventana de terminal en una carpeta de prueba y la vuelve a cerrar."
+            "value": "Después, haz clic con el botón derecho en una carpeta en el Finder. La sección «Comprobaciones» también tiene una prueba que abre una ventana de terminal y la vuelve a cerrar."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "یک پنجره ترمینال را در یک پوشه آزمایشی باز و دوباره بسته می‌کند."
+            "value": "پس از آن، روی یک پوشه در Finder کلیک راست کنید. صفحه‌ی بررسی‌ها همچنین یک آزمایش دارد که یک پنجره ترمینال را باز و دوباره بسته می‌کند."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ouvre une fenêtre de terminal dans un dossier de test, puis la referme."
+            "value": "Après cela, faites un clic droit sur un dossier dans le Finder. La page Vérifications contient aussi un test qui ouvre une fenêtre de terminal, puis la referme."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "פותח חלון מסוף בתיקיית בדיקה וסוגר אותו שוב."
+            "value": "אחר כך, לחצו לחיצה ימנית על תיקייה ב-Finder. בדף הבדיקות יש גם בדיקה שפותחת חלון מסוף וסוגרת אותו שוב."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "एक परीक्षण फ़ोल्डर में टर्मिनल विंडो खोलता है और फिर बंद कर देता है।"
+            "value": "इसके बाद, Finder में किसी फ़ोल्डर पर राइट-क्लिक करें। जाँच पेज पर भी एक परीक्षण है, जो एक टर्मिनल विंडो खोलता है और फिर बंद कर देता है।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Membuka jendela terminal di folder uji lalu menutupnya kembali."
+            "value": "Setelah itu, klik kanan pada folder di Finder. Halaman Pemeriksaan juga memiliki uji coba yang membuka jendela terminal lalu menutupnya kembali."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Apre una finestra di terminale in una cartella di prova e la chiude di nuovo."
+            "value": "Dopodiché, fai clic destro su una cartella nel Finder. La pagina Controlli contiene anche un test che apre una finestra di terminale e la chiude di nuovo."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "テスト用フォルダでターミナルウインドウを開き、すぐに閉じます。"
+            "value": "その後、Finder でフォルダを右クリックしてください。「確認」ページには、ターミナルウインドウを開いてから閉じるテストもあります。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "테스트 폴더에서 터미널 창을 열었다가 다시 닫습니다."
+            "value": "그다음 Finder에서 폴더를 우클릭하세요. 확인 항목 페이지에도 터미널 창을 열었다가 다시 닫는 테스트가 있습니다."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "एका चाचणी फोल्डरमध्ये टर्मिनल विंडो उघडते आणि पुन्हा बंद करते."
+            "value": "त्यानंतर Finder मध्ये एका फोल्डरवर उजवे-क्लिक करा. तपासण्या पेजवर टर्मिनल विंडो उघडून ती पुन्हा बंद करणारी एक चाचणी देखील आहे."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Membuka tetingkap terminal dalam folder ujian dan menutupnya semula."
+            "value": "Selepas itu, klik kanan pada folder dalam Finder. Halaman Semakan juga mempunyai ujian yang membuka tetingkap terminal dan menutupnya semula."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Opent een terminalvenster in een testmap en sluit het weer."
+            "value": "Klik daarna met de rechtermuisknop op een map in de Finder. Op de pagina Controles staat ook een test die een terminalvenster opent en het weer sluit."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Otwiera okno terminala w folderze testowym i zamyka je ponownie."
+            "value": "Następnie kliknij prawym przyciskiem myszy folder w Finderze. Na stronie Kontrole jest też test, który otwiera okno terminala i zamyka je ponownie."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abre uma janela de terminal em uma pasta de teste e a fecha novamente."
+            "value": "Depois, clique com o botão direito em uma pasta no Finder. A página Verificações também tem um teste que abre uma janela de terminal e a fecha novamente."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deschide o fereastră de terminal într-un dosar de test și o închide din nou."
+            "value": "După aceea, faceți clic dreapta pe un dosar în Finder. Pagina Verificări conține și un test care deschide o fereastră de terminal și o închide din nou."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Открывает окно терминала в тестовой папке и закрывает его."
+            "value": "Затем щёлкните правой кнопкой мыши по папке в Finder. На странице «Проверки» есть также тест, который открывает окно терминала и закрывает его."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ஒரு சோதனைக் கோப்புறையில் டெர்மினல் சாளரத்தைத் திறந்து மீண்டும் மூடும்."
+            "value": "அதன் பிறகு, Finder இல் ஒரு கோப்புறையை வலது-கிளிக் செய்யவும். சோதனைகள் பக்கத்தில் டெர்மினல் சாளரத்தைத் திறந்து மீண்டும் மூடும் ஒரு சோதனையும் உள்ளது."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ఒక టెస్ట్ ఫోల్డర్‌లో టెర్మినల్ విండోను తెరిచి, మళ్లీ మూసివేస్తుంది."
+            "value": "ఆ తర్వాత, Finder లో ఒక ఫోల్డర్‌పై రైట్-క్లిక్ చేయండి. తనిఖీలు పేజీలో టెర్మినల్ విండోను తెరిచి, మళ్లీ మూసివేసే ఒక టెస్ట్ కూడా ఉంది."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เปิดหน้าต่างเทอร์มินัลในโฟลเดอร์ทดสอบ แล้วปิดอีกครั้ง"
+            "value": "หลังจากนั้น คลิกขวาที่โฟลเดอร์ใน Finder. หน้าการตรวจสอบยังมีการทดสอบที่เปิดหน้าต่างเทอร์มินัลแล้วปิดอีกครั้ง."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Bir test klasöründe terminal penceresi açar ve sonra yeniden kapatır."
+            "value": "Ardından Finder’da bir klasöre sağ tıklayın. Denetimler sayfasında ayrıca terminal penceresini açıp yeniden kapatan bir test de var."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Відкриває вікно терміналу в тестовій папці та закриває його."
+            "value": "Після цього клацніть правою кнопкою миші на папку у Finder. На сторінці «Перевірки» також є тест, який відкриває вікно терміналу та знову закриває його."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ایک ٹیسٹ فولڈر میں ٹرمینل ونڈو کھولتا ہے اور پھر بند کر دیتا ہے۔"
+            "value": "اس کے بعد Finder میں کسی فولڈر پر دائیں کلک کریں۔ چیکس میں بھی ایک ٹیسٹ ہے جو ٹرمینل ونڈو کھولتا ہے اور پھر بند کر دیتا ہے۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Mở một cửa sổ terminal trong thư mục thử nghiệm rồi đóng lại."
+            "value": "Sau đó, nhấp chuột phải vào một thư mục trong Finder. Phần Kiểm tra cũng có một phép thử mở một cửa sổ terminal rồi đóng lại."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在测试文件夹中打开终端窗口，然后将其关闭。"
+            "value": "之后，在访达中右键点击一个文件夹。“检查”中还有一项测试，会打开终端窗口，然后将其关闭。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在測試資料夾中打開終端機視窗，然後再將其關閉。"
+            "value": "之後，在 Finder 中的資料夾上按右鍵。「檢查」中還有一項測試，會打開終端機視窗，然後再將其關閉。"
           }
         }
       }

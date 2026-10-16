@@ -21,6 +21,11 @@ public struct LiveSystemFacts: SystemFacts {
     /// account database is asked instead.
     public var homeDirectory: URL {
         if let override = Self.homeOverride { return override }
+        return Self.realHomeDirectory
+    }
+
+    /// The home folder of the account, whatever `RH_HOME` says.
+    public static var realHomeDirectory: URL {
         if let entry = getpwuid(getuid()), let directory = entry.pointee.pw_dir {
             return URL(fileURLWithPath: String(cString: directory))
         }

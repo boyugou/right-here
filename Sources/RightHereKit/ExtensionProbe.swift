@@ -39,12 +39,15 @@ public struct ExtensionProbe: Sendable {
     private let facts: any SystemFacts
     private let runner: any ProcessRunner
     private let activity: ProbeActivity
+    private let environment: [String: String]
 
-    public init(paths: RHPaths, facts: any SystemFacts = LiveSystemFacts(), runner: any ProcessRunner = LiveProcessRunner(), activity: ProbeActivity = .shared) {
+    public init(paths: RHPaths, facts: any SystemFacts = LiveSystemFacts(), runner: any ProcessRunner = LiveProcessRunner(), activity: ProbeActivity = .shared,
+                environment: [String: String] = ProcessInfo.processInfo.environment) {
         self.paths = paths
         self.facts = facts
         self.runner = runner
         self.activity = activity
+        self.environment = environment
     }
 
     private var logFile: URL { paths.logFile }
@@ -71,9 +74,11 @@ public struct ExtensionProbe: Sendable {
     /// Leaves the marker, restarts the extension so it looks for it, and waits for `rh` to report.
     private func report(_ kind: Kind, marker text: String? = nil, timeout: Duration) async -> Data? {
         let started = Date()
+        // Restarting the extension is a change to the whole Mac (`RealHomeGuard`).
+        guard (try? RealHomeGuard.checkSystemWide(environment: environment)) != nil else { return nil }
         guard ProbeMarker.write(text ?? kind.rawValue, in: paths) else { return nil }
 
-        let manager = FinderExtensionManager(runner: runner)
+        let manager = FinderExtensionManager(runner: runner, environment: environment)
         let runner = runner
         await activity.switching {
             try? await manager.disable()

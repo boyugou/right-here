@@ -9,6 +9,8 @@
 #   ./script/preview_setup.sh out.png en --onboarding       the first-run card, as when the Finder extension is off
 #   ./script/preview_setup.sh out.png en --first-run        the very first run: no config file yet, the choice of terminal, editor and agents
 #   ./script/preview_setup.sh out.png en --set-up           just after the first setup: what it did, and the Finder extension still to switch on
+#   ./script/preview_setup.sh out.png en --failed-set-up    the first run after a Set Up that did not come out: the chooser, and what went wrong above it
+#   ./script/preview_setup.sh out.png en --location         the app runs from a disk image: the card that says to move it, with Set Up off
 #   ./script/preview_setup.sh out.png en --picks-not-applied  after a setup that kept a config that was there: the choices it could not apply, with the edits, and a warning
 #   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
 #   ./script/preview_setup.sh out.png en --demo --tab folders
@@ -29,7 +31,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -44,7 +46,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       TAB="${args[$i]:?preview_setup.sh: --tab needs a section}"
       ;;
     --details) TAB="checks" ;;
-    --dark | --onboarding | --first-run | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
+    --dark | --onboarding | --first-run | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -238,6 +240,17 @@ func demoSetupReport() -> SetupReport {
     ])
 }
 
+/// A first setup in which the config step failed (a file in the way) and the others did not: what the chooser stays above.
+func demoFailedSetupReport() -> SetupReport {
+    SetupReport(steps: [
+        SetupStep(.config, .failed, detail: .doctorVerbatim("~/.config/right-here/config.toml cannot be used (line 1: TOML syntax error)")),
+        SetupStep(.runnerScript, .created, detail: .doctorVerbatim("~/Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run")),
+        SetupStep(.cliLink, .created, detail: .doctorVerbatim("~/.local/bin/rh")),
+        SetupStep(.services, .skipped, detail: .doctorVerbatim("they are made from the config, which cannot be used (see the config file above)")),
+        SetupStep(.finderExtension, .created, detail: .doctorVerbatim("\(appContents)/PlugIns/FinderExtension.appex"))
+    ])
+}
+
 /// A setup that found a config that was there: it was kept, the choices could not be applied, and what would apply them is listed.
 func demoKeptConfigReport() -> SetupReport {
     let kept = "# My own notes.\nversion = 1\n\n[general]\nterminal = \"ghostty\"\neditor = \"vscode\"\nagents = [\"claude\"]\n"
@@ -379,7 +392,7 @@ func render(to path: String) async {
     if flag("--gallery") {
         model.simulate(SetupSnapshot(checks: gallery(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
                                      home: URL(fileURLWithPath: demoHome)), tab: .checks)
-    } else if flag("--first-run") {
+    } else if flag("--first-run") || flag("--failed-set-up") || flag("--location") {
         model.simulate(SetupSnapshot(checks: firstRunChecks(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
                                      configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: .overview)
     } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") {
@@ -392,6 +405,8 @@ func render(to path: String) async {
     }
     if flag("--onboarding") || flag("--set-up") { model.simulateExtensionOff() }
     if flag("--set-up") { model.simulate(setupReport: demoSetupReport()) }
+    if flag("--failed-set-up") { model.simulate(setupReport: demoFailedSetupReport()) }
+    if flag("--location") { model.simulateLocationProblem() }
     if flag("--picks-not-applied") { model.simulate(setupReport: demoKeptConfigReport()) }
     if flag("--submenus") { model.simulate(openSubmenus: allSubmenus(model.snapshot?.menu ?? [])) }
     // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.

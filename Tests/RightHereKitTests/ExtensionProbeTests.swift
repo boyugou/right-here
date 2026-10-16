@@ -42,6 +42,16 @@ struct ExtensionProbeTests {
         #expect(!activity.isSwitching, "and may quit as soon as it is on again")
     }
 
+    @Test func aProcessATestStartedWithoutATrialHomeDoesNotRestartTheExtension() async throws {
+        let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
+        let runner = FakeProcessRunner()
+        let probe = ExtensionProbe(paths: RHPaths(environment: [:], home: home), facts: FakeSystemFacts(homeDirectory: home), runner: runner, activity: ProbeActivity(),
+                                   environment: ["RH_NO_UI": "1"])
+        #expect(await probe.runLaunch(timeout: .milliseconds(50)) == nil)
+        #expect(runner.recorded.isEmpty, "pluginkit was started: \(runner.recorded)")
+        #expect(!FileManager.default.fileExists(atPath: ProbeMarker.url(in: RHPaths(environment: [:], home: home)).path), "and no request was left for the extension")
+    }
+
     @Test func aPluginkitCallThatNeverComesBackIsStoppedAndSaysSo() async {
         let manager = FinderExtensionManager(runner: StuckRunner())
         await #expect(throws: ExecutionError.timedOut(step: "pluginkit -a /Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex", seconds: 30)) {

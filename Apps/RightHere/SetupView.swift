@@ -198,6 +198,7 @@ struct SetupView: View {
             Text(l10n.string(title(for: model.selectedTab)))
                 .font(.title2.weight(.bold))
                 .lineLimit(1)
+                .accessibilityAddTraits(.isHeader)
 
             Spacer(minLength: 12)
 
@@ -221,7 +222,7 @@ struct SetupView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
                 .keyboardShortcut(.defaultAction)
-                .disabled(model.isWorking)
+                .disabled(model.isWorking || model.locationProblem != nil)
             }
         }
     }

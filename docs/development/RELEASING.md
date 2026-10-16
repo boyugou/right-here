@@ -35,7 +35,7 @@
 
 5. Keep the releases page current: when a fix that people running the released build need lands on `main`, raise the patch version and publish
    again (steps 2 and 4), and let the notes of the release it replaces say which one to download.
-6. After installing from the DMG on a clean user, open the app and press Set Up (or run `rh setup`), then `rh doctor --probe-launch` (a terminal window opens and closes; macOS asks once to allow Right Here to control it).
+6. After installing from the DMG on a clean user, open the app and press Set Up (on a clean user there is no config yet, so the window asks first; or run `rh setup`), then `rh doctor --probe-launch` (a terminal window opens and closes; macOS asks once to allow Right Here to control it).
 
 Releases are arm64 only, macOS 26 and later.
 

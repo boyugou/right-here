@@ -16,6 +16,16 @@
   - The window reads your Mac again when you come back to it (from System Settings, an editor, or a terminal where an AI assistant ran `rh setup`).
   - A command link whose folder is not on PATH is a note on the Checks page, no longer a reason for "Some checks need your attention" after a setup that went well.
   - "What Right Here set up" says the Finder extension is "registered but switched off" while it is.
+  - The first page says, before anything is tried, when the app runs from a disk image or another volume, and what to do (the Set Up button waits).
+  - Step 3 of the first-run card points to the test on the Checks page instead of a button that could only fail while the extension is off; the test is off until it is on.
+  - The fixes on the Checks page say which button to press ("Press Install or Repair.") and not which command to run; a Claude Code terminal link without its
+    handler, and a choice of no agents at all, are on the page and not a reason for "needs attention".
+  - A person who uses VoiceOver hears the result of an action and the state after a setup; the titles of the sections are headings and a step says whether it is done.
+  - The window stops looking at the extension every two seconds when it is minimized, hidden or covered, and a pluginkit call that changes something is stopped after
+    30 seconds instead of holding the setup lock. Quitting the app waits for the one second in which the launch test has the extension switched off.
+- `rh` refuses to change the real home when it is started by a test (`RH_NO_UI` set) without a trial home (`RH_HOME`): a full run of the mutation check had replaced the real
+  runner script, command link and Quick Actions of the machine it ran on, through a test that expected a refusal and, with the protection removed, got a setup. The mutation
+  check now also stops at the first mutant that changes the real home.
 - The MCP tools mark two more texts from the config as data for the agent that reads them: the permission-bypass flag of an agent (`right_here_catalog`) and the file
   extension of a new-file template, which names the icon in `right_here_menu`. The structured data stays plain.
 

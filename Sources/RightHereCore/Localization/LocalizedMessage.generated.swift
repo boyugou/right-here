@@ -87,12 +87,24 @@ extension LocalizedMessage {
     public static var appCopySetupPrompt: LocalizedMessage { LocalizedMessage(.appCopySetupPrompt) }
     /// Finder Extension Settings
     public static var appExtensionSettings: LocalizedMessage { LocalizedMessage(.appExtensionSettings) }
+    /// Press Install or Repair to remove the stale copies.
+    public static var appFixExtensionClean: LocalizedMessage { LocalizedMessage(.appFixExtensionClean) }
+    /// Switch on Right Here in System Settings › General › Login Items & Extensions › Finder.
+    public static var appFixExtensionEnable: LocalizedMessage { LocalizedMessage(.appFixExtensionEnable) }
+    /// Press Install or Repair.
+    public static var appFixRepair: LocalizedMessage { LocalizedMessage(.appFixRepair) }
+    /// Press Set Up on the Overview page.
+    public static var appFixSetUp: LocalizedMessage { LocalizedMessage(.appFixSetUp) }
     /// Right Here remembers these folders on this Mac only, in a file next to your config. An AI assistant that you connect through MCP can read them.
     public static var appFoldersNote: LocalizedMessage { LocalizedMessage(.appFoldersNote) }
     /// Install or Repair
     public static var appInstallOrRepair: LocalizedMessage { LocalizedMessage(.appInstallOrRepair) }
     /// Loading…
     public static var appLoading: LocalizedMessage { LocalizedMessage(.appLoading) }
+    /// Right Here is running from a disk image or a temporary location, so what it sets up would stop working once that goes away. Drag Right Here.app into your Applications folder, eject the disk image, and open Right Here from there.
+    public static var appLocationBody: LocalizedMessage { LocalizedMessage(.appLocationBody) }
+    /// Move Right Here to your Applications folder first
+    public static var appLocationTitle: LocalizedMessage { LocalizedMessage(.appLocationTitle) }
     /// MCP configuration copied. Paste it into your assistant's MCP settings.
     public static var appMcpCopied: LocalizedMessage { LocalizedMessage(.appMcpCopied) }
     /// This is the menu for a folder. Items for selected files appear when you select files.
@@ -191,9 +203,9 @@ extension LocalizedMessage {
     public static func appStepLabel(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.appStepLabel, [argument1, argument2]) }
     /// Right Here opens these by default. To change them, edit the config file.
     public static var appStepOneBody: LocalizedMessage { LocalizedMessage(.appStepOneBody) }
-    /// Pick your terminal and editor
+    /// Your terminal and editor
     public static var appStepOneTitle: LocalizedMessage { LocalizedMessage(.appStepOneTitle) }
-    /// Opens a terminal window in a test folder and closes it again.
+    /// After that, right-click a folder in Finder. The Checks page also has a test that opens a terminal window and closes it again.
     public static var appStepThreeBody: LocalizedMessage { LocalizedMessage(.appStepThreeBody) }
     /// Try it
     public static var appStepThreeTitle: LocalizedMessage { LocalizedMessage(.appStepThreeTitle) }

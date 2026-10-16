@@ -83,12 +83,12 @@ struct Uninstall: AsyncParsableCommand {
             Output.print("Removed \(services.count) Services.")
         }
         await attempt("command link") {
-            guard let destination = try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path) else { return }
-            if Installer.isRightHereBinary(destination) {
-                try FileManager.default.removeItem(at: installer.cliLink)
+            switch try installer.removeCLILink() {
+            case .absent:
+                break
+            case .removed(let destination):
                 Output.print("Removed the command link (it pointed at \(destination.withControlCharactersEscaped)).")
-            } else {
-                // `rh` is a short name other tools use too; a link to something that is not Right Here's is not ours to delete.
+            case .foreign(let destination):
                 Output.print("Left the command link alone: \(installer.cliLink.path.withControlCharactersEscaped) points at \(destination.withControlCharactersEscaped), which is not Right Here's rh. Remove it yourself if you want it gone.")
             }
         }
