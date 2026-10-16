@@ -14,6 +14,18 @@ private struct EmptyHomeRunner: ProcessRunner {
     }
 }
 
+/// Runs the real login shell with a home folder of its own, so the one startup file a test writes is the only one it reads.
+private struct StartupWordRunner: ProcessRunner {
+    let home: URL
+    func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
+        var step = step
+        step.environment.merge(["HOME": home.path, "ZDOTDIR": home.path, "XDG_CONFIG_HOME": home.appendingPathComponent(".config").path, "ENV": "", "BASH_ENV": ""]) { $1 }
+        return try await LiveProcessRunner().run(step, timeout: timeout)
+    }
+}
+
+private let fishForTheProbe: String? = ["/opt/homebrew/bin/fish", "/usr/local/bin/fish"].first(where: FileManager.default.isExecutableFile)
+
 @Suite("Detector command lookup")
 struct DetectorCommandLookupTests {
     /// A plain POSIX login shell keeps the test quick and independent of anyone's startup files.
@@ -70,21 +82,13 @@ struct DetectorCommandLookupTests {
         #expect(result.found == ["ls"])
     }
 
-    @Test func aStartupFileThatPrintsAnUnfinishedLineDoesNotHideTheAnswer() async throws {
-        // `printf Welcome` ends no line: without a line feed of their own the names and the last line would be glued to it, and a shell that did answer would read as silent.
-        let home = FileManager.default.temporaryDirectory.appendingPathComponent("rh-welcome-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: home) }
-        try "printf Welcome\n".write(to: home.appendingPathComponent(".zshrc"), atomically: true, encoding: .utf8)
-        struct Welcome: ProcessRunner {
-            let home: URL
-            func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
-                var step = step
-                step.environment.merge(["HOME": home.path, "ZDOTDIR": home.path, "ENV": "", "BASH_ENV": ""]) { $1 }
-                return try await LiveProcessRunner().run(step, timeout: timeout)
-            }
-        }
-        let detector = Detector(facts: FakeSystemFacts(loginShell: "/bin/zsh"), runner: Welcome(home: home))
+    /// `printf Welcome` ends no line: without a line feed of their own the names and the last line would be glued to it, and a shell that did answer would read as silent.
+    private func checkTheProbeAfterAnUnfinishedLine(loginShell: String, startupFile: String) async throws {
+        let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
+        let file = home.appendingPathComponent(startupFile)
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "printf Welcome\n".write(to: file, atomically: true, encoding: .utf8)
+        let detector = Detector(facts: FakeSystemFacts(loginShell: loginShell), runner: StartupWordRunner(home: home))
         let shell = await detector.probe(commands: ["ls", "definitely-not-a-command-xyz"], wantPath: true)
         #expect(shell.found == ["ls"], "the word the startup file printed is not a command that was asked about: \(shell.found)")
         #expect(shell.answered, "a shell that printed a word before the script was taken for a silent one")
@@ -95,6 +99,15 @@ struct DetectorCommandLookupTests {
         #expect(none.answered, "the last line was glued to the word the startup file printed")
         #expect(none.path?.contains("/usr/bin") == true, "the path line was glued to the word the startup file printed")
         #expect(await detector.probe(commands: ["definitely-not-a-command-xyz"]).answered)
+    }
+
+    @Test func aStartupFileThatPrintsAnUnfinishedLineDoesNotHideTheAnswer() async throws {
+        try await checkTheProbeAfterAnUnfinishedLine(loginShell: "/bin/zsh", startupFile: ".zshrc")
+    }
+
+    @Test("the same under fish, whose script is another one (skipped where fish is not installed)", .enabled(if: fishForTheProbe != nil))
+    func aStartupFileOfFishThatPrintsAnUnfinishedLineDoesNotHideTheAnswer() async throws {
+        try await checkTheProbeAfterAnUnfinishedLine(loginShell: try #require(fishForTheProbe), startupFile: ".config/fish/config.fish")
     }
 
     @Test func aShellThatDidNotGetToTheEndOfTheScriptHasNotAnswered() {
