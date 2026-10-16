@@ -104,7 +104,6 @@ public enum KnownApps {
         AppDescriptor(id: "android-studio", name: "Android Studio", bundleIDs: ["com.google.android.studio"], role: .editor),
         AppDescriptor(id: "trae", name: "Trae", bundleIDs: ["com.trae.app", "cn.trae.app", "com.byteplus.trae"], role: .editor),
         AppDescriptor(id: "positron", name: "Positron", bundleIDs: ["com.rstudio.positron", "co.posit.positron"], role: .editor),
-        AppDescriptor(id: "fleet", name: "Fleet", bundleIDs: ["com.jetbrains.fleet"], role: .editor),
         AppDescriptor(id: "rustrover", name: "RustRover", bundleIDs: ["com.jetbrains.rustrover"], role: .editor),
         AppDescriptor(id: "clion", name: "CLion", bundleIDs: ["com.jetbrains.CLion"], role: .editor),
         AppDescriptor(id: "goland", name: "GoLand", bundleIDs: ["com.jetbrains.goland"], role: .editor)

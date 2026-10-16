@@ -44,6 +44,12 @@ found is in the decision above.
 Not confirmed, so not built in: Muse Code's prompt, bypass and continue arguments; Goose's "continue the latest session" (one page of its documentation says `goose session -r`, another says
 `--resume` needs a name or an id); whether opencode's `--prompt` submits at once or only fills the input; Amp's flag for a first prompt.
 
+## The editors and terminals
+
+The same rule for the apps: the bundle identifiers of the 29 built-in terminals and editors were compared with Homebrew's cask metadata on 2026-10-16 (a maintained list of what
+each app quits as). 26 are confirmed there; the alternates of Trae (`cn.trae.app`, `com.byteplus.trae`) and Positron (`co.posit.positron`) are not in a cask, and only cost a detection
+that never matches. Fleet was removed: JetBrains no longer makes it (Homebrew disabled its cask on 2025-12-22) and its identifier was in no cask.
+
 ## Consequences
 
 - The built-in entries that remain were each seen in the tool's documentation, source or help; the next agent added to the catalog needs the same, and the review of the catalog is a

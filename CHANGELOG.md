@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- JetBrains Fleet is no longer a built-in editor (the product was discontinued); the bundle identifiers of the other built-in terminals and editors were checked against Homebrew's cask
+  metadata (ADR 0024), the update path is documented for the mishap of two copies of the app (README, troubleshooting).
+
 ## 0.3.2 (2026-10-16)
 
 A patch release: the setup window and `rh setup` after the first run's review, a login shell that says nothing, the built-in agents checked against their own documentation, and

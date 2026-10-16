@@ -106,7 +106,7 @@ struct DefaultAppsTests {
             let ranks = KnownApps.all.filter { $0.role == role }.compactMap(\.defaultRank)
             #expect(Set(ranks).count == ranks.count, "two \(role.rawValue)s share a rank")
         }
-        for id in ["xcode", "typora", "obsidian", "android-studio", "trae", "positron", "fleet", "rustrover", "clion", "goland"] {
+        for id in ["xcode", "typora", "obsidian", "android-studio", "trae", "positron", "rustrover", "clion", "goland"] {
             #expect(KnownApps.app(id: id)?.defaultRank == nil, "\(id) is never a default")
         }
         #expect(KnownApps.terminals.max { ($0.defaultRank ?? -1) < ($1.defaultRank ?? -1) }?.id == "terminal", "Terminal.app is always there, so it is the last resort")
