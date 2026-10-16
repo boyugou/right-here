@@ -57,12 +57,17 @@ struct FileLockTests {
         let file = folder.appendingPathComponent("not a folder")
         try "x".write(to: file, atomically: true, encoding: .utf8)
         #expect(try FileLock.acquireNow(file.appendingPathComponent(".lock"), timeout: .milliseconds(50)).isHeld == false)
-        // The name is a link, which is not followed (and what it points at is not made).
-        let target = folder.appendingPathComponent("elsewhere/target")
+        // The name is a link, which is not followed: what it points at is not made, though its folder is there, and a file it points at is
+        // not locked or changed.
+        let target = folder.appendingPathComponent("target")
         let link = folder.appendingPathComponent("linked.lock")
         try FileManager.default.createSymbolicLink(atPath: link.path, withDestinationPath: target.path)
         #expect(try FileLock.acquireNow(link, timeout: .milliseconds(50)).isHeld == false)
-        #expect(!FileManager.default.fileExists(atPath: target.path) && !FileManager.default.fileExists(atPath: target.deletingLastPathComponent().path))
+        #expect(!FileManager.default.fileExists(atPath: target.path), "a file was made through the link")
+        try "mine".write(to: target, atomically: true, encoding: .utf8)
+        #expect(try FileLock.acquireNow(link, timeout: .milliseconds(50)).isHeld == false)
+        #expect(try String(contentsOf: target, encoding: .utf8) == "mine")
+        #expect(try FileLock.acquireNow(target, timeout: .milliseconds(50)).isHeld, "the file itself is no less a lock file")
         // The name is a folder.
         let directory = folder.appendingPathComponent("a.lock")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
