@@ -30,7 +30,7 @@ public struct RHPaths: Sendable, Equatable {
         if let logs = environment["RH_LOG_DIR"], !logs.isEmpty {
             logDirectory = expanded(logs)
         } else {
-            logDirectory = home.appendingPathComponent("Library/Logs/right-here")
+            logDirectory = home.appendingPathComponent("Library/Logs/" + AppIdentity.configDirectoryName)
         }
         if let file = environment["RH_CONFIG"], !file.isEmpty {
             configFile = expanded(file)
@@ -40,9 +40,9 @@ public struct RHPaths: Sendable, Equatable {
         if let directory = environment["RH_CONFIG_DIR"], !directory.isEmpty {
             configDirectory = expanded(directory)
         } else if let base = environment["XDG_CONFIG_HOME"], !base.isEmpty {
-            configDirectory = expanded(base).appendingPathComponent("right-here")
+            configDirectory = expanded(base).appendingPathComponent(AppIdentity.configDirectoryName)
         } else {
-            configDirectory = home.appendingPathComponent(".config/right-here")
+            configDirectory = home.appendingPathComponent(".config/" + AppIdentity.configDirectoryName)
         }
         configFile = configDirectory.appendingPathComponent("config.toml")
     }

@@ -83,6 +83,4 @@ public struct HereContext: Sendable, Equatable, Codable {
         case nil: return nil
         }
     }
-
-    public var isFolderOnly: Bool { items.isEmpty }
 }

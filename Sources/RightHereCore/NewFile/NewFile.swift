@@ -84,9 +84,4 @@ public enum NewFileNamer {
         }
         return .exhausted
     }
-
-    public static func uniqueName(for template: NewFileTemplate, in directory: URL, facts: any SystemFacts, localizer: Localizer = .english) -> String? {
-        if case .free(let name) = firstFreeName(for: template, in: directory, facts: facts, localizer: localizer) { return name }
-        return nil
-    }
 }

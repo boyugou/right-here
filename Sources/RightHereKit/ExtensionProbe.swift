@@ -79,8 +79,4 @@ public struct ExtensionProbe: Sendable {
         }
         return nil
     }
-
-    static func latestResults(in log: URL, since date: Date) -> [AutomationProbe.Result]? {
-        latestReport(.automation, in: log, since: date).flatMap { try? JSONDecoder().decode([AutomationProbe.Result].self, from: $0) }
-    }
 }

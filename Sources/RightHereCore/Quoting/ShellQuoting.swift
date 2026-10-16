@@ -42,10 +42,6 @@ public enum ShellQuoting {
         }
     }
 
-    public static func join(_ words: [String], for flavor: ShellFlavor = .posix) -> String {
-        words.map { quote($0, for: flavor) }.joined(separator: " ")
-    }
-
     /// Escape with backslashes the way terminals do for a dropped path. Text with control
     /// characters cannot be backslash-escaped, so it falls back to single quotes.
     public static func backslashEscape(_ value: String) -> String {

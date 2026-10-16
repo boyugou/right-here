@@ -264,10 +264,6 @@ public struct MCPServer: Sendable {
         ])
     }
 
-    static func response(id: JSONValue, result: JSONValue) -> String {
-        responseObject(id: id, result: result).line()
-    }
-
     static func errorResponse(id: JSONValue, code: Int, message: String) -> String {
         errorObject(id: id, code: code, message: message).line()
     }

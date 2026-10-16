@@ -5,6 +5,10 @@ import RightHereCore
 
 @Suite("ExtensionProbe")
 struct ExtensionProbeTests {
+    private func automationResults(in log: URL, since start: Date) -> [AutomationProbe.Result]? {
+        ExtensionProbe.latestReport(.automation, in: log, since: start).flatMap { try? JSONDecoder().decode([AutomationProbe.Result].self, from: $0) }
+    }
+
     @Test func readsTheNewestProbeLineAfterTheStart() throws {
         let log = FileManager.default.temporaryDirectory.appendingPathComponent("rh-log-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: log) }
@@ -15,7 +19,7 @@ struct ExtensionProbeTests {
         2026-10-12T00:42:17Z probe automation: [{"application":"Ghostty","bundleID":"com.mitchellh.ghostty","outcome":"granted"}]
         2026-10-12T00:42:18Z ok run something
         """.write(to: log, atomically: true, encoding: .utf8)
-        let results = try #require(ExtensionProbe.latestResults(in: log, since: start))
+        let results = try #require(automationResults(in: log, since: start))
         #expect(results.map(\.outcome) == [.granted])
     }
 
@@ -24,7 +28,7 @@ struct ExtensionProbeTests {
         defer { try? FileManager.default.removeItem(at: log) }
         try #"2026-10-12T00:39:55Z probe automation: [{"application":"Ghostty","bundleID":"a","outcome":"granted"}]"#.write(to: log, atomically: true, encoding: .utf8)
         let start = ISO8601DateFormatter().date(from: "2026-10-12T00:42:00Z")!
-        #expect(ExtensionProbe.latestResults(in: log, since: start) == nil)
+        #expect(automationResults(in: log, since: start) == nil)
     }
 
     @Test func eachKindOfProbeReadsOnlyItsOwnLines() throws {
@@ -39,7 +43,7 @@ struct ExtensionProbeTests {
         let decoded = try JSONDecoder().decode(LaunchProbe.Result.self, from: launch)
         #expect(decoded.outcome == .ran)
         #expect(decoded.shell == "/bin/zsh")
-        #expect(ExtensionProbe.latestResults(in: log, since: start)?.map(\.outcome) == [.granted])
+        #expect(automationResults(in: log, since: start)?.map(\.outcome) == [.granted])
     }
 
     @Test func theMarkerNamesAPlacementOnlyFromAFixedVocabulary() {
@@ -49,7 +53,7 @@ struct ExtensionProbeTests {
     }
 
     @Test func aMissingLogMeansNoResult() {
-        #expect(ExtensionProbe.latestResults(in: URL(fileURLWithPath: "/nonexistent/rh.log"), since: Date()) == nil)
+        #expect(automationResults(in: URL(fileURLWithPath: "/nonexistent/rh.log"), since: Date()) == nil)
     }
 }
 

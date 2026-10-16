@@ -77,7 +77,7 @@ struct ShellQuotingJoiningMarkTests {
           arguments: ["/bin/sh", "/bin/bash", "/bin/zsh"])
     func marksAfterMetacharacters(shell: String) throws {
         let directory = try makeScratchDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
-        let output = try Shell.run(shell, "printf '%s\\0' " + ShellQuoting.join(markedWords), in: directory)
+        let output = try Shell.run(shell, "printf '%s\\0' " + markedWords.map { ShellQuoting.quote($0) }.joined(separator: " "), in: directory)
         #expect(output.split(separator: "\0", omittingEmptySubsequences: false).dropLast().map(String.init) == markedWords)
         let escaped = try Shell.run(shell, "printf '%s\\0' " + markedWords.map(ShellQuoting.backslashEscape).joined(separator: " "), in: directory)
         #expect(escaped.split(separator: "\0", omittingEmptySubsequences: false).dropLast().map(String.init) == markedWords)
@@ -157,12 +157,6 @@ struct ShellQuotingTests {
     func backslashRoundTrip(shell: String, word: String) throws {
         let command = "printf %s " + ShellQuoting.backslashEscape(word)
         #expect(try Shell.run(shell, command) == word)
-    }
-
-    @Test func joinQuotesEachWord() throws {
-        let words = ["cd", "my dir", "it's"]
-        #expect(ShellQuoting.join(words) == "cd 'my dir' 'it'\\''s'")
-        #expect(try Shell.run("/bin/sh", "printf '%s|' " + ShellQuoting.join(words)) == "cd|my dir|it's|")
     }
 
     @Test("fish quoting reads back unchanged (skipped where fish is not installed)",
