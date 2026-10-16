@@ -248,7 +248,7 @@ enum Tools {
         let config = server.loadConfig().config
         let nodes = MenuBuilder(config: config, facts: server.facts).build(for: try context(from: arguments, facts: server.facts))
         let json = try JSONValue(encoding: nodes)
-        return ToolOutput(text: json.fencing(["title"]).pretty(), structured: .object(["menu": json]))
+        return ToolOutput(text: json.fencing(["title"], kindsNamedByTheConfig: [Icon.Kind.fileType.rawValue]).pretty(), structured: .object(["menu": json]))
     }
 
     private static func finderSelection(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
@@ -290,7 +290,7 @@ enum Tools {
             "apps": try JSONValue(encoding: config.appRows(facts: server.facts)),
             "agents": try JSONValue(encoding: config.agentRows())
         ])
-        return ToolOutput(text: structured.fencing(["name", "command", "bundleID"]).pretty(), structured: structured)
+        return ToolOutput(text: structured.fencing(["name", "command", "bundleID", "bypassPermissionArgument"]).pretty(), structured: structured)
     }
 
     private static func docs(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {

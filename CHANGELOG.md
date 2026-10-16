@@ -4,6 +4,8 @@
 
 - `rh setup` and `rh doctor` no longer print the marks that tell an AI agent which words are data (`⟦user⟧Ghostty⟦/user⟧`) to a person at a terminal; a pipe and the
   JSON keep them (ADR 0020).
+- The MCP tools mark two more texts from the config as data for the agent that reads them: the permission-bypass flag of an agent (`right_here_catalog`) and the file
+  extension of a new-file template, which names the icon in `right_here_menu`. The structured data stays plain.
 
 ## 0.3.0 (2026-10-16)
 
