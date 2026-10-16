@@ -64,7 +64,7 @@ struct DoctorMessageTests {
         let check = DoctorCheck(.config, status: .warn, detail: .doctorConfigWarnings("2"), notes: [.doctorConfigOverlay("/h/config.local.toml")], fix: .doctorFixConfigWarnings)
         #expect(check.englishLines() == [
             "[warn] Config file: 2 warning(s); run `rh config validate`",
-            "       note: merged with the per-machine overlay ⟦user⟧/h/config.local.toml⟦/user⟧",
+            "       note: merged with the per-machine overlay /h/config.local.toml",
             "       fix: Run `rh config validate`; warnings are usually typos, and what they were meant to set is missing."
         ])
         #expect(DoctorCheck(.agents, status: .ok).englishLines() == ["[ok] Agents"])

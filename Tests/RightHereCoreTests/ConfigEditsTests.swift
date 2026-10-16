@@ -60,7 +60,7 @@ struct ConfigEditsTests {
         #expect(edit.line == 7)
         #expect(edit.current == "[\"claude\"]")
         #expect(edit.value == "[\"claude\", \"codex\"]")
-        #expect(edit.instruction == "In config.toml on line 7, change agents = [\"claude\"] to agents = [\"claude\", \"codex\"].")
+        #expect(edit.instruction == "In config.toml on line 7, change agents = ⟦user⟧[\"claude\"]⟦/user⟧ to agents = [\"claude\", \"codex\"].")
     }
 
     @Test func followingTheEditChangesOnlyThatLineAndTheConfigThenSaysWhatWasAsked() {
@@ -182,7 +182,7 @@ struct ConfigEditQuotingTests {
         #expect(edit.kind == .change)
         #expect(!edit.instruction.unicodeScalars.contains("\u{1b}"), "the instruction carries an escape character: \(edit.instruction.debugDescription)")
         #expect(!(edit.current ?? "").unicodeScalars.contains("\u{1b}"), "`current` carries an escape character: \((edit.current ?? "").debugDescription)")
-        #expect(edit.instruction.contains("terminal = 'x\\u001b[2Jy' to terminal = \"ghostty\""), "the instruction still says which text to change: \(edit.instruction)")
+        #expect(edit.instruction.contains("terminal = ⟦user⟧'x\\u001b[2Jy'⟦/user⟧ to terminal = \"ghostty\""), Comment(rawValue: "the instruction still says which text to change: \(edit.instruction)"))
         #expect(edit.line == 2)
     }
 

@@ -54,6 +54,89 @@ struct ExtensionCrashesTests {
         #expect(ExtensionCrashes.scan(in: URL(fileURLWithPath: "/nonexistent/DiagnosticReports"), installedAfter: nil, now: now) == nil)
     }
 
+    // MARK: Whose crash a report is
+
+    private func littleEndian(_ value: UInt32) -> [UInt8] { (0..<4).map { UInt8(truncatingIfNeeded: value >> (8 * UInt32($0))) } }
+
+    /// An `.appex` whose executable is a Mach-O file with this UUID, written `daysAgo` days before `now`, as a copy that keeps the dates of its files has it.
+    private func extensionBundle(uuid: UUID, builtDaysAgo daysAgo: Double) throws -> URL {
+        let appex = try makeTemporaryDirectory().appendingPathComponent("FinderExtension.appex")
+        let executable = appex.appendingPathComponent("Contents/MacOS/FinderExtension")
+        try FileManager.default.createDirectory(at: executable.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let command = littleEndian(0x1B) + littleEndian(24) + withUnsafeBytes(of: uuid.uuid) { Array($0) }
+        let header = littleEndian(0xFEEDFACF) + littleEndian(0x0100000C) + littleEndian(0) + littleEndian(2) + littleEndian(1) + littleEndian(UInt32(command.count)) + littleEndian(0) + littleEndian(0)
+        try Data(header + command).write(to: executable)
+        try FileManager.default.setAttributes([.modificationDate: now.addingTimeInterval(-daysAgo * 86_400)], ofItemAtPath: executable.path)
+        return appex
+    }
+
+    /// A crash report as macOS writes it: a JSON header on the first line, which names the UUID of the code that crashed, and the report's own JSON after it.
+    private func report(_ name: String, uuid: UUID?, hoursAgo: Double, in folder: URL) throws {
+        let header = uuid.map { "{\"app_name\":\"FinderExtension\",\"slice_uuid\":\"\($0.uuidString.lowercased())\",\"bug_type\":\"309\"}" } ?? "Process: FinderExtension [123]"
+        let file = folder.appendingPathComponent(name)
+        try (header + "\n{\"pid\":123}\n").write(to: file, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.modificationDate: now.addingTimeInterval(-hoursAgo * 3600)], ofItemAtPath: file.path)
+    }
+
+    private let current = UUID(uuidString: "F220ADBD-EAF4-3364-916E-9B513225F252")!
+    private let replaced = UUID(uuidString: "0A1B2C3D-4E5F-4061-8273-849506A7B8C9")!
+
+    /// Copying an app (`ditto`, `cp -Rp`: measured) keeps the date of the executable, so it is when the code was built and not when the copy arrived; a crash of the copy it replaces,
+    /// written between the build and the install, was counted against the new one for a week (the doctor said the new build had crashed and asked for a bug report).
+    @Test func aCrashOfTheCopyThatWasReplacedIsNotACrashOfTheNewOne() throws {
+        let appex = try extensionBundle(uuid: current, builtDaysAgo: 5); defer { try? FileManager.default.removeItem(at: appex.deletingLastPathComponent()) }
+        let folder = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: folder) }
+        try report("FinderExtension-old-copy.ips", uuid: replaced, hoursAgo: 2, in: folder)
+        let installed = try #require(ExtensionCrashes.installDate(ofExtensionAt: appex.path))
+        let ids = try #require(ExtensionCrashes.buildIDs(ofExtensionAt: appex.path))
+        #expect(ids == [current.uuidString.lowercased()])
+        #expect(installed < now.addingTimeInterval(-3600), "set up: the date says the report is later than the code")
+        #expect(ExtensionCrashes.scan(in: folder, installedAfter: installed, buildIDs: ids, now: now) == nil, "a crash of another build was counted against this one")
+        #expect(ExtensionCrashes.scan(in: folder, installedAfter: installed, now: now)?.count == 1, "without the UUIDs the date is all there is")
+    }
+
+    @Test func aCrashOfThisBuildCountsWhereverItsCopyWasAndWhenever() throws {
+        let appex = try extensionBundle(uuid: current, builtDaysAgo: 1); defer { try? FileManager.default.removeItem(at: appex.deletingLastPathComponent()) }
+        let folder = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: folder) }
+        try report("FinderExtension-a.ips", uuid: current, hoursAgo: 40, in: folder)   // from before the date of the code: the same build, run from another place
+        try report("FinderExtension-b.ips", uuid: current, hoursAgo: 3, in: folder)
+        try report("FinderExtension-c.ips", uuid: replaced, hoursAgo: 1, in: folder)
+        let ids = try #require(ExtensionCrashes.buildIDs(ofExtensionAt: appex.path))
+        let found = try #require(ExtensionCrashes.scan(in: folder, installedAfter: ExtensionCrashes.installDate(ofExtensionAt: appex.path), buildIDs: ids, now: now))
+        #expect(found.count == 2 && found.latestFile == "FinderExtension-b.ips" && found.matchedByBuild)
+        #expect(found.detail(now: now).hasPrefix("switched on, but this build of it crashed 2 times in the last week (the latest "), Comment(rawValue: found.detail(now: now)))
+    }
+
+    @Test func aReportWithNoUUIDIsJudgedByTheDateTheCopyArrived() throws {
+        let folder = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: folder) }
+        try report("FinderExtension-before.crash", uuid: nil, hoursAgo: 30, in: folder)
+        try report("FinderExtension-after.crash", uuid: nil, hoursAgo: 3, in: folder)
+        let found = try #require(ExtensionCrashes.scan(in: folder, installedAfter: now.addingTimeInterval(-10 * 3600), buildIDs: [current.uuidString.lowercased()], now: now))
+        #expect(found.count == 1 && found.latestFile == "FinderExtension-after.crash")
+    }
+
+    @Test func anExecutableThatCannotBeReadLeavesTheDateAsTheRule() throws {
+        let folder = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: folder) }
+        try report("FinderExtension-x.ips", uuid: replaced, hoursAgo: 3, in: folder)
+        #expect(ExtensionCrashes.buildIDs(ofExtensionAt: folder.appendingPathComponent("missing.appex").path) == nil)
+        #expect(ExtensionCrashes.scan(in: folder, installedAfter: nil, buildIDs: nil, now: now)?.count == 1)
+        #expect(ExtensionCrashes.scan(in: folder, installedAfter: nil, buildIDs: [], now: now)?.count == 1, "an empty set says nothing either")
+        #expect(ExtensionCrashes.scan(in: folder, installedAfter: nil, now: now)?.matchedByBuild == false)
+    }
+
+    @Test func theRowSaysWhichBuildCrashedWhenTheDoctorKnowsIt() async throws {
+        let appex = try extensionBundle(uuid: current, builtDaysAgo: 5); defer { try? FileManager.default.removeItem(at: appex.deletingLastPathComponent()) }
+        let folder = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: folder) }
+        try report("FinderExtension-old-copy.ips", uuid: replaced, hoursAgo: 2, in: folder)
+        let line = "+    \(AppIdentity.extensionBundleID)(1.0)\tU1\t2026-10-11 23:29:41 +0000\t\(appex.path)\n"
+        let healthy = await Doctor.extensionCheck(runner: FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: line)]), crashReports: folder, now: now)
+        #expect(healthy.status == .ok, "the report of the replaced copy is not this build's: \(healthy.englishLines())")
+        try report("FinderExtension-this.ips", uuid: current, hoursAgo: 1, in: folder)
+        let crashed = await Doctor.extensionCheck(runner: FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: line)]), crashReports: folder, now: now)
+        #expect(crashed.status == .warn)
+        #expect(crashed.detail?.english().contains("this build of it crashed once") == true, "\(crashed.englishLines())")
+    }
+
     @Test func theInstallDateIsWhenTheExtensionsCodeWasWritten() throws {
         let appex = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: appex) }
         #expect(ExtensionCrashes.installDate(ofExtensionAt: appex.path + "/nope") == nil)

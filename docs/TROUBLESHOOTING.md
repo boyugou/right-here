@@ -8,7 +8,7 @@ throwaway terminal window.
 
 - `rh doctor` says the extension is switched off or not registered: run `rh install --finder`, or switch on
   Right Here in System Settings, General, Login Items & Extensions, Finder (the app's window has a button).
-- `rh doctor` warns that the extension "crashed N times since this copy was installed": macOS keeps a report for each, as
+- `rh doctor` warns that "this build of it crashed N times in the last week": macOS keeps a report for each, as
   `~/Library/Logs/DiagnosticReports/FinderExtension-<date>.ips`, and a crashing extension leaves Finder's menu without
   Right Here's entries while it is registered and switched on. Version 0.2.0 crashed this way on macOS 26.5.1 every time Finder asked
   it to watch a folder (ADR 0019). The fix is in `main`; it has not yet been confirmed on that system. Install a current build, then

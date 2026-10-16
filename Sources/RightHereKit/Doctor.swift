@@ -368,7 +368,8 @@ public struct Doctor: Sendable {
                                    fix: .doctorFixExtensionClean)
             }
             if let crashReports,
-               let crashes = ExtensionCrashes.scan(in: crashReports, installedAfter: status.paths.first.flatMap(ExtensionCrashes.installDate(ofExtensionAt:)), now: now) {
+               let crashes = ExtensionCrashes.scan(in: crashReports, installedAfter: status.paths.first.flatMap(ExtensionCrashes.installDate(ofExtensionAt:)),
+                                                   buildIDs: status.paths.first.flatMap(ExtensionCrashes.buildIDs(ofExtensionAt:)), now: now) {
                 return DoctorCheck(.finderExtension, status: .warn, detail: .doctorVerbatim(crashes.detail(now: now)), fix: .doctorVerbatim(ExtensionCrashes.fix))
             }
             return DoctorCheck(.finderExtension, status: .ok, detail: status.paths.first.map(LocalizedMessage.doctorExtensionEnabled))
