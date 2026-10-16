@@ -132,6 +132,13 @@ Start with `rh doctor`. Every check says what is wrong and what to run. `rh doct
 scripts and AI agents, and `rh doctor --probe-launch` proves the whole click chain by opening and closing a
 throwaway terminal window.
 
+## The window says to move Right Here to your Applications folder
+
+The app is running from the disk image, from another volume (a USB stick, a network share) or from the temporary copy that macOS makes of a downloaded app. What
+setup writes (the runner script the Finder extension runs, the `rh` link, the Quick Actions) would point into that place and stop working when it goes away, so Set Up
+and Install or Repair wait. Drag Right Here.app into your Applications folder, eject the disk image, and open it from there. `rh setup` run from inside the app in that
+place refuses for the same reason. A `rh` that is not inside an app (Homebrew's, or one you built) is not asked about its volume.
+
 ## The Finder menu does not appear
 
 - `rh doctor` says the extension is switched off or not registered: run `rh install --finder`, or switch on
@@ -225,6 +232,10 @@ The agent's command is typed into your own login shell, so it sees what a new te
 PATH and your aliases. If `agy`, `claude`, or `codex` works in a new window of your terminal it works here. `rh agents` shows which
 agent commands your login shell finds. If your shell takes a few seconds to start, the agent starts that much
 later; that is your shell's startup time, and `rh doctor --probe-launch` reports how long the round trip took.
+
+- The window's first-run choice says "Your login shell did not say which AI agents are installed, so none is checked": the shell was started the way a new terminal
+  window starts it and did not get to the end, because a startup file exits or takes longer than ten seconds. No agent was found because nobody could tell, so check the
+  ones you use before you press Set Up (or run `rh agents` after making the startup file quick).
 
 ## The check says `~/.local/bin` is not on PATH, and my terminal has it
 
