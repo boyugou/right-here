@@ -17,24 +17,30 @@ Before anything changes, ask the user which terminal, editor and AI agents they 
 `$ARGUMENTS` already says, use that. `right_here_catalog` lists the ids (`ghostty`, `terminal`, `vscode`, `zed`, `claude`,
 `codex`, ...); an id is exact. "Whatever you find" is an answer: leave that flag out. No agent at all is `--agents none`.
 
-## 2. Run setup once, in the shell
+## 2. Look before you change, in the shell
 
 Setting up writes files in the user's home, so it is a shell command and not a tool:
 
+    rh setup --dry-run --json --terminal <id> --editor <id> --agents <id,id>
+
+Leave out a flag the user did not answer. It changes nothing. If `configEdits` is not empty, the user already has a config, which
+setup never rewrites: make exactly those edits to the file each names, now, keep every comment and every other line, then check it
+with `right_here_config_validate` (`clean` must be true). To add an agent to a config that exists, give the whole list of agents.
+
+## 3. Run setup once
+
     rh setup --json --terminal <id> --editor <id> --agents <id,id>
 
-Leave out a flag the user did not answer. It makes the config only when there is none, installs what Finder needs, runs the
-doctor, and opens no window. To add an agent to a config that exists, give the whole list of agents. If the report's
-`configEdits` is not empty, the existing config was left alone: make exactly those edits to the file each names, keep every
-comment and every other line, then check it with `right_here_config_validate` (`clean` must be true).
+The same flags, without `--dry-run`. It makes the config only when there is none, installs what Finder needs (the Quick Actions from
+the config as it is now, so the edits come first), runs the doctor, and opens no window.
 
-## 3. Tell the user what only they can do
+## 4. Tell the user what only they can do
 
 Each `needsUser` entry has a `text` and `how`: give them to the user in your words, with the exact clicks (switching the Finder
 extension on in System Settings, the PATH line, the permission macOS asks for once). Running setup again does not switch the
 extension on, so never run it in a loop.
 
-## 4. Check the result
+## 5. Check the result
 
 `right_here_doctor`: no check has the status `fail`; say what a `warn` or `needs-user` says. `right_here_menu` with a folder
 shows the user the menu their config makes. Do not run an action for real unless the user asked. The one thing worth offering when

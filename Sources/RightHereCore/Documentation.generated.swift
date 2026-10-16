@@ -12,36 +12,44 @@ what macOS keeps for the person at the keyboard. Read this once, then follow it 
 
 Before anything changes, ask the person three questions, in one message, and wait for the answers:
 
-1. Which terminal do you use? (`rh apps` lists the ones Right Here knows, with their ids. Terminal.app is always there.)
+1. Which terminal do you use?
 2. Which editor do you use?
-3. Which AI agents do you use, if any? (`rh agents` lists the ones it knows.)
+3. Which AI agents do you use, if any?
 
-Ask nothing else: the rest has defaults. "Whatever you find" is a good answer; then leave that flag out and Right Here uses what
-is installed. Turn their words into ids with `rh apps --json` and `rh agents --json`. An id is exact (`ghostty`, `vscode`,
-`claude`, `codex`), and a misspelt one is refused with the closest id. If they use no agent, the answer is `--agents none`. If
-they name an app that is not on this Mac yet, write it anyway: setup says it is not installed, and which app is used until it is.
+`rh apps` and `rh agents` only read, so run them first to offer real choices: the first column is the id, and Terminal.app is always
+there. Ask nothing else: the rest has defaults. "Whatever you find" is a good answer; then leave that flag out and Right Here uses
+what is installed. An id is exact (`ghostty`, `vscode`, `claude`, `codex`), and a misspelt one is refused with the closest id. If they
+use no agent, the answer is `--agents none`. If they name an app that is not on this Mac yet, write it anyway: the checks say it is
+not installed, and which app is used until it is.
 
 ## 2. Look before you change
 
-`rh config path` says where the config file is. If a file is there it is the person's, and you will not rewrite it.
-`rh setup --dry-run --json` (with the flags of step 3) shows what would be done and changes nothing.
+`rh setup --dry-run --json` with the flags of step 3 shows what would be done and changes nothing. If it lists `configEdits`, the
+person already has a config file: it is theirs, so setup never rewrites it, and you make the edits yourself, now, before step 3
+(`rh config path` says where the file is):
+
+- Make exactly the listed edits, in the file each names, and nothing else. Each has the `line`, the `current` value and the `value`
+  to write.
+- Keep every comment and every other line as they are, even a comment your edit made out of date (say so to the person).
+- Then `rh config validate --strict` must say ok. Fix what it says.
+
+To add an agent to a config that exists, give the whole list in `--agents`: the agents already enabled (`rh agents`) and the new one.
 
 ## 3. Run setup once
 
     rh setup --json --terminal <id> --editor <id> --agents <id,id>
 
-Leave out a flag the person did not answer. To add an agent to a config that exists, give the whole list: the agents already
-enabled (`rh agents`) and the new one. Setup does everything in order and can be run again: the config file (created only when
+Leave out a flag the person did not answer. Setup does everything in order and can be run again: the config file (created only when
 there is none), the runner script and the command link that Finder needs, the Quick Actions and the Finder extension, then the
-checks of `rh doctor`. It opens no window and never touches System Settings. Exit status 0 means no step failed.
+checks of `rh doctor`. It opens no window and never touches System Settings. Exit status 0 means no step failed. The Quick Actions
+are built from the config as it is at that moment, which is why the edits of step 2 come first.
 
 ## 4. Read the report
 
 - `ok` is false when a step failed. `steps` says which (`outcome` is created, updated, unchanged, skipped or failed) and why. Read
   `rh docs troubleshooting`, fix the cause, and run setup again: it only does what is still missing.
-- `configEdits` is not empty only when a config already existed and the person's choices differ from what it says. That config was
-  not changed. Make exactly the listed edits, in the file each names, and nothing else: each has the `line`, the `current` value
-  and the `value` to write. Keep every comment and every other line. Then run `rh config validate --strict` and fix what it says.
+- `configEdits` is empty now. If it is not (you did not look first, or the person's answers changed), make those edits as in step 2,
+  then run `rh setup` once more: it builds the Quick Actions from the edited file.
 - `warnings` are for the person: say each one in a sentence.
 - `needsUser` is what only the person can do (step 5). `checks` are the rows of `rh doctor --json`. `next` lists commands to run after.
 
@@ -82,10 +90,15 @@ for them.
 
 ## 9. Hand back
 
-Tell the person, in a few lines: what you set up (their terminal, editor and agents, and that Finder is connected); the one thing
-left for them, if `needsUser` has an entry, with its clicks; any warning; and how to change it later, which is editing the config
-file (`rh config path` says where; `rh docs config` lists every setting) or asking you. If the Finder menu does not show in a
-folder inside iCloud Drive, say that right-click › Quick Actions works there.
+Tell the person, in a few lines, in this order:
+
+1. What you set up: their terminal, editor and agents, and whether you made a config or kept theirs (and changed what).
+2. What the Finder menu now lists, from `rh menu`.
+3. What is left for them: each `needsUser` entry with its clicks, or "nothing".
+4. Any warning, in a sentence, saying whether it needs anything from them.
+5. How to change it later: editing the config file (`rh config path` says where; `rh docs config` lists every setting) or asking you.
+
+If the Finder menu does not show in a folder inside iCloud Drive, say that right-click › Quick Actions works there.
 """#,
         "troubleshooting": #"""
 # Troubleshooting
