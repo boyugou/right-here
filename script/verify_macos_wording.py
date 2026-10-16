@@ -19,6 +19,7 @@ It depends on the macOS version it runs on, so it is not part of verify_all.sh; 
 """
 import json
 import plistlib
+import subprocess
 import sys
 from pathlib import Path
 
@@ -86,8 +87,12 @@ def settings_path_problems(strings: dict, settings: dict, languages: dict) -> li
     keyboard_info = read_table(EXTENSIONS / "KeyboardSettings.appex/Contents/Resources/InfoPlist.loctable")
     keyboard = read_table(EXTENSIONS / "KeyboardSettings.appex/Contents/Resources/Localizable.loctable")
     shortcuts = read_table(EXTENSIONS / "KeyboardSettings.appex/Contents/Resources/DefaultShortcutsTable.loctable")
-    if not all((general, login, keyboard_info, keyboard, shortcuts)):
-        return ["cannot read the General, Login Items or Keyboard settings of this macOS"]
+    unreadable = [name for name, table in (
+        ("GeneralSettings.appex/Contents/Resources/InfoPlist.loctable", general), ("LoginItems.appex/Contents/Resources/Localizable.loctable", login),
+        ("KeyboardSettings.appex/Contents/Resources/InfoPlist.loctable", keyboard_info), ("KeyboardSettings.appex/Contents/Resources/Localizable.loctable", keyboard),
+        ("KeyboardSettings.appex/Contents/Resources/DefaultShortcutsTable.loctable", shortcuts)) if not table]
+    if unreadable:
+        return [f"cannot read {name} of this macOS" for name in unreadable]
     paths = {
         "app.fixExtensionEnable": ("System Settings › General › Login Items & Extensions", (
             ("System Settings", lambda l: lookup(settings, l, "CFBundleDisplayName") or lookup(settings, l, "CFBundleName")),
@@ -119,7 +124,23 @@ def settings_path_problems(strings: dict, settings: dict, languages: dict) -> li
     return problems
 
 
+def layout() -> int:
+    """What the Settings panes' folders hold on this macOS, for when a table is not where `settings_path_problems` looks."""
+    print("macOS", subprocess.run(["sw_vers", "-productVersion"], capture_output=True, text=True).stdout.strip())
+    for name in ("GeneralSettings", "LoginItems", "KeyboardSettings", "SecurityPrivacyExtension"):
+        folder = EXTENSIONS / f"{name}.appex" / "Contents" / "Resources"
+        if not folder.exists():
+            near = sorted(path.name for path in EXTENSIONS.glob(f"*{name[:8]}*"))
+            print(f"{name}.appex: no Resources folder; extensions named alike: {near}")
+            continue
+        entries = sorted(path.name for path in folder.iterdir() if path.suffix in (".loctable", ".strings", ".plist") or path.name == "en.lproj")
+        print(f"{name}.appex: {entries}")
+    return 0
+
+
 def main() -> int:
+    if "--layout" in sys.argv[1:]:
+        return layout()
     try:
         pane_info = plistlib.loads((PANE / "InfoPlist.loctable").read_bytes())
         pane_loc = plistlib.loads((PANE / "Localizable.loctable").read_bytes())

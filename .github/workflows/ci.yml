@@ -55,5 +55,8 @@ jobs:
         # macOS version, so it is not part of verify_all.sh. It does not fail the run: it says where a version differs.
         continue-on-error: true
         run: ./script/verify_macos_wording.py
+      - name: Where this macOS keeps the names of the Settings panes
+        continue-on-error: true
+        run: ./script/verify_macos_wording.py --layout
       - name: Public safety
         run: ./script/verify_public_safety.sh
