@@ -253,11 +253,59 @@ struct DoctorScenarioTests {
 
     @Test func theCommandLinkSaysWhenItsFolderIsNotOnThePath() async throws {
         var scene = try Scene(); defer { scene.cleanUp() }
-        scene.answers = [ProcessResult(status: 0)]
+        scene.answers = [ProcessResult(status: 0, standardOutput: "\u{01}rh-path\u{01}/usr/bin\n")]
         scene.variables = ["PATH": "/usr/bin"]
         try scene.linkCLI(to: "/opt/rh/bin/rh")
         let link = said(await scene.run(), "cli.link")
         #expect(link == Said(status: .warn, detail: "linked at \(scene.home.path)/.local/bin/rh, but that folder is not on PATH", fix: "Add ~/.local/bin to PATH in your shell profile."))
+    }
+
+    @Test("a login shell that gives no PATH leaves it unknown: the row is ok and nobody is told to edit a profile", arguments: [
+        ProcessResult(status: 0),                                        // the startup file exited, or printed nothing we asked for
+        ProcessResult(status: 15, terminatedAfter: .seconds(10)),        // the startup file took longer than the probe waits
+        ProcessResult(status: 0, standardOutput: "welcome back\n")        // only what the startup files said
+    ])
+    func anUnansweredShellIsNotAWrongPath(answer: ProcessResult) async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.answers = [answer]
+        scene.variables = ["PATH": "/usr/bin"]
+        try scene.linkCLI(to: "/opt/rh/bin/rh")
+        let link = said(await scene.run(), "cli.link")
+        #expect(link == Said(status: .ok, detail: "linked at \(scene.home.path)/.local/bin/rh; your login shell did not say whether that folder is on PATH", fix: nil))
+    }
+
+    @Test("the folder is on the PATH however its entry is spelled", arguments: [
+        "{home}/.local/bin/", "{home}/.local//bin", "{home}/./.local/bin", "{home}/.local/../.local/bin", "{home}/.local/bin/."
+    ])
+    func spellingsOfTheSameFolder(entry: String) async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.variables = ["PATH": "/usr/bin:" + entry.replacingOccurrences(of: "{home}", with: scene.home.path)]
+        try scene.linkCLI(to: "/opt/rh/bin/rh")
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: pluginkitEnabled)])
+        let checks = await scene.run(with: runner)
+        #expect(said(checks, "cli.link")?.status == .ok)
+        #expect(runner.recorded.map(\.executable) == ["/usr/bin/pluginkit"], "the shell was asked although this process's PATH has the folder")
+    }
+
+    @Test func aFolderThatIsOnlyReachedThroughASymbolicLinkIsTheSameFolder() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        let real = scene.home.appendingPathComponent("elsewhere")
+        try FileManager.default.createDirectory(at: real.appendingPathComponent("bin"), withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(at: scene.home.appendingPathComponent(".local"), withDestinationURL: real)
+        scene.variables = ["PATH": "/usr/bin:" + real.appendingPathComponent("bin").path]
+        try scene.linkCLI(to: "/opt/rh/bin/rh")
+        scene.answers = [ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
+        #expect(said(await scene.run(), "cli.link")?.status == .ok)
+    }
+
+    @Test("an entry that is not an absolute folder, or another folder, is not the link's folder", arguments: [
+        "bin", "", ".", "~/.local/bin", "/usr/local/bin", "{home}/.local/bin2", "{home}/.local"
+    ])
+    func notTheSameFolder(entry: String) {
+        let home = URL(fileURLWithPath: "/Users/tester")
+        let folder = home.appendingPathComponent(".local/bin")
+        #expect(!Doctor.pathListsFolder([entry.replacingOccurrences(of: "{home}", with: home.path)], folder))
+        #expect(Doctor.pathListsFolder(["/usr/bin", entry.replacingOccurrences(of: "{home}", with: home.path), "/Users/tester/.local/bin"], folder))
     }
 
     /// What the login shell prints for its `PATH`: the line a probe asks for, after whatever the startup files said.

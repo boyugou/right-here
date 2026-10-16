@@ -185,6 +185,21 @@ PATH and your aliases. If `agy`, `claude`, or `codex` works in a new window of y
 agent commands your login shell finds. If your shell takes a few seconds to start, the agent starts that much
 later; that is your shell's startup time, and `rh doctor --probe-launch` reports how long the round trip took.
 
+## The check says `~/.local/bin` is not on PATH, and my terminal has it
+
+A graphical app, and a program an AI assistant starts, gets the `PATH` that launchd gives it: macOS does not read your shell's
+startup files for it, so it lacks the folders your `~/.zshrc` adds. Right Here does not trust that `PATH`. When the link `~/.local/bin/rh`
+exists and the program's own `PATH` lacks its folder, it starts your login shell the way a new terminal window would (`-lic`, the shell macOS
+has on record for you: `dscl . -read /Users/$USER UserShell`) and reads that shell's `PATH`. The row is ok when the folder is there, however it is
+spelled (a trailing slash, a `.` part, a symbolic link on the way).
+
+- It still warns: the shell it asked is not the one your terminal runs (a terminal's own shell or `command` setting, a profile with another
+  shell), or your startup file adds the folder only in some cases. In the terminal you use, `command -v rh` should print
+  `~/.local/bin/rh`; to see what Right Here saw, run your login shell the same way: `"$(dscl . -read /Users/$USER UserShell | awk '{print $2}')" -lic 'echo $PATH'`.
+- The row says the login shell "did not say whether that folder is on PATH": the shell was started and gave no answer, because a startup file exits,
+  waits for input or takes longer than ten seconds. That is unknown, not wrong, so nothing asks you to change a profile. Make the startup file finish quickly
+  (move slow tools and prompts behind a check for an interactive terminal) and look again.
+
 ## Running an agent in an isolated git worktree
 
 To start an agent on an isolated branch without dirtying your current branch or working tree, use:

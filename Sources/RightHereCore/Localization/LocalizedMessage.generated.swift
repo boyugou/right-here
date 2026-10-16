@@ -287,6 +287,8 @@ extension LocalizedMessage {
     public static func doctorCliMissing(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorCliMissing, [argument1]) }
     /// linked at %@, but that folder is not on PATH
     public static func doctorCliNotOnPath(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorCliNotOnPath, [argument1]) }
+    /// linked at %@; your login shell did not say whether that folder is on PATH
+    public static func doctorCliPathUnknown(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorCliPathUnknown, [argument1]) }
     /// none at %@; defaults apply
     public static func doctorConfigMissing(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorConfigMissing, [argument1]) }
     /// merged with the per-machine overlay %@

@@ -385,6 +385,16 @@ MUTANTS = [
      "crashReports: ExtensionCrashes.reportsFolder(home: facts.homeDirectory)))", "crashReports: nil))"),
     ("crash reports from before the installed copy count against it", "Sources/RightHereKit/ExtensionCrashes.swift",
      "let cutoff = max(installed ?? .distantPast, now.addingTimeInterval(-window))", "let cutoff = now.addingTimeInterval(-window)"),
+    ("the PATH row ignores what the person's login shell says", "Sources/RightHereKit/Doctor.swift",
+     " || Self.pathListsFolder(shell.path ?? [], installer.locations.localBin)", ""),
+    ("the login shell is asked for its PATH although the link is missing or this process already has the folder", "Sources/RightHereKit/Doctor.swift",
+     "let wantPath = linked && !processPath(contains: installer.locations.localBin)", "let wantPath = true"),
+    ("a login shell that said nothing is called a wrong PATH", "Sources/RightHereKit/Doctor.swift",
+     "} else if shell.path == nil {", "} else if false {"),
+    ("a PATH entry must be the folder letter for letter", "Sources/RightHereKit/Doctor.swift",
+     "return wanted.contains(url.standardizedFileURL.path) || wanted.contains(url.resolvingSymlinksInPath().path)", "return entry == folder.path"),
+    ("a symbolic link on the way makes the folder another one", "Sources/RightHereKit/Doctor.swift",
+     "let wanted = Set([folder.standardizedFileURL.path, folder.resolvingSymlinksInPath().path])", "let wanted = Set([folder.standardizedFileURL.path])"),
 ]
 
 

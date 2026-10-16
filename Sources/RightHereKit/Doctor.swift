@@ -71,7 +71,18 @@ public struct Doctor: Sendable {
     }
 
     private func processPath(contains folder: URL) -> Bool {
-        (facts.environment("PATH") ?? "").split(separator: ":").contains { String($0) == folder.path }
+        Self.pathListsFolder((facts.environment("PATH") ?? "").split(separator: ":").map(String.init), folder)
+    }
+
+    /// Whether the folders of a `PATH` include `folder`, however they are spelled: a trailing slash, a doubled slash, a `.` part and a
+    /// symbolic link on the way all name the same folder, and a text compare would call the person's own `PATH` wrong.
+    static func pathListsFolder(_ entries: [String], _ folder: URL) -> Bool {
+        let wanted = Set([folder.standardizedFileURL.path, folder.resolvingSymlinksInPath().path])
+        return entries.contains { entry in
+            guard entry.hasPrefix("/") else { return false }
+            let url = URL(fileURLWithPath: entry)
+            return wanted.contains(url.standardizedFileURL.path) || wanted.contains(url.resolvingSymlinksInPath().path)
+        }
     }
 
     /// The launch probe alone, as a check: what `run(probeLaunch:)` adds as its last row. The setup window runs this and
@@ -294,13 +305,17 @@ public struct Doctor: Sendable {
                 .serviceSpecs(rhPath: rhPath ?? "rh").map(ServiceWorkflow.bundleName(for:)))))
 
         let linked = (try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path)) != nil
-        let onPath = processPath(contains: installer.locations.localBin) || (shell.path ?? []).contains(installer.locations.localBin.path)
+        let onPath = processPath(contains: installer.locations.localBin) || Self.pathListsFolder(shell.path ?? [], installer.locations.localBin)
         if !linked {
             checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliMissing(installer.cliLink.path), fix: .doctorFixRunSetup))
-        } else if !onPath {
-            checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath(installer.cliLink.path), fix: .doctorFixCliPath(Quoted.localBin)))
-        } else {
+        } else if onPath {
             checks.append(DoctorCheck(.cliLink, status: .ok, detail: .doctorVerbatim(installer.cliLink.path)))
+        } else if shell.path == nil {
+            // The shell was asked (the link exists and this process's PATH lacks the folder) and said nothing: a startup file that exits, or
+            // takes longer than the probe waits. Nothing is known, so nothing is claimed and the person is not told to edit a profile.
+            checks.append(DoctorCheck(.cliLink, status: .ok, detail: .doctorCliPathUnknown(installer.cliLink.path)))
+        } else {
+            checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath(installer.cliLink.path), fix: .doctorFixCliPath(Quoted.localBin)))
         }
         return checks
     }

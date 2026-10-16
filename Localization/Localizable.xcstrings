@@ -26599,6 +26599,192 @@
         }
       }
     },
+    "doctor.cli.pathUnknown": {
+      "comment": "Detail of the command link's check row when the link exists and the login shell was asked for its PATH but did not answer (a startup file that exits or hangs), so it is not known whether the link's folder is on PATH. The %@ is the path of the link.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "مرتبط بالمسار %@؛ لم تُبيّن صدفة تسجيل الدخول لديك ما إذا كان ذلك المجلد ضمن PATH"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@-এ লিংক করা আছে; ওই ফোল্ডার PATH-এ আছে কি না, আপনার লগইন শেল তা জানায়নি"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "verlinkt unter %@; deine Login-Shell hat nicht gesagt, ob dieser Ordner im PATH ist"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "συνδεδεμένο στο %@· το κέλυφος σύνδεσης σας δεν είπε αν ο φάκελος αυτός είναι στο PATH"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "linked at %@; your login shell did not say whether that folder is on PATH"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "enlazado en %@; tu shell de inicio de sesión no indicó si esa carpeta está en PATH"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "به %@ پیوند داده شده؛ پوستهٔ ورود خود نگفت که آیا آن پوشه در PATH است یا نه"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "lié à %@ ; votre shell de connexion n’a pas dit si ce dossier figure dans PATH"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "מקושר ב-%@; מעטפת הכניסה שלכם לא אמרה אם התיקייה הזו נמצאת ב-PATH"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ पर लिंक है; आपके लॉगिन शेल ने नहीं बताया कि वह फ़ोल्डर PATH में है या नहीं"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ditautkan di %@; shell login Anda tidak menyebutkan apakah folder itu ada di PATH"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "collegato in %@; la tua shell di login non ha detto se quella cartella è nel PATH"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ にリンクされていて、ログインシェルは、そのフォルダが PATH に含まれているかどうか答えませんでした"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@에 링크됨; 로그인 셸이 그 폴더가 PATH에 있는지 알려 주지 않음"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ येथे लिंक केले; तुमच्या लॉगिन शेलने ते फोल्डर PATH मध्ये आहे की नाही हे सांगितले नाही"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "dipautkan pada %@; shell log masuk anda tidak memberitahu sama ada folder itu berada dalam PATH"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "gelinkt op %@; je loginshell heeft niet gezegd of die map in PATH staat"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "dowiązany w %@; powłoka logowania nie powiedziała, czy ten folder jest w PATH"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "vinculado em %@; seu shell de login não informou se essa pasta está no PATH"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "link la %@; shell-ul de conectare nu a spus dacă dosarul respectiv este în PATH"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ссылка создана по пути %@; ваша оболочка входа не сообщила, входит ли эта папка в PATH"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ இல் இணைக்கப்பட்டுள்ளது; உங்கள் login shell அந்தக் கோப்புறை PATH இல் உள்ளதா என்று கூறவில்லை"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ వద్ద లింక్ చేయబడింది; మీ login shell ఆ ఫోల్డర్ PATH లో ఉందో లేదో చెప్పలేదు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เชื่อมโยงที่ %@; เชลล์ล็อกอินของคุณไม่ได้บอกว่าโฟลเดอร์นั้นอยู่ใน PATH หรือไม่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ konumuna bağlı; oturum kabuğunuz bu klasörün PATH içinde olup olmadığını söylemedi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "посилання за шляхом %@; ваша оболонка входу не сказала, чи входить ця папка до PATH"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ پر لنک ہے؛ آپ کی لاگ ان شیل نے نہیں بتایا کہ وہ فولڈر PATH میں ہے یا نہیں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "đã liên kết tại %@; shell đăng nhập của bạn không cho biết thư mục đó có trong PATH hay không"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已链接到 %@；你的登录 shell 没有说明该文件夹是否在 PATH 中"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已連結到 %@；你的登入 shell 沒有說明該資料夾是否在 PATH 中"
+          }
+        }
+      }
+    },
     "doctor.config.missing": {
       "comment": "Detail line of a check in the setup window's Details list; it follows the check's title, so it is a fragment with no final period. %@ is the path where the config file would be.",
       "extractionState": "manual",

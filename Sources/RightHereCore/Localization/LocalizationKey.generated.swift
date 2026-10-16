@@ -146,6 +146,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case doctorClaudeLinkOk = "doctor.claudeLink.ok"
     case doctorCliMissing = "doctor.cli.missing"
     case doctorCliNotOnPath = "doctor.cli.notOnPath"
+    case doctorCliPathUnknown = "doctor.cli.pathUnknown"
     case doctorConfigMissing = "doctor.config.missing"
     case doctorConfigOverlay = "doctor.config.overlay"
     case doctorConfigSymlink = "doctor.config.symlink"
@@ -237,7 +238,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     /// How many arguments the English text takes: its `%@` placeholders, or the highest `%n$@`.
     public var arity: Int {
         switch self {
-        case .alertPermissionMessage, .appCommandStopped, .appNeedAttentionCount, .appNotARepository, .appRemoveWorktreeMessage, .appRemoveWorktreeNamed, .appUnpinFolder, .appVersion, .appWorktreeRemoved, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAppNotInstalled, .doctorClaudeLinkMissing, .doctorCliMissing, .doctorCliNotOnPath, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorExtensionEnabled, .doctorFixAgentRemove, .doctorFixAgentsAdd, .doctorFixCliPath, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
+        case .alertPermissionMessage, .appCommandStopped, .appNeedAttentionCount, .appNotARepository, .appRemoveWorktreeMessage, .appRemoveWorktreeNamed, .appUnpinFolder, .appVersion, .appWorktreeRemoved, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAppNotInstalled, .doctorClaudeLinkMissing, .doctorCliMissing, .doctorCliNotOnPath, .doctorCliPathUnknown, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorExtensionEnabled, .doctorFixAgentRemove, .doctorFixAgentsAdd, .doctorFixCliPath, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
         case .appStepLabel, .doctorAgentOk, .doctorAppFallback, .doctorExtensionMultiple, .doctorFixAgentLauncher, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
         case .doctorActivityRecent, .doctorAgentBypass, .doctorServicesDiffer, .menuAgentVariantIn: 3
         default: 0
