@@ -61,12 +61,19 @@ struct Runtime {
 }
 
 enum Output {
+    /// What goes to a terminal: its control characters, and the ones that draw nothing, are shown as escapes. A line feed and a tab stay, since a line is
+    /// what a command prints and a table is made of tabs and spaces. Every line the command line prints goes through here, so a name from a file, a config or git
+    /// cannot act on the terminal or forge a line of what a command says, whichever command prints it.
+    static func safe(_ text: String) -> String {
+        text.escapingControlCharacters(keeping: ["\n", "\t"])
+    }
+
     static func print(_ text: String) {
-        Swift.print(text)
+        Swift.print(safe(text))
     }
 
     static func error(_ text: String) {
-        FileHandle.standardError.write(Data((text + "\n").utf8))
+        FileHandle.standardError.write(Data((safe(text) + "\n").utf8))
     }
 
     /// The text padded with spaces to a column `width` characters wide. `String.padding(toLength:)` cuts a longer text off,
@@ -82,12 +89,14 @@ enum Output {
         return ExitCode(1)
     }
 
-    /// JSON is what an AI agent is told to read, so what a check quotes from the config is fenced in its `text` (`DoctorCheck.encode`).
+    /// JSON is what an AI agent is told to read, so what a check quotes from the config is fenced in its `text` (`DoctorCheck.encode`). A value is printed as it is, but
+    /// a character that a terminal acts on or that draws nothing (a C1 control, a bidirectional mark, a tag character) is written as the JSON escape, which a JSON
+    /// reader reads back as the same character.
     static func json(_ value: some Encodable) throws {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         encoder.userInfo[.fencesQuotedText] = true
-        Swift.print(String(decoding: try encoder.encode(value), as: UTF8.self))
+        Swift.print(String(decoding: try encoder.encode(value), as: UTF8.self).escapingControlCharacters(keeping: ["\n"]))
     }
 }
 

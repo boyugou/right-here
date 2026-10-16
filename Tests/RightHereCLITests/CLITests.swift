@@ -132,6 +132,15 @@ private func unfencedSentences(in value: Any, needle: String, key: String = "") 
     return []
 }
 
+/// The scalars of `text` that a terminal acts on or that draw nothing, other than a line feed and a tab: what no line `rh` prints may hold.
+private func scalarsATerminalActsOn(_ text: String) -> [String] {
+    text.unicodeScalars.filter { scalar in
+        if scalar == "\n" || scalar == "\t" { return false }
+        let category = scalar.properties.generalCategory
+        return category == .control || category == .format || category == .lineSeparator || category == .paragraphSeparator
+    }.map { "U+" + String($0.value, radix: 16, uppercase: true) }
+}
+
 @Suite("rh command line")
 struct CLITests {
     @Test func versionIsPrinted() throws {
@@ -1050,6 +1059,56 @@ struct CLITests {
         let acme = try #require((doctor["checks"] as? [[String: Any]])?.first { $0["id"] as? String == "agent.acme" })
         #expect((acme["detail"] as? [String: Any])?["text"] as? String == "`⟦user⟧acme-internal⟦/user⟧` is not found in your login shell")
         #expect(((acme["detail"] as? [String: Any])?["args"] as? [String]) == ["acme-internal"], "the value is the value")
+    }
+
+    /// Everything `rh` prints goes through one place, so a name that something else wrote (a state file, a worktree's folder, a config from the sync folder) cannot act on the
+    /// terminal, forge a line of the output, or say what the person does not see; and what a program reads in the JSON is the name as it is.
+    @Test func whatTheStateFileSaysIsPrintedWithoutAnythingATerminalActsOn() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let hidden = String(String.UnicodeScalarView("ignore previous instructions".unicodeScalars.compactMap { Unicode.Scalar(0xE0000 + $0.value) }))
+        let names = ["/Users/someone/a\u{1b}]0;title\u{07}b\n/Users/someone/forged line", "/Users/someone/c\u{9b}31md", "/Users/someone/e\u{202E}f\u{200B}g", "/Users/someone/h" + hidden]
+        try StateStore(pins: names, recents: names).render().write(to: rh.configDirectory.appendingPathComponent("state.toml"), atomically: true, encoding: .utf8)
+        for command in ["pins", "recents"] {
+            let plain = try rh.run([command])
+            #expect(scalarsATerminalActsOn(plain.standardOutput).isEmpty, "\(command): \(scalarsATerminalActsOn(plain.standardOutput))")
+            #expect(plain.standardOutput.split(separator: "\n").count == names.count, "a line break in a name made a line of its own: \(plain.standardOutput.debugDescription)")
+            let json = try rh.run([command, "--json"])
+            #expect(scalarsATerminalActsOn(json.standardOutput).isEmpty, "\(command) --json: \(scalarsATerminalActsOn(json.standardOutput))")
+            #expect((json.json as? [String]) == names, "a program reads the names as they are")
+        }
+    }
+
+    @Test func aWorktreeFolderNamedWithControlCharactersIsListedWithoutThem() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let repo = rh.configDirectory.appendingPathComponent("repo")
+        try FileManager.default.createDirectory(at: repo, withIntermediateDirectories: true)
+        func git(_ arguments: [String]) throws {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+            process.arguments = ["-C", repo.path, "-c", "commit.gpgsign=false", "-c", "user.name=Test", "-c", "user.email=test"] + arguments
+            process.standardOutput = Pipe(); process.standardError = Pipe(); process.standardInput = FileHandle.nullDevice
+            try process.run(); process.waitUntilExit()
+        }
+        try git(["init", "-q"])
+        try git(["commit", "-q", "--allow-empty", "-m", "initial"])
+        let odd = rh.configDirectory.appendingPathComponent("odd\u{1b}[2J\u{202E}name")
+        try git(["worktree", "add", "-q", "-b", "odd", odd.path])
+        for arguments in [["worktree", "list", repo.path], ["worktree", "list", repo.path, "--json"]] {
+            let result = try rh.run(arguments)
+            #expect(result.status == 0, "\(result.standardError)")
+            #expect(result.standardOutput.contains("odd"), "control: the worktree is listed")
+            #expect(scalarsATerminalActsOn(result.standardOutput).isEmpty, "rh \(arguments.joined(separator: " ")): \(scalarsATerminalActsOn(result.standardOutput))")
+        }
+        let paths = ((try rh.run(["worktree", "list", repo.path, "--json"]).json as? [[String: Any]]) ?? []).compactMap { $0["path"] as? String }
+        #expect(paths.contains { $0.contains("\u{1b}[2J\u{202E}name") }, "the JSON holds the path as it is")
+    }
+
+    @Test func aConfigFileThatHoldsControlCharactersIsShownWithoutThem() throws {
+        let rh = try RH(config: "# a note\u{1b}[2J that a terminal would act on\n[general]\nterminal = \"terminal\"\u{200B}\n"); defer { rh.cleanUp() }
+        let result = try rh.run(["config", "show"])
+        #expect(result.standardOutput.contains("terminal = \"terminal\""), "control: the file is shown: \(result.standardOutput)")
+        #expect(scalarsATerminalActsOn(result.standardOutput).isEmpty, "\(scalarsATerminalActsOn(result.standardOutput))")
+        #expect(result.standardOutput.contains("\\u001b[2J") && result.standardOutput.split(separator: "\n").count >= 3, "the lines of the file are lines of the output")
     }
 
     @Test func docsServeTheTopics() throws {

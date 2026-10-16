@@ -11,18 +11,22 @@ public enum ExecutionError: Error, Equatable, Sendable, LocalizedError {
     /// permission prompt.
     case timedOut(step: String, seconds: Int)
 
+    /// What a step says is what a program, a file or git wrote (git's own words name branches and paths), so the line breaks stay and every other control or
+    /// invisible character is shown as an escape.
     public var errorDescription: String? {
+        let text: String
         switch self {
         case .stepFailed(let index, let step, let message):
-            return "Step \(index + 1) (\(step)) failed: \(message)"
+            text = "Step \(index + 1) (\(step)) failed: \(message)"
         case .automationDenied(let application):
             let target = application.map { " \($0)" } ?? " the application"
-            return "macOS blocked controlling\(target). Allow it in System Settings › Privacy & Security › Automation, then try again."
+            text = "macOS blocked controlling\(target). Allow it in System Settings › Privacy & Security › Automation, then try again."
         case .fileExists(let path):
-            return "\(path) already exists."
+            text = "\(path) already exists."
         case .timedOut(let step, let seconds):
-            return "\(step) did not finish within \(seconds) seconds and was stopped. If macOS is waiting for you to allow Right Here to control an app (a permission prompt), answer it and try again."
+            text = "\(step) did not finish within \(seconds) seconds and was stopped. If macOS is waiting for you to allow Right Here to control an app (a permission prompt), answer it and try again."
         }
+        return text.escapingControlCharacters(keeping: ["\n"])
     }
 }
 

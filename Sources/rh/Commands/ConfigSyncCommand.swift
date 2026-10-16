@@ -41,7 +41,7 @@ struct ConfigSyncCommand: ParsableCommand {
             let runtime = Runtime()
             try ConfigSyncCommand.run {
                 let report = try ConfigSync(paths: runtime.paths).enable(folder: folder)
-                Output.print("Sync folder: \(report.folder.path)")
+                Output.print("Sync folder: \(report.folder.path.withControlCharactersEscaped)")
                 Output.print(Status.describe(report))
                 for line in Status.problems(report) { Output.print(line) }
                 for line in Status.pendingCommands(report) { Output.print(line) }
@@ -85,11 +85,11 @@ struct ConfigSyncCommand: ParsableCommand {
                                            localProblems: report.localProblems.map(\.message), remoteProblems: report.remoteProblems.map(\.message)))
                     return
                 }
-                Output.print("Sync folder: \(report.folder.path)" + (report.folderReachable ? "" : " (not reachable)"))
+                Output.print("Sync folder: \(report.folder.path.withControlCharactersEscaped)" + (report.folderReachable ? "" : " (not reachable)"))
                 Output.print(Self.describe(report))
                 for line in Self.problems(report) { Output.print(line) }
                 for copy in report.conflictCopies {
-                    Output.print("Conflict copy: \(copy) (two machines wrote at once; compare it with config.toml and remove it by hand)")
+                    Output.print("Conflict copy: \(copy.withControlCharactersEscaped) (two machines wrote at once; compare it with config.toml and remove it by hand)")
                 }
                 for line in Self.pendingCommands(report) { Output.print(line) }
                 Output.print(Self.nextStep(report))
@@ -208,7 +208,7 @@ struct ConfigSyncCommand: ParsableCommand {
                 case .alreadyInSync: Output.print("Already in sync.")
                 case .pulled(let backup):
                     Output.print("Pulled the config into \(runtime.paths.configFile.path).")
-                    if let backup { Output.print("The replaced file is saved as \(backup.path).") }
+                    if let backup { Output.print("The replaced file is saved as \(backup.path.withControlCharactersEscaped).") }
                 }
             }
         }
@@ -231,8 +231,8 @@ struct ConfigSyncCommand: ParsableCommand {
                 case .alreadyInSync: Output.print("Already in sync.")
                 case .pushed(let backup, let created):
                     let folder = sync.settings()?.folder ?? ""
-                    Output.print((created ? "Created \(folder) and pushed" : "Pushed") + " the config to \(folder)/config.toml.")
-                    if let backup { Output.print("The replaced copy is saved as \(backup.path).") }
+                    Output.print((created ? "Created \(folder.withControlCharactersEscaped) and pushed" : "Pushed") + " the config to \(folder.withControlCharactersEscaped)/config.toml.")
+                    if let backup { Output.print("The replaced copy is saved as \(backup.path.withControlCharactersEscaped).") }
                 }
             }
         }

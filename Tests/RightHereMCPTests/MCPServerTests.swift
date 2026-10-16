@@ -498,6 +498,31 @@ struct MCPToolTests {
         #expect(branchDeletes.count == 1 && branchDeletes[0].arguments.contains("-d") && !branchDeletes[0].arguments.contains("-D"))
     }
 
+    /// A plan names the files of the request and the apps of the config, and what git or a program says names branches and folders somebody else chose: in the text of a result
+    /// that is data, and the structured plan holds it as it is.
+    @Test func thePlanTheDoneLineAndTheTextOfAFailureAreFencedAsData() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let dry = try await harness.call("right_here_run", ["action": .string("copy-path.absolute"), "paths": .array([.string("/Users/tester/code/app/a.txt")]), "dry_run": .bool(true)])
+        let dryText = dry["content"]?.arrayValue?.first?["text"]?.stringValue ?? ""
+        #expect(dryText.hasPrefix("Plan (nothing was run):\n⟦user⟧{") && dryText.hasSuffix("}⟦/user⟧"), Comment(rawValue: dryText))
+        #expect(dryText.contains("\n"), "the lines of the plan stay lines")
+        #expect(dry["structuredContent"]?["plan"]?["summary"]?.stringValue?.contains("⟦") == false)
+
+        let done = try await harness.call("right_here_run", ["action": .string("copy-path.absolute"), "paths": .array([.string("/Users/tester/code/app/a.txt")])])
+        let doneText = done["content"]?.arrayValue?.first?["text"]?.stringValue ?? ""
+        #expect(doneText.hasPrefix("Done: ⟦user⟧") && doneText.hasSuffix("⟦/user⟧"), Comment(rawValue: doneText))
+
+        // An error that is Right Here's own sentence about the call is not data; one that quotes a path, a program or git is.
+        let refused = try await harness.call("right_here_run", ["action": .string("copy-path.absolute"), "paths": .array([.string("/Users/tester/missing\u{1b}[2J")])])
+        #expect(refused["isError"]?.boolValue == true)
+        let refusedText = refused["content"]?.arrayValue?.first?["text"]?.stringValue ?? ""
+        #expect(refusedText.hasPrefix("⟦user⟧") && refusedText.hasSuffix("⟦/user⟧") && !refusedText.contains("\u{1b}"), Comment(rawValue: refusedText))
+        let own = try await harness.call("right_here_worktree", ["operation": .string("remove")])
+        #expect(own["isError"]?.boolValue == true)
+        let ownText = own["content"]?.arrayValue?.first?["text"]?.stringValue ?? ""
+        #expect(ownText == "Not inside a git repository.", Comment(rawValue: "a sentence of the tool's own is not fenced: \(ownText.debugDescription)"))
+    }
+
     @Test func onlyTheWorktreeToolIsAnnotatedAsAbleToDelete() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
         let reply = try #require(try await harness.send("tools/list"))

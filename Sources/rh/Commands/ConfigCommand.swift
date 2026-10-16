@@ -42,10 +42,10 @@ struct ConfigCommand: ParsableCommand {
                 switch ConfigStore.text(of: file) {
                 case .absent: continue
                 case .problem(let reason):
-                    throw Output.fail("Cannot show \(file.path): \(reason)")
+                    throw Output.fail("Cannot show \(file.path.withControlCharactersEscaped): \(reason.withControlCharactersEscaped)")
                 case .text(let text):
                     if printed > 0 { Output.print("") }
-                    Output.print("==> \(file.path) <==")
+                    Output.print("==> \(file.path.withControlCharactersEscaped) <==")
                     Output.print(text.hasSuffix("\n") ? String(text.dropLast()) : text)
                     printed += 1
                 }

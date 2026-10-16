@@ -83,10 +83,10 @@ struct Uninstall: AsyncParsableCommand {
             guard let destination = try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path) else { return }
             if Installer.isRightHereBinary(destination) {
                 try FileManager.default.removeItem(at: installer.cliLink)
-                Output.print("Removed the command link (it pointed at \(destination)).")
+                Output.print("Removed the command link (it pointed at \(destination.withControlCharactersEscaped)).")
             } else {
                 // `rh` is a short name other tools use too; a link to something that is not Right Here's is not ours to delete.
-                Output.print("Left the command link alone: \(installer.cliLink.path) points at \(destination), which is not Right Here's rh. Remove it yourself if you want it gone.")
+                Output.print("Left the command link alone: \(installer.cliLink.path.withControlCharactersEscaped) points at \(destination.withControlCharactersEscaped), which is not Right Here's rh. Remove it yourself if you want it gone.")
             }
         }
         if ProcessInfo.processInfo.environment["RH_HOME"] != nil {
@@ -98,7 +98,7 @@ struct Uninstall: AsyncParsableCommand {
         for path in await manager.status().paths {
             try? await manager.disable()
             try? await manager.unregister(appexPath: path)
-            Output.print("Unregistered the Finder extension: \(path)")
+            Output.print("Unregistered the Finder extension: \(path.withControlCharactersEscaped)")
         }
         if problems > 0 { throw Output.fail("\(problems) step(s) failed; run `rh uninstall` again once the cause is fixed.") }
     }

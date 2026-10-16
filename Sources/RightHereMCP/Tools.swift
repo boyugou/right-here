@@ -218,7 +218,8 @@ enum Tools {
         let plan = try Planner(config: loaded.config, facts: server.facts).plan(ref, context: context(from: arguments, facts: server.facts))
         let planJSON = try JSONValue(encoding: plan)
         if arguments["dry_run"]?.boolValue == true {
-            return ToolOutput(text: "Plan (nothing was run):\n" + planJSON.pretty(), structured: .object(["ran": .bool(false), "plan": planJSON]))
+            // The plan names the files and folders of the request and the apps of the config: data, in the text; the structured plan holds them as they are.
+            return ToolOutput(text: "Plan (nothing was run):\n" + Fence.block(planJSON.pretty()), structured: .object(["ran": .bool(false), "plan": planJSON]))
         }
         let cost = LaunchCost.of(plan)
         if cost > 0 {
@@ -232,7 +233,7 @@ enum Tools {
             }
         }
         try await LiveExecutor(runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), pasteboard: server.pasteboard).execute(plan)
-        return ToolOutput(text: "Done: " + plan.summary, structured: .object(["ran": .bool(true), "plan": planJSON]))
+        return ToolOutput(text: "Done: " + Fence.wrap(plan.summary), structured: .object(["ran": .bool(true), "plan": planJSON]))
     }
 
     private static func actions(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {

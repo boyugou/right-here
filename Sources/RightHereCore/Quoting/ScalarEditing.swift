@@ -46,10 +46,21 @@ extension String {
     /// `JSONEncoder` leaves U+007F to U+009F, U+2028 and U+2029, and everything above, raw, and a different spelling would have turned them into something no JSON
     /// reader accepts.
     public var withControlCharactersEscaped: String {
+        escapingControlCharacters()
+    }
+
+    /// The same, for text that has lines of its own (what a command prints, a block of JSON): the scalars in `kept` stay as they are, and a line feed, a carriage return
+    /// or a tab not in it is `\n`, `\r` or `\t`. Everything else a terminal acts on or that draws nothing is written as the JSON escape, so what is printed is still
+    /// the text it was, to a JSON reader.
+    public func escapingControlCharacters(keeping kept: Set<Unicode.Scalar> = []) -> String {
         var result = ""
         var previous: Unicode.Scalar?
         for scalar in unicodeScalars {
             defer { previous = scalar }
+            if kept.contains(scalar) {
+                result.unicodeScalars.append(scalar)
+                continue
+            }
             switch scalar {
             case "\n": result += "\\n"
             case "\r": result += "\\r"

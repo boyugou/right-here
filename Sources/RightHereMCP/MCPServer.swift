@@ -240,8 +240,11 @@ public struct MCPServer: Sendable {
             ]
             if let structured = output.structured { result["structuredContent"] = structured }
             return Self.responseObject(id: id, result: .object(result))
+        } catch let failure as ToolError {
+            return Self.toolFailure(id: id, text: failure.localizedDescription)
         } catch {
-            return Self.toolFailure(id: id, text: error.localizedDescription)
+            // What a plan, a program or git says names the files, folders and branches somebody else chose: to the agent that reads it, it is data.
+            return Self.toolFailure(id: id, text: Fence.block(error.localizedDescription))
         }
     }
 

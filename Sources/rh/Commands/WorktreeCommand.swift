@@ -53,10 +53,10 @@ struct WorktreeList: AsyncParsableCommand {
         }
         for entry in list {
             let tag = entry.isRightHere ? " [rh]" : ""
-            let branch = entry.branch.map { " (\($0))" } ?? ""
+            let branch = entry.branch.map { " (\($0.withControlCharactersEscaped))" } ?? ""
             let bare = entry.isBare ? " [bare]" : ""
             let detached = entry.isDetached ? " [detached]" : ""
-            Output.print("\(entry.path)\(branch)\(tag)\(bare)\(detached)")
+            Output.print("\(entry.path.withControlCharactersEscaped)\(branch)\(tag)\(bare)\(detached)")
         }
     }
 }
@@ -87,7 +87,7 @@ struct WorktreeAdd: AsyncParsableCommand {
             try Output.json(result)
             return
         }
-        Output.print("Isolated worktree ready on branch '\(result.branch)': \(result.worktreeURL.path)")
+        Output.print("Isolated worktree ready on branch '\(result.branch.withControlCharactersEscaped)': \(result.worktreeURL.path.withControlCharactersEscaped)")
     }
 }
 
@@ -121,8 +121,8 @@ struct WorktreeRemove: AsyncParsableCommand {
             throw ValidationError("Not inside a git repository.")
         }
         let removal = try await GitWorktreeManager.removeWorktree(worktreePath: target, gitRoot: root, deleteBranch: deleteBranch, force: force)
-        Output.print("Removed worktree at \(removal.path)")
+        Output.print("Removed worktree at \(removal.path.withControlCharactersEscaped)")
         if removal.branchDeleted { Output.print("Deleted its branch.") }
-        if let kept = removal.branchKept { Output.print("Kept its branch: \(kept)") }
+        if let kept = removal.branchKept { Output.print("Kept its branch: \(kept.withControlCharactersEscaped)") }
     }
 }

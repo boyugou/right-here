@@ -9,6 +9,15 @@ struct LiveExecutorTests {
         LiveExecutor(runner: runner, pasteboard: pasteboard)
     }
 
+    /// What a step says is what a program wrote (git's own words name branches and paths): its line breaks stay, and a terminal escape or a character that draws nothing is shown.
+    @Test func whatAStepSaysHasItsControlAndInvisibleCharactersShownAsEscapes() {
+        let description = ExecutionError.stepFailed(index: 0, step: "git worktree remove", message: "fatal: 'x\u{1b}]0;t\u{07}y\u{202E}' is dirty\nhint: use --force\u{200B}").errorDescription ?? ""
+        #expect(description == "Step 1 (git worktree remove) failed: fatal: 'x\\u001b]0;t\\u0007y\\u202e' is dirty\nhint: use --force\\u200b")
+        for error in [ExecutionError.fileExists(path: "/a\u{1b}b"), .automationDenied(application: "T\u{9b}"), .timedOut(step: "run\u{1b}", seconds: 3)] {
+            #expect(!(error.errorDescription ?? "").unicodeScalars.contains { $0.properties.generalCategory == .control }, "\(error)")
+        }
+    }
+
     @Test func openRunsLaunchServicesWithTheBundleId() async throws {
         let runner = FakeProcessRunner()
         let plan = LaunchPlan(action: "t", summary: "t", steps: [.open(OpenStep(bundleID: "com.apple.Terminal", targets: ["/tmp/a b"]))])

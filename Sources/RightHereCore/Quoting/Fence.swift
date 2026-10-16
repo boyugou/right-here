@@ -13,7 +13,15 @@ public enum Fence {
 
     /// The text fenced; text with nothing in it is left as it is (a separator has no title to mark).
     public static func wrap(_ text: String) -> String {
-        guard !text.isEmpty else { return text }
-        return open + text.withControlCharactersEscaped.scalarReplacing(["⟦": "[", "⟧": "]"]) + close
+        fenced(text.withControlCharactersEscaped)
+    }
+
+    /// Text that has lines of its own (a plan as JSON) fenced as a whole: its line feeds stay, and everything else is escaped as it is in a name.
+    public static func block(_ text: String) -> String {
+        fenced(text.escapingControlCharacters(keeping: ["\n"]))
+    }
+
+    private static func fenced(_ escaped: String) -> String {
+        escaped.isEmpty ? escaped : open + escaped.scalarReplacing(["⟦": "[", "⟧": "]"]) + close
     }
 }

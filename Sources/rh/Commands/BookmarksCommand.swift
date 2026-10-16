@@ -41,7 +41,7 @@ struct Pin: ParsableCommand {
         // A pin is an absolute path: `rh pin .` must still name the folder after the shell has moved on.
         let path = Pin.absolute(folder ?? ".", from: runtime.facts.currentDirectory)
         guard runtime.facts.isDirectory(URL(fileURLWithPath: path)) == true else {
-            throw ValidationError("\"\(path)\" is not an existing folder.")
+            throw ValidationError("\"\(path.withControlCharactersEscaped)\" is not an existing folder.")
         }
         var state = StateStore.load(paths: runtime.paths)
         let added = state.pin(path)
@@ -51,9 +51,9 @@ struct Pin: ParsableCommand {
             try Output.json(PinResult(ok: true, pinned: path, alreadyPinned: !added))
         } else {
             if added {
-                Output.print("pinned: \(path)")
+                Output.print("pinned: \(path.withControlCharactersEscaped)")
             } else {
-                Output.print("already pinned: \(path)")
+                Output.print("already pinned: \(path.withControlCharactersEscaped)")
             }
         }
     }
@@ -81,9 +81,9 @@ struct Unpin: ParsableCommand {
             try Output.json(UnpinResult(ok: true, unpinned: path, wasPinned: removed))
         } else {
             if removed {
-                Output.print("unpinned: \(path)")
+                Output.print("unpinned: \(path.withControlCharactersEscaped)")
             } else {
-                Output.print("not pinned: \(path)")
+                Output.print("not pinned: \(path.withControlCharactersEscaped)")
             }
         }
     }
@@ -104,7 +104,8 @@ struct Pins: ParsableCommand {
             try Output.json(state.pins)
         } else {
             for pin in state.pins {
-                Output.print(pin)
+                // A folder name may hold a line break, and the file that keeps the pins can be written by any program: one line for each pin.
+                Output.print(pin.withControlCharactersEscaped)
             }
             // On standard error, so a script that reads the folders gets nothing and a person at a terminal is told why.
             if state.pins.isEmpty { Output.error("No pinned folders yet. Pin one with `rh pin <folder>`.") }
@@ -140,7 +141,7 @@ struct Recents: ParsableCommand {
             try Output.json(state.recents)
         } else {
             for recent in state.recents {
-                Output.print(recent)
+                Output.print(recent.withControlCharactersEscaped)
             }
             if state.recents.isEmpty { Output.error("No recent folders yet. They are remembered when an action starts from Finder or with `rh run`.") }
         }

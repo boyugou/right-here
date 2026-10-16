@@ -220,6 +220,13 @@ struct ControlCharacterEscapingTests {
         #expect("葛\u{E0100}\u{E0101}".withControlCharactersEscaped == "葛\u{E0100}\\udb40\\udd01")
     }
 
+    @Test func textThatHasLinesOfItsOwnKeepsThemAndEscapesTheRest() {
+        let text = "line one\n\tcolumn\u{1b}[2J\r\nnext\u{9b}\u{202E}\u{E0041}"
+        #expect(text.escapingControlCharacters(keeping: ["\n", "\t"]) == "line one\n\tcolumn\\u001b[2J\\r\nnext\\u009b\\u202e\\udb40\\udc41")
+        #expect("a\nb".escapingControlCharacters(keeping: ["\n"]) == "a\nb")
+        #expect("a\nb".escapingControlCharacters() == "a\\nb", "without a list of what to keep, a line break is an escape too")
+    }
+
     @Test func escapingTwiceChangesNothing() {
         let text = "a\n\u{1b}[2J\u{200B}\u{E0041}\u{202E}\u{200D}b"
         #expect(text.withControlCharactersEscaped.withControlCharactersEscaped == text.withControlCharactersEscaped)

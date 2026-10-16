@@ -71,7 +71,7 @@ struct Probe: AsyncParsableCommand {
                 try Output.json(results)
             } else {
                 for result in results {
-                    Output.print("\(result.application): \(result.outcome.rawValue)" + (result.detail.map { " (\($0))" } ?? ""))
+                    Output.print("\(result.application.withControlCharactersEscaped): \(result.outcome.rawValue)" + (result.detail.map { " (\($0.withControlCharactersEscaped))" } ?? ""))
                 }
             }
             if results.contains(where: { $0.outcome == .denied || $0.outcome == .failed }) { throw ExitCode(1) }
@@ -116,11 +116,11 @@ struct Probe: AsyncParsableCommand {
             if json {
                 try Output.json(result)
             } else {
-                var line = "\(result.application): \(result.outcome.rawValue)"
+                var line = "\(result.application.withControlCharactersEscaped): \(result.outcome.rawValue)"
                 if let seconds = result.seconds { line += String(format: " in %.1f s", seconds) }
                 if let accepted = result.accepted { line += String(format: " (request accepted after %.1f s)", accepted) }
-                if let shell = result.shell { line += ", login shell \(shell)" }
-                if let detail = result.detail { line += " (\(detail))" }
+                if let shell = result.shell { line += ", login shell \(shell.withControlCharactersEscaped)" }
+                if let detail = result.detail { line += " (\(detail.withControlCharactersEscaped))" }
                 Output.print(line)
             }
             if result.outcome != .ran { throw ExitCode(1) }

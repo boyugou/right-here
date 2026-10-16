@@ -51,6 +51,18 @@ Everything since 0.2.0.
   window and a program an AI assistant starts have launchd's PATH, which says nothing about a terminal). It asks the login shell, reads the folder
   however it is spelled (trailing slash, `.` part, symbolic link), and says "did not say" instead of "not on PATH" when the shell gives no answer.
 - The AI Assistants section shows `rh setup` as code, without its backticks.
+- Worktrees: a repository is somebody else's code, and its own files made git start programs while Right Here made, checked or removed a worktree: filter
+  drivers in an included file or in `config.worktree` (and one whose name has an equals sign), `core.fsmonitor` and hooks for `worktree remove`, `status` and
+  `branch -d`, hooks that the configuration names (git 2.54), and a promisor remote's `ext::` transport or `core.sshCommand` during the checkout of a partial
+  clone. Every git command goes through one function that switches all of that off, the list of worktrees is read NUL-separated, and the commands that only read
+  stop after twenty seconds (a named pipe in `include.path` held them for ever). The Finder extension's runner script passes on only the shapes the extension sends,
+  so a compromised extension cannot start an agent with its prompts off or with a prompt of its own (ADR 0016).
+- `rh doctor --report`, for a public issue, held what the config says (an agent's command, an app's name, the text of an error, the sync folder). It now holds none of it
+  and says what it holds; its block closes whatever a crash report's name holds. `rh setup` and `rh doctor` fence what the config names in every sentence an AI agent
+  passes on (ADR 0020), and names that something else wrote (a crash report, a folder, a worktree, git's words) are shown with the characters that draw nothing as
+  escapes, in every line `rh` prints and in its JSON.
+- The doctor counts the extension's crash reports by the UUID of the code that crashed and not by the date the code was written, so a crash of the copy that was
+  replaced is not held against the new one.
 
 ## 0.2.0 (2026-10-14)
 
