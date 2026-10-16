@@ -97,6 +97,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 21 | A process a test started (`RH_NO_UI`) without a trial home (`RH_HOME`) cannot change the real home or the Finder extension's registration. | [0022](decisions/0022-a-test-cannot-change-the-real-home.md) |
 | 22 | The setup window says where the app runs from before it tries, only a first run's Set Up makes a config, and a warning the person may leave is not "needs attention". | [0023](decisions/0023-the-window-says-before-it-tries.md) |
 | 23 | A built-in field of an agent (its prompt flag, its permission flag, its continue arguments) is confirmed by the tool's own documentation or help, or it is not there. | [0024](decisions/0024-a-built-in-agent-field-is-confirmed-or-absent.md) |
+| 24 | The flags a built-in terminal adapter starts its terminal with are the ones the terminal documents; Alacritty has an adapter, kitty quits with its last window. | [0025](decisions/0025-terminal-launch-flags-are-the-documented-ones.md) |
 
 ## 5. Platform facts
 

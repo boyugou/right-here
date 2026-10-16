@@ -9,7 +9,7 @@
   setup window's first run runs the same code. The playbook an AI agent follows (`rh docs agent-setup`) was tried with cold agents on three personas
   ([`docs/development/SETUP_EVALUATION.md`](docs/development/SETUP_EVALUATION.md)).
 - Terminal adapters: Ghostty (1.3 and later for commands; window and tab) and Terminal.app are tried on a real Mac. The Ghostty and iTerm2 splits, iTerm2 (3.0 and later),
-  WezTerm and kitty are built in and not yet tried on a real Mac (`rh doctor --probe-launch` checks yours). Agent launchers: typed, terminal link, desktop app.
+  WezTerm, kitty and Alacritty are built in and not yet tried on a real Mac (`rh doctor --probe-launch` checks yours). Agent launchers: typed, terminal link, desktop app.
 - Agents in isolated git worktrees (`rh worktree`, `rh run --worktree`, the MCP tool), pinned and recent folders, and an agent's permission prompts skipped only when
   you ask for it per agent (`bypass_permissions`, off by default, never for a preset).
 - `rh doctor --probe-launch`: a throwaway terminal session started through the Finder extension proves a
@@ -44,7 +44,7 @@ The items that need a person with a real Finder and terminals are listed with th
 - Confirm a real Finder click reaching `rh` (everything after it, typed launch included, is verified by
   `rh doctor --probe-launch`), and the first-ever Automation prompt on a clean system.
 - Homebrew cask and formula for distribution.
-- Trying iTerm2, WezTerm and kitty on a real Mac, and built-in adapters for Alacritty, Warp and cmux, to be written and checked against the real terminals; a
+- Trying iTerm2, WezTerm, kitty and Alacritty on a real Mac, and built-in adapters for Warp and cmux, to be written and checked against the real terminals; a
   config-defined launcher (`open_args`, `run_args`) exists for the meantime.
 - Native-speaker review of the translations.
 - A menu-only App Store build (scope and risks in the design notes).

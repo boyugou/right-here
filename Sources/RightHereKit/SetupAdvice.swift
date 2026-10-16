@@ -78,7 +78,7 @@ enum SetupAdvice {
         guard terminal.installedBundleID(facts: facts) != nil, TerminalAdapters.adapter(for: terminal).supportsCommands else { return nil }
         switch terminal.driver {
         case .ghostty, .appleScriptTerminal, .iterm: return terminal
-        case .wezterm, .kitty, .openFolder, .template: return nil
+        case .wezterm, .kitty, .alacritty, .openFolder, .template: return nil
         }
     }
 

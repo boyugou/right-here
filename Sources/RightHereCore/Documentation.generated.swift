@@ -276,12 +276,16 @@ monitor switched off, and without fetching anything a partial clone lacks. Your 
 with `git lfs install` for your account works. A repository that sets LFS up in its own `.git/config` instead gets a worktree
 with LFS pointer files in place of the files.
 
-## WezTerm or kitty launch questions
+## WezTerm, kitty or Alacritty launch questions
 
-Right Here includes native adapters for WezTerm and kitty without requiring manual template configurations. It finds each
+Right Here includes native adapters for WezTerm, kitty and Alacritty without requiring manual template configurations. It finds each
 by its bundle identifier, wherever it is installed, and starts it through LaunchServices (`open -n -b`), so `rh run` does not
 wait for the window to close. Their own command-line arguments (`start --cwd <folder>` for WezTerm, `--directory <folder>` for
-kitty) carry the folder. Neither has been run on the development Mac: `rh doctor --probe-launch` is how to check yours.
+kitty, `--working-directory <folder>` for Alacritty) carry the folder; each flag is the one the terminal's own documentation gives
+(ADR 0025). None has been run on the development Mac: `rh doctor --probe-launch` is how to check yours. Each launch is a new process:
+kitty and Alacritty quit with their last window (kitty is told to, with `-o macos_quit_when_last_window_closed=yes`), and a running WezTerm
+takes the window itself and the new process leaves. Alacritty is no longer a Homebrew cask (Homebrew disabled it on 2026-09-01 because
+the download fails Gatekeeper's check): install it from its releases page, and if macOS will not open it, that is the reason.
 
 ## Terminal says it will not start a command in a folder
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The launch flags of the terminal adapters were read against each terminal's own documentation (ADR 0025): none of WezTerm's, kitty's or iTerm2's is wrong. Alacritty, which was handed the
+  folder with `open` although it declares no document types (so a window could open in the wrong folder), now has an adapter of its own that starts it with `--working-directory` and, for an
+  agent, `-e` (it joins the terminals that can run commands). kitty is started with `-o macos_quit_when_last_window_closed=yes`, so a launch no longer leaves an idle kitty and its Dock icon
+  behind. None of the three has been run on a real Mac.
 - JetBrains Fleet is no longer a built-in editor (the product was discontinued); the bundle identifiers of the other built-in terminals and editors were checked against Homebrew's cask
   metadata (ADR 0024), the update path is documented for the mishap of two copies of the app (README, troubleshooting).
 

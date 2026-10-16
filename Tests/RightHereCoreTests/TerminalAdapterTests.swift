@@ -351,6 +351,7 @@ struct TerminalAdapterTests {
         #expect(throws: PlanError.self) { try ITermAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try WezTermAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try KittyAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try AlacrittyAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try TerminalAdapters.adapter(for: KnownApps.terminal(id: "warp")!).steps(for: session, bundleID: "x", facts: facts) }
     }
 
@@ -362,6 +363,7 @@ struct TerminalAdapterTests {
         #expect(throws: PlanError.self) { try ITermAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try WezTermAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.self) { try KittyAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.self) { try AlacrittyAdapter().steps(for: session, bundleID: "x", facts: facts) }
     }
 
     @Test("a typed launch refuses text that would press Return or other keys", arguments: ["claude\nrm -rf ~", "claude\r", "claude\u{1b}[A", "claude\u{2028}"])
@@ -372,6 +374,7 @@ struct TerminalAdapterTests {
         #expect(throws: PlanError.unsafeText(text)) { try ITermAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.unsafeText(text)) { try WezTermAdapter().steps(for: session, bundleID: "x", facts: facts) }
         #expect(throws: PlanError.unsafeText(text)) { try KittyAdapter().steps(for: session, bundleID: "x", facts: facts) }
+        #expect(throws: PlanError.unsafeText(text)) { try AlacrittyAdapter().steps(for: session, bundleID: "x", facts: facts) }
     }
 
     @Test func terminalRefusesAFolderItWouldHaveToTypeWithALineBreak() {
@@ -397,13 +400,15 @@ struct TerminalAdapterTests {
         #expect(wezterm.arguments[6] == name, "\(wezterm.arguments)")
         guard case .run(let kitty)? = try KittyAdapter().steps(for: session, bundleID: "x", facts: machine).first else { Issue.record("expected a run step"); return }
         #expect(kitty.arguments[5] == name, "\(kitty.arguments)")
+        guard case .run(let alacritty)? = try AlacrittyAdapter().steps(for: session, bundleID: "x", facts: machine).first else { Issue.record("expected a run step"); return }
+        #expect(alacritty.arguments[5] == name, "\(alacritty.arguments)")
         // The command is still typed, and still held to the rule.
         let hostile = TerminalSession(directory: URL(fileURLWithPath: name), typedInput: "claude\nrm -rf ~")
         #expect(throws: PlanError.unsafeText("claude\nrm -rf ~")) { try GhosttyAdapter().steps(for: hostile, bundleID: "x", facts: machine) }
     }
 
     @Test func onlyTheTerminalsThatHandOverTheFolderSayTheyTypeNothingOfIt() {
-        #expect(!GhosttyAdapter().typesTheFolder && !WezTermAdapter().typesTheFolder && !KittyAdapter().typesTheFolder)
+        #expect(!GhosttyAdapter().typesTheFolder && !WezTermAdapter().typesTheFolder && !KittyAdapter().typesTheFolder && !AlacrittyAdapter().typesTheFolder)
         #expect(!OpenFolderTerminalAdapter(terminalID: "warp", displayName: "Warp").typesTheFolder)
         #expect(AppleTerminalAdapter().typesTheFolder && ITermAdapter().typesTheFolder)
         // A terminal the config defines says nothing, and the default is the strict answer: its template may type `{dir}`.
@@ -435,24 +440,26 @@ struct TerminalAdapterTests {
         #expect(adapter("anything", .iterm) is ITermAdapter)
         #expect(adapter("anything", .wezterm) is WezTermAdapter)
         #expect(adapter("anything", .kitty) is KittyAdapter)
+        #expect(adapter("anything", .alacritty) is AlacrittyAdapter)
         #expect(adapter("ghostty", .openFolder) is OpenFolderTerminalAdapter)
         #expect(adapter("terminal", .template(TerminalLaunch(run: ["/bin/x", "{command}"]))) is TemplateTerminalAdapter)
     }
 
     @Test func theAdviceNamesTheBuiltInTerminalsThatCanRunCommands() {
         // `rh doctor` says which terminals to choose; a built-in terminal that gains a way to run commands joins the phrase.
-        #expect(KnownApps.commandTerminalPhrase == "Ghostty, Terminal, iTerm, WezTerm or kitty")
-        #expect(KnownApps.terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name) == ["Ghostty", "Terminal", "iTerm", "WezTerm", "kitty"])
+        #expect(KnownApps.commandTerminalPhrase == "Ghostty, Terminal, iTerm, WezTerm, kitty or Alacritty")
+        #expect(KnownApps.terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name) == ["Ghostty", "Terminal", "iTerm", "WezTerm", "kitty", "Alacritty"])
     }
 
-    @Test func theBuiltInDriversAreGhosttyTerminalAppITermWezTermKittyAndTheRestAreHandedTheFolder() {
+    @Test func theBuiltInDriversAreGhosttyTerminalAppITermWezTermKittyAlacrittyAndTheRestAreHandedTheFolder() {
         let drivers = Dictionary(uniqueKeysWithValues: KnownApps.terminals.map { ($0.id, $0.driver) })
         #expect(drivers["ghostty"] == .ghostty)
         #expect(drivers["terminal"] == .appleScriptTerminal)
         #expect(drivers["iterm"] == .iterm)
         #expect(drivers["wezterm"] == .wezterm)
         #expect(drivers["kitty"] == .kitty)
-        for id in ["alacritty", "warp", "cmux"] { #expect(drivers[id] == .openFolder, "\(id)") }
+        #expect(drivers["alacritty"] == .alacritty)
+        for id in ["warp", "cmux"] { #expect(drivers[id] == .openFolder, "\(id)") }
     }
 
     @Test func wezTermIsStartedThroughOpenWithItsOwnArguments() throws {
@@ -476,13 +483,26 @@ struct TerminalAdapterTests {
         let plainSteps = try KittyAdapter().steps(for: plainSession, bundleID: "net.kovidgoyal.kitty", facts: kittyFacts)
         guard case .run(let step1)? = plainSteps.first else { Issue.record("expected run step"); return }
         #expect(step1.executable == "/usr/bin/open")
-        #expect(step1.arguments == ["-n", "-b", "net.kovidgoyal.kitty", "--args", "--directory", "/Users/tester/code"])
+        #expect(step1.arguments == ["-n", "-b", "net.kovidgoyal.kitty", "--args", "--directory", "/Users/tester/code", "-o", "macos_quit_when_last_window_closed=yes"])
 
         let typedSession = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"), typedInput: "claude")
         let typedSteps = try KittyAdapter().steps(for: typedSession, bundleID: "net.kovidgoyal.kitty", facts: kittyFacts)
         guard case .run(let step2)? = typedSteps.first else { Issue.record("expected run step"); return }
         #expect(step2.executable == "/usr/bin/open")
-        #expect(step2.arguments == ["-n", "-b", "net.kovidgoyal.kitty", "--args", "--directory", "/Users/tester/code", "/bin/zsh", "-lic", "claude; exec /bin/zsh -l"])
+        #expect(step2.arguments == ["-n", "-b", "net.kovidgoyal.kitty", "--args", "--directory", "/Users/tester/code", "-o", "macos_quit_when_last_window_closed=yes", "/bin/zsh", "-lic", "claude; exec /bin/zsh -l"])
+    }
+
+    @Test func alacrittyIsStartedThroughOpenWithItsOwnArguments() throws {
+        // The flags of its man page: `--working-directory`, and `-e` with the program, which must be the last option.
+        let facts = FakeSystemFacts(directories: ["/Users/tester/code"], applications: ["org.alacritty": URL(fileURLWithPath: "/Applications/Alacritty.app")])
+        let plain = try AlacrittyAdapter().steps(for: TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code")), bundleID: "org.alacritty", facts: facts)
+        guard case .run(let step1)? = plain.first else { Issue.record("expected run step"); return }
+        #expect(step1.executable == "/usr/bin/open")
+        #expect(step1.arguments == ["-n", "-b", "org.alacritty", "--args", "--working-directory", "/Users/tester/code"])
+        let typed = try AlacrittyAdapter().steps(for: TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/code"), typedInput: "claude"), bundleID: "org.alacritty", facts: facts)
+        guard case .run(let step2)? = typed.first else { Issue.record("expected run step"); return }
+        #expect(step2.arguments == ["-n", "-b", "org.alacritty", "--args", "--working-directory", "/Users/tester/code", "-e", "/bin/zsh", "-lic", "claude; exec /bin/zsh -l"])
+        #expect(!AlacrittyAdapter().typesTheFolder)
     }
 }
 
@@ -513,7 +533,7 @@ struct ArgumentTerminalTests {
         let session = TerminalSession(directory: URL(fileURLWithPath: "/Users/tester/my code"), typedInput: nil)
         let step = try process(KittyAdapter().steps(for: session, bundleID: "net.kovidgoyal.kitty", facts: facts()))
         #expect(step.executable == "/usr/bin/open")
-        #expect(step.arguments == ["-n", "-b", "net.kovidgoyal.kitty", "--args", "--directory", "/Users/tester/my code"])
+        #expect(step.arguments == ["-n", "-b", "net.kovidgoyal.kitty", "--args", "--directory", "/Users/tester/my code", "-o", "macos_quit_when_last_window_closed=yes"])
     }
 
     @Test func noTerminalBinaryIsRunDirectly() throws {

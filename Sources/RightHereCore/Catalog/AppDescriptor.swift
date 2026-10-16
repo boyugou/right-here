@@ -35,6 +35,8 @@ public struct AppDescriptor: Sendable, Equatable, Identifiable {
         case wezterm
         /// kitty CLI.
         case kitty
+        /// Alacritty CLI.
+        case alacritty
         /// The app is handed the folder with `open`; it cannot be told to run a command.
         case openFolder
         /// Started the way the config says (`open_args`, `run_args`).
@@ -79,7 +81,7 @@ public enum KnownApps {
         AppDescriptor(id: "iterm", name: "iTerm", bundleIDs: ["com.googlecode.iterm2"], role: .terminal, driver: .iterm, defaultRank: 2),
         AppDescriptor(id: "wezterm", name: "WezTerm", bundleIDs: ["com.github.wez.wezterm"], role: .terminal, driver: .wezterm, defaultRank: 3),
         AppDescriptor(id: "kitty", name: "kitty", bundleIDs: ["net.kovidgoyal.kitty"], role: .terminal, driver: .kitty, defaultRank: 4),
-        AppDescriptor(id: "alacritty", name: "Alacritty", bundleIDs: ["org.alacritty"], role: .terminal, defaultRank: 5),
+        AppDescriptor(id: "alacritty", name: "Alacritty", bundleIDs: ["org.alacritty"], role: .terminal, driver: .alacritty, defaultRank: 5),
         AppDescriptor(id: "warp", name: "Warp", bundleIDs: ["dev.warp.Warp-Stable"], role: .terminal, defaultRank: 6),
         AppDescriptor(id: "cmux", name: "cmux", bundleIDs: ["com.cmuxterm.app"], role: .terminal, defaultRank: 1)
     ]

@@ -81,10 +81,10 @@ struct SetupChoicesTests {
     }
 
     @Test func aTerminalThatCannotRunCommandsIsAdviceForAgentsOnly() {
-        let warning = SetupChoices.agentTerminalWarning(terminal: "alacritty", agents: ["claude"])
-        #expect(warning?.contains("Alacritty cannot run commands") == true, "\(warning ?? "nil")")
+        let warning = SetupChoices.agentTerminalWarning(terminal: "warp", agents: ["claude"])
+        #expect(warning?.contains("Warp cannot run commands") == true, "\(warning ?? "nil")")
         #expect(warning?.contains("ghostty") == true)
-        #expect(SetupChoices.agentTerminalWarning(terminal: "alacritty", agents: []) == nil)
+        #expect(SetupChoices.agentTerminalWarning(terminal: "warp", agents: []) == nil)
         #expect(SetupChoices.agentTerminalWarning(terminal: "ghostty", agents: ["claude"]) == nil)
         #expect(SetupChoices.agentTerminalWarning(terminal: nil, agents: ["claude"]) == nil)
     }

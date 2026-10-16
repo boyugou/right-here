@@ -4,8 +4,9 @@ import Foundation
 ///
 /// The terminal is started through LaunchServices (`open -n -b <id> --args ...`), which returns at once. Running the terminal's own binary
 /// instead would make `rh run` wait for the window to be closed, and the MCP server's time limit would kill the terminal after two minutes.
-/// `terminal_placement` does not apply: WezTerm always opens a new window here. Not verified against a real WezTerm (none is installed on the
-/// machine this was written on): `rh doctor --probe-launch` is how a person checks theirs.
+/// `terminal_placement` does not apply: this opens a new window, unless the person's config says `prefer_to_spawn_tabs` and a WezTerm is already
+/// running (then it is a tab). The flags are the ones its documentation gives (`start --cwd`, and the program after `--`); a run of a real WezTerm
+/// has not been made on the machine this was written on, and `rh doctor --probe-launch` is how a person checks theirs.
 public struct WezTermAdapter: TerminalAdapter {
     public let terminalID = "wezterm"
     /// The folder is the value of `--cwd`, an argument; nothing types it.

@@ -257,8 +257,8 @@ struct SetupRunnerTests {
 
     @Test func anInstalledTerminalThatCannotRunCommandsGetsAWarningWhenAgentsAreChosen() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
-        let report = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "alacritty", agents: ["claude"])))
-        #expect(report.warnings.contains { $0.contains("Alacritty cannot run commands") }, "\(report.warnings)")
+        let report = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "warp", agents: ["claude"])))
+        #expect(report.warnings.contains { $0.contains("Warp cannot run commands") }, "\(report.warnings)")
     }
 
     // MARK: A config that is there
@@ -833,8 +833,8 @@ struct SetupRunnerTests {
         #expect(notApplied.english().contains(SetupReport.editsHeading), "the window and the text say the same before the edits")
 
         let warned = try Machine(); defer { warned.cleanUp() }
-        let alacritty = try await warned.runner(trial: false).run(.setup(choices: SetupChoices(terminal: "alacritty", agents: ["claude"])))
-        #expect(alacritty.ok && !alacritty.warnings.isEmpty && alacritty.hasNews)
+        let warp = try await warned.runner(trial: false).run(.setup(choices: SetupChoices(terminal: "warp", agents: ["claude"])))
+        #expect(warp.ok && !warp.warnings.isEmpty && warp.hasNews)
 
         let broken = try Machine(); defer { broken.cleanUp() }
         try broken.writeConfig(Self.broken)

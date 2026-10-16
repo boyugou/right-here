@@ -117,6 +117,7 @@ public enum TerminalAdapters {
         case .iterm: return ITermAdapter()
         case .wezterm: return WezTermAdapter()
         case .kitty: return KittyAdapter()
+        case .alacritty: return AlacrittyAdapter()
         case .template(let launch): return TemplateTerminalAdapter(terminalID: app.id, displayName: app.name, launch: launch)
         case .openFolder: return OpenFolderTerminalAdapter(terminalID: app.id, displayName: app.name)
         }

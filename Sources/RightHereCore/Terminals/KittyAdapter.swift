@@ -14,7 +14,8 @@ public struct KittyAdapter: TerminalAdapter {
         let directory = try session.requireDirectory(facts)
         let typed = try session.requireTypeableInput()
         guard facts.applicationURL(bundleID: bundleID) != nil else { throw PlanError.appNotInstalled("kitty") }
-        var arguments = ["--directory", directory]
+        // `-n` starts a separate kitty each time, and kitty stays running on macOS with no window left unless this option says it should not.
+        var arguments = ["--directory", directory, "-o", "macos_quit_when_last_window_closed=yes"]
         if let typed {
             arguments += [facts.loginShell, "-lic", typed + "; exec " + ShellQuoting.quote(facts.loginShell, for: .posix) + " -l"]
         }

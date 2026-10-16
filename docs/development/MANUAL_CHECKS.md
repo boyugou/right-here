@@ -23,10 +23,15 @@ a stand-in `rh` under zsh, sh, bash and dash, but not through a real `NSUserUnix
 from Finder" and no runner refusal in the Console (the extension logs it as `failed`, with the runner's words, "right-here runner: refusing: ...");
 `rh doctor --probe-launch` sends the launch probe through the same script.
 
-## 2. Terminals without a built-in adapter
+## 2. Terminals that were never run
 
-These terminals are not yet tested with Right Here beyond fakes. Each snippet below is a starting point written from the
-terminal's documented command line, not a verified one. Add it to the config, then:
+WezTerm, kitty, Alacritty and iTerm2 are built in, from each terminal's own documentation (ADR 0025); none of them has been run on a Mac that Right Here
+was written on. For each one on your Mac: `rh doctor --probe-launch`, then by hand: the window opens in the folder and runs the command, a folder named
+`it's a "test"` works, closing the agent leaves a usable shell, and (kitty and Alacritty, which `rh` starts as a new process each time) the app quits with its last
+window. Warp and cmux are only handed a folder, and what they do with it is not documented either.
+
+A terminal that has no adapter can be started by a config entry. This is the shape, with the arguments Alacritty's own adapter uses, so it replaces the
+built-in one:
 
 ```sh
 rh config validate
@@ -44,9 +49,8 @@ open_args = ["/usr/bin/open", "-n", "-b", "org.alacritty", "--args", "--working-
 run_args = ["/usr/bin/open", "-n", "-b", "org.alacritty", "--args", "--working-directory", "{dir}", "-e", "{shell}", "-lic", "{command}; exec {shell} -l"]
 ```
 
-`rh config validate` warns that each entry replaces the built-in one; that is intended, the built-in entries only know how to open the app, not how to start a command. (WezTerm and kitty are built in: check them with `rh doctor --probe-launch` and by hand as below.) Check for each: the window opens in the folder, the command is typed
-and runs, a folder named `it's a "test"` works, and closing the agent leaves a usable shell. Report what had to
-change so the docs can carry a verified entry.
+`rh config validate` warns that the entry replaces the built-in one; that is intended. Check the entry the way the list above says, and report what had to change so the docs
+can carry a verified one.
 
 ## 3. Translations
 

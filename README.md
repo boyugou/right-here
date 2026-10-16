@@ -92,7 +92,7 @@ When you right-click in Finder or run an action:
 
 Right-click a folder, a file, or the empty canvas of a Finder window:
 
-- **Open in a terminal or editor**: Ghostty and Terminal are verified on a real Mac; iTerm2, WezTerm and kitty are built in but not yet verified (`rh doctor --probe-launch` checks yours); VS Code, Cursor, Zed, Antigravity and other editors.
+- **Open in a terminal or editor**: Ghostty and Terminal are verified on a real Mac; iTerm2, WezTerm, kitty and Alacritty are built in but not yet verified (`rh doctor --probe-launch` checks yours); VS Code, Cursor, Zed, Antigravity and other editors.
 - **Start an AI agent here**: Claude Code, Codex, Antigravity (`agy`) and others, typed into your chosen terminal. The command is typed into your own interactive login shell, preserving your environment, `PATH`, `nvm`, and aliases.
 - **Isolated Git Worktrees**: Run agents in dedicated worktree branches (`rh run agent.agy --worktree`), protecting your active working tree from partial AI edits.
 - **Folder Bookmarks & Pins**: Pin frequently accessed project directories (`rh pin <folder>`), list them (`rh pins`), and inspect recent project directories (`rh recents`).
