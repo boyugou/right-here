@@ -33,6 +33,11 @@ let package = Package(
             name: "RightHereMCP",
             dependencies: ["RightHereCore", "RightHereKit"]
         ),
+        // The setup window's model (`Apps/RightHere/SetupModel.swift`, linked in as it is), so that its states can be tested: the window itself cannot be.
+        .target(
+            name: "AppModel",
+            dependencies: ["RightHereCore", "RightHereKit"]
+        ),
         .executableTarget(
             name: "rh",
             dependencies: [
@@ -54,6 +59,11 @@ let package = Package(
         .testTarget(
             name: "RightHereCLITests",
             dependencies: ["rh", "RightHereKit", "RightHereCore"]
+        ),
+        // The window's model with a made-up Mac: a temporary home, fake facts, a scripted runner.
+        .testTarget(
+            name: "AppModelTests",
+            dependencies: ["AppModel", "RightHereKit", "RightHereCore"]
         ),
         .testTarget(
             name: "RightHereMCPTests",

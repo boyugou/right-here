@@ -9,6 +9,15 @@ public struct SetupSummary: Sendable, Equatable {
         case checking
         case allSet
         case needsAttention
+
+        /// The sentence that says how the setup stands.
+        public var titleKey: LocalizationKey {
+            switch self {
+            case .checking: .appChecking
+            case .allSet: .appAllSet
+            case .needsAttention: .appNeedsAttention
+            }
+        }
     }
 
     public let checks: [DoctorCheck]

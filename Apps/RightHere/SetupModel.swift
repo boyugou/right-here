@@ -48,19 +48,36 @@ final class SetupModel {
     private let actions: SetupActions
     private let browser = WorktreeBrowser()
     private let home: URL
+    private let pollInterval: Duration
+    private let windowIsVisible: @MainActor () -> Bool
     @ObservationIgnored private var icons: IconProvider
     @ObservationIgnored private var loop: RefreshLoop<SetupSnapshot>?
 
     /// The `rh` that ships inside this app.
     private static let helper = Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/rh").path
 
-    init() {
-        let facts = LiveSystemFacts()
-        loader = SetupLoader(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper)
-        actions = SetupActions(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper, app: Bundle.main.bundleURL)
+    /// - Parameters:
+    ///   - helper: The `rh` inside the app, which tells where the app runs from (`InstallError.problem(runningFrom:)`).
+    ///   - pollInterval: How often the Finder extension is looked at while it is not switched on.
+    ///   - windowIsVisible: Whether the window can be seen; the look is skipped while it cannot.
+    /// Everything it asks of the Mac comes through these, so that a test gives it a temporary home, a made-up Mac and a runner that answers as scripted.
+    init(loader: SetupLoader, actions: SetupActions, facts: any SystemFacts, helper: String, pollInterval: Duration = .seconds(2),
+         windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible) {
+        self.loader = loader
+        self.actions = actions
         icons = IconProvider(facts: facts)
         home = facts.homeDirectory
-        locationProblem = InstallError.problem(runningFrom: Self.helper)
+        locationProblem = InstallError.problem(runningFrom: helper)
+        self.pollInterval = pollInterval
+        self.windowIsVisible = windowIsVisible
+    }
+
+    /// The window of the app: this Mac, and the `rh` that ships inside the app.
+    convenience init() {
+        let facts = LiveSystemFacts()
+        self.init(loader: SetupLoader(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper),
+                  actions: SetupActions(facts: facts, runner: LiveProcessRunner(), helperPath: Self.helper, app: Bundle.main.bundleURL),
+                  facts: facts, helper: Self.helper)
     }
 
     /// The checks as a summary: whether anything is known yet, what is open, whether the first-run card is due.
@@ -127,7 +144,7 @@ final class SetupModel {
 
     /// Whether the window can be seen: not minimized, hidden or covered. A window beside System Settings is on screen while the app is not the active one,
     /// which is where the person is when they switch the extension on.
-    private var windowIsOnScreen: Bool {
+    static func liveWindowIsVisible() -> Bool {
         NSApplication.shared.windows.contains { $0.isVisible && $0.occlusionState.contains(.visible) }
     }
 
@@ -145,11 +162,11 @@ final class SetupModel {
     /// way of work the person started.
     func watchExtension() async {
         while summary.extensionNeedsSetup, !Task.isCancelled {
-            try? await Task.sleep(for: .seconds(2))
+            try? await Task.sleep(for: pollInterval)
             #if PREVIEW
             if simulated { return }
             #endif
-            guard !Task.isCancelled, !isWorking, !isRefreshing, windowIsOnScreen else { continue }
+            guard !Task.isCancelled, !isWorking, !isRefreshing, windowIsVisible() else { continue }
             let check = await actions.extensionCheck()
             // A refresh that is running, or that the person started meanwhile, has a newer look at the extension than this one.
             guard !Task.isCancelled, !isWorking, !isRefreshing else { continue }
@@ -359,7 +376,7 @@ final class SetupModel {
     /// How the setup stands after a setup or a repair that raised no notice of its own, said aloud: "Everything is set up." or "Some checks need your attention."
     private func announceState(unless notice: SetupNotice?) {
         guard notice == nil, summary.state != .checking else { return }
-        announce(Localizer.system.string(statusTitle(summary.state)))
+        announce(Localizer.system.string(summary.state.titleKey))
     }
 
     private func announce(_ text: String) {

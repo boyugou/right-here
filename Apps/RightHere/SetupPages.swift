@@ -15,13 +15,7 @@ extension View {
 }
 
 /// The sentence that says how the setup stands.
-func statusTitle(_ state: SetupSummary.State) -> LocalizationKey {
-    switch state {
-    case .checking: .appChecking
-    case .allSet: .appAllSet
-    case .needsAttention: .appNeedsAttention
-    }
-}
+func statusTitle(_ state: SetupSummary.State) -> LocalizationKey { state.titleKey }
 
 /// What the doctor says, written for the window: a command between backticks is code, and a path starts from `~`.
 enum DoctorText {
