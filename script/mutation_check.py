@@ -329,6 +329,8 @@ MUTANTS = [
      "if let folder, facts.itemState(target) == .missing {", "if false, let folder, facts.itemState(target) == .missing {"),
     ("a misspelt subcommand that is read as a folder is not said to be one", "Sources/RightHereCore/CommandLine/InvocationCheck.swift",
      'guard !word.contains("/"), let close = Suggestion.closest(to: word, in: subcommands) else { return nil }', 'guard false, let close = Suggestion.closest(to: word, in: subcommands) else { return nil }'),
+    ("the MCP worktree tool works on the repository around a path that is not there", "Sources/RightHereMCP/Tools.swift",
+     "if let given, server.facts.itemState(URL(fileURLWithPath: given)) == .missing {", "if false, let given, server.facts.itemState(URL(fileURLWithPath: given)) == .missing {"),
     ("a worktree run for a folder that is not there does not say which", "Sources/rh/Commands/Run.swift",
      "if let missing = here.firstMissingPath(facts: runtime.facts) { try await fail(PlanError.pathNotFound(missing.path)) }", "if false, let missing = here.firstMissingPath(facts: runtime.facts) { try await fail(PlanError.pathNotFound(missing.path)) }"),
     ("a preset is started with --bypass-permissions or --safe", "Sources/rh/Commands/Run.swift",

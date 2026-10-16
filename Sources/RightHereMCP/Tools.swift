@@ -328,7 +328,12 @@ enum Tools {
 
     private static func worktree(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         let op = arguments["operation"]?.stringValue ?? "list"
-        let target = arguments["path"]?.stringValue ?? server.facts.currentDirectory.path
+        let given = arguments["path"]?.stringValue
+        let target = given ?? server.facts.currentDirectory.path
+        // A path that is not there is a typo and is said so; it is never replaced by the repository around it (docs/DESIGN.md, 9.0).
+        if let given, server.facts.itemState(URL(fileURLWithPath: given)) == .missing {
+            throw ToolError(Fence.wrap(given) + " does not exist.")
+        }
         guard let root = server.facts.gitRoot(containing: URL(fileURLWithPath: target)) else {
             throw ToolError("Not inside a git repository.")
         }
