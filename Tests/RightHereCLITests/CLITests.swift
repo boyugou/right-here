@@ -1891,6 +1891,36 @@ struct SetupCommandTests {
         #expect(written.isEmpty, "a dry run wrote \(written)")
     }
 
+    @Test func theStepsOfADryRunSayInTheJSONWhatWouldBeDoneNotThatItWasDone() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let result = try rh.run(["setup", "--dry-run", "--json", "--terminal", "terminal", "--editor", "textedit", "--agents", "none"])
+        #expect(result.status == 0, "\(result.standardError)")
+        let report = try #require(result.json as? [String: Any])
+        #expect(report["dryRun"] as? Bool == true)
+        let listed = try #require(report["steps"] as? [[String: Any]])
+        let words = try steps(result)
+        #expect(words == ["config": "would-create", "runnerScript": "would-create", "cliLink": "would-create", "services": "would-create", "finderExtension": "skipped"], "\(words)")
+        for step in listed {
+            let text = step["text"] as? String ?? ""
+            #expect(text.contains("would") == (step["outcome"] as? String ?? "").hasPrefix("would-"), "a dry run changed nothing, but a step says: \(text)")
+        }
+        let real = try rh.run(["setup", "--json", "--terminal", "terminal", "--editor", "textedit", "--agents", "none"])
+        #expect(try steps(real).values.sorted() == ["created", "created", "created", "created", "skipped"])
+    }
+
+    @Test func aDryRunThatWouldFailSaysSoWithStatusOneAndDoesNotCallItFinished() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        try FileManager.default.createDirectory(at: home.appendingPathComponent(".local/bin"), withIntermediateDirectories: true)
+        try "mine".write(to: home.appendingPathComponent(".local/bin/rh"), atomically: true, encoding: .utf8)
+        let result = try rh.run(["setup", "--dry-run", "--json"])
+        #expect(result.status == 1, "\(result.standardError)")
+        #expect((result.json as? [String: Any])?["ok"] as? Bool == false)
+        #expect(try steps(result)["cliLink"] == "would-fail")
+        #expect(result.standardError.contains("The dry run found 1 problem(s)") && !result.standardError.contains("Finished"), "\(result.standardError)")
+        #expect(try String(contentsOf: home.appendingPathComponent(".local/bin/rh"), encoding: .utf8) == "mine")
+    }
+
     @Test func aStepThatFailsIsReportedInTheJSONAndTheStatusIsOne() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)

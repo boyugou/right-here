@@ -50,7 +50,11 @@ enum SetupCommandSupport {
         }
         if !report.ok {
             let failed = report.steps.filter { $0.outcome == .failed }.count
-            Output.error("Finished with \(failed) problem(s): the steps above that failed say why. Fix the cause and run `rh setup` again; it only does what is still missing.")
+            if report.dryRun {
+                Output.error("The dry run found \(failed) problem(s): the steps above that would fail say why. Fix the cause before you run `rh setup`.")
+            } else {
+                Output.error("Finished with \(failed) problem(s): the steps above that failed say why. Fix the cause and run `rh setup` again; it only does what is still missing.")
+            }
             throw ExitCode(1)
         }
     }

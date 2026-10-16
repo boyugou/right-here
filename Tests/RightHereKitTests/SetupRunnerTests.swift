@@ -535,6 +535,37 @@ struct SetupRunnerTests {
         #expect(checks.first?["id"] as? String == "config")
     }
 
+    @Test func aDryRunSaysInItsJSONWhatWouldBeDoneAndNeverThatItWasDone() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        let installer = Installer(home: machine.home)
+        try FileManager.default.createDirectory(at: installer.locations.localBin, withIntermediateDirectories: true)
+        try "#!/bin/sh\necho mine\n".write(to: installer.cliLink, atomically: true, encoding: .utf8)
+        let report = try await machine.runner().run(.setup(choices: SetupChoices(terminal: "terminal"), dryRun: true))
+        let json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(report)) as? [String: Any])
+        #expect(json["dryRun"] as? Bool == true && json["ok"] as? Bool == false)
+        let steps = try #require(json["steps"] as? [[String: Any]])
+        let words = Dictionary(uniqueKeysWithValues: steps.map { ($0["id"] as? String ?? "", $0["outcome"] as? String ?? "") })
+        #expect(words == ["config": "would-create", "runnerScript": "would-create", "cliLink": "would-fail", "services": "would-create", "finderExtension": "skipped"], "\(words)")
+        for step in steps {
+            let text = step["text"] as? String ?? ""
+            let word = step["outcome"] as? String ?? ""
+            #expect(word.hasPrefix("would-") ? text.contains("would") : !text.contains("would"), "\(word): \(text)")
+            #expect(!text.contains(": created") && !text.contains(": updated") && !text.contains(": failed"), "a dry run says it did something: \(text)")
+        }
+        // The same steps of a real run keep the words of what was done.
+        let real = try await machine.runner().run(.setup())
+        let realWords = try #require((try JSONSerialization.jsonObject(with: JSONEncoder().encode(real)) as? [String: Any])?["steps"] as? [[String: Any]]).map { $0["outcome"] as? String ?? "" }
+        #expect(realWords == ["created", "created", "failed", "created", "skipped"], "\(realWords)")
+    }
+
+    @Test func onlyWhatWouldChangeSomethingOrFailGetsAWouldInTheDryRun() {
+        for outcome in [SetupStep.Outcome.created, .updated, .unchanged, .skipped, .failed] {
+            let changes = [SetupStep.Outcome.created, .updated, .failed].contains(outcome)
+            #expect(outcome.word(dryRun: false) == outcome.rawValue)
+            #expect(outcome.word(dryRun: true).hasPrefix("would-") == changes, "\(outcome)")
+        }
+    }
+
     @Test func theTextNamesWhatWasDoneWhatWasChosenAndWhatToRunNext() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         let lines = try await machine.runner(trial: false).run(.setup()).english()

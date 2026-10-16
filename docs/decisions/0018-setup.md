@@ -16,7 +16,8 @@ Date: 2026-10-15. Status: decided.
 3. **A config that exists is never rewritten.** Setup says so and lists the edit that would make it say what was asked: the file, the
    line, the current text and the new value (`configEdits`). The person, or the agent acting for them, makes it by hand. The Quick
    Actions are built from the file as it is when setup runs, so the order is: dry run, the edits, one real run.
-4. **One report for people and programs.** `SetupReport` holds the steps (created, updated, unchanged, skipped, failed), what was chosen,
+4. **One report for people and programs.** `SetupReport` holds the steps (created, updated, unchanged, skipped, failed; a dry run says
+   what it would do, `would-create`, `would-update` and `would-fail`, so a plan cannot be read as a result), what was chosen,
    `configEdits`, warnings, what only the person can do (`needsUser`: the Finder extension switch, the PATH line, the permission
    prompt), the commands to run next and the doctor's rows. `rh setup --json` prints it, the plain output is rendered from the same
    value, and the setup window reads the same steps. Its sentences are English on the command line and catalog messages only where the

@@ -24,9 +24,10 @@ not installed, and which app is used until it is.
 
 ## 2. Look before you change
 
-`rh setup --dry-run --json` with the flags of step 3 shows what would be done and changes nothing. If it lists `configEdits`, the
-person already has a config file: it is theirs, so setup never rewrites it, and you make the edits yourself, now, before step 3
-(`rh config path` says where the file is):
+`rh setup --dry-run --json` with the flags of step 3 shows what would be done and changes nothing: each step's `outcome` is what it
+would do (`would-create`, `would-update`, `would-fail`, or `unchanged` or `skipped`), never `created` or `updated`, and its `text`
+says "would be". If it lists `configEdits`, the person already has a config file: it is theirs, so setup never rewrites it, and you
+make the edits yourself, now, before step 3 (`rh config path` says where the file is):
 
 - Make exactly the listed edits, in the file each names, and nothing else. Each has the `line`, the `current` value and the `value`
   to write.
@@ -46,7 +47,8 @@ are built from the config as it is at that moment, which is why the edits of ste
 
 ## 4. Read the report
 
-- `ok` is false when a step failed. `steps` says which (`outcome` is created, updated, unchanged, skipped or failed) and why. Read
+- `ok` is false when a step failed (in a dry run: when one would). `steps` says which (`outcome` is `created`, `updated`, `unchanged`,
+  `skipped` or `failed`; in a dry run `would-create`, `would-update`, `unchanged`, `skipped` or `would-fail`) and why. Read
   `rh docs troubleshooting`, fix the cause, and run setup again: it only does what is still missing.
 - `configEdits` is empty now. If it is not (you did not look first, or the person's answers changed), make those edits as in step 2,
   then run `rh setup` once more: it builds the Quick Actions from the edited file.
