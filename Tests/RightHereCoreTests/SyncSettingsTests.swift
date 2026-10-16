@@ -17,7 +17,7 @@ struct SyncSettingsTests {
         #expect(SyncSettings.parse(settings.render()) == settings)
     }
 
-    @Test("text that is not a sync file is refused", arguments: ["", "folder = 3\n", "folder = \"\"\n", "[folder]\n", "folder = \"/x\"\nlast_synced_sha256 = \"nothex\"\n", "folder = \"/x\"\nlast_synced_sha256 = 4\n", "folder = "])
+    @Test("text that is not a sync file is refused", arguments: ["", "folder = 3\n", "folder = \"\"\n", "[folder]\n", "folder = \"/x\"\nlast_synced_sha256 = \"nothex\"\n", "folder = \"/x\"\nlast_synced_sha256 = 4\n", "folder = \"/x\"\nlast_synced_sha256 = \"\"\n", "folder = "])
     func refused(text: String) {
         #expect(SyncSettings.parse(text) == nil)
     }

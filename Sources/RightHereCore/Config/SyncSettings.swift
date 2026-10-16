@@ -19,10 +19,10 @@ public struct SyncSettings: Sendable, Equatable {
               let folder = try? table.string(forKey: "folder"), !folder.isEmpty else { return nil }
         var last: String?
         if table.contains(key: "last_synced_sha256") {
-            guard let value = try? table.string(forKey: "last_synced_sha256"), value.isEmpty || isHash(value) else { return nil }
+            guard let value = try? table.string(forKey: "last_synced_sha256"), isHash(value) else { return nil }
             last = value
         }
-        return SyncSettings(folder: folder, lastSynced: last.flatMap { $0.isEmpty ? nil : $0 })
+        return SyncSettings(folder: folder, lastSynced: last)
     }
 
     public func render() -> String {
