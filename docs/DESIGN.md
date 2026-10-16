@@ -34,7 +34,7 @@ Goals:
    agent, new text or Markdown file.
 2. An AI agent can set it up and operate it without anyone clicking through a settings window.
 3. No resident process. The Finder menu works whenever Finder runs.
-4. Safe by construction: file names are data and never become shell or AppleScript source.
+4. Safe by construction: file names are data. They travel as arguments, and where a shell has to read one it is quoted by the single vetted quoting module first (section 9); they never become AppleScript source.
 5. Open source (Apache-2.0), notarized direct distribution first, App Store possible later.
 
 Non-goals: a file manager, a terminal, an AI chat interface, changing Finder's own behavior (that needs

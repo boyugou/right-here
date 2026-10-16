@@ -172,7 +172,7 @@ public enum ConfigSchema {
                            "How the command takes a first prompt, which prompt presets (`[[preset]]`) need: \"positional\" for `tool \"prompt\"`, or the flag that carries it, such as \"--prompt\". Claude Code and Codex are built in as positional; presets are not offered for an agent that is not known to take a prompt.",
                            example: "\"positional\" or \"--prompt\"", pattern: PromptArgument.pattern),
                 SchemaNode("bypass_permissions", .boolean,
-                           "Whether to launch this agent with flags that bypass tool confirmation prompts (e.g. --dangerously-skip-permissions for Claude/Antigravity, --dangerously-bypass-approvals-and-sandbox for Codex, -y for Gemini, --auto-approve for Kimi/Muse). Overrides general.bypass_permissions."),
+                           "Whether to launch this agent with flags that bypass tool confirmation prompts (e.g. --dangerously-skip-permissions for Claude/Antigravity, --dangerously-bypass-approvals-and-sandbox for Codex, -y for Gemini, --auto-approve for Kimi/Muse). The flags of Claude Code, Codex and Antigravity were read from the tools' own --help; the others come from each tool's documentation and have not been run here, so check one with `rh run agent.<id> --bypass-permissions --dry-run` and the tool's own help. Overrides general.bypass_permissions."),
                 SchemaNode("bypass_permission_arg", .string,
                            "Custom flag or argument to bypass confirmation prompts for this agent, overriding the built-in default.",
                            example: "\"--dangerously-skip-permissions\""),

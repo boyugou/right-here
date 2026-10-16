@@ -49,7 +49,7 @@ Developers use contextual right-clicks in Finder or the native macOS workspace a
 
 - **No daemon of its own.** The Finder extension lives in the extension process Finder starts and keeps loaded (so the menu is there when you right-click); `rh` runs only when something calls it.
 - **Isolated git worktrees.** AI coding agents can execute inside dedicated, temporary git worktrees (`--worktree`), ensuring your active git branch and uncommitted modifications remain untouched.
-- **Safe by construction.** File names travel as argv entries and AppleScript arguments, never inside a shell string or AppleScript source; a terminal is only ever handed a folder. The extension is sandboxed and has no network entitlement.
+- **Safe by construction.** File names are data: they travel as argv entries and AppleScript arguments. Where a folder has to be typed into a shell (Terminal.app, iTerm2, a terminal template of your own) one quoting function writes it, tested by round-tripping awkward names through real shells, and a name with a line break or another control character is refused there. A terminal is only ever handed a folder. The extension is sandboxed and has no network entitlement.
 - **One set of actions.** Anything in the Finder menu can be previewed, tested and run with `rh run <action>` or over MCP.
 - **Local-first configuration.** Configured via standard TOML with JSON Schema validation (`rh config schema`) and optional multi-device sync without third-party servers.
 - **Native.** Apple silicon, macOS 26 or later, Dark Mode, and 30 languages including right-to-left ones (machine-translated, awaiting native-speaker review).
@@ -229,7 +229,7 @@ Right Here provides an onboarding guide for AI assistants ([`docs/AGENT_SETUP.md
 
 ## Safety & App Store Readiness
 
-- **Data isolation**: File paths are strictly processed as argv arguments and AppleScript descriptors, preventing shell injection vulnerabilities.
+- **Data isolation**: file paths travel as argv arguments and AppleScript arguments; where a folder is typed into a shell, one tested quoting function writes it and control characters are refused (see [`docs/DESIGN.md`](docs/DESIGN.md), section 9).
 - **Type verification**: Terminal actions verify that target directories are valid containers before launching.
 - **No telemetry**: no analytics, no network connections of its own, nothing leaves your Mac. The sandboxed extension has no network entitlement.
 - **Mac App Store**: a sandboxed, menu-only edition is drafted (scope and open questions in the design notes); it is not submitted.
