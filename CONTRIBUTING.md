@@ -94,8 +94,8 @@ To add a language:
 3. Write the translations as JSON, `{"key": {"translations": {"<code>": "text"}}}`, one file per catalog, and add them
    with `./script/merge_translations.py file.json` (add `--catalog AppIntents.xcstrings`, `InfoPlist.xcstrings` or
    `AppShortcuts.xcstrings` for the others). It checks each text (placeholders, the commands between backticks, the script of the language),
-   puts the right-to-left mark where a right-to-left text needs one, marks the texts `needs_review` and writes nothing
-   unless every text passes. Keep `%@` and `%1$@` and the text between backticks as they are.
+   puts the right-to-left mark where a right-to-left text needs one, marks the texts `needs_review` (`--reviewed` marks them
+   `translated`: use it only for a native speaker's correction of their own language) and writes nothing unless every text passes. Keep `%@` and `%1$@` and the text between backticks as they are.
 4. `./script/compile_localizations.py`, then `./script/verify_localizations.py` must pass and `swift test` must stay green.
    Also run `./script/verify_macos_wording.py`: it reads the words macOS itself uses for System Settings, Automation and Finder's own menu items from
    this Mac's resources and compares ours with them. It is not part of the gate because the answer depends on the macOS version it runs on, so a label

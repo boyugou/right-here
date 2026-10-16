@@ -7,6 +7,7 @@
     ./script/merge_translations.py translations.json                       into Localizable.xcstrings
     ./script/merge_translations.py translations.json --catalog InfoPlist.xcstrings      (also AppIntents.xcstrings, AppShortcuts.xcstrings)
     ./script/merge_translations.py translations.json --replace              also overwrite a translation that exists
+    ./script/merge_translations.py translations.json --replace --reviewed   the texts are a native speaker's own: mark them translated, not needs_review
 
 translations.json holds the keys to add or to complete. Every language is named by its code, never by position:
 
@@ -22,7 +23,8 @@ translations.json holds the keys to add or to complete. Every language is named 
 A translation is checked the way verify_localizations.py checks the catalog (placeholders, commands in backticks,
 the script of the language, and in a right-to-left one no literal path or quoted setting, which has to be a value), and a
 right-to-left one that would start with Latin text gets the right-to-left mark.
-New translations are marked needs_review. Nothing is written unless every translation passes.
+New translations are marked needs_review, or translated with --reviewed (a native speaker's correction of their own language).
+Nothing is written unless every translation passes.
 """
 import argparse
 import sys
@@ -34,7 +36,7 @@ from localization_lib import (
 )
 
 
-def merge(catalog_name: str, requested: dict, replace: bool) -> tuple[dict, list[str], list[str]]:
+def merge(catalog_name: str, requested: dict, replace: bool, reviewed: bool = False) -> tuple[dict, list[str], list[str]]:
     """The catalog with the translations merged in, the problems found, and what was added."""
     catalog = read_catalog(catalog_name)
     strings = catalog["strings"]
@@ -72,7 +74,7 @@ def merge(catalog_name: str, requested: dict, replace: bool) -> tuple[dict, list
                 problems.append(f"{key} [{code}]: already translated (use --replace to overwrite)")
                 continue
             if existing is None or existing["value"] != value:
-                entry["localizations"][code] = {"stringUnit": {"state": "needs_review", "value": value}}
+                entry["localizations"][code] = {"stringUnit": {"state": "translated" if reviewed else "needs_review", "value": value}}
                 added.append(f"{key} [{code}]")
     return catalog, problems, added
 
@@ -82,8 +84,9 @@ def main() -> int:
     parser.add_argument("translations", type=Path)
     parser.add_argument("--catalog", default="Localizable.xcstrings", choices=CATALOGS)
     parser.add_argument("--replace", action="store_true")
+    parser.add_argument("--reviewed", action="store_true", help="the texts come from a native speaker: state translated instead of needs_review")
     arguments = parser.parse_args()
-    catalog, problems, added = merge(arguments.catalog, read_json(arguments.translations), arguments.replace)
+    catalog, problems, added = merge(arguments.catalog, read_json(arguments.translations), arguments.replace, arguments.reviewed)
     if problems:
         print("\n".join(problems), file=sys.stderr)
         print(f"nothing written: {len(problems)} problems", file=sys.stderr)
