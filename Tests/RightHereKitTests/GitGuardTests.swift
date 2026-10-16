@@ -202,6 +202,24 @@ struct GitGuardCommandTests {
 
 // MARK: The real git
 
+/// Whether the git on this Mac is 2.54 or later, which is when a hook can be a command named in the configuration. The git of Xcode 26 is older, and a test of
+/// that kind of hook (its control above all: "git without the guards runs it") means nothing there.
+private let gitKnowsConfigHooks: Bool = {
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+    process.arguments = ["--version"]
+    let output = Pipe()
+    process.standardOutput = output
+    process.standardError = FileHandle.nullDevice
+    guard (try? process.run()) != nil else { return false }
+    let data = output.fileHandleForReading.readDataToEndOfFile()
+    process.waitUntilExit()
+    // "git version 2.54.0" or "git version 2.50.1 (Apple Git-155)".
+    let numbers = String(decoding: data, as: UTF8.self).split(separator: " ").dropFirst(2).first?.split(separator: ".").compactMap { Int($0) } ?? []
+    guard numbers.count >= 2 else { return false }
+    return (numbers[0], numbers[1]) >= (2, 54)
+}()
+
 /// A git that reads nothing of the person's: a global configuration of its own, no system one, no prompts. Everything lives in one folder.
 private final class Lab {
     let folder: URL
@@ -359,7 +377,8 @@ struct GitGuardRepositoryTests {
     }
 
     /// Since git 2.54 a hook can be a command named in the configuration (`hook.<name>.event`, `hook.<name>.command`), and `core.hooksPath=/dev/null` does not stop those.
-    @Test func aHookTheConfigurationNamesDoesNotRunWhileAWorktreeIsMadeOrRemoved() async throws {
+    @Test(.enabled(if: gitKnowsConfigHooks, "needs git 2.54 or later: a hook named in the configuration"))
+    func aHookTheConfigurationNamesDoesNotRunWhileAWorktreeIsMadeOrRemoved() async throws {
         let lab = try Lab()
         try lab.makeRepository(attributes: nil)
         let hook = try lab.program("configured")
