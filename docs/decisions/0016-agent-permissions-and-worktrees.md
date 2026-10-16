@@ -36,8 +36,8 @@ worktree and its branch behind after a failed run, and started the agent at the 
 ## What git may start
 
 A repository is whatever somebody sent (an archive, a copy, a clone of a stranger's project), and its own files can make git start programs. Every
-git command Right Here runs in a repository is built by one function (`GitCommand.step`), so that a new command cannot leave a guard out, and
-`defined(in:)` finds what the repository's configuration defines. Measured with git 2.54.0 (Apple Git-157) in throwaway repositories whose
+git command Right Here runs in a repository is built by one function (`GitCommand.step`), so that a new command cannot leave a guard out (a test fails when
+any other source file names git's program), and `defined(in:)` finds what the repository's configuration defines. Measured with git 2.54.0 (Apple Git-157) in throwaway repositories whose
 configuration names a program that records that it ran (`GitGuardTests`, each with a control that the same repository does start it for a git without
 the guards):
 

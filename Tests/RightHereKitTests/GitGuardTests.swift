@@ -595,3 +595,24 @@ struct GitGuardRepositoryTests {
         #expect(!entries.contains { $0.path == "/tmp/forged" })
     }
 }
+
+/// A repository is somebody else's code, and a git command that was not built by `GitCommand.step` has none of the guards. Whoever adds one has to name git's
+/// program, so naming it anywhere else than `GitCommand` fails here, and the `step` function is the one door.
+@Suite("git guard: the one place that starts git")
+struct GitIsStartedInOnePlaceTests {
+    @Test func noFileOfTheProductButGitCommandNamesGitsProgram() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        var offenders: [String] = []
+        var seen = 0
+        for folder in ["Sources", "Apps"] {
+            let files = try #require(FileManager.default.enumerator(at: root.appendingPathComponent(folder), includingPropertiesForKeys: nil))
+            for case let file as URL in files where file.pathExtension == "swift" && file.lastPathComponent != "GitCommand.swift" {
+                seen += 1
+                let text = try String(contentsOf: file, encoding: .utf8)
+                for needle in ["bin/git", "GitCommand.executable", "\"git\""] where text.contains(needle) { offenders.append("\(file.lastPathComponent) names \(needle)") }
+            }
+        }
+        #expect(seen > 100, "the scan did not find the sources")
+        #expect(offenders.isEmpty, "git is started outside GitCommand.step: \(offenders)")
+    }
+}
