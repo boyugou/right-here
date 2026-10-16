@@ -21,26 +21,24 @@ public struct RHPaths: Sendable, Equatable {
     public var logFile: URL { logDirectory.appendingPathComponent("rh.log") }
 
     /// `RH_CONFIG` names the file itself; `RH_CONFIG_DIR` or `XDG_CONFIG_HOME` name its folder;
-    /// otherwise it is `~/.config/right-here/config.toml`.
+    /// otherwise it is `~/.config/right-here/config.toml`. A variable of Right Here's that is set to nothing is not "not set"
+    /// (`RHEnvironment`); `XDG_CONFIG_HOME` is not Right Here's, and the XDG specification reads an empty one as not set.
     public init(environment: [String: String], home: URL) {
         self.home = home
-        func expanded(_ path: String) -> URL {
-            URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
-        }
-        if let logs = environment["RH_LOG_DIR"], !logs.isEmpty {
-            logDirectory = expanded(logs)
+        if let logs = RHEnvironment.path("RH_LOG_DIR", in: environment) {
+            logDirectory = logs
         } else {
             logDirectory = home.appendingPathComponent("Library/Logs/" + AppIdentity.configDirectoryName)
         }
-        if let file = environment["RH_CONFIG"], !file.isEmpty {
-            configFile = expanded(file)
+        if let file = RHEnvironment.path("RH_CONFIG", in: environment) {
+            configFile = file
             configDirectory = configFile.deletingLastPathComponent()
             return
         }
-        if let directory = environment["RH_CONFIG_DIR"], !directory.isEmpty {
-            configDirectory = expanded(directory)
+        if let directory = RHEnvironment.path("RH_CONFIG_DIR", in: environment) {
+            configDirectory = directory
         } else if let base = environment["XDG_CONFIG_HOME"], !base.isEmpty {
-            configDirectory = expanded(base).appendingPathComponent(AppIdentity.configDirectoryName)
+            configDirectory = URL(fileURLWithPath: (base as NSString).expandingTildeInPath).appendingPathComponent(AppIdentity.configDirectoryName)
         } else {
             configDirectory = home.appendingPathComponent(".config/" + AppIdentity.configDirectoryName)
         }

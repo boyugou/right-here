@@ -38,7 +38,9 @@ agents first.
 - Try a setup without touching your own: `RH_HOME=/tmp/trial rh setup` writes the config,
   runner script, command link and Services under that folder (the Finder extension's registration is
   system-wide, so a trial leaves it alone). `rh uninstall` under the same `RH_HOME` undoes it. `rh doctor` under it says
-  so on standard error, since its rows mix that home's files with the real extension registration.
+  so on standard error, since its rows mix that home's files with the real extension registration. An empty `RH_HOME` (or
+  `RH_CONFIG`, `RH_CONFIG_DIR`, `RH_LOG_DIR`) is refused with status 64, because it is what `RH_HOME=$TRIAL rh setup` becomes when
+  `$TRIAL` is not set, and "not set" would be your real home.
 - Changed setup, its report, a sentence of the doctor or the agent playbook (`docs/AGENT_SETUP.md`)? Run the cold-agent
   evaluation (`docs/development/SETUP_EVALUATION.md`): fresh AI agents set Right Here up for three personas in a sandbox that cannot
   touch your Mac.

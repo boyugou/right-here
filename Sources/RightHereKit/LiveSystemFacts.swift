@@ -7,10 +7,14 @@ public struct LiveSystemFacts: SystemFacts {
     public init() {}
 
     /// The folder `RH_HOME` names, when it is set: it points every per-user path (config, logs, Services, the runner script,
-    /// the command link) at another folder, so an install can be tried or tested without touching the real one.
+    /// the command link) at another folder, so an install can be tried or tested without touching the real one. Set to nothing it
+    /// is not "not set" (`RHEnvironment`).
     public static var homeOverride: URL? {
-        guard let override = ProcessInfo.processInfo.environment["RH_HOME"], !override.isEmpty else { return nil }
-        return URL(fileURLWithPath: (override as NSString).expandingTildeInPath)
+        homeOverride(in: ProcessInfo.processInfo.environment)
+    }
+
+    static func homeOverride(in environment: [String: String]) -> URL? {
+        RHEnvironment.path("RH_HOME", in: environment)
     }
 
     /// The real home directory. In a sandboxed process `NSHomeDirectory()` is the container, so the

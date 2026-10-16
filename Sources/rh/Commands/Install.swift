@@ -74,7 +74,7 @@ struct Uninstall: AsyncParsableCommand {
             let services = installer.installedServices()
             guard !services.isEmpty else { return }
             try installer.removeServices()
-            if ProcessInfo.processInfo.environment["RH_HOME"] == nil {
+            if LiveSystemFacts.homeOverride == nil {
                 _ = try? await LiveProcessRunner().run(ProcessStep(executable: "/System/Library/CoreServices/pbs", arguments: ["-update"]), timeout: .seconds(20))
             }
             Output.print("Removed \(services.count) Services.")
@@ -89,7 +89,7 @@ struct Uninstall: AsyncParsableCommand {
                 Output.print("Left the command link alone: \(installer.cliLink.path) points at \(destination), which is not Right Here's rh. Remove it yourself if you want it gone.")
             }
         }
-        if ProcessInfo.processInfo.environment["RH_HOME"] != nil {
+        if LiveSystemFacts.homeOverride != nil {
             Output.print("RH_HOME is set: the Finder extension's registration is system-wide and was left alone.")
             if problems > 0 { throw Output.fail("\(problems) step(s) failed; run `rh uninstall` again once the cause is fixed.") }
             return

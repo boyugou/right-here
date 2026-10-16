@@ -26,9 +26,14 @@ struct RH: AsyncParsableCommand {
         ]
     )
 
-    /// Looks at the command line before ArgumentParser reads it (`InvocationCheck`): a misspelt command, or an argument with a dash that
-    /// would be read as an option, is said in one line with status 64, instead of printing the whole help with status 0.
+    /// Looks at the environment and at the command line before ArgumentParser reads it: a variable that moves Right Here's files and is set
+    /// to nothing (`RHEnvironment`), a misspelt command, or an argument with a dash that would be read as an option (`InvocationCheck`) is
+    /// said in one line with status 64, instead of acting on the real folders or printing the whole help with status 0.
     static func main() async {
+        if let problem = RHEnvironment.problem(in: ProcessInfo.processInfo.environment) {
+            Output.error("error: " + problem)
+            Darwin.exit(64)
+        }
         let arguments = Array(CommandLine.arguments.dropFirst())
         if let problem = InvocationCheck.problem(arguments, commands: configuration.subcommands.map { $0._commandName }) {
             Output.error("error: " + problem)

@@ -83,11 +83,16 @@ private struct RH {
         return item
     }
 
-    func run(_ arguments: [String]) throws -> Output {
+    /// `set` and `unset` change the environment of this one command, after the harness has made it.
+    func run(_ arguments: [String], set: [String: String] = [:], unset: [String] = [], inFolder: URL? = nil) throws -> Output {
         let process = Process()
         process.executableURL = binary
         process.arguments = arguments
-        process.environment = environment()
+        var environment = environment()
+        for name in unset { environment.removeValue(forKey: name) }
+        for (name, value) in set { environment[name] = value }
+        process.environment = environment
+        if let inFolder { process.currentDirectoryURL = inFolder }
         let out = Pipe(), err = Pipe()
         process.standardOutput = out
         process.standardError = err
@@ -149,6 +154,28 @@ struct CLITests {
         let path = try rh.run(["config", "path"]).standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
         #expect(path.hasSuffix("/config.toml"))
         #expect(path.contains("rh-cli-"))
+    }
+
+    @Test("a variable that moves Right Here's files and is set to nothing is refused before anything is done, not read as \"not set\"", arguments: RHEnvironment.names)
+    func aVariableSetToNothingIsRefused(name: String) throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        // Only a command that reads nothing of the real home: `RH_HOME=` read as "not set" is the real home, which `rh uninstall` takes for a
+        // trial (so no test runs it) and `rh setup` for a real setup.
+        let result = try rh.run(["config", "path"], set: [name: ""])
+        #expect(result.status == 64, "rh config path with \(name) set to nothing ended with \(result.status) and printed: \(result.standardOutput.prefix(300))")
+        #expect(result.standardOutput.isEmpty, "\(result.standardOutput.prefix(300))")
+        #expect(result.standardError.contains("\(name) is set to nothing"), "\(result.standardError)")
+        #expect(result.standardError.contains("RH_HOME=/tmp/trial"), "the sentence does not say what to do: \(result.standardError)")
+    }
+
+    @Test func aVariableThatIsNotSetIsNoProblemAndAnEmptyXDGOneIsNotSet() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        // The XDG variable is not Right Here's, and the XDG specification reads an empty one as not set.
+        let xdg = try rh.run(["config", "path"], set: ["XDG_CONFIG_HOME": ""])
+        #expect(xdg.status == 0, "\(xdg.standardError)")
+        #expect(xdg.standardOutput.hasPrefix(home.path + "/.config/right-here/"), "\(xdg.standardOutput)")
+        #expect(try rh.run(["config", "path"], unset: ["RH_CONFIG", "RH_LOG_DIR"]).status == 0)
     }
 
     @Test func validatingAValidConfigSucceedsAndAnInvalidOneFails() throws {
