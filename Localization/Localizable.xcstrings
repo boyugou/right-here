@@ -68,7 +68,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tampilkan pada Finder"
+            "value": "Tampilkan di Finder"
           }
         },
         "it": {
@@ -182,7 +182,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "顯示於Finder"
+            "value": "在 Finder 中顯示"
           }
         }
       }
@@ -572,7 +572,7 @@
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "সিস্টেম সেটিংস খুলুন"
+            "value": "System Settings খুলুন"
           }
         },
         "de": {
@@ -650,7 +650,7 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "सिस्टम सेटिंग्ज उघडा"
+            "value": "System Settings उघडा"
           }
         },
         "ms": {
@@ -692,13 +692,13 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "கணினி அமைப்புகளைத் திற"
+            "value": "System Settings-ஐத் திற"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "సిస్టమ్ సెట్టింగ్‌లను తెరవండి"
+            "value": "System Settings ను తెరవండి"
           }
         },
         "th": {
@@ -722,7 +722,7 @@
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "سسٹم سیٹنگز کھولیں"
+            "value": "‏System Settings کھولیں"
           }
         },
         "vi": {
@@ -752,7 +752,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمن › التحكم التلقائي، ثم حاول مرة أخرى."
+            "value": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمن › الأتمتة، ثم حاول مرة أخرى."
           }
         },
         "bn": {
@@ -800,7 +800,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏macOS מנע מ-Right Here לשלוט על %@. אפשר זאת בהגדרות המערכת › פרטיות ואבטחה › פעולות אוטומטיות ונסה שוב."
+            "value": "‏macOS מנע מ-Right Here לשלוט על %@. אפשרו זאת בהגדרות המערכת › פרטיות ואבטחה › אוטומציה ונסו שוב."
           }
         },
         "hi": {
@@ -812,7 +812,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS mencegah Right Here mengendalikan %@. Izinkan di Pengaturan Sistem › Privasi & Keamanan › Automasi, lalu coba lagi."
+            "value": "macOS mencegah Right Here mengendalikan %@. Izinkan di Pengaturan Sistem › Privasi & Keamanan › Otomatisasi, lalu coba lagi."
           }
         },
         "it": {
@@ -986,7 +986,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here זקוק לאישור שלך"
+            "value": "‏Right Here זקוק לאישור שלכם"
           }
         },
         "hi": {
@@ -1274,7 +1274,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "застосунком"
+            "value": "програмою"
           }
         },
         "ur": {
@@ -1310,7 +1310,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "أضِف هذا إلى إعدادات MCP لمساعد AI مثل Claude Desktop أو Cursor، ليتمكن من استخدام Right Here."
+            "value": "أضِف هذا إلى إعدادات MCP لمساعد ذكاء اصطناعي مثل Claude Desktop أو Cursor، ليتمكن من استخدام Right Here."
           }
         },
         "bn": {
@@ -1322,7 +1322,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Fügen Sie dies zu den MCP-Einstellungen eines AI-Assistenten wie Claude Desktop oder Cursor hinzu, damit er Right Here verwenden kann."
+            "value": "Füge dies zu den MCP-Einstellungen eines KI-Assistenten wie Claude Desktop oder Cursor hinzu, damit er Right Here verwenden kann."
           }
         },
         "el": {
@@ -1340,19 +1340,19 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Añada esto a los ajustes de MCP de un asistente de AI, como Claude Desktop o Cursor, para que pueda usar Right Here."
+            "value": "Añade esto a los ajustes de MCP de un asistente de IA, como Claude Desktop o Cursor, para que pueda usar Right Here."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "این را به تنظیمات MCP یک دستیار AI مانند Claude Desktop یا Cursor اضافه کنید تا بتواند از Right Here استفاده کند."
+            "value": "این را به تنظیمات MCP یک دستیار هوش مصنوعی مانند Claude Desktop یا Cursor اضافه کنید تا بتواند از Right Here استفاده کند."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ajoutez ceci aux réglages MCP d’un assistant AI, comme Claude Desktop ou Cursor, afin qu’il puisse utiliser Right Here."
+            "value": "Ajoutez ceci aux réglages MCP d’un assistant IA, comme Claude Desktop ou Cursor, afin qu’il puisse utiliser Right Here."
           }
         },
         "he": {
@@ -1376,7 +1376,7 @@
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Aggiungilo alle impostazioni MCP di un assistente AI come Claude Desktop o Cursor, così che possa usare Right Here."
+            "value": "Aggiungilo alle impostazioni MCP di un assistente IA come Claude Desktop o Cursor, così che possa usare Right Here."
           }
         },
         "ja": {
@@ -1418,7 +1418,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Adicione isto às configurações MCP de um assistente de AI, como o Claude Desktop ou o Cursor, para que ele possa usar o Right Here."
+            "value": "Adicione isto às configurações MCP de um assistente de IA, como o Claude Desktop ou o Cursor, para que ele possa usar o Right Here."
           }
         },
         "ro": {
@@ -1430,7 +1430,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Добавьте это в настройки MCP AI-ассистента, например Claude Desktop или Cursor, чтобы он мог использовать Right Here."
+            "value": "Добавьте это в настройки MCP ИИ-ассистента, например Claude Desktop или Cursor, чтобы он мог использовать Right Here."
           }
         },
         "ta": {
@@ -1460,7 +1460,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Додайте це в налаштування MCP AI-асистента, наприклад Claude Desktop або Cursor, щоб він міг використовувати Right Here."
+            "value": "Додайте це в налаштування MCP ШІ-асистента, наприклад Claude Desktop або Cursor, щоб він міг використовувати Right Here."
           }
         },
         "ur": {
@@ -1694,7 +1694,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Führen Sie diese zwei Befehle in Claude Code aus, um die Skills und Werkzeuge von Right Here hinzuzufügen."
+            "value": "Führe diese zwei Befehle in Claude Code aus, um die Skills und Werkzeuge von Right Here hinzuzufügen."
           }
         },
         "el": {
@@ -1712,7 +1712,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ejecute estos dos comandos en Claude Code para añadir las habilidades y herramientas de Right Here."
+            "value": "Ejecuta estos dos comandos en Claude Code para añadir las habilidades y herramientas de Right Here."
           }
         },
         "fa": {
@@ -2066,7 +2066,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Kopiert einen Prompt, mit dem Ihr Assistent fragt, was Sie verwenden, und Right Here dann mit `rh setup` einrichtet."
+            "value": "Kopiert einen Prompt, mit dem dein Assistent fragt, was du verwendest, und Right Here dann mit `rh setup` einrichtet."
           }
         },
         "el": {
@@ -2084,7 +2084,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copia un prompt que hace que su asistente le pregunte qué usa y después configure Right Here con `rh setup`."
+            "value": "Copia una indicación que hace que tu asistente te pregunte qué usas y después configure Right Here con `rh setup`."
           }
         },
         "fa": {
@@ -2180,7 +2180,7 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "நீங்கள் எதைப் பயன்படுத்துகிறீர்கள் என்று உங்களிடம் கேட்டு, பின்னர் `rh setup` மூலம் Right Here-ஐ அமைக்கும்படி உங்கள் உதவியாளரிடம் கேட்கும் ப்ராம்ப்டை நகலெடுக்கிறது."
+            "value": "உங்கள் உதவியாளர் நீங்கள் எதைப் பயன்படுத்துகிறீர்கள் என்று கேட்டு, பின்னர் `rh setup` மூலம் Right Here-ஐ அமைக்கும் ப்ராம்ப்டை நகலெடுக்கிறது."
           }
         },
         "te": {
@@ -2240,7 +2240,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "دَع مساعد AI يتولى الإعداد"
+            "value": "دَع مساعد ذكاء اصطناعي يتولى الإعداد"
           }
         },
         "bn": {
@@ -2252,7 +2252,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Von einem AI-Assistenten einrichten lassen"
+            "value": "Von einem KI-Assistenten einrichten lassen"
           }
         },
         "el": {
@@ -2270,19 +2270,19 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deje que un asistente de AI lo configure"
+            "value": "Deja que un asistente de IA lo configure"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "اجازه دهید دستیار AI آن را راه‌اندازی کند"
+            "value": "اجازه دهید دستیار هوش مصنوعی آن را راه‌اندازی کند"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Laisser un assistant AI le configurer"
+            "value": "Laisser un assistant IA le configurer"
           }
         },
         "he": {
@@ -2306,7 +2306,7 @@
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Lascia che un assistente AI lo configuri"
+            "value": "Lascia che un assistente IA lo configuri"
           }
         },
         "ja": {
@@ -2348,7 +2348,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deixe um assistente de AI configurar"
+            "value": "Deixe um assistente de IA configurar"
           }
         },
         "ro": {
@@ -2360,7 +2360,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Поручите настройку AI-ассистенту"
+            "value": "Поручите настройку ИИ-ассистенту"
           }
         },
         "ta": {
@@ -2390,7 +2390,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Доручіть AI-асистенту налаштувати це"
+            "value": "Доручіть ШІ-асистенту налаштувати це"
           }
         },
         "ur": {
@@ -2612,19 +2612,19 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "انقر بالزر الأيمن على مجلد في Finder لإرساله إلى الطرفية أو المحرر أو وكيل AI لديك."
+            "value": "انقر بالزر الأيمن على مجلد في Finder لإرساله إلى الطرفية أو المحرر أو وكيل ذكاء اصطناعي لديك."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder-এ একটি ফোল্ডারে রাইট-ক্লিক করে সেটি আপনার টার্মিনাল, এডিটর বা AI এজেন্টে পাঠান."
+            "value": "Finder-এ একটি ফোল্ডারে ডান-ক্লিক করে সেটি আপনার টার্মিনাল, এডিটর বা AI এজেন্টে পাঠান."
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Klicken Sie im Finder mit der rechten Maustaste auf einen Ordner, um ihn an Ihr Terminal, Ihren Editor oder Ihren AI-Agenten zu senden."
+            "value": "Klicke im Finder mit der rechten Maustaste auf einen Ordner, um ihn an dein Terminal, deinen Editor oder deinen KI-Agenten zu senden."
           }
         },
         "el": {
@@ -2642,19 +2642,19 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Haga clic con el botón derecho en una carpeta del Finder para enviarla a su terminal, editor o agente de AI."
+            "value": "Haz clic con el botón derecho en una carpeta del Finder para enviarla a tu terminal, editor o agente de IA."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "در Finder روی یک پوشه کلیک راست کنید تا آن را به ترمینال، ویرایشگر یا عامل AI خود بفرستید."
+            "value": "در Finder روی یک پوشه کلیک راست کنید تا آن را به ترمینال، ویرایشگر یا عامل هوش مصنوعی خود بفرستید."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Faites un clic droit sur un dossier dans le Finder pour l’envoyer à votre terminal, à votre éditeur ou à votre agent AI."
+            "value": "Faites un clic droit sur un dossier dans le Finder pour l’envoyer à votre terminal, à votre éditeur ou à votre agent IA."
           }
         },
         "he": {
@@ -2678,7 +2678,7 @@
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Fai clic destro su una cartella nel Finder per inviarla al terminale, all'editor o all'agente AI."
+            "value": "Fai clic destro su una cartella nel Finder per inviarla al terminale, all'editor o all'agente IA."
           }
         },
         "ja": {
@@ -2720,7 +2720,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Clique com o botão direito em uma pasta no Finder para enviá-la ao seu terminal, editor ou agente de AI."
+            "value": "Clique com o botão direito em uma pasta no Finder para enviá-la ao seu terminal, editor ou agente de IA."
           }
         },
         "ro": {
@@ -2732,7 +2732,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Щёлкните правой кнопкой мыши по папке в Finder, чтобы отправить её в терминал, редактор или AI-агент."
+            "value": "Щёлкните правой кнопкой мыши по папке в Finder, чтобы отправить её в терминал, редактор или ИИ-агент."
           }
         },
         "ta": {
@@ -2750,7 +2750,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "คลิกขวาที่โฟลเดอร์ใน Finder เพื่อส่งไปยังเทอร์มินัล ตัวแก้ไข หรือเอเจนต์ AI ของคุณ."
+            "value": "คลิกขวาที่โฟลเดอร์ใน Finder เพื่อส่งไปยังเทอร์มินัล โปรแกรมแก้ไข หรือเอเจนต์ AI ของคุณ."
           }
         },
         "tr": {
@@ -2762,7 +2762,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Клацніть папку правою кнопкою миші у Finder, щоб надіслати її у термінал, редактор або AI-агент."
+            "value": "Клацніть папку правою кнопкою миші у Finder, щоб надіслати її у термінал, редактор або ШІ-агент."
           }
         },
         "ur": {
@@ -2774,13 +2774,13 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Nhấp chuột phải vào thư mục trong Finder để gửi nó đến terminal, trình soạn thảo hoặc tác nhân AI."
+            "value": "Nhấp chuột phải vào thư mục trong Finder để gửi nó đến terminal, trình soạn thảo hoặc tác tử AI."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在访达中右键点击文件夹，即可将其发送到终端、编辑器或 AI 代理。"
+            "value": "在访达中右键点击文件夹，即可将其发送到终端、编辑器或 AI 智能体。"
           }
         },
         "zh-Hant": {
@@ -2930,7 +2930,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "రద్దు చేయి"
+            "value": "రద్దు చేయండి"
           }
         },
         "th": {
@@ -3158,7 +3158,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "智慧代理"
+            "value": "代理程式"
           }
         }
       }
@@ -3218,7 +3218,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏rh ב-PATH שלך"
+            "value": "‏rh ב-PATH שלכם"
           }
         },
         "hi": {
@@ -3776,7 +3776,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "קובץ הגדרות"
+            "value": "קובץ תצורה"
           }
         },
         "hi": {
@@ -3788,7 +3788,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Berkas konfigurasi"
+            "value": "File konfigurasi"
           }
         },
         "it": {
@@ -4820,7 +4820,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Trình đơn Finder"
+            "value": "Menu Finder"
           }
         },
         "zh-Hans": {
@@ -5114,7 +5114,7 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder सेवा"
+            "value": "Finder Services"
           }
         },
         "ms": {
@@ -5342,13 +5342,13 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "கட்டமைப்பு ஒத்திசைவு"
+            "value": "உள்ளமைவு ஒத்திசைவு"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "కాన్ఫిగ్ సింక్"
+            "value": "కాన్ఫిగరేషన్ సింక్"
           }
         },
         "th": {
@@ -5528,13 +5528,13 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "கட்டமைப்பு ஒத்திசைவு கட்டளைகள்"
+            "value": "உள்ளமைவு ஒத்திசைவு கட்டளைகள்"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "కాన్ఫిగ్ సింక్ ఆదేశాలు"
+            "value": "కాన్ఫిగరేషన్ సింక్ ఆదేశాలు"
           }
         },
         "th": {
@@ -5714,13 +5714,13 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "கட்டமைப்பு ஒத்திசைவு முரண்பாட்டு நகல்கள்"
+            "value": "உள்ளமைவு ஒத்திசைவு முரண்பாட்டு நகல்கள்"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "కాన్ఫిగ్ సింక్ వైరుధ్య కాపీలు"
+            "value": "కాన్ఫిగరేషన్ సింక్ వైరుధ్య కాపీలు"
           }
         },
         "th": {
@@ -5900,13 +5900,13 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "கட்டமைப்பு ஒத்திசைவுக் கோப்புறை"
+            "value": "உள்ளமைவு ஒத்திசைவுக் கோப்புறை"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "కాన్ఫిగ్ సింక్ ఫోల్డర్"
+            "value": "కాన్ఫిగరేషన్ సింక్ ఫోల్డర్"
           }
         },
         "th": {
@@ -6344,7 +6344,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ihre Einrichtung wird geprüft…"
+            "value": "Deine Einrichtung wird geprüft…"
           }
         },
         "el": {
@@ -6362,7 +6362,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Comprobando su configuración…"
+            "value": "Comprobando tu configuración…"
           }
         },
         "fa": {
@@ -6530,7 +6530,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Wählen Sie einen Ordner in einem git-Repository aus, um seine Worktrees aufzulisten."
+            "value": "Wähle einen Ordner in einem git-Repository aus, um seine Worktrees aufzulisten."
           }
         },
         "el": {
@@ -6548,7 +6548,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Elija una carpeta dentro de un repositorio de git para mostrar sus worktrees."
+            "value": "Elige una carpeta dentro de un repositorio de git para mostrar sus worktrees."
           }
         },
         "fa": {
@@ -7022,7 +7022,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ఇటీవలి ఫోల్డర్లను క్లియర్ చేయి"
+            "value": "ఇటీవలి ఫోల్డర్లను క్లియర్ చేయండి"
           }
         },
         "th": {
@@ -7394,7 +7394,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "MCP కాన్ఫిగరేషన్ను కాపీ చేయి"
+            "value": "MCP కాన్ఫిగరేషన్ను కాపీ చేయండి"
           }
         },
         "th": {
@@ -7580,7 +7580,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ప్లగిన్ ఆదేశాలను కాపీ చేయి"
+            "value": "ప్లగిన్ ఆదేశాలను కాపీ చేయండి"
           }
         },
         "th": {
@@ -7778,7 +7778,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Yapay Zekâ İçin Kurulum İstemini Kopyala"
+            "value": "AI İçin Kurulum İstemini Kopyala"
           }
         },
         "uk": {
@@ -7796,7 +7796,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Sao chép prompt thiết lập cho AI"
+            "value": "Sao chép lời nhắc thiết lập cho AI"
           }
         },
         "zh-Hans": {
@@ -7904,7 +7904,7 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder एक्स्टेंशन सेटिंग्ज"
+            "value": "Finder एक्सटेंशन सेटिंग्ज"
           }
         },
         "ms": {
@@ -8006,7 +8006,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "يحتفظ Right Here بهذه المجلدات على هذا Mac فقط، في ملف بجانب ملف الإعدادات الخاص بك. ويمكن لمساعد AI متصل عبر MCP أن يقرأها."
+            "value": "يحتفظ Right Here بهذه المجلدات على هذا Mac فقط، في ملف بجانب ملف الإعداد الخاص بك. ويمكن لمساعد ذكاء اصطناعي متصل عبر MCP أن يقرأها."
           }
         },
         "bn": {
@@ -8018,7 +8018,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here merkt sich diese Ordner nur auf diesem Mac, und zwar in einer Datei neben Ihrer Konfigurationsdatei. Ein AI-Assistent, den Sie über MCP verbinden, kann sie lesen."
+            "value": "Right Here merkt sich diese Ordner nur auf diesem Mac, und zwar in einer Datei neben deiner Konfigurationsdatei. Ein KI-Assistent, den du über MCP verbindest, kann sie lesen."
           }
         },
         "el": {
@@ -8036,25 +8036,25 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here recuerda estas carpetas solo en este Mac, en un archivo junto a su archivo de configuración. Un asistente de AI conectado a través de MCP puede leerlas."
+            "value": "Right Here recuerda estas carpetas solo en este Mac, en un archivo junto a tu archivo de configuración. Un asistente de IA conectado a través de MCP puede leerlas."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here این پوشه‌ها را فقط روی همین مک و در فایلی کنار فایل پیکربندی شما نگه می‌دارد. یک دستیار AI که از طریق MCP وصلش می‌کنید می‌تواند آن‌ها را بخواند."
+            "value": "‏Right Here این پوشه‌ها را فقط روی همین مک و در فایلی کنار فایل پیکربندی شما نگه می‌دارد. یک دستیار هوش مصنوعی که از طریق MCP وصلش می‌کنید می‌تواند آن‌ها را بخواند."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here mémorise ces dossiers uniquement sur ce Mac, dans un fichier placé à côté de votre fichier de configuration. Un assistant AI que vous connectez via MCP peut les lire."
+            "value": "Right Here mémorise ces dossiers uniquement sur ce Mac, dans un fichier placé à côté de votre fichier de configuration. Un assistant IA que vous connectez via MCP peut les lire."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here זוכר את התיקיות האלה רק על ה-Mac הזה, בקובץ שנמצא ליד קובץ הגדרות שלכם. עוזר AI שאתם מחברים דרך MCP יכול לקרוא אותן."
+            "value": "‏Right Here זוכר את התיקיות האלה רק על ה-Mac הזה, בקובץ שנמצא ליד קובץ התצורה שלכם. עוזר AI שאתם מחברים דרך MCP יכול לקרוא אותן."
           }
         },
         "hi": {
@@ -8066,13 +8066,13 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here menyimpan folder-folder ini hanya di Mac ini, dalam berkas di samping berkas konfigurasi Anda. Asisten AI yang Anda hubungkan melalui MCP dapat membacanya."
+            "value": "Right Here menyimpan folder-folder ini hanya di Mac ini, dalam file di samping file konfigurasi Anda. Asisten AI yang Anda hubungkan melalui MCP dapat membacanya."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here ricorda queste cartelle solo su questo Mac, in un file accanto al file di configurazione. Un assistente AI collegato tramite MCP può leggerle."
+            "value": "Right Here ricorda queste cartelle solo su questo Mac, in un file accanto al file di configurazione. Un assistente IA collegato tramite MCP può leggerle."
           }
         },
         "ja": {
@@ -8114,7 +8114,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "O Right Here guarda estas pastas somente neste Mac, em um arquivo ao lado da sua configuração. Um assistente de AI conectado pelo MCP pode lê-las."
+            "value": "O Right Here guarda estas pastas somente neste Mac, em um arquivo ao lado da sua configuração. Um assistente de IA conectado pelo MCP pode lê-las."
           }
         },
         "ro": {
@@ -8126,7 +8126,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here запоминает эти папки только на этом Mac, в файле рядом с файлом конфигурации. AI-ассистент, подключённый через MCP, может их читать."
+            "value": "Right Here запоминает эти папки только на этом Mac, в файле рядом с файлом конфигурации. ИИ-ассистент, подключённый через MCP, может их читать."
           }
         },
         "ta": {
@@ -8156,7 +8156,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here зберігає ці папки лише на цьому Mac у файлі поруч із вашим файлом конфігурації. AI-асистент, якого ви підключаєте через MCP, може їх читати."
+            "value": "Right Here зберігає ці папки лише на цьому Mac у файлі поруч із вашим файлом конфігурації. ШІ-асистент, якого ви підключаєте через MCP, може їх читати."
           }
         },
         "ur": {
@@ -8276,7 +8276,7 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "इंस्टॉल किंवा दुरुस्त करा"
+            "value": "इन्स्टॉल किंवा दुरुस्त करा"
           }
         },
         "ms": {
@@ -8576,7 +8576,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "MCP-Konfiguration kopiert. Fügen Sie sie in die MCP-Einstellungen Ihres Assistenten ein."
+            "value": "MCP-Konfiguration kopiert. Füge sie in die MCP-Einstellungen deines Assistenten ein."
           }
         },
         "el": {
@@ -8594,7 +8594,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Configuración de MCP copiada. Péguela en los ajustes de MCP de su asistente."
+            "value": "Configuración de MCP copiada. Pégala en los ajustes de MCP de tu asistente."
           }
         },
         "fa": {
@@ -8786,7 +8786,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "این منوی یک پوشه است. گزینه‌های مربوط به پرونده‌های انتخاب‌شده وقتی پرونده انتخاب می‌کنید ظاهر می‌شوند."
+            "value": "این منوی یک پوشه است. گزینه‌های مربوط به فایل‌های انتخاب‌شده وقتی فایل انتخاب می‌کنید ظاهر می‌شوند."
           }
         },
         "fr": {
@@ -8798,7 +8798,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "זהו התפריט לתיקייה. פריטים עבור הקבצים שנבחרו מופיעים כשאתה בוחר קבצים."
+            "value": "זהו התפריט לתיקייה. פריטים עבור הקבצים שנבחרו מופיעים כשאתם בוחרים קבצים."
           }
         },
         "hi": {
@@ -8864,7 +8864,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Acesta este meniul pentru un folder. Elementele pentru fișiere apar doar la selectarea fișierelor."
+            "value": "Acesta este meniul pentru un dosar. Elementele pentru fișiere apar doar la selectarea fișierelor."
           }
         },
         "ru": {
@@ -8912,7 +8912,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Đây là trình đơn cho một thư mục. Các mục dành cho tệp đã chọn chỉ xuất hiện khi bạn chọn tệp."
+            "value": "Đây là menu cho một thư mục. Các mục dành cho tệp đã chọn chỉ xuất hiện khi bạn chọn tệp."
           }
         },
         "zh-Hans": {
@@ -8990,7 +8990,7 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "अभी दिखाने के लिए कोई मेन्यू नहीं है। कारण जाँच में सूचीबद्ध है।"
+            "value": "अभी दिखाने के लिए कोई मेनू नहीं है। कारण जाँच में सूचीबद्ध है।"
           }
         },
         "id": {
@@ -9098,7 +9098,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Hiện không có trình đơn nào để hiển thị. Lý do được liệt kê trong phần Kiểm tra."
+            "value": "Hiện không có menu nào để hiển thị. Lý do được liệt kê trong phần Kiểm tra."
           }
         },
         "zh-Hans": {
@@ -9284,7 +9284,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Trình đơn con, đã thu gọn"
+            "value": "Menu con, đã thu gọn"
           }
         },
         "zh-Hans": {
@@ -9470,7 +9470,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Trình đơn con, đã mở rộng"
+            "value": "Menu con, đã mở rộng"
           }
         },
         "zh-Hans": {
@@ -9656,7 +9656,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Trình đơn Finder"
+            "value": "Menu Finder"
           }
         },
         "zh-Hans": {
@@ -9872,7 +9872,7 @@
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "কিছু পরীক্ষায় আপনার মনোযোগ প্রয়োজন।"
+            "value": "কিছু চেকে আপনার মনোযোগ প্রয়োজন।"
           }
         },
         "de": {
@@ -9914,7 +9914,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "חלק מהבדיקות דורשות את תשומת לבך."
+            "value": "חלק מהבדיקות דורשות את תשומת לבכם."
           }
         },
         "hi": {
@@ -10064,7 +10064,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Keine angehefteten Ordner. Heften Sie einen Ordner mit `rh pin <folder>` an."
+            "value": "Keine angehefteten Ordner. Hefte einen Ordner mit `rh pin <folder>` an."
           }
         },
         "el": {
@@ -10082,7 +10082,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "No hay carpetas fijadas. Fije una con `rh pin <folder>`."
+            "value": "No hay carpetas fijadas. Fija una con `rh pin <folder>`."
           }
         },
         "fa": {
@@ -10994,7 +10994,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Öffnen Sie Prüfungen, um zu sehen, was zu tun ist."
+            "value": "Öffne Prüfungen, um zu sehen, was zu tun ist."
           }
         },
         "el": {
@@ -11012,7 +11012,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Abra Comprobaciones para ver qué hacer."
+            "value": "Abre Comprobaciones para ver qué hacer."
           }
         },
         "fa": {
@@ -11216,7 +11216,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "פתח הגדרות"
+            "value": "פתח קובץ תצורה"
           }
         },
         "hi": {
@@ -11294,19 +11294,19 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "கட்டமைப்பைத் திற"
+            "value": "உள்ளமைவுக் கோப்பைத் திற"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "కాన్ఫిగ్‌ను తెరవండి"
+            "value": "కాన్ఫిగరేషన్ ఫైల్‌ను తెరవండి"
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เปิดไฟล์กำหนดค่า"
+            "value": "เปิดไฟล์ตั้งค่า"
           }
         },
         "tr": {
@@ -11552,7 +11552,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Plug-in-Befehle kopiert. Fügen Sie sie in Claude Code ein."
+            "value": "Plug-in-Befehle kopiert. Füge sie in Claude Code ein."
           }
         },
         "el": {
@@ -11570,7 +11570,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Comandos del plugin copiados. Péguelos en Claude Code."
+            "value": "Comandos del plugin copiados. Pégalos en Claude Code."
           }
         },
         "fa": {
@@ -11774,7 +11774,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "הנחיית ההגדרה הועתקה. הדבק אותה בעוזר ה-AI שלך."
+            "value": "הנחיית ההגדרה הועתקה. הדביקו אותה בעוזר ה-AI שלכם."
           }
         },
         "hi": {
@@ -11870,7 +11870,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Kurulum istemi kopyalandı. Yapay zekâ asistanınıza yapıştırın."
+            "value": "Kurulum istemi kopyalandı. AI asistanınıza yapıştırın."
           }
         },
         "uk": {
@@ -11888,7 +11888,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Đã sao chép prompt thiết lập. Hãy dán vào trợ lý AI của bạn."
+            "value": "Đã sao chép lời nhắc thiết lập. Hãy dán vào trợ lý AI của bạn."
           }
         },
         "zh-Hans": {
@@ -11912,7 +11912,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "تعمل الإجراءات السريعة دون الملحق: انقر بزر التحكم أو الزر الأيمن على ملف أو مجلد واختر الإجراءات السريعة. لاختصار لوحة المفاتيح، انتقل إلى إعدادات النظام ‹ لوحة المفاتيح ‹ اختصارات لوحة المفاتيح ‹ الخدمات."
+            "value": "تعمل الإجراءات السريعة دون الامتداد: انقر بزر التحكم أو الزر الأيمن على ملف أو مجلد واختر الإجراءات السريعة. لاختصار لوحة المفاتيح، انتقل إلى إعدادات النظام › لوحة المفاتيح › اختصارات لوحة المفاتيح › الخدمات."
           }
         },
         "bn": {
@@ -11960,7 +11960,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "פעולות מהירות פועלות ללא התוסף: לחצו לחיצה ימנית על קובץ או תיקייה ובחרו פעולות מהירות. לקיצור מקלדת, עברו אל הגדרות המערכת › מקלדת › קיצורי מקלדת › שירותים."
+            "value": "פעולות מהירות פועלות ללא ההרחבה: לחצו לחיצה ימנית על קובץ או תיקייה ובחרו פעולות מהירות. לקיצור מקלדת, עברו אל הגדרות המערכת › מקלדת › קיצורי מקלדת › שירותים."
           }
         },
         "hi": {
@@ -11990,7 +11990,7 @@
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "빠른 동작은 Finder 확장 없이도 작동합니다. 파일이나 폴더를 우클릭하고 빠른 동작을 선택하세요. 키보드 단축키를 지정하려면 시스템 설정 › 키보드 › 키보드 단축키 › 서비스로 이동하세요."
+            "value": "빠른 동작은 Finder 확장 프로그램 없이도 작동합니다. 파일이나 폴더를 우클릭하고 빠른 동작을 선택하세요. 키보드 단축키를 지정하려면 시스템 설정 › 키보드 › 키보드 단축키 › 서비스로 이동하세요."
           }
         },
         "mr": {
@@ -12008,7 +12008,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Snelle acties werken zonder de extensie: klik met de rechtermuisknop op een bestand of map en kies Snelle acties. Voor een sneltoets ga naar Systeeminstellingen › Toetsenbord › Sneltoetsen › Voorzieningen."
+            "value": "Snelle acties werken zonder de extensie: klik met de rechtermuisknop op een bestand of map en kies Snelle acties. Voor een sneltoets ga naar Systeeminstellingen › Toetsenbord › Toetscombinaties › Voorzieningen."
           }
         },
         "pl": {
@@ -12074,7 +12074,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Thao tác nhanh hoạt động mà không cần tiện ích: nhấp chuột phải vào tệp hoặc thư mục rồi chọn Thao tác nhanh. Để đặt phím tắt, vào Cài đặt Hệ thống › Bàn phím › Phím tắt › Dịch vụ."
+            "value": "Thao tác nhanh hoạt động mà không cần tiện ích mở rộng: nhấp chuột phải vào tệp hoặc thư mục rồi chọn Thao tác nhanh. Để đặt phím tắt, vào Cài đặt Hệ thống › Bàn phím › Phím tắt › Dịch vụ."
           }
         },
         "zh-Hans": {
@@ -12974,7 +12974,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "తీసివేయి…"
+            "value": "తీసివేయండి…"
           }
         },
         "th": {
@@ -13160,7 +13160,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Worktree ను తీసివేయి"
+            "value": "Worktree ను తీసివేయండి"
           }
         },
         "th": {
@@ -13226,7 +13226,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ wird von Ihrer Festplatte gelöscht. Der Branch bleibt erhalten, und git verweigert das Entfernen, wenn im Worktree Änderungen liegen, die nicht committet sind."
+            "value": "%@ wird von deiner Festplatte gelöscht. Der Branch bleibt erhalten, und git verweigert das Entfernen, wenn im Worktree Änderungen liegen, die nicht committet sind."
           }
         },
         "el": {
@@ -13532,7 +13532,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "తీసివేయి: %@"
+            "value": "తీసివేయండి: %@"
           }
         },
         "th": {
@@ -13958,7 +13958,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "وكلاء AI"
+            "value": "وكلاء ذكاء اصطناعي"
           }
         },
         "bn": {
@@ -13994,13 +13994,13 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "عامل‌های AI"
+            "value": "عامل‌های هوش مصنوعی"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Agents AI"
+            "value": "Agents IA"
           }
         },
         "he": {
@@ -14066,7 +14066,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Agentes de AI"
+            "value": "Agentes de IA"
           }
         },
         "ro": {
@@ -14078,7 +14078,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI-агенты"
+            "value": "ИИ-агенты"
           }
         },
         "ta": {
@@ -14108,7 +14108,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI-агенти"
+            "value": "ШІ-агенти"
           }
         },
         "ur": {
@@ -14132,7 +14132,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI 智慧代理"
+            "value": "AI 代理程式"
           }
         }
       }
@@ -14192,7 +14192,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "הסוכנים ש-Right Here מוצאת ב-Mac הזה מסומנים מראש."
+            "value": "הסוכנים ש-Right Here מוצא ב-Mac הזה מסומנים מראש."
           }
         },
         "hi": {
@@ -14318,7 +14318,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here 在這台 Mac 上找到的 AI 智慧代理已預先勾選。"
+            "value": "Right Here 在這台 Mac 上找到的 AI 代理程式已預先勾選。"
           }
         }
       }
@@ -14378,7 +14378,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "בחרו מה אתם משתמשים בו. Right Here כותבת מהבחירות האלה את קובץ ההגדרות שלכם ומתחברת ל-Finder. תוכלו לשנות את הבחירות שלכם מאוחר יותר בעריכת קובץ ההגדרות."
+            "value": "בחרו מה אתם משתמשים בו. Right Here כותב מהבחירות האלה את קובץ התצורה שלכם ומתחבר ל-Finder. תוכלו לשנות את הבחירות שלכם מאוחר יותר בעריכת קובץ התצורה."
           }
         },
         "hi": {
@@ -14390,7 +14390,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pilih yang Anda gunakan. Right Here membuat berkas konfigurasi dari pilihan Anda dan terhubung ke Finder. Nanti Anda dapat mengubah pilihan dengan mengedit berkas konfigurasi."
+            "value": "Pilih yang Anda gunakan. Right Here membuat file konfigurasi dari pilihan Anda dan terhubung ke Finder. Nanti Anda dapat mengubah pilihan dengan mengedit file konfigurasi."
           }
         },
         "it": {
@@ -15122,7 +15122,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "מה ש-Right Here הגדירה"
+            "value": "מה ש-Right Here הגדיר"
           }
         },
         "hi": {
@@ -16508,7 +16508,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "తనిఖీలను చూపించు"
+            "value": "తనిఖీలను చూపించండి"
           }
         },
         "th": {
@@ -16610,7 +16610,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "נדרשת פעולה מצדך"
+            "value": "נדרשת פעולה מצדכם"
           }
         },
         "hi": {
@@ -17204,7 +17204,7 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "इशारा"
+            "value": "चेतावणी"
           }
         },
         "ms": {
@@ -17540,7 +17540,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here פותחת אותם כברירת מחדל. כדי לשנות אותם, ערכו את קובץ ההגדרות."
+            "value": "‏Right Here פותח אותם כברירת מחדל. כדי לשנות אותם, ערכו את קובץ התצורה."
           }
         },
         "hi": {
@@ -17552,7 +17552,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here membuka keduanya secara bawaan. Untuk mengubahnya, edit berkas konfigurasi."
+            "value": "Right Here membuka keduanya secara bawaan. Untuk mengubahnya, edit file konfigurasi."
           }
         },
         "it": {
@@ -17726,7 +17726,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "בחרו טרמינל ועורך"
+            "value": "בחרו מסוף ועורך"
           }
         },
         "hi": {
@@ -17912,7 +17912,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "פותח חלון טרמינל בתיקיית בדיקה וסוגר אותו שוב."
+            "value": "פותח חלון מסוף בתיקיית בדיקה וסוגר אותו שוב."
           }
         },
         "hi": {
@@ -17936,7 +17936,7 @@
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "テスト用フォルダでターミナルウィンドウを開き、すぐに閉じます。"
+            "value": "テスト用フォルダでターミナルウインドウを開き、すぐに閉じます。"
           }
         },
         "ko": {
@@ -18422,7 +18422,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "فعّل ملحق Finder"
+            "value": "فعّل امتداد Finder"
           }
         },
         "bn": {
@@ -18452,7 +18452,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Activa la extensión del Finder"
+            "value": "Activar la extensión del Finder"
           }
         },
         "fa": {
@@ -18470,7 +18470,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "הפעילו את התוסף של Finder"
+            "value": "הפעילו את הרחבת Finder"
           }
         },
         "hi": {
@@ -18500,7 +18500,7 @@
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Finder 확장 켜기"
+            "value": "Finder 확장 프로그램 켜기"
           }
         },
         "mr": {
@@ -18584,7 +18584,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Bật tiện ích Finder"
+            "value": "Bật tiện ích mở rộng Finder"
           }
         },
         "zh-Hans": {
@@ -18656,7 +18656,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "שלח תיקייה או בחירה אל המסופים, העורכים וסוכני ה-AI שלך."
+            "value": "שלחו תיקייה או בחירה אל המסופים, העורכים וסוכני ה-AI שלכם."
           }
         },
         "hi": {
@@ -18704,7 +18704,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Stuur een map of selectie naar je terminals, editors en AI-agents."
+            "value": "Stuur een map of selectie naar je terminals, editors en AI-agenten."
           }
         },
         "pl": {
@@ -18722,7 +18722,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Trimiteți un folder sau o selecție către terminalele, editoarele și agenții dvs. AI."
+            "value": "Trimiteți un dosar sau o selecție către terminalele, editoarele și agenții dvs. AI."
           }
         },
         "ru": {
@@ -18746,13 +18746,13 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ส่งโฟลเดอร์หรือรายการที่เลือกไปยังเทอร์มินัล ตัวแก้ไข และเอเจนต์ AI ของคุณ"
+            "value": "ส่งโฟลเดอร์หรือรายการที่เลือกไปยังเทอร์มินัล โปรแกรมแก้ไข และเอเจนต์ AI ของคุณ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Bir klasörü veya seçimi terminallerinize, düzenleyicilerinize ve yapay zekâ ajanlarınıza gönderin."
+            "value": "Bir klasörü veya seçimi terminallerinize, düzenleyicilerinize ve AI ajanlarınıza gönderin."
           }
         },
         "uk": {
@@ -18782,7 +18782,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "將資料夾或所選項目傳送到你的終端機、編輯器和 AI 代理。"
+            "value": "將資料夾或所選項目傳送到你的終端機、編輯器和 AI 代理程式。"
           }
         }
       }
@@ -18794,7 +18794,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "مساعدو AI"
+            "value": "مساعدو الذكاء الاصطناعي"
           }
         },
         "bn": {
@@ -18806,7 +18806,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI-Assistenten"
+            "value": "KI-Assistenten"
           }
         },
         "el": {
@@ -18824,19 +18824,19 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Asistentes de AI"
+            "value": "Asistentes de IA"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "دستیارهای AI"
+            "value": "دستیارهای هوش مصنوعی"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Assistants AI"
+            "value": "Assistants IA"
           }
         },
         "he": {
@@ -18860,7 +18860,7 @@
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Assistenti AI"
+            "value": "Assistenti IA"
           }
         },
         "ja": {
@@ -18902,7 +18902,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Assistentes de AI"
+            "value": "Assistentes de IA"
           }
         },
         "ro": {
@@ -18914,7 +18914,7 @@
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI-ассистенты"
+            "value": "ИИ-ассистенты"
           }
         },
         "ta": {
@@ -18944,7 +18944,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI-асистенти"
+            "value": "ШІ-асистенти"
           }
         },
         "ur": {
@@ -19538,13 +19538,13 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "نسخ العمل"
+            "value": "‏Worktrees"
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ওয়ার্কিং কপি"
+            "value": "Worktrees"
           }
         },
         "de": {
@@ -19556,7 +19556,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Αντίγραφα εργασίας"
+            "value": "Worktrees"
           }
         },
         "en": {
@@ -19574,7 +19574,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "درخت‌های کاری"
+            "value": "‏worktreeها"
           }
         },
         "fr": {
@@ -19586,7 +19586,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "עצי עבודה"
+            "value": "‏Worktrees"
           }
         },
         "hi": {
@@ -19670,7 +19670,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "వర్క్ట్రీలు"
+            "value": "Worktrees"
           }
         },
         "th": {
@@ -19688,7 +19688,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Робочі копії"
+            "value": "Worktrees"
           }
         },
         "ur": {
@@ -19754,7 +19754,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Probar el inicio del terminal"
+            "value": "Probar el inicio de la terminal"
           }
         },
         "fa": {
@@ -19958,7 +19958,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "פותח חלון בדיקה במסוף שלך…"
+            "value": "פותח חלון בדיקה במסוף שלכם…"
           }
         },
         "hi": {
@@ -20228,7 +20228,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "పిన్ తీసివేయి"
+            "value": "పిన్ తీసివేయండి"
           }
         },
         "th": {
@@ -20414,7 +20414,7 @@
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "పిన్ తీసివేయి: %@"
+            "value": "పిన్ తీసివేయండి: %@"
           }
         },
         "th": {
@@ -21212,13 +21212,13 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "لم تُزِل Right Here شجرة العمل هذه، لأنها ليست من إنشاء Right Here، فتُركت كما هي."
+            "value": "لم يُزِل Right Here هذا worktree، لأنه ليس من إنشاء Right Here، فتُرك كما هو."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here এই ওয়ার্কট্রি সরায়নি: এটি Right Here-এর তৈরি নয়, তাই এটি অক্ষত রাখা হয়েছে।"
+            "value": "Right Here এই worktree সরায়নি: এটি Right Here-এর তৈরি নয়, তাই এটি অক্ষত রাখা হয়েছে।"
           }
         },
         "de": {
@@ -21248,7 +21248,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here این درخت کاری را حذف نکرد: آن را Right Here نساخته است، پس دست نمی‌خورد."
+            "value": "‏Right Here این worktree را حذف نکرد: آن را Right Here نساخته است، پس دست نمی‌خورد."
           }
         },
         "fr": {
@@ -21260,13 +21260,13 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here לא הסיר את עץ העבודה הזה: הוא לא נוצר על ידי Right Here, ולכן הוא נשאר כמות שהוא."
+            "value": "‏Right Here לא הסיר את ה-worktree הזה: הוא לא נוצר על ידי Right Here, ולכן הוא נשאר כמות שהוא."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here ने यह वर्कट्री नहीं हटाया: यह Right Here द्वारा बनाई गई नहीं है, इसलिए इसे छोड़ दिया गया है।"
+            "value": "Right Here ने यह worktree नहीं हटाया: यह Right Here द्वारा बनाया गया नहीं है, इसलिए इसे छोड़ दिया गया है।"
           }
         },
         "id": {
@@ -21290,19 +21290,19 @@
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here는 이 워크트리를 제거하지 않았습니다. Right Here가 만든 것이 아니므로 그대로 두었습니다."
+            "value": "Right Here는 이 워크트리를 삭제하지 않았습니다. Right Here가 만든 것이 아니므로 그대로 두었습니다."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here ने हा वर्कट्री काढला नाही: तो Right Here ने तयार केलेला नाही, म्हणून तो तसाच ठेवला आहे."
+            "value": "Right Here ने हे वर्कट्री काढले नाही: ते Right Here ने तयार केलेले नाही, म्हणून ते तसेच ठेवले आहे."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here tidak mengeluarkan worktree ini: ia bukan dicipta oleh Right Here, jadi ia dibiarkan."
+            "value": "Right Here tidak mengalih keluar worktree ini: ia bukan dicipta oleh Right Here, jadi ia dibiarkan."
           }
         },
         "nl": {
@@ -21314,7 +21314,7 @@
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here nie usunęło tego worktree: nie został utworzony przez Right Here, więc pozostaje bez zmian."
+            "value": "Right Here nie usunął tego drzewa roboczego: nie zostało ono utworzone przez Right Here, więc pozostaje bez zmian."
           }
         },
         "pt-BR": {
@@ -21338,13 +21338,13 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here இந்த வொர்க்ட்ரீயை நீக்கவில்லை: இது Right Here உருவாக்கியது அல்ல, அதனால் அது அப்படியே விடப்பட்டது."
+            "value": "Right Here இந்த worktree-ஐ நீக்கவில்லை: இது Right Here உருவாக்கியது அல்ல, அதனால் அது அப்படியே விடப்பட்டது."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here ఈ వర్క్‌ట్రీని తీసివేయలేదు: ఇది Right Here సృష్టించినది కాదు, కాబట్టి అది అలాగే ఉంచబడింది."
+            "value": "Right Here ఈ worktree ను తీసివేయలేదు: ఇది Right Here సృష్టించినది కాదు, కాబట్టి అది అలాగే ఉంచబడింది."
           }
         },
         "th": {
@@ -21362,7 +21362,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here не видалив це робоче дерево: воно створене не Right Here, тож залишено без змін."
+            "value": "Right Here не видалив цей worktree: його створено не Right Here, тож залишено без змін."
           }
         },
         "ur": {
@@ -21806,7 +21806,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "نسخه‌های کاری جداگانه‌ای که `rh run --worktree` می‌سازد، تا یک عامل AI بتواند روی شاخه‌ی خودش کار کند."
+            "value": "نسخه‌های کاری جداگانه‌ای که `rh run --worktree` می‌سازد، تا یک عامل هوش مصنوعی بتواند روی شاخه‌ی خودش کار کند."
           }
         },
         "fr": {
@@ -21830,7 +21830,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Salinan kerja terpisah yang dibuat oleh `rh run --worktree`, agar agen dapat bekerja pada cabangnya sendiri."
+            "value": "Salinan kerja terpisah yang dibuat oleh `rh run --worktree`, agar agen dapat bekerja pada branch-nya sendiri."
           }
         },
         "it": {
@@ -21854,7 +21854,7 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh run --worktree` तयार करणारे वेगळे चेकआउट, जेणेकरून एखादा एजंट स्वतःच्या ब्रांचवर काम करू शकेल."
+            "value": "`rh run --worktree` ने तयार केलेले वेगळे चेकआउट, जेणेकरून एखादा एजंट स्वतःच्या ब्रांचवर काम करू शकेल."
           }
         },
         "ms": {
@@ -21932,13 +21932,13 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Các bản sao làm việc riêng do `rh run --worktree` tạo ra, để tác nhân AI có thể làm việc trên một nhánh riêng."
+            "value": "Các bản sao làm việc riêng do `rh run --worktree` tạo ra, để tác tử AI có thể làm việc trên một nhánh riêng."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "由 `rh run --worktree` 创建的独立检出副本，让 AI 代理可以在自己的分支上工作。"
+            "value": "由 `rh run --worktree` 创建的独立检出副本，让 AI 智能体可以在自己的分支上工作。"
           }
         },
         "zh-Hant": {
@@ -21968,7 +21968,7 @@
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Noch kein git-Repository zum Anzeigen. Heften Sie einen Ordner an, der in einem liegt, oder wählen Sie einen Ordner aus."
+            "value": "Noch kein git-Repository zum Anzeigen. Hefte einen Ordner an, der in einem liegt, oder wähle einen Ordner aus."
           }
         },
         "el": {
@@ -21986,7 +21986,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Todavía no hay ningún repositorio de git que mostrar. Fije una carpeta que esté en uno, o elija una carpeta."
+            "value": "Todavía no hay ningún repositorio de git que mostrar. Fija una carpeta que esté en uno, o elige una carpeta."
           }
         },
         "fa": {
@@ -22268,7 +22268,7 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "களஞ்சியம்"
+            "value": "Repository"
           }
         },
         "te": {
@@ -22658,7 +22658,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Yapay Zekâ İçin @ Bahsetme"
+            "value": "AI İçin @ Bahsetme"
           }
         },
         "uk": {
@@ -22736,7 +22736,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "نشانی پرونده (URL)"
+            "value": "نشانی فایل (URL)"
           }
         },
         "fr": {
@@ -23294,7 +23294,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "نام پرونده"
+            "value": "نام فایل"
           }
         },
         "fr": {
@@ -23558,7 +23558,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Calea folderului părinte"
+            "value": "Calea dosarului părinte"
           }
         },
         "ru": {
@@ -23666,7 +23666,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "مسیر با escape برای شل"
+            "value": "مسیر با escape برای پوسته"
           }
         },
         "fr": {
@@ -23678,7 +23678,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "נתיב עם escape ל-shell"
+            "value": "נתיב עם escape למעטפת"
           }
         },
         "hi": {
@@ -23720,7 +23720,7 @@
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Laluan Dilepaskan untuk Shell"
+            "value": "Laluan dengan Escape untuk Shell"
           }
         },
         "nl": {
@@ -25478,7 +25478,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "未啟用任何智慧代理"
+            "value": "未啟用任何代理程式"
           }
         }
       }
@@ -25640,7 +25640,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Застосунок %1$@ не встановлено; натомість використовується %2$@."
+            "value": "Програму %1$@ не встановлено; натомість використовується %2$@."
           }
         },
         "ur": {
@@ -25826,7 +25826,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Застосунок «%@» не встановлено."
+            "value": "Програму «%@» не встановлено."
           }
         },
         "ur": {
@@ -26252,7 +26252,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "δεν υπάρχει σύνδεση στο %@"
+            "value": "δεν υπάρχει σύνδεσμος στο %@"
           }
         },
         "en": {
@@ -26516,7 +26516,7 @@
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "gelinkt naar %@, maar die map staat niet in PATH"
+            "value": "gelinkt op %@, maar die map staat niet in PATH"
           }
         },
         "pl": {
@@ -26840,7 +26840,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ממוזג עם שכבת ההגדרות הייעודית לכל מחשב %@"
+            "value": "ממוזג עם שכבת התצורה הייעודית לכל מחשב %@"
           }
         },
         "hi": {
@@ -28826,7 +28826,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "將智慧代理加入 general.agents，例如 %@。"
+            "value": "將代理程式加入 general.agents，例如 %@。"
           }
         }
       }
@@ -28964,19 +28964,19 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`claude` ஐ ஒருமுறை தொடங்கி ஒரு prompt ஐ அனுப்பவும்; Claude Code handler ஐப் பதிவு செய்யும்."
+            "value": "`claude` ஐ ஒருமுறை தொடங்கி ஒரு ப்ராம்ப்டை அனுப்பவும்; Claude Code handler ஐப் பதிவு செய்யும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`claude` ను ఒకసారి ప్రారంభించి ఒక prompt పంపండి; Claude Code handler ను రిజిస్టర్ చేస్తుంది."
+            "value": "`claude` ను ఒకసారి ప్రారంభించి ఒక ప్రాంప్ట్ పంపండి; Claude Code handler ను రిజిస్టర్ చేస్తుంది."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "เรียกใช้ `claude` สักครั้งแล้วส่ง prompt หนึ่งครั้ง; Claude Code จะลงทะเบียน handler."
+            "value": "เรียกใช้ `claude` สักครั้งแล้วส่งพรอมต์หนึ่งครั้ง; Claude Code จะลงทะเบียน handler."
           }
         },
         "tr": {
@@ -28988,7 +28988,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Запустіть `claude` один раз і надішліть запит; Claude Code зареєструє обробник."
+            "value": "Запустіть `claude` один раз і надішліть промпт; Claude Code зареєструє обробник."
           }
         },
         "ur": {
@@ -29168,7 +29168,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Shell profilinize %@ klasörünü PATH’e ekleyin."
+            "value": "Kabuk profilinize %@ klasörünü PATH’e ekleyin."
           }
         },
         "uk": {
@@ -30140,7 +30140,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "شغّل `rh setup`، أو فعّل Right Here في إعدادات النظام › عام › عناصر الدخول والملحقات › Finder."
+            "value": "شغّل `rh setup`، أو فعّل Right Here في إعدادات النظام › عام › عناصر تسجيل الدخول والامتدادات › Finder."
           }
         },
         "bn": {
@@ -31982,7 +31982,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "检查驱动器或 iCloud Drive 是否可用，或运行 `rh config sync push` 创建文件夹，或使用 `rh config sync enable --folder <folder>` 选择其他文件夹。"
+            "value": "检查驱动器或 iCloud 云盘是否可用，或运行 `rh config sync push` 创建文件夹，或使用 `rh config sync enable --folder <folder>` 选择其他文件夹。"
           }
         },
         "zh-Hant": {
@@ -35804,7 +35804,7 @@
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "समक्रमित"
+            "value": "सिंक झाले"
           }
         },
         "ms": {
@@ -37754,7 +37754,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "更多代理選項"
+            "value": "更多代理程式選項"
           }
         }
       }
@@ -37802,7 +37802,7 @@
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "پرونده جدید"
+            "value": "فایل جدید"
           }
         },
         "fr": {
@@ -38300,7 +38300,7 @@
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Mẫu có sẵn cho tác nhân"
+            "value": "Mẫu có sẵn cho tác tử"
           }
         },
         "zh-Hans": {
@@ -38312,7 +38312,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "代理預設"
+            "value": "代理程式預設"
           }
         }
       }
@@ -38378,13 +38378,13 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "पथ कॉपी हो गया।"
+            "value": "पाथ कॉपी हो गया।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Path disalin."
+            "value": "Jalur disalin."
           }
         },
         "it": {
@@ -38462,7 +38462,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "คัดลอกพาธแล้ว"
+            "value": "คัดลอกเส้นทางแล้ว"
           }
         },
         "tr": {
@@ -38744,7 +38744,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here לא הצליחה לבצע את הפעולה: %@"
+            "value": "‏Right Here לא הצליח לבצע את הפעולה: %@"
           }
         },
         "hi": {
@@ -39218,7 +39218,7 @@
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ у застосунку для комп’ютера"
+            "value": "%@ у програмі для комп’ютера"
           }
         },
         "ur": {
@@ -39656,7 +39656,7 @@
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%@ en el último terminal usado"
+            "value": "%@ en la última terminal usada"
           }
         },
         "fa": {
@@ -41306,7 +41306,7 @@
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "পর্যালোচনা"
+            "value": "পর্যালোচনা করুন"
           }
         },
         "de": {
@@ -42218,7 +42218,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在此處打開、拷貝路徑、啟動代理"
+            "value": "在此處打開、拷貝路徑、啟動代理程式"
           }
         }
       }

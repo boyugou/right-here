@@ -56,7 +56,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏Right Here מבקש מהמסוף שלך לפתוח חלון בתיקייה שבחרת ולהריץ את הפקודה שבחרת, כמו סוכן הבינה המלאכותית שלך."
+            "value": "‏Right Here מבקש מהמסוף שלכם לפתוח חלון בתיקייה שבחרתם ולהריץ את הפקודה שבחרתם, כמו סוכן ה-AI שלכם."
           }
         },
         "hi": {
@@ -122,7 +122,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here solicită terminalului dvs. să deschidă o fereastră în folderul ales și să ruleze comanda selectată, de exemplu agentul dvs. AI."
+            "value": "Right Here solicită terminalului dvs. să deschidă o fereastră în dosarul ales și să ruleze comanda selectată, de exemplu agentul dvs. AI."
           }
         },
         "ru": {
@@ -152,7 +152,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here, terminalinizden seçtiğiniz klasörde bir pencere açmasını ve seçtiğiniz komutu, örneğin yapay zekâ ajanınızı, çalıştırmasını ister."
+            "value": "Right Here, terminalinizden seçtiğiniz klasörde bir pencere açmasını ve seçtiğiniz komutu, örneğin AI ajanınızı, çalıştırmasını ister."
           }
         },
         "uk": {
@@ -182,7 +182,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Right Here 會請求你的終端機在所選資料夾中開啟視窗，並執行你選擇的指令，例如你的 AI 代理。"
+            "value": "Right Here 會請求你的終端機在所選資料夾中開啟視窗，並執行你選擇的指令，例如你的 AI 代理程式。"
           }
         }
       }

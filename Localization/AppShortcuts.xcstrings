@@ -62,13 +62,13 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "${applicationName} के साथ पथ कॉपी करें"
+            "value": "${applicationName} के साथ पाथ कॉपी करें"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Salin path dengan ${applicationName}"
+            "value": "Salin jalur dengan ${applicationName}"
           }
         },
         "it": {
@@ -146,7 +146,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "คัดลอกพาธด้วย ${applicationName}"
+            "value": "คัดลอกเส้นทางด้วย ${applicationName}"
           }
         },
         "tr": {
@@ -398,7 +398,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Άνοιγμα στο terminal με ${applicationName}"
+            "value": "Άνοιγμα στο τερματικό με ${applicationName}"
           }
         },
         "en": {
@@ -428,7 +428,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "פתיחה בטרמינל עם ${applicationName}"
+            "value": "פתיחה במסוף עם ${applicationName}"
           }
         },
         "hi": {
@@ -734,7 +734,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "使用 ${applicationName} 启动代理"
+            "value": "使用 ${applicationName} 启动智能体"
           }
         },
         "zh-Hant": {

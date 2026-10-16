@@ -62,13 +62,13 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "किसी फ़ाइल या फ़ोल्डर का पथ क्लिपबोर्ड पर कॉपी करता है।"
+            "value": "किसी फ़ाइल या फ़ोल्डर का पाथ क्लिपबोर्ड पर कॉपी करता है।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Menyalin path file atau folder ke clipboard."
+            "value": "Menyalin jalur file atau folder ke clipboard."
           }
         },
         "it": {
@@ -146,7 +146,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "คัดลอกพาธของไฟล์หรือโฟลเดอร์ไปยังคลิปบอร์ด"
+            "value": "คัดลอกเส้นทางของไฟล์หรือโฟลเดอร์ไปยังคลิปบอร์ด"
           }
         },
         "tr": {
@@ -248,13 +248,13 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "पथ कॉपी करें"
+            "value": "पाथ कॉपी करें"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Salin Path"
+            "value": "Salin Jalur"
           }
         },
         "it": {
@@ -332,7 +332,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "คัดลอกพาธ"
+            "value": "คัดลอกเส้นทาง"
           }
         },
         "tr": {
@@ -494,7 +494,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Creează un fișier nou dintr-unul dintre șabloanele tale, într-un dosar."
+            "value": "Creează un fișier nou dintr-unul dintre șabloanele dvs., într-un dosar."
           }
         },
         "ru": {
@@ -800,7 +800,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "פותח תיקייה באפליקציית הטרמינל שלכם."
+            "value": "פותח תיקייה באפליקציית המסוף שלכם."
           }
         },
         "hi": {
@@ -866,7 +866,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Deschide un dosar în aplicația ta de terminal."
+            "value": "Deschide un dosar în aplicația dvs. de terminal."
           }
         },
         "ru": {
@@ -878,7 +878,7 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "உங்கள் டெர்மினல் பயன்பாட்டில் கோப்புறையைத் திறக்கும்."
+            "value": "உங்கள் டெர்மினல் செயலியில் கோப்புறையைத் திறக்கும்."
           }
         },
         "te": {
@@ -956,7 +956,7 @@
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Άνοιγμα στο Terminal"
+            "value": "Άνοιγμα στο τερματικό"
           }
         },
         "en": {
@@ -986,7 +986,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "פתיחה בטרמינל"
+            "value": "פתיחה במסוף"
           }
         },
         "hi": {
@@ -1004,7 +1004,7 @@
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Apri nel Terminale"
+            "value": "Apri nel terminale"
           }
         },
         "ja": {
@@ -1292,7 +1292,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "代理"
+            "value": "智能体"
           }
         },
         "zh-Hant": {
@@ -1736,13 +1736,13 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "पथ शैली"
+            "value": "पाथ शैली"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Gaya Path"
+            "value": "Gaya Jalur"
           }
         },
         "it": {
@@ -1820,7 +1820,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "รูปแบบพาธ"
+            "value": "รูปแบบเส้นทาง"
           }
         },
         "tr": {
@@ -2102,7 +2102,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "מפעיל סוכן AI בתיקייה, באפליקציית הטרמינל שלכם."
+            "value": "מפעיל סוכן AI בתיקייה, באפליקציית המסוף שלכם."
           }
         },
         "hi": {
@@ -2168,7 +2168,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Pornește un agent AI într-un dosar, în aplicația ta de terminal."
+            "value": "Pornește un agent AI într-un dosar, în aplicația dvs. de terminal."
           }
         },
         "ru": {
@@ -2180,7 +2180,7 @@
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "உங்கள் டெர்மினல் பயன்பாட்டில் ஒரு கோப்புறையில் AI முகவரைத் தொடங்கும்."
+            "value": "உங்கள் டெர்மினல் செயலியில் ஒரு கோப்புறையில் AI முகவரைத் தொடங்கும்."
           }
         },
         "te": {
@@ -2222,7 +2222,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在终端 App 中于文件夹内启动 AI 代理。"
+            "value": "在终端 App 中于文件夹内启动 AI 智能体。"
           }
         },
         "zh-Hant": {
@@ -2408,7 +2408,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "启动 AI 代理"
+            "value": "启动 AI 智能体"
           }
         },
         "zh-Hant": {
@@ -2594,7 +2594,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "AI 代理"
+            "value": "AI 智能体"
           }
         },
         "zh-Hant": {
@@ -2666,13 +2666,13 @@
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "पथ शैली"
+            "value": "पाथ शैली"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Gaya Path"
+            "value": "Gaya Jalur"
           }
         },
         "it": {
@@ -2750,7 +2750,7 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "รูปแบบพาธ"
+            "value": "รูปแบบเส้นทาง"
           }
         },
         "tr": {

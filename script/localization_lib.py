@@ -126,7 +126,8 @@ def scripts_in(text: str) -> set[str]:
 
 def wrong_script(script: str, value: str, english: str) -> bool:
     found = scripts_in(value)
-    if not found or value == english:
+    # A name kept as it is in a right-to-left language carries the direction mark that makes it start the line on the right.
+    if not found or value.replace(RIGHT_TO_LEFT_MARK, "").replace(LEFT_TO_RIGHT_MARK, "") == english:
         return False
     if script == "Latn":
         return bool(found - LETTERS["Latn"])
