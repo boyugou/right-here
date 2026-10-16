@@ -18,7 +18,7 @@ body:
     id: doctor
     attributes:
       label: Output of `rh doctor --report`
-      description: Run `rh doctor --report` and paste its output as it is. It holds no text of your config file, and the home folder and the account name are removed.
+      description: Run `rh doctor --report` and paste its output as it is. It holds nothing your config says (names, commands, folders and the text of its errors are left out), and the home folder and the account name are removed.
     validations:
       required: true
   - type: input

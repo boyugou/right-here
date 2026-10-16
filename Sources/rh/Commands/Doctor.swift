@@ -9,10 +9,10 @@ struct Doctor: AsyncParsableCommand {
         discussion: "Each check has a status (ok, warn, fail, needs-user) and, when something is wrong, a fix. Exits with status 1 if any check fails."
     )
 
-    @Flag(help: "Print JSON.")
+    @Flag(help: "Print JSON, for you and your AI agent. It holds the names, commands and paths from your config as they are, so it is not for a public issue: --report is.")
     var json = false
 
-    @Flag(help: "Print a report for a bug report, as Markdown: the versions of rh and the app, macOS and the processor, the checks, and the counts of the config check. The home folder is shown as ~ and the account name is removed; it holds no text of the config.")
+    @Flag(help: "Print a report for a public bug report, as Markdown: the versions of rh and the app, macOS and the processor, the checks in Right Here's own words, and the counts of the config check. What your config says (names, commands, folders, the text of its errors) is left out and shown as …; the home folder is shown as ~ and the account name is removed.")
     var report = false
 
     @Flag(help: "Also test the whole chain a Finder click uses, through the extension. Restarts the extension and may show a permission prompt.")

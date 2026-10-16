@@ -19,6 +19,15 @@ public struct LocalizedMessage: Sendable, Equatable {
     public func english() -> String {
         Localizer.english.render(self)
     }
+
+    /// The sentence with its values left out (shown as `…`), except the numbers and the values at the positions named: Right Here's own
+    /// wording and nothing a config or a file put into it. For a report that is pasted where everyone reads it.
+    public func english(showingOnly positions: Set<Int> = []) -> String {
+        let shown = arguments.enumerated().map { index, value in
+            positions.contains(index) || (!value.isEmpty && value.utf8.allSatisfy { $0 >= UInt8(ascii: "0") && $0 <= UInt8(ascii: "9") }) ? value : "…"
+        }
+        return Localizer.english.render(LocalizedMessage(key, shown))
+    }
 }
 
 /// `{"code": "doctor.config.missing", "args": ["/path"], "text": "none at /path; defaults apply"}`: the code and the values

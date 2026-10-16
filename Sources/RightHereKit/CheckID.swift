@@ -53,6 +53,19 @@ public enum CheckID: Hashable, Sendable {
         if case .agent = self { true } else { false }
     }
 
+    /// Whether the row can hold text that the config gave (an app's or an agent's name, an agent's command, the error that quotes a value, the folder the
+    /// config syncs with) or that a probe took from it. `rh doctor --report` leaves such text out, and a report an AI agent reads marks it as data. There
+    /// is no `default`: a new check has to be put on one side or the other.
+    public var quotesTheConfig: Bool {
+        switch self {
+        case .config, .terminalDefault, .editorDefault, .agents, .agent, .finderMenu, .finderActivity, .finderChain, .finderLaunch,
+             .syncFolder, .syncRemote, .syncState, .syncCommands, .syncConflict:
+            true
+        case .claudeLink, .finderRunner, .services, .cliLink, .finderExtension:
+            false
+        }
+    }
+
     /// The catalog text that titles the row, in every language. An agent's row is titled with the agent's own name.
     public var titleKey: LocalizationKey? {
         switch self {

@@ -1,9 +1,11 @@
 import Foundation
 import RightHereCore
 
-/// `rh doctor --report`: what a person pastes into a bug report, as Markdown. It holds the versions of rh and of the app, the macOS version and
-/// the processor, the doctor's own lines, and the count of what the config check found. It never holds the text of the config file, and the
-/// home folder and the account name are taken out of everything in it (`Privacy`), so it does not say who the person is or where they keep things.
+/// `rh doctor --report`: what a person pastes into a public bug report, as Markdown. It holds the versions of rh and of the app, the macOS version and
+/// the processor, the doctor's rows in Right Here's own words, and the count of what the config check found. It never holds what the config says:
+/// the rows that can quote it (an app's or an agent's name, an agent's command, the text of an error, the folder the config syncs with) show their
+/// values as `…` and the text they would have quoted not at all (`lines(for:)`). The home folder and the account name are taken out of everything
+/// in it (`Privacy`), so it does not say who the person is or where they keep things.
 public enum DoctorReport {
     public struct Identity: Sendable, Equatable {
         public var rhVersion: String
@@ -63,15 +65,57 @@ public enum DoctorReport {
         }
     }
 
+    /// What the report says for a value that a row quotes, at these places of these messages: Right Here's own files (where it looks for the config, the
+    /// overlay, which file is a link, the sync state), and the origin and the age of the last action started from Finder, whose id is the config's.
+    private static let valuesShown: [LocalizationKey: Set<Int>] = [
+        .doctorConfigMissing: [0], .doctorConfigOverlay: [0], .doctorConfigSymlink: [0], .doctorSyncStateUnreadable: [0],
+        .doctorActivityRecent: [1, 2]
+    ]
+
+    static let notShown = "(not shown: it can quote the config)"
+
+    private static func shown(_ message: LocalizedMessage) -> String {
+        message.key == .doctorVerbatim ? notShown : message.english(showingOnly: valuesShown[message.key] ?? [])
+    }
+
+    /// The lines of one check in the report. A row that cannot hold text from the config is printed as the doctor prints it. One that can (`CheckID.quotesTheConfig`)
+    /// is titled by the built-in agent's own name, or the id for one the config defines, and says its sentence with the values left out; a text the doctor
+    /// quotes as it is (`doctorVerbatim`) is not shown, and neither are the notes that quote.
+    static func lines(for check: DoctorCheck) -> [String] {
+        guard check.id.quotesTheConfig else { return check.englishLines() }
+        var title = check.title
+        if case .agent(let id) = check.id { title = KnownAgents.agent(id: id)?.name ?? check.id.rawValue }
+        var lines = ["[\(check.status.rawValue)] \(title)" + (check.detail.map { ": " + shown($0) } ?? "")]
+        lines += check.notes.filter { $0.key != .doctorVerbatim }.map { "       note: " + shown($0) }
+        let quoting = check.notes.filter { $0.key == .doctorVerbatim }.count
+        if quoting > 0 { lines.append("       note: \(quoting) more, \(notShown)") }
+        if let fix = check.fix { lines.append("       fix: " + shown(fix)) }
+        return lines
+    }
+
+    /// The most backticks in a row in `text`, counted by scalars.
+    static func longestRun(of character: Unicode.Scalar, in text: String) -> Int {
+        var longest = 0
+        var current = 0
+        for scalar in text.unicodeScalars {
+            current = scalar == character ? current + 1 : 0
+            longest = max(longest, current)
+        }
+        return longest
+    }
+
     /// The report. `configCheck` is the result line of `rh config validate --strict` (counts, never the text it quotes); `checks` are the doctor's.
     public static func markdown(identity: Identity, configCheck: String, checks: [DoctorCheck], privacy: Privacy) -> String {
-        let body = checks.flatMap { $0.englishLines() }.joined(separator: "\n")
-        // The doctor's lines go in a block as they are printed; a fence longer than any run of backticks in them keeps the block closed.
-        let fence = body.contains("```") ? "````" : "```"
+        let body = checks.flatMap(lines(for:)).joined(separator: "\n")
+        // The doctor's lines go in a block as they are printed; a fence longer than any run of backticks in them keeps the block closed, whatever a
+        // crash report's name (or anything else a row quotes) holds.
+        let fence = String(repeating: "`", count: max(3, longestRun(of: "`", in: body) + 1))
         let lines = [
             "# Right Here bug report",
             "",
-            "Made by `rh doctor --report`. The home folder is shown as `~`, the account name is removed, and the report holds no text of the config file.",
+            "Made by `rh doctor --report`, for a public issue. It holds the versions, the doctor's rows in Right Here's own words and the counts of the config check. "
+                + "What your config says (names, commands, folders and the text of its errors) is left out and shown as `…`. "
+                + "Where Right Here and its parts are installed is shown, with the home folder as `~`, and the account name is removed.",
             "",
             "- Right Here (rh): \(identity.rhVersion)",
             "- Right Here.app: \(identity.appVersion ?? "not found")",

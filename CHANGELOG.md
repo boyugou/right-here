@@ -24,7 +24,7 @@ Everything since 0.2.0.
   guard lists it.
 - Terminals: WezTerm and kitty adapters (not verified on a real machine) and split placements for Ghostty and iTerm2
   (`terminal_placement = "split-right"` and `"split-down"`).
-- `rh doctor --report` (versions, the doctor's rows, the home folder as `~`), `rh run --language` (so Shortcuts names a new file in the person's language),
+- `rh doctor --report` (versions, the doctor's rows without anything the config says, the home folder as `~`), `rh run --language` (so Shortcuts names a new file in the person's language),
   and a warning from `rh doctor` when the Finder extension has crashed since it was installed, with the newest crash report's name.
 - The setup window is rebuilt: six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders), every text in the thirty-language
   catalog, and a check that fails the gate when a view shows a literal. The preview script renders each section (`--tab`).

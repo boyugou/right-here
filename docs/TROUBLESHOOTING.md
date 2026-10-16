@@ -154,8 +154,10 @@ until the file is fixed, so look there first when the menu is not what you set.
 ## Sending a bug report
 
 Run `rh doctor --report` and send its output as it is. It names the versions of rh, of Right Here.app and of macOS, the
-processor, every doctor line and the counts of the config check. It holds no text of your config file, and the home folder
-(shown as `~`) and the account name are removed from it. (The doctor lines can name an agent or an app you set up.)
+processor, every doctor line in Right Here's own words and the counts of the config check. What your config says (the names of
+apps and agents, their commands, the folder you sync with, the text of an error) is left out of it and shown as `…`, and the home
+folder (shown as `~`) and the account name are removed from it. `rh doctor --json` is not for a public issue: it holds those
+names, commands and paths as they are, for you and your AI agent.
 
 ## `rh config sync` will not pull or push
 
