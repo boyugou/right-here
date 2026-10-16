@@ -520,6 +520,58 @@ struct CLITests {
         #expect(try git(["worktree", "list"], in: repo).split(separator: "\n").count == 1)
     }
 
+    @Test func theWorktreeCommandsRefuseAFolderThatDoesNotExistAndMakeNothing() throws {
+        // docs/DESIGN.md 9.0: a typo is reported and never replaced by the folder around it. The repository around a folder that is not there
+        // used to be used: `rh worktree add --folder <typo>` made a worktree and a branch in it.
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let missing = repo.appendingPathComponent("no/such/folder").path
+        for arguments in [["worktree", "list", missing], ["worktree", "add", "feature-x", "--folder", missing], ["worktree", "remove", "feature-x", "--folder", missing]] {
+            let result = try rh.run(arguments)
+            #expect(result.status == 1, "rh \(arguments.joined(separator: " ")) ended with \(result.status) and printed: \(result.standardOutput)")
+            #expect(result.standardOutput.isEmpty, Comment(rawValue: result.standardOutput))
+            #expect(result.standardError.contains("\(missing) does not exist."), Comment(rawValue: result.standardError))
+        }
+        #expect(try git(["worktree", "list"], in: repo).split(separator: "\n").count == 1, "a worktree was made for a folder that is not there")
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here").path))
+        #expect(try git(["branch", "--list", "feature-x"], in: repo).isEmpty)
+        // A folder that is there, or a file in the repository, still finds the repository.
+        for folder in [repo.appendingPathComponent("sub").path, repo.appendingPathComponent("README.md").path] {
+            let listed = try rh.run(["worktree", "list", folder])
+            #expect(listed.status == 0 && listed.standardOutput.contains(repo.lastPathComponent), "\(folder): \(listed.standardError)")
+        }
+    }
+
+    @Test func aWordLikeASubcommandThatIsNoFolderIsSaidToBeAMistypedSubcommand() throws {
+        // `rh worktree ad` is `rh worktree list ad`, since listing is what `rh worktree` does: it listed the repository and exited 0.
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        for (typed, meant) in [("ad", "add"), ("lst", "list"), ("remov", "remove"), ("ls", "list")] {
+            let result = try rh.run(["worktree", typed], inFolder: repo)
+            #expect(result.status == 1 && result.standardOutput.isEmpty, "rh worktree \(typed): \(result.standardOutput)")
+            #expect(result.standardError.contains("/\(typed) does not exist. Did you mean \"rh worktree \(meant)\"?"), Comment(rawValue: result.standardError))
+        }
+        // A word with a slash is a path and nothing else, and a folder that is there is a folder whatever its name is.
+        let path = try rh.run(["worktree", "./ad"], inFolder: repo)
+        #expect(path.status == 1 && !path.standardError.contains("Did you mean"), Comment(rawValue: path.standardError))
+        try FileManager.default.createDirectory(at: repo.appendingPathComponent("ad"), withIntermediateDirectories: true)
+        let folder = try rh.run(["worktree", "ad"], inFolder: repo)
+        #expect(folder.status == 0 && folder.standardOutput.contains(repo.lastPathComponent), Comment(rawValue: folder.standardError))
+    }
+
+    @Test func aWorktreeRunNamesAFolderThatIsNotThereAndMakesNothing() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let missing = repo.appendingPathComponent("sub/typo").path
+        let result = try rh.run(["run", "agent.marker@faketerm", "--worktree", "--branch", "feature-q", "--container", missing])
+        #expect(result.status == 1, Comment(rawValue: result.standardError))
+        #expect(result.standardError.contains("\(missing) does not exist."), "it said: \(result.standardError)")
+        #expect(!FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here").path))
+        #expect(try git(["branch", "--list", "feature-q"], in: repo).isEmpty)
+        let dry = try rh.run(["run", "agent.marker@faketerm", "--worktree", "--dry-run", "--json", "--container", missing])
+        #expect(dry.status == 1 && (dry.json as? [String: Any])?["ok"] as? Bool == false, Comment(rawValue: dry.standardOutput))
+    }
+
     @Test("the checker knows exactly the options that run and menu have, so a new option cannot slip past it")
     func theCheckerKnowsTheOptionsOfRunAndMenu() throws {
         for (command, known) in [("run", InvocationCheck.runOptions), ("menu", InvocationCheck.menuOptions)] {

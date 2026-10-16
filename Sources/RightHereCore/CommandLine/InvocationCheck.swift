@@ -27,6 +27,13 @@ public enum InvocationCheck {
         values: ["--origin", "--container", "--language"]
     )
 
+    /// What to add to "<word> does not exist" for a word that was read as a folder (`rh worktree ad` is `rh worktree list ad`, since `list`
+    /// is what `rh worktree` does) when it is close to the name of a subcommand: a folder that is not there and a misspelt `add` look the same.
+    public static func subcommandHint(for word: String, of command: String, in subcommands: [String]) -> String? {
+        guard !word.contains("/"), let close = Suggestion.closest(to: word, in: subcommands) else { return nil }
+        return "Did you mean \"rh \(command) \(close)\"?"
+    }
+
     /// The first problem with the command line as one sentence for standard error, or `nil` when ArgumentParser may read it.
     /// `commands` are the root's subcommands.
     public static func problem(_ arguments: [String], commands: [String]) -> String? {

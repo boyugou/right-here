@@ -104,6 +104,9 @@ struct Run: AsyncParsableCommand {
     /// removed again, and one that existed before is never touched.
     private func runInWorktree(_ ref: ActionRef, config: Config, here: HereContext, localizer: Localizer, runtime: Runtime) async throws {
         guard let folder = here.workingDirectory(facts: runtime.facts) else {
+            // The same refusals as without --worktree: a folder that is not there is named, and is not replaced by the folder around it.
+            if let missing = here.firstMissingPath(facts: runtime.facts) { try await fail(PlanError.pathNotFound(missing.path)) }
+            if let target = here.unplaceableTarget(facts: runtime.facts), target.reason == .unreadable { try await fail(PlanError.unreadable(target.url.path)) }
             throw ValidationError("--worktree requires a folder target.")
         }
         guard let root = runtime.facts.gitRoot(containing: folder) else {
