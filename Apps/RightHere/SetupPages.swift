@@ -526,20 +526,23 @@ struct AIPage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            section(.appAiPromptTitle, .appAiPromptBody) {
+            section(.appAiPromptTitle) {
+                Prose(key: .appAiPromptBody, home: model.homePath)
                 Button(l10n.string(.appCopySetupPrompt)) { model.copySetupPrompt() }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
             }
 
-            section(.appAiMCPTitle, .appAiMCPBody) {
+            section(.appAiMCPTitle) {
+                Prose(key: .appAiMCPBody, home: model.homePath)
                 CodeBlock(code: SetupSnippets.mcpConfiguration(command: model.mcpCommand))
                 Button(l10n.string(.appCopyMCPConfig)) { model.copyMCPConfiguration() }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
 
-            section(.appAiPluginTitle, .appAiPluginBody) {
+            section(.appAiPluginTitle) {
+                Prose(key: .appAiPluginBody, home: model.homePath)
                 CodeBlock(code: SetupSnippets.pluginCommands)
                 Button(l10n.string(.appCopyPluginCommands)) { model.copyPluginCommands() }
                     .buttonStyle(.bordered)
@@ -548,15 +551,11 @@ struct AIPage: View {
         }
     }
 
-    private func section<Actions: View>(_ title: LocalizationKey, _ text: LocalizationKey, @ViewBuilder actions: () -> Actions) -> some View {
+    private func section<Content: View>(_ title: LocalizationKey, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(l10n.string(title))
                 .font(.headline)
-            Text(l10n.string(text))
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            actions()
+            content()
         }
     }
 }

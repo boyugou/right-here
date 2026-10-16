@@ -24,6 +24,8 @@
 - Localization/InfoPlist.xcstrings (the permission-prompt text in the app and the extension) is complete too;
 - the SwiftUI views in Apps/ show no literal text: what a view shows is a catalog entry or `Text(verbatim:)` for a name or a
   command (script/swiftui_literals.py; it checks itself on a fixture before it looks at the code).
+- a text with a command between backticks is not shown with a plain `Text`, which would put the backticks on the screen: the window
+  writes it as code (`Prose`, `DoctorText.styled`).
 
     ./script/verify_localizations.py
     ./script/verify_localizations.py --missing de     list what a language still lacks, in every catalog
@@ -41,6 +43,9 @@ KEYS_FILE = SWIFT_DIRECTORY / "LocalizationKey.generated.swift"
 MESSAGES_FILE = SWIFT_DIRECTORY / "LocalizedMessage.generated.swift"
 # `LocalizedStringResource("key", defaultValue: "English", table: "Table")`: the app's own way of saying something, read by the
 # system by key (and table) from the app bundle, not compiled into Swift.
+# A line that names a catalog entry may show it as code (`Prose(key: .appNoPinned, ..)`, `DoctorText.styled(..)`) or map something to it
+# (`case .cliLink: .appSetupCommandLink`, whose display is the place that styles it).
+STYLED_USE = re.compile(r"\bProse\(|\bstyled\(|^\s*case\b.*:\s*\.\w+\s*$")
 RESOURCE = re.compile(r'LocalizedStringResource\(\s*"([^"]+)"\s*,\s*defaultValue:\s*"((?:[^"\\]|\\.)*)"(?:\s*,\s*table:\s*"([^"]+)")?')
 
 
@@ -163,6 +168,35 @@ def check_swiftui_literals(problems: list[str]) -> None:
                             f'entry through Localizer, or as Text(verbatim:) when it is a name or a command')
 
 
+def unstyled_uses_of(source: str, names: set[str]) -> list[tuple[int, str]]:
+    """The lines of a Swift file that name one of the catalog entries `names` (their `LocalizationKey` case names) other than to show it as code."""
+    found = []
+    for number, line in enumerate(source.splitlines(), 1):
+        if STYLED_USE.search(line):
+            continue
+        for name in re.findall(r"(?<![\w)\]])\.(\w+)\b", line):
+            if name in names:
+                found.append((number, name))
+    return found
+
+
+def check_code_in_plain_text(strings: dict, problems: list[str]) -> None:
+    """The window shows a command between backticks as code (`Prose`, `DoctorText.styled`); in a plain `Text` the backticks would be on the
+    screen, which is what the AI assistants section did with `rh setup` once. So a catalog entry with a command in it is named in Apps/ only
+    where it is shown as code or mapped to (a `case` that returns it). A net, not a proof: the `Text` that shows a mapped key is not looked at."""
+    english = source_language()
+    names = {case_name(key): key for key, entry in strings.items() if "`" in entry["localizations"][english]["stringUnit"]["value"]}
+    fixture = ["section(.a, .b) { go() }", "Prose(key: .b, home: home)", "case .cli: .b", "Text(DoctorText.styled(l10n.string(.b), home: home))",
+               "Text(l10n.string(.b))", "Text(l10n.string(.c))"]
+    found = unstyled_uses_of("\n".join(fixture), {"b"})
+    if found != [(1, "b"), (5, "b")]:
+        problems.append(f"check_code_in_plain_text: the self test found {found}, expected [(1, 'b'), (5, 'b')]")
+    for path in sorted((ROOT / "Apps").rglob("*.swift")):
+        for number, name in unstyled_uses_of(path.read_text(encoding="utf-8"), set(names)):
+            problems.append(f"{path.relative_to(ROOT)}:{number}: {names[name]} holds a command between backticks and is not shown as code, so the "
+                            f"backticks would be on the screen; use Prose(key:) or DoctorText.styled")
+
+
 def main() -> int:
     if "--missing" in sys.argv:
         code = sys.argv[sys.argv.index("--missing") + 1]
@@ -180,6 +214,7 @@ def main() -> int:
     check_languages("Localizable.xcstrings", catalog, problems)
     check_texts(strings, problems)
     check_swiftui_literals(problems)
+    check_code_in_plain_text(strings, problems)
 
     # What the App Intents are called: written on screen like the strings of the code, but read by the app from its bundle.
     intents = read_catalog("AppIntents.xcstrings")
