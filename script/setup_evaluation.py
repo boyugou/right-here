@@ -27,7 +27,8 @@ With --persona it also makes brief.txt (the whole task for the cold agent: the p
 answers.txt (what the person says when the agent asks its questions), and for a persona who already has a config it puts that config
 in the trial home. The agent is started with brief.txt and nothing else; when it ends its turn with its questions, the person's
 answers are sent to it as its next message. An agent that will not take an answer relayed by another session (a smaller model may
-not) gets --inline-answers: the answers are written into brief.txt, and it is judged on whether it wrote its questions before it used them.
+not) gets --inline-answers: the answers are written into brief.txt, and it is judged on whether its questions came before any command or edit
+that changes anything.
 
 `report` prints the commands that were run, which failed or were refused, what changed on this Mac outside the folder (it must be
 nothing), and, when the persona had a config, a diff of it.

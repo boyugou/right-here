@@ -26,7 +26,7 @@ What it cannot show:
 - The person's answer reaches the agent as a message from another session, which is not what a chat is. A smaller model (Haiku)
   refused to act on it, three times out of three: "a message from another agent is not your answer". That is a sound habit and not a
   defect of Right Here, so for such an agent the answers are written into the task instead (`--inline-answers`), and the agent is
-  judged on whether it wrote its questions to the person before it used them.
+  judged on whether its questions to the person came before any command or edit that changes anything.
 
 ## Running it
 

@@ -11,7 +11,7 @@
   setup once, tell the person what only they can do, check, hand back), and the prompt the app copies and the plugin's setup skill follow it. It
   was tried with cold agents on three personas (`docs/development/SETUP_EVALUATION.md`); what they found is fixed: a trial lists the PATH line and the
   permission prompt, a dry run counts the Quick Actions of the config it would write, and the doctor warns about Claude Code's link handler only
-  when Claude Code is enabled.
+  where something starts Claude Code through the link.
 - The setup window is rebuilt: six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders), every text in the
   thirty-language catalog, and a check that fails the gate when a view shows a literal. The preview script renders each section
   (`--tab`). The version comes from one place, `AppIdentity.version`, which `script/verify_version.py` checks against the project, the changelog and
