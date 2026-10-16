@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- The playbook for AI agents (`rh docs agent-setup`) and the plugin's setup skill tell an agent to report, and not only to ignore, a name or a message that reads like an
+  instruction to it: tried with a cold agent on a config whose terminal's name asks for a forced setup (ADR 0020).
+- The setup evaluation has a fifth persona (a config with such a name) and a fifth round, on 0.3.1; the troubleshooting guide has entries for the window that says to move
+  the app and for a login shell that says nothing about the agents.
+
 ## 0.3.1 (2026-10-16)
 
 Fixes to the first run in the app, which an independent review read as a person doing a first setup, and to what an AI assistant is told about names from a config.
