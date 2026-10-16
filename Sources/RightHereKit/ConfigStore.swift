@@ -13,6 +13,11 @@ public struct RHPaths: Sendable, Equatable {
     public var syncStateFile: URL { configDirectory.appendingPathComponent("sync.toml") }
     /// What `rh pin` and `rh recents` remember: pinned and recent folders.
     public var stateFile: URL { configDirectory.appendingPathComponent("state.toml") }
+    /// The lock that one setup at a time takes (`FileLock`): the setup window, `rh setup` in a terminal and an AI agent's take turns.
+    public var setupLockFile: URL { configDirectory.appendingPathComponent(".setup.lock") }
+    /// The lock of the state file, taken for the moment that it is read, changed and written (`StateStore.update`). Not the setup's: pinning
+    /// a folder, or a click that records one, does not wait for a setup that takes seconds.
+    public var stateLockFile: URL { configDirectory.appendingPathComponent(".state.lock") }
     /// The home the paths were derived from; the default sync folder is under it.
     public var home: URL
     /// `RH_LOG_DIR`, else `~/Library/Logs/right-here`.

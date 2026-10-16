@@ -17,22 +17,25 @@ public struct SetupActions: Sendable {
     private let helperPath: String
     private let app: URL?
     private let trialHome: URL?
+    private let lockTimeout: Duration
 
     /// - Parameters:
     ///   - helperPath: The `rh` that ships in the app: what the runner script and the Quick Actions run.
     ///   - app: The app that has the Finder extension (the one that is running).
+    ///   - lockTimeout: How long setup waits for another one that is running (`SetupRunner`).
     public init(facts: any SystemFacts = LiveSystemFacts(), paths: RHPaths? = nil, runner: any ProcessRunner = LiveProcessRunner(), helperPath: String,
-                app: URL? = nil, trialHome: URL? = LiveSystemFacts.homeOverride) {
+                app: URL? = nil, trialHome: URL? = LiveSystemFacts.homeOverride, lockTimeout: Duration = .seconds(120)) {
         self.facts = facts
         self.paths = paths ?? RHPaths.current(facts: facts)
         self.runner = runner
         self.helperPath = helperPath
         self.app = app
         self.trialHome = trialHome
+        self.lockTimeout = lockTimeout
     }
 
     private var setup: SetupRunner {
-        SetupRunner(facts: facts, paths: paths, runner: runner, rhPath: helperPath, app: app, trialHome: trialHome)
+        SetupRunner(facts: facts, paths: paths, runner: runner, rhPath: helperPath, app: app, trialHome: trialHome, lockTimeout: lockTimeout)
     }
 
     /// Sets Right Here up, as `rh setup` does: the config file (made from `choices` and what is installed, only when there is none), the
@@ -97,10 +100,8 @@ public struct SetupActions: Sendable {
     }
 
     private func edit(_ change: (inout StateStore) -> Bool) -> SetupNotice? {
-        var state = StateStore.load(paths: paths)
-        guard change(&state) else { return nil }
         do {
-            try state.save(paths: paths)
+            try StateStore.update(paths: paths) { _ = change(&$0) }
             return nil
         } catch {
             return .failed(error.localizedDescription)

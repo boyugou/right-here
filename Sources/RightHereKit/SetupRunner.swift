@@ -57,6 +57,7 @@ public struct SetupRunner: Sendable {
     private let systemWide: Bool
     private let localizer: Localizer
     private let settle: Duration
+    private let lockTimeout: Duration
 
     /// - Parameters:
     ///   - rhPath: The `rh` that the runner script and the Quick Actions run: the one inside Right Here.app for the app, the running
@@ -64,8 +65,11 @@ public struct SetupRunner: Sendable {
     ///   - app: The Right Here.app that has the Finder extension: the one that holds `rhPath`, or the installed one; `nil` when there is none.
     ///   - trialHome: The folder `RH_HOME` names, when it is set.
     ///   - systemWide: Whether what is registered for the whole Mac may be changed. By default, when there is no trial home.
+    ///   - lockTimeout: How long a setup waits for another one that is running (the setup window, `rh setup` in a terminal, an AI agent's)
+    ///     before it gives up. A full run takes seconds: the extension is registered and given three to settle, and the doctor starts the login shell.
     public init(facts: any SystemFacts = LiveSystemFacts(), paths: RHPaths? = nil, runner: any ProcessRunner = LiveProcessRunner(), rhPath: String, app: URL?,
-                trialHome: URL? = LiveSystemFacts.homeOverride, systemWide: Bool? = nil, localizer: Localizer = .system, settle: Duration = .seconds(3)) {
+                trialHome: URL? = LiveSystemFacts.homeOverride, systemWide: Bool? = nil, localizer: Localizer = .system, settle: Duration = .seconds(3),
+                lockTimeout: Duration = .seconds(120)) {
         self.facts = facts
         self.paths = paths ?? RHPaths.current(facts: facts)
         self.runner = runner
@@ -75,11 +79,19 @@ public struct SetupRunner: Sendable {
         self.systemWide = systemWide ?? (trialHome == nil)
         self.localizer = localizer
         self.settle = settle
+        self.lockTimeout = lockTimeout
     }
 
     public func run(_ request: SetupRequest) async throws -> SetupReport {
         // The runner script and the Services would point into a folder that disappears when the app quits.
         if InstallError.isTranslocated(rhPath) { throw InstallError.translocated }
+        // One setup at a time: a second one waits its turn and then finds everything in place, which it says. A dry run writes nothing, so
+        // it neither waits nor makes the lock file (and the folder of it).
+        var turn: FileLock?
+        if !request.dryRun {
+            do { turn = try await FileLock.acquire(paths.setupLockFile, timeout: lockTimeout) } catch is FileLock.Busy { throw InstallError.anotherSetupIsRunning }
+        }
+        defer { turn?.release() }
         let installer = Installer(home: facts.homeDirectory)
         var report = SetupReport(dryRun: request.dryRun, trialHome: trialHome?.path)
 

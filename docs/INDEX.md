@@ -22,6 +22,7 @@
   - [0017 The setup window has six sections](decisions/0017-setup-window-sections.md)
   - [0018 One setup command, a playbook for AI agents, and cold agents as the test](decisions/0018-setup.md)
   - [0019 The Finder extension does not override the directory-observing methods](decisions/0019-no-swift-override-of-directory-observing.md)
+  - [0021 One setup at a time, the state file in one step, and each Quick Action replaced on its own](decisions/0021-one-setup-at-a-time.md)
 - [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.

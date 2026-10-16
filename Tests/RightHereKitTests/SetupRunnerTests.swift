@@ -91,9 +91,9 @@ private final class Machine: Sendable {
         }
     }
 
-    func runner(app: URL?? = nil, trial: Bool = true, rhPath: String? = nil) -> SetupRunner {
+    func runner(app: URL?? = nil, trial: Bool = true, rhPath: String? = nil, lockTimeout: Duration = .seconds(120)) -> SetupRunner {
         SetupRunner(facts: facts, paths: paths, runner: processRunner, rhPath: rhPath ?? rh, app: app ?? self.app,
-                    trialHome: trial ? home : nil, localizer: .english, settle: .zero)
+                    trialHome: trial ? home : nil, localizer: .english, settle: .zero, lockTimeout: lockTimeout)
     }
 
     func writeConfig(_ text: String, local: String? = nil) throws {
@@ -654,6 +654,64 @@ struct SetupRunnerTests {
         #expect(!installed.warnings.contains { $0.contains("build folder") })
         let trial = try await machine.runner(trial: true, rhPath: build).run(.setup())
         #expect(!trial.warnings.contains { $0.contains("build folder") })
+    }
+
+    // MARK: One setup at a time
+
+    @Test func aSetupWaitsForTheOneThatIsRunningAndMakesNothingUntilItIsDone() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        let runner = machine.runner()
+        // Another setup (the window, a terminal, an AI agent's) has its turn.
+        let other = try FileLock.acquireNow(machine.paths.setupLockFile, timeout: .seconds(1))
+        let waiting = Task { try await runner.run(.setup()) }
+        try await Task.sleep(for: .milliseconds(600))
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path), "it did not wait for its turn")
+        #expect(!FileManager.default.fileExists(atPath: Installer(home: machine.home).runnerScript.path))
+        other.release()
+        let report = try await waiting.value
+        #expect(report.ok && outcomes(report)["config"] == .created)
+    }
+
+    @Test func twoSetupsAtOnceTakeTurnsAndTheSecondFindsEverythingInPlaceAndSaysSo() async throws {
+        // They failed and left Quick Actions missing; the config was made by one and kept by the other. Now whichever comes second finds
+        // every piece in place.
+        for round in 0..<3 {
+            let machine = try Machine(shellOutput: "claude\ncodex\n"); defer { machine.cleanUp() }
+            let runner = machine.runner()
+            let choices = SetupChoices(terminal: "terminal", editor: "zed", agents: ["claude"])
+            async let first = runner.run(.setup(choices: choices))
+            async let second = runner.run(.setup(choices: choices))
+            let reports = try await [first, second]
+            #expect(reports.allSatisfy { $0.ok }, "round \(round)")
+            let waited = try #require(reports.first { outcomes($0)["config"] == .unchanged }, "round \(round): both made the config")
+            #expect(outcomes(waited) == ["config": .unchanged, "runnerScript": .unchanged, "cliLink": .unchanged, "services": .unchanged, "finderExtension": .skipped], "round \(round)")
+            #expect(reports.filter { outcomes($0)["config"] == .created }.count == 1, "round \(round)")
+            #expect(Installer(home: machine.home).installedServices().count == 6, "round \(round)")
+        }
+    }
+
+    @Test func aSetupThatDoesNotGetItsTurnInTimeSaysSoAndWritesNothing() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        let other = try FileLock.acquireNow(machine.paths.setupLockFile, timeout: .seconds(1))
+        defer { other.release() }
+        await #expect(throws: InstallError.anotherSetupIsRunning) { _ = try await machine.runner(lockTimeout: .milliseconds(300)).run(.setup()) }
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
+        #expect(InstallError.anotherSetupIsRunning.errorDescription?.contains("run `rh setup` again") == true)
+        // The window says it in the same words: it shows the error of a setup that did not start.
+        let window = SetupActions(facts: machine.facts, paths: machine.paths, runner: machine.processRunner, helperPath: machine.rh, trialHome: machine.home, lockTimeout: .milliseconds(200))
+        let result = await window.setUp()
+        guard case .failed(let said)? = result.notice else { Issue.record("no failure was reported: \(String(describing: result.notice))"); return }
+        #expect(said == InstallError.anotherSetupIsRunning.errorDescription && result.report == nil)
+    }
+
+    @Test func aDryRunNeitherWaitsForAnotherSetupNorMakesTheLockFile() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        let report = try await machine.runner(lockTimeout: .milliseconds(100)).run(.setup(dryRun: true))
+        #expect(report.ok && !FileManager.default.fileExists(atPath: machine.paths.configDirectory.path), "a dry run writes nothing")
+        let other = try FileLock.acquireNow(machine.paths.setupLockFile, timeout: .seconds(1))
+        defer { other.release() }
+        let again = try await machine.runner(lockTimeout: .milliseconds(100)).run(.setup(dryRun: true))
+        #expect(again.ok, "a dry run waited for a setup that is running")
     }
 
     // MARK: What is left for the person

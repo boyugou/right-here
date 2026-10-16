@@ -83,8 +83,40 @@ private struct RH {
         return item
     }
 
+    /// An `rh` that was started and may still be running: `finish` waits for it. Its output is read as it comes, so a process that writes a
+    /// lot is never held up by a full pipe.
+    final class Running: @unchecked Sendable {
+        let process: Process
+        private let group = DispatchGroup()
+        private var outData = Data(), errData = Data()
+        private let timer: DispatchWorkItem
+
+        fileprivate init(process: Process, out: Pipe, err: Pipe, timer: DispatchWorkItem) {
+            self.process = process
+            self.timer = timer
+            // Threads of their own: a read that is queued behind the test threads, which wait in `finish`, would never start.
+            for (pipe, isOut) in [(out, true), (err, false)] {
+                group.enter()
+                Thread { [self] in
+                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                    if isOut { outData = data } else { errData = data }
+                    group.leave()
+                }.start()
+            }
+        }
+
+        var isRunning: Bool { process.isRunning }
+
+        func finish() -> Output {
+            group.wait()
+            process.waitUntilExit()
+            timer.cancel()
+            return Output(status: process.terminationStatus, standardOutput: String(decoding: outData, as: UTF8.self), standardError: String(decoding: errData, as: UTF8.self))
+        }
+    }
+
     /// `set` and `unset` change the environment of this one command, after the harness has made it.
-    func run(_ arguments: [String], set: [String: String] = [:], unset: [String] = [], inFolder: URL? = nil) throws -> Output {
+    func start(_ arguments: [String], set: [String: String] = [:], unset: [String] = [], inFolder: URL? = nil) throws -> Running {
         let process = Process()
         process.executableURL = binary
         process.arguments = arguments
@@ -97,12 +129,11 @@ private struct RH {
         process.standardOutput = out
         process.standardError = err
         try process.run()
-        let timer = watchdog(process)
-        defer { timer.cancel() }
-        let outData = out.fileHandleForReading.readDataToEndOfFile()
-        let errData = err.fileHandleForReading.readDataToEndOfFile()
-        process.waitUntilExit()
-        return Output(status: process.terminationStatus, standardOutput: String(decoding: outData, as: UTF8.self), standardError: String(decoding: errData, as: UTF8.self))
+        return Running(process: process, out: out, err: err, timer: watchdog(process))
+    }
+
+    func run(_ arguments: [String], set: [String: String] = [:], unset: [String] = [], inFolder: URL? = nil) throws -> Output {
+        try start(arguments, set: set, unset: unset, inFolder: inFolder).finish()
     }
 }
 
@@ -126,6 +157,22 @@ struct CLITests {
         let attributes = try FileManager.default.attributesOfItem(atPath: rh.configDirectory.appendingPathComponent("state.toml").path)
         #expect((attributes[.posixPermissions] as? Int) == 0o600)
         #expect(try rh.run(["unpin", "Sources"]).standardOutput.hasPrefix("unpinned: /"))
+    }
+
+    @Test func pinsMadeAtTheSameTimeAreAllKept() throws {
+        // Twenty `rh pin` started together kept twelve: each read the state, added its folder and wrote it back.
+        let rh = try RH(); defer { rh.cleanUp() }
+        let folders = try (0..<20).map { index -> URL in
+            let folder = rh.configDirectory.appendingPathComponent("pin-\(index)")
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            return folder
+        }
+        let running = try folders.map { try rh.start(["pin", $0.path]) }
+        let results = running.map { $0.finish() }
+        #expect(results.allSatisfy { $0.status == 0 }, "\(results.map(\.standardError).filter { !$0.isEmpty })")
+        let pins = try #require(try rh.run(["pins", "--json"]).json as? [String])
+        #expect(pins.count == 20, "\(20 - pins.count) of 20 pins were lost")
+        #expect(Set(pins.map { URL(fileURLWithPath: $0).lastPathComponent }) == Set(folders.map(\.lastPathComponent)))
     }
 
     @Test func anEmptyListOfPinsOrRecentsSaysWhyOnStandardErrorOnly() throws {
@@ -2063,6 +2110,48 @@ struct SetupCommandTests {
         #expect(try steps(result)["config"] == "created")
     }
 
+    @Test func twoSetupsAtOnceBothSucceedAndLeaveEveryQuickAction() throws {
+        // The setup window and `rh setup` in a terminal (or an agent's) at the same moment: one of them failed ("couldn't be moved to
+        // Services"), and Quick Actions were left missing. Several rounds, since whether they met is a matter of timing.
+        for round in 0..<6 {
+            let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+            let flags = ["setup", "--json", "--terminal", "terminal", "--editor", "textedit", "--agents", "claude"]
+            let first = try rh.start(flags), second = try rh.start(flags)
+            let results = [first.finish(), second.finish()]
+            for result in results {
+                #expect(result.status == 0, "round \(round): \(result.standardError)")
+                #expect((result.json as? [String: Any])?["ok"] as? Bool == true, "round \(round): \(result.standardOutput.prefix(400))")
+            }
+            // Whichever came second found everything in place; a third run changes nothing.
+            let third = try rh.run(flags)
+            #expect(try steps(third) == ["config": "unchanged", "runnerScript": "unchanged", "cliLink": "unchanged", "services": "unchanged", "finderExtension": "skipped"], "round \(round)")
+            let configs = try results.map { try steps($0)["config"] }
+            #expect(configs.filter { $0 == "created" }.count == 1, "round \(round): \(configs)")
+        }
+    }
+
+    @Test func aSetupWaitsForTheLockThatAnotherSetupHoldsAndThenRuns() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let paths = RHPaths(environment: [:], home: home)
+        // Another setup has its turn: the lock is held until it is let go of.
+        let other = try FileLock.acquireNow(paths.setupLockFile, timeout: .seconds(1))
+        defer { other.release() }
+        let waiting = try rh.start(["setup", "--json"])
+        Thread.sleep(forTimeInterval: 1.5)
+        #expect(waiting.isRunning, "rh setup did not wait for the setup that was running")
+        #expect(!FileManager.default.fileExists(atPath: paths.configFile.path) && !FileManager.default.fileExists(atPath: home.appendingPathComponent(".local").path), "it began before its turn")
+        other.release()
+        let result = waiting.finish()
+        #expect(result.status == 0, "\(result.standardError)")
+        #expect(try steps(result) == ["config": "created", "runnerScript": "created", "cliLink": "created", "services": "created", "finderExtension": "skipped"])
+        // A dry run has no turn to wait for.
+        let blocker = try FileLock.acquireNow(paths.setupLockFile, timeout: .seconds(1))
+        defer { blocker.release() }
+        let dry = try rh.run(["setup", "--dry-run", "--json"])
+        #expect(dry.status == 0, "\(dry.standardError)")
+    }
+
     @Test func installNamesAPieceAndSendsEveryoneElseToSetup() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let bare = try rh.run(["install"])
@@ -2077,7 +2166,8 @@ struct SetupCommandTests {
         #expect(result.status == 0, "\(result.standardError)")
         #expect(result.standardOutput.hasPrefix("  Runner script: created ("), "\(result.standardOutput)")
         #expect(FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run").path))
-        #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent(".config").path))
+        // The lock that a setup takes (one at a time) is the only thing of the config folder: no config, no Quick Actions.
+        #expect(try FileManager.default.contentsOfDirectory(atPath: home.appendingPathComponent(".config/right-here").path) == [".setup.lock"])
         #expect(!FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Services").path))
     }
 
