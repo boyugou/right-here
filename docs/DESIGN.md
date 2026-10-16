@@ -287,8 +287,11 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    of the instruction the agent reads, so they are for folders the person trusts; the built-ins are read-only only
    in their wording.
 3. The sandbox stays on for the extension. What it cannot do is done by `rh` through the runner script,
-   which only the user can install and which passes on only `run` and `probe`: a compromised extension
-   cannot call `rh setup`, `rh install`, `rh uninstall` or `rh init --force`.
+   which only the user can install and which passes on only the shapes the extension sends (`run --alert <action>
+   --origin <origin> [--container <folder>] -- <items>` and the two probes) and builds the command from the parts it
+   has checked: a compromised extension cannot call `rh setup`, `rh install`, `rh uninstall` or `rh init --force`, and
+   cannot start an agent with its permission prompts off (`--bypass-permissions`), with a prompt of its own (`--arg`) or
+   in a new worktree. What it can still ask for is any action of the person's config on files that exist.
 4. Configuration is never loaded from the folder being acted on. The one other place a config comes from is the sync
    folder, which item 7 guards.
 5. `rh` itself is not privileged and needs no administrator rights anywhere.

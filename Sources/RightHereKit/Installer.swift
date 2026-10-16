@@ -85,17 +85,79 @@ public struct Installer: Sendable {
     }
 
     /// The script a sandboxed Finder extension runs through `NSUserUnixTask`: it runs outside the
-    /// sandbox, with an empty PATH, so it names `rh` by absolute path. The extension passes the
-    /// subcommand (`run --alert <action> …`).
+    /// sandbox, with an empty PATH, so it names `rh` by absolute path.
+    ///
+    /// It passes on only the shapes the extension sends (`RunnerArguments`), and builds the command it starts from the parts it has checked,
+    /// so what a compromised extension asks for can only be one of those: `rh run` has options that start an agent with its permission
+    /// prompts off (`--bypass-permissions`), with a first prompt of the caller's choosing (`--arg`), or in a new worktree, and
+    /// `rh setup`, `rh install` and `rh init --force` change the machine. The action must be an action id (`ActionRef`'s grammar, and not an
+    /// option: `--alert` takes none, so a first word with a dash would be read as one), the origin one the extension has, the folder an
+    /// absolute path. What follows `--` is the items, which are never read as options. A refusal says so on standard error, which the
+    /// extension writes to its log.
     public static func runnerScriptText(rhPath: String) -> String {
-        """
+        let origins = FinderMenuKind.allCases.map(\.rawValue).joined(separator: "|")
+        let placements = TerminalPlacement.configNames.joined(separator: "|")
+        let letters = "abcdefghijklmnopqrstuvwxyz0123456789"
+        return """
         #!/bin/zsh -f
         # Installed by `rh setup`. The Finder extension runs this outside its sandbox.
-        # Only `run` and `probe` are passed on: the extension has no reason to call anything else, and a
-        # compromised extension should not be able to (rh setup, rh install, rh uninstall, rh init --force, ...).
+        # It passes on exactly what the extension sends, and builds the command from the parts it has checked:
+        #   run --alert <action> --origin <origin> [--container <folder>] -- <items>
+        #   probe automation --from-extension
+        #   probe launch --from-extension [--placement <placement>]
+        # Everything else is refused, so a compromised extension cannot start an agent with its prompts off or with a
+        # prompt of its own, and cannot call rh setup, rh install, rh uninstall, rh init --force, ...
+        refuse() { echo "right-here runner: refusing: $1" >&2; exit 64; }
         case "${1:-}" in
-          run|probe) ;;
-          *) echo "right-here runner: refusing '${1:-}'" >&2; exit 64 ;;
+          run)
+            [ "${2:-}" = "--alert" ] && [ "${4:-}" = "--origin" ] || refuse "run takes --alert <action> --origin <origin>"
+            action=${3:-}
+            origin=${5:-}
+            case "$action" in
+              ''|[!\(letters)]*|*[!\(letters).@-]*) refuse "the action is not an action id" ;;
+            esac
+            case "$origin" in
+              \(origins)) ;;
+              *) refuse "the origin is not one the Finder extension sends" ;;
+            esac
+            if [ "${6:-}" = "--container" ]; then
+              container=${7:-}
+              case "$container" in
+                /*) ;;
+                *) refuse "--container takes the absolute path of a folder" ;;
+              esac
+              [ "${8:-}" = "--" ] || refuse "the items come after --"
+              shift 8
+              set -- run --alert "$action" --origin "$origin" --container "$container" -- "$@"
+            else
+              [ "${6:-}" = "--" ] || refuse "the items come after --"
+              shift 6
+              set -- run --alert "$action" --origin "$origin" -- "$@"
+            fi
+            ;;
+          probe)
+            [ "${3:-}" = "--from-extension" ] || refuse "probe takes --from-extension"
+            case "${2:-}" in
+              automation)
+                [ "$#" -eq 3 ] || refuse "probe automation takes nothing more"
+                set -- probe automation --from-extension
+                ;;
+              launch)
+                if [ "$#" -eq 3 ]; then
+                  set -- probe launch --from-extension
+                else
+                  [ "$#" -eq 5 ] && [ "${4:-}" = "--placement" ] || refuse "probe launch takes --placement <placement> and nothing more"
+                  case "${5:-}" in
+                    \(placements)) ;;
+                    *) refuse "the placement is not one the Finder extension sends" ;;
+                  esac
+                  set -- probe launch --from-extension --placement "$5"
+                fi
+                ;;
+              *) refuse "probe takes automation or launch" ;;
+            esac
+            ;;
+          *) refuse "only run and probe are passed on" ;;
         esac
         exec \(ShellQuoting.quote(rhPath)) "$@"
 
