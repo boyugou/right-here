@@ -78,7 +78,7 @@ public struct SetupLoader: Sendable {
     public func load() async -> SetupSnapshot {
         let loaded = ConfigStore.load(paths: paths)
         // Without a config the window is on its first run and offers what is installed; the login shell is asked once, for that.
-        let configExists = loaded.fileExists || loaded.localFileExists
+        let configExists = loaded.hasConfig
         let offer = configExists ? nil : await SetupOffer.make(facts: facts, runner: runner)
         let checks = await Doctor(facts: facts, paths: paths, loaded: loaded, runner: runner, rhPath: helperPath).run()
         let menu = MenuPreview.folderMenu(loaded.result, facts: facts, folder: facts.homeDirectory, localizer: localizer)

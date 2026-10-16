@@ -19,7 +19,7 @@ public enum SetupTab: String, CaseIterable, Identifiable, Sendable {
 
 /// What a sidebar row shows beside its title.
 public enum SetupBadge: Sendable, Equatable {
-    /// This many checks are not ok.
+    /// This many checks are not ok and are not the person's to leave (`SetupSummary.attentionChecks`).
     case attention(Int)
 }
 
@@ -27,7 +27,7 @@ extension SetupSummary {
     /// The badge of a sidebar row. Every tab is named, so a new one has to decide.
     public func badge(for tab: SetupTab) -> SetupBadge? {
         switch tab {
-        case .checks: openChecks.isEmpty ? nil : .attention(openChecks.count)
+        case .checks: attentionChecks.isEmpty ? nil : .attention(attentionChecks.count)
         case .overview, .menu, .ai, .worktrees, .folders: nil
         }
     }

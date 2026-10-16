@@ -9,6 +9,9 @@ public enum InstallError: Error, Equatable, LocalizedError {
     /// The app is running from the temporary copy macOS makes of a downloaded app that was not moved
     /// anywhere yet. The runner script and the Services would point into a folder that disappears.
     case translocated
+    /// The app is running from a disk image or another volume: the runner script, the command link and the Quick Actions would point into it,
+    /// and stop working when it is ejected.
+    case onAnotherVolume(path: String)
     /// Another setup (the setup window, `rh setup` in another terminal, an AI agent's) holds the turn, and did not finish in time.
     case anotherSetupIsRunning
 
@@ -22,6 +25,8 @@ public enum InstallError: Error, Equatable, LocalizedError {
             return "\(path) does not exist."
         case .translocated:
             return "Right Here is running from the temporary location macOS uses for a downloaded app. Move Right Here.app into your Applications folder, open it from there, and install again."
+        case .onAnotherVolume(let path):
+            return "Right Here is running from \(path), which is a disk image or another volume. Drag Right Here.app into your Applications folder, eject the disk image, open the app from Applications, and install again."
         case .anotherSetupIsRunning:
             return "Another setup is running (the setup window, `rh setup` in another terminal, or an AI agent's) and did not finish in time, so this one did not start. Wait for it to finish, then run `rh setup` again."
         }
@@ -30,6 +35,12 @@ public enum InstallError: Error, Equatable, LocalizedError {
     /// Whether `path` is inside App Translocation's temporary mount.
     public static func isTranslocated(_ path: String) -> Bool {
         path.contains("/AppTranslocation/")
+    }
+
+    /// Whether `path` is on a volume that is mounted under `/Volumes` (a disk image, a USB stick, a network share). A link in `/Volumes` to the
+    /// startup disk (`/Volumes/Macintosh HD`) leads to the same place as `/`, which is where Applications is, and is not one.
+    public static func isOnAnotherVolume(_ path: String, volumes: String = "/Volumes/") -> Bool {
+        URL(fileURLWithPath: path).resolvingSymlinksInPath().path.hasPrefix(volumes)
     }
 }
 
@@ -387,6 +398,9 @@ public struct FinderExtensionManager: Sendable {
             if let marker = trimmed.first {
                 if marker == "+" { state = .enabled } else if marker == "-", state != .enabled { state = .disabled }
             }
+            // `pluginkit` writes a tag for an election somebody made and none for the default, which is where an extension that macOS found and the
+            // person has not switched on stands (of the 513 plug-ins on the Mac this was measured on, 477 had no tag). It is registered, and off.
+            if state == .notRegistered { state = .disabled }
             if let path = line.split(separator: "\t").last.map(String.init), path.hasPrefix("/") { paths.append(path) }
         }
         return Status(state: state, paths: paths)

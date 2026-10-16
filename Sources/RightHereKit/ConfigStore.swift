@@ -76,6 +76,13 @@ public struct LoadedConfig: Sendable, Equatable {
     }
 
     public var config: Config { result.config }
+
+    /// Whether the person has a config, as the first run decides it: the file, the per-machine overlay, or a link to a file that is not there (a
+    /// dotfiles manager makes the link before it has cloned its repository). A read takes the link for no file, and the setup leaves it as it is,
+    /// so the window must not offer a first run whose button could only fail; the checks say what the link is (`Doctor.configCheck`).
+    public var hasConfig: Bool {
+        fileExists || localFileExists || [file, localFile].contains { ConfigProblem.danglingTarget(of: $0) != nil }
+    }
 }
 
 extension LoadedConfig {

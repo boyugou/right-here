@@ -149,22 +149,54 @@ struct SetupActionsTests {
         #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.configFile.path])])
     }
 
-    @Test func aMissingConfigIsMadeBeforeItIsOpened() async throws {
+    @Test func aMissingConfigIsNotMadeByOpeningItAndTheEditorIsNotStarted() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
         let runner = FakeProcessRunner()
-        #expect(await machine.actions(runner).openConfig() == nil)
-        #expect(FileManager.default.fileExists(atPath: machine.paths.configFile.path))
-        #expect(runner.recorded.last == ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.configFile.path]))
+        // The first run makes the config from what the person chooses; a button that made it from what was found would skip that choice.
+        guard case .failed(let said)? = await machine.actions(runner).openConfig() else { Issue.record("no failure was reported"); return }
+        #expect(said.contains("press Set Up"), "\(said)")
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
+        #expect(runner.recorded.isEmpty)
     }
 
-    @Test func aConfigThatCouldNotBeMadeIsNotOpened() async throws {
+    @Test func installOrRepairNeverMakesTheConfigAndStartsNothing() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
-        // A file where the config folder goes: it cannot be made.
-        try FileManager.default.createDirectory(at: machine.paths.configDirectory.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try "in the way".write(to: machine.paths.configDirectory, atomically: true, encoding: .utf8)
         let runner = FakeProcessRunner()
-        guard case .failed? = await machine.actions(runner).openConfig() else { Issue.record("no failure was reported"); return }
-        #expect(!runner.recorded.contains { $0.executable == "/usr/bin/open" })
+        let result = await machine.actions(runner).repair()
+        #expect(result.report == nil)
+        guard case .failed(let said)? = result.notice else { Issue.record("no failure was reported"); return }
+        #expect(said.contains("press Set Up"), "\(said)")
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
+        #expect(!FileManager.default.fileExists(atPath: Installer(home: machine.home).runnerScript.path), "nothing was installed either")
+        #expect(runner.recorded.isEmpty)
+    }
+
+    @Test func installOrRepairOfAMacThatHasAConfigIsTheSetupWithoutChoices() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try machine.writeConfig()
+        let result = await machine.actions(FakeProcessRunner()).repair()
+        let report = try #require(result.report)
+        #expect(report.step(.config)?.outcome == .unchanged)
+        #expect(report.step(.runnerScript)?.outcome == .created)
+    }
+
+    @Test func aConfigThatIsALinkToNothingIsARepairNotAFirstRun() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(atPath: machine.paths.configFile.path, withDestinationPath: machine.home.appendingPathComponent("dotfiles/config.toml").path)
+        // The window offers no first run for it (`SetupLoader`), so its buttons must not answer "choose first": the setup runs, says the config cannot be used, and leaves the link.
+        let result = await machine.actions(FakeProcessRunner()).repair()
+        #expect(result.report?.step(.config)?.outcome == .failed)
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: machine.paths.configFile.path) == machine.home.appendingPathComponent("dotfiles/config.toml").path)
+    }
+
+    @Test func aMacWithOnlyThePerMachineOverlayHasAConfigTheEditorOpens() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)
+        try "[general]\n".write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
+        let runner = FakeProcessRunner()
+        #expect(await machine.actions(runner).openConfig() == nil)
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.localConfigFile.path])])
     }
 
     @Test func anEditorThatCouldNotBeOpenedIsReported() async throws {

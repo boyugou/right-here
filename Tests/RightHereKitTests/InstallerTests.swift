@@ -302,6 +302,21 @@ struct InstallerTests {
         #expect(InstallError.isTranslocated(path) == translocated)
     }
 
+    @Test func aVolumeIsAnotherVolumeUnlessItIsALinkToTheStartupDisk() throws {
+        // `/Volumes/Macintosh HD` is a link to `/`, where Applications is; a disk image, a USB stick and a share are folders there.
+        let root = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: root) }
+        let base = root.resolvingSymlinksInPath()
+        let volumes = base.appendingPathComponent("Volumes").path + "/"
+        for helper in ["Volumes/Right Here 0.3.0/Right Here.app/Contents/Helpers", "startup/Applications/Right Here.app/Contents/Helpers"] {
+            try FileManager.default.createDirectory(at: base.appendingPathComponent(helper), withIntermediateDirectories: true)
+            try "binary".write(to: base.appendingPathComponent(helper + "/rh"), atomically: true, encoding: .utf8)
+        }
+        try FileManager.default.createSymbolicLink(atPath: base.appendingPathComponent("Volumes/Macintosh HD").path, withDestinationPath: base.appendingPathComponent("startup").path)
+        #expect(InstallError.isOnAnotherVolume(base.appendingPathComponent("Volumes/Right Here 0.3.0/Right Here.app/Contents/Helpers/rh").path, volumes: volumes))
+        #expect(!InstallError.isOnAnotherVolume(base.appendingPathComponent("Volumes/Macintosh HD/Applications/Right Here.app/Contents/Helpers/rh").path, volumes: volumes))
+        #expect(!InstallError.isOnAnotherVolume("/Applications/Right Here.app/Contents/Helpers/rh"))
+    }
+
     @Test func aHomebrewInstallKeepsThePrefixPathInsteadOfTheVersionedCellarPath() throws {
         let prefix = try makeTemporaryDirectory().appendingPathComponent("opt/homebrew")
         defer { try? FileManager.default.removeItem(at: prefix.deletingLastPathComponent().deletingLastPathComponent()) }

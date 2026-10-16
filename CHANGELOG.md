@@ -4,6 +4,18 @@
 
 - `rh setup` and `rh doctor` no longer print the marks that tell an AI agent which words are data (`⟦user⟧Ghostty⟦/user⟧`) to a person at a terminal; a pipe and the
   JSON keep them (ADR 0020).
+- First run in the app (found by an independent review of the window):
+  - Install or Repair and Open Config are not offered before the window's first look at your Mac has finished, and never make the config from what they found
+    (Set Up makes it from your choices); a click in the first seconds used to skip the choice.
+  - A first Set Up that does not come out is shown in the window, where you are looking, and not only in the footnote of the sidebar.
+  - Setting up from a disk image or another volume is refused, with the way out (drag Right Here to Applications first): the runner script and the Quick Actions
+    would have pointed into the volume.
+  - A config that is a link to a file that is not there (a dotfiles manager before its repository is cloned) is no longer offered as a first run.
+  - A Finder extension that is registered and not switched on is called that, not "not registered, install Right Here.app".
+  - `rh setup` no longer says it removed a stale extension registration that macOS refused to remove.
+  - The window reads your Mac again when you come back to it (from System Settings, an editor, or a terminal where an AI assistant ran `rh setup`).
+  - A command link whose folder is not on PATH is a note on the Checks page, no longer a reason for "Some checks need your attention" after a setup that went well.
+  - "What Right Here set up" says the Finder extension is "registered but switched off" while it is.
 - The MCP tools mark two more texts from the config as data for the agent that reads them: the permission-bypass flag of an agent (`right_here_catalog`) and the file
   extension of a new-file template, which names the icon in `right_here_menu`. The structured data stays plain.
 

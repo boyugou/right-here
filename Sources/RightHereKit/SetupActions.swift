@@ -52,18 +52,33 @@ public struct SetupActions: Sendable {
         }
     }
 
-    /// Opens the config file in the default text editor, after setup has made it when there is none. `nil` when it worked.
+    /// Install or Repair: the same setup without choices, for a Mac that has a config. It makes what is missing and changes what is out of date,
+    /// and never makes the config: a config made from what was found, without the choice the first run asks for, is not what the person would
+    /// have chosen, and the window that is not sure yet whether there is one (it has not looked) must not make it.
+    public func repair() async -> SetupResult {
+        guard existingConfigFile != nil else { return SetupResult(report: nil, notice: .failed(Self.noConfigYet)) }
+        return await setUp()
+    }
+
+    /// Opens the config file in the default text editor. A Mac with no config is told to choose first and press Set Up, which makes the file
+    /// from the choices; this does not. `nil` when it worked.
     public func openConfig() async -> SetupNotice? {
+        guard let file = existingConfigFile else { return .failed(Self.noConfigYet) }
         do {
-            if !facts.fileExists(paths.configFile) {
-                let report = try await setup.run(SetupRequest(pieces: [.config]))
-                if let failure = report.steps.first(where: { $0.outcome == .failed }) { return .failed(failure.detail?.english() ?? "The config file could not be made.") }
-            }
-            return Self.failure(of: try await runner.run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", paths.configFile.path])))
+            return Self.failure(of: try await runner.run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", file.path])))
         } catch {
             return .failed(error.localizedDescription)
         }
     }
+
+    /// The config file, or when only the per-machine overlay is there, that: what a config that exists is, for the window (`LoadedConfig.hasConfig`).
+    private var existingConfigFile: URL? {
+        let loaded = ConfigStore.load(paths: paths)
+        guard loaded.hasConfig else { return nil }
+        return loaded.localFileExists && !loaded.fileExists ? paths.localConfigFile : paths.configFile
+    }
+
+    static let noConfigYet = "There is no config file yet. Choose what you use and press Set Up: the file is made from your choices."
 
     /// Takes a folder out of the pinned ones. `nil` when it was saved, or when there was nothing to take out.
     public func unpin(_ folder: String) async -> SetupNotice? {

@@ -42,6 +42,9 @@ struct SetupView: View {
             await model.refresh()
             await model.watchExtension()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            Task { await model.refreshOnActivation() }
+        }
     }
 
     // MARK: Sidebar
@@ -198,9 +201,9 @@ struct SetupView: View {
 
             Spacer(minLength: 12)
 
-            // On the first run the card of the first section is the way in: it makes the config file from what is chosen, and these two
-            // would make it from what was found without asking.
-            if !model.needsFirstRunChoice {
+            // On the first run the card of the first section is the way in: it makes the config file from what is chosen. These two act on a
+            // config that is there, and are not offered before the first look has found out whether it is.
+            if model.configIsThere {
                 Button {
                     Task { await model.openConfig() }
                 } label: {

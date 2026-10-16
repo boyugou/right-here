@@ -67,6 +67,11 @@ final class SetupModel {
     /// while nothing is known: a window that has not looked yet must not claim a first run.
     var needsFirstRunChoice: Bool { snapshot.map { !$0.configExists } ?? false }
 
+    /// The first look has ended and found a config file: what Install or Repair and Open Config act on. Before that the window does not know
+    /// whether this is a first run (the look starts the login shell, which takes seconds), and on a first run the config is made from the
+    /// person's choices, not from what was found.
+    var configIsThere: Bool { snapshot?.configExists ?? false }
+
     func check(_ id: CheckID) -> DoctorCheck? {
         checks.first { $0.id == id }
     }
@@ -113,6 +118,14 @@ final class SetupModel {
         await refreshLoop().refresh()
     }
 
+    /// Reads the state again when the app comes to the front: the person may be back from System Settings, from the editor of the config or from a
+    /// terminal where an AI assistant ran `rh setup`, and what the window shows is old. Not while the first look runs, or while something the
+    /// person started does; each ends with a read of its own.
+    func refreshOnActivation() async {
+        guard snapshot != nil, !isWorking, !isRefreshing else { return }
+        await refresh()
+    }
+
     /// While the Finder extension is not switched on, looks at it every two seconds, so the first-run card turns into the status
     /// by itself once the person flips the switch in System Settings. A look is one `pluginkit` call, not the whole doctor; when the
     /// extension is on, one full refresh follows. It stops when the extension is ok or the window closes, and it stays out of the
@@ -153,7 +166,7 @@ final class SetupModel {
     func repair() async {
         guard !isWorking else { return }
         isWorking = true
-        let result = await actions.setUp()
+        let result = await actions.repair()
         setupReport = result.report ?? setupReport
         notice = result.notice
         isWorking = false
@@ -175,13 +188,10 @@ final class SetupModel {
         isWorking = false
     }
 
-    /// Opens the config file. A refresh follows only when the file was missing, which the checks say: the file made now is the
-    /// one the config check is waiting for, and a refresh runs the login shell, which is not needed otherwise.
+    /// Opens the config file. It does not make one: a Mac without a config chooses first.
     func openConfig() async {
         guard !isWorking else { return }
-        let wasMissing = check(.config)?.detail?.key == .doctorConfigMissing
         notice = await actions.openConfig()
-        if notice == nil, wasMissing { await refresh() }
     }
 
     func showExtensionSettings() {

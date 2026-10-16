@@ -85,6 +85,10 @@ public struct SetupRunner: Sendable {
     public func run(_ request: SetupRequest) async throws -> SetupReport {
         // The runner script and the Services would point into a folder that disappears when the app quits.
         if InstallError.isTranslocated(rhPath) { throw InstallError.translocated }
+        // The app, not a `rh` that somebody built or installed with Homebrew (a build folder is noted; its volume is the developer's business).
+        if rhPath.contains(".app/Contents/"), InstallError.isOnAnotherVolume(rhPath) {
+            throw InstallError.onAnotherVolume(path: URL(fileURLWithPath: rhPath).resolvingSymlinksInPath().path)
+        }
         // One setup at a time: a second one waits its turn and then finds everything in place, which it says. A dry run writes nothing, so
         // it neither waits nor makes the lock file (and the folder of it).
         var turn: FileLock?
@@ -309,14 +313,19 @@ public struct SetupRunner: Sendable {
         if dryRun { return SetupStep(.finderExtension, outcome, detail: .doctorVerbatim(appex)) }
         do {
             // A build folder or an old copy registered under the same identifier makes macOS drop the extension.
-            var removed: [String] = []
+            var removed: [String] = [], kept: [String] = []
             for stale in status.paths where stale != appex {
-                try? await manager.unregister(appexPath: stale)
-                removed.append(stale)
+                do {
+                    try await manager.unregister(appexPath: stale)
+                    removed.append(stale)
+                } catch {
+                    kept.append("\(stale) (\(error.localizedDescription))")
+                }
             }
             let again = try await manager.registerAndConfirm(appexPath: appex, settle: settle)
             var text = appex
             if !removed.isEmpty { text += "; removed the stale registration of " + removed.joined(separator: ", ") }
+            if !kept.isEmpty { text += "; could not remove the stale registration of " + kept.joined(separator: ", ") }
             if again { text += "; the first registration did not stay, so it was registered again" }
             return SetupStep(.finderExtension, outcome, detail: .doctorVerbatim(text))
         } catch {

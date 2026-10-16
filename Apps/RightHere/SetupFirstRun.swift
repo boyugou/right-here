@@ -184,6 +184,9 @@ struct FirstRunChooser: View {
 struct SetupDonePanel: View {
     let report: SetupReport
     let home: String
+    /// Whether the Finder extension is switched on now. Registering it is what setup does; the switch in System Settings is the person's, and the
+    /// mark of the extension says so while it is off, directly above the step of the card that tells them where.
+    let extensionIsOn: Bool
     private let l10n = Localizer.system
 
     var body: some View {
@@ -192,7 +195,7 @@ struct SetupDonePanel: View {
                 .font(.headline)
             FlowLayout(spacing: 16) {
                 ForEach(Array(report.steps.enumerated()), id: \.offset) { _, step in
-                    SetupStepMark(step: step, home: home)
+                    SetupStepMark(step: step, home: home, extensionIsOn: extensionIsOn)
                 }
             }
             ForEach(Array(report.steps.enumerated()), id: \.offset) { _, step in
@@ -249,6 +252,7 @@ extension SetupDonePanel {
 struct SetupStepMark: View {
     let step: SetupStep
     let home: String
+    let extensionIsOn: Bool
     private let l10n = Localizer.system
 
     var body: some View {
@@ -270,6 +274,9 @@ struct SetupStepMark: View {
 
     /// How it came out, when "created" does not say it: updated, already in place, skipped, failed, or how many Quick Actions.
     private var remark: String? {
+        if step.piece == .finderExtension, !extensionIsOn, step.outcome == .created || step.outcome == .updated || step.outcome == .unchanged {
+            return l10n.render(.doctorExtensionDisabled)
+        }
         switch step.outcome {
         case .created:
             guard step.piece == .services, let detail = step.detail else { return nil }

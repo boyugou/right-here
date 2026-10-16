@@ -32,6 +32,26 @@ struct SetupSummaryTests {
         #expect(summary.openChecks.map(\.id) == [.cliLink, .finderRunner])
     }
 
+    @Test func theCommandLinkNotBeingOnPathDoesNotMakeAFirstRunThatWentWellNeedAttention() {
+        // The runner script and the MCP command name `rh` by its full path, so only a person who types `rh` in a terminal has anything to do.
+        // The Checks page still lists the row; it is the window's state and the badge that leave it out.
+        let notOnPath = DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath("~/.local/bin/rh"), fix: .doctorFixCliPath("~/.local/bin"))
+        let summary = SetupSummary(checks: [check(.config, .ok), notOnPath, check(.finderExtension, .ok)])
+        #expect(summary.state == .allSet)
+        #expect(summary.openChecks.map(\.id) == [.cliLink], "the page of the checks lists it")
+        #expect(summary.badge(for: .checks) == nil)
+        #expect(summary.openTitles(in: .english).isEmpty)
+    }
+
+    @Test func aMissingCommandLinkAndEveryOtherRowStillNeedAttention() {
+        let missing = DoctorCheck(.cliLink, status: .warn, detail: .doctorCliMissing("~/.local/bin/rh"), fix: .doctorFixRunSetup)
+        let summary = SetupSummary(checks: [missing, check(.editorDefault, .warn)])
+        #expect(summary.state == .needsAttention)
+        #expect(summary.badge(for: .checks) == .attention(2))
+        let onlyPath = DoctorCheck(.cliLink, status: .warn, detail: .doctorCliNotOnPath("~/.local/bin/rh"), fix: .doctorFixCliPath("~/.local/bin"))
+        #expect(SetupSummary(checks: [onlyPath, check(.editorDefault, .warn)]).badge(for: .checks) == .attention(1), "the editor still counts")
+    }
+
     @Test("the first-run card is due while the extension is not registered or is switched off, and only then", arguments: [
         (DoctorCheck.Status.fail, true), (.needsUser, true), (.warn, false), (.ok, false)
     ])

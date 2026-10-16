@@ -67,6 +67,7 @@ struct ProgressRow: View {
 /// What the last action said: a confirmation, or why it did not work (with the symbol that says which).
 struct NoticeLine: View {
     let notice: SetupNotice
+    var font: Font = .caption2
     private let l10n = Localizer.system
 
     var body: some View {
@@ -75,7 +76,7 @@ struct NoticeLine: View {
                 .foregroundStyle(notice.isProblem ? Color.orange : Color.green)
                 .accessibilityHidden(true)
             Text(l10n.render(notice.message, isolatingValues: true))
-                .font(.caption2)
+                .font(font)
                 .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
         }
@@ -108,9 +109,17 @@ struct OverviewPage: View {
             if model.needsFirstRunChoice {
                 // No config file yet: what is installed, to choose from, before anything is written.
                 FirstRunChooser(model: model)
+                // A Set Up that did not come out leaves no config, so the chooser stays: what went wrong is said here, where the person is
+                // looking, and not only in the footnote of the sidebar. A refusal that started nothing (the app runs from a disk image) has
+                // no report, only the notice.
+                if let report = model.setupReport {
+                    SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
+                } else if let notice = model.notice, notice.isProblem {
+                    NoticeLine(notice: notice, font: .callout)
+                }
             } else {
                 if let report = model.setupReport, model.summary.state != .allSet || report.hasNews {
-                    SetupDonePanel(report: report, home: model.homePath)
+                    SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
                 }
 
                 if model.summary.extensionNeedsSetup {

@@ -19,12 +19,18 @@ public struct SetupSummary: Sendable, Equatable {
 
     public var state: State {
         if checks.isEmpty { return .checking }
-        return openChecks.isEmpty ? .allSet : .needsAttention
+        return attentionChecks.isEmpty ? .allSet : .needsAttention
     }
 
-    /// The checks that are anything but ok, warnings included, in the doctor's order.
+    /// The checks that are anything but ok, warnings included, in the doctor's order: the Checks page lists all of them.
     public var openChecks: [DoctorCheck] {
         checks.filter { $0.status != .ok }
+    }
+
+    /// The open checks the window asks the person to look at: all but those that are theirs to leave as they are (`DoctorCheck.isOptional`),
+    /// so that a first run that went well does not end in "some checks need your attention" for a convenience.
+    public var attentionChecks: [DoctorCheck] {
+        openChecks.filter { !$0.isOptional }
     }
 
     /// The Finder extension is the one step of the first run that only the person can take, in System Settings, and the
@@ -41,7 +47,7 @@ public struct SetupSummary: Sendable, Equatable {
 
     /// The titles of the open checks, in a language, so a banner can say which ones ("Finder extension and Default editor").
     public func openTitles(in localizer: Localizer) -> [String] {
-        openChecks.map { $0.title(in: localizer) }
+        attentionChecks.map { $0.title(in: localizer) }
     }
 
     /// The terminal a click opens, by the name the system gives it; `nil` when there is none or nothing is known yet.
@@ -52,6 +58,13 @@ public struct SetupSummary: Sendable, Equatable {
 }
 
 extension DoctorCheck {
+    /// Whether the person may leave this as it is: the command link is in place and its folder is not on PATH. That matters to someone who types
+    /// `rh` in a terminal; the Finder menu, the Quick Actions and an AI assistant's tools run the `rh` that the runner script and the MCP command
+    /// name by its full path.
+    public var isOptional: Bool {
+        id == .cliLink && detail?.key == .doctorCliNotOnPath
+    }
+
     /// For the default terminal and editor checks: the app a click opens, as the name the check carries, whatever the
     /// language of the window (the check is a message with the name as its value; reading the name back out of the
     /// rendered sentence works in the few languages one has tried). `nil` when the check says there is no such app.
