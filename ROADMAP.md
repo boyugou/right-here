@@ -3,9 +3,15 @@
 ## Working
 
 - Core: actions, planner, config, menu, catalogs, path styles, quoting (with real-shell tests).
-- `rh`: run, actions, menu, agents, apps, config, init, install, uninstall, docs, doctor, finder, mcp, probe.
-- Terminal adapters: Ghostty (1.3 and later for commands, new window or new tab), iTerm2 (3.0 and later for commands, new window or new tab), Terminal.app. Agent
-  launchers: typed, terminal link, desktop app.
+- `rh`: run, actions, menu, agents, apps, pin, unpin, pins, recents, worktree, config, setup, init, install, uninstall, docs, doctor, finder, mcp, probe.
+- `rh setup`: the whole first-time job in one idempotent command (the config from what is installed or from `--terminal`, `--editor` and `--agents`, the runner
+  script, the command link, the Quick Actions, the Finder extension, then the checks), with a plain and a `--json` report that ends in what only the person can do. The
+  setup window's first run runs the same code. The playbook an AI agent follows (`rh docs agent-setup`) was tried with cold agents on three personas
+  ([`docs/development/SETUP_EVALUATION.md`](docs/development/SETUP_EVALUATION.md)).
+- Terminal adapters: Ghostty (1.3 and later for commands; window and tab) and Terminal.app are tried on a real Mac. The Ghostty and iTerm2 splits, iTerm2 (3.0 and later),
+  WezTerm and kitty are built in and not yet tried on a real Mac (`rh doctor --probe-launch` checks yours). Agent launchers: typed, terminal link, desktop app.
+- Agents in isolated git worktrees (`rh worktree`, `rh run --worktree`, the MCP tool), pinned and recent folders, and an agent's permission prompts skipped only when
+  you ask for it per agent (`bypass_permissions`, off by default, never for a preset).
 - `rh doctor --probe-launch`: a throwaway terminal session started through the Finder extension proves a
   typed command runs, in the right folder, in the login shell.
 - The app (summary, details, a launch test button) with its icon, and the Finder extension; installer;
@@ -26,7 +32,8 @@
   diagnostics, a JSON Schema with required keys and patterns, a backup on `rh init --force`.
 - App Intents: native Shortcuts and Spotlight actions (`OpenInTerminalIntent`, `StartAgentIntent`, `NewFileIntent`, `CopyPathIntent`) that execute safely without requiring the Finder extension.
 - Config sync: `rh config sync` (push, pull, status) syncing across Macs through iCloud Drive or any local folder, with `--allow-commands` safety protection for executable templates.
-- Setup window: six sections (Overview, Finder menu preview, Checks, AI Assistants, Worktrees, Folders) with live status and a 3-step first run.
+- Setup window: six sections (Overview, Finder menu preview, Checks, AI Assistants, Worktrees, Folders) with live status; its first run offers what is installed
+  and sets it up. `rh doctor` also notices a Finder extension that crashed since it was installed.
 - Official Claude Code plugin with dedicated skills (`setup`, `open-here`, `review-changes`).
 
 ## Next
@@ -37,9 +44,8 @@ The items that need a person with a real Finder and terminals are listed with th
 - Confirm a real Finder click reaching `rh` (everything after it, typed launch included, is verified by
   `rh doctor --probe-launch`), and the first-ever Automation prompt on a clean system.
 - Homebrew cask and formula for distribution.
-- Built-in adapters for WezTerm, kitty, Alacritty, Warp, cmux, to be written and checked against the real
-  terminals (not yet tested with these terminals); a config-defined launcher (`open_args`, `run_args`) exists
-  for the meantime.
+- Trying iTerm2, WezTerm and kitty on a real Mac, and built-in adapters for Alacritty, Warp and cmux, to be written and checked against the real terminals; a
+  config-defined launcher (`open_args`, `run_args`) exists for the meantime.
 - Native-speaker review of the translations.
 - A menu-only App Store build (scope and risks in the design notes).
 
@@ -47,12 +53,10 @@ The items that need a person with a real Finder and terminals are listed with th
 
 Researched against macOS 26 as of October 2026; each needs a short decision record before it is built.
 
-1. **Recent and pinned folders**: a recents command, a pin command, a private state file, offered as intent entities.
-2. **Ghostty split-pane placement**: open new sessions in an adjacent split pane instead of a new window or tab.
-3. **Project-local overrides** (`.right-here.toml` at the git root) behind an explicit trust step pinned to the file
+1. **Project-local overrides** (`.right-here.toml` at the git root) behind an explicit trust step pinned to the file
    content, as direnv does. Reverses the rule that config is never read from the acted-on folder, so it needs its own
    record and mutation entries first.
-4. **Git-aware workflow actions**: launch agents directly inside a newly isolated git worktree for clean branch testing.
+2. **Recent folders and pins as App Intent entities**, so Shortcuts and Spotlight can choose one.
 
 ## Open
 
