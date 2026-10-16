@@ -42,7 +42,7 @@ agents first.
   `RH_CONFIG`, `RH_CONFIG_DIR`, `RH_LOG_DIR`) is refused with status 64, because it is what `RH_HOME=$TRIAL rh setup` becomes when
   `$TRIAL` is not set, and "not set" would be your real home.
 - Changed setup, its report, a sentence of the doctor or the agent playbook (`docs/AGENT_SETUP.md`)? Run the cold-agent
-  evaluation (`docs/development/SETUP_EVALUATION.md`): fresh AI agents set Right Here up for three personas in a sandbox that cannot
+  evaluation (`docs/development/SETUP_EVALUATION.md`): fresh AI agents set Right Here up for four personas in a sandbox that cannot
   touch your Mac.
 - Test an action without side effects with `rh run <id> --dry-run`.
 - Point a command at a throwaway config with `RH_CONFIG_DIR=/tmp/x`.

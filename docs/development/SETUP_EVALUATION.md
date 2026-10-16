@@ -109,6 +109,36 @@ The person says:
 
 If an agent asks anything else, the person says: Use your judgement, but do not change anything I did not ask for.
 
+### A config that does not parse
+
+Edited the config by hand yesterday, and a bracket is missing, which they do not know. Wants Zed as the editor and Codex added. Gets the
+first prompt. The config they have (line 4 lost its closing bracket):
+
+```toml
+# Right Here: my config.
+version = 1
+
+[general
+terminal = "ghostty"
+editor = "vscode"
+agents = ["claude"]
+
+# My menu, which I like as it is.
+[menu]
+items = ["open.terminal", "agents", "-", "copy-path.absolute"]
+```
+
+The person says:
+
+> I use Ghostty and Zed, and Claude Code and Codex. I edited my config by hand yesterday and I think something is not right with it.
+
+When the agent has told them what is wrong with the file and asks whether it may fix it, the person says: Yes, please fix only what is broken, and keep my comments and my menu as they are.
+
+What a pass looks like here: the dry run says the config step `would-fail` with the line; the agent stops and tells the person what and where
+before it edits anything (setup never rewrites a config); after the person agrees it makes the smallest edit (the closing bracket), runs
+`rh config validate --strict`, looks again with a dry run, makes the edits that the choices need (the editor, the second agent), validates
+again, and runs setup once; the comments and the menu are as they were.
+
 ## The prompts
 
 The setup window copies one of two forms, depending on whether `rh` is already linked on the PATH. A test holds both to the code
