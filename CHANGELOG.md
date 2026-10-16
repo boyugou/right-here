@@ -1,43 +1,53 @@
 # Changelog
 
-## Unreleased
+## 0.3.2 (2026-10-16)
 
-- `rh setup` without `--agents` says so when the login shell said nothing about the agents (a config with no agents was made without a word); `rh docs` and the refusal of the
-  real-home guard say how to leave `RH_NO_UI` out; the mutation check can be asked `--check` (the gate does) whether every pattern still matches, and no longer stops for a change
-  in the Services folder that is not Right Here's.
+A patch release: the setup window and `rh setup` after the first run's review, a login shell that says nothing, the built-in agents checked against their own documentation, and
+words that now agree with macOS and with what the app does.
 
-- Found by the review of the changes after 0.3.0's review (round 20): Install or Repair on a Mac that has only the per-machine overlay no longer makes `config.toml` from what
-  it found; a look at the Finder extension's registration is stopped after twenty seconds and says "pluginkit did not answer" (before, a stuck daemon held the window's first look,
-  the doctor and the setup for ever); `rh uninstall` says "Unregistered" only when macOS did; coming back to the window reads the Mac again at most every twenty seconds
-  (each read starts your login shell); a failed setup is shown until the next read of its own, and no longer next to a config that somebody else has made meanwhile; the window
-  keeps looking at the Finder extension after it is on (every half minute), so switching it off again brings the first-run card back.
+### Setup and the window
 
-- A login shell that says nothing (a startup file that exits, such as an `exec tmux`, or one that waits or is slow) is no longer taken for one that did not find the agents:
-  `rh doctor` and the Checks page say "did not say whether it is installed", `rh agents` leaves the command unlisted as found or not found, and the dry-run note of `rh run`
-  does not claim "command not found".
+- Install or Repair on a Mac that has only the per-machine overlay no longer makes `config.toml` from what it found. A look at the Finder extension's registration is stopped after twenty
+  seconds and says "pluginkit did not answer" (before, a stuck daemon held the window's first look, the doctor and the setup for ever); `rh uninstall` says "Unregistered" only when macOS did;
+  coming back to the window reads the Mac again at most every twenty seconds (each read starts your login shell); a failed setup is shown until the next read of its own, and no longer
+  next to a config that somebody else has made meanwhile; the window keeps looking at the Finder extension after it is on (every half minute), so switching it off again brings the
+  first-run card back.
+- `rh setup` without `--agents` says so when the login shell said nothing about the agents (a config with no agents was made without a word). `rh docs` and the refusal of the real-home
+  guard say how to leave `RH_NO_UI` out.
 
-- The playbook for AI agents (`rh docs agent-setup`) and the plugin's setup skill tell an agent to report, and not only to ignore, a name or a message that reads like an
-  instruction to it: tried with a cold agent on a config whose terminal's name asks for a forced setup (ADR 0020).
-- The setup evaluation has a fifth persona (a config with such a name) and a fifth round, on 0.3.1; the troubleshooting guide has entries for the window that says to move
-  the app and for a login shell that says nothing about the agents.
+### A login shell that says nothing
 
-- The catalog of built-in agents was read against each tool's own documentation (ADR 0024) and what was wrong is corrected: Gemini CLI starts on a first prompt with `-i` and
-  skips its approvals with `--approval-mode=yolo` (its `-y` is documented as deprecated); GitHub Copilot takes its prompt with `-i`; Kimi Code's `-p`
-  ran the prompt once and exited, so it has no first-prompt flag, and its approvals flag is spelled `--yolo`; Goose is started with `goose session` (a bare `goose` prints its help) and
-  has no prompt, continue or bypass entry; Muse Code, whose documentation names none of them (`--auto-approve` does not exist), has only its command; Cody is no longer built in
-  (its free and pro plans ended in 2025 and its command line is a one-shot chat); the first run looks an agent up by the first word of its command. Presets are offered for five
-  agents (Claude Code, Codex, Antigravity, Gemini CLI, GitHub Copilot); GitHub Copilot and Kimi Code get the continue and resume entries their documentation names. The `instructionFile` field of an agent, which nothing read, is gone.
-- The permission alert and the Settings paths name System Settings the way macOS writes it in Malay ("Seting Sistem"), Arabic Finder is "فايندر" in Reveal, and the Open With
-  submenu is called what Finder's own is in Traditional Chinese: `script/verify_macos_wording.py` (which CI runs, and which now also reads the Login Items & Extensions and
-  Keyboard Shortcuts paths) found them on macOS 26 and 27.
+- A login shell that says nothing (a startup file that exits, such as an `exec tmux`, or one that waits or is slow) is no longer taken for one that did not find the agents: `rh doctor` and the
+  Checks page say "did not say whether it is installed", `rh agents` leaves the command unlisted as found or not found, and the dry-run note of `rh run` does not claim "command not found".
+- The question put to the login shell (which agents are installed, what is on the `PATH`) no longer loses its first line to a startup file that prints a word without ending the line
+  (`printf Welcome` in `.zshrc` or `config.fish`: with fish 4.9 the first agent was read as `Welcomeclaude`, so it was not found), and a word a startup file prints can no longer pass for an
+  agent that was asked about only because it was printed.
+
+### The built-in agents
+
+- The catalog was read against each tool's own documentation (ADR 0024) and what was wrong is corrected: Gemini CLI starts on a first prompt with `-i` and skips its approvals with
+  `--approval-mode=yolo` (its `-y` is documented as deprecated); GitHub Copilot takes its prompt with `-i`; Kimi Code's `-p` ran the prompt once and exited, so it has no first-prompt flag,
+  and its approvals flag is spelled `--yolo`; Goose is started with `goose session` (a bare `goose` prints its help) and has no prompt, continue or bypass entry; Muse Code, whose documentation
+  names none of them (`--auto-approve` does not exist), has only its command; Cody is no longer built in (its free and pro plans ended in 2025 and its command line is a one-shot chat).
+  Presets are offered for five agents (Claude Code, Codex, Antigravity, Gemini CLI, GitHub Copilot); GitHub Copilot and Kimi Code get the continue and resume entries their documentation
+  names. The first run looks an agent up by the first word of its command, and the `instructionFile` field of an agent, which nothing read, is gone.
+
+### Words
+
+- Where the app tells you to go in System Settings, the names are the ones macOS shows: System Settings in Malay ("Seting Sistem"), Login Items & Extensions in Arabic, Brazilian Portuguese
+  and Turkish, and the Keyboard, Keyboard Shortcuts and Services panes in Indonesian, Romanian, Thai, Turkish and Ukrainian. Arabic Finder is "فايندر" in Reveal, and the Open With submenu
+  is called what Finder's own is in Traditional Chinese. `script/verify_macos_wording.py` (which CI runs, and which now reads these paths too) found them on macOS 26 and 27; the site's
+  strings were checked the same way.
 - The privacy policy says what the app does: it also reads the Finder selection when you or an AI assistant ask for it (`rh finder`, the MCP tool), sends Apple events to Finder then,
   starts your login shell to look for agent commands, and looks for its own extension's crash reports; its paragraph on the source code no longer says the code is public.
-  `rh docs sync`, the design notes and ADR 0013 list what the sync guard lists (an agent's `args` and `bypass_permissions` too); the playbook for AI agents says the command
-  link is for your terminal and the runner script is what Finder needs.
 
-- The question put to the login shell (which agents are installed, what is on the `PATH`) no longer loses its first line to a startup file that prints a word without ending the
-  line (`printf Welcome` in `.zshrc` or `config.fish`: with fish 4.9 the first agent was read as `Welcomeclaude`, so it was not found), and a word a startup file prints can no
-  longer pass for an agent that was asked about only because it was printed.
+### For AI agents and the docs
+
+- The playbook for AI agents (`rh docs agent-setup`) and the plugin's setup skill tell an agent to report, and not only to ignore, a name or a message that reads like an instruction to it:
+  tried with a cold agent on a config whose terminal's name asks for a forced setup (ADR 0020). The playbook says the command link is for your terminal and the runner script is what
+  Finder needs. The setup evaluation has a fifth persona and a fifth round, on 0.3.1.
+- `rh docs sync`, the design notes and ADR 0013 list what the sync guard lists (an agent's `args` and `bypass_permissions` too); the troubleshooting guide has entries for the window that
+  says to move the app and for a login shell that says nothing about the agents; the mutation check can be asked `--check` (the gate does) whether every pattern still matches.
 
 ## 0.3.1 (2026-10-16)
 

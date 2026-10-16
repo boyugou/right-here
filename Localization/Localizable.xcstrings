@@ -8192,7 +8192,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "فعّل Right Here في إعدادات النظام › عام › عناصر تسجيل الدخول والامتدادات › Finder."
+            "value": "فعّل Right Here في إعدادات النظام › عام › عناصر الدخول والملحقات › Finder."
           }
         },
         "bn": {
@@ -8300,7 +8300,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ative o Right Here em Ajustes do Sistema › Geral › Itens de Login e Extensões › Finder."
+            "value": "Ative o Right Here em Ajustes do Sistema › Geral › Itens de Início de Sessão e Extensões › Finder."
           }
         },
         "ro": {
@@ -8336,7 +8336,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Sistem Ayarları › Genel › Oturum Açma Öğeleri ve Uzantılar › Finder bölümünde Right Here’ı açın."
+            "value": "Sistem Ayarları › Genel › Oturum Açma Öğeleri ve Genişletmeler › Finder bölümünde Right Here’ı açın."
           }
         },
         "uk": {
@@ -13088,7 +13088,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tindakan Cepat berfungsi tanpa ekstensi: klik kanan file atau folder lalu pilih Tindakan Cepat. Untuk pintasan keyboard, buka Pengaturan Sistem › Keyboard › Pintasan Keyboard › Layanan."
+            "value": "Tindakan Cepat berfungsi tanpa ekstensi: klik kanan file atau folder lalu pilih Tindakan Cepat. Untuk pintasan keyboard, buka Pengaturan Sistem › Papan Ketik › Pintasan Papan Ketik › Layanan."
           }
         },
         "it": {
@@ -13142,7 +13142,7 @@
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Acțiunile rapide funcționează fără extensie: faceți clic dreapta pe un fișier sau dosar și alegeți Acțiuni rapide. Pentru o comandă rapidă de la tastatură, mergeți la Setări sistem › Tastatură › Comenzi rapide de la tastatură › Servicii."
+            "value": "Acțiunile rapide funcționează fără extensie: faceți clic dreapta pe un fișier sau dosar și alegeți Acțiuni rapide. Pentru o comandă rapidă de la tastatură, mergeți la Configurări sistem › Tastatură › Scurtături din tastatură › Servicii."
           }
         },
         "ru": {
@@ -13166,19 +13166,19 @@
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "การดำเนินการด่วนใช้ได้โดยไม่ต้องมีส่วนขยาย: คลิกขวาที่ไฟล์หรือโฟลเดอร์ แล้วเลือกการดำเนินการด่วน หากต้องการทางลัดแป้นพิมพ์ ไปที่ การตั้งค่าระบบ › แป้นพิมพ์ › ทางลัดแป้นพิมพ์ › บริการ"
+            "value": "การดำเนินการด่วนใช้ได้โดยไม่ต้องมีส่วนขยาย: คลิกขวาที่ไฟล์หรือโฟลเดอร์ แล้วเลือกการดำเนินการด่วน หากต้องการทางลัดแป้นพิมพ์ ไปที่ การตั้งค่าระบบ › แป้นพิมพ์ › ปุ่มลัดแป้นพิมพ์ › บริการ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Hızlı Eylemler, uzantı olmadan çalışır: bir dosyaya veya klasöre sağ tıklayıp Hızlı Eylemler'i seçin. Klavye kısayolu için Sistem Ayarları › Klavye › Klavye Kısayolları › Servisler bölümüne gidin."
+            "value": "Hızlı Eylemler, uzantı olmadan çalışır: bir dosyaya veya klasöre sağ tıklayıp Hızlı Eylemler'i seçin. Klavye kısayolu için Sistem Ayarları › Klavye › Klavye Kestirmeleri › Servisler bölümüne gidin."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Швидкі дії працюють без розширення: клацніть файл або папку правою кнопкою миші та оберіть «Швидкі дії». Щоб призначити комбінацію клавіш, відкрийте Системні параметри › Клавіатура › Комбінації клавіш › Служби."
+            "value": "Швидкі дії працюють без розширення: клацніть файл або папку правою кнопкою миші та оберіть «Швидкі дії». Щоб призначити комбінацію клавіш, відкрийте Системні параметри › Клавіатура › Клавіатурні скорочення › Сервіси."
           }
         },
         "ur": {
@@ -31814,7 +31814,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "شغّل `rh setup`، أو فعّل Right Here في إعدادات النظام › عام › عناصر تسجيل الدخول والامتدادات › Finder."
+            "value": "شغّل `rh setup`، أو فعّل Right Here في إعدادات النظام › عام › عناصر الدخول والملحقات › Finder."
           }
         },
         "bn": {
@@ -31922,7 +31922,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Execute `rh setup` ou ative o Right Here em Ajustes do Sistema › Geral › Itens de Login e Extensões › Finder."
+            "value": "Execute `rh setup` ou ative o Right Here em Ajustes do Sistema › Geral › Itens de Início de Sessão e Extensões › Finder."
           }
         },
         "ro": {
@@ -31958,7 +31958,7 @@
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh setup` komutunu çalıştırın veya Sistem Ayarları › Genel › Oturum Açma Öğeleri ve Uzantılar › Finder bölümünde Right Here’ı açın."
+            "value": "`rh setup` komutunu çalıştırın veya Sistem Ayarları › Genel › Oturum Açma Öğeleri ve Genişletmeler › Finder bölümünde Right Here’ı açın."
           }
         },
         "uk": {

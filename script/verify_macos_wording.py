@@ -42,6 +42,8 @@ INFLECTED = {
 
 # The words of the other Settings paths in a case ending, as the sentence correctly writes them (by language, then by macOS's label).
 INFLECTED_PATHS = {
+    # macOS 26 calls the Italian button "Abbreviazioni da tastiera" and macOS 27 "Scorciatoie da tastiera": the text uses the newer one.
+    "it": {"Keyboard Shortcuts": ["Scorciatoie da tastiera"]},
     "el": {"System Settings": ["Ρυθμίσεων συστήματος"]},
     "pl": {"System Settings": ["Ustawieniach systemowych"]},
     "ru": {"System Settings": ["Системных настройках"]},
@@ -105,7 +107,7 @@ def settings_path_problems(strings: dict, settings: dict, languages: dict) -> li
     paths = {
         "app.fixExtensionEnable": ("System Settings › General › Login Items & Extensions", (
             ("System Settings", lambda l: lookup(settings, l, "CFBundleDisplayName") or lookup(settings, l, "CFBundleName")),
-            ("General", lambda l: lookup(general, l, "CFBundleDisplayName") if general else "General"),
+            *((("General", lambda l: lookup(general, l, "CFBundleDisplayName")),) if general else ()),
             ("Login Items & Extensions", lambda l: lookup(login, l, "Login Items & Extensions")))),
         "app.quickActionsBody": ("System Settings › Keyboard › Keyboard Shortcuts › Services", (
             ("System Settings", lambda l: lookup(settings, l, "CFBundleDisplayName") or lookup(settings, l, "CFBundleName")),
