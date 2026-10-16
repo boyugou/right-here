@@ -101,3 +101,8 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     Worktrees rows draw the names in reverse order in the preview (`script/preview_setup.sh --demo --tab folders ar`), and the
     left-to-right marks that are added did not change that. Look at the real window: if the names read in order there, the limit
     is the preview's; if not, the path rows need another way to be drawn, and this check says so in the decision record.
+11. The first run, with no config file (move yours aside first, and put it back afterwards). Overview offers the terminals and editors
+    installed here and the agents Right Here knows, with the ones your login shell finds checked. Choose and press Set Up: `rh config
+    show` has what you chose, "What Right Here set up" lists the pieces, and the three-step card waits for the Finder extension, as in
+    item 7. Open the window again with a config in place: the chooser is gone, and nothing rewrites the file (compare it byte for
+    byte). `script/preview_setup.sh --first-run` shows the card without a screen; this check is the real window, once.
