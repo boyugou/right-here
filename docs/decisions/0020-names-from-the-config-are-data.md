@@ -29,7 +29,8 @@ without drawing anything cannot say what the person does not see) and takes the 
 - Every row of a check that can quote the config (`CheckID.quotesTheConfig`: the config, the default terminal and editor, the agents, the menu, the last
   action, the two probes, the five sync rows; a `switch` without a default, so a new check has to be put on one side or the other) says what it quotes between
   the marks, value by value, so that Right Here's own words stay outside them: ``[warn] Acme: `⟦user⟧acme-internal⟦/user⟧` is not found in your login shell``. A text
-  that the doctor quotes as it is (a config error, a probe's answer) is one value. The rows that cannot quote the config (the Finder extension, the runner
+  that the doctor quotes as it is (a config error, a probe's answer) is one value. A few values are Right Here's own and stay outside the fences (`DoctorCheck.ownValues`: where it
+  looks for the config and the overlay, the origin and the age of the last action, the constants a fix quotes); `rh doctor --report` shows exactly those and hides the rest. The rows that cannot quote the config (the Finder extension, the runner
   script, the Quick Actions, the command link, the Claude Code link) are as they were. The same in `rh setup`, which prints these rows, and in the `text` of
   every message of the JSON of both commands: the command line's JSON printer sets `CodingUserInfoKey.fencesQuotedText`.
 - The sentence of an edit of the config (`configEdits[].instruction`, "change terminal = ... to ...") fences the text of the file it quotes. An agent
