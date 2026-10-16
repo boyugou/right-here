@@ -136,7 +136,7 @@ rh run agent.agy --worktree   # launch Antigravity in an isolated git worktree
 rh worktree list              # list active git worktrees
 rh pins                       # list pinned directories
 rh doctor                     # run full diagnostic health check
-rh doctor --probe-launch      # test terminal AppleEvent automation launch
+rh doctor --probe-launch      # prove a click can start an agent: opens a terminal window for a second (macOS may ask once)
 ```
 
 Shell completions:
