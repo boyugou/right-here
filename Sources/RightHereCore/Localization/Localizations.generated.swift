@@ -249,7 +249,7 @@ enum Localizations {
         "fr": "Afficher dans le Finder",
         "he": "הצגה ב-Finder",
         "hi": "Finder में दिखाएँ",
-        "id": "Tampilkan di Finder",
+        "id": "Tampilkan pada Finder",
         "it": "Mostra nel Finder",
         "ja": "Finderに表示",
         "ko": "Finder에서 보기",
@@ -268,7 +268,7 @@ enum Localizations {
         "ur": "‏Finder میں دکھائیں",
         "vi": "Hiển thị trong Finder",
         "zh-Hans": "在访达中显示",
-        "zh-Hant": "在 Finder 中顯示",
+        "zh-Hant": "顯示於Finder",
     ]
 
     private static let alertFailedTitle: [String: String] = [
@@ -372,16 +372,16 @@ enum Localizations {
 
     private static let alertPermissionMessage: [String: String] = [
         "en": "macOS blocked Right Here from controlling %@. Allow it in System Settings › Privacy & Security › Automation, then try again.",
-        "ar": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمن › الأتمتة، ثم حاول مرة أخرى.",
+        "ar": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمن › التحكم التلقائي، ثم حاول مرة أخرى.",
         "bn": "macOS Right Here-কে %@ নিয়ন্ত্রণ করতে বাধা দিয়েছে। System Settings › Privacy & Security › Automation-এ অনুমতি দিন, তারপর আবার চেষ্টা করুন।",
         "de": "macOS hat Right Here daran gehindert, %@ zu steuern. Erlaube es unter Systemeinstellungen › Datenschutz & Sicherheit › Automation und versuche es dann erneut.",
         "el": "Το macOS εμπόδισε το Right Here να ελέγξει το %@. Επιτρέψτε το στις Ρυθμίσεις συστήματος › Απόρρητο και ασφάλεια › Αυτοματοποίηση και δοκιμάστε ξανά.",
         "es": "macOS impidió que Right Here controlara %@. Permítelo en Ajustes del Sistema › Privacidad y seguridad › Automatización y vuelve a intentarlo.",
         "fa": "‏macOS به Right Here اجازهٔ کنترل %@ را نداد. در System Settings › Privacy & Security › Automation اجازه دهید و دوباره تلاش کنید.",
         "fr": "macOS a empêché Right Here de contrôler %@. Autorisez-le dans Réglages Système › Confidentialité et sécurité › Automatisation, puis réessayez.",
-        "he": "‏macOS מנע מ-Right Here לשלוט על %@. אפשרו זאת בהגדרות המערכת › פרטיות ואבטחה › אוטומציה ונסו שוב.",
+        "he": "‏macOS מנע מ-Right Here לשלוט על %@. אפשרו זאת בהגדרות המערכת › פרטיות ואבטחה › פעולות אוטומטיות ונסו שוב.",
         "hi": "macOS ने Right Here को %@ को नियंत्रित करने से रोक दिया। सिस्टम सेटिंग › गोपनीयता और सुरक्षा › ऑटोमेशन में इसकी अनुमति दें, फिर दोबारा कोशिश करें।",
-        "id": "macOS mencegah Right Here mengendalikan %@. Izinkan di Pengaturan Sistem › Privasi & Keamanan › Otomatisasi, lalu coba lagi.",
+        "id": "macOS mencegah Right Here mengendalikan %@. Izinkan di Pengaturan Sistem › Privasi & Keamanan › Automasi, lalu coba lagi.",
         "it": "macOS ha impedito a Right Here di controllare %@. Consentilo in Impostazioni di Sistema › Privacy e sicurezza › Automazione, poi riprova.",
         "ja": "macOSがRight Hereによる%@の制御をブロックしました。システム設定 › プライバシーとセキュリティ › オートメーションで許可してから、もう一度お試しください。",
         "ko": "macOS가 Right Here의 %@ 제어를 차단했습니다. 시스템 설정 › 개인정보 보호 및 보안 › 자동화에서 허용한 다음 다시 시도하세요.",

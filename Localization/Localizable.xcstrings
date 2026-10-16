@@ -68,7 +68,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tampilkan di Finder"
+            "value": "Tampilkan pada Finder"
           }
         },
         "it": {
@@ -182,7 +182,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "在 Finder 中顯示"
+            "value": "顯示於Finder"
           }
         }
       }
@@ -752,7 +752,7 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمن › الأتمتة، ثم حاول مرة أخرى."
+            "value": "منع macOS تطبيق Right Here من التحكم في %@. اسمح بذلك من إعدادات النظام › الخصوصية والأمن › التحكم التلقائي، ثم حاول مرة أخرى."
           }
         },
         "bn": {
@@ -800,7 +800,7 @@
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "‏macOS מנע מ-Right Here לשלוט על %@. אפשרו זאת בהגדרות המערכת › פרטיות ואבטחה › אוטומציה ונסו שוב."
+            "value": "‏macOS מנע מ-Right Here לשלוט על %@. אפשרו זאת בהגדרות המערכת › פרטיות ואבטחה › פעולות אוטומטיות ונסו שוב."
           }
         },
         "hi": {
@@ -812,7 +812,7 @@
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS mencegah Right Here mengendalikan %@. Izinkan di Pengaturan Sistem › Privasi & Keamanan › Otomatisasi, lalu coba lagi."
+            "value": "macOS mencegah Right Here mengendalikan %@. Izinkan di Pengaturan Sistem › Privasi & Keamanan › Automasi, lalu coba lagi."
           }
         },
         "it": {
