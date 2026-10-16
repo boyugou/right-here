@@ -2,34 +2,56 @@
 
 ## Unreleased
 
-- `rh setup` and `rh doctor` no longer print the marks that tell an AI agent which words are data (`⟦user⟧Ghostty⟦/user⟧`) to a person at a terminal; a pipe and the
-  JSON keep them (ADR 0020).
-- First run in the app (found by an independent review of the window):
-  - Install or Repair and Open Config are not offered before the window's first look at your Mac has finished, and never make the config from what they found
-    (Set Up makes it from your choices); a click in the first seconds used to skip the choice.
-  - A first Set Up that does not come out is shown in the window, where you are looking, and not only in the footnote of the sidebar.
-  - Setting up from a disk image or another volume is refused, with the way out (drag Right Here to Applications first): the runner script and the Quick Actions
-    would have pointed into the volume.
+## 0.3.1 (2026-10-16)
+
+Fixes to the first run in the app, which an independent review read as a person doing a first setup, and to what an AI assistant is told about names from a config.
+To update from 0.3.0: drag the app over the old one in Applications, open it and press **Install or Repair**.
+
+### Highlights
+
+- **The first run says what went wrong, where you look.** A Set Up that does not come out is shown above the choice (you used to see the same page and a footnote in the corner),
+  and an app that runs from the disk image or another volume says so before you press anything, and waits for you to move it to Applications.
+- **Nothing makes your config behind your back.** Install or Repair and Open Config are not offered before the window has looked at your Mac, and they never make the config
+  from what they find: Set Up makes it, from your choices.
+- **"Everything is set up" can be reached.** A command link whose folder is not on PATH, a Claude Code terminal link without its handler and a choice of no agents are
+  notes on the Checks page and no longer a reason for "Some checks need your attention". The fixes there name the button to press, not a command to run.
+- **VoiceOver** hears the result of an action and how the setup stands, and the sections and steps say what they are.
+
+### Fixed
+
+- The first-run choice and the window around it:
   - A config that is a link to a file that is not there (a dotfiles manager before its repository is cloned) is no longer offered as a first run.
-  - A Finder extension that is registered and not switched on is called that, not "not registered, install Right Here.app".
+  - A Finder extension that is registered and not switched on is called that, and no longer "not registered, install Right Here.app".
   - `rh setup` no longer says it removed a stale extension registration that macOS refused to remove.
   - The window reads your Mac again when you come back to it (from System Settings, an editor, or a terminal where an AI assistant ran `rh setup`).
-  - A command link whose folder is not on PATH is a note on the Checks page, no longer a reason for "Some checks need your attention" after a setup that went well.
-  - "What Right Here set up" says the Finder extension is "registered but switched off" while it is.
-  - When the login shell says nothing about which AI agents are installed (a startup file that exits, a shell that is slow to start), the first-run choice says so
-    instead of showing every agent as "not found" and setting up with none.
-  - The first page says, before anything is tried, when the app runs from a disk image or another volume, and what to do (the Set Up button waits).
-  - Step 3 of the first-run card points to the test on the Checks page instead of a button that could only fail while the extension is off; the test is off until it is on.
-  - The fixes on the Checks page say which button to press ("Press Install or Repair.") and not which command to run; a Claude Code terminal link without its
-    handler, and a choice of no agents at all, are on the page and not a reason for "needs attention".
-  - A person who uses VoiceOver hears the result of an action and the state after a setup; the titles of the sections are headings and a step says whether it is done.
-  - The window stops looking at the extension every two seconds when it is minimized, hidden or covered, and a pluginkit call that changes something is stopped after
-    30 seconds instead of holding the setup lock. Quitting the app waits for the one second in which the launch test has the extension switched off.
-- `rh` refuses to change the real home when it is started by a test (`RH_NO_UI` set) without a trial home (`RH_HOME`): a full run of the mutation check had replaced the real
+  - "What Right Here set up" says the Finder extension is "registered but switched off" while it is, and step 3 of the first-run card points to the test on the Checks page
+    instead of a button that could only fail while the extension is off.
+  - When the login shell says nothing about which AI agents are installed (a startup file that exits, a shell that is slow to start), the first-run choice says so instead of
+    showing every agent as "not found" and setting up with none.
+  - The window stops looking at the extension every two seconds when it is minimized, hidden or covered; a `pluginkit` call that changes something is stopped after 30 seconds
+    instead of holding the setup lock; quitting the app waits for the one second in which the launch test has the extension switched off.
+  - The README and the release steps named a Set Up button that an updated app, which has a config, does not show; it is Install or Repair.
+- The MCP tools mark two more texts from the config as data for the agent that reads them: the permission-bypass flag of an agent (`right_here_catalog`) and the file extension
+  of a new-file template, which names the icon in `right_here_menu`. The structured data stays plain.
+- `rh setup` and `rh doctor` no longer print the marks that tell an AI agent which words are data (`⟦user⟧Ghostty⟦/user⟧`) to a person at a terminal; a pipe and the JSON keep
+  them (ADR 0020).
+
+### Changed
+
+- The setup window has a test target for its model (`Sources/AppModel`, `Tests/AppModelTests`), and ADR 0023 says what it says before it tries and what it calls attention.
+- `rh` refuses to change the real home when a test started it (`RH_NO_UI` set) without a trial home (`RH_HOME`) (ADR 0022): a full run of the mutation check had replaced the
   runner script, command link and Quick Actions of the machine it ran on, through a test that expected a refusal and, with the protection removed, got a setup. The mutation
   check now also stops at the first mutant that changes the real home.
-- The MCP tools mark two more texts from the config as data for the agent that reads them: the permission-bypass flag of an agent (`right_here_catalog`) and the file
-  extension of a new-file template, which names the icon in `right_here_menu`. The structured data stays plain.
+
+### Known limits
+
+- Only Ghostty and Terminal have been tried as terminals. iTerm2, WezTerm and kitty are built in and not verified on a real Mac (`rh doctor --probe-launch` checks yours).
+- That removing the directory-observing overrides ends the Finder extension's crash on macOS 26.5.1 is not yet confirmed there. If the menu is still empty,
+  `rh doctor` names the crash report to attach to a bug report.
+- The setup window's first run, and its card updating when the extension is switched on, were rendered and tested (the model with a made-up Mac) but not yet tried by a person
+  in a real window (`docs/development/MANUAL_CHECKS.md`).
+- A few sentences of the setup window are English in every language: what a step of the setup says when it was skipped or failed, the edits it lists for an existing config
+  and the report's warnings.
 
 ## 0.3.0 (2026-10-16)
 

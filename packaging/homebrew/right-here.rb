@@ -3,7 +3,7 @@
 # Developer-ID-signed, notarized app; a personal tap does not enforce that.
 # The release this downloads from is private until the first public release, so `brew install` works only for people with access to it.
 cask "right-here" do
-  version "0.3.0"
+  version "0.3.1"
   sha256 "e720244c1ff191cefe565a4358c766bb7f0c9d9c54805dc8f70390edc67ff355"
 
   url "https://github.com/boyugou/right-here/releases/download/v#{version}/Right-Here-#{version}.dmg"
