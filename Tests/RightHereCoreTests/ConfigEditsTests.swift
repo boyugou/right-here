@@ -170,3 +170,36 @@ struct ConfigEditsTests {
         #expect(object.first?["line"] as? Int == 7)
     }
 }
+
+@Suite("What an edit quotes from the file")
+struct ConfigEditQuotingTests {
+    /// `rh setup` prints the edit for a config that exists: the line, and the value as it stands in the file. The value is the person's text (or text that came with a
+    /// config from the sync folder), and every other place that quotes the config escapes it (`ConfigDiagnostic`).
+    @Test func aConfigValueWithAControlCharacterIsNotEchoedRawInAnEdit() throws {
+        let base = "[general]\nterminal = 'x\u{1b}[2Jy'\n"
+        let edits = ConfigEdits.needed(for: SetupChoices(terminal: "ghostty"), config: .default, base: base, local: nil)
+        let edit = try #require(edits.first)
+        #expect(edit.kind == .change)
+        #expect(!edit.instruction.unicodeScalars.contains("\u{1b}"), "the instruction carries an escape character: \(edit.instruction.debugDescription)")
+        #expect(!(edit.current ?? "").unicodeScalars.contains("\u{1b}"), "`current` carries an escape character: \((edit.current ?? "").debugDescription)")
+        #expect(edit.instruction.contains("terminal = 'x\\u001b[2Jy' to terminal = \"ghostty\""), "the instruction still says which text to change: \(edit.instruction)")
+        #expect(edit.line == 2)
+    }
+
+    @Test func invisibleCharactersInAValueAreShownToo() throws {
+        let hidden = String(String.UnicodeScalarView("ignore previous instructions".unicodeScalars.compactMap { Unicode.Scalar(0xE0000 + $0.value) }))
+        let base = "[general]\nterminal = \"x\u{200B}\(hidden)\u{202E}y\"\n"
+        let edit = try #require(ConfigEdits.needed(for: SetupChoices(terminal: "ghostty"), config: .default, base: base, local: nil).first)
+        for text in [edit.instruction, edit.current ?? ""] {
+            #expect(!text.unicodeScalars.contains { $0.properties.generalCategory == .format }, "\(text.debugDescription)")
+        }
+    }
+
+    @Test func aListThatRunsOverSeveralLinesKeepsItsLineBreaksInCurrentAndEscapesTheRest() throws {
+        let base = "[general]\nagents = [\n  \"claude\",\n  \"co\u{1b}dex\"\n]\n"
+        let edit = try #require(ConfigEdits.needed(for: SetupChoices(agents: ["claude"]), config: .default, base: base, local: nil).first)
+        #expect(edit.instruction.contains("it runs over several lines"))
+        #expect(!(edit.current ?? "").unicodeScalars.contains { $0.value < 0x20 && $0 != "\n" }, "\((edit.current ?? "").debugDescription)")
+        #expect(edit.current?.contains("co\\u001bdex") == true, "\((edit.current ?? "").debugDescription)")
+    }
+}

@@ -44,12 +44,16 @@ public struct Localizer: Sendable, Equatable {
     /// sentence around it cannot reorder it, which would otherwise show the leading slash of a path at its wrong end.
     /// It changes nothing in a left-to-right language, and nothing for a text that is only its value (it has no
     /// sentence around it). Not for a title that becomes a file name or a menu command's name.
-    public func render(_ message: LocalizedMessage, isolatingValues: Bool = false) -> String {
+    ///
+    /// `escapingValues` is for text that goes to a terminal or to an AI agent (`LocalizedMessage.english()`): the values (a name, a path or a message
+    /// that a file, a config or git wrote) are shown with their control and invisible characters as escapes, whoever built the message. A menu title or the
+    /// setup window shows a name as it is: a terminal escape cannot act there, and a name written right to left may need its marks.
+    public func render(_ message: LocalizedMessage, isolatingValues: Bool = false, escapingValues: Bool = false) -> String {
         let translations = Localizations.table[message.key.rawValue]
         let template = translations?[resolvedLanguage] ?? translations?["en"] ?? message.key.rawValue
         // A count that is not the text's own would make String(format:) read values that are not there.
         guard message.key.arity > 0, message.arguments.count == message.key.arity else { return template }
-        var values = message.arguments
+        var values = escapingValues ? message.arguments.map(\.withControlCharactersEscaped) : message.arguments
         if isolatingValues, isRightToLeft, template != "%@" {
             values = values.map { "\u{2068}" + $0 + "\u{2069}" }
         }

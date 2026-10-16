@@ -58,11 +58,14 @@ public enum ConfigEdits {
 
     private static func change(_ key: String, name: String, value: String, in file: (name: String, text: String)) -> ConfigEdit {
         let outline = TOMLOutline(file.text)
-        let current = outline.rawValue(of: key)
+        let raw = outline.rawValue(of: key)
+        // What the file holds is the person's text, or a config's that came through the sync folder: it is shown with its control and invisible characters as
+        // escapes, in the sentence and in `current`, like every other place that quotes the config. The line breaks of a list stay in `current`, which only JSON carries.
+        let current = raw?.split(separator: "\n", omittingEmptySubsequences: false).map { String($0).withControlCharactersEscaped }.joined(separator: "\n")
         let line = outline.lines[key]
         let located = line.map { " on line \($0)" } ?? ""
         let instruction: String
-        if let current, current.contains("\n") {
+        if let raw, raw.contains("\n") {
             instruction = "In \(file.name)\(located), change the list that starts there (it runs over several lines) to \(name) = \(value)."
         } else {
             instruction = "In \(file.name)\(located), change \(name) = \(current ?? "…") to \(name) = \(value)."

@@ -302,7 +302,10 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    paths are copied to the clipboard. Tool calls run eight at a time, up to 256 (and 16 MB of requests) are held waiting
    for a turn, a call past that is answered with a server-busy error at once, `ping` and the other quick requests are
    never held up, and a request line is capped at 2 MB.
-   Names in logs and plan output have control characters escaped, and the log is private and capped. So does what a
+   Names in logs and plan output have control characters escaped, and so have the characters that draw nothing (the Unicode tag
+   characters that spell ASCII, the zero-width space, the byte order mark, a joiner that joins nothing, a run of variation selectors:
+   a name that shows as `report.txt` must not carry a sentence for an agent), and the log is private and capped. The values of every
+   English sentence the doctor says (on the command line, in `--json` and in the MCP tool) are escaped the same way, whoever builds the sentence. So does what a
    config problem quotes from the config (a key, a value, an id): `ConfigDiagnostic` stores its text escaped, since a
    config can arrive from the sync folder and an escape sequence in a key name must not act on a terminal. The names
    and titles a config gives to apps, agents, templates, variants and presets are refused when they hold a control

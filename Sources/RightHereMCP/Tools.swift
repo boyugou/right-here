@@ -37,14 +37,6 @@ struct ToolDefinition: Sendable {
     }
 }
 
-/// File names and other text from the file system come from whoever created them. Wrapping them
-/// in sentinels (and removing the sentinel characters inside) marks them as data for the model.
-enum Fence {
-    static func wrap(_ text: String) -> String {
-        "⟦user⟧" + text.scalarReplacing(["⟦": "[", "⟧": "]"]) + "⟦/user⟧"
-    }
-}
-
 enum Tools {
     // MARK: Schema helpers
 
@@ -247,7 +239,7 @@ enum Tools {
         let config = server.loadConfig().config
         let all = arguments["include_unavailable"]?.boolValue == true
         let infos = ActionRegistry(config: config, facts: server.facts).catalog().filter { all || $0.available }
-        let lines = infos.map { "\($0.id)  " + Fence.name($0.title) + ($0.available ? "" : "  [unavailable: " + Fence.name($0.unavailableReason ?? "") + "]") }
+        let lines = infos.map { "\($0.id)  " + Fence.wrap($0.title) + ($0.available ? "" : "  [unavailable: " + Fence.wrap($0.unavailableReason ?? "") + "]") }
         return ToolOutput(text: lines.joined(separator: "\n"), structured: .object(["actions": try JSONValue(encoding: infos)]))
     }
 

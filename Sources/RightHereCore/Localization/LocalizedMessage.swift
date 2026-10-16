@@ -16,8 +16,9 @@ public struct LocalizedMessage: Sendable, Equatable {
         self.arguments = arguments
     }
 
+    /// The sentence in English, as the command line and the MCP server print it: its values with their control and invisible characters shown as escapes.
     public func english() -> String {
-        Localizer.english.render(self)
+        Localizer.english.render(self, escapingValues: true)
     }
 
     /// The sentence with its values left out (shown as `…`), except the numbers and the values at the positions named: Right Here's own
@@ -26,7 +27,7 @@ public struct LocalizedMessage: Sendable, Equatable {
         let shown = arguments.enumerated().map { index, value in
             positions.contains(index) || (!value.isEmpty && value.utf8.allSatisfy { $0 >= UInt8(ascii: "0") && $0 <= UInt8(ascii: "9") }) ? value : "…"
         }
-        return Localizer.english.render(LocalizedMessage(key, shown))
+        return Localizer.english.render(LocalizedMessage(key, shown), escapingValues: true)
     }
 }
 

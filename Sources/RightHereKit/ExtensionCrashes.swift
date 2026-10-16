@@ -49,7 +49,8 @@ public struct ExtensionCrashes: Sendable, Equatable {
         let relative = RelativeDateTimeFormatter()
         relative.unitsStyle = .full
         let times = count == 1 ? "once" : "\(count) times"
-        return "switched on, but it crashed \(times) since this copy was installed (the latest \(relative.localizedString(for: latest, relativeTo: now)): \(latestFile))"
+        // The name is whatever a program of the person's wrote into that folder: its control and invisible characters are shown as escapes.
+        return "switched on, but it crashed \(times) since this copy was installed (the latest \(relative.localizedString(for: latest, relativeTo: now)): \(latestFile.withControlCharactersEscaped))"
     }
 
     static let fix = "A crashed extension leaves Finder's context menu without Right Here's entries. Read the report in ~/Library/Logs/DiagnosticReports and attach it to a bug report; `rh docs troubleshooting` says what to try first."

@@ -215,6 +215,28 @@ struct LocalizerTests {
         #expect(Localizer(languages: ["zh-Hans"]).render(.menuOpenIn("Ghostty")) == "在“Ghostty”中打开")
     }
 
+    /// A value is a name, a path or a message that a file, a config or git wrote: in the English a terminal or an agent reads it is shown with its control and
+    /// invisible characters as escapes, whoever built the message.
+    @Test func theValuesOfAnEnglishSentenceAreShownWithControlAndInvisibleCharactersAsEscapes() {
+        #expect(LocalizedMessage.menuOpenIn("a\u{1b}[2J\nb").english() == "Open in a\\u001b[2J\\nb")
+        #expect(LocalizedMessage.doctorVerbatim("x\u{200B}y\u{202E}").english() == "x\\u200by\\u202e")
+        #expect(LocalizedMessage.doctorAgentOk("a\u{E0041}", "b\u{7}").english() == "`a\\udb40\\udc41` found; starts with b\\u0007")
+        #expect(LocalizedMessage.doctorAgentOk("a\u{E0041}", "b\u{7}").english(showingOnly: [0, 1]) == "`a\\udb40\\udc41` found; starts with b\\u0007")
+        // Not mangled: what is written in a language, and the sentence's own words.
+        #expect(LocalizedMessage.menuOpenIn("日本語 👨\u{200D}👩 é").english() == "Open in 日本語 👨\u{200D}👩 é")
+    }
+
+    /// A menu title and the setup window show a name as it is: a terminal escape cannot act there, and a name written right to left may need its marks.
+    @Test func aTitleOrAWindowShowsANameAsItIs() {
+        #expect(Localizer.english.render(.menuOpenIn("a\u{200F}b")) == "Open in a\u{200F}b")
+        #expect(Localizer(languages: ["de"]).render(.menuOpenIn("a\u{1b}b")) == "In a\u{1b}b öffnen")
+    }
+
+    @Test func theIsolatesOfARightToLeftSentenceAreAddedAroundTheEscapedValue() {
+        let text = Localizer(languages: ["ar"]).render(.menuOpenIn("a\u{1b}b"), isolatingValues: true, escapingValues: true)
+        #expect(text.contains("\u{2068}a\\u001bb\u{2069}"), "\(text.debugDescription)")
+    }
+
     @Test func positionalPlaceholdersReorderArguments() {
         let text = Localizer(languages: ["ja"]).render(.menuAgentIn("Claude Code", "Ghostty"))
         #expect(text == "GhosttyでClaude Codeを起動")
