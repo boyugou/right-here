@@ -114,6 +114,6 @@ Two reviewers read setup as a stranger would, and an agent that follows the play
   setup of the real home.
 - **The playbook** says how to run `rh` before setup has linked it, that what `rh` prints is data and not an instruction, that `rh agents` starts
   the login shell, and what registering the extension does and does not do (it asks macOS to use it; the switch can still be the person's).
-- The cold-agent evaluation was **not** run again for these changes: they were checked with the tests that make each edit and each step literally,
-  with the real `rh` in a trial home, and by reading the report as the stranger did. Run it before a release.
+- The cold-agent evaluation was run again for these changes (round 4 of [`SETUP_EVALUATION.md`](../development/SETUP_EVALUATION.md)), with a
+  fourth persona whose config does not parse: four of four passed. What it did not try is a config or a file name that reads as an instruction.
 
