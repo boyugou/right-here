@@ -123,3 +123,7 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     window may be left open afterwards. The window's scene is `.defaultLaunchBehavior(.presented)` (`Apps/RightHere/RightHereApp.swift`) and the app quits when its last
     window closes; if a window appears and stays for every shortcut, that is the cause and the scene needs another launch behavior (the intents run in the app's own
     process). Not tried on a real Mac yet.
+14. Updating the way the README says, in Finder: drag the newer Right Here.app over the old one in Applications and look at the dialog Finder shows. "Replace" must be offered; after it,
+    `rh doctor` is all ok (open the app and press Install or Repair, or run `rh setup`). With "Keep Both" there are two copies, and the doctor says "not registered" with no extension
+    (measured with a renamed copy: `rh setup` called the extension "already in place" and `pluginkit` knew none); `mdfind 'kMDItemCFBundleIdentifier == "com.boyugou.righthere"'`
+    lists the copies. Which button the dialog makes the default has not been looked at on macOS 26.
