@@ -34,5 +34,8 @@ agents first.
   runner script, command link and Services under that folder (the Finder extension's registration is
   system-wide, so a trial leaves it alone). `rh uninstall` under the same `RH_HOME` undoes it. `rh doctor` under it says
   so on standard error, since its rows mix that home's files with the real extension registration.
+- Changed setup, its report, a sentence of the doctor or the agent playbook (`docs/AGENT_SETUP.md`)? Run the cold-agent
+  evaluation (`docs/development/SETUP_EVALUATION.md`): fresh AI agents set Right Here up for three personas in a sandbox that cannot
+  touch your Mac.
 - Test an action without side effects with `rh run <id> --dry-run`.
 - Point a command at a throwaway config with `RH_CONFIG_DIR=/tmp/x`.

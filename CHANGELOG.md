@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- New: `rh setup` puts everything in place in one command and can be run again at any time: the config file, the runner script, the `rh` link, the
+  Quick Actions and the Finder extension, then the checks, and it says what only you can do. `--terminal`, `--editor` and `--agents` say what you
+  use instead of editing TOML (also on `rh init`), `--dry-run` shows the plan and `--json` is the report for an AI agent. A config that exists is
+  never rewritten: the report lists the edit to make. `rh install` now repairs one named piece, the doctor's fixes say `rh setup`, and the setup
+  window's first run offers what is installed and runs the same setup (ADR 0018).
+- `rh docs agent-setup` is a procedure for an AI agent (ask the person first, look with a dry run, make the edits an existing config needs, run
+  setup once, tell the person what only they can do, check, hand back), and the prompt the app copies and the plugin's setup skill follow it. It
+  was tried with cold agents on three personas (`docs/development/SETUP_EVALUATION.md`); what they found is fixed: a trial lists the PATH line and the
+  permission prompt, a dry run counts the Quick Actions of the config it would write, and the doctor warns about Claude Code's link handler only
+  when Claude Code is enabled.
 - The setup window is rebuilt: six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders), every text in the
   thirty-language catalog, and a check that fails the gate when a view shows a literal. The preview script renders each section
   (`--tab`). The version comes from one place, `AppIdentity.version`, which `script/verify_version.py` checks against the project, the changelog and
