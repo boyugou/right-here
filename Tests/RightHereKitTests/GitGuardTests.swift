@@ -256,8 +256,6 @@ private final class Lab {
         return (script.path, { FileManager.default.fileExists(atPath: marker.path) })
     }
 
-    func clear(_ name: String) { try? FileManager.default.removeItem(at: outside.appendingPathComponent("\(name).ran")) }
-
     /// Makes the files of a worktree look as if they were written after its index: git compares such a file with the index by reading it (through the clean filter), which it
     /// otherwise does only for a file whose date is in the second of the index's own, and a test must not depend on how fast the checkout was.
     func makeLookRecentlyWritten(_ worktree: URL) throws {
