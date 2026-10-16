@@ -87,4 +87,31 @@ struct StateStoreTests {
         let reParsed = StateStore.parse(reRendered)
         #expect(reParsed == parsed)
     }
+
+    @Test func aFileHoldsOnlyAbsoluteFolders() {
+        let parsed = StateStore.parse("""
+        pins = ["relative/project", "~/project", "/Users/tester/code/", "/Users/tester/./code", "", "/Users/tester/../tester/notes"]
+        recents = ["../elsewhere", "/Users/tester/a", "."]
+        """)
+        #expect(parsed.pins == ["/Users/tester/code", "/Users/tester/notes"])
+        #expect(parsed.recents == ["/Users/tester/a"])
+    }
+
+    @Test func aFileWithMoreRecentsThanTheLimitKeepsTheNewest() {
+        let many = (1...StateStore.maxRecents + 5).map { "\"/folder/\($0)\"" }.joined(separator: ", ")
+        let parsed = StateStore.parse("recents = [\(many)]")
+        #expect(parsed.recents.count == StateStore.maxRecents)
+        #expect(parsed.recents.first == "/folder/1")
+    }
+
+    @Test func aRelativeFolderIsNeitherPinnedNorRemembered() {
+        var store = StateStore(pins: ["/Users/tester/code"])
+        let pinnedRelative = store.pin("relative/project")
+        let pinnedTilde = store.pin("~/project")
+        store.recordRecent("relative/project")
+        let unpinnedRelative = store.unpin("code")
+        #expect(!pinnedRelative && !pinnedTilde && !unpinnedRelative)
+        #expect(store.pins == ["/Users/tester/code"])
+        #expect(store.recents.isEmpty)
+    }
 }

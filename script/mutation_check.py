@@ -371,6 +371,10 @@ MUTANTS = [
      "if InstallError.isTranslocated(rhPath) { throw InstallError.translocated }", "if false { throw InstallError.translocated }"),
     ("the Claude Code link handler is checked where nothing starts Claude Code through the link", "Sources/RightHereKit/Doctor.swift",
      "if claudeLinkIsOffered() { checks.append(claudeLinkCheck()) }", "checks.append(claudeLinkCheck())"),
+    ("a pinned or recent folder in the state file may be a relative path", "Sources/RightHereCore/Config/StateStore.swift",
+     'path.hasPrefix("/") ? (path as NSString).standardizingPath : nil', "(path as NSString).standardizingPath"),
+    ("a state file may hold any number of recent folders", "Sources/RightHereCore/Config/StateStore.swift",
+     'Array(folders(in: table, key: "recents").prefix(maxRecents))', 'folders(in: table, key: "recents")'),
 ]
 
 

@@ -18,23 +18,25 @@ public struct StateStore: Sendable, Equatable, Codable {
               let table = try? TOMLTable(source: text + "\n") else {
             return StateStore()
         }
-        var pins: [String] = []
-        if let array = try? table.array(forKey: "pins") {
-            for i in 0..<array.count {
-                if let str = try? array.string(atIndex: i), !str.isEmpty, !pins.contains(str) {
-                    pins.append(str)
-                }
+        return StateStore(pins: folders(in: table, key: "pins"),
+                          recents: Array(folders(in: table, key: "recents").prefix(maxRecents)))
+    }
+
+    /// A pin or a recent folder is an absolute path. A relative one (the file is meant to be written by `rh`, but it is plain text) would name a
+    /// different folder for every program that reads it, whatever its working directory is, so it is dropped.
+    private static func absolute(_ path: String) -> String? {
+        path.hasPrefix("/") ? (path as NSString).standardizingPath : nil
+    }
+
+    private static func folders(in table: TOMLTable, key: String) -> [String] {
+        guard let array = try? table.array(forKey: key) else { return [] }
+        var folders: [String] = []
+        for index in 0..<array.count {
+            if let text = try? array.string(atIndex: index), let path = absolute(text), !folders.contains(path) {
+                folders.append(path)
             }
         }
-        var recents: [String] = []
-        if let array = try? table.array(forKey: "recents") {
-            for i in 0..<array.count {
-                if let str = try? array.string(atIndex: i), !str.isEmpty, !recents.contains(str) {
-                    recents.append(str)
-                }
-            }
-        }
-        return StateStore(pins: pins, recents: recents)
+        return folders
     }
 
     public func render() -> String {
@@ -54,24 +56,20 @@ public struct StateStore: Sendable, Equatable, Codable {
 
     @discardableResult
     public mutating func pin(_ path: String) -> Bool {
-        let clean = (path as NSString).standardizingPath
-        guard !pins.contains(clean) else { return false }
+        guard let clean = Self.absolute(path), !pins.contains(clean) else { return false }
         pins.append(clean)
         return true
     }
 
     @discardableResult
     public mutating func unpin(_ path: String) -> Bool {
-        let clean = (path as NSString).standardizingPath
-        if let idx = pins.firstIndex(of: clean) {
-            pins.remove(at: idx)
-            return true
-        }
-        return false
+        guard let clean = Self.absolute(path), let index = pins.firstIndex(of: clean) else { return false }
+        pins.remove(at: index)
+        return true
     }
 
     public mutating func recordRecent(_ path: String) {
-        let clean = (path as NSString).standardizingPath
+        guard let clean = Self.absolute(path) else { return }
         recents.removeAll { $0 == clean }
         recents.insert(clean, at: 0)
         if recents.count > Self.maxRecents {
