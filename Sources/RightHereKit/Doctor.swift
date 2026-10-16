@@ -49,7 +49,7 @@ public struct Doctor: Sendable {
         checks += menuEmptyCheck()
         if claudeLinkIsOffered() { checks.append(claudeLinkCheck()) }
         checks += integrationChecks(shell)
-        checks.append(await Self.extensionCheck(runner: runner))
+        checks.append(await Self.extensionCheck(runner: runner, crashReports: ExtensionCrashes.reportsFolder(home: facts.homeDirectory)))
         checks.append(Self.activityCheck(logFile: paths.logFile))
         if probeLaunch {
             checks.append(await launchCheck(placement: launchPlacement))
@@ -338,7 +338,9 @@ public struct Doctor: Sendable {
     /// What the Finder extension's check says, and nothing else: one `pluginkit` call. The setup window looks again
     /// every two seconds while its first-run card waits for the extension to be switched on, and the whole doctor
     /// would read the config and ask a login shell for the agents' commands each time.
-    public static func extensionCheck(runner: any ProcessRunner = LiveProcessRunner()) async -> DoctorCheck {
+    /// - Parameter crashReports: where macOS writes crash reports. Given, a switched-on extension that crashed since it was installed is a warning:
+    ///   it is registered and enabled, and still shows no menu (ADR 0019). Left out, as the setup window does, only `pluginkit` is asked.
+    public static func extensionCheck(runner: any ProcessRunner = LiveProcessRunner(), crashReports: URL? = nil, now: Date = Date()) async -> DoctorCheck {
         let status = await FinderExtensionManager(runner: runner).status()
         switch status.state {
         case .notRegistered:
@@ -349,6 +351,10 @@ public struct Doctor: Sendable {
             if status.paths.count > 1 {
                 return DoctorCheck(.finderExtension, status: .warn, detail: .doctorExtensionMultiple(String(status.paths.count), status.paths.joined(separator: "; ")),
                                    fix: .doctorFixExtensionClean)
+            }
+            if let crashReports,
+               let crashes = ExtensionCrashes.scan(in: crashReports, installedAfter: status.paths.first.flatMap(ExtensionCrashes.installDate(ofExtensionAt:)), now: now) {
+                return DoctorCheck(.finderExtension, status: .warn, detail: .doctorVerbatim(crashes.detail(now: now)), fix: .doctorVerbatim(ExtensionCrashes.fix))
             }
             return DoctorCheck(.finderExtension, status: .ok, detail: status.paths.first.map(LocalizedMessage.doctorExtensionEnabled))
         }

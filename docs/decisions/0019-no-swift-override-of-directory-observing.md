@@ -28,6 +28,15 @@ ok (the extension is registered and switched on, and the launch probe, which doe
 Without the override there is no Swift thunk on this path: `FIFinderSync`'s own Objective-C implementation receives the call. The
 removed methods did nothing, so no behaviour of ours changes.
 
+## The doctor looks at crash reports
+
+The report also showed why the doctor stayed green: it asks `pluginkit` whether the extension is registered and switched on, and the
+launch probe runs the chain a click uses, and neither does what Finder asks of an extension by itself (watching a folder). `rh doctor`
+now reads the crash reports macOS keeps for the extension (`FinderExtension-*.ips` in `~/Library/Logs/DiagnosticReports`), counts those
+written since the installed copy's code was written and within the last seven days, and turns the Finder extension row into a warning that
+names the newest one. The setup window is sandboxed and may not read that folder, so only the command line has the row; it is English in every
+language for that reason (`doctor.verbatim`). A report is a file for a person to attach to a bug report, not a sentence to translate.
+
 ## Alternatives
 
 - Keep the override and guard the argument: not possible, the exception is thrown while bridging the argument, before any line of

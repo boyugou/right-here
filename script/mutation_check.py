@@ -379,6 +379,12 @@ MUTANTS = [
      "switch await server.launchLimiter.allow(cost: LaunchCost.worktree) {", "switch await server.launchLimiter.allow(cost: 0) {"),
     ("the extension remembers every folder it was ever asked about", "Sources/RightHereKit/CachingSystemFacts.swift",
      "if cache.count >= Self.maxDirectories {\n                cache = cache.filter", "if false {\n                cache = cache.filter"),
+    ("a switched-on Finder extension that crashed is reported as healthy", "Sources/RightHereKit/Doctor.swift",
+     "if let crashReports,\n", "if false, let crashReports,\n"),
+    ("the whole doctor never looks at the extension's crash reports", "Sources/RightHereKit/Doctor.swift",
+     "crashReports: ExtensionCrashes.reportsFolder(home: facts.homeDirectory)))", "crashReports: nil))"),
+    ("crash reports from before the installed copy count against it", "Sources/RightHereKit/ExtensionCrashes.swift",
+     "let cutoff = max(installed ?? .distantPast, now.addingTimeInterval(-window))", "let cutoff = now.addingTimeInterval(-window)"),
 ]
 
 

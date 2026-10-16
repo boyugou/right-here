@@ -325,6 +325,17 @@ struct DoctorScenarioTests {
                                        fix: "Run `rh setup`, or switch on Right Here in System Settings › General › Login Items & Extensions › Finder."))
     }
 
+    @Test func aFinderExtensionThatCrashedIsAWarningInTheWholeRunToo() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.answers = [ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
+        let folder = ExtensionCrashes.reportsFolder(home: scene.home)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try "report".write(to: folder.appendingPathComponent("FinderExtension-2026-10-15-180000.ips"), atomically: true, encoding: .utf8)
+        let extensionCheck = said(await scene.run(), "finder.extension")
+        #expect(extensionCheck?.status == .warn)
+        #expect(extensionCheck?.detail?.contains("crashed once") == true)
+    }
+
     @Test func aFinderExtensionRegisteredFromSeveralPlacesSaysWhere() async throws {
         var scene = try Scene(); defer { scene.cleanUp() }
         let second = "     \(AppIdentity.extensionBundleID)(1.0)\tU2\t2026-10-11 23:20:00 +0000\t/Users/x/DerivedData/Right Here.app/Contents/PlugIns/FinderExtension.appex\n"
