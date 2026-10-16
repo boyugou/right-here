@@ -83,12 +83,14 @@ public struct SetupRunner: Sendable {
         let installer = Installer(home: facts.homeDirectory)
         var report = SetupReport(dryRun: request.dryRun, trialHome: trialHome?.path)
 
+        // What a dry run would have written: the Quick Actions of the plan are counted from it, not from a file that is not there yet.
+        var planned: Config?
         for piece in SetupPiece.allCases where request.pieces.contains(piece) {
             switch piece {
-            case .config: await configStep(request, into: &report)
+            case .config: planned = await configStep(request, into: &report)
             case .runnerScript: report.steps.append(runnerScriptStep(installer, dryRun: request.dryRun))
             case .cliLink: report.steps.append(cliLinkStep(installer, dryRun: request.dryRun))
-            case .services: report.steps.append(await servicesStep(installer, dryRun: request.dryRun))
+            case .services: report.steps.append(await servicesStep(installer, dryRun: request.dryRun, planned: planned))
             case .finderExtension: report.steps.append(await finderExtensionStep(strict: request.strict, dryRun: request.dryRun))
             }
         }
@@ -99,7 +101,7 @@ public struct SetupRunner: Sendable {
             // What a trial says about the Finder extension is what this Mac says, not what the trial did.
             if !systemWide { rows.removeAll { $0.id == .finderExtension } }
             report.checks = rows
-            report.needsUser = SetupAdvice.needsUser(checks: rows, config: loaded.config, facts: facts, systemWide: systemWide)
+            report.needsUser = SetupAdvice.needsUser(checks: rows, config: loaded.config, facts: facts)
         }
         report.warnings += notes(editsPending: !report.configEdits.isEmpty)
         report.next = request.checkup ? SetupAdvice.next(configEdits: report.configEdits, needs: report.needsUser, checked: !request.dryRun,
@@ -129,7 +131,8 @@ public struct SetupRunner: Sendable {
         (try? FileManager.default.attributesOfItem(atPath: url.path)) != nil
     }
 
-    private func configStep(_ request: SetupRequest, into report: inout SetupReport) async {
+    /// - Returns: In a dry run that would write a config, the config it would write; otherwise `nil`, and what depends on the config reads the file.
+    private func configStep(_ request: SetupRequest, into report: inout SetupReport) async -> Config? {
         let exists = entryExists(paths.configFile)
         if exists, !request.force {
             let loaded = ConfigStore.load(paths: paths)
@@ -146,7 +149,7 @@ public struct SetupRunner: Sendable {
                 report.configEdits = ConfigEdits.needed(for: request.choices, config: loaded.config, base: text(paths.configFile), local: text(paths.localConfigFile),
                                                         baseName: paths.configFile.lastPathComponent, localName: paths.localConfigFile.lastPathComponent)
             }
-            return
+            return nil
         }
 
         var detected = DetectedEnvironment()
@@ -159,7 +162,7 @@ public struct SetupRunner: Sendable {
         if let warning = SetupChoices.agentTerminalWarning(terminal: written.terminal, agents: written.agents) { report.warnings.append(warning) }
         if request.dryRun {
             report.steps.append(SetupStep(.config, exists ? .updated : .created, detail: .doctorVerbatim(paths.configFile.path + (exists ? "; the old file would be saved next to it first" : ""))))
-            return
+            return plannedConfig(written)
         }
         do {
             switch try ConfigStore.initialize(paths: paths, detected: written, force: request.force) {
@@ -176,6 +179,18 @@ public struct SetupRunner: Sendable {
             report.steps.append(SetupStep(.config, .failed, detail: .doctorVerbatim(error.localizedDescription)))
             report.chosen = nil
         }
+        return nil
+    }
+
+    /// The config that a run with these choices would create, with the per-machine overlay on top as it is read now.
+    private func plannedConfig(_ written: DetectedEnvironment) -> Config {
+        let local: ConfigSource
+        switch ConfigStore.text(of: paths.localConfigFile) {
+        case .absent: local = .absent
+        case .text(let text): local = .text(text)
+        case .problem(let message): local = .unreadable(ConfigDiagnostic(severity: .error, path: "", message: message))
+        }
+        return ConfigLayers.load(base: .text(ConfigTemplate.render(written)), local: local, overlayName: paths.localConfigFile.lastPathComponent).config
     }
 
     private func chosen(_ written: DetectedEnvironment, choices: SetupChoices) -> SetupReport.Chosen {
@@ -220,15 +235,16 @@ public struct SetupRunner: Sendable {
         }
     }
 
-    private func servicesStep(_ installer: Installer, dryRun: Bool) async -> SetupStep {
-        // The Services follow the config as it is now, which this very run may have just created.
-        let config = ConfigStore.load(paths: paths).config
+    private func servicesStep(_ installer: Installer, dryRun: Bool, planned: Config?) async -> SetupStep {
+        // The Services follow the config as it is now, which this very run may have just created, or, in a dry run, would create.
+        let config = planned ?? ConfigStore.load(paths: paths).config
         let specs = ActionRegistry(config: config, facts: facts, localizer: localizer).serviceSpecs(rhPath: rhPath)
         let names = Set(specs.map(ServiceWorkflow.bundleName(for:))).count
         let detail = LocalizedMessage.doctorServicesOk(String(names))
         if installer.servicesAreCurrent(specs) { return SetupStep(.services, .unchanged, detail: detail) }
         let outcome: SetupStep.Outcome = installer.installedServices().isEmpty ? .created : .updated
-        if dryRun { return SetupStep(.services, outcome, detail: detail) }
+        // Nothing is installed in a dry run, so it counts what would be (the sentence of the checks says "installed").
+        if dryRun { return SetupStep(.services, outcome, detail: .doctorVerbatim("\(names) in all")) }
         do {
             try installer.installServices(specs)
             if systemWide {

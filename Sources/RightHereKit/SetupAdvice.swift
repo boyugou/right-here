@@ -4,9 +4,12 @@ import RightHereCore
 /// What is left for the person after the steps, and what to run next. Pure: it reads the doctor's rows and the config, and starts nothing.
 enum SetupAdvice {
     /// The things only the person can do, from what the doctor found. Nothing here is a failure of setup.
-    static func needsUser(checks: [DoctorCheck], config: Config, facts: any SystemFacts, systemWide: Bool) -> [SetupNeed] {
-        // A trial home registers nothing and links nothing that is meant to be used: the system-wide items are not its business.
-        guard systemWide else { return [] }
+    ///
+    /// A trial (`RH_HOME`) says the same as a real run, except about the Finder extension: it registers and checks nothing for the
+    /// whole Mac, so its rows have no extension row and no switch to ask for. The PATH line and the permission prompt depend only on
+    /// the config and on the person's shell and terminal, so a trial is a rehearsal of them (and an AI agent that tries setup in a
+    /// trial meets the same list the person will).
+    static func needsUser(checks: [DoctorCheck], config: Config, facts: any SystemFacts) -> [SetupNeed] {
         var needs: [SetupNeed] = []
 
         if checks.first(where: { $0.id == .finderExtension })?.status == .needsUser {
@@ -62,13 +65,22 @@ enum SetupAdvice {
     }
 
     /// What to run after setup.
+    ///
+    /// The Quick Actions are built from the config as it is when setup runs, and the edits of an existing config are made by hand,
+    /// so the order matters: with the edits made first, one real run builds them all. A real run that came first needs one more
+    /// `rh setup` after the edits, and says so.
     static func next(configEdits: [ConfigEdit], needs: [SetupNeed], checked: Bool, rerun: String?) -> [SetupNext] {
         var next: [SetupNext] = []
         if let rerun {
-            return [SetupNext(rerun, why: "The same without --dry-run: it makes the changes above.")]
+            guard !configEdits.isEmpty else { return [SetupNext(rerun, why: "The same without --dry-run: it makes the changes above.")] }
+            return [
+                SetupNext("rh config validate --strict", why: "After you have made the edits above to the config file: it must say ok, with no error and no warning."),
+                SetupNext(rerun, why: "Then the same without --dry-run: it makes the other changes above, and builds the Quick Actions from the config as you edited it.")
+            ]
         }
         if !configEdits.isEmpty {
             next.append(SetupNext("rh config validate --strict", why: "After the edits: it must say ok, with no error and no warning."))
+            next.append(SetupNext("rh setup", why: "After the edits: it builds the Quick Actions from the config as you edited it (the Quick Actions of this run came from the file as it was), and checks everything again."))
         }
         next.append(SetupNext("rh menu --container ~", why: "Shows the Finder menu this config makes for a folder (your home folder here)."))
         if checked {

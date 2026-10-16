@@ -273,6 +273,36 @@ struct SetupRunnerTests {
         #expect(report.english().contains { $0.contains("In config.toml on line 7, change agents = [\"claude\"] to agents = [\"claude\", \"codex\"].") })
     }
 
+    @Test func theEditsComeBeforeTheRealRunSoOneRunBuildsEveryQuickAction() async throws {
+        // Persona C of the cold-agent evaluation ran setup, then made the listed edit by hand, and Codex had no Quick Action.
+        let machine = try Machine(shellOutput: "claude\ncodex\n"); defer { machine.cleanUp() }
+        try machine.writeConfig(Self.mine)
+        let choices = SetupChoices(agents: ["claude", "codex"])
+        let dry = try await machine.runner().run(.setup(choices: choices, dryRun: true))
+        #expect(dry.configEdits.count == 1)
+        #expect(dry.next == [
+            SetupNext("rh config validate --strict", why: "After you have made the edits above to the config file: it must say ok, with no error and no warning."),
+            SetupNext("rh setup --agents claude,codex", why: "Then the same without --dry-run: it makes the other changes above, and builds the Quick Actions from the config as you edited it.")
+        ], "\(dry.next)")
+        try machine.writeConfig(Self.mine.replacingOccurrences(of: "agents = [\"claude\"]", with: "agents = [\"claude\", \"codex\"]"))
+        let real = try await machine.runner().run(.setup(choices: choices))
+        #expect(real.configEdits.isEmpty && real.ok)
+        let names = Installer(home: machine.home).installedServices().map(\.lastPathComponent)
+        #expect(names.contains { $0.contains("Codex") } && names.contains { $0.contains("Claude Code") }, "\(names)")
+    }
+
+    @Test func aRealRunBeforeTheEditsSaysToRunSetupAgainAfterThem() async throws {
+        let machine = try Machine(shellOutput: "claude\ncodex\n"); defer { machine.cleanUp() }
+        try machine.writeConfig(Self.mine)
+        let first = try await machine.runner().run(.setup(choices: SetupChoices(agents: ["claude", "codex"])))
+        #expect(first.next.prefix(2).map(\.command) == ["rh config validate --strict", "rh setup"], "\(first.next.map(\.command))")
+        #expect(!Installer(home: machine.home).installedServices().map(\.lastPathComponent).contains { $0.contains("Codex") }, "these Quick Actions came from the file as it was")
+        try machine.writeConfig(Self.mine.replacingOccurrences(of: "agents = [\"claude\"]", with: "agents = [\"claude\", \"codex\"]"))
+        let again = try await machine.runner().run(.setup())
+        #expect(outcomes(again)["services"] == .updated)
+        #expect(Installer(home: machine.home).installedServices().map(\.lastPathComponent).contains { $0.contains("Codex") })
+    }
+
     @Test func aConfigThatAlreadySaysWhatWasAskedNeedsNoEditAndNoNote() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         try machine.writeConfig(Self.mine)
@@ -325,6 +355,21 @@ struct SetupRunnerTests {
         #expect(report.next == [SetupNext("rh setup --terminal terminal", why: "The same without --dry-run: it makes the changes above.")])
         #expect(report.english().first == "Right Here setup (a dry run: nothing was changed)")
         #expect(report.english().contains("  Config file: would be created (\(machine.paths.configFile.path))"))
+    }
+
+    @Test func aDryRunCountsTheQuickActionsOfTheConfigItWouldCreateNotOfNoConfigAtAll() async throws {
+        // It said "5 installed" for a plan that the real run then made 7 of: the count came from the defaults that apply with no file.
+        let machine = try Machine(shellOutput: "claude\ncodex\n"); defer { machine.cleanUp() }
+        let choices = SetupChoices(terminal: "ghostty", editor: "vscode", agents: ["claude", "codex"])
+        func count(_ report: SetupReport) throws -> String {
+            try #require(report.step(.services)?.detail?.english().split(separator: " ").first.map(String.init), "\(report.steps)")
+        }
+        let dry = try await machine.runner().run(.setup(choices: choices, dryRun: true))
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
+        let real = try await machine.runner().run(.setup(choices: choices))
+        #expect(try count(dry) == count(real), "dry run: \(dry.step(.services)?.detail?.english() ?? "-"); real run: \(real.step(.services)?.detail?.english() ?? "-")")
+        #expect(dry.step(.services)?.detail?.english().hasSuffix(" in all") == true, "nothing is installed in a dry run, so it does not say \"installed\"")
+        #expect(real.step(.services)?.detail?.english().hasSuffix(" installed") == true)
     }
 
     @Test func aDryRunAfterASetupFindsEverythingInPlace() async throws {
@@ -444,11 +489,16 @@ struct SetupRunnerTests {
         #expect(need.how.last == "Right Here does not edit your shell's startup files.")
     }
 
-    @Test func aTrialSaysNothingAboutTheExtensionTheMacOrThePath() async throws {
+    @Test func aTrialSaysNothingAboutTheExtensionButWhatARealRunSaysAboutThePathAndThePermission() async throws {
+        // An AI agent that tries setup in a trial (`RH_HOME`) must meet the list the person will: the doctor warns about the PATH, so
+        // the list says the same, with the line to add.
         let machine = try Machine(); defer { machine.cleanUp() }
         let report = try await machine.runner().run(.setup())
-        #expect(report.needsUser.isEmpty)
-        #expect(report.checks?.contains { $0.id == .finderExtension } == false)
+        #expect(report.checks?.contains { $0.id == .finderExtension } == false, "a trial neither registers nor checks the extension")
+        #expect(report.needsUser.map(\.id) == [.path, .automation], "\(report.needsUser.map(\.id))")
+        let path = try #require(report.needsUser.first { $0.id == .path })
+        #expect(path.how.contains { $0.contains("export PATH=\"$HOME/.local/bin:$PATH\"") }, "\(path.how)")
+        #expect(report.next.contains { $0.command == "rh doctor --probe-launch" })
     }
 
     @Test func startingAnAgentInGhosttyHasMacOSAskForPermissionOnce() async throws {
