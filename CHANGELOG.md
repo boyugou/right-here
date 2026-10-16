@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `script/verify_mcp_protocol.py` starts the MCP server in a trial home and checks what it answers (initialize, `tools/list`, the read-only tools, `ping`, the errors) against the protocol's
+  own JSON Schema for each of the four protocol versions it claims: it is conformant on all four.
 - The launch flags of the terminal adapters were read against each terminal's own documentation (ADR 0025): none of WezTerm's, kitty's or iTerm2's is wrong. Alacritty, which was handed the
   folder with `open` although it declares no document types (so a window could open in the wrong folder), now has an adapter of its own that starts it with `--working-directory` and, for an
   agent, `-e` (it joins the terminals that can run commands). kitty is started with `-o macos_quit_when_last_window_closed=yes`, so a launch no longer leaves an idle kitty and its Dock icon

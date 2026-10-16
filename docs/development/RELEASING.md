@@ -1,6 +1,7 @@
 # Releasing
 
-1. `./script/verify_all.sh` passes and the working tree is clean.
+1. `./script/verify_all.sh` passes and the working tree is clean. After a change to the MCP server, `./script/verify_mcp_protocol.py` (it needs `swift build` and, the first time, the network) checks its answers against
+   the protocol's own schemas for every version it claims; `./script/verify_macos_wording.py` does the same for the Settings names on the macOS it runs on (CI runs it on the macOS 26 image).
 2. Raise the version in `Sources/RightHereCore/AppIdentity.swift` (`AppIdentity.version`), `MARKETING_VERSION` in
    `project.yml`, the top heading of `CHANGELOG.md`, the two files under `packaging/homebrew` and the `version` of
    `plugins/right-here/.claude-plugin/plugin.json`;

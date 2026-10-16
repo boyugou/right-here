@@ -97,7 +97,7 @@ To add a language:
    puts the right-to-left mark where a right-to-left text needs one, marks the texts `needs_review` (`--reviewed` marks them
    `translated`: use it only for a native speaker's correction of their own language) and writes nothing unless every text passes. Keep `%@` and `%1$@` and the text between backticks as they are.
 4. `./script/compile_localizations.py`, then `./script/verify_localizations.py` must pass and `swift test` must stay green.
-   Also run `./script/verify_macos_wording.py`: it reads the words macOS itself uses for System Settings, Automation and Finder's own menu items from
+   Also run `./script/verify_macos_wording.py`: it reads the words macOS itself uses for the System Settings panes the app names (the permission, the extension switch, the keyboard shortcuts) and Finder's own menu items from
    this Mac's resources and compares ours with them. It is not part of the gate because the answer depends on the macOS version it runs on, so a label
    you are fairly sure of is checked with it before you apply it (a review once put five wrong labels in from memory).
    Look at the setup window in the new language with `./script/preview_setup.sh out.png <code>`.
