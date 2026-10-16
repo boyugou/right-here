@@ -85,6 +85,19 @@ struct DoctorReportTests {
         for secret in ["Bluebird", "ACME_API_KEY", "sk-live", "Project"] { #expect(!text.contains(secret), "\(secret) in \(text)") }
     }
 
+    @Test func theFilesRightHereLooksAtItselfAreNamedInTheReportAndInTheTextAnAgentReads() {
+        let config = DoctorCheck(.config, status: .warn, detail: .doctorConfigWarnings("0"),
+                                 notes: [.doctorConfigOverlay("/Users/tester/.config/right-here/config.local.toml"), .doctorConfigSymlink("config.toml")])
+        let sync = DoctorCheck(.syncState, status: .warn, detail: .doctorSyncStateUnreadable("/Users/tester/.config/right-here/sync-state.toml"))
+        let text = report([config, sync])
+        #expect(text.contains("merged with the per-machine overlay ~/.config/right-here/config.local.toml"), Comment(rawValue: text))
+        #expect(text.contains("config.toml is a symlink, which the Finder extension's sandbox may not be able to follow"), Comment(rawValue: text))
+        #expect(text.contains("~/.config/right-here/sync-state.toml cannot be read"), Comment(rawValue: text))
+        // What an agent reads says the same files without a fence: they are not the config's text.
+        let said = (config.englishLines() + sync.englishLines()).joined(separator: "\n")
+        #expect(!said.contains("⟦"), Comment(rawValue: said))
+    }
+
     @Test func theConstantsThatAFixQuotesAreRightHeresOwnAndAreNeitherHiddenNorFenced() {
         let none = DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd("agents = [\"claude\"]"))
         let launcher = DoctorCheck(.agent("acme"), title: "Acme", status: .warn, fix: .doctorFixAgentLauncher("launcher = \"link\"", "\"desktop\""))
