@@ -58,11 +58,19 @@ public struct SetupSummary: Sendable, Equatable {
 }
 
 extension DoctorCheck {
-    /// Whether the person may leave this as it is: the command link is in place and its folder is not on PATH. That matters to someone who types
-    /// `rh` in a terminal; the Finder menu, the Quick Actions and an AI assistant's tools run the `rh` that the runner script and the MCP command
-    /// name by its full path.
+    /// Whether the person may leave this warning as it is, so that the window does not ask them to look at it:
+    /// - the command link is in place and its folder is not on PATH: that matters to someone who types `rh` in a terminal; the Finder menu, the Quick
+    ///   Actions and an AI assistant's tools run the `rh` that the runner script and the MCP command name by its full path;
+    /// - Claude Code's terminal link has no handler yet: it is made when Claude Code is started once, and only the menu's terminal link entry needs it;
+    /// - no agent is enabled, which is what a person chose who picked none.
     public var isOptional: Bool {
-        id == .cliLink && detail?.key == .doctorCliNotOnPath
+        guard status == .warn else { return false }
+        switch id {
+        case .cliLink: return detail?.key == .doctorCliNotOnPath
+        case .claudeLink: return true
+        case .agents: return detail?.key == .doctorAgentsNone
+        default: return false
+        }
     }
 
     /// For the default terminal and editor checks: the app a click opens, as the name the check carries, whatever the

@@ -84,11 +84,7 @@ public struct SetupRunner: Sendable {
 
     public func run(_ request: SetupRequest) async throws -> SetupReport {
         // The runner script and the Services would point into a folder that disappears when the app quits.
-        if InstallError.isTranslocated(rhPath) { throw InstallError.translocated }
-        // The app, not a `rh` that somebody built or installed with Homebrew (a build folder is noted; its volume is the developer's business).
-        if rhPath.contains(".app/Contents/"), InstallError.isOnAnotherVolume(rhPath) {
-            throw InstallError.onAnotherVolume(path: URL(fileURLWithPath: rhPath).resolvingSymlinksInPath().path)
-        }
+        if let problem = InstallError.problem(runningFrom: rhPath) { throw problem }
         // One setup at a time: a second one waits its turn and then finds everything in place, which it says. A dry run writes nothing, so
         // it neither waits nor makes the lock file (and the folder of it).
         var turn: FileLock?
@@ -141,7 +137,7 @@ public struct SetupRunner: Sendable {
             notes.append("This rh runs from a build folder (\(rhPath)), and the runner script and the Quick Actions now point at it: they stop working when that folder is cleaned. For a lasting setup run the rh inside Right Here.app (Right Here.app/Contents/Helpers/rh setup).")
         }
         if editsPending {
-            notes.append("\(paths.configFile.lastPathComponent) already exists, so Right Here left it alone and did not apply your choices. The edits that would make it say so are listed above (and in configEdits with --json).")
+            notes.append("\(paths.configFile.lastPathComponent) already exists, so Right Here left it alone and did not apply your choices.")
         }
         return notes
     }

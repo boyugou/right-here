@@ -37,6 +37,15 @@ public enum InstallError: Error, Equatable, LocalizedError {
         path.contains("/AppTranslocation/")
     }
 
+    /// Why the app cannot set anything up from where it runs, or `nil`: the temporary copy macOS makes of a downloaded app, or a disk image or
+    /// another volume. `helper` is the `rh` inside the app; one that is not inside an app (a build folder, Homebrew's) is the developer's or the package
+    /// manager's business, and its volume is not the disk image's.
+    public static func problem(runningFrom helper: String) -> InstallError? {
+        if isTranslocated(helper) { return .translocated }
+        guard helper.contains(".app/Contents/"), isOnAnotherVolume(helper) else { return nil }
+        return .onAnotherVolume(path: URL(fileURLWithPath: helper).resolvingSymlinksInPath().path)
+    }
+
     /// Whether `path` is on a volume that is mounted under `/Volumes` (a disk image, a USB stick, a network share). A link in `/Volumes` to the
     /// startup disk (`/Volumes/Macintosh HD`) leads to the same place as `/`, which is where Applications is, and is not one.
     public static func isOnAnotherVolume(_ path: String, volumes: String = "/Volumes/") -> Bool {
@@ -435,8 +444,14 @@ public struct FinderExtensionManager: Sendable {
         try await run(["-r", appexPath])
     }
 
+    /// How long a `pluginkit` call that changes something may take. It talks to a daemon that is occasionally stuck, and a call that never comes back
+    /// held the setup lock (and with it every other setup) until the app was quit.
+    static let changeTimeout: Duration = .seconds(30)
+
     private func run(_ arguments: [String]) async throws {
-        let result = try await runner.run(ProcessStep(executable: "/usr/bin/pluginkit", arguments: arguments))
+        let step = "pluginkit " + arguments.joined(separator: " ")
+        let result = try await runner.run(ProcessStep(executable: "/usr/bin/pluginkit", arguments: arguments), timeout: Self.changeTimeout)
+        if result.terminatedAfter != nil { throw ExecutionError.timedOut(step: step, seconds: Int(Self.changeTimeout.components.seconds)) }
         guard result.status == 0 else {
             throw ExecutionError.stepFailed(index: 0, step: "pluginkit " + arguments.joined(separator: " "),
                                             message: result.standardError.trimmingCharacters(in: .whitespacesAndNewlines))

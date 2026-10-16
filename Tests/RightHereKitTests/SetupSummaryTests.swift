@@ -52,6 +52,23 @@ struct SetupSummaryTests {
         #expect(SetupSummary(checks: [onlyPath, check(.editorDefault, .warn)]).badge(for: .checks) == .attention(1), "the editor still counts")
     }
 
+    @Test func aClaudeLinkWithoutItsHandlerAndNoAgentsAtAllAreWarningsThePersonMayLeave() {
+        // The handler is made when Claude Code is started once; a person who picked no agents has nothing to add. Neither is for the window to ask about.
+        let link = DoctorCheck(.claudeLink, status: .warn, detail: .doctorClaudeLinkMissing("claude"), fix: .doctorFixClaudeLink)
+        let none = DoctorCheck(.agents, status: .warn, detail: .doctorAgentsNone, fix: .doctorFixAgentsAdd("agents = [\"claude\"]"))
+        let summary = SetupSummary(checks: [check(.config, .ok), link, none])
+        #expect(summary.state == .allSet)
+        #expect(summary.openChecks.map(\.id) == [.claudeLink, .agents], "the page of the checks lists both")
+        #expect(summary.badge(for: .checks) == nil)
+    }
+
+    @Test func anAgentThatIsNotFoundAndAFailingLinkStillNeedAttention() {
+        let notFound = DoctorCheck(.agent("claude"), status: .warn, detail: .doctorAgentNotFound("claude"))
+        let brokenLink = DoctorCheck(.claudeLink, status: .fail, detail: .doctorClaudeLinkMissing("claude"))
+        #expect(SetupSummary(checks: [notFound]).state == .needsAttention)
+        #expect(SetupSummary(checks: [brokenLink]).state == .needsAttention, "only a warning is the person's to leave")
+    }
+
     @Test("the first-run card is due while the extension is not registered or is switched off, and only then", arguments: [
         (DoctorCheck.Status.fail, true), (.needsUser, true), (.warn, false), (.ok, false)
     ])

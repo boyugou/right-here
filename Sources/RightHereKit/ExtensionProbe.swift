@@ -1,5 +1,25 @@
 import Foundation
 import RightHereCore
+import Synchronization
+
+/// Whether a launch probe is in the one stretch where the Finder extension is switched off and not yet on again. The probe restarts the extension with
+/// `pluginkit -e ignore` and `-e use`; a process that ends between the two leaves Finder without its menu. The command line guards that with
+/// `InterruptGuard`; the app does not quit while this says so (`applicationShouldTerminate`).
+public final class ProbeActivity: Sendable {
+    public static let shared = ProbeActivity()
+
+    private let depth = Mutex(0)
+
+    public init() {}
+
+    public var isSwitching: Bool { depth.withLock { $0 > 0 } }
+
+    func switching<Result: Sendable>(_ body: () async -> Result) async -> Result {
+        depth.withLock { $0 += 1 }
+        defer { depth.withLock { $0 -= 1 } }
+        return await body()
+    }
+}
 
 /// Asks the installed Finder extension to run a probe through the same chain a menu click uses
 /// (extension, runner script, `rh`, then `osascript` or `open`), and reads the answer from the log.
@@ -18,11 +38,13 @@ public struct ExtensionProbe: Sendable {
     private let paths: RHPaths
     private let facts: any SystemFacts
     private let runner: any ProcessRunner
+    private let activity: ProbeActivity
 
-    public init(paths: RHPaths, facts: any SystemFacts = LiveSystemFacts(), runner: any ProcessRunner = LiveProcessRunner()) {
+    public init(paths: RHPaths, facts: any SystemFacts = LiveSystemFacts(), runner: any ProcessRunner = LiveProcessRunner(), activity: ProbeActivity = .shared) {
         self.paths = paths
         self.facts = facts
         self.runner = runner
+        self.activity = activity
     }
 
     private var logFile: URL { paths.logFile }
@@ -52,9 +74,12 @@ public struct ExtensionProbe: Sendable {
         guard ProbeMarker.write(text ?? kind.rawValue, in: paths) else { return nil }
 
         let manager = FinderExtensionManager(runner: runner)
-        try? await manager.disable()
-        try? await Task.sleep(for: .seconds(1))
-        _ = try? await runner.run(ProcessStep(executable: "/usr/bin/pluginkit", arguments: ["-e", "use", "-i", AppIdentity.extensionBundleID]))
+        let runner = runner
+        await activity.switching {
+            try? await manager.disable()
+            try? await Task.sleep(for: .seconds(1))
+            _ = try? await runner.run(ProcessStep(executable: "/usr/bin/pluginkit", arguments: ["-e", "use", "-i", AppIdentity.extensionBundleID]))
+        }
 
         let deadline = ContinuousClock.now + timeout
         while ContinuousClock.now < deadline {
