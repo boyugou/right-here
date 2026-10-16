@@ -1103,6 +1103,25 @@ struct CLITests {
         #expect(paths.contains { $0.contains("\u{1b}[2J\u{202E}name") }, "the JSON holds the path as it is")
     }
 
+    /// ArgumentParser prints the errors that a command throws and the ones it finds in what was typed, and its message quotes the word (an unknown topic, a path with `..` after
+    /// a link, an option that is not there): `rh` prints them itself, through the same function as the rest.
+    @Test func anErrorThatQuotesWhatWasTypedIsPrintedWithoutAnythingATerminalActsOn() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        for arguments in [["docs", "x\u{1b}[2J\u{202E}"], ["pin", "--no\u{1b}[2Jsuch"], ["probe", "automation", "no\u{9b}31msuch"], ["run", "reveal", "/nonexistent/\u{9b}31m\u{200B}"],
+                          ["run", "no\u{1b}[2Jsuch"], ["setup", "--terminal", "no\u{1b}[2Jsuch"]] {
+            let result = try rh.run(arguments)
+            #expect(result.status != 0, "rh \(arguments)")
+            #expect(scalarsATerminalActsOn(result.standardError).isEmpty, "rh \(arguments): \(scalarsATerminalActsOn(result.standardError)) in \(result.standardError.debugDescription)")
+            #expect(scalarsATerminalActsOn(result.standardOutput).isEmpty, "rh \(arguments)")
+        }
+        let topic = try rh.run(["docs", "x\u{1b}[2J"])
+        #expect(topic.standardError.contains("Unknown topic \"x\\u001b[2J\""), "control: the message quotes the word: \(topic.standardError)")
+        #expect(topic.status == 64, "ArgumentParser's status for a usage error is kept")
+        // Help and the version are not errors: they are on standard output, as before.
+        let help = try rh.run(["doctor", "--help"])
+        #expect(help.status == 0 && help.standardOutput.contains("OVERVIEW:") && help.standardError.isEmpty)
+    }
+
     @Test func aConfigFileThatHoldsControlCharactersIsShownWithoutThem() throws {
         let rh = try RH(config: "# a note\u{1b}[2J that a terminal would act on\n[general]\nterminal = \"terminal\"\u{200B}\n"); defer { rh.cleanUp() }
         let result = try rh.run(["config", "show"])

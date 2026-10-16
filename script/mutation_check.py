@@ -388,6 +388,8 @@ MUTANTS = [
      'text.escapingControlCharacters(keeping: ["\\n", "\\t"])', "text"),
     ("the JSON that rh prints holds the characters a terminal acts on as they are", "Sources/rh/RH.swift",
      'as: UTF8.self).escapingControlCharacters(keeping: ["\\n"]))', "as: UTF8.self))"),
+    ("an error that rh finds in what was typed, or that a command throws, is printed by ArgumentParser, which does not escape what it quotes", "Sources/rh/RH.swift",
+     "if !message.isEmpty { code == .success ? Output.print(message) : Output.error(message) }", "if !message.isEmpty { code == .success ? Swift.print(message) : FileHandle.standardError.write(Data((message + \"\\n\").utf8)) }"),
     ("rh pins prints a folder name with its line break, which forges a line", "Sources/rh/Commands/BookmarksCommand.swift",
      "Output.print(pin.withControlCharactersEscaped)", "Output.print(pin)"),
     ("rh recents prints a folder name with its line break, which forges a line", "Sources/rh/Commands/BookmarksCommand.swift",

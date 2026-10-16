@@ -34,7 +34,21 @@ struct RH: AsyncParsableCommand {
             Output.error("error: " + problem)
             Darwin.exit(64)
         }
-        await main(arguments)
+        // What ArgumentParser's `main` does, except that an error is printed here, through `Output`: its own message quotes what was typed or what a command found (an unknown
+        // topic, a path with `..` after a link, an app that is not there), and a name in it must not act on the terminal either.
+        do {
+            var command = try parseAsRoot(arguments)
+            if var asyncCommand = command as? any AsyncParsableCommand {
+                try await asyncCommand.run()
+            } else {
+                try command.run()
+            }
+        } catch {
+            let code = exitCode(for: error)
+            let message = fullMessage(for: error)
+            if !message.isEmpty { code == .success ? Output.print(message) : Output.error(message) }
+            Darwin.exit(code.rawValue)
+        }
     }
 }
 
