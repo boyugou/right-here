@@ -31,12 +31,14 @@ public struct ExtensionCrashes: Sendable, Equatable {
 
     /// `nil` when there is no report in the window, or when the folder cannot be read.
     public static func scan(in folder: URL, installedAfter installed: Date?, now: Date = Date()) -> ExtensionCrashes? {
-        guard let urls = try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: [.contentModificationDateKey]) else { return nil }
+        // Names only: the folder holds a report for every program that crashed on this Mac, and only this one's are looked at.
+        guard let names = try? FileManager.default.contentsOfDirectory(atPath: folder.path) else { return nil }
         let cutoff = max(installed ?? .distantPast, now.addingTimeInterval(-window))
         var reports: [(date: Date, name: String)] = []
-        for url in urls where url.lastPathComponent.hasPrefix(namePrefix) && reportExtensions.contains(url.pathExtension) {
+        for name in names where name.hasPrefix(namePrefix) && reportExtensions.contains((name as NSString).pathExtension) {
+            let url = folder.appendingPathComponent(name)
             guard let date = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate, date >= cutoff else { continue }
-            reports.append((date, url.lastPathComponent))
+            reports.append((date, name))
         }
         guard let newest = reports.max(by: { $0.date < $1.date }) else { return nil }
         return ExtensionCrashes(count: reports.count, latest: newest.date, latestFile: newest.name)
