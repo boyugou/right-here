@@ -63,6 +63,12 @@ You need a Mac with Apple silicon and macOS 26 or later.
 2. Open the DMG and drag **Right Here** to **Applications**.
 3. Open Right Here from **Applications**.
 
+Or install it with Homebrew, from the project's own tap:
+
+```sh
+brew install --cask boyugou/tap/right-here
+```
+
 To build from source, you need Xcode 26 and `xcodegen`:
 
 ```sh
@@ -83,7 +89,8 @@ brew install xcodegen
 
 You can also run `rh setup` in a terminal. Or let an AI assistant do it: press **Copy Setup Prompt for AI** in the app, and paste the prompt.
 
-**To update,** download the new DMG and drag the app over the old one. Choose **Replace**. Then open Right Here and press **Install or Repair**. Your config file stays as it is.
+**To update,** download the new DMG and drag the app over the old one. Choose **Replace**. With Homebrew, run `brew upgrade --cask right-here`
+instead. Then open Right Here and press **Install or Repair**. Your config file stays as it is.
 
 ## Use the command line
 

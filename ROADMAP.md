@@ -45,7 +45,9 @@
 **Distribution**
 
 - A notarized DMG is attached to each release on GitHub (the latest is `v1.0.0`).
-- A Homebrew cask is in `packaging/homebrew`. It needs a tap.
+- Homebrew, from the tap [boyugou/homebrew-tap](https://github.com/boyugou/homebrew-tap): `brew install --cask boyugou/tap/right-here`
+  (the app) or `brew install boyugou/tap/rh` (the command-line tool, built from source). Each release updates the tap, and the tap's CI
+  installs both.
 
 ## Next
 
@@ -55,7 +57,9 @@ terminals.
 - Try a click on items in Desktop, Documents and Downloads, and the first Automation prompt on a new Mac.
 - Try iTerm2, WezTerm, kitty, Alacritty and Warp on a real Mac. Agents in Warp (only through a saved Tab Config) and in cmux (its
   socket takes outside programs only when the person allows it) wait for someone who uses them (ADR 0025).
-- The cask in a tap, so that `brew install --cask right-here` works.
+- The cask in Homebrew's own repository, so that `brew install --cask right-here` works. Homebrew takes a package that its author
+  submits once the repository is 30 days old (from 2026-11-28) and has 225 stars, 90 forks or 90 watchers (75, 30 or 30 when someone
+  else submits it). The tap's CI runs the audit of a new package to show what is left.
 - Review of the translations by native speakers.
 - A menu-only edition for the App Store (the design notes give its scope and risks).
 

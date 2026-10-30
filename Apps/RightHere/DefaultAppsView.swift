@@ -139,7 +139,8 @@ struct DefaultAppRow: View {
         let automatic = role == .terminal ? general.automaticTerminalName : general.automaticEditorName
         return ChoiceMenu(shown: usedName(general) ?? l10n.string(.appNoneFound), icon: model.image(for: used(general)?.icon), font: .body,
                           accessibilityLabel: l10n.string(title)) {
-            Picker(selection: Binding(get: { choice(general) }, set: choose)) {
+            // A closure, not `set: choose`: Swift 6.3 (Xcode 26) crashes turning a method into the binding's @isolated(any) setter.
+            Picker(selection: Binding(get: { choice(general) }, set: { choose($0) })) {
                 Text(automatic.map { l10n.render(.appTerminalAutomatic($0)) } ?? l10n.string(.appNoneFound)).tag("")
                 ForEach(apps(general)) { app in
                     Group {
