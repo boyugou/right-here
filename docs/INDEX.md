@@ -68,3 +68,4 @@ Each record says what we decided, the alternatives, and the evidence.
 - [0030 A pinned or recent folder is a thing Shortcuts can pick](decisions/0030-saved-folders-for-shortcuts.md)
 - [0031 Right Here reads no settings from the folder it acts on](decisions/0031-no-settings-from-the-folder-acted-on.md)
 - [0032 New File makes blank Word, Excel and PowerPoint documents, and each template can be left out](decisions/0032-office-documents-from-new-file.md)
+- [0033 A file's link on its git host, copied or opened](decisions/0033-links-to-the-git-host.md)

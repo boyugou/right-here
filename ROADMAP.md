@@ -67,8 +67,14 @@ terminals.
 
 Each idea needs a short decision record before it is built.
 
-None at the moment. Project-local settings (a `.right-here.toml` at the git root, behind a step of trust) were considered and not built:
-the menu could not show them, what is left is a terminal placement, and an agent in the folder could grant the trust itself
+1. **A file's link on its git host**, copied (Copy Repository Link) or opened (Open Repository Page): the checked-out commit's page of
+   the item on GitHub, GitLab, Codeberg or Bitbucket, refused for a commit that is not pushed or a file that is not in it. Decided in
+   [ADR 0033](docs/decisions/0033-links-to-the-git-host.md); next to build.
+2. **Self-hosted git hosts** for those links (a company's GitHub Enterprise or GitLab), as a setting that maps a host to one of the four
+   forms. After 1, when someone asks.
+
+Project-local settings (a `.right-here.toml` at the git root, behind a step of trust) were considered and not built: the menu could not
+show them, what is left is a terminal placement, and an agent in the folder could grant the trust itself
 ([ADR 0031](docs/decisions/0031-no-settings-from-the-folder-acted-on.md)).
 
 ## Open
