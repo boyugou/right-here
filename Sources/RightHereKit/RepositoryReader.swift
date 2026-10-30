@@ -5,11 +5,12 @@ import RightHereCore
 /// names a program for every hook, its file system monitor, a filter for every file, a pager and an ssh command, none of `rev-parse`,
 /// `config --get`, `remote`, `remote get-url`, `rev-list` and `cat-file -e` started one (`ls-files` started the monitor and is not used).
 public enum RepositoryReader {
-    /// The state of the repository around each item that is in one; an item outside a repository has no entry.
+    /// The state of the repository around each item that is in one, by the item's normalized URL (as the planner looks it up); an item
+    /// outside a repository has no entry.
     public static func read(items: [URL], facts: any SystemFacts, runner: any ProcessRunner = LiveProcessRunner()) async throws -> [URL: RepositoryState] {
         var states: [URL: RepositoryState] = [:]
         var byRoot: [URL: RepositoryState] = [:]
-        for item in items {
+        for item in items.map(\.lexicallyNormalized) {
             guard let root = facts.gitRoot(containing: item), let path = RepositoryLink.itemPath(of: item, inRepository: root) else { continue }
             var state: RepositoryState
             if let known = byRoot[root] {
@@ -28,6 +29,14 @@ public enum RepositoryReader {
             states[item] = state
         }
         return states
+    }
+
+    /// What the planner needs for `ref` and `context`: nothing for an action that does not read the repository, which then runs no git.
+    public static func read(for ref: ActionRef, context: HereContext, facts: any SystemFacts, runner: any ProcessRunner = LiveProcessRunner()) async throws -> [URL: RepositoryState] {
+        guard ref.readsRepository else { return [:] }
+        // With nothing named on the command line the planner acts on the folder `rh` runs in.
+        let targets = context.pathTargets.isEmpty && context.origin == .cli ? [facts.currentDirectory] : context.pathTargets
+        return try await read(items: targets, facts: facts, runner: runner)
     }
 
     private static func readRepository(_ root: URL, runner: any ProcessRunner) async throws -> RepositoryState {

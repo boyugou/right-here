@@ -48,6 +48,8 @@ public enum AgentLauncher: Sendable, Equatable, Hashable {
 ///     preset.<id>[@<terminal>]       preset.review   preset.tests@ghostty
 ///     new-file.<template>            new-file.md
 ///     reveal
+///     repository.copy-link           the item's page on its git host, copied (ADR 0033)
+///     repository.open-page           the same page, opened in the browser
 public enum ActionRef: Sendable, Equatable, Hashable {
     case copyPath(PathStyle)
     case openTerminal(String?)
@@ -59,6 +61,8 @@ public enum ActionRef: Sendable, Equatable, Hashable {
     /// A prompt preset of the config, typed into a terminal with its agent; `nil` is the agent's own terminal choice.
     case preset(id: String, terminal: String?)
     case reveal
+    case copyRepositoryLink
+    case openRepositoryPage
 
     public init?(parsing text: String) {
         let (body, suffix) = Self.split(text)
@@ -91,10 +95,19 @@ public enum ActionRef: Sendable, Equatable, Hashable {
         case ("reveal", 1):
             guard suffix == nil else { return nil }
             self = .reveal
+        case ("repository", 2) where parts[1] == "copy-link":
+            guard suffix == nil else { return nil }
+            self = .copyRepositoryLink
+        case ("repository", 2) where parts[1] == "open-page":
+            guard suffix == nil else { return nil }
+            self = .openRepositoryPage
         default:
             return nil
         }
     }
+
+    /// The actions whose plan needs what git says about the repository (`RepositoryState`), read before planning.
+    public var readsRepository: Bool { self == .copyRepositoryLink || self == .openRepositoryPage }
 
     public var id: String {
         switch self {
@@ -121,6 +134,10 @@ public enum ActionRef: Sendable, Equatable, Hashable {
             return "new-file.\(template)"
         case .reveal:
             return "reveal"
+        case .copyRepositoryLink:
+            return "repository.copy-link"
+        case .openRepositoryPage:
+            return "repository.open-page"
         }
     }
 

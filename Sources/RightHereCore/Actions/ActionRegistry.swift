@@ -93,6 +93,18 @@ public struct ActionRegistry: Sendable {
             info.title = localizer.revealInFinder
             info.shortTitle = localizer.revealInFinder
             info.icon = .symbol("magnifyingglass")
+
+        case .copyRepositoryLink:
+            info.group = "repository"
+            info.title = localizer.copyRepositoryLink
+            info.shortTitle = localizer.copyRepositoryLink
+            info.icon = .symbol("link")
+
+        case .openRepositoryPage:
+            info.group = "repository"
+            info.title = localizer.openRepositoryPage
+            info.shortTitle = localizer.openRepositoryPage
+            info.icon = .symbol("globe")
         }
         return info
     }
@@ -262,6 +274,7 @@ public struct ActionRegistry: Sendable {
         refs += config.presets.map { .preset(id: $0.id, terminal: nil) }
         refs += config.newFile.templates.map { .newFile($0.id) }
         refs.append(.reveal)
+        refs += [.copyRepositoryLink, .openRepositoryPage]
 
         var seen = Set<String>()
         return refs.filter { seen.insert($0.id).inserted }.map(info)

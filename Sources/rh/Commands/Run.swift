@@ -91,7 +91,8 @@ struct Run: AsyncParsableCommand {
         }
         let plan: LaunchPlan
         do {
-            plan = try Planner(config: config, facts: runtime.facts, localizer: localizer).plan(ref, context: here)
+            let repositories = try await RepositoryReader.read(for: ref, context: here, facts: runtime.facts)
+            plan = try Planner(config: config, facts: runtime.facts, localizer: localizer, repositories: repositories).plan(ref, context: here)
         } catch {
             try await fail(error)
         }

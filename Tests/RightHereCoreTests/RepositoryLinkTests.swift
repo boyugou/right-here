@@ -35,6 +35,11 @@ struct RepositoryLinkTests {
         #expect(throws: RepositoryLinkError.self) { try RepositoryLink.parse(remote: text).get() }
     }
 
+    @Test func aTransportPrefixIsNotAHost() {
+        #expect(RepositoryLink.parse(remote: "ext::sh -c touch% /tmp/x") == .failure(.unreadableRemote))
+        #expect(RepositoryLink.parse(remote: "fd::17") == .failure(.unreadableRemote))
+    }
+
     @Test func anotherHostIsNamedInTheRefusal() {
         #expect(RepositoryLink.parse(remote: "git" + Self.at + "git.example.com:team/repo.git") == .failure(.unknownHost("git.example.com")))
         #expect(RepositoryLink.parse(remote: "https://user" + Self.at + "GHE.Corp.example:8443/team/repo") == .failure(.unknownHost("ghe.corp.example")))

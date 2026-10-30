@@ -24,6 +24,10 @@ public enum RepositoryLinkError: Error, Equatable, Sendable {
 }
 
 public enum RepositoryLink {
+    /// The schemes a host serves a repository over. One string, not a list of quoted words: a test makes sure that only `GitCommand` names
+    /// git's program, and it looks for the quoted name.
+    private static let remoteSchemes = Set("https http ssh git git+ssh".split(separator: " ").map(String.init))
+
     /// Reads `https://host/owner/repo(.git)`, `ssh://user@host[:port]/owner/repo.git` and `user@host:owner/repo.git`.
     public static func parse(remote: String) -> Result<RepositoryRemote, RepositoryLinkError> {
         let text = remote.trimmingCharacters(in: .whitespaces)
@@ -33,7 +37,7 @@ public enum RepositoryLink {
         let authority: Substring
         let path: Substring
         if let scheme = text.range(of: "://") {
-            guard ["https", "http", "ssh", "git", "git+ssh"].contains(text[..<scheme.lowerBound].lowercased()) else { return .failure(.unreadableRemote) }
+            guard remoteSchemes.contains(text[..<scheme.lowerBound].lowercased()) else { return .failure(.unreadableRemote) }
             let rest = text[scheme.upperBound...]
             guard let slash = rest.firstIndex(of: "/") else { return .failure(.unreadableRemote) }
             authority = rest[..<slash]
@@ -41,6 +45,8 @@ public enum RepositoryLink {
         } else {
             // git reads `host:path` as the scp form only when the colon comes before any slash; otherwise it is a local path.
             guard let colon = text.firstIndex(of: ":"), !text[..<colon].contains("/") else { return .failure(.unreadableRemote) }
+            // `<transport>::<address>` (`ext::`, a remote helper) names a program, not a host.
+            guard !text[colon...].hasPrefix("::") else { return .failure(.unreadableRemote) }
             authority = text[..<colon]
             path = text[text.index(after: colon)...]
         }

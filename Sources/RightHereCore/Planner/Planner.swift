@@ -6,13 +6,16 @@ public struct Planner: Sendable {
     public let config: Config
     public let facts: any SystemFacts
     public let localizer: Localizer
+    /// What git says about the repository around each item, for the repository actions (ADR 0033); `rh` reads it for those actions only.
+    public let repositories: [URL: RepositoryState]
 
     private var defaults: DefaultApps { DefaultApps(config: config, facts: facts) }
 
-    public init(config: Config = .default, facts: any SystemFacts, localizer: Localizer = .english) {
+    public init(config: Config = .default, facts: any SystemFacts, localizer: Localizer = .english, repositories: [URL: RepositoryState] = [:]) {
         self.config = config
         self.facts = facts
         self.localizer = localizer
+        self.repositories = repositories
     }
 
     public func plan(_ ref: ActionRef, context named: HereContext) throws -> LaunchPlan {
@@ -48,7 +51,56 @@ public struct Planner: Sendable {
             let paths = context.pathTargets.map(\.path)
             guard !paths.isEmpty else { throw PlanError.noTarget }
             return LaunchPlan(action: ref.id, summary: "Reveal in Finder", steps: [.reveal(paths)])
+        case .copyRepositoryLink:
+            let targets = context.pathTargets
+            guard !targets.isEmpty else { throw PlanError.noTarget }
+            let links = try targets.map(repositoryLink)
+            return LaunchPlan(action: ref.id, summary: targets.count == 1 ? "Copy the repository link" : "Copy \(targets.count) repository links",
+                              steps: [.copyToPasteboard(links.joined(separator: "\n"))],
+                              notices: ["The link shows the checked-out commit: changes that are not committed are not on it."])
+        case .openRepositoryPage:
+            let targets = context.pathTargets
+            guard !targets.isEmpty else { throw PlanError.noTarget }
+            guard targets.count == 1 else {
+                throw PlanError.unsupported("Open Repository Page opens one item's page; for the links of several, use repository.copy-link.")
+            }
+            return LaunchPlan(action: ref.id, summary: "Open the repository page", steps: [.openURL(try repositoryLink(targets[0]))])
         }
+    }
+
+    // MARK: Repository links (ADR 0033)
+
+    /// The page of `target` on its git host, or the reason there is none, said so that the person knows what to do.
+    private func repositoryLink(_ target: URL) throws -> String {
+        let target = target.lexicallyNormalized
+        guard let state = repositories[target] else {
+            if facts.gitRoot(containing: target) == nil { throw PlanError.unsupported("\(target.path) is not in a git repository.") }
+            throw PlanError.unsupported("The repository of \(target.path) was not read, so its link cannot be made here; `rh run` reads it.")
+        }
+        guard let remote = state.remoteName else {
+            if state.remoteNames.isEmpty { throw PlanError.unsupported("The repository has no remote, so it has no page on a git host.") }
+            throw PlanError.unsupported("The repository has several remotes (\(state.remoteNames.joined(separator: ", "))), none of them origin or the branch's upstream, so it is not clear which one to link to.")
+        }
+        let parsed: RepositoryRemote
+        switch state.remoteURL.map(RepositoryLink.parse(remote:)) {
+        case .success(let value)?:
+            parsed = value
+        case .failure(.unknownHost(let host))?:
+            throw PlanError.unsupported("Remote \"\(remote)\" is on \(host); Right Here makes links for github.com, gitlab.com, codeberg.org and bitbucket.org.")
+        case .failure(.unreadableRemote)?, nil:
+            throw PlanError.unsupported("The URL of remote \"\(remote)\" is not one of a repository on a git host.")
+        }
+        guard let commit = state.commit else { throw PlanError.unsupported("The repository has no commit yet.") }
+        guard state.isPushed else {
+            throw PlanError.unsupported("The checked-out commit is not on remote \"\(remote)\" yet, so it has no page there. Push it, then try again.")
+        }
+        guard state.isInCommit, let path = RepositoryLink.itemPath(of: target, inRepository: state.root) else {
+            throw PlanError.unsupported("\(target.lastPathComponent) is not in the checked-out commit (a new or untracked file has no page yet). Commit and push it, then try again.")
+        }
+        guard let link = RepositoryLink.url(remote: parsed, commit: commit, itemPath: path, isDirectory: facts.isDirectory(target) ?? false) else {
+            throw PlanError.unsupported("The checked-out commit of the repository could not be read.")
+        }
+        return link
     }
 
     // MARK: Copy path

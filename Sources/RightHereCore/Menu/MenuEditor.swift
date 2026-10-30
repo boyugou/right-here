@@ -91,6 +91,8 @@ public enum MenuEditor {
         case "new-file": return .newFile
         case "agent": return .agents
         case "reveal": return .reveal
+        // Beside the ways of copying a path, and the page with the ways of opening.
+        case "repository": return info.id == ActionRef.copyRepositoryLink.id ? .copyPath : .openApp
         default: return .openApp
         }
     }

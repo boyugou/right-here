@@ -204,6 +204,7 @@ copy-path.<style>            absolute, tilde, git-relative, name, parent, shell-
 open.terminal[@<terminal>]   open.editor   open.app.<app>
 agent.<agent>[.<variant>][@<launcher>]
 preset.<id>[@<terminal>]     new-file.<template>          reveal
+repository.copy-link         repository.open-page
 ```
 
 `rh actions` lists what is available on the machine, with reasons for what is not. `rh docs actions` prints
@@ -353,6 +354,12 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
 9. A test cannot change the real home: `rh` started with `RH_NO_UI` and without `RH_HOME` refuses to write the runner script, the command link or the Quick Actions, and to
    change the Finder extension's registration (`RealHomeGuard`; the writes of `rh config sync`, of `rh config` and of the config that `rh init` and `rh setup` make ask it too), and the mutation check stops at the first mutant that changes the runner script, the link or the Quick Actions; see
    [0022](decisions/0022-a-test-cannot-change-the-real-home.md), which says what happened before it.
+10. A repository's remote URL is text from the repository: it can name a program (`ext::`), a local file or a token. A link to a git host
+   (`repository.copy-link`, `repository.open-page`) is built only from parsed parts: `https://`, one of four hosts, owner and repository
+   segments of letters, digits, `-`, `_` and `.` (never `.` or `..`), the commit's full hash and the item's percent-encoded, precomposed
+   path. A user name or password in the remote is dropped; another scheme, a transport prefix or another host is refused. The commit has to
+   be on the chosen remote and the item in the commit, so a link never points at a page that is not there. The git commands that read this
+   start nothing and run through `GitCommand`; see [0033](decisions/0033-links-to-the-git-host.md).
 
 An independent review and a cold-start usability test shaped several of these; see
 [0008](decisions/0008-independent-review.md). The Mac App Store question is in [0007](decisions/0007-app-store-edition.md).

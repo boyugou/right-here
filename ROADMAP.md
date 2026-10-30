@@ -69,7 +69,7 @@ Each idea needs a short decision record before it is built.
 
 1. **A file's link on its git host**, copied (Copy Repository Link) or opened (Open Repository Page): the checked-out commit's page of
    the item on GitHub, GitLab, Codeberg or Bitbucket, refused for a commit that is not pushed or a file that is not in it. Decided in
-   [ADR 0033](docs/decisions/0033-links-to-the-git-host.md); next to build.
+   [ADR 0033](docs/decisions/0033-links-to-the-git-host.md); built, in the next release.
 2. **Self-hosted git hosts** for those links (a company's GitHub Enterprise or GitLab), as a setting that maps a host to one of the four
    forms. After 1, when someone asks.
 

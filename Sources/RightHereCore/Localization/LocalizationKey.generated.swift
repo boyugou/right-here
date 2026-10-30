@@ -3,6 +3,8 @@
 /// One case per entry of the String Catalog; the raw value is the catalog key. `LocalizedMessage` has a typed
 /// constructor for each of them.
 public enum LocalizationKey: String, Sendable, CaseIterable {
+    case actionCopyRepositoryLink = "action.copyRepositoryLink"
+    case actionOpenRepositoryPage = "action.openRepositoryPage"
     case actionReveal = "action.reveal"
     case alertFailedTitle = "alert.failedTitle"
     case alertOk = "alert.ok"

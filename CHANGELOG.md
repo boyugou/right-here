@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Repository links** ([ADR 0033](docs/decisions/0033-links-to-the-git-host.md)): Copy Repository Link (`repository.copy-link`)
+  copies the page of the selected file or folder on GitHub, GitLab, Codeberg or Bitbucket, at the checked-out commit, and Open
+  Repository Page (`repository.open-page`) opens it. They are not in the default menu: add them in the menu editor. A commit that is
+  not pushed, a file that is not in it, a remote on another host and several remotes without an upstream or `origin` are each refused
+  with what to do; a user name or password in the remote never reaches the link.
 - **The app builds with Xcode 26 again.** Swift 6.3 (Xcode 26) crashed while compiling the terminal and editor menus of the setup
   window; Swift 6.4 did not. The gate now also builds with Xcode 26 when it is installed beside a newer one, and a failed app build
   shows how the log ends.

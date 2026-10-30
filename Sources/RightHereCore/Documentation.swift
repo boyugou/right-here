@@ -24,6 +24,9 @@ public enum Documentation {
                                        own: `[[preset]]` in the config). The agent starts at once.
         new-file.<template>            make an empty file next to the selection, or in the folder
         reveal                         select the items in Finder
+        repository.copy-link           copy the page of the selection on the git host of its repository
+                                       (GitHub, GitLab, Codeberg, Bitbucket), at the checked-out commit
+        repository.open-page           open that page in the browser (one item)
 
     Examples:
 
@@ -32,6 +35,7 @@ public enum Documentation {
         rh run agent.codex@desktop ~/code/project
         rh run preset.review src/main.swift src/util.swift
         rh run new-file.md --container ~/notes
+        rh run repository.copy-link src/main.swift
 
     Add `--dry-run` to see the plan and run nothing. Add `--json` to get the plan as data.
 

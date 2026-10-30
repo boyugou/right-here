@@ -268,7 +268,9 @@ enum Tools {
         } catch let unknown as UnknownActionID {
             throw ToolError(unknown.message(next: "Call right_here_actions to list them."))
         }
-        let plan = try Planner(config: loaded.config, facts: server.facts).plan(ref, context: context(from: arguments, facts: server.facts))
+        let here = try context(from: arguments, facts: server.facts)
+        let repositories = try await RepositoryReader.read(for: ref, context: here, facts: server.facts)
+        let plan = try Planner(config: loaded.config, facts: server.facts, repositories: repositories).plan(ref, context: here)
         let planJSON = try JSONValue(encoding: plan)
         if arguments["dry_run"]?.boolValue == true {
             // The plan names the files and folders of the request and the apps of the config: data, in the text; the structured plan holds them as they are.
