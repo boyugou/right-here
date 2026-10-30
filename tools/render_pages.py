@@ -483,7 +483,7 @@ rh setup</code></pre></article>
 <section class="block" id="status" aria-labelledby="status-h">
 <div class="wrap">
 <h2 id="status-h" data-i18n="home.status.title"></h2>
-<p class="section-lead" data-i18n="home.status.lead2"></p>
+<p class="section-lead" data-i18n="home.status.lead3"></p>
 <div class="status">
 <div class="status-col done"><h3 data-i18n="home.status.auto.title"></h3><ul>
 <li data-i18n="home.status.auto.1b"></li><li data-i18n="home.status.auto.2"></li></ul></div>
@@ -492,7 +492,7 @@ rh setup</code></pre></article>
 <div class="status-col open"><h3 data-i18n="home.status.open.title"></h3><ul>
 <li data-i18n="home.status.open.1"></li><li data-i18n="home.status.open.2"></li><li data-i18n="home.status.open.3b"></li><li data-i18n="home.status.open.4"></li></ul></div>
 <div class="status-col next"><h3 data-i18n="home.status.next.title"></h3><ul>
-<li data-i18n="home.status.next.1b"></li><li data-i18n="home.status.next.2"></li><li data-i18n="home.status.next.3"></li></ul></div>
+<li data-i18n="home.status.next.1c"></li><li data-i18n="home.status.next.2"></li><li data-i18n="home.status.next.3"></li></ul></div>
 </div>
 </div>
 </section>
@@ -714,14 +714,16 @@ DOCS = f"""<main id="main" class="wrap docs">
 <div class="doc-body">
 <h1 data-i18n="docs.title"></h1>
 <p class="lead" data-i18n="doc.lead"></p>
-<p class="banner" data-i18n="doc.status2"></p>
+<p class="banner" data-i18n="doc.status3"></p>
 <p><a href="index.html" data-keep-lang data-i18n="docs.home"></a></p>
 
 <section id="install" aria-labelledby="install-h">
 <h2 id="install-h" data-i18n="doc.install.title"></h2>
 {items("doc.install.1b", "doc.install.2", "doc.install.3", tag="ol", cls="numbered")}
+<p data-i18n="doc.install.brew"></p>
+<pre><code>brew install --cask boyugou/tap/right-here</code></pre>
 <p data-i18n="doc.install.move"></p>
-<p data-i18n="doc.install.update"></p>
+<p data-i18n="doc.install.update2"></p>
 <p data-i18n="doc.install.source2"></p>
 <pre><code>brew install xcodegen
 ./script/install_local.sh     # builds the app, copies it to ~/Applications and runs rh setup</code></pre>
@@ -813,7 +815,7 @@ DOCS = f"""<main id="main" class="wrap docs">
 <section id="shortcuts" aria-labelledby="shortcuts-h">
 <h2 id="shortcuts-h" data-i18n="d.shortcuts.title"></h2>
 <p data-i18n="doc.shortcuts.p1"></p>
-<p data-i18n="doc.shortcuts.p2"></p>
+<p data-i18n="doc.shortcuts.p2b"></p>
 <p data-i18n="doc.shortcuts.p3"></p>
 <ul class="phrases" lang="en" dir="ltr">
 <li>Open in terminal with Right Here</li>

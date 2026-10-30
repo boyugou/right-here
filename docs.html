@@ -128,7 +128,7 @@
 <div class="doc-body">
 <h1 data-i18n="docs.title">Documentation</h1>
 <p class="lead" data-i18n="doc.lead">How to install, set up, configure and fix Right Here.</p>
-<p class="banner" data-i18n="doc.status2">Right Here is in beta. You need a Mac with Apple silicon and macOS 26 or later.</p>
+<p class="banner" data-i18n="doc.status3">Right Here 1.0 is the first public release. You need a Mac with Apple silicon and macOS 26 or later.</p>
 <p><a href="index.html" data-keep-lang data-i18n="docs.home">Back to the overview</a></p>
 
 <section id="install" aria-labelledby="install-h">
@@ -138,8 +138,10 @@
 <li data-i18n="doc.install.2">Open the DMG and drag Right Here to Applications.</li>
 <li data-i18n="doc.install.3">Open Right Here from Applications.</li>
 </ol>
+<p data-i18n="doc.install.brew">Or install it with Homebrew, from the project's own tap:</p>
+<pre><code>brew install --cask boyugou/tap/right-here</code></pre>
 <p data-i18n="doc.install.move">Right Here must run from your Applications folder. A copy that runs from the DMG or from Downloads cannot set up: the window asks you to move it, and <code>rh setup</code> refuses.</p>
-<p data-i18n="doc.install.update">To update, drag the new app over the old one and choose Replace. Then open Right Here and press Install or Repair. Your config file stays as it is.</p>
+<p data-i18n="doc.install.update2">To update, drag the new app over the old one and choose Replace, or run <code>brew upgrade --cask right-here</code>. Then open Right Here and press Install or Repair. Your config file stays as it is.</p>
 <p data-i18n="doc.install.source2">You can also build Right Here yourself. You need Xcode 26 or later and <code>xcodegen</code>:</p>
 <pre><code>brew install xcodegen
 ./script/install_local.sh     # builds the app, copies it to ~/Applications and runs rh setup</code></pre>
