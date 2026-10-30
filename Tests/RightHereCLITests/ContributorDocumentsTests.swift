@@ -126,4 +126,40 @@ struct ContributorDocumentsTests {
         #expect(result.error.contains("uv"), "the failure does not name uv: \(result.error)")
         #expect(!gate.started.contains("swift build"), "the slow steps ran before the missing tool was noticed: \(gate.started)")
     }
+
+    /// `verify_public_safety.sh` read only `git ls-files`, so a new file passed until it was staged: run before `git add`, the check said
+    /// "ok" about a file that the next commit published. A file that is not ignored is checked whether or not it is tracked yet.
+    @Test func thePublicSafetyCheckReadsFilesThatAreNotStagedYet() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("rh-safety-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let scripts = root.appendingPathComponent("script")
+        try FileManager.default.createDirectory(at: scripts, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: Self.repository.appendingPathComponent("script/verify_public_safety.sh"),
+                                         to: scripts.appendingPathComponent("verify_public_safety.sh"))
+        func run(_ executable: String, _ arguments: [String]) throws -> (status: Int32, error: String) {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: executable)
+            process.arguments = arguments
+            process.currentDirectoryURL = root
+            process.environment = ["PATH": "/usr/bin:/bin", "HOME": root.path, "GIT_CONFIG_NOSYSTEM": "1"]
+            let err = Pipe()
+            process.standardOutput = Pipe()
+            process.standardError = err
+            try process.run()
+            let data = err.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            return (process.terminationStatus, String(decoding: data, as: UTF8.self))
+        }
+        #expect(try run("/usr/bin/git", ["init", "-q"]).status == 0)
+        // The copy of the script is not what is being checked (its list of names needs uv, which this PATH does not have).
+        try Data("script/\n".utf8).write(to: root.appendingPathComponent(".gitignore"))
+        try Data("# Notes\n".utf8).write(to: root.appendingPathComponent("notes.md"))
+        let clean = try run("/bin/bash", ["script/verify_public_safety.sh"])
+        #expect(!clean.error.contains("email address found"), "a file without an address was reported: \(clean.error)")
+        // Written in pieces, so that this file does not hold an address itself.
+        try Data(("Write to someone" + "@" + "example.org.\n").utf8).write(to: root.appendingPathComponent("notes.md"))
+        let found = try run("/bin/bash", ["script/verify_public_safety.sh"])
+        #expect(found.status != 0)
+        #expect(found.error.contains("email address found"), "an address in a file that is not staged yet passed: \(found.error)")
+    }
 }

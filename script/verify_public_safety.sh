@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# Reject anything in tracked files that must not be published: email addresses, developer-machine
-# paths, key material, credential files and the names on a list. The repository may become public at any time.
+# Reject anything in the repository's files that must not be published: email addresses, developer-machine paths, key
+# material, credential files and the names on a list. It reads the tracked files and the ones that are not ignored but not
+# staged yet, which the next `git add -A` publishes.
 
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -10,7 +11,7 @@ fail=0
 report() { echo "public-safety: $1" >&2; fail=1; }
 
 files=()
-while IFS= read -r f; do files+=("$f"); done < <(git ls-files)
+while IFS= read -r f; do files+=("$f"); done < <(git ls-files --cached --others --exclude-standard)
 [[ ${#files[@]} -gt 0 ]] || exit 0
 
 # Email addresses. The only allowed @ forms are file-mention examples and git remotes, neither of which matches.
