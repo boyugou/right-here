@@ -1,0 +1,114 @@
+name: RightHere
+
+options:
+  bundleIdPrefix: com.boyugou.righthere
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+
+# The logic lives in the SwiftPM package at the repository root; the app and the extension link
+# its libraries. Regenerate the project with `xcodegen generate` after editing this file. The
+# .xcodeproj is generated and not committed.
+packages:
+  RightHerePackage:
+    path: .
+
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: NO
+    # The app and the extension build in Swift 6 language mode, like the package: a data race is a compile error.
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_HARDENED_RUNTIME: YES
+    # Signing is chosen by script/build_app.sh through the environment; "-" signs ad hoc.
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    # Xcode would add get-task-allow, which notarization rejects.
+    CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
+    MARKETING_VERSION: 1.0.0
+    CURRENT_PROJECT_VERSION: 3
+
+targets:
+  RightHere:
+    type: application
+    platform: macOS
+    sources:
+      - path: Apps/RightHere
+        excludes:
+          - "*.entitlements"
+          - Generated-Info.plist
+      # The Finder menu's own glyphs: the setup window's menu preview draws the ones the Finder menu shows. One catalog,
+      # compiled into the bundle of the app and of the extension.
+      - path: Apps/FinderExtension/Assets.xcassets
+        buildPhase: resources
+      # The permission-prompt text, in every shipped language (one catalog for both targets).
+      - path: Localization/InfoPlist.xcstrings
+        buildPhase: resources
+      # What the App Intents say, which the system reads by key from the app bundle: their titles, descriptions and
+      # parameter names (AppIntents), the names of the path styles (Localizable, which is also compiled into Swift for
+      # the rest of the code) and the phrases Siri and Spotlight listen for (AppShortcuts). Xcode reads these catalogs
+      # when it extracts the intents metadata.
+      - path: Localization/Localizable.xcstrings
+        buildPhase: resources
+      - path: Localization/AppIntents.xcstrings
+        buildPhase: resources
+      - path: Localization/AppShortcuts.xcstrings
+        buildPhase: resources
+    info:
+      path: Apps/RightHere/Generated-Info.plist
+      properties:
+        CFBundleName: Right Here
+        CFBundleDisplayName: Right Here
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.utilities
+        LSMinimumSystemVersion: "26.0"
+        NSHumanReadableCopyright: Licensed under the Apache License 2.0.
+        NSAppleEventsUsageDescription: "Right Here asks your terminal to open a window in the folder you picked and to run the command you chose, such as your AI agent."
+    dependencies:
+      - target: FinderExtension
+      - package: RightHerePackage
+        product: RightHereCore
+      - package: RightHerePackage
+        product: RightHereKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.boyugou.righthere
+        PRODUCT_NAME: Right Here
+        EXECUTABLE_NAME: RightHere
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_ENTITLEMENTS: Apps/RightHere/RightHere.entitlements
+
+  FinderExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: Apps/FinderExtension
+        excludes:
+          - "*.entitlements"
+          - Generated-Info.plist
+      - path: Localization/InfoPlist.xcstrings
+        buildPhase: resources
+    info:
+      path: Apps/FinderExtension/Generated-Info.plist
+      properties:
+        CFBundleName: Right Here
+        CFBundleDisplayName: Right Here
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: "26.0"
+        NSAppleEventsUsageDescription: "Right Here asks your terminal to open a window in the folder you picked and to run the command you chose, such as your AI agent."
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.FinderSync
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).FinderSyncExtension
+    dependencies:
+      - package: RightHerePackage
+        product: RightHereCore
+      - package: RightHerePackage
+        product: RightHereKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.boyugou.righthere.FinderExtension
+        CODE_SIGN_ENTITLEMENTS: Apps/FinderExtension/FinderExtension.entitlements

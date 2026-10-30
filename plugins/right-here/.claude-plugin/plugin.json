@@ -1,0 +1,20 @@
+{
+  "name": "right-here",
+  "displayName": "Right Here",
+  "version": "1.0.0",
+  "description": "Set up Right Here, open a folder or Finder selection in a terminal, editor or agent, and show the files you changed in Finder. Connects Claude Code to the rh command-line tool.",
+  "author": {
+    "name": "boyugou",
+    "url": "https://github.com/boyugou/right-here"
+  },
+  "homepage": "https://github.com/boyugou/right-here",
+  "repository": "https://github.com/boyugou/right-here",
+  "license": "Apache-2.0",
+  "keywords": [
+    "finder",
+    "macos",
+    "terminal",
+    "agents",
+    "mcp"
+  ]
+}

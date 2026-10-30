@@ -1,0 +1,35 @@
+name: Translation correction
+description: A menu, window or message text that reads wrong in your language
+labels: [translation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The thirty languages were machine-translated and await review by native speakers; a correction from you is the review. Pull requests are welcome too
+        (`CONTRIBUTING.md`, "Fix a translation").
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      description: The language code from `Localization/languages.json` (for example `de`, `pt-BR`, `zh-Hant`).
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where does the text appear?
+      description: The Finder menu, the setup window (which section), an alert, the Shortcuts actions, or a sentence of `rh doctor`.
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: The text as it reads now, and a better one
+      description: Quote both. Keep `%@`, `%1$@` and anything between backticks as they are.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is yours better?
+      description: Wrong meaning, an unnatural word, a different word than macOS uses in that language (name the macOS screen), or a mix of two words for one thing.

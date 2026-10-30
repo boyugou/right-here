@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "right-here",
+  "description": "Right Here, the Finder menu and command-line tool that sends a folder or selection to terminals, editors and AI agents, for Claude Code.",
+  "owner": {
+    "name": "boyugou"
+  },
+  "plugins": [
+    {
+      "name": "right-here",
+      "description": "Set up Right Here, open a folder or Finder selection in a terminal, editor or agent, and show the files you changed in Finder. Connects Claude Code to the rh command-line tool.",
+      "category": "productivity",
+      "source": "./plugins/right-here",
+      "homepage": "https://github.com/boyugou/right-here"
+    }
+  ]
+}

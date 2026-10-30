@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security problem privately
+    url: https://github.com/boyugou/right-here/security/policy
+    about: A file name or a config that makes something run, open or change what it should not. Please do not open a public issue.
+  - name: Troubleshooting guide
+    url: https://github.com/boyugou/right-here/blob/main/docs/TROUBLESHOOTING.md
+    about: The Finder menu does not appear, a click does nothing, a permission prompt, a PATH warning. Start with `rh doctor`.

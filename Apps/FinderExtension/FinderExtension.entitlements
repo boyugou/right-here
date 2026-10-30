@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- A Finder extension must be sandboxed. -->
+  <key>com.apple.security.app-sandbox</key>
+  <true/>
+  <!-- Without this a hardened app that sends Apple events is refused without ever being asked.
+       The extension is the process macOS holds responsible for the Apple events rh sends on its
+       behalf (running Claude Code in Ghostty, for example), so it is the one that needs it. -->
+  <key>com.apple.security.automation.apple-events</key>
+  <true/>
+  <!-- Read-only access to the config folder, so the menu follows the config file with no
+       helper process running. Everything that needs more is done by rh, outside the sandbox,
+       through the runner script in Application Scripts. -->
+  <key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
+  <array>
+    <string>/.config/right-here/</string>
+  </array>
+</dict>
+</plist>

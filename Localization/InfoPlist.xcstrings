@@ -1,0 +1,192 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSAppleEventsUsageDescription": {
+      "comment": "Permission prompt text: shown by macOS when Right Here first asks the terminal to open a window and run a command.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "يطلب Right Here من الطرفية فتح نافذة في المجلد الذي اخترته وتشغيل الأمر الذي حددته، مثل وكيل الذكاء الاصطناعي."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here আপনার টার্মিনালকে আপনার বেছে নেওয়া ফোল্ডারে একটি উইন্ডো খুলতে এবং আপনার নির্বাচিত কমান্ড, যেমন আপনার AI এজেন্ট, চালাতে বলে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here bittet dein Terminal, ein Fenster im gewählten Ordner zu öffnen und den gewählten Befehl auszuführen, zum Beispiel deinen KI-Agenten."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το Right Here ζητά από το τερματικό σας να ανοίξει ένα παράθυρο στον φάκελο που επιλέξατε και να εκτελέσει την εντολή που διαλέξατε, όπως τον πράκτορα AI σας."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right Here asks your terminal to open a window in the folder you picked and to run the command you chose, such as your AI agent."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here pide a tu terminal que abra una ventana en la carpeta que elegiste y ejecute el comando que seleccionaste, por ejemplo tu agente de IA."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Right Here از ترمینال شما می‌خواهد پنجره‌ای در پوشهٔ انتخابی شما باز کند و دستوری را که برگزیده‌اید، مثلاً عامل هوش مصنوعی شما، اجرا کند."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here demande à votre terminal d’ouvrir une fenêtre dans le dossier choisi et d’exécuter la commande sélectionnée, par exemple votre agent d’IA."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Right Here מבקש מהמסוף שלכם לפתוח חלון בתיקייה שבחרתם ולהריץ את הפקודה שבחרתם, כמו סוכן ה-AI שלכם."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here आपके टर्मिनल से आपके चुने हुए फ़ोल्डर में एक विंडो खोलने और आपकी चुनी हुई कमांड, जैसे आपका AI एजेंट, चलाने को कहता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here meminta terminal Anda membuka jendela di folder yang Anda pilih dan menjalankan perintah yang Anda pilih, seperti agen AI Anda."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here chiede al tuo terminale di aprire una finestra nella cartella scelta e di eseguire il comando selezionato, ad esempio il tuo agente IA."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here は、選択したフォルダでターミナルのウインドウを開き、選んだコマンド（AI エージェントなど）を実行するようターミナルに依頼します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here는 터미널에 선택한 폴더에서 창을 열고 선택한 명령(예: AI 에이전트)을 실행하도록 요청합니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here तुमच्या टर्मिनलला तुम्ही निवडलेल्या फोल्डरमध्ये विंडो उघडण्यास आणि तुम्ही निवडलेली कमांड, उदा. तुमचा AI एजंट, चालवण्यास सांगते."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here meminta terminal anda membuka tetingkap dalam folder yang anda pilih dan menjalankan arahan yang anda pilih, seperti ejen AI anda."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here vraagt je terminal een venster te openen in de gekozen map en de gekozen opdracht uit te voeren, bijvoorbeeld je AI-agent."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here prosi terminal o otwarcie okna w wybranym folderze i uruchomienie wybranego polecenia, na przykład agenta AI."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "O Right Here pede ao seu terminal que abra uma janela na pasta escolhida e execute o comando selecionado, como seu agente de IA."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here solicită terminalului dvs. să deschidă o fereastră în dosarul ales și să ruleze comanda selectată, de exemplu agentul dvs. AI."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here просит ваш терминал открыть окно в выбранной папке и выполнить выбранную команду, например запустить вашего ИИ-агента."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "நீங்கள் தேர்ந்தெடுத்த கோப்புறையில் ஒரு சாளரத்தைத் திறக்கவும், உங்கள் AI முகவர் போன்ற நீங்கள் தேர்ந்த கட்டளையை இயக்கவும் Right Here உங்கள் டெர்மினலைக் கேட்கிறது."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "మీరు ఎంచుకున్న ఫోల్డర్‌లో విండోను తెరవమని, మీ AI ఏజెంట్ వంటి మీరు ఎంచుకున్న కమాండ్‌ను అమలు చేయమని Right Here మీ టెర్మినల్‌ను అడుగుతుంది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here ขอให้เทอร์มินัลของคุณเปิดหน้าต่างในโฟลเดอร์ที่คุณเลือกและรันคำสั่งที่คุณเลือก เช่น เอเจนต์ AI ของคุณ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here, terminalinizden seçtiğiniz klasörde bir pencere açmasını ve seçtiğiniz komutu, örneğin AI ajanınızı, çalıştırmasını ister."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here просить ваш термінал відкрити вікно у вибраній папці та виконати вибрану команду, наприклад запустити вашого ШІ-агента."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Right Here آپ کے ٹرمینل سے کہتا ہے کہ وہ آپ کے منتخب کردہ فولڈر میں ایک ونڈو کھولے اور آپ کی منتخب کردہ کمانڈ، مثلاً آپ کا AI ایجنٹ، چلائے۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here yêu cầu terminal của bạn mở một cửa sổ trong thư mục bạn chọn và chạy lệnh bạn đã chọn, chẳng hạn như tác tử AI của bạn."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here 会请求你的终端在所选文件夹中打开窗口，并运行你选择的命令，例如你的 AI 智能体。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Right Here 會請求你的終端機在所選資料夾中開啟視窗，並執行你選擇的指令，例如你的 AI 代理程式。"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

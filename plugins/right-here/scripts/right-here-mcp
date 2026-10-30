@@ -1,0 +1,39 @@
+#!/bin/bash
+# Starts `rh mcp`, the MCP server of Right Here.
+#
+# Lookup order: rh on PATH, ~/.local/bin, Homebrew, then the copy inside Right Here.app in
+# /Applications or ~/Applications. `exec` hands this process's stdio to rh, which speaks MCP over it.
+#
+# There is no Spotlight search for the app: it would start whatever app in whatever folder (a download, a
+# build folder, a copy somebody planted) claims the bundle identifier. `rh install` links ~/.local/bin/rh
+# to an app kept anywhere else, and that is found first.
+#
+# `right-here-mcp --print-path` prints the rh it would start, without starting it.
+set -uo pipefail
+
+print_only=0
+if [[ "${1:-}" == "--print-path" ]]; then
+  print_only=1
+fi
+
+start() {
+  if [[ "$print_only" == 1 ]]; then
+    echo "$1"
+    exit 0
+  fi
+  exec "$1" mcp
+}
+
+if command -v rh >/dev/null 2>&1; then
+  start "$(command -v rh)"
+fi
+
+for candidate in "${HOME:-}/.local/bin/rh" "/opt/homebrew/bin/rh" "/usr/local/bin/rh" \
+  "/Applications/Right Here.app/Contents/Helpers/rh" "${HOME:-}/Applications/Right Here.app/Contents/Helpers/rh"; do
+  if [[ -x "$candidate" ]]; then
+    start "$candidate"
+  fi
+done
+
+echo "right-here-mcp: rh was not found. Install Right Here (see the repository README), then start a new Claude Code session." >&2
+exit 1
