@@ -31,8 +31,9 @@ Releases are for Apple silicon only, macOS 26 and later.
    NOTARY_PROFILE=<profile> SUPERSEDES=v<older> RELEASE_TITLE="<what is new>" ./script/publish_release.sh
    ```
 
-5. **Commit the cask.** The script writes the new version and checksum into `packaging/homebrew/right-here.rb`. Look at the change, commit
-   it and push it. Change the "latest is" line of `ROADMAP.md` in the same commit. Update `rh.rb` in the tap.
+5. **Commit the cask and the formula.** The script writes the new version and checksums into `packaging/homebrew` and pushes both files
+   to the tap, [boyugou/homebrew-tap](https://github.com/boyugou/homebrew-tap), whose CI then installs them as a person would. Look at
+   the change, commit it and push it. Change the "latest is" line of `ROADMAP.md` in the same commit.
 6. **Keep the releases page current.** When a fix that people with the released build need lands on `main`, raise the patch version and
    publish again (steps 2 and 4). The notes of the release that it replaces then say which one to download.
 7. **Update the screenshots.** They show the version in the sidebar of the window. Render them again ([`WEBSITE.md`](WEBSITE.md) lists the
@@ -48,7 +49,8 @@ It refuses to run unless all of these are true:
 - the versions agree, and the top numbered section of `CHANGELOG.md` is this version;
 - neither the tag nor the release exists;
 - `gh` is signed in;
-- `xcrun notarytool history --keychain-profile <profile>` works. So a profile that is gone is found before the build.
+- `xcrun notarytool history --keychain-profile <profile>` works. So a profile that is gone is found before the build;
+- the tap can be read.
 
 Then it does these steps, and stops if a notarization fails or is not accepted:
 
@@ -59,29 +61,19 @@ Then it does these steps, and stops if a notarization fails or is not accepted:
 2. It tags `v<version>`.
 3. It makes the GitHub release, with the DMG, the checksum and the section of `CHANGELOG.md` as its notes.
 4. It puts a "superseded" banner on the release that `SUPERSEDES` names.
-5. It writes the new version and checksum into `packaging/homebrew/right-here.rb`.
+5. It writes the new version and the DMG's checksum into `packaging/homebrew/right-here.rb`, and the tag and the checksum of GitHub's
+   source archive of the tag into `rh.rb`.
+6. It copies both to the tap (`TAP`, by default `<owner>/homebrew-tap`) and pushes it, with this repository's git identity.
 
 `NOTARY_PROFILE=… ./script/package_dmg.sh` alone builds the DMG and does not publish it. Without `NOTARY_PROFILE`, it builds a signed DMG
 that is not notarized. With `SECURE_TIMESTAMP=0` as well, it needs no network once `uv` has dmgbuild: a dry run of the packaging.
 
 If codesign says "timestamps differ", the clock of the Mac is wrong. Turn on Date & Time › Set time and date automatically.
 
-## Before the first public push
+## What the repository protects
 
-`script/verify_public_safety.sh` checks the working tree only. Scan the whole history too, because a file that was committed once and removed
-later is still in every clone:
+Two rulesets keep what has been published: `main` cannot be force-pushed or deleted, and a `v*` tag cannot be moved or deleted. A release
+that fails after its tag was pushed is fixed with the next patch version, not by moving the tag.
 
-```sh
-git log -p --all | grep -n -E '/Users/|@[A-Za-z0-9.-]+\.(com|edu|org)'
-```
-
-If something shows up that must not be public, rewrite the history in a fresh clone, not in the working repository. Then publish from the
-clone:
-
-```sh
-git clone --no-local --no-hardlinks <repository> clean && cd clean
-git filter-repo --path <offending path> --invert-paths
-```
-
-Check the clone with the same scan. Publish it as a new repository, or force-push it only when everyone who has the old history knows. Every
-commit hash changes.
+Before pushing anything that was written outside this repository, scan it for what must not be public, as `script/verify_public_safety.sh`
+does for the working tree: a file committed once stays in every clone even after it is removed.

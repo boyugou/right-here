@@ -1,6 +1,7 @@
-# Homebrew cask for the app (Finder extension, rh inside). Copy to a tap's Casks folder and fill in the
-# version and checksum from script/package_dmg.sh. The official cask repository requires a
-# Developer-ID-signed, notarized app; a personal tap does not enforce that.
+# frozen_string_literal: true
+
+# Homebrew cask for the app (Finder extension, rh inside). The source of Casks/right-here.rb in the tap
+# boyugou/homebrew-tap: script/publish_release.sh fills the version and the DMG's checksum and copies the file there.
 cask "right-here" do
   version "1.0.0"
   sha256 "8f30e8cd8501fc3332a305e1f361c030177d03c8f002e14ec9978c3c283aea14"

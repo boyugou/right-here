@@ -1,6 +1,12 @@
-# Homebrew templates
+# Homebrew
 
-`right-here.rb` (a cask for the app) and `rh.rb` (a formula for the command-line tool alone) are templates for a
-tap. The formula's checksum is a placeholder (`REPLACE_WITH_THE_SHA256_OF_THE_SOURCE_ARCHIVE`); the cask carries the version and checksum
-of the latest release's DMG, which `script/publish_release.sh` fills in when it publishes a release. See
-[`docs/development/RELEASING.md`](../../docs/development/RELEASING.md).
+`right-here.rb` (a cask for the app) and `rh.rb` (a formula for the command-line tool alone, built from source) are the sources of the
+tap [boyugou/homebrew-tap](https://github.com/boyugou/homebrew-tap):
+
+```sh
+brew install --cask boyugou/tap/right-here
+brew install boyugou/tap/rh
+```
+
+Edit them here, never in the tap. `script/publish_release.sh` writes each release's version and checksums into them and copies them to the
+tap. See [`docs/development/RELEASING.md`](../../docs/development/RELEASING.md).

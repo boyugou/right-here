@@ -3,7 +3,7 @@
 # Publish the version in AppIdentity.version as a GitHub release: a notarized, stapled DMG and its checksum, with the release notes taken from
 # CHANGELOG.md. Run it from main, after the gate and after the version was raised (docs/development/RELEASING.md, steps 1 to 3).
 #
-#   NOTARY_PROFILE=<keychain profile> ./script/publish_release.sh     build, notarize, tag, publish, and fill the cask's checksum
+#   NOTARY_PROFILE=<keychain profile> ./script/publish_release.sh     build, notarize, tag, publish, and update the cask and the formula
 #   ./script/publish_release.sh --dry-run                             every check, and the release notes it would publish; nothing is built or sent
 #
 # Environment:
@@ -11,10 +11,12 @@
 #   RELEASE_TITLE    what follows "v<version>: " in the release's title. Default: "Right Here <version>".
 #   SUPERSEDES       an older tag whose release notes get a "superseded" banner pointing here (for example v0.2.0).
 #   SUPERSEDES_NOTE  one more sentence for that banner: what is wrong with the older build.
+#   TAP              the Homebrew tap that gets the cask and the formula. Default: <owner of this repository>/homebrew-tap.
 #
 # It refuses to run unless the working tree is clean, HEAD is main and is what origin/main has, `verify_version.py` agrees, the top numbered
 # section of CHANGELOG.md is this version and is not empty, neither the tag nor a release of that name exists, `gh` is signed in and the notarytool profile works.
-# The tag is annotated and pushed before the release is created. It edits the cask (version and checksum) and leaves that change for you to commit and push.
+# The tag is annotated and pushed before the release is created. It writes the version and the checksums into the cask and the formula of
+# packaging/homebrew, copies both to the tap and pushes the tap; the change to packaging/homebrew is left for you to commit and push.
 
 set -euo pipefail
 
@@ -43,10 +45,13 @@ gh auth status >/dev/null 2>&1 || fail "gh is not signed in"
 ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null || fail "the tag $TAG exists"
 ! git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1 || fail "the tag $TAG exists on origin"
 ! gh release view "$TAG" >/dev/null 2>&1 || fail "a release $TAG exists"
+TAP="${TAP:-$(gh repo view --json owner -q .owner.login)/homebrew-tap}"
+gh repo view "$TAP" >/dev/null 2>&1 || fail "the tap $TAP cannot be read"
 
 # The notes: the CHANGELOG section of this version, without its heading.
 NOTES="$(mktemp -t right-here-notes)"
-trap 'rm -f "$NOTES"' EXIT
+TAP_DIR=""
+trap 'rm -f "$NOTES"; [[ -z "$TAP_DIR" ]] || rm -rf "$TAP_DIR"' EXIT
 awk -v heading="## $VERSION" 'index($0, heading) == 1 { found = 1; next } found && /^## / { exit } found { print }' CHANGELOG.md \
   | sed -e '/./,$!d' > "$NOTES"
 [[ -s "$NOTES" ]] || fail "the CHANGELOG section of $VERSION is empty or missing"
@@ -55,7 +60,7 @@ TITLE="$TAG: ${RELEASE_TITLE:-Right Here $VERSION}"
 if [[ "$DRY_RUN" == 1 ]]; then
   echo "title: $TITLE"
   echo "supersedes: ${SUPERSEDES:-nothing}"
-  echo "would build and notarize dist/Right-Here-$VERSION.dmg, tag $TAG at $(git rev-parse --short HEAD), publish the release and fill the cask. The notes:"
+  echo "would build and notarize dist/Right-Here-$VERSION.dmg, tag $TAG at $(git rev-parse --short HEAD), publish the release, update the cask and the formula and copy them to $TAP. The notes:"
   echo "-----"
   cat "$NOTES"
   echo "-----"
@@ -93,9 +98,27 @@ if [[ -n "${SUPERSEDES:-}" ]]; then
   rm -f "$OLD"
 fi
 
-log "Filling the cask"
+log "Filling the cask and the formula"
 SUM="$(cut -d' ' -f1 "$DMG.sha256")"
 sed -i '' -E "s/^( *version )\"[^\"]+\"/\\1\"$VERSION\"/; s/^( *sha256 )\"[0-9a-f]{64}\"/\\1\"$SUM\"/" packaging/homebrew/right-here.rb
+# The formula builds from the source archive GitHub makes of the tag, which exists only now that the tag is pushed.
+SOURCE="$(gh repo view --json url -q .url)/archive/refs/tags/$TAG.tar.gz"
+SOURCE_SUM="$(curl -fsSL "$SOURCE" | shasum -a 256 | cut -d' ' -f1)"
+[[ "$SOURCE_SUM" =~ ^[0-9a-f]{64}$ ]] || fail "no checksum of $SOURCE"
+sed -i '' -E "s#/archive/refs/tags/v[^\"]+\\.tar\\.gz\"#/archive/refs/tags/$TAG.tar.gz\"#; s/^( *sha256 )\"[0-9a-f]{64}\"/\\1\"$SOURCE_SUM\"/" packaging/homebrew/rh.rb
+grep -qF "\"$SUM\"" packaging/homebrew/right-here.rb && grep -qF "\"$SOURCE_SUM\"" packaging/homebrew/rh.rb && grep -qF "/$TAG.tar.gz\"" packaging/homebrew/rh.rb \
+  || fail "the cask or the formula did not take the new version and checksums"
+
+log "Copying the cask and the formula to $TAP"
+TAP_DIR="$(mktemp -d -t right-here-tap)"
+gh repo clone "$TAP" "$TAP_DIR" -- --quiet --depth 1
+mkdir -p "$TAP_DIR/Casks" "$TAP_DIR/Formula"
+cp packaging/homebrew/right-here.rb "$TAP_DIR/Casks/right-here.rb"
+cp packaging/homebrew/rh.rb "$TAP_DIR/Formula/rh.rb"
+git -C "$TAP_DIR" add Casks/right-here.rb Formula/rh.rb
+# The tap's commits carry this repository's identity, not the global one.
+git -C "$TAP_DIR" -c user.name="$(git config user.name)" -c user.email="$(git config user.email)" commit --quiet -m "right-here and rh $VERSION"
+git -C "$TAP_DIR" push --quiet origin HEAD
 
 echo "published: $(gh release view "$TAG" --json url -q .url)"
-echo "packaging/homebrew/right-here.rb now has $VERSION and $SUM: look at it, commit it and push." >&2
+echo "$TAP has right-here and rh $VERSION. packaging/homebrew has them too: look at the change, commit it and push." >&2
