@@ -26,6 +26,8 @@ public enum CheckID: Hashable, Sendable {
     case syncState
     case syncCommands
     case syncConflict
+    /// git, when the menu has an item that needs it.
+    case git
 
     /// The id as `rh doctor --json` prints it: `terminal.default`, `agent.claude`.
     public var rawValue: String {
@@ -51,6 +53,7 @@ public enum CheckID: Hashable, Sendable {
         case .syncState: "sync.state"
         case .syncCommands: "sync.commands"
         case .syncConflict: "sync.conflict"
+        case .git: "git.installed"
         }
     }
 
@@ -67,7 +70,7 @@ public enum CheckID: Hashable, Sendable {
         case .config, .terminalDefault, .editorDefault, .agents, .agent, .finderMenu, .finderActivity, .finderChain, .finderLaunch,
              .syncFolder, .syncRemote, .syncState, .syncCommands, .syncConflict:
             true
-        case .pending, .claudeLink, .finderRunner, .services, .cliLink, .finderExtension, .appCopies:
+        case .pending, .claudeLink, .finderRunner, .services, .cliLink, .finderExtension, .appCopies, .git:
             false
         }
     }
@@ -88,6 +91,7 @@ public enum CheckID: Hashable, Sendable {
         case .cliLink: .appCheckCLI
         case .finderExtension: .appCheckExtension
         case .appCopies: .appCheckCopies
+        case .git: .appCheckGit
         case .finderActivity: .appCheckLastAction
         case .finderChain: .appCheckChain
         case .finderLaunch: .appCheckLaunch

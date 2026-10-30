@@ -193,6 +193,8 @@ extension LocalizedMessage {
     public static var appCheckEditor: LocalizedMessage { LocalizedMessage(.appCheckEditor) }
     /// Finder extension
     public static var appCheckExtension: LocalizedMessage { LocalizedMessage(.appCheckExtension) }
+    /// Git
+    public static var appCheckGit: LocalizedMessage { LocalizedMessage(.appCheckGit) }
     /// Last action started from Finder
     public static var appCheckLastAction: LocalizedMessage { LocalizedMessage(.appCheckLastAction) }
     /// Finder click runs a command in the terminal
@@ -827,6 +829,12 @@ extension LocalizedMessage {
     public static var doctorFixTerminal: LocalizedMessage { LocalizedMessage(.doctorFixTerminal) }
     /// Install it, or change general.terminal (remove the setting to use the first installed terminal).
     public static var doctorFixTerminalFallback: LocalizedMessage { LocalizedMessage(.doctorFixTerminalFallback) }
+    /// Run `xcode-select --install` in Terminal. It installs git with the Command Line Tools.
+    public static var doctorFixGitInstall: LocalizedMessage { LocalizedMessage(.doctorFixGitInstall) }
+    /// The menu has repository links, and git is not installed, so each of them would fail.
+    public static var doctorGitMissing: LocalizedMessage { LocalizedMessage(.doctorGitMissing) }
+    /// git is installed, so the repository links in the menu can read their repository.
+    public static var doctorGitOk: LocalizedMessage { LocalizedMessage(.doctorGitOk) }
     /// empty for a folder: no entry is left with this config
     public static var doctorMenuEmpty: LocalizedMessage { LocalizedMessage(.doctorMenuEmpty) }
     /// Changes that an AI assistant proposed wait for you: %@

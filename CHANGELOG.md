@@ -3,7 +3,8 @@
 ## Unreleased
 
 - Without Xcode or the Command Line Tools, the worktree actions and the repository links say that git is not installed and how to
-  get it, instead of starting `/usr/bin/git`, which only offers to install the tools.
+  get it, instead of starting `/usr/bin/git`, which only offers to install the tools. When the menu has a repository link, the Checks
+  page has a git row, and `rh doctor` a `git` check, that says whether git is there and how to get it.
 
 ## 1.1.1 (2026-10-30)
 

@@ -8,6 +8,8 @@ public struct Doctor: Sendable {
     private let loaded: LoadedConfig
     private let runner: any ProcessRunner
     private let rhPath: String?
+    /// Whether there is a git to start; nil asks the disk (`GitCommand.gitIsInstalled`).
+    private let gitInstalled: Bool?
 
     /// Paths and config text that a sentence quotes. They are values of the message, not words of its translation: in a
     /// right-to-left sentence the setup window puts a value in an isolate, which is what keeps `~/.local/bin` or a quoted word
@@ -24,13 +26,15 @@ public struct Doctor: Sendable {
         paths: RHPaths,
         loaded: LoadedConfig,
         runner: any ProcessRunner = LiveProcessRunner(),
-        rhPath: String? = Installer.currentExecutablePath()
+        rhPath: String? = Installer.currentExecutablePath(),
+        gitInstalled: Bool? = nil
     ) {
         self.facts = facts
         self.paths = paths
         self.loaded = loaded
         self.runner = runner
         self.rhPath = rhPath
+        self.gitInstalled = gitInstalled
     }
 
     /// - Parameters:
@@ -54,6 +58,7 @@ public struct Doctor: Sendable {
         let shell = await loginShellFacts(everyAgent: everyAgent)
         checks.append(configCheck())
         if let pending = pendingCheck() { checks.append(pending) }
+        if let git = gitCheck() { checks.append(git) }
         checks += ConfigSync(paths: paths).doctorChecks()
         let names = Localizer(languages: [language])
         checks += menuChecks(names)
@@ -102,6 +107,15 @@ public struct Doctor: Sendable {
         let linked = (try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path)) != nil
         let wantPath = linked && !processPath(contains: installer.locations.localBin)
         return await Detector(facts: facts, runner: runner).probe(commands: commands, wantPath: wantPath)
+    }
+
+    /// git, only when the menu has an item that needs it (a repository link): a Mac without Xcode or the Command Line Tools has none, and
+    /// each click on such an item would fail. Without such an item nothing needs git, and a missing one is no problem to report.
+    func gitCheck() -> DoctorCheck? {
+        let items = loaded.config.menuItems ?? MenuBuilder.defaultItems
+        guard items.contains(where: { ActionRef(parsing: $0)?.readsRepository == true }) else { return nil }
+        if gitInstalled ?? GitCommand.gitIsInstalled() { return DoctorCheck(.git, status: .ok, detail: .doctorGitOk) }
+        return DoctorCheck(.git, status: .warn, detail: .doctorGitMissing, fix: .doctorFixGitInstall)
     }
 
     private func processPath(contains folder: URL) -> Bool {

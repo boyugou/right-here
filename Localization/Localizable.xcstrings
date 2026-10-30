@@ -17857,6 +17857,192 @@
         }
       }
     },
+    "app.checkGit": {
+      "comment": "Title of a row on the Checks page: whether git is installed (the program, a proper name; keep it as Git in every language).",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Git"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Git"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Git"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Git"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Git"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Git"
+          }
+        }
+      }
+    },
     "app.checkLastAction": {
       "comment": "Title of one check row in the setup window.",
       "extractionState": "manual",
@@ -76815,6 +77001,564 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "安裝它，或變更 general.terminal（移除該設定，即可使用第一個已安裝的終端機）。"
+          }
+        }
+      }
+    },
+    "doctor.fixGitInstall": {
+      "comment": "Checks page, how to fix the git warning. Terminal is the macOS app (use its name in the language as the catalog does).",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "شغّل `xcode-select --install` في الوحدة الطرفية. يثبّت هذا الأمر git ضمن Command Line Tools."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Terminal-এ `xcode-select --install` চালান। এই কমান্ড Command Line Tools-এর সাথে git ইনস্টল করে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Führe `xcode-select --install` im Terminal aus. Der Befehl installiert git zusammen mit den Command Line Tools."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Εκτελέστε `xcode-select --install` στο Τερματικό. Η εντολή εγκαθιστά το git μαζί με τα Command Line Tools."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run `xcode-select --install` in Terminal. It installs git with the Command Line Tools."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ejecuta `xcode-select --install` en Terminal. El comando instala git junto con las Command Line Tools."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏`xcode-select --install` را در Terminal اجرا کنید. این دستور git را همراه با Command Line Tools نصب می‌کند."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Exécutez `xcode-select --install` dans Terminal. La commande installe git en même temps que les Command Line Tools."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "יש להריץ את `xcode-select --install` במסוף. הפקודה מתקינה את git יחד עם Command Line Tools."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "टर्मिनल में `xcode-select --install` चलाएँ। यह कमांड Command Line Tools के साथ git इंस्टॉल करता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Jalankan `xcode-select --install` di Terminal. Perintah ini menginstal git bersama Command Line Tools."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Esegui `xcode-select --install` in Terminale. Il comando installa git insieme ai Command Line Tools."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ターミナルで `xcode-select --install` を実行してください。このコマンドは git を Command Line Tools と一緒にインストールします。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "터미널에서 `xcode-select --install` 명령을 실행하십시오. 이 명령은 Command Line Tools와 함께 git을 설치합니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Terminal मध्ये `xcode-select --install` चालवा. ही कमांड Command Line Tools सोबत git इन्स्टॉल करते."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Jalankan `xcode-select --install` dalam Terminal. Perintah ini memasang git bersama Command Line Tools."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Voer `xcode-select --install` uit in Terminal. Het commando installeert git samen met de Command Line Tools."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Uruchom `xcode-select --install` w Terminalu. To polecenie instaluje git razem z Command Line Tools."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Execute `xcode-select --install` no Terminal. O comando instala o git junto com as Command Line Tools."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Rulați `xcode-select --install` în Terminal. Comanda instalează git împreună cu Command Line Tools."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Выполните `xcode-select --install` в Терминале. Команда установит git вместе с Command Line Tools."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Terminal-இல் `xcode-select --install` ஐ இயக்கவும். இந்தக் கட்டளை Command Line Tools உடன் git ஐ நிறுவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Terminal లో `xcode-select --install` రన్ చేయండి. ఈ ఆదేశం Command Line Tools తో పాటు git ను ఇన్‌స్టాల్ చేస్తుంది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เรียกใช้ `xcode-select --install` ในเทอร์มินัล คำสั่งนี้จะติดตั้ง git พร้อมกับ Command Line Tools"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Terminal’de `xcode-select --install` komutunu çalıştırın. Bu komut git’i Command Line Tools ile birlikte yükler."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Виконайте `xcode-select --install` у Терміналі. Команда інсталює git разом із Command Line Tools."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏Terminal میں `xcode-select --install` چلائیں۔ یہ کمانڈ Command Line Tools کے ساتھ git انسٹال کرتی ہے۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Chạy `xcode-select --install` trong Terminal. Lệnh này cài đặt git cùng với Command Line Tools."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "在“终端”中运行 `xcode-select --install`。此命令会随 Command Line Tools 一起安装 git。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "在「終端機」中執行 `xcode-select --install`。此指令會連同 Command Line Tools 一起安裝 git。"
+          }
+        }
+      }
+    },
+    "doctor.gitMissing": {
+      "comment": "Checks page, git row, a warning. git comes with Apple's Command Line Tools or Xcode.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تحتوي القائمة على روابط المستودع، وبرنامج git غير مثبَّت، لذا سيفشل كل منها."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "মেনুতে রিপোজিটরি লিংক আছে, এবং git ইনস্টল করা নেই, তাই সেগুলোর প্রতিটি ব্যর্থ হবে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Das Menü enthält Repository-Links, und git ist nicht installiert, daher würde jeder davon fehlschlagen."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το μενού έχει συνδέσμους αποθετηρίου, και το git δεν είναι εγκατεστημένο, οπότε καθένας τους θα αποτύγχανε."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The menu has repository links, and git is not installed, so each of them would fail."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "El menú tiene enlaces del repositorio, y git no está instalado, así que cada uno de ellos fallaría."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "منو پیوندهای مخزن دارد و git نصب نشده است، پس هر کدام از آن‌ها ناموفق خواهد بود."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Le menu contient des liens du dépôt, et git n’est pas installé, donc chacun d’eux échouerait."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "בתפריט יש קישורי מאגר, ו-git אינו מותקן, ולכן כל אחד מהם ייכשל."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "मेन्यू में रिपॉज़िटरी लिंक हैं, और git इंस्टॉल नहीं है, इसलिए उनमें से हर एक विफल हो जाएगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu memiliki tautan repositori, dan git tidak diinstal, jadi setiap tautan itu akan gagal."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Il menu contiene link del repository e git non è installato, quindi ognuno di essi fallirebbe."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "メニューにはリポジトリのリンクがありますが、git がインストールされていないため、どのリンクも失敗します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "메뉴에 저장소 링크가 있는데 git이 설치되어 있지 않으므로 각 링크가 실패합니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "मेनूमध्ये रेपॉझिटरी लिंक आहेत, आणि git इन्स्टॉल नाही, त्यामुळे त्यातील प्रत्येक लिंक अयशस्वी होईल."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu mempunyai pautan repositori, dan git tidak dipasang, jadi setiap pautan itu akan gagal."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Het menu heeft repositorylinks, en git is niet geïnstalleerd, dus elk daarvan zou mislukken."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu ma łącza repozytorium, a git nie jest zainstalowany, więc każde z nich zakończyłoby się błędem."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "O menu tem links do repositório, e o git não está instalado, então cada um deles falharia."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Meniul are linkuri ale depozitului, iar git nu este instalat, deci fiecare dintre ele ar eșua."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "В меню есть ссылки на репозиторий, а git не установлен, поэтому каждая из них завершилась бы ошибкой."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "மெனுவில் repository இணைப்புகள் உள்ளன, ஆனால் git நிறுவப்படவில்லை, எனவே அவை ஒவ்வொன்றும் தோல்வியடையும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "మెనూలో రిపోజిటరీ లింక్‌లు ఉన్నాయి, కానీ git ఇన్‌స్టాల్ చేయబడలేదు, కాబట్టి వాటిలో ప్రతి ఒక్కటీ విఫలమవుతుంది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เมนูมีลิงก์รีโพซิทอรี แต่ยังไม่ได้ติดตั้ง git ลิงก์แต่ละรายการจึงจะใช้ไม่ได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menüde depo bağlantıları var ve git yüklü değil, bu yüzden her biri başarısız olurdu."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Меню має посилання на репозиторій, а git не інстальовано, тож кожне з них не спрацювало б."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "مینو میں ریپازٹری لنکس ہیں، اور git انسٹال نہیں ہے، اس لیے ان میں سے ہر ایک ناکام ہو جائے گا۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menu có các liên kết kho git, và git chưa được cài đặt, nên mỗi liên kết đó sẽ thất bại."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "菜单中有仓库链接，而 git 未安装，所以每个链接都会失败。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "選單中有儲存庫連結，而 git 未安裝，因此每個連結都會失敗。"
+          }
+        }
+      }
+    },
+    "doctor.gitOk": {
+      "comment": "Checks page, git row, all good. The repository links are the menu items Copy Repository Link and Open Repository Page.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "برنامج git مثبَّت، لذا تستطيع روابط المستودع في القائمة قراءة مستودعها."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git ইনস্টল করা আছে, তাই মেনুর রিপোজিটরি লিংকগুলো নিজ নিজ রিপোজিটরি পড়তে পারে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git ist installiert, also können die Repository-Links im Menü ihr Repository lesen."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το git είναι εγκατεστημένο, οπότε οι σύνδεσμοι αποθετηρίου στο μενού μπορούν να διαβάσουν το αποθετήριό τους."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "git is installed, so the repository links in the menu can read their repository."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git está instalado, así que los enlaces del repositorio del menú pueden leer su repositorio."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏git نصب شده است، پس پیوندهای مخزن در منو می‌توانند مخزن خود را بخوانند."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git est installé, donc les liens du dépôt dans le menu peuvent lire leur dépôt."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏git מותקן, ולכן קישורי המאגר בתפריט יכולים לקרוא את המאגר שלהם."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git इंस्टॉल है, इसलिए मेन्यू के रिपॉज़िटरी लिंक अपनी रिपॉज़िटरी पढ़ सकते हैं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git sudah diinstal, jadi tautan repositori di menu dapat membaca repositorinya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git è installato, quindi i link del repository nel menu possono leggere il loro repository."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git がインストールされているため、メニューのリポジトリのリンクはそれぞれのリポジトリを読み取れます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git이 설치되어 있으므로 메뉴의 저장소 링크가 해당 저장소를 읽을 수 있습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git इन्स्टॉल आहे, त्यामुळे मेनूमधील रेपॉझिटरी लिंक त्यांची रेपॉझिटरी वाचू शकतात."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git sudah dipasang, jadi pautan repositori dalam menu boleh membaca repositorinya."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git is geïnstalleerd, dus de repositorylinks in het menu kunnen hun repository lezen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git jest zainstalowany, więc łącza repozytorium w menu mogą odczytać swoje repozytorium."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "O git está instalado, então os links do repositório no menu podem ler o repositório deles."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git este instalat, deci linkurile depozitului din meniu își pot citi depozitul."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git установлен, поэтому ссылки на репозиторий в меню могут прочитать свой репозиторий."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git நிறுவப்பட்டுள்ளது, எனவே மெனுவில் உள்ள repository இணைப்புகள் அவற்றின் repository-ஐப் படிக்க முடியும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git ఇన్‌స్టాల్ చేయబడింది, కాబట్టి మెనూలోని రిపోజిటరీ లింక్‌లు వాటి రిపోజిటరీని చదవగలవు."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ติดตั้ง git แล้ว ลิงก์รีโพซิทอรีในเมนูจึงอ่านรีโพซิทอรีของตัวเองได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git yüklü, bu yüzden menüdeki depo bağlantıları kendi depolarını okuyabilir."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git інстальовано, тож посилання на репозиторій у меню можуть прочитати свій репозиторій."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏git انسٹال ہے، اس لیے مینو کے ریپازٹری لنکس اپنی ریپازٹری پڑھ سکتے ہیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git đã được cài đặt, vì vậy các liên kết kho git trong menu có thể đọc kho git của chúng."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git 已安装，所以菜单中的仓库链接可以读取各自的仓库。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git 已安裝，因此選單中的儲存庫連結可以讀取各自的儲存庫。"
           }
         }
       }

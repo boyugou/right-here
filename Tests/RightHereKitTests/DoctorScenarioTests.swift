@@ -595,3 +595,28 @@ struct DoctorExtensionLookTests {
         #expect(after.map(\.status) == [.ok, .warn])
     }
 }
+
+@Suite("Doctor: git, for the repository links")
+struct DoctorGitTests {
+    private func gitCheck(menu: String?, installed: Bool) throws -> DoctorCheck? {
+        let scene = try Scene(); defer { scene.cleanUp() }
+        if let menu { try scene.writeConfig("[menu]\nitems = \(menu)\n") }
+        let doctor = Doctor(facts: FakeSystemFacts(homeDirectory: scene.home), paths: scene.paths, loaded: ConfigStore.load(paths: scene.paths),
+                            runner: FakeProcessRunner(), rhPath: scene.rhPath, gitInstalled: installed)
+        return doctor.gitCheck()
+    }
+
+    /// A menu with a repository link on a Mac without git: every click on it would fail, so the Checks page says how to get git.
+    @Test func aRepositoryLinkInTheMenuWithoutGitIsAWarningWithTheFix() throws {
+        let check = try #require(try gitCheck(menu: "[\"copy-path\", \"repository.copy-link\"]", installed: false))
+        #expect(check.status == .warn)
+        #expect(check.fix?.english().contains("xcode-select --install") == true, "\(check.fix?.english() ?? "")")
+        #expect(try gitCheck(menu: "[\"repository.open-page\"]", installed: true)?.status == .ok)
+    }
+
+    /// Nothing in the menu needs git: a Mac without it has nothing to fix, and the Checks page does not ask for attention.
+    @Test func withoutARepositoryLinkThereIsNoGitRow() throws {
+        #expect(try gitCheck(menu: nil, installed: false) == nil, "the default menu has no repository link")
+        #expect(try gitCheck(menu: "[\"copy-path\", \"reveal\"]", installed: false) == nil)
+    }
+}

@@ -361,7 +361,8 @@ monitor turned off, and fetches nothing. Your own git configuration still applie
 
 The worktree actions and the repository links need git. macOS has it only with Xcode or the Command Line Tools: run
 `xcode-select --install` in Terminal, wait for the installation to finish, then try again. Right Here looks for git before it starts
-it, so a click never ends in macOS's window that offers the tools.
+it, so a click never ends in macOS's window that offers the tools. When the menu has a repository link, the Checks page has a git row
+that says whether git is there.
 
 ## WezTerm, kitty or Alacritty
 
