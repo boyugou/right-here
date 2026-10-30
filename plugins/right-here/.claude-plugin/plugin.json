@@ -1,7 +1,7 @@
 {
   "name": "right-here",
   "displayName": "Right Here",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Set up Right Here, open a folder or Finder selection in a terminal, editor or agent, and show the files you changed in Finder. Connects Claude Code to the rh command-line tool.",
   "author": {
     "name": "boyugou",

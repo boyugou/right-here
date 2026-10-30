@@ -5,7 +5,7 @@ public enum AppIdentity {
     public static let productName = "Right Here"
     /// The released version: `rh --version`, the MCP server, the app. `project.yml` (MARKETING_VERSION) and the top entry of CHANGELOG.md say the
     /// same; `script/verify_version.py` checks it.
-    public static let version = "1.0.0"
+    public static let version = "1.1.0"
     public static let cliName = "rh"
     public static let configDirectoryName = "right-here"
 
