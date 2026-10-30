@@ -62,8 +62,17 @@ log "Generating the Xcode project"
 xcodegen generate --quiet
 
 log "Building the app and the Finder extension ($CONFIGURATION)"
-xcodebuild -project RightHere.xcodeproj -scheme RightHere -configuration "$CONFIGURATION" \
-  -derivedDataPath "$DERIVED" CODE_SIGNING_ALLOWED=NO build | { grep -E "error:|warning: .*(sign|entitle)|BUILD (SUCCEEDED|FAILED)" || true; }
+mkdir -p "$DERIVED"
+XCODEBUILD_LOG="$DERIVED/xcodebuild.log"
+if ! xcodebuild -project RightHere.xcodeproj -scheme RightHere -configuration "$CONFIGURATION" \
+  -derivedDataPath "$DERIVED" CODE_SIGNING_ALLOWED=NO build > "$XCODEBUILD_LOG" 2>&1; then
+  grep -E "error:" "$XCODEBUILD_LOG" >&2 || true
+  # A compiler that crashes prints a stack dump and no "error:" line, so show how the log ends as well.
+  echo "error: xcodebuild failed. The end of $XCODEBUILD_LOG:" >&2
+  tail -n 40 "$XCODEBUILD_LOG" >&2
+  exit 1
+fi
+grep -E "warning: .*(sign|entitle)|BUILD SUCCEEDED" "$XCODEBUILD_LOG" || true
 BUILT_APP="$DERIVED/Build/Products/$CONFIGURATION/$APP_NAME"
 [[ -d "$BUILT_APP" ]] || { echo "Build did not produce $BUILT_APP" >&2; exit 1; }
 

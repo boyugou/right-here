@@ -18,6 +18,8 @@ swift test
 # broken target, project setting or entitlement file fails here and not at the next local install.
 if command -v xcodegen >/dev/null && [[ "$have_xcode" == 1 ]]; then
     ./script/build_app.sh >/dev/null
+    # CI builds with the oldest supported Xcode; build with it here too when it is installed.
+    ./script/build_floor.sh
 else
     echo "note: xcodegen or a full Xcode (not only the Command Line Tools) is missing, so the app and extension were not built" >&2
 fi

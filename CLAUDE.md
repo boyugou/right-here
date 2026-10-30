@@ -91,7 +91,8 @@ docs/                    DESIGN.md, decisions/, development/
   a screenshot for the website must use. Those pictures show a stand-in for each control that AppKit draws (a switch, a text
   field, the segmented control, the config's text); `--real-controls` draws the real ones in a window that is never put on screen, so look at it
   after changing how a control is made (ADR 0029, 10 and 11: two such controls drew differently from their stand-ins).
-- Before pushing run `./script/verify_all.sh` (build, tests, the app and extension build, catalog, the window's control styles, config schema,
+- Before pushing run `./script/verify_all.sh` (build, tests, the app and extension build, the same with Xcode 26 when it is installed
+  beside a newer one (CI builds with it, and its Swift crashed on code that a newer Swift compiled), catalog, the window's control styles, config schema,
   embedded docs, the docs check (commands and links), public-safety check).
 - After changing a protection that `docs/DESIGN.md` section 9 relies on, run `./script/mutation_check.py`: it removes
   each protection in a throwaway clone and expects a test to fail. Add an entry when you add a protection.
