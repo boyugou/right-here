@@ -21,7 +21,7 @@
   "home.hero.try": "メニューを試す",
   "home.hero.docs": "ドキュメントを読む",
   "home.hero.download": "ダウンロード",
-  "home.hero.demo.alt": "アニメーション：app フォルダを右クリックすると、Right Here のメニューが開きます。Claude Code Here を選ぶと、そのフォルダで Ghostty が開き、claude と入力されます。",
+  "home.hero.demo.alt": "アニメーション：app フォルダを右クリックすると、Right Here のメニューが開きます。「ここでClaude Codeを起動」を選ぶと、そのフォルダで Ghostty が開き、claude と入力されます。",
   "home.hero.demo.caption": "フォルダを右クリックすると、そのフォルダで Claude Code が起動します。",
   "home.what.title": "できること",
   "home.what.lead": "フォルダ、ファイル、または Finder ウィンドウの何もない部分を右クリックします。そのあと、アクションを選びます。",

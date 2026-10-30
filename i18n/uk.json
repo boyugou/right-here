@@ -163,7 +163,7 @@
   "d.actions.title": "Дії",
   "d.actions.col.id": "Ідентифікатор дії",
   "d.actions.col.does": "Що робить",
-  "d.config.title": "Налаштування",
+  "d.config.title": "Конфігурація",
   "d.trouble.title": "Усунення несправностей",
   "d.t2.title": "Я клацаю на елемент, але нічого не відбувається",
   "d.t3.title": "macOS питає, чи може Right Here керувати терміналом",
