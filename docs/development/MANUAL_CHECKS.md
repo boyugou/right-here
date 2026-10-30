@@ -564,3 +564,21 @@ No test can see the window's own chrome or Finder's window of a disk image.
    - Their names are in the text colour, as the agents' names above them, not grey. Write down a grey row and whether the window
      was in front.
    - A click anywhere on a row, also on its empty middle, opens its page; the row dims while it is pressed.
+
+## 11. Repository links (1.1.0, ADR 0033)
+
+Tests read real repositories with the real git and check every link form against the hosts; what they cannot do is click in Finder.
+
+1. On the Finder Menu page, press Edit Menu. Under Not in the Menu, check Copy Repository Link and Open Repository Page.
+   - Both appear in the menu at once (the next time it opens), with a link and a globe symbol.
+2. In a clone of a public GitHub repository whose checked-out commit is pushed, right-click a file, then Copy Repository Link.
+   - The clipboard holds `https://github.com/<owner>/<repo>/blob/<commit>/<path>`; pasted into a browser, it shows that file at that
+     commit. A folder gives `/tree/…`.
+3. Right-click the same file, then Open Repository Page.
+   - The default browser opens that page. Nothing else opens, and no Terminal window.
+4. Select two files and open the menu.
+   - Open Repository Page is not offered; Copy Repository Link copies two lines.
+5. Make a commit and do not push it; click Copy Repository Link.
+   - An alert says the checked-out commit is not on the remote yet and to push it. Nothing is copied.
+6. Right-click a file that is not committed (a new file), and a folder outside any repository.
+   - Each gives an alert with its own reason: not in the checked-out commit, not in a git repository.
