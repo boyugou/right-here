@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The menu editor lists Copy Repository Link and Open Repository Page under Not in the Menu, where one check adds each; they were
+  only inside the submenus of Add to Menu.
+
 ## 1.1.0 (2026-10-30)
 
 Repository links, Homebrew, and the app building with Xcode 26 again.

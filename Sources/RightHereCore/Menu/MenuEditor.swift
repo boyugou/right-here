@@ -90,9 +90,8 @@ public enum MenuEditor {
         case "preset": return .presets
         case "new-file": return .newFile
         case "agent": return .agents
-        case "reveal": return .reveal
-        // Beside the ways of copying a path, and the page with the ways of opening.
-        case "repository": return info.id == ActionRef.copyRepositoryLink.id ? .copyPath : .openApp
+        // Lines of their own, as Reveal in Finder is: listed where one check puts them in the menu, not inside a submenu of the Add menu.
+        case "reveal", "repository": return .reveal
         default: return .openApp
         }
     }

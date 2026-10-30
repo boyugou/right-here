@@ -87,6 +87,9 @@ struct MenuEditorTests {
         #expect(!entries.contains("copy-path") && !entries.contains("open-terminal") && !entries.contains("-"))
         #expect(state.choices.first { $0.entry == "copy-path.tilde" }?.section == .copyPath)
         #expect(state.choices.first { $0.entry == "reveal" }?.section == .reveal)
+        // Lines of their own, listed where one check adds them (Not in the Menu), not inside a submenu of Add to Menu.
+        #expect(state.choices.first { $0.entry == "repository.copy-link" }?.section == .reveal)
+        #expect(state.choices.first { $0.entry == "repository.open-page" }?.section == .reveal)
         #expect(state.choices.first { $0.entry == "new-file.md" }?.section == .newFile)
         #expect(state.choices.first { $0.entry == "open.app.zed" }?.section == .openApp)
         #expect(state.choices.first { $0.entry == "copy-path.tilde" }?.title == "Copy Path: Path from Home (~)")

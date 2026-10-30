@@ -802,6 +802,8 @@ MUTANTS = [
      '&& !segment.hasPrefix("-") &&', '&&'),
     ("Open Repository Page is offered in the menu for several items", "Sources/RightHereCore/Actions/ActionRegistry.swift",
      "if ref == .openRepositoryPage, context.items.count > 1 {", "if ref == .openRepositoryPage, context.items.count > 99 {"),
+    ("the repository actions are offered only inside the submenus of Add to Menu", "Sources/RightHereCore/Menu/MenuEditor.swift",
+     'case "reveal", "repository": return .reveal', 'case "reveal": return .reveal'),
     ("Ghostty is handed a file as its working directory", "Sources/RightHereCore/Terminals/GhosttyAdapter.swift",
      "let directory = try session.requireDirectory(facts)", "let directory = session.directory.path"),
     ("Terminal.app is handed a file as its working directory", "Sources/RightHereCore/Terminals/AppleTerminalAdapter.swift",

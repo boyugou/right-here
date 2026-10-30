@@ -11,8 +11,8 @@ Two actions give the web page of the selected file or folder on the host of its 
 - **Open Repository Page** (`repository.open-page`) opens it in the default browser; it takes one item, and refuses more rather than
   opening a tab for each. The menu does not offer it for a selection of several (counted, not looked at).
 
-They are not in the default menu: the menu editor lists them under the actions that are not in the menu, and `menu.items` takes their
-ids. They are actions of their own, not a style of Copy Path, because the Finder extension renders Copy Path's styles itself
+They are not in the default menu: the menu editor lists them under Not in the Menu, where one check adds each, and `menu.items` takes
+their ids. They are actions of their own, not a style of Copy Path, because the Finder extension renders Copy Path's styles itself
 (`FinderSyncExtension`), and it may read nothing but its cached config (hard rule 5); these two run `rh`, which reads the repository
 when the item is clicked. For the same reason the titles name the repository, not GitHub: the menu cannot know the host.
 
