@@ -650,7 +650,9 @@ func gallery() -> [DoctorCheck] {
         (.ok, .doctorSyncCommandsOwn("2", changes), nil),
         (.ok, .doctorSyncInSync, nil),
         (.warn, .doctorSyncLocalAhead, .doctorFixSyncPushShort),
-        (.warn, .doctorSyncRemoteAhead, .doctorFixSyncPull)
+        (.warn, .doctorSyncRemoteAhead, .doctorFixSyncPull),
+        (.ok, .doctorGitOk, nil),
+        (.warn, .doctorGitMissing, .doctorFixGitInstall)
     ]
     for (number, row) in more.enumerated() {
         rows.append(DoctorCheck(.agent("gallery\(number)"), title: "Agent \(number + 1)", status: row.0, detail: row.1, fix: row.2))
