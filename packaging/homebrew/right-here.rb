@@ -12,7 +12,7 @@ cask "right-here" do
   homepage "https://github.com/boyugou/right-here"
 
   depends_on arch: :arm64
-  depends_on macos: ">= :tahoe"
+  depends_on macos: :tahoe
 
   app "Right Here.app"
   binary "#{appdir}/Right Here.app/Contents/Helpers/rh"
