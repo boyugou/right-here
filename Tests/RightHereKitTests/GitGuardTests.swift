@@ -671,3 +671,98 @@ struct GitIsStartedInOnePlaceTests {
         #expect(offenders.isEmpty, "git is started outside GitCommand.step: \(offenders)")
     }
 }
+
+@Suite("git guard: reading a repository for its link")
+struct RepositoryReaderTests {
+    private let commit = "d89f86032883bae7ef136d543343639777e2455a"
+
+    @Test func readingTheRemoteAndTheCommitCarriesTheGuardsAndPrefersTheUpstream() async throws {
+        let runner = FakeProcessRunner(results: [
+            ProcessResult(status: 0, standardOutput: commit + "\n"),
+            ProcessResult(status: 0, standardOutput: "main\n"),
+            ProcessResult(status: 0, standardOutput: "upstream\n"),
+            ProcessResult(status: 0, standardOutput: "origin\nupstream\n"),
+            ProcessResult(status: 0, standardOutput: "https://github.com/o/r.git\n"),
+            ProcessResult(status: 0, standardOutput: ""),
+            ProcessResult(status: 0)
+        ])
+        let item = URL(fileURLWithPath: "/work/app/src/a.swift")
+        let states = try await RepositoryReader.read(items: [item], facts: FakeSystemFacts(gitRoots: ["/work/app"]), runner: runner)
+        #expect(runner.recorded == [
+            git(["-C", "/work/app", "rev-parse", "--verify", "--quiet", "HEAD^{commit}"]),
+            git(["-C", "/work/app", "rev-parse", "--abbrev-ref", "HEAD"]),
+            git(["-C", "/work/app", "config", "--get", "branch.main.remote"]),
+            git(["-C", "/work/app", "remote"]),
+            git(["-C", "/work/app", "remote", "get-url", "upstream"]),
+            git(["-C", "/work/app", "rev-list", "-n1", commit, "--not", "--remotes=upstream"]),
+            git(["-C", "/work/app", "cat-file", "-e", "\(commit):src/a.swift"])
+        ])
+        #expect(states[item] == RepositoryState(root: URL(fileURLWithPath: "/work/app"), remoteName: "upstream", remoteNames: ["origin", "upstream"],
+                                                remoteURL: "https://github.com/o/r.git", commit: commit, isPushed: true, isInCommit: true))
+    }
+
+    @Test func withoutAnUpstreamOriginIsChosenAndWithSeveralOthersNone() async throws {
+        func chosen(remotes: String) async throws -> String? {
+            let runner = FakeProcessRunner(results: [
+                ProcessResult(status: 0, standardOutput: commit + "\n"), ProcessResult(status: 0, standardOutput: "HEAD\n"),
+                ProcessResult(status: 0, standardOutput: remotes),
+                ProcessResult(status: 0, standardOutput: "https://github.com/o/r.git\n"), ProcessResult(status: 0, standardOutput: "")
+            ])
+            let root = URL(fileURLWithPath: "/work/app")
+            return try await RepositoryReader.read(items: [root], facts: FakeSystemFacts(gitRoots: ["/work/app"]), runner: runner)[root]?.remoteName
+        }
+        #expect(try await chosen(remotes: "fork\norigin\n") == "origin")
+        #expect(try await chosen(remotes: "fork\n") == "fork")
+        #expect(try await chosen(remotes: "fork\nmine\n") == nil)
+        // A name that `--remotes=` would read as a pattern is never used.
+        #expect(try await chosen(remotes: "o*\n") == nil)
+    }
+
+    @Test func theRealGitReadsTheRepositoryAndStartsNoneOfItsPrograms() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        let precomposed = "\u{E9}t\u{E9}.md"
+        try "x".write(to: lab.repository.appendingPathComponent("-x"), atomically: true, encoding: .utf8)
+        try "x".write(to: lab.repository.appendingPathComponent(precomposed), atomically: true, encoding: .utf8)
+        try lab.git(["add", "--", "-x", precomposed])
+        try lab.git(["commit", "-q", "-m", "names"])
+        try lab.git(["remote", "add", "origin", "gh:owner/repo"])
+        try lab.git(["config", "--local", "url.https://github.com/.insteadOf", "gh:"])
+        try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
+        try "new".write(to: lab.repository.appendingPathComponent("new.txt"), atomically: true, encoding: .utf8)
+        // Everything the repository can name that git would start.
+        let program = try lab.program("started", passingInput: true)
+        for hook in ["post-checkout", "reference-transaction", "post-index-change", "pre-commit"] {
+            try FileManager.default.copyItem(atPath: program.path, toPath: lab.repository.appendingPathComponent(".git/hooks/\(hook)").path)
+        }
+        try lab.git(["config", "--local", "core.fsmonitor", program.path])
+        for key in ["smudge", "clean", "process"] { try lab.git(["config", "--local", "filter.evil.\(key)", program.path]) }
+        try "* filter=evil\n".write(to: lab.repository.appendingPathComponent(".gitattributes"), atomically: true, encoding: .utf8)
+        try lab.git(["config", "--local", "core.pager", program.path])
+        try lab.git(["config", "--local", "core.sshCommand", program.path])
+
+        let root = lab.repository
+        let decomposed = root.appendingPathComponent(precomposed.decomposedStringWithCanonicalMapping)
+        let items = [root.appendingPathComponent("README.md"), root.appendingPathComponent("-x"), decomposed, root.appendingPathComponent("new.txt"), root]
+        let states = try await RepositoryReader.read(items: items, facts: FakeSystemFacts(gitRoots: [root.path]), runner: lab.runner)
+        #expect(!program.ran(), "a program of the repository ran while it was read")
+        let readme = try #require(states[items[0]])
+        #expect(readme.remoteName == "origin" && readme.remoteURL == "https://github.com/owner/repo", "insteadOf was not applied: \(readme)")
+        #expect(readme.commit?.count == 40 && readme.isPushed && readme.isInCommit)
+        #expect(states[items[1]]?.isInCommit == true, "a name that starts with - was read as an option")
+        #expect(states[items[2]]?.isInCommit == true, "the decomposed name of a precomposed file was not found")
+        #expect(states[items[3]]?.isInCommit == false, "an untracked file was said to be in the commit")
+        #expect(states[items[4]]?.isInCommit == true)
+
+        // A commit that only this clone has is not pushed.
+        let tree = try lab.git(["rev-parse", "HEAD^{tree}"]).trimmingCharacters(in: .whitespacesAndNewlines)
+        let local = try lab.git(["commit-tree", tree, "-p", "HEAD", "-m", "local"]).trimmingCharacters(in: .whitespacesAndNewlines)
+        try lab.git(["update-ref", "refs/heads/main", local])
+        // That unguarded update-ref ran the repository's reference-transaction hook: the control that shows the program can be seen to run.
+        #expect(program.ran(), "control: git without the guards runs the repository's hook")
+        try FileManager.default.removeItem(at: lab.outside.appendingPathComponent("started.ran"))
+        let after = try await RepositoryReader.read(items: [root], facts: FakeSystemFacts(gitRoots: [root.path]), runner: lab.runner)
+        #expect(after[root]?.commit == local && after[root]?.isPushed == false)
+        #expect(!program.ran())
+    }
+}

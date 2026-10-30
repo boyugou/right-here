@@ -85,6 +85,14 @@ public enum RepositoryLink {
         }
     }
 
+    /// The item's path from the repository's top folder, by segment: empty for the top folder itself, nil outside it.
+    public static func itemPath(of item: URL, inRepository root: URL) -> [String]? {
+        let base = root.lexicallyNormalized.pathComponents
+        let target = item.lexicallyNormalized.pathComponents
+        guard target.count >= base.count, Array(target.prefix(base.count)) == base else { return nil }
+        return Array(target.dropFirst(base.count))
+    }
+
     private static func isSafeSegment(_ segment: String) -> Bool {
         let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.")
         return !segment.isEmpty && segment != "." && segment != ".." && segment.unicodeScalars.allSatisfy { allowed.contains($0) }
