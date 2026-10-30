@@ -47,7 +47,7 @@
 
 **Distribution**
 
-- A notarized DMG is attached to each release on GitHub (the latest is `v1.1.0`).
+- A notarized DMG is attached to each release on GitHub (the latest is `v1.1.1`).
 - Homebrew, from the tap [boyugou/homebrew-tap](https://github.com/boyugou/homebrew-tap): `brew install --cask boyugou/tap/right-here`
   (the app, `rh` included) or `brew install boyugou/tap/rh` (the command-line tool alone, built from source with Xcode 26 or later), one or
   the other. Each release updates the tap, and the tap's CI installs both.

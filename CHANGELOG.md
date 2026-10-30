@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.1.1 (2026-10-30)
+
+The repository links where one check adds them, and clearer release notes.
+
 - Edit Menu (on the Finder Menu page) lists Copy Repository Link and Open Repository Page under Not in the Menu, where one check adds
   each; in 1.1.0 they were only inside the submenus of Add to Menu.
 - Release notes on GitHub read as paragraphs (the CHANGELOG's wrapped lines are joined), their links lead to the files of the release, and
