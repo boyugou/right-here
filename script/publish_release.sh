@@ -56,7 +56,7 @@ join_wrapped_lines() {
     /^(- |\* |#|\||> |[0-9]+\. )/ { if (buf != "") print buf; buf = $0; next }
     { line = $0; sub(/^ +/, "", line); buf = (buf == "" ? line : buf " " line) }
     END { if (buf != "") print buf }
-  '
+  ' | awk 'NF { last = NR } { line[NR] = $0 } END { for (i = 1; i <= last; i++) print line[i] }'
 }
 
 # The notes: the CHANGELOG section of this version, without its heading.
