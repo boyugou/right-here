@@ -35,7 +35,10 @@ Right Here adds a menu to Finder. Right-click a folder, a file or the empty part
 | **Agent presets** | Sends the selected files to an agent with a prompt: Review, Explain, Write Tests, or your own. |
 | **New File** | Makes a text file, a Markdown file, a blank Word, Excel or PowerPoint document, or a file from your own template. |
 | **Copy Path** | Copies the path in the form that you need: full, from your home, from the git root, or as an `@` mention for an agent. |
-| **Repository link** | Copies or opens the page of the file on GitHub, GitLab, Codeberg or Bitbucket, at the commit that you have checked out. Add it to the menu in the menu editor. |
+| **Reveal in Finder** | Selects the items in a Finder window. Not in the menu at first. |
+| **Repository link** | Copies or opens the page of the file on GitHub, GitLab, Codeberg or Bitbucket, at the commit that you have checked out. Not in the menu at first: see below. |
+
+To change the menu, open Right Here, go to the **Finder Menu** page and press **Edit Menu**: drag a line to move it, uncheck it to take it out, and under **Not in the Menu** check Reveal in Finder, Copy Repository Link, Open Repository Page or a group to put it in. From a terminal: `rh config add menu.items repository.copy-link`.
 
 The same actions run from the `rh` command, from Quick Actions (right-click, then **Quick Actions**), from the Shortcuts app, Siri and Spotlight (where a shortcut can also pick one of your pinned or recent folders) and from AI assistants.
 
@@ -70,7 +73,7 @@ Or install it with Homebrew, from the project's own tap:
 brew install --cask boyugou/tap/right-here
 ```
 
-To build from source, you need Xcode 26 and `xcodegen`:
+To build from source, you need Xcode 26 or later and `xcodegen`:
 
 ```sh
 brew install xcodegen
@@ -170,7 +173,7 @@ To let an assistant set Right Here up, give it [`docs/AGENT_SETUP.md`](docs/AGEN
 
 ## Status
 
-Right Here 1.0 is the first public release. Config keys and the command line's output can still change from one version to the next, and the [CHANGELOG](CHANGELOG.md) says what changed. Tests cover the planning code, the command line, the Quick Actions, the MCP server and the plugin. They use temporary folders and real shells. Some parts need a real Finder and real terminals, and [`docs/development/MANUAL_CHECKS.md`](docs/development/MANUAL_CHECKS.md) lists them. Ghostty and Terminal were tried on a real Mac. The other terminals were not tried yet.
+Right Here has been public since 1.0 (2026-10-29). Config keys and the command line's output can still change from one version to the next, and the [CHANGELOG](CHANGELOG.md) says what changed. Tests cover the planning code, the command line, the Quick Actions, the MCP server and the plugin. They use temporary folders and real shells. Some parts need a real Finder and real terminals, and [`docs/development/MANUAL_CHECKS.md`](docs/development/MANUAL_CHECKS.md) lists them. Ghostty and Terminal were tried on a real Mac. The other terminals were not tried yet.
 
 ## Languages
 

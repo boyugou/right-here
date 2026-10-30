@@ -1,6 +1,7 @@
 # 0033: A file's link on its git host, copied or opened
 
-Date: 2026-10-29. Status: built (after 1.0.0). The Codeberg folder and root forms were measured on 2026-10-30.
+Date: 2026-10-29. Status: shipped in 1.1.0; listed under Not in the Menu from 1.1.1. The Codeberg folder and root forms were measured on
+2026-10-30.
 
 ## Decision
 

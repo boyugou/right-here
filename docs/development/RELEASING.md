@@ -28,7 +28,7 @@ Releases are for Apple silicon only, macOS 26 and later.
 
    ```sh
    ./script/publish_release.sh --dry-run        # every check, and the release notes that it would publish
-   NOTARY_PROFILE=<profile> SUPERSEDES=v<older> RELEASE_TITLE="<what is new>" ./script/publish_release.sh
+   NOTARY_PROFILE=<profile> SUPERSEDES=v<older> ./script/publish_release.sh     # titled "Right Here <version>"; RELEASE_TITLE changes it
    ```
 
 5. **Commit the cask and the formula.** The script writes the new version and checksums into `packaging/homebrew` and pushes both files

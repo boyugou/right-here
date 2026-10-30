@@ -8,7 +8,7 @@
 #
 # Environment:
 #   NOTARY_PROFILE   the notarytool keychain profile (xcrun notarytool store-credentials ...). Required for a real run.
-#   RELEASE_TITLE    what follows "v<version>: " in the release's title. Default: "Right Here <version>".
+#   RELEASE_TITLE    the release's title. Default: "Right Here <version>" (the tag is shown beside it).
 #   SUPERSEDES       an older tag whose release notes get a "superseded" banner pointing here (for example v0.2.0).
 #   SUPERSEDES_NOTE  one more sentence for that banner: what is wrong with the older build.
 #   TAP              the Homebrew tap that gets the cask and the formula. Default: <owner of this repository>/homebrew-tap.
@@ -48,14 +48,30 @@ gh auth status >/dev/null 2>&1 || fail "gh is not signed in"
 TAP="${TAP:-$(gh repo view --json owner -q .owner.login)/homebrew-tap}"
 gh repo view "$TAP" >/dev/null 2>&1 || fail "the tap $TAP cannot be read"
 
+# GitHub shows each line break of release notes as one, where a Markdown file joins wrapped lines: join the lines of a paragraph or a
+# list item, keep blank lines, headings, tables, quotes and the start of each item.
+join_wrapped_lines() {
+  awk '
+    /^$/ { if (buf != "") print buf; buf = ""; print ""; next }
+    /^(- |\* |#|\||> |[0-9]+\. )/ { if (buf != "") print buf; buf = $0; next }
+    { line = $0; sub(/^ +/, "", line); buf = (buf == "" ? line : buf " " line) }
+    END { if (buf != "") print buf }
+  '
+}
+
 # The notes: the CHANGELOG section of this version, without its heading.
 NOTES="$(mktemp -t right-here-notes)"
 TAP_DIR=""
 trap 'rm -f "$NOTES"; [[ -z "$TAP_DIR" ]] || rm -rf "$TAP_DIR"' EXIT
 awk -v heading="## $VERSION" 'index($0, heading) == 1 { found = 1; next } found && /^## / { exit } found { print }' CHANGELOG.md \
-  | sed -e '/./,$!d' > "$NOTES"
+  | sed -e '/./,$!d' | join_wrapped_lines > "$NOTES"
+# A link to a file of the repository (docs/decisions/…) is relative to the release page there, where it leads nowhere: point it at the tag.
+REPO_URL="$(gh repo view --json url -q .url)"
+sed -i '' -E "s#\]\(([^):\#][^):]*)\)#](${REPO_URL}/blob/${TAG}/\1)#g" "$NOTES"
 [[ -s "$NOTES" ]] || fail "the CHANGELOG section of $VERSION is empty or missing"
-TITLE="$TAG: ${RELEASE_TITLE:-Right Here $VERSION}"
+TITLE="${RELEASE_TITLE:-Right Here $VERSION}"
+# What every release says beside its own changes: who can run it and how to update.
+printf '\n%s\n' "Needs a Mac with Apple silicon and macOS 26 or later. To update, replace the app in Applications with the one in the DMG (or run \`brew upgrade --cask right-here\`), then open Right Here and press Install or Repair." >> "$NOTES"
 
 if [[ "$DRY_RUN" == 1 ]]; then
   echo "title: $TITLE"

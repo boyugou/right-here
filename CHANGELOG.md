@@ -2,8 +2,10 @@
 
 ## Unreleased
 
-- The menu editor lists Copy Repository Link and Open Repository Page under Not in the Menu, where one check adds each; they were
-  only inside the submenus of Add to Menu.
+- Edit Menu (on the Finder Menu page) lists Copy Repository Link and Open Repository Page under Not in the Menu, where one check adds
+  each; in 1.1.0 they were only inside the submenus of Add to Menu.
+- Release notes on GitHub read as paragraphs (the CHANGELOG's wrapped lines are joined), their links lead to the files of the release, and
+  they say what a Mac needs and how to update.
 
 ## 1.1.0 (2026-10-30)
 

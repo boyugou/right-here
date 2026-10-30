@@ -18,7 +18,7 @@
   `rh setup`. The doctor lists the installed copies when there is more than one.
 - **Repository links**: Copy Repository Link and Open Repository Page give the selected item's page on GitHub, GitLab, Codeberg or
   Bitbucket at the checked-out commit, and refuse a commit that is not pushed or a file that is not in it
-  ([ADR 0033](docs/decisions/0033-links-to-the-git-host.md)). Add them in the menu editor.
+  ([ADR 0033](docs/decisions/0033-links-to-the-git-host.md)). Add them with Edit Menu on the Finder Menu page.
 - **Quick Actions**, made from the config. The doctor notices when they differ from it.
 - **Shortcuts and Spotlight.** Four App Intents: Open in Terminal, Start AI Agent, Create New File and Copy Path. Each can take a
   pinned or recent folder picked from a list (a Saved Folder) instead of a folder given as a file.
@@ -49,8 +49,8 @@
 
 - A notarized DMG is attached to each release on GitHub (the latest is `v1.1.0`).
 - Homebrew, from the tap [boyugou/homebrew-tap](https://github.com/boyugou/homebrew-tap): `brew install --cask boyugou/tap/right-here`
-  (the app) or `brew install boyugou/tap/rh` (the command-line tool, built from source). Each release updates the tap, and the tap's CI
-  installs both.
+  (the app, `rh` included) or `brew install boyugou/tap/rh` (the command-line tool alone, built from source with Xcode 26 or later), one or
+  the other. Each release updates the tap, and the tap's CI installs both.
 
 ## Next
 
