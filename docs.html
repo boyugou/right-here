@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="meta.docs.title">Right Here documentation</title>
+<meta name="description" data-i18n-content="meta.docs.description2" content="How to install, set up, configure and fix Right Here, and how to set it up with an AI assistant.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="128x128" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="canonical" href="https://boyugou.github.io/right-here/docs.html" data-abs="docs.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Right Here">
+<meta property="og:title" content="Right Here: send a folder to your terminals, editors and AI agents">
+<meta property="og:description" content="Right-click a folder in Finder. Open it in your terminal, your editor or an AI agent. Free and open source.">
+<meta property="og:url" content="https://boyugou.github.io/right-here/docs.html" data-abs="docs.html">
+<meta property="og:image" content="https://boyugou.github.io/right-here/assets/og-image.png" data-abs="assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Right Here: send a folder to your terminals, editors and AI agents.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Right Here: send a folder to your terminals, editors and AI agents">
+<meta name="twitter:description" content="Right-click a folder in Finder. Open it in your terminal, your editor or an AI agent. Free and open source.">
+<meta name="twitter:image" content="https://boyugou.github.io/right-here/assets/og-image.png" data-abs="assets/og-image.png">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="alternate" hreflang="ar" href="https://boyugou.github.io/right-here/docs.html?lang=ar" data-abs="docs.html?lang=ar">
+<link rel="alternate" hreflang="bn" href="https://boyugou.github.io/right-here/docs.html?lang=bn" data-abs="docs.html?lang=bn">
+<link rel="alternate" hreflang="de" href="https://boyugou.github.io/right-here/docs.html?lang=de" data-abs="docs.html?lang=de">
+<link rel="alternate" hreflang="el" href="https://boyugou.github.io/right-here/docs.html?lang=el" data-abs="docs.html?lang=el">
+<link rel="alternate" hreflang="en" href="https://boyugou.github.io/right-here/docs.html?lang=en" data-abs="docs.html?lang=en">
+<link rel="alternate" hreflang="es" href="https://boyugou.github.io/right-here/docs.html?lang=es" data-abs="docs.html?lang=es">
+<link rel="alternate" hreflang="fa" href="https://boyugou.github.io/right-here/docs.html?lang=fa" data-abs="docs.html?lang=fa">
+<link rel="alternate" hreflang="fr" href="https://boyugou.github.io/right-here/docs.html?lang=fr" data-abs="docs.html?lang=fr">
+<link rel="alternate" hreflang="he" href="https://boyugou.github.io/right-here/docs.html?lang=he" data-abs="docs.html?lang=he">
+<link rel="alternate" hreflang="hi" href="https://boyugou.github.io/right-here/docs.html?lang=hi" data-abs="docs.html?lang=hi">
+<link rel="alternate" hreflang="id" href="https://boyugou.github.io/right-here/docs.html?lang=id" data-abs="docs.html?lang=id">
+<link rel="alternate" hreflang="it" href="https://boyugou.github.io/right-here/docs.html?lang=it" data-abs="docs.html?lang=it">
+<link rel="alternate" hreflang="ja" href="https://boyugou.github.io/right-here/docs.html?lang=ja" data-abs="docs.html?lang=ja">
+<link rel="alternate" hreflang="ko" href="https://boyugou.github.io/right-here/docs.html?lang=ko" data-abs="docs.html?lang=ko">
+<link rel="alternate" hreflang="mr" href="https://boyugou.github.io/right-here/docs.html?lang=mr" data-abs="docs.html?lang=mr">
+<link rel="alternate" hreflang="ms" href="https://boyugou.github.io/right-here/docs.html?lang=ms" data-abs="docs.html?lang=ms">
+<link rel="alternate" hreflang="nl" href="https://boyugou.github.io/right-here/docs.html?lang=nl" data-abs="docs.html?lang=nl">
+<link rel="alternate" hreflang="pl" href="https://boyugou.github.io/right-here/docs.html?lang=pl" data-abs="docs.html?lang=pl">
+<link rel="alternate" hreflang="pt-BR" href="https://boyugou.github.io/right-here/docs.html?lang=pt-BR" data-abs="docs.html?lang=pt-BR">
+<link rel="alternate" hreflang="ro" href="https://boyugou.github.io/right-here/docs.html?lang=ro" data-abs="docs.html?lang=ro">
+<link rel="alternate" hreflang="ru" href="https://boyugou.github.io/right-here/docs.html?lang=ru" data-abs="docs.html?lang=ru">
+<link rel="alternate" hreflang="ta" href="https://boyugou.github.io/right-here/docs.html?lang=ta" data-abs="docs.html?lang=ta">
+<link rel="alternate" hreflang="te" href="https://boyugou.github.io/right-here/docs.html?lang=te" data-abs="docs.html?lang=te">
+<link rel="alternate" hreflang="th" href="https://boyugou.github.io/right-here/docs.html?lang=th" data-abs="docs.html?lang=th">
+<link rel="alternate" hreflang="tr" href="https://boyugou.github.io/right-here/docs.html?lang=tr" data-abs="docs.html?lang=tr">
+<link rel="alternate" hreflang="uk" href="https://boyugou.github.io/right-here/docs.html?lang=uk" data-abs="docs.html?lang=uk">
+<link rel="alternate" hreflang="ur" href="https://boyugou.github.io/right-here/docs.html?lang=ur" data-abs="docs.html?lang=ur">
+<link rel="alternate" hreflang="vi" href="https://boyugou.github.io/right-here/docs.html?lang=vi" data-abs="docs.html?lang=vi">
+<link rel="alternate" hreflang="zh-Hans" href="https://boyugou.github.io/right-here/docs.html?lang=zh-Hans" data-abs="docs.html?lang=zh-Hans">
+<link rel="alternate" hreflang="zh-Hant" href="https://boyugou.github.io/right-here/docs.html?lang=zh-Hant" data-abs="docs.html?lang=zh-Hant">
+<link rel="alternate" hreflang="x-default" href="https://boyugou.github.io/right-here/docs.html" data-abs="docs.html">
+</head>
+<body id="top">
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="index.html" data-keep-lang data-i18n-aria-label="brand.home" aria-label="Right Here, home"><img src="assets/icon.png" width="32" height="32" alt=""><span>Right Here</span></a>
+<nav class="nav" data-i18n-aria-label="nav.label" aria-label="Main">
+<a href="index.html#what" data-keep-lang data-i18n="nav.what">What it does</a>
+<a href="index.html#try" data-keep-lang data-i18n="nav.try">Try it</a>
+<a href="index.html#setup" data-keep-lang data-i18n="nav.start">Set up</a>
+<a href="index.html#how" data-keep-lang data-i18n="nav.how">How it works</a>
+<a href="index.html#ai" data-keep-lang data-i18n="nav.ai">AI assistants</a>
+<a href="docs.html" data-keep-lang data-i18n="nav.docs">Docs</a>
+<a href="https://github.com/boyugou/right-here" rel="noopener" data-i18n="nav.github">GitHub</a>
+</nav>
+<div class="lang">
+<label for="lang" data-i18n="lang.label">Language</label>
+<select id="lang" name="lang">
+<option value="ar" lang="ar">العربية</option>
+<option value="bn" lang="bn">বাংলা</option>
+<option value="de" lang="de">Deutsch</option>
+<option value="el" lang="el">Ελληνικά</option>
+<option value="en" lang="en">English</option>
+<option value="es" lang="es">Español</option>
+<option value="fa" lang="fa">فارسی</option>
+<option value="fr" lang="fr">Français</option>
+<option value="he" lang="he">עברית</option>
+<option value="hi" lang="hi">हिन्दी</option>
+<option value="id" lang="id">Bahasa Indonesia</option>
+<option value="it" lang="it">Italiano</option>
+<option value="ja" lang="ja">日本語</option>
+<option value="ko" lang="ko">한국어</option>
+<option value="mr" lang="mr">मराठी</option>
+<option value="ms" lang="ms">Bahasa Melayu</option>
+<option value="nl" lang="nl">Nederlands</option>
+<option value="pl" lang="pl">Polski</option>
+<option value="pt-BR" lang="pt-BR">Português (Brasil)</option>
+<option value="ro" lang="ro">Română</option>
+<option value="ru" lang="ru">Русский</option>
+<option value="ta" lang="ta">தமிழ்</option>
+<option value="te" lang="te">తెలుగు</option>
+<option value="th" lang="th">ไทย</option>
+<option value="tr" lang="tr">Türkçe</option>
+<option value="uk" lang="uk">Українська</option>
+<option value="ur" lang="ur">اردو</option>
+<option value="vi" lang="vi">Tiếng Việt</option>
+<option value="zh-Hans" lang="zh-Hans">简体中文</option>
+<option value="zh-Hant" lang="zh-Hant">繁體中文</option>
+</select>
+</div>
+</div>
+<div class="wrap"><p id="lang-status" class="status-msg" role="status" hidden></p></div>
+</header>
+<main id="main" class="wrap docs">
+<nav class="toc" data-i18n-aria-label="docs.toc" aria-label="On this page">
+<h2 data-i18n="docs.toc">On this page</h2>
+<ol>
+<li><a href="#install" data-i18n="doc.install.title">Install</a></li>
+<li><a href="#setup" data-i18n="doc.setup.title">Set up</a></li>
+<li><a href="#use" data-i18n="doc.use.title">Use it</a></li>
+<li><a href="#actions" data-i18n="d.actions.title">Actions</a></li>
+<li><a href="#config" data-i18n="d.config.title">Configure</a></li>
+<li><a href="#presets" data-i18n="d.presets.title">Agent presets</a></li>
+<li><a href="#shortcuts" data-i18n="d.shortcuts.title">Shortcuts and Spotlight</a></li>
+<li><a href="#sync" data-i18n="doc.sync.title">Use one config on several Macs</a></li>
+<li><a href="#terminals" data-i18n="d.terminals.title">Supported terminals</a></li>
+<li><a href="#mcp" data-i18n="doc.mcp.title">AI assistants and MCP</a></li>
+<li><a href="#troubleshooting" data-i18n="d.trouble.title">Troubleshooting</a></li>
+</ol>
+</nav>
+<div class="doc-body">
+<h1 data-i18n="docs.title">Documentation</h1>
+<p class="lead" data-i18n="doc.lead">How to install, set up, configure and fix Right Here.</p>
+<p class="banner" data-i18n="doc.status2">Right Here is in beta. You need a Mac with Apple silicon and macOS 26 or later.</p>
+<p><a href="index.html" data-keep-lang data-i18n="docs.home">Back to the overview</a></p>
+
+<section id="install" aria-labelledby="install-h">
+<h2 id="install-h" data-i18n="doc.install.title">Install</h2>
+<ol class="numbered">
+<li data-i18n="doc.install.1b">Download the DMG from the Releases page of the project on GitHub.</li>
+<li data-i18n="doc.install.2">Open the DMG and drag Right Here to Applications.</li>
+<li data-i18n="doc.install.3">Open Right Here from Applications.</li>
+</ol>
+<p data-i18n="doc.install.move">Right Here must run from your Applications folder. A copy that runs from the DMG or from Downloads cannot set up: the window asks you to move it, and <code>rh setup</code> refuses.</p>
+<p data-i18n="doc.install.update">To update, drag the new app over the old one and choose Replace. Then open Right Here and press Install or Repair. Your config file stays as it is.</p>
+<p data-i18n="doc.install.source2">You can also build Right Here yourself. You need Xcode 26 or later and <code>xcodegen</code>:</p>
+<pre><code>brew install xcodegen
+./script/install_local.sh     # builds the app, copies it to ~/Applications and runs rh setup</code></pre>
+</section>
+
+<section id="setup" aria-labelledby="setup-h">
+<h2 id="setup-h" data-i18n="doc.setup.title">Set up</h2>
+<p data-i18n="doc.setup.p1">There are three ways to set up. All three run the same steps.</p>
+<ul>
+<li data-i18n="doc.setup.way1">In the app: choose your terminal, your editor and your agents, and press Set Up.</li>
+<li data-i18n="doc.setup.way2">In a terminal: run <code>rh setup</code>.</li>
+<li data-i18n="doc.setup.way3">With an AI assistant: see below.</li>
+</ul>
+<p data-i18n="doc.setup.order">Setup does these steps, in this order:</p>
+<ol class="numbered">
+<li data-i18n="doc.setup.s1">It makes the config file, if there is none.</li>
+<li data-i18n="doc.setup.s2">It installs the runner script that Finder needs.</li>
+<li data-i18n="doc.setup.s3">It links <code>rh</code> into <code>~/.local/bin</code>.</li>
+<li data-i18n="doc.setup.s4">It installs the Quick Actions.</li>
+<li data-i18n="doc.setup.s5">It registers the Finder extension.</li>
+<li data-i18n="doc.setup.s6">It runs the checks of <code>rh doctor</code>.</li>
+</ol>
+<pre><code>rh setup                      # set everything up
+rh setup --terminal ghostty --editor zed --agents claude,codex
+rh setup --dry-run            # show what it would do, and change nothing
+rh setup --json               # the report, for a script or an AI assistant</code></pre>
+<p data-i18n="doc.setup.again">You can run setup again at any time. It makes what is missing and updates what is out of date.</p>
+<p data-i18n="doc.setup.config">Setup never rewrites a config file that exists. If the file does not say what you asked for, setup lists the line to change, and you make the edit. <code>--force</code> replaces the file, and saves the old one next to it first.</p>
+<p data-i18n="doc.setup.you">Setup opens no window and never changes System Settings. At the end, it lists what only you can do:</p>
+<ul>
+<li data-i18n="doc.setup.you1">Turn on Right Here in System Settings › General › Login Items &amp; Extensions › Finder.</li>
+<li data-i18n="doc.setup.you2">Choose Allow when macOS asks whether Right Here may control your terminal. macOS asks this the first time that an agent starts there.</li>
+<li data-i18n="doc.setup.you3">Add <code>~/.local/bin</code> to your <code>PATH</code>, if it is not there.</li>
+</ul>
+<h3 id="first-run" data-i18n="doc.first.title">The setup window</h3>
+<p data-i18n="doc.first.p1">If there is no config file, the setup window shows the terminals and editors on your Mac and the agents that Right Here knows. It selects the ones that it finds.</p>
+<p data-i18n="doc.first.p2">Press Set Up. The window runs the same steps as <code>rh setup</code> and lists what it did.</p>
+<p data-i18n="doc.first.p3">Then a card shows three steps. Its button opens System Settings for the Finder extension. The window checks every two seconds, so the card changes when you turn the extension on.</p>
+<p data-i18n="doc.first.p4">After the first setup, the app changes your config file only when you change a setting. Open Config opens the file. Install or Repair runs the other steps of setup again, and leaves the config as it is. Use it after you replace the app with a newer copy.</p>
+<p class="beta" data-i18n="doc.first.beta">Beta: tests cover the setup with temporary folders and fake runners. Not tried yet: the first run in a real window, and the card when you turn the extension on.</p>
+<h3 id="ai-setup" data-i18n="doc.ai.title">Set up with an AI assistant</h3>
+<p data-i18n="doc.ai.p1">In the app, open AI Assistants and press Copy Setup Prompt for AI. Paste the prompt into your assistant. An assistant that can run commands can also read the playbook with <code>rh docs agent-setup</code>.</p>
+<p data-i18n="doc.ai.steps">The assistant follows these steps:</p>
+<ol class="numbered">
+<li data-i18n="doc.ai.s1">It asks you which terminal, editor and agents you use.</li>
+<li data-i18n="doc.ai.s2">It runs <code>rh setup --dry-run --json</code> to see what setup would do.</li>
+<li data-i18n="doc.ai.s3">If you have a config file, it makes the edits that setup lists.</li>
+<li data-i18n="doc.ai.s4">It runs <code>rh setup --json</code> once.</li>
+<li data-i18n="doc.ai.s5">It tells you what only you can do, with the exact clicks.</li>
+<li data-i18n="doc.ai.s6">It checks the result with <code>rh doctor</code>.</li>
+</ol>
+<p data-i18n="doc.ai.never">The assistant does not change System Settings. It does not rewrite or delete your config file.</p>
+<p data-i18n="doc.ai.tested2">We tested the playbook with new Claude agents in five setups: no config, no agent, a config to keep, a config that does not parse, and a config that holds a sentence written to an AI agent. Each agent asked first and changed only what the person asked for. A sandbox cannot register the Finder extension, so the test did not cover that step.</p>
+</section>
+
+<section id="use" aria-labelledby="use-h">
+<h2 id="use-h" data-i18n="doc.use.title">Use it</h2>
+<p data-i18n="doc.use.p1">In Finder, right-click a folder, a file or the empty part of a window. Then choose an action. In a terminal, use <code>rh</code>:</p>
+<pre><code>rh menu                       # the Finder menu for this folder
+rh actions                    # the actions that you can run here
+rh run agent.claude           # start Claude Code in this folder, in your terminal
+rh run agent.claude --worktree   # the same, in a new git worktree of the repository
+rh worktree list              # the worktrees (remove takes only the ones that Right Here made)
+rh run copy-path.git-relative src/main.swift
+rh run new-file.md --container ~/notes
+rh pin ~/code/app             # pin a folder (rh pins and rh recents list them)
+rh doctor                     # check the setup
+rh doctor --probe-launch      # test a click: a terminal window opens and closes
+rh config sync status         # compare this Mac's config with the sync folder</code></pre>
+<p data-i18n="doc.use.icloud">Finder shows no extension menu in iCloud Drive. This includes a Desktop or Documents folder that iCloud syncs. Use the Quick Actions there. You can give them keyboard shortcuts in System Settings › Keyboard › Keyboard Shortcuts › Services.</p>
+<p data-i18n="doc.use.preview">The Finder menu page of the setup window shows the menu for a folder. <code>rh menu --explain</code> says what the menu leaves out, and why.</p>
+<p data-i18n="doc.use.completion"><code>rh --generate-completion-script zsh</code> prints a completion script for your shell. It also takes <code>bash</code> and <code>fish</code>.</p>
+</section>
+
+<section id="actions" aria-labelledby="actions-h">
+<h2 id="actions-h" data-i18n="d.actions.title">Actions</h2>
+<p data-i18n="doc.actions.p1">Each action has an id. <code>rh actions</code> lists the actions for the current folder. <code>rh actions --all</code> also lists the others, and says why they are not available.</p>
+<div class="tablewrap">
+<table>
+<thead><tr><th scope="col" data-i18n="d.actions.col.id">Action id</th><th scope="col" data-i18n="d.actions.col.does">What it does</th></tr></thead>
+<tbody>
+<tr><td><code>open.terminal</code></td><td data-i18n="doc.actions.terminal">Opens the folder in your terminal.</td></tr>
+<tr><td><code>open.editor</code></td><td data-i18n="doc.actions.editor">Opens the folder or the file in your editor.</td></tr>
+<tr><td><code>open.app.&lt;app&gt;</code></td><td data-i18n="doc.actions.app">Opens the selection in that app. <code>rh apps</code> lists the apps.</td></tr>
+<tr><td><code>agent.claude</code></td><td data-i18n="doc.actions.agent">Starts Claude Code in the folder, in your login shell.</td></tr>
+<tr><td><code>preset.review</code></td><td data-i18n="doc.actions.preset">Starts an agent with the Review prompt and the selected files.</td></tr>
+<tr><td><code>copy-path.git-relative</code></td><td data-i18n="doc.actions.copy">Copies the path from the git root. The other forms are: full, from your home, file name, shell-escaped, and <code>@path</code>.</td></tr>
+<tr><td><code>new-file.md</code></td><td data-i18n="doc.actions.newfile">Makes an empty Markdown file. Then Finder shows it, or an app opens it.</td></tr>
+<tr><td><code>reveal</code></td><td data-i18n="doc.actions.reveal">Selects the items in Finder.</td></tr>
+</tbody>
+</table>
+</div>
+<p data-i18n="doc.actions.p2">Add <code>--dry-run --json</code> to <code>rh run</code> to see what an action would do, without doing it:</p>
+<pre><code>rh run agent.claude --dry-run --json</code></pre>
+</section>
+
+<section id="config" aria-labelledby="config-h">
+<h2 id="config-h" data-i18n="d.config.title">Configure</h2>
+<p data-i18n="doc.config.p1">Right Here keeps its settings in one TOML file, <code>~/.config/right-here/config.toml</code>. <code>rh setup</code> makes it from what is installed. After that, Right Here changes only what you ask for, and keeps your comments. An example:</p>
+<pre><code>[general]
+terminal = "ghostty"
+terminal_placement = "tab"           # a new tab in the front Ghostty window
+editor = "vscode"
+agents = ["claude", "codex", "lazygit"]   # what the menu offers, in order
+
+[menu]                               # this is the default
+items = ["open-terminal", "open-editor", "open-with", "agents", "agents-more", "-", "new-file", "copy-path"]
+
+[new_file]
+then = "open"
+
+[[new_file.template]]
+id = "md"
+title = "Markdown Document"
+extension = "md"
+open_with = "typora"
+
+[agent.claude]
+command = "claude --model opus"      # what is typed into the shell
+
+[agent.lazygit]                      # any command works like an agent
+name = "lazygit"
+command = "lazygit"</code></pre>
+<p data-i18n="doc.config.how">You can change a setting in three ways:</p>
+<ul>
+<li data-i18n="doc.config.how1">In the setup window. Each page changes the config file, and Undo takes a change back.</li>
+<li data-i18n="doc.config.how2">With <code>rh config</code>, one setting at a time: <code>rh config set general.terminal ghostty</code>, <code>rh config add menu.items open.app.zed --at 3</code>, <code>rh config move menu.items agents --to first</code>. <code>rh config undo</code> takes the last change back.</li>
+<li data-i18n="doc.config.how3">In a text editor. <code>rh config path</code> says where the file is.</li>
+</ul>
+<p data-i18n="doc.config.check"><code>rh config validate</code> checks the file and suggests a fix for a typo. <code>--strict</code> also fails on a warning. <code>rh docs config</code> lists every setting with its default. <code>rh config schema</code> prints a JSON Schema for your editor.</p>
+<p data-i18n="doc.config.bypass">Agents keep their permission prompts. If you set <code>bypass_permissions = true</code> under <code>[general]</code>, or under <code>[agent.&lt;id&gt;]</code> for one agent, the agents start without them. The default is off. <code>rh agents</code>, <code>rh doctor</code> and <code>rh menu --explain</code> say when it is on. A preset always keeps the prompts.</p>
+<h3 id="launcher" data-i18n="d.agentapp.title">Terminal command or desktop app</h3>
+<p data-i18n="doc.agentapp.p1">Claude Code and Codex are command-line tools and desktop apps. Claude Code Here and Codex Here type the command into a terminal. Claude Code in Desktop App and Codex in Desktop App open the desktop app on the folder. These two are in More Agent Options.</p>
+<p data-i18n="doc.agentapp.p2b">To make Claude Code Here or Codex Here open the desktop app, set <code>launcher = "desktop"</code> under <code>[agent.claude]</code> or <code>[agent.codex]</code>. The value can also be <code>terminal</code> (the default) or <code>link</code> (the agent's own link to a terminal).</p>
+<pre><code>[agent.claude]
+launcher = "desktop"      # the agent's main menu entry opens the desktop app on the folder
+
+[agent.codex]
+launcher = "terminal"     # the default: the command is typed into a terminal</code></pre>
+</section>
+
+<section id="presets" aria-labelledby="presets-h">
+<h2 id="presets-h" data-i18n="d.presets.title">Agent presets</h2>
+<p data-i18n="doc.presets.p1">A preset is a prompt that Right Here sends to an agent with the files that you selected. Three presets are built in: Review, Explain and Write Tests. Write Tests proposes a plan for tests. The presets are in More Agent Options › Agent Presets.</p>
+<p data-i18n="doc.presets.p2">A preset types the command of the agent and the prompt into a terminal. The agent starts to work on the prompt at once.</p>
+<p data-i18n="doc.presets.p3">Add your own preset with <code>[[preset]]</code> in the config. A preset with the id of a built-in one replaces it.</p>
+<pre><code>[[preset]]
+id = "lint"
+title = "Check Style"
+agent = "claude"          # optional: the first agent in general.agents when left out
+prompt = "Check {files} for style problems. Do not modify any files."
+max_files = 10            # optional: 1 to 50, default 20
+
+[agent.mytool]            # another agent: how its command takes a first prompt
+name = "My Tool"
+command = "mytool"
+prompt_arg = "--prompt"   # or "positional"</code></pre>
+<ul>
+<li data-i18n="doc.presets.v1"><code>{files}</code> is the selected files, as <code>@</code> mentions from the folder.</li>
+<li data-i18n="doc.presets.v2"><code>{folder}</code> is the name of the folder.</li>
+<li data-i18n="doc.presets.v3"><code>{name}</code> is the name of the first selected item.</li>
+</ul>
+<p data-i18n="doc.presets.p5b">The agent must take a first prompt as an argument. Claude Code, Codex, Antigravity, Gemini CLI, GitHub Copilot, Cursor CLI, Qwen Code, Factory Droid and Kiro CLI do. For another agent, set <code>prompt_arg</code> in its <code>[agent.&lt;id&gt;]</code> table to <code>"positional"</code>, or to the flag that carries the prompt. Right Here offers no preset for an agent that cannot take a prompt.</p>
+<p data-i18n="doc.presets.p6">A preset with <code>{files}</code> needs selected files, not folders, and at most <code>max_files</code> of them. If not, the menu leaves it out, or <code>rh</code> refuses it and says why. A prompt cannot contain a line break, another control character or a backslash, and it cannot start with a dash.</p>
+<p data-i18n="doc.presets.p7">The built-in prompts ask the agent not to change files. The agent and its permission settings decide whether it obeys. The prompt contains the file names, and it goes to the agent before you read it. So use presets in folders that you trust.</p>
+<p class="beta" data-i18n="doc.presets.beta">Beta: tests plan each preset and send unusual file names through real shells. Not tried yet: a preset in a real terminal.</p>
+</section>
+
+<section id="shortcuts" aria-labelledby="shortcuts-h">
+<h2 id="shortcuts-h" data-i18n="d.shortcuts.title">Shortcuts and Spotlight</h2>
+<p data-i18n="doc.shortcuts.p1">Four actions also run from the Shortcuts app, Siri and Spotlight, without the Finder extension: Open in Terminal, Start AI Agent, Create New File and Copy Path.</p>
+<p data-i18n="doc.shortcuts.p2b">Each one starts the <code>rh</code> that is inside the app, with a list of arguments, and stops it after 60 seconds. You choose the folder or the item as a file, or pick one of your pinned or recent folders from a list. You choose the agent and the file template from lists. There is no field for a command of your own.</p>
+<p data-i18n="doc.shortcuts.p3">These are the English phrases for Siri and Spotlight. The app has them in 30 languages.</p>
+<ul class="phrases" lang="en" dir="ltr">
+<li>Open in terminal with Right Here</li>
+<li>Start an agent with Right Here</li>
+<li>Create a new file with Right Here</li>
+<li>Copy a path with Right Here</li>
+</ul>
+<p class="beta" data-i18n="doc.shortcuts.beta">Beta: the app contains the four actions and their phrases, and tests cover the command that they make. Not tried yet: the actions in Shortcuts and in Spotlight.</p>
+</section>
+
+<section id="sync" aria-labelledby="sync-h">
+<h2 id="sync-h" data-i18n="doc.sync.title">Use one config on several Macs</h2>
+<p data-i18n="doc.sync.p1">Keep the shared settings in <code>config.toml</code>, and what differs on each Mac in <code>config.local.toml</code>. Then copy <code>config.toml</code> through a folder. <code>rh docs sync</code> has the full guide.</p>
+<h3 data-i18n="doc.sync.h1">Settings for this Mac only</h3>
+<p data-i18n="doc.sync.p2"><code>config.local.toml</code> is next to <code>config.toml</code>. <code>rh</code> and the Finder menu read both. Right Here never syncs <code>config.local.toml</code>.</p>
+<ul>
+<li data-i18n="doc.sync.r1">A setting in it replaces the shared setting.</li>
+<li data-i18n="doc.sync.r2">A list replaces the shared list as a whole.</li>
+<li data-i18n="doc.sync.r3">An entry with an id (<code>[[app]]</code>, <code>[[preset]]</code>, <code>[[new_file.template]]</code>, <code>[[agent.&lt;id&gt;.variant]]</code>) replaces the shared entry with that id, or adds a new one.</li>
+<li data-i18n="doc.sync.r4"><code>[agent.&lt;id&gt;]</code> merges one key at a time.</li>
+<li data-i18n="doc.sync.r5"><code>disabled = ["id", ...]</code> removes apps, templates and agents on this Mac, also the built-in apps.</li>
+</ul>
+<p data-i18n="doc.sync.example">For example, a work laptop without Codex, with Terminal as its default terminal:</p>
+<pre><code># config.local.toml: this Mac has no Codex and uses another default terminal
+disabled = ["codex"]
+
+[general]
+terminal = "terminal"</code></pre>
+<h3 data-i18n="doc.sync.h2">Sync through a folder</h3>
+<p data-i18n="doc.sync.p3">Right Here copies the config, and does not link it. The Finder extension is sandboxed and can read only its own config folder. Also, iCloud can replace a file that it did not download with a placeholder. So each Mac keeps an ordinary file, and <code>rh config sync</code> copies it to and from a folder that you choose.</p>
+<pre><code>rh config sync enable                     # choose the folder (default: iCloud Drive, folder "Right Here")
+rh config sync enable --folder ~/Sync/rh  # any folder works: Dropbox, a git checkout, a network share
+rh config sync push                       # send this Mac's config to the folder
+rh config sync pull                       # take the folder's config (refused, with a list, if it adds programs)
+rh config sync pull --allow-commands      # take it although it adds or changes terminal templates or agent commands
+rh config sync status                     # in-sync, local-ahead, remote-ahead, diverged, remote-missing or remote-evicted
+rh config sync disable                    # forget the folder; both copies stay</code></pre>
+<p data-i18n="doc.sync.p4">On a second Mac, run <code>rh config sync enable</code> and then <code>rh config sync pull</code>.</p>
+<ul>
+<li data-i18n="doc.sync.rule1"><code>pull</code> refuses if this Mac's config changed since the last sync. <code>push</code> refuses if the copy in the folder changed. <code>--force</code> replaces the file anyway, and saves the old one first.</li>
+<li data-i18n="doc.sync.rule2">Both refuse a config that is not valid, is larger than 1 MiB, or has key names that look like secrets.</li>
+<li data-i18n="doc.sync.rule3"><code>pull</code> waits while somebody else changes the config, in the window, with <code>rh config</code> or through an assistant.</li>
+<li data-i18n="doc.sync.rule4">Right Here never overwrites a copy that iCloud did not download. Each write is atomic, and nothing is deleted.</li>
+</ul>
+<h3 data-i18n="doc.sync.h3">Programs in a synced config</h3>
+<p data-i18n="doc.sync.p8">Other Macs, a sync service or a shared drive can write the folder. So a config from the folder cannot add a program by itself. <code>pull</code> stops and lists the change if the copy adds or changes one of these:</p>
+<ul>
+<li data-i18n="doc.sync.c1">a terminal template, or the role of a terminal app</li>
+<li data-i18n="doc.sync.c2">a terminal that starts through a template, where Right Here uses it</li>
+<li data-i18n="doc.sync.c3">the <code>command</code>, <code>args</code>, <code>prompt_arg</code>, start options, <code>bypass_permissions</code> or <code>bypass_permission_arg</code> of an agent</li>
+<li data-i18n="doc.sync.c4">an agent in the menu or in the Quick Actions that starts without its permission prompts</li>
+<li data-i18n="doc.sync.c5">the contents of a New File template</li>
+</ul>
+<p data-i18n="doc.sync.p9">Read the list. If the changes are yours, run <code>rh config sync pull --allow-commands</code>. <code>rh config sync status</code> shows the same list before you pull. A first pull on a new Mac asks only about programs of your own, not about the built-in apps and agents.</p>
+<p data-i18n="doc.sync.p6">A dotfiles manager can keep <code>config.toml</code> as a link. <code>rh</code> follows the link, but the Finder extension may not, so copy the file instead. A git repository can be the sync folder: commit there.</p>
+<p class="beta" data-i18n="doc.sync.beta">Beta: tests use temporary folders and fake file systems. Not tried yet: real iCloud Drive.</p>
+</section>
+
+<section id="terminals" aria-labelledby="terminals-h">
+<h2 id="terminals-h" data-i18n="d.terminals.title">Supported terminals</h2>
+<p data-i18n="doc.terminals.p1b">Right Here has built-in support for six terminals: Ghostty, Terminal, iTerm2, WezTerm, kitty and Alacritty. Each one opens a folder, and starts an agent or a preset in it. Ghostty and Terminal were tried on a real Mac. The others were not, and <code>rh doctor --probe-launch</code> checks yours.</p>
+<div class="tablewrap">
+<table>
+<thead><tr><th scope="col" data-i18n="d.terminals.col.terminal">Terminal</th><th scope="col" data-i18n="d.terminals.col.notes">Notes</th></tr></thead>
+<tbody>
+<tr><td>Ghostty</td><td data-i18n="doc.terminals.ghostty">A new window. With <code>terminal_placement = "tab"</code>, a new tab. A command needs Ghostty 1.3 or later.</td></tr>
+<tr><td>Terminal</td><td data-i18n="doc.terminals.terminal">A new window. It cannot start an agent in a folder whose name contains a backslash.</td></tr>
+<tr><td>iTerm2</td><td data-i18n="doc.terminals.iterm">A new window, a tab or a split. It needs iTerm2 3.0 or later. Not tried yet.</td></tr>
+<tr><td>WezTerm</td><td data-i18n="doc.terminals.wezterm">A new window. Not tried yet.</td></tr>
+<tr><td>kitty</td><td data-i18n="doc.terminals.kitty">A new window. kitty quits with its last window. Not tried yet.</td></tr>
+<tr><td>Alacritty</td><td data-i18n="doc.terminals.alacritty">A new window. Not tried yet.</td></tr>
+<tr><td>Warp</td><td data-i18n="doc.terminals.warp">A new window. With <code>terminal_placement = "tab"</code>, a new tab. Not tried yet. To start agents in it, add it to the config as below.</td></tr>
+<tr><td>cmux</td><td data-i18n="doc.terminals.folderonly">It opens the folder. To start agents in it, add it to the config as below.</td></tr>
+</tbody>
+</table>
+</div>
+<p data-i18n="doc.terminals.p3">You can add any terminal with an <code>[[app]]</code> entry that has <code>role = "terminal"</code>:</p>
+<ul>
+<li data-i18n="doc.terminals.a1"><code>open_args</code> says how to open a folder.</li>
+<li data-i18n="doc.terminals.a2"><code>run_args</code> says how to start a typed command. It must contain <code>{command}</code>.</li>
+<li data-i18n="doc.terminals.a3">Both are lists of arguments, and can use <code>{dir}</code>, <code>{shell}</code> and <code>{app}</code>.</li>
+<li data-i18n="doc.terminals.a4">Start the terminal through <code>/usr/bin/open -n -b &lt;bundle id&gt; --args</code>, so that <code>rh run</code> does not wait for the window to close.</li>
+</ul>
+<p data-i18n="doc.terminals.p4">This entry for Alacritty is an example. It replaces the built-in entry, so <code>rh config validate</code> warns about it:</p>
+<pre><code>[[app]]
+id = "alacritty"
+name = "Alacritty"
+bundle_id = "org.alacritty"
+role = "terminal"
+open_args = ["/usr/bin/open", "-n", "-b", "org.alacritty", "--args", "--working-directory", "{dir}"]
+run_args = ["/usr/bin/open", "-n", "-b", "org.alacritty", "--args", "--working-directory", "{dir}", "-e", "{shell}", "-lic", "{command}; exec {shell} -l"]</code></pre>
+<p data-i18n="doc.terminals.p5">Termius is not offered. It is an SSH client, and it cannot start a local shell in a folder.</p>
+</section>
+
+<section id="mcp" aria-labelledby="mcp-h">
+<h2 id="mcp-h" data-i18n="doc.mcp.title">AI assistants and MCP</h2>
+<p data-i18n="doc.mcp.p0">MCP, the Model Context Protocol, is the way that AI apps use tools. <code>rh mcp</code> is an MCP server.</p>
+<p data-i18n="doc.mcp.p1">Add the MCP server to Claude Code:</p>
+<pre><code>claude mcp add right-here -- rh mcp</code></pre>
+<p data-i18n="doc.mcp.p2"><code>rh</code> must be on the <code>PATH</code> of the client. An app that starts from the Dock does not get your <code>PATH</code>, so give it the full path of <code>rh</code>. Copy MCP Configuration, on the AI Assistants page of the app, writes it for you.</p>
+<p data-i18n="doc.mcp.p3">Or install the Claude Code plugin, and start a new session:</p>
+<pre><code>/plugin marketplace add boyugou/right-here
+/plugin install right-here@right-here</code></pre>
+<p data-i18n="doc.mcp.p4">The plugin adds three skills: set Right Here up, open a folder, and show in Finder the files that the agent changed.</p>
+<p data-i18n="doc.mcp.p5">An assistant cannot change by itself which program a click starts, or turn off the permission prompts of an agent. It proposes the change. You apply it on the Config page of the app, or with <code>rh config pending</code>.</p>
+<p data-i18n="doc.mcp.p6">The tools mark names and paths as data. A terminal only gets folders.</p>
+</section>
+
+<section id="troubleshooting" aria-labelledby="trouble-h">
+<h2 id="trouble-h" data-i18n="d.trouble.title">Troubleshooting</h2>
+<p data-i18n="doc.trouble.p1">Start with <code>rh doctor</code>. Each check says what is wrong and what to do.</p>
+<ul>
+<li data-i18n="doc.trouble.json"><code>rh doctor --json</code> gives the same checks to scripts and AI assistants.</li>
+<li data-i18n="doc.trouble.probe"><code>rh doctor --probe-launch</code> tests the whole path of a click. A terminal window opens and closes.</li>
+<li data-i18n="doc.trouble.report">To report a bug, send the output of <code>rh doctor --report</code>. Do not send <code>--json</code>, because it contains the names and paths of your config.</li>
+<li data-i18n="doc.trouble.lang2">The setup window shows the same checks in its own language. <code>rh doctor</code> and the MCP tool use English.</li>
+</ul>
+<h3 data-i18n="doc.t1.title">The Finder menu does not show</h3>
+<ul>
+<li data-i18n="doc.t1.a">If the extension is off, turn on Right Here in System Settings › General › Login Items &amp; Extensions › Finder. Or run <code>rh install --finder</code>.</li>
+<li data-i18n="doc.t1.b">In iCloud Drive, Finder shows no extension menus. Use right-click › Quick Actions there.</li>
+<li data-i18n="doc.t1.c">After a macOS update or a new copy of the app, run <code>rh setup</code>. It registers the extension again.</li>
+<li data-i18n="doc.t1.d">If two copies of Right Here.app are on the Mac, macOS registers neither. Move every copy except the one in Applications to the Trash. Then run <code>rh setup</code> again.</li>
+<li data-i18n="doc.t1.e">If <code>rh doctor</code> says that the extension crashed, attach the crash report that it names to a bug report.</li>
+</ul>
+<h3 data-i18n="d.t2.title">I click an item and nothing happens</h3>
+<ul>
+<li data-i18n="doc.t2.a"><code>rh doctor</code> shows the line "Last action started from Finder". If it says "none yet" after your click, the click did not reach <code>rh</code>.</li>
+<li data-i18n="doc.t2.b">A failed action shows an alert, and writes a line to <code>~/Library/Logs/right-here/rh.log</code>.</li>
+<li data-i18n="doc.t2.c">Run the action from a terminal with <code>--dry-run</code> to see what it would do.</li>
+</ul>
+<h3 data-i18n="d.t3.title">macOS asks whether Right Here may control the terminal</h3>
+<p data-i18n="doc.t3.body">This is the Automation permission. macOS asks it once for each terminal. Choose Allow. If you chose Don't Allow, turn it on in System Settings › Privacy &amp; Security › Automation.</p>
+<h3 data-i18n="d.t4.title">An action says macOS did not let Right Here look at a folder</h3>
+<p data-i18n="doc.t4.body">Desktop, Documents, Downloads and iCloud Drive are protected, and macOS asks once. Choose Allow, and run the action again. Right Here stops on purpose. It never starts a terminal in another folder instead.</p>
+<h3 data-i18n="d.t5.title">An agent says “not found”, or starts without my aliases</h3>
+<ul>
+<li data-i18n="doc.t5.a">Right Here types the command of the agent into your login shell. So the agent sees what a new terminal window sees: nvm, your <code>PATH</code> and your aliases.</li>
+<li data-i18n="doc.t5.b"><code>rh agents</code> shows which agent commands your login shell finds.</li>
+<li data-i18n="doc.t5.c">If <code>rh doctor</code> says that your login shell "did not say whether it is installed", a startup file exits or is slow. <code>exec tmux</code> is a usual cause. Start tmux only when a terminal is attached, and look again.</li>
+</ul>
+<h3 data-i18n="d.t6.title">The agent opens in a window and I want a tab</h3>
+<p data-i18n="doc.t6.body">Set <code>terminal_placement = "tab"</code>, <code>"split-right"</code> or <code>"split-down"</code> under <code>[general]</code>. This works in Ghostty and iTerm2.</p>
+<h3 data-i18n="d.t7.title">Quick Actions are missing or out of date</h3>
+<p data-i18n="doc.t7.body2"><code>rh install --services</code> makes them again from the config. A change in the setup window updates them at once. After a change in the config file or with <code>rh config</code>, press Install or Repair, or run that command.</p>
+<h3 data-i18n="d.t8.title">The config has a mistake</h3>
+<p data-i18n="doc.t8.body"><code>rh config validate --strict</code> lists each problem. For a typo, it suggests the likely word.</p>
+<h3 data-i18n="doc.t10.title"><code>rh config sync pull</code> does not take the copy</h3>
+<p data-i18n="doc.t10.body">The message says why, and nothing changed. The usual reasons:</p>
+<ul>
+<li data-i18n="doc.t10.a">The copy adds or changes a program. Read the list. Then run <code>rh config sync pull --allow-commands</code>.</li>
+<li data-i18n="doc.t10.b">This Mac's config changed since the last sync. Run <code>rh config sync status</code>. Then <code>rh config sync push</code> sends your file, or <code>rh config sync pull --force</code> replaces it. The old file is saved first.</li>
+<li data-i18n="doc.t10.c">iCloud keeps the copy online only. Open the folder in Finder and let the file download.</li>
+<li data-i18n="doc.t10.d">Another change of the config is in progress. Wait for it, and run <code>pull</code> again.</li>
+</ul>
+<h3 data-i18n="doc.t9.title">Remove Right Here</h3>
+<p data-i18n="doc.t9.body"><code>rh uninstall</code> removes the runner script, the Quick Actions, the command link and the registration of the extension. It keeps your config. Then delete Right Here.app.</p>
+</section>
+</div>
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<span data-i18n="footer.license2">Apache-2.0 licensed. Open source.</span>
+<nav>
+<a href="docs.html" data-keep-lang data-i18n="footer.docs">Documentation</a>
+<a href="privacy.html" data-keep-lang data-i18n="footer.privacy">Privacy</a>
+<a href="https://github.com/boyugou/right-here/security/policy" rel="noopener" data-i18n="footer.security">Security</a>
+<a href="https://github.com/boyugou/right-here" rel="noopener" data-i18n="footer.source">Source</a>
+<a href="https://github.com/boyugou/right-here/blob/main/ROADMAP.md" rel="noopener" data-i18n="footer.roadmap">Roadmap</a>
+<a href="#top" data-i18n="footer.top">Back to top</a>
+</nav>
+</div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://boyugou.github.io/right-here/sitemap.xml

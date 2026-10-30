@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found · Right Here</title>
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<style>
+  :root { color-scheme: light dark; --bg: #fbfbfd; --text: #1d1d1f; --muted: #55555e; --accent: #0a62c9; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #101014; --text: #f2f2f5; --muted: #a9a9b5; --accent: #6cb4ff; } }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 32rem; }
+  h1 { font-size: 2rem; margin: 0 0 0.5rem; }
+  p { color: var(--muted); margin: 0 0 1.5rem; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Page not found</h1>
+<p>There is no page at this address.</p>
+<!-- tools/set_base_url.py makes this link absolute: a 404 page is served from any depth. -->
+<a href="https://boyugou.github.io/right-here/" data-abs="" rel="noopener">Back to Right Here</a>
+</main>
+</body>
+</html>

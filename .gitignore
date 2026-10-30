@@ -1,0 +1,10 @@
+.DS_Store
+.build/
+.swiftpm/
+Apps/
+RightHere.xcodeproj/
+dist/
+script/
+Sources/
+Tests/
+Package.resolved

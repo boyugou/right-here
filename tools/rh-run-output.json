@@ -1,0 +1,296 @@
+{
+  "open.terminal": {
+    "summary": "Open Sources in Ghostty",
+    "steps": [
+      {
+        "kind": "open",
+        "opens": [
+          "Sources"
+        ]
+      }
+    ]
+  },
+  "open.editor": {
+    "summary": "Open main.swift in Visual Studio Code",
+    "steps": [
+      {
+        "kind": "open",
+        "opens": [
+          "main.swift"
+        ]
+      }
+    ]
+  },
+  "open.terminal@terminal": {
+    "summary": "Open Sources in Terminal",
+    "steps": [
+      {
+        "kind": "open",
+        "opens": [
+          "Sources"
+        ]
+      }
+    ]
+  },
+  "open.app.antigravity": {
+    "summary": "Open main.swift in Antigravity",
+    "steps": [
+      {
+        "kind": "open",
+        "opens": [
+          "main.swift"
+        ]
+      }
+    ]
+  },
+  "open.app.xcode": {
+    "summary": "Open main.swift in Xcode",
+    "steps": [
+      {
+        "kind": "open",
+        "opens": [
+          "main.swift"
+        ]
+      }
+    ]
+  },
+  "open.app.typora": {
+    "summary": "Open main.swift in Typora",
+    "steps": [
+      {
+        "kind": "open",
+        "opens": [
+          "main.swift"
+        ]
+      }
+    ]
+  },
+  "open.app.textedit": {
+    "summary": "Open main.swift in TextEdit",
+    "steps": [
+      {
+        "kind": "open",
+        "opens": [
+          "main.swift"
+        ]
+      }
+    ]
+  },
+  "agent.claude": {
+    "summary": "Run claude in Sources with Ghostty",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Ghostty",
+        "types": "claude"
+      }
+    ]
+  },
+  "agent.codex": {
+    "summary": "Run codex in Sources with Ghostty",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Ghostty",
+        "types": "codex"
+      }
+    ]
+  },
+  "agent.claude.continue": {
+    "summary": "Run claude --continue in Sources with Ghostty",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Ghostty",
+        "types": "claude --continue"
+      }
+    ]
+  },
+  "agent.claude.resume": {
+    "summary": "Run claude --resume in Sources with Ghostty",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Ghostty",
+        "types": "claude --resume"
+      }
+    ]
+  },
+  "agent.claude@desktop": {
+    "summary": "Open Claude Code desktop in Sources",
+    "steps": [
+      {
+        "kind": "openURL",
+        "url": "claude://code/new"
+      }
+    ]
+  },
+  "agent.claude@link": {
+    "summary": "Open Claude Code in Sources",
+    "steps": [
+      {
+        "kind": "openURL",
+        "url": "claude-cli://open"
+      }
+    ]
+  },
+  "agent.claude@terminal": {
+    "summary": "Run claude in Sources with Terminal",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Terminal",
+        "types": "cd '/Users/you/code/My App/Sources' && claude"
+      }
+    ]
+  },
+  "agent.codex.last": {
+    "summary": "Run codex resume --last in Sources with Ghostty",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Ghostty",
+        "types": "codex resume --last"
+      }
+    ]
+  },
+  "agent.codex.resume": {
+    "summary": "Run codex resume in Sources with Ghostty",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Ghostty",
+        "types": "codex resume"
+      }
+    ]
+  },
+  "agent.codex@desktop": {
+    "summary": "Open Codex desktop in Sources",
+    "steps": [
+      {
+        "kind": "openURL",
+        "url": "codex://threads/new"
+      }
+    ]
+  },
+  "agent.codex@terminal": {
+    "summary": "Run codex in Sources with Terminal",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Terminal",
+        "types": "cd '/Users/you/code/My App/Sources' && codex"
+      }
+    ]
+  },
+  "preset.review": {
+    "summary": "Run claude with preset review in Sources with Ghostty",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Ghostty",
+        "types": "claude 'Review @main.swift for bugs, unclear code and risky changes. Do not modify any files; reply with your findings, most serious first.'"
+      }
+    ]
+  },
+  "preset.explain": {
+    "summary": "Run claude with preset explain in Sources with Ghostty",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Ghostty",
+        "types": "claude 'Explain what @main.swift does and how it fits into the rest of Sources. Do not modify any files.'"
+      }
+    ]
+  },
+  "preset.tests": {
+    "summary": "Run claude with preset tests in Sources with Ghostty",
+    "steps": [
+      {
+        "kind": "appleScript",
+        "app": "Ghostty",
+        "types": "claude 'Read @main.swift and propose a test plan: the behaviors and edge cases that need tests, and where the tests would live. Write the plan only; do not create or modify any files.'"
+      }
+    ]
+  },
+  "new-file.txt": {
+    "summary": "Create untitled.txt",
+    "steps": [
+      {
+        "kind": "createFile",
+        "file": "untitled.txt"
+      },
+      {
+        "kind": "reveal",
+        "file": "untitled.txt"
+      }
+    ]
+  },
+  "new-file.md": {
+    "summary": "Create untitled.md",
+    "steps": [
+      {
+        "kind": "createFile",
+        "file": "untitled.md"
+      },
+      {
+        "kind": "reveal",
+        "file": "untitled.md"
+      }
+    ]
+  },
+  "copy-path.absolute": {
+    "summary": "Copy path (absolute)",
+    "steps": [
+      {
+        "kind": "copyToPasteboard",
+        "copies": "/Users/you/code/My App/Sources/main.swift"
+      }
+    ]
+  },
+  "copy-path.tilde": {
+    "summary": "Copy path (tilde)",
+    "steps": [
+      {
+        "kind": "copyToPasteboard",
+        "copies": "~/code/My App/Sources/main.swift"
+      }
+    ]
+  },
+  "copy-path.git-relative": {
+    "summary": "Copy path (git-relative)",
+    "steps": [
+      {
+        "kind": "copyToPasteboard",
+        "copies": "Sources/main.swift"
+      }
+    ]
+  },
+  "copy-path.name": {
+    "summary": "Copy path (name)",
+    "steps": [
+      {
+        "kind": "copyToPasteboard",
+        "copies": "main.swift"
+      }
+    ]
+  },
+  "copy-path.shell-escaped": {
+    "summary": "Copy path (shell-escaped)",
+    "steps": [
+      {
+        "kind": "copyToPasteboard",
+        "copies": "/Users/you/code/My\\ App/Sources/main.swift"
+      }
+    ]
+  },
+  "copy-path.ai-mention": {
+    "summary": "Copy path (ai-mention)",
+    "steps": [
+      {
+        "kind": "copyToPasteboard",
+        "copies": "@Sources/main.swift"
+      }
+    ]
+  }
+}

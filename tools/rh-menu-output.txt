@@ -1,0 +1,39 @@
+Menu for 1 selected item (items): main.swift:
+Open in Ghostty    (open.terminal)
+Open in Visual Studio Code    (open.editor)
+Open With >
+  Terminal    (open.terminal@terminal)
+  -----
+  Antigravity    (open.app.antigravity)
+  Xcode    (open.app.xcode)
+  Typora    (open.app.typora)
+  TextEdit    (open.app.textedit)
+Claude Code Here    (agent.claude)
+Codex Here    (agent.codex)
+More Agent Options >
+  Claude Code: Continue Last Session    (agent.claude.continue)
+  Claude Code: Resume a Session…    (agent.claude.resume)
+  Claude Code in Desktop App    (agent.claude@desktop)
+  Claude Code in Last-Used Terminal    (agent.claude@link)
+  Claude Code in Terminal    (agent.claude@terminal)
+  -----
+  Codex: Continue Last Session    (agent.codex.last)
+  Codex: Resume a Session…    (agent.codex.resume)
+  Codex in Desktop App    (agent.codex@desktop)
+  Codex in Terminal    (agent.codex@terminal)
+  -----
+  Agent Presets >
+    Review    (preset.review)
+    Explain    (preset.explain)
+    Write Tests    (preset.tests)
+-----
+New File >
+  Text Document    (new-file.txt)
+  Markdown Document    (new-file.md)
+Copy Path >
+  Full Path    (copy-path.absolute)
+  Path from Home (~)    (copy-path.tilde)
+  Path from Git Root    (copy-path.git-relative)
+  File Name    (copy-path.name)
+  Shell-Escaped Path    (copy-path.shell-escaped)
+  @ Mention for AI    (copy-path.ai-mention)

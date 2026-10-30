@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" width="760" height="430" role="img" aria-labelledby="demo-title">
+<title id="demo-title">A right-click on the folder app opens the Right Here menu. Choosing Claude Code Here opens a terminal in that folder and types claude.</title>
+<style>
+  :root { --desk-a: #e8edf5; --desk-b: #dce3ef; --win: #ffffff; --side: #f3f4f7; --bar: #ececf0; --line: #d4d6de; --ink: #1d1d1f;
+          --muted: #6e6e78; --sel: #0a62c9; --sel-ink: #ffffff; --folder: #5aa7f0; --folder-tab: #3f8fdc; --term: #1e1f26;
+          --term-bar: #2b2c35; --term-ink: #e8e8ee; --prompt: #7ad19a; --shadow: rgba(20, 30, 60, 0.18); }
+  @media (prefers-color-scheme: dark) {
+    :root { --desk-a: #1c2130; --desk-b: #141824; --win: #24252c; --side: #2b2c33; --bar: #303139; --line: #3d3e48; --ink: #f2f2f5;
+            --muted: #a3a3ae; --sel: #3d8ef0; --sel-ink: #ffffff; --folder: #4b97e3; --folder-tab: #3a80cc; --term: #121318;
+            --term-bar: #24252d; --term-ink: #e8e8ee; --prompt: #7ad19a; --shadow: rgba(0, 0, 0, 0.45); }
+  }
+  text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; fill: var(--ink); }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .muted { fill: var(--muted); }
+  .win { fill: var(--win); stroke: var(--line); }
+  .bar { fill: var(--bar); }
+  .side { fill: var(--side); }
+  .sep { stroke: var(--line); }
+  .folder { fill: var(--folder); }
+  .folder-tab { fill: var(--folder-tab); }
+
+  /* One loop of eight seconds. With motion reduced, every part keeps its base style: the menu with
+     Claude Code Here chosen, and the terminal with the command typed, which tells the same story. */
+  .cursor { transform: translate(300px, 232px); animation: cursor 8s ease-in-out infinite; }
+  .pick { animation: pick 8s linear infinite; }
+  .menu { animation: menu 8s linear infinite; }
+  .hover { animation: hover 8s linear infinite; }
+  .term { animation: term 8s ease-out infinite; }
+  .typed { animation: typed 8s steps(6, end) infinite; }
+  .caret { animation: caret 1s steps(2, start) infinite; }
+  @keyframes cursor {
+    0% { transform: translate(640px, 400px); opacity: 0; }
+    2% { transform: translate(640px, 400px); opacity: 1; }
+    9% { transform: translate(206px, 146px); }
+    11% { transform: translate(206px, 146px) scale(0.86); }
+    13% { transform: translate(206px, 146px) scale(1); }
+    16% { transform: translate(206px, 146px); }
+    24% { transform: translate(300px, 232px); }
+    29% { transform: translate(300px, 232px) scale(0.86); }
+    31% { transform: translate(300px, 232px) scale(1); opacity: 1; }
+    88% { transform: translate(300px, 232px); opacity: 1; }
+    93%, 100% { transform: translate(300px, 232px); opacity: 0; }
+  }
+  @keyframes pick { 0%, 10% { opacity: 0; } 11%, 33% { opacity: 1; } 35%, 100% { opacity: 0; } }
+  @keyframes menu { 0%, 12% { opacity: 0; } 14%, 31% { opacity: 1; } 34%, 100% { opacity: 0; } }
+  @keyframes hover { 0%, 23% { opacity: 0; } 24%, 100% { opacity: 1; } }
+  @keyframes term {
+    0%, 33% { opacity: 0; transform: translateY(10px); }
+    38%, 88% { opacity: 1; transform: translateY(0); }
+    93%, 100% { opacity: 0; transform: translateY(0); }
+  }
+  @keyframes typed { 0%, 40% { clip-path: inset(0 100% 0 0); } 47%, 100% { clip-path: inset(0 0 0 0); } }
+  @keyframes caret { to { opacity: 0; } }
+  .cursor, .pick, .menu, .hover, .term, .typed, .caret { animation: none; }
+</style>
+<defs>
+  <linearGradient id="desk" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" style="stop-color: var(--desk-a)"/>
+    <stop offset="1" style="stop-color: var(--desk-b)"/>
+  </linearGradient>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+    <feDropShadow dx="0" dy="6" stdDeviation="9" style="flood-color: var(--shadow)"/>
+  </filter>
+  <g id="folder-icon">
+    <path class="folder-tab" d="M0 6 a4 4 0 0 1 4 -4 h13 l5 5 h22 a4 4 0 0 1 4 4 v4 h-48 z"/>
+    <rect class="folder" x="0" y="11" width="48" height="31" rx="4"/>
+  </g>
+</defs>
+
+<rect width="760" height="430" rx="16" fill="url(#desk)"/>
+
+<!-- Finder window -->
+<g filter="url(#shadow)">
+  <rect class="win" x="24" y="34" width="400" height="300" rx="11"/>
+</g>
+<path class="bar" d="M35 34.5 h378 a10.5 10.5 0 0 1 10.5 10.5 v20 h-399 v-20 a10.5 10.5 0 0 1 10.5 -10.5 z"/>
+<circle cx="44" cy="50" r="5.5" fill="#ff5f57"/>
+<circle cx="62" cy="50" r="5.5" fill="#febc2e"/>
+<circle cx="80" cy="50" r="5.5" fill="#28c840"/>
+<text x="224" y="54" font-size="12.5" font-weight="600" text-anchor="middle">code</text>
+<rect class="side" x="24.5" y="65" width="110" height="268.5"/>
+<path class="sep" d="M134.5 65 v268"/>
+<path class="sep" d="M24.5 65 h399"/>
+<text x="36" y="88" font-size="10.5" font-weight="600" class="muted">Favorites</text>
+<text x="44" y="108" font-size="12">Applications</text>
+<text x="44" y="128" font-size="12">Desktop</text>
+<text x="44" y="148" font-size="12">Documents</text>
+<text x="44" y="168" font-size="12">Downloads</text>
+<rect x="34" y="176" width="94" height="20" rx="5" fill="var(--line)" opacity="0.6"/>
+<text x="44" y="190" font-size="12" font-weight="600">code</text>
+
+<!-- The folders; "app" gets the selection when it is right-clicked -->
+<rect class="pick" x="160" y="90" width="76" height="82" rx="8" fill="var(--sel)" fill-opacity="0.2"/>
+<use href="#folder-icon" x="174" y="98"/>
+<text x="198" y="160" font-size="12" text-anchor="middle">app</text>
+<use href="#folder-icon" x="262" y="98"/>
+<text x="286" y="160" font-size="12" text-anchor="middle">docs</text>
+<use href="#folder-icon" x="350" y="98"/>
+<text x="374" y="160" font-size="12" text-anchor="middle">notes</text>
+<use href="#folder-icon" x="174" y="192"/>
+<text x="198" y="254" font-size="12" text-anchor="middle">site</text>
+
+<!-- Terminal -->
+<g class="term">
+  <g filter="url(#shadow)">
+    <rect x="452" y="182" width="286" height="214" rx="11" fill="var(--term)"/>
+  </g>
+  <path d="M463 182.5 h264 a10.5 10.5 0 0 1 10.5 10.5 v17 h-285 v-17 a10.5 10.5 0 0 1 10.5 -10.5 z" fill="var(--term-bar)"/>
+  <circle cx="471" cy="196" r="5" fill="#ff5f57"/>
+  <circle cx="487" cy="196" r="5" fill="#febc2e"/>
+  <circle cx="503" cy="196" r="5" fill="#28c840"/>
+  <text x="595" y="200" font-size="11.5" text-anchor="middle" style="fill: var(--term-ink)">Ghostty — app</text>
+  <text x="468" y="236" font-size="12.5" class="mono" style="fill: var(--prompt)">~/code/app</text>
+  <text x="468" y="258" font-size="12.5" class="mono" style="fill: var(--prompt)">❯</text>
+  <text x="484" y="258" font-size="12.5" class="mono typed" style="fill: var(--term-ink)">claude</text>
+  <rect class="caret" x="533" y="248" width="7.5" height="13" fill="var(--term-ink)"/>
+</g>
+
+<!-- The menu of Right Here -->
+<g class="menu">
+  <g filter="url(#shadow)">
+    <rect class="win" x="212" y="148" width="226" height="199" rx="9"/>
+  </g>
+  <rect class="hover" x="217" y="219" width="216" height="22" rx="5" fill="var(--sel)"/>
+  <text x="228" y="168" font-size="12.5">Open in Ghostty</text>
+  <text x="228" y="190" font-size="12.5">Open in Visual Studio Code</text>
+  <text x="228" y="212" font-size="12.5">Open With</text>
+  <text x="424" y="212" font-size="12.5" text-anchor="end" class="muted">›</text>
+  <text x="228" y="234" font-size="12.5">Claude Code Here</text>
+  <text x="228" y="234" font-size="12.5" class="hover" style="fill: var(--sel-ink)">Claude Code Here</text>
+  <text x="228" y="256" font-size="12.5">Codex Here</text>
+  <text x="228" y="278" font-size="12.5">More Agent Options</text>
+  <text x="424" y="278" font-size="12.5" text-anchor="end" class="muted">›</text>
+  <path class="sep" d="M222 289.5 h206"/>
+  <text x="228" y="310" font-size="12.5">New File</text>
+  <text x="424" y="310" font-size="12.5" text-anchor="end" class="muted">›</text>
+  <text x="228" y="332" font-size="12.5">Copy Path</text>
+  <text x="424" y="332" font-size="12.5" text-anchor="end" class="muted">›</text>
+</g>
+
+<!-- Pointer -->
+<g class="cursor">
+  <path d="M0 0 L0 17 L4.6 12.8 L7.6 19.6 L10.6 18.3 L7.7 11.6 L13.6 11.4 Z" fill="#111" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/>
+</g>
+</svg>

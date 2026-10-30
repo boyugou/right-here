@@ -1,0 +1,428 @@
+[
+  {
+    "actionID" : "open.terminal",
+    "children" : [
+
+    ],
+    "icon" : {
+      "kind" : "app",
+      "value" : "com.mitchellh.ghostty"
+    },
+    "kind" : "action",
+    "title" : "Open in Ghostty"
+  },
+  {
+    "actionID" : "open.editor",
+    "children" : [
+
+    ],
+    "icon" : {
+      "kind" : "app",
+      "value" : "com.microsoft.VSCode"
+    },
+    "kind" : "action",
+    "title" : "Open in Visual Studio Code"
+  },
+  {
+    "children" : [
+      {
+        "actionID" : "open.terminal@terminal",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.apple.Terminal"
+        },
+        "kind" : "action",
+        "title" : "Terminal"
+      },
+      {
+        "children" : [
+
+        ],
+        "kind" : "separator",
+        "title" : ""
+      },
+      {
+        "actionID" : "open.app.antigravity",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.google.antigravity"
+        },
+        "kind" : "action",
+        "title" : "Antigravity"
+      },
+      {
+        "actionID" : "open.app.xcode",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.apple.dt.Xcode"
+        },
+        "kind" : "action",
+        "title" : "Xcode"
+      },
+      {
+        "actionID" : "open.app.typora",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "abnerworks.Typora"
+        },
+        "kind" : "action",
+        "title" : "Typora"
+      },
+      {
+        "actionID" : "open.app.textedit",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.apple.TextEdit"
+        },
+        "kind" : "action",
+        "title" : "TextEdit"
+      }
+    ],
+    "icon" : {
+      "kind" : "symbol",
+      "value" : "arrow.up.forward.app"
+    },
+    "kind" : "submenu",
+    "title" : "Open With"
+  },
+  {
+    "actionID" : "agent.claude",
+    "children" : [
+
+    ],
+    "icon" : {
+      "kind" : "app",
+      "value" : "com.anthropic.claudefordesktop"
+    },
+    "kind" : "action",
+    "title" : "Claude Code Here"
+  },
+  {
+    "actionID" : "agent.codex",
+    "children" : [
+
+    ],
+    "icon" : {
+      "kind" : "app",
+      "value" : "com.openai.codex"
+    },
+    "kind" : "action",
+    "title" : "Codex Here"
+  },
+  {
+    "children" : [
+      {
+        "actionID" : "agent.claude.continue",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.anthropic.claudefordesktop"
+        },
+        "kind" : "action",
+        "title" : "Claude Code: Continue Last Session"
+      },
+      {
+        "actionID" : "agent.claude.resume",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.anthropic.claudefordesktop"
+        },
+        "kind" : "action",
+        "title" : "Claude Code: Resume a Session…"
+      },
+      {
+        "actionID" : "agent.claude@desktop",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.anthropic.claudefordesktop"
+        },
+        "kind" : "action",
+        "title" : "Claude Code in Desktop App"
+      },
+      {
+        "actionID" : "agent.claude@link",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.anthropic.claudefordesktop"
+        },
+        "kind" : "action",
+        "title" : "Claude Code in Last-Used Terminal"
+      },
+      {
+        "actionID" : "agent.claude@terminal",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.anthropic.claudefordesktop"
+        },
+        "kind" : "action",
+        "title" : "Claude Code in Terminal"
+      },
+      {
+        "children" : [
+
+        ],
+        "kind" : "separator",
+        "title" : ""
+      },
+      {
+        "actionID" : "agent.codex.last",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.openai.codex"
+        },
+        "kind" : "action",
+        "title" : "Codex: Continue Last Session"
+      },
+      {
+        "actionID" : "agent.codex.resume",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.openai.codex"
+        },
+        "kind" : "action",
+        "title" : "Codex: Resume a Session…"
+      },
+      {
+        "actionID" : "agent.codex@desktop",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.openai.codex"
+        },
+        "kind" : "action",
+        "title" : "Codex in Desktop App"
+      },
+      {
+        "actionID" : "agent.codex@terminal",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "app",
+          "value" : "com.openai.codex"
+        },
+        "kind" : "action",
+        "title" : "Codex in Terminal"
+      },
+      {
+        "children" : [
+
+        ],
+        "kind" : "separator",
+        "title" : ""
+      },
+      {
+        "children" : [
+          {
+            "actionID" : "preset.review",
+            "children" : [
+
+            ],
+            "icon" : {
+              "kind" : "app",
+              "value" : "com.anthropic.claudefordesktop"
+            },
+            "kind" : "action",
+            "title" : "Review"
+          },
+          {
+            "actionID" : "preset.explain",
+            "children" : [
+
+            ],
+            "icon" : {
+              "kind" : "app",
+              "value" : "com.anthropic.claudefordesktop"
+            },
+            "kind" : "action",
+            "title" : "Explain"
+          },
+          {
+            "actionID" : "preset.tests",
+            "children" : [
+
+            ],
+            "icon" : {
+              "kind" : "app",
+              "value" : "com.anthropic.claudefordesktop"
+            },
+            "kind" : "action",
+            "title" : "Write Tests"
+          }
+        ],
+        "icon" : {
+          "kind" : "symbol",
+          "value" : "text.bubble"
+        },
+        "kind" : "submenu",
+        "title" : "Agent Presets"
+      }
+    ],
+    "icon" : {
+      "kind" : "symbol",
+      "value" : "ellipsis.circle"
+    },
+    "kind" : "submenu",
+    "title" : "More Agent Options"
+  },
+  {
+    "children" : [
+
+    ],
+    "kind" : "separator",
+    "title" : ""
+  },
+  {
+    "children" : [
+      {
+        "actionID" : "new-file.txt",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "fileType",
+          "value" : "txt"
+        },
+        "kind" : "action",
+        "title" : "Text Document"
+      },
+      {
+        "actionID" : "new-file.md",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "fileType",
+          "value" : "md"
+        },
+        "kind" : "action",
+        "title" : "Markdown Document"
+      }
+    ],
+    "icon" : {
+      "kind" : "symbol",
+      "value" : "doc.badge.plus"
+    },
+    "kind" : "submenu",
+    "title" : "New File"
+  },
+  {
+    "children" : [
+      {
+        "actionID" : "copy-path.absolute",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "symbol",
+          "value" : "doc.on.doc"
+        },
+        "kind" : "action",
+        "title" : "Full Path"
+      },
+      {
+        "actionID" : "copy-path.tilde",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "symbol",
+          "value" : "doc.on.doc"
+        },
+        "kind" : "action",
+        "title" : "Path from Home (~)"
+      },
+      {
+        "actionID" : "copy-path.git-relative",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "symbol",
+          "value" : "doc.on.doc"
+        },
+        "kind" : "action",
+        "title" : "Path from Git Root"
+      },
+      {
+        "actionID" : "copy-path.name",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "symbol",
+          "value" : "doc.on.doc"
+        },
+        "kind" : "action",
+        "title" : "File Name"
+      },
+      {
+        "actionID" : "copy-path.shell-escaped",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "symbol",
+          "value" : "doc.on.doc"
+        },
+        "kind" : "action",
+        "title" : "Shell-Escaped Path"
+      },
+      {
+        "actionID" : "copy-path.ai-mention",
+        "children" : [
+
+        ],
+        "icon" : {
+          "kind" : "symbol",
+          "value" : "doc.on.doc"
+        },
+        "kind" : "action",
+        "title" : "@ Mention for AI"
+      }
+    ],
+    "icon" : {
+      "kind" : "symbol",
+      "value" : "doc.on.doc"
+    },
+    "kind" : "submenu",
+    "title" : "Copy Path"
+  }
+]
