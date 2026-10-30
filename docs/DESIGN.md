@@ -157,6 +157,10 @@ Verified on macOS 26.x (build as reported by `sw_vers`):
   app verifies when mounted. The notarization pipeline (notarytool with a keychain profile, stapling, Gatekeeper
   assessment with `spctl`) runs end to end: Apple accepted the app and the DMG, both are stapled, and Gatekeeper
   reports `accepted` with `source=Notarized Developer ID`.
+- Foundation's `Process` hands its arguments to the program decomposed (the file-system form of the string): `é` arrives as `e` and a
+  combining accent. The file system does not mind; a program that compares names does. git with `core.precomposeunicode=false` did
+  not find a precomposed name given as an argument and found it on its input (measured 2026-10-30, git 2.54), so names that git has
+  to look up go on its input (ADR 0033).
 
 Sourced:
 
