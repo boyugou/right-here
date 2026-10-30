@@ -236,6 +236,8 @@
   "doc.actions.copy": "Kopieert het pad vanaf de git-root. De andere vormen zijn: volledig, vanaf je thuismap, bestandsnaam, shell-geëscapet en `@path`.",
   "doc.actions.newfile": "Maakt een leeg Markdown-bestand. Daarna toont Finder het, of opent een app het.",
   "doc.actions.reveal": "Selecteert de items in Finder.",
+  "doc.actions.repoCopy": "Kopieert de link naar de pagina van de selectie op GitHub, GitLab, Codeberg of Bitbucket, voor de uitgecheckte commit. Een commit die nog niet is gepusht, heeft daar geen pagina, dus die wordt geweigerd.",
+  "doc.actions.repoOpen": "Opent die pagina in je browser, voor één enkel item.",
   "doc.actions.p2": "Voeg `--dry-run --json` toe aan `rh run` om te zien wat een actie zou doen, zonder het te doen:",
   "doc.config.p1": "Right Here bewaart zijn instellingen in één TOML-bestand, `~/.config/right-here/config.toml`. `rh setup` maakt het op basis van wat is geïnstalleerd. Daarna wijzigt Right Here alleen wat je vraagt, en je commentaar blijft behouden. Een voorbeeld:",
   "doc.config.how": "Je kunt een instelling op drie manieren wijzigen:",

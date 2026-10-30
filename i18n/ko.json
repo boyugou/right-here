@@ -236,6 +236,8 @@
   "doc.actions.copy": "git 루트 기준 경로를 복사합니다. 다른 형식은 전체 경로, 홈 기준 경로, 파일 이름, 셸 이스케이프 경로, `@path`입니다.",
   "doc.actions.newfile": "빈 Markdown 파일을 만듭니다. 그런 다음 Finder가 그 파일을 표시하거나 앱이 엽니다.",
   "doc.actions.reveal": "Finder에서 항목을 선택합니다.",
+  "doc.actions.repoCopy": "체크아웃된 커밋 기준으로, GitHub, GitLab, Codeberg 또는 Bitbucket에 있는 선택한 항목의 페이지 링크를 복사합니다. 아직 푸시하지 않은 커밋은 그곳에 페이지가 없으므로 거부됩니다.",
+  "doc.actions.repoOpen": "항목을 하나만 선택했을 때 사용하는 브라우저에서 그 페이지를 엽니다.",
   "doc.actions.p2": "`rh run`에 `--dry-run --json`을 추가하면 액션을 실행하지 않고 어떤 일이 일어날지 볼 수 있습니다:",
   "doc.config.p1": "Right Here는 설정을 TOML 파일 하나, `~/.config/right-here/config.toml`에 보관합니다. `rh setup` 명령이 설치된 항목을 바탕으로 이 파일을 만듭니다. 그 뒤에는 요청한 변경만 적용하고 주석은 그대로 보존합니다. 예:",
   "doc.config.how": "설정을 바꾸는 방법은 세 가지입니다:",

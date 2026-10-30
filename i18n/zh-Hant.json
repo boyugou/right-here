@@ -236,6 +236,8 @@
   "doc.actions.copy": "拷貝相對於 git 根目錄的路徑。其他形式有：完整路徑、相對於你的主目錄的路徑、檔案名稱、經 shell 跳脫的路徑，以及 `@path`。",
   "doc.actions.newfile": "建立一個空白的 Markdown 檔案。然後由 Finder 顯示它，或由某個應用程式打開它。",
   "doc.actions.reveal": "在 Finder 中選取這些項目。",
+  "doc.actions.repoCopy": "拷貝所選項目在 GitHub、GitLab、Codeberg 或 Bitbucket 上的頁面連結，指向目前簽出的提交。尚未推送的提交在那裡沒有頁面，因此會被拒絕。",
+  "doc.actions.repoOpen": "在你的瀏覽器中打開該頁面，僅限單一項目。",
   "doc.actions.p2": "在 `rh run` 後面加上 `--dry-run --json`，即可查看某個動作會做什麼，而不真正執行：",
   "doc.config.p1": "Right Here 把設定存放在一個 TOML 檔案 `~/.config/right-here/config.toml` 中。`rh setup` 會根據已安裝的內容建立它。此後，Right Here 只會修改你要求的內容，並保留你的註解。範例：",
   "doc.config.how": "你可以用三種方式變更設定：",

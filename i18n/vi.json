@@ -236,6 +236,8 @@
   "doc.actions.copy": "Sao chép đường dẫn tính từ gốc git. Các dạng khác: đầy đủ, tính từ thư mục nhà của bạn, tên tệp, đã escape cho shell, và `@path`.",
   "doc.actions.newfile": "Tạo một tệp Markdown trống. Sau đó Finder hiển thị tệp, hoặc một ứng dụng mở tệp.",
   "doc.actions.reveal": "Chọn các mục trong Finder.",
+  "doc.actions.repoCopy": "Sao chép liên kết đến trang của mục đã chọn trên GitHub, GitLab, Codeberg hoặc Bitbucket, tại commit đang được checkout. Commit chưa được push thì chưa có trang ở đó, nên bị từ chối.",
+  "doc.actions.repoOpen": "Mở trang đó trong trình duyệt của bạn, chỉ cho một mục.",
   "doc.actions.p2": "Thêm `--dry-run --json` vào `rh run` để xem một thao tác sẽ làm gì mà không thực hiện nó:",
   "doc.config.p1": "Right Here giữ các cài đặt của nó trong một tệp TOML, `~/.config/right-here/config.toml`. `rh setup` tạo tệp này từ những gì đã cài đặt. Sau đó, Right Here chỉ thay đổi những gì bạn yêu cầu, và giữ nguyên các chú thích của bạn. Một ví dụ:",
   "doc.config.how": "Bạn có thể thay đổi một cài đặt theo ba cách:",

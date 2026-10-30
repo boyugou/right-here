@@ -236,6 +236,8 @@
   "doc.actions.copy": "Copia o caminho a partir da raiz do git. As outras formas são: completo, a partir da sua pasta pessoal, nome do arquivo, com escape para shell e `@path`.",
   "doc.actions.newfile": "Cria um arquivo Markdown vazio. Depois o Finder o mostra, ou um app o abre.",
   "doc.actions.reveal": "Seleciona os itens no Finder.",
+  "doc.actions.repoCopy": "Copia o link da página da seleção no GitHub, GitLab, Codeberg ou Bitbucket, no commit do checkout atual. Um commit que ainda não foi enviado com push não tem página lá, então ele é recusado.",
+  "doc.actions.repoOpen": "Abre essa página no seu navegador, para um único item.",
   "doc.actions.p2": "Acrescente `--dry-run --json` ao `rh run` para ver o que uma ação faria, sem executá-la:",
   "doc.config.p1": "O Right Here guarda seus ajustes em um único arquivo TOML, `~/.config/right-here/config.toml`. O `rh setup` o cria a partir do que está instalado. Depois disso, o Right Here altera só o que você pedir e mantém seus comentários. Um exemplo:",
   "doc.config.how": "Você pode mudar um ajuste de três formas:",

@@ -236,6 +236,8 @@
   "doc.actions.copy": "Menyalin laluan dari akar git. Bentuk lain ialah: penuh, dari home anda, nama fail, dilindungi escape shell dan `@path`.",
   "doc.actions.newfile": "Mencipta fail Markdown kosong. Kemudian Finder menunjukkannya, atau sebuah aplikasi membukanya.",
   "doc.actions.reveal": "Memilih item dalam Finder.",
+  "doc.actions.repoCopy": "Menyalin pautan ke halaman pilihan di GitHub, GitLab, Codeberg atau Bitbucket, pada commit yang sedang di-checkout. Commit yang belum di-push tidak mempunyai halaman di sana, jadi ia ditolak.",
+  "doc.actions.repoOpen": "Membuka halaman itu dalam pelayar anda, untuk satu item sahaja.",
   "doc.actions.p2": "Tambahkan `--dry-run --json` pada `rh run` untuk melihat apa yang akan dilakukan oleh sesuatu tindakan, tanpa melakukannya:",
   "doc.config.p1": "Right Here menyimpan tetapannya dalam satu fail TOML, `~/.config/right-here/config.toml`. `rh setup` mencipta fail itu daripada apa yang dipasang. Selepas itu, Right Here hanya menukar apa yang anda minta, dan mengekalkan komen anda. Contohnya:",
   "doc.config.how": "Anda boleh menukar tetapan dengan tiga cara:",

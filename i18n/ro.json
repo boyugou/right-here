@@ -236,6 +236,8 @@
   "doc.actions.copy": "Copiază calea de la rădăcina git. Celelalte forme sunt: completă, relativă la dosarul tău home, numele fișierului, cu escape pentru shell și `@path`.",
   "doc.actions.newfile": "Creează un fișier Markdown gol. Apoi Finder îl arată sau o aplicație îl deschide.",
   "doc.actions.reveal": "Selectează elementele în Finder.",
+  "doc.actions.repoCopy": "Copiază linkul către pagina selecției pe GitHub, GitLab, Codeberg sau Bitbucket, la commitul pe care ai făcut checkout. Un commit care nu a fost încă trimis cu push nu are pagină acolo, așa că este refuzat.",
+  "doc.actions.repoOpen": "Deschide pagina respectivă în browserul tău, pentru un singur element.",
   "doc.actions.p2": "Adaugă `--dry-run --json` la `rh run` ca să vezi ce ar face o acțiune, fără să o facă:",
   "doc.config.p1": "Right Here își păstrează setările într-un singur fișier TOML, `~/.config/right-here/config.toml`. `rh setup` îl creează pe baza celor instalate. După aceea, Right Here schimbă doar ce ceri și îți păstrează comentariile. Un exemplu:",
   "doc.config.how": "Poți schimba o setare în trei moduri:",

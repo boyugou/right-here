@@ -236,6 +236,8 @@
   "doc.actions.copy": "Menyalin path dari root git. Bentuk lainnya: lengkap, dari home Anda, nama file, di-escape untuk shell, dan `@path`.",
   "doc.actions.newfile": "Membuat file Markdown kosong. Lalu Finder menampilkannya, atau sebuah aplikasi membukanya.",
   "doc.actions.reveal": "Memilih item di Finder.",
+  "doc.actions.repoCopy": "Menyalin tautan ke halaman pilihan di GitHub, GitLab, Codeberg, atau Bitbucket, pada commit yang sedang di-checkout. Commit yang belum di-push tidak memiliki halaman di sana, jadi ditolak.",
+  "doc.actions.repoOpen": "Membuka halaman itu di browser Anda, untuk satu item saja.",
   "doc.actions.p2": "Tambahkan `--dry-run --json` ke `rh run` untuk melihat apa yang akan dilakukan sebuah aksi, tanpa menjalankannya:",
   "doc.config.p1": "Right Here menyimpan pengaturannya dalam satu file TOML, `~/.config/right-here/config.toml`. `rh setup` membuatnya dari apa yang terpasang. Setelah itu, Right Here hanya mengubah apa yang Anda minta, dan mempertahankan komentar Anda. Contohnya:",
   "doc.config.how": "Anda dapat mengubah pengaturan dengan tiga cara:",

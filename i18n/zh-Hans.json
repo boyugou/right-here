@@ -236,6 +236,8 @@
   "doc.actions.copy": "拷贝相对于 git 根目录的路径。其他形式有：完整路径、相对于你的主文件夹的路径、文件名、经 shell 转义的路径，以及 `@path`。",
   "doc.actions.newfile": "创建一个空白的 Markdown 文件。然后由访达显示它，或由某个应用打开它。",
   "doc.actions.reveal": "在访达中选中这些项目。",
+  "doc.actions.repoCopy": "拷贝所选项目在 GitHub、GitLab、Codeberg 或 Bitbucket 上的页面链接，指向当前检出的提交。尚未推送的提交在那里没有页面，因此会被拒绝。",
+  "doc.actions.repoOpen": "在你的浏览器中打开该页面，仅限单个项目。",
   "doc.actions.p2": "在 `rh run` 后添加 `--dry-run --json`，即可查看某项操作会做什么，而不真正执行：",
   "doc.config.p1": "Right Here 把设置保存在一个 TOML 文件 `~/.config/right-here/config.toml` 中。`rh setup` 会根据已安装的内容创建它。此后，Right Here 只会修改你要求的内容，并保留你的注释。示例：",
   "doc.config.how": "你可以通过三种方式更改设置：",

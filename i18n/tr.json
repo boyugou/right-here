@@ -236,6 +236,8 @@
   "doc.actions.copy": "Yolu git kökünden başlayarak kopyalar. Diğer biçimler: tam, ana klasörünüzden, dosya adı, kabuk için kaçışlanmış ve `@path`.",
   "doc.actions.newfile": "Boş bir Markdown dosyası oluşturur. Sonra Finder onu gösterir ya da bir uygulama açar.",
   "doc.actions.reveal": "Öğeleri Finder’da seçer.",
+  "doc.actions.repoCopy": "Seçimin GitHub, GitLab, Codeberg veya Bitbucket’teki sayfasının bağlantısını, checkout edilmiş commit’e göre kopyalar. Henüz push edilmemiş bir commit’in orada sayfası yoktur, bu yüzden reddedilir.",
+  "doc.actions.repoOpen": "Tek bir öğe için o sayfayı tarayıcınızda açar.",
   "doc.actions.p2": "Bir eylemin ne yapacağını yapmadan görmek için `rh run` komutuna `--dry-run --json` ekleyin:",
   "doc.config.p1": "Right Here ayarlarını tek bir TOML dosyasında tutar: `~/.config/right-here/config.toml`. `rh setup` onu yüklü olanlardan oluşturur. Sonrasında Right Here yalnızca sizin istediğinizi değiştirir ve yorumlarınızı korur. Bir örnek:",
   "doc.config.how": "Bir ayarı üç yolla değiştirebilirsiniz:",

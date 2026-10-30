@@ -236,6 +236,8 @@
   "doc.actions.copy": "מעתיקה את הנתיב משורש ה-git. הצורות האחרות הן: מלא, יחסי לתיקיית הבית, שם קובץ, עם escape למעטפת, ו-`@path`.",
   "doc.actions.newfile": "יוצרת קובץ Markdown ריק. לאחר מכן Finder מציג אותו, או שאפליקציה פותחת אותו.",
   "doc.actions.reveal": "בוחרת את הפריטים ב-Finder.",
+  "doc.actions.repoCopy": "מעתיקה את הקישור לעמוד של הבחירה ב-GitHub, ב-GitLab, ב-Codeberg או ב-Bitbucket, ב-commit שנמצא כרגע ב-checkout. ל-commit שעוד לא בוצע לו push אין שם עמוד, ולכן הוא נדחה.",
+  "doc.actions.repoOpen": "פותחת את העמוד הזה בדפדפן שלכם, עבור פריט אחד בלבד.",
   "doc.actions.p2": "הוסיפו `--dry-run --json` ל-`rh run` כדי לראות מה פעולה הייתה עושה, בלי לבצע אותה:",
   "doc.config.p1": "‏Right Here שומר את ההגדרות שלו בקובץ TOML אחד, `~/.config/right-here/config.toml`. `rh setup` יוצר אותו ממה שמותקן. אחרי זה Right Here משנה רק מה שאתם מבקשים, ושומר את ההערות שלכם. דוגמה:",
   "doc.config.how": "אפשר לשנות הגדרה בשלוש דרכים:",

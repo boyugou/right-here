@@ -236,6 +236,8 @@
   "doc.actions.copy": "ينسخ المسار نسبةً إلى جذر git. أما الأشكال الأخرى فهي: الكامل، والنسبي إلى المجلد الرئيسي، واسم الملف، والمهيّأ للصدفة، و`@path`‎.",
   "doc.actions.newfile": "ينشئ ملف Markdown فارغًا. ثم يعرضه Finder أو يفتحه تطبيق.",
   "doc.actions.reveal": "يحدّد العناصر في Finder.",
+  "doc.actions.repoCopy": "ينسخ رابط صفحة التحديد على GitHub أو GitLab أو Codeberg أو Bitbucket، عند الـcommit الحالي في نسخة العمل. والـcommit الذي لم يُنفَّذ له push بعد ليست له صفحة هناك، لذلك يُرفض.",
+  "doc.actions.repoOpen": "يفتح تلك الصفحة في متصفحك، لعنصر واحد فقط.",
   "doc.actions.p2": "أضف `--dry-run --json` إلى `rh run` لترى ما كان الإجراء سيفعله، دون تنفيذه:",
   "doc.config.p1": "يحفظ Right Here إعداداته في ملف TOML واحد، `~/.config/right-here/config.toml`‎. ينشئه `rh setup` مما هو مثبّت. وبعد ذلك لا يغيّر Right Here إلا ما تطلبه، ويحتفظ بتعليقاتك. مثال:",
   "doc.config.how": "يمكنك تغيير إعداد بثلاث طرق:",

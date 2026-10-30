@@ -778,6 +778,8 @@ DOCS = f"""<main id="main" class="wrap docs">
 <tr><td><code>copy-path.git-relative</code></td><td data-i18n="doc.actions.copy"></td></tr>
 <tr><td><code>new-file.md</code></td><td data-i18n="doc.actions.newfile"></td></tr>
 <tr><td><code>reveal</code></td><td data-i18n="doc.actions.reveal"></td></tr>
+<tr><td><code>repository.copy-link</code></td><td data-i18n="doc.actions.repoCopy"></td></tr>
+<tr><td><code>repository.open-page</code></td><td data-i18n="doc.actions.repoOpen"></td></tr>
 </tbody>
 </table>
 </div>

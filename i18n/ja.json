@@ -236,6 +236,8 @@
   "doc.actions.copy": "git ルートからのパスをコピーします。ほかの形式は、フルパス、ホームからのパス、ファイル名、シェル用にエスケープしたパス、`@path` です。",
   "doc.actions.newfile": "空の Markdown ファイルを作成します。そのあと、Finder で表示するか、アプリで開きます。",
   "doc.actions.reveal": "Finder で項目を選択します。",
+  "doc.actions.repoCopy": "選択した項目について、チェックアウト中のコミット時点の GitHub、GitLab、Codeberg または Bitbucket 上のページへのリンクをコピーします。まだプッシュしていないコミットには、そこにページがないため、拒否します。",
+  "doc.actions.repoOpen": "項目が1つの場合のみ、そのページをお使いのブラウザで開きます。",
   "doc.actions.p2": "`rh run` に `--dry-run --json` を付けると、アクションを実行せずに、何が行われるかを確認できます：",
   "doc.config.p1": "Right Here は、設定を1つの TOML ファイル、`~/.config/right-here/config.toml` に保存します。`rh setup` が、インストールされているものをもとに、このファイルを作成します。そのあと Right Here が変更するのは、依頼された内容だけです。コメントはそのまま残ります。例：",
   "doc.config.how": "設定を変更する方法は3つあります：",
