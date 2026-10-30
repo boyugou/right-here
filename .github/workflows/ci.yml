@@ -1,9 +1,10 @@
 name: CI
 
-# CI runs on pull requests and on demand (workflow_dispatch) to conserve GitHub Actions credits.
-# Run ./script/verify_all.sh locally before pushing.
+# CI runs on pull requests, on every push to main and on demand. Run ./script/verify_all.sh locally before pushing.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
 
