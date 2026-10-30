@@ -11,6 +11,11 @@ cask "right-here" do
   desc "Send a folder or Finder selection to terminals, editors and AI agents"
   homepage "https://github.com/boyugou/right-here"
 
+  livecheck do
+    url :url
+    strategy :github_latest
+  end
+
   depends_on arch: :arm64
   depends_on macos: :tahoe
 
@@ -21,7 +26,9 @@ cask "right-here" do
     "~/.config/right-here",
     "~/.local/bin/rh",
     "~/Library/Application Scripts/com.boyugou.righthere.FinderExtension",
+    "~/Library/Containers/com.boyugou.righthere.FinderExtension",
     "~/Library/Logs/right-here",
+    "~/Library/Preferences/com.boyugou.righthere.plist",
     "~/Library/Services/Right Here - *.workflow",
   ]
 
