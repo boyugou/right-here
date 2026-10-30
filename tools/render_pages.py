@@ -437,8 +437,8 @@ INDEX = f"""<main id="main">
 {tile("editor", "editor")}
 {tile("agent", "more-agents", body="body2")}
 {tile("preset", "more-agents", title="title2", body="body2")}
-{tile("newfile", "new-file")}
-{tile("copy", "copy-path")}
+{tile("newfile", "new-file", body="body2")}
+{tile("copy", "copy-path", body="body2")}
 </div>
 <p class="plain-note" data-i18n="home.what.quick2"></p>
 </div>
