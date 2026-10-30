@@ -159,7 +159,8 @@ Verified on macOS 26.x (build as reported by `sw_vers`):
   reports `accepted` with `source=Notarized Developer ID`.
 - Foundation's `Process` hands its arguments to the program decomposed (the file-system form of the string): `é` arrives as `e` and a
   combining accent. The file system does not mind; a program that compares names does. git with `core.precomposeunicode=false` did
-  not find a precomposed name given as an argument and found it on its input (measured 2026-10-30, git 2.54), so names that git has
+  not find a precomposed name given as an argument and found it on its input (measured 2026-10-30 with Homebrew's git 2.54.0 and
+  Apple's 2.50.1), so names that git has
   to look up go on its input (ADR 0033).
 
 Sourced:
@@ -352,7 +353,9 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
 8. A repository is somebody else's code to git: its hooks (files, and commands named in its configuration), `core.fsmonitor`, filter drivers and a
    partial clone's promisor remote all start programs. Right Here starts git in a repository only through one function (`GitCommand`), which
    switches those off for every command it runs (the person's own filters, Git LFS in the global configuration, still apply), keeps the
-   commands that only read to twenty seconds, and reads the list of worktrees NUL-separated; see
+   commands that only read to twenty seconds, and reads the list of worktrees NUL-separated. It also takes `GIT_DIR` and its kin out of
+   git's environment (an `rh` started from a hook would otherwise act on another repository than `-C` names) and turns replace refs off
+   (`GIT_NO_REPLACE_OBJECTS`, so a commit is read as the host has it); see
    [0016](decisions/0016-agent-permissions-and-worktrees.md), "What git may start", for what was measured.
 
 9. A test cannot change the real home: `rh` started with `RH_NO_UI` and without `RH_HOME` refuses to write the runner script, the command link or the Quick Actions, and to

@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## 1.1.0 (2026-10-30)
 
 Repository links, Homebrew, and the app building with Xcode 26 again.

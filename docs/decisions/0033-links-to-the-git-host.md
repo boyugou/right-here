@@ -67,7 +67,9 @@ when the item is clicked. For the same reason the titles name the repository, no
 
 ## What git may start
 
-Measured with git 2.54 in a repository whose files and configuration name a program for every hook (files and `hook.<name>.command`),
+Measured by hand with Homebrew's git 2.54.0, and by the tests with the git the product starts (`/usr/bin/git`: Apple's 2.54.0 with
+Xcode 27.1 and 2.50.1 with Xcode 26.6, which CI uses; the tests pass with both), in a repository whose files and configuration name a
+program for every hook (files and `hook.<name>.command`),
 `core.fsmonitor`, a filter driver for every file (`smudge`, `clean`, `process`), `core.pager`, `pager.<command>` and `core.sshCommand`:
 `rev-parse --show-toplevel`, `rev-parse --verify HEAD^{commit}`, `symbolic-ref -q HEAD`, `config --get`, `remote`, `remote get-url`,
 `rev-list -n1 <commit> --not --remotes=<name>` and `cat-file --batch-check -Z` started none of them (the tests run each against such a
