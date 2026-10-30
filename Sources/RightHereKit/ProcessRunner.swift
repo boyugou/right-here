@@ -93,7 +93,9 @@ public struct LiveProcessRunner: ProcessRunner {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: step.executable)
         process.arguments = step.arguments
-        process.environment = ProcessInfo.processInfo.environment.merging(step.environment) { $1 }
+        var environment = ProcessInfo.processInfo.environment.merging(step.environment) { $1 }
+        for name in step.unsetEnvironment ?? [] { environment.removeValue(forKey: name) }
+        process.environment = environment
         if let directory = step.currentDirectory { process.currentDirectoryURL = URL(fileURLWithPath: directory) }
 
         let output = Pipe()

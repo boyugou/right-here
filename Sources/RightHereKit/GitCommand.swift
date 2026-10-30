@@ -49,6 +49,9 @@ enum GitCommand {
     /// - `GIT_NO_LAZY_FETCH=1`: a partial clone does not fetch what it lacks, so no transport (`ext::`, `core.sshCommand`, a credential
     ///   helper, `core.gitProxy`) is started. None of these commands needs the network.
     /// - `--no-pager`: nothing is paged, whatever `core.pager` or `pager.<command>` say.
+    /// - `GIT_NO_REPLACE_OBJECTS=1`: the repository's replace refs do not swap one commit or tree for another, so what is read is what the
+    ///   host has under that name.
+    /// - `inheritedRepository` is taken out of the environment: the repository is the one `-C` names, never one an inherited `GIT_DIR` names.
     ///
     /// The settings are given as `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_<n>` and `GIT_CONFIG_VALUE_<n>`, which beat the configuration files like
     /// `-c` does, and which keep a name whole: `-c filter.a=b.smudge=` is split at the first equals sign, so the driver `a=b` is never
@@ -57,6 +60,11 @@ enum GitCommand {
     ///
     /// `defined` has no default, so whoever adds a command has to say whether it can run a hook, or write or compare files (add, remove and status
     /// can; list and `branch -d` touch no file of the work tree, so only the hooks of `branch -d` matter; `config` is what finds what is defined).
+    /// What `rh` may have been started with (from a hook, an alias or another git command) that makes git use another repository, another
+    /// index or settings of its own, whatever `-C` says: such a command would read, or link to, a repository the person did not select.
+    static let inheritedRepository = ["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY",
+                                      "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE", "GIT_CONFIG_PARAMETERS", "GIT_CONFIG"]
+
     static func step(_ arguments: [String], in directory: String, blanking defined: Defined) -> ProcessStep {
         var settings: [(name: String, value: String)] = [
             ("core.hooksPath", "/dev/null"),
@@ -67,12 +75,13 @@ enum GitCommand {
             for key in ["smudge", "clean", "process"] { settings.append(("filter.\(driver).\(key)", "")) }
             settings.append(("filter.\(driver).required", "false"))
         }
-        var environment = ["GIT_NO_LAZY_FETCH": "1", "GIT_CONFIG_COUNT": String(settings.count)]
+        var environment = ["GIT_NO_LAZY_FETCH": "1", "GIT_NO_REPLACE_OBJECTS": "1", "GIT_CONFIG_COUNT": String(settings.count)]
         for (index, setting) in settings.enumerated() {
             environment["GIT_CONFIG_KEY_\(index)"] = setting.name
             environment["GIT_CONFIG_VALUE_\(index)"] = setting.value
         }
-        return ProcessStep(executable: executable, arguments: ["--no-pager", "-C", directory] + arguments, environment: environment)
+        return ProcessStep(executable: executable, arguments: ["--no-pager", "-C", directory] + arguments, environment: environment,
+                           unsetEnvironment: inheritedRepository)
     }
 
     /// The configuration scopes whose filter drivers are the person's own: the system's and the person's global configuration, and what was

@@ -77,9 +77,10 @@ public struct Planner: Sendable {
             if facts.gitRoot(containing: target) == nil { throw PlanError.unsupported("\(target.path) is not in a git repository.") }
             throw PlanError.unsupported("The repository of \(target.path) was not read, so its link cannot be made here; `rh run` reads it.")
         }
+        if let error = state.gitError { throw PlanError.unsupported("git could not read the repository of \(target.lastPathComponent): \(error)") }
         guard let remote = state.remoteName else {
             if state.remoteNames.isEmpty { throw PlanError.unsupported("The repository has no remote, so it has no page on a git host.") }
-            throw PlanError.unsupported("The repository has several remotes (\(state.remoteNames.joined(separator: ", "))), none of them origin or the branch's upstream, so it is not clear which one to link to.")
+            throw PlanError.unsupported("The repository has several remotes (\(state.remoteNames.joined(separator: ", "))), none of them origin or the branch's upstream or push remote, so it is not clear which one to link to.")
         }
         let parsed: RepositoryRemote
         switch state.remoteURL.map(RepositoryLink.parse(remote:)) {
@@ -94,10 +95,16 @@ public struct Planner: Sendable {
         guard state.isPushed else {
             throw PlanError.unsupported("The checked-out commit is not on remote \"\(remote)\" yet, so it has no page there. Push it, then try again.")
         }
-        guard state.isInCommit, let path = RepositoryLink.itemPath(of: target, inRepository: state.root) else {
+        let isDirectory: Bool
+        switch state.kind {
+        case .file?: isDirectory = false
+        case .folder?: isDirectory = true
+        case .submodule?:
+            throw PlanError.unsupported("\(target.lastPathComponent) is a submodule: its pages are in its own repository. Select an item inside it.")
+        case nil:
             throw PlanError.unsupported("\(target.lastPathComponent) is not in the checked-out commit (a new or untracked file has no page yet). Commit and push it, then try again.")
         }
-        guard let link = RepositoryLink.url(remote: parsed, commit: commit, itemPath: path, isDirectory: facts.isDirectory(target) ?? false) else {
+        guard let link = RepositoryLink.url(remote: parsed, commit: commit, itemPath: state.itemPath, isDirectory: isDirectory) else {
             throw PlanError.unsupported("The checked-out commit of the repository could not be read.")
         }
         return link

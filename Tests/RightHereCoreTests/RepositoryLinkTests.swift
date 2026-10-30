@@ -35,6 +35,24 @@ struct RepositoryLinkTests {
         #expect(throws: RepositoryLinkError.self) { try RepositoryLink.parse(remote: text).get() }
     }
 
+    /// The name of another host is shown in a refusal, so only what reads as a host name is: what is left of a token after its "@" was
+    /// taken for the end of the user part, or a host with a space, is not repeated.
+    @Test func whatIsNotAHostNameIsNotShownAsOne() {
+        // Without a scheme, git reads everything before the first ":" as the host (`host:path`).
+        #expect(RepositoryLink.parse(remote: "ghp_TOKEN123:x-oauth" + Self.at + "github.com/owner/repo") == .failure(.unreadableRemote))
+        #expect(RepositoryLink.parse(remote: "https://ghp_TOKEN123:x-oauth/owner/repo") == .failure(.unreadableRemote))
+        #expect(RepositoryLink.parse(remote: "https://user:12345/abc" + Self.at + "github.com/owner/repo") != .failure(.unknownHost("user")))
+        #expect(RepositoryLink.parse(remote: "https://github .com/owner/repo") == .failure(.unreadableRemote))
+        #expect(RepositoryLink.parse(remote: "https://localhost/owner/repo") == .failure(.unreadableRemote))
+    }
+
+    /// GitLab's `/-/` starts the part of a URL that names a page: a remote whose path has such a segment is not a repository's.
+    @Test func aSegmentThatStartsWithADashIsRefusedAndAnyCaseOfGitIsDropped() {
+        #expect(RepositoryLink.parse(remote: "https://gitlab.com/g/s/r/-/tree") == .failure(.unreadableRemote))
+        #expect(RepositoryLink.parse(remote: "https://github.com/-owner/repo") == .failure(.unreadableRemote))
+        #expect(remote("https://github.com/owner/repo.GIT") == RepositoryRemote(host: .github, path: ["owner", "repo"]))
+    }
+
     @Test func aTransportPrefixIsNotAHost() {
         #expect(RepositoryLink.parse(remote: "ext::sh -c touch% /tmp/x") == .failure(.unreadableRemote))
         #expect(RepositoryLink.parse(remote: "fd::17") == .failure(.unreadableRemote))

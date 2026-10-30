@@ -120,6 +120,11 @@ public struct ActionRegistry: Sendable {
     /// and `rh` says why when it cannot run.
     public func info(_ ref: ActionRef, context: HereContext) -> ActionInfo {
         var info = info(ref)
+        // Counted, not looked at: a menu offers the page of one item only, as the action opens no more than one.
+        if ref == .openRepositoryPage, context.items.count > 1 {
+            unavailable(&info, reason: "Open Repository Page opens one item's page.")
+            return info
+        }
         guard info.available, case .preset(let id, _) = ref, let preset = config.preset(id: id) else { return info }
         if context.items.isEmpty, context.container == nil, context.origin != .cli {
             unavailable(&info, reason: "There is no folder to run in.")

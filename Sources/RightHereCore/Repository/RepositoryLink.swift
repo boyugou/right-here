@@ -59,11 +59,13 @@ public enum RepositoryLink {
         }
         host = host.lowercased()
         guard let known = GitHost(rawValue: host) else {
-            let shown = String(host.unicodeScalars.filter { CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789.-").contains($0) })
-            return .failure(shown.isEmpty ? .unreadableRemote : .unknownHost(shown))
+            // Named only when it reads as a host name: what is left of a token that lost its "@" (`ghp_…:x@host`) or a host
+            // with a space in it would otherwise be shown, in an alert, the log or an agent's reply.
+            let isHostName = host.contains(".") && host.unicodeScalars.allSatisfy { CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789.-").contains($0) }
+            return .failure(isHostName ? .unknownHost(host) : .unreadableRemote)
         }
         var segments = path.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
-        if let last = segments.last, last.hasSuffix(".git") { segments[segments.count - 1] = String(last.dropLast(4)) }
+        if let last = segments.last, last.lowercased().hasSuffix(".git") { segments[segments.count - 1] = String(last.dropLast(4)) }
         guard segments.allSatisfy(isSafeSegment) else { return .failure(.unreadableRemote) }
         switch known {
         case .gitlab: guard segments.count >= 2 else { return .failure(.unreadableRemote) }
@@ -101,7 +103,8 @@ public enum RepositoryLink {
 
     private static func isSafeSegment(_ segment: String) -> Bool {
         let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.")
-        return !segment.isEmpty && segment != "." && segment != ".." && segment.unicodeScalars.allSatisfy { allowed.contains($0) }
+        // A leading "-" is no owner or repository on these hosts, and on GitLab it starts the part of a URL that names a page (`/-/tree`).
+        return !segment.isEmpty && segment != "." && segment != ".." && !segment.hasPrefix("-") && segment.unicodeScalars.allSatisfy { allowed.contains($0) }
     }
 
     private static func isFullHash(_ commit: String) -> Bool {

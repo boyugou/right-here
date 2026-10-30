@@ -7,7 +7,7 @@ private let root = URL(fileURLWithPath: "/work/app")
 
 /// What every git command carries when the repository defines no filter driver (the whole of `GitGuardTests.swift` is about it).
 private let guardedGit: [String: String] = [
-    "GIT_NO_LAZY_FETCH": "1", "GIT_CONFIG_COUNT": "2",
+    "GIT_NO_LAZY_FETCH": "1", "GIT_NO_REPLACE_OBJECTS": "1", "GIT_CONFIG_COUNT": "2",
     "GIT_CONFIG_KEY_0": "core.hooksPath", "GIT_CONFIG_VALUE_0": "/dev/null",
     "GIT_CONFIG_KEY_1": "core.fsmonitor", "GIT_CONFIG_VALUE_1": "false"
 ]
@@ -133,7 +133,9 @@ struct WorktreeBrowserTests {
         let listing = await WorktreeBrowser(runner: runner).list(in: root)
         guard case .loaded(let rows) = listing else { Issue.record("not loaded: \(listing)"); return }
         #expect(rows.count == 5)
-        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/git", arguments: ["--no-pager", "-C", "/work/app", "worktree", "list", "--porcelain", "-z"], environment: guardedGit)])
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/git", arguments: ["--no-pager", "-C", "/work/app", "worktree", "list", "--porcelain", "-z"], environment: guardedGit,
+                                                    unsetEnvironment: ["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY",
+                                                                       "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE", "GIT_CONFIG_PARAMETERS", "GIT_CONFIG"])])
     }
 
     @Test func gitThatSaysNoIsShownInItsWords() async {

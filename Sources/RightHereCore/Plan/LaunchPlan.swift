@@ -54,17 +54,21 @@ public struct ProcessStep: Sendable, Equatable, Codable {
     public var environment: [String: String]
     public var currentDirectory: String?
     public var standardInput: String?
+    /// Variables of the environment `rh` was started with that the program must not get.
+    public var unsetEnvironment: [String]?
 
     public init(
         executable: String,
         arguments: [String] = [],
         environment: [String: String] = [:],
         currentDirectory: String? = nil,
-        standardInput: String? = nil
+        standardInput: String? = nil,
+        unsetEnvironment: [String]? = nil
     ) {
         self.executable = executable
         self.arguments = arguments
         self.environment = environment
+        self.unsetEnvironment = unsetEnvironment
         self.currentDirectory = currentDirectory
         self.standardInput = standardInput
     }

@@ -11,9 +11,9 @@ struct RepositoryPlanTests {
     private let facts = FakeSystemFacts(directories: ["/Users/tester", "/Users/tester/code/app", "/Users/tester/code/app/src"],
                                         files: ["/Users/tester/code/app/src/main.swift"], gitRoots: ["/Users/tester/code/app"])
 
-    private func state(remote: String? = "origin", names: [String] = ["origin"], url: String? = "git@github.com:owner/app.git",
-                       commit: String? = nil, pushed: Bool = true, inCommit: Bool = true) -> RepositoryState {
-        RepositoryState(root: root, remoteName: remote, remoteNames: names, remoteURL: url, commit: commit ?? self.commit, isPushed: pushed, isInCommit: inCommit)
+    private func state(_ path: [String] = ["src", "main.swift"], kind: RepositoryState.Kind? = .file, remote: String? = "origin",
+                       names: [String] = ["origin"], url: String? = "git@github.com:owner/app.git", commit: String? = nil, pushed: Bool = true) -> RepositoryState {
+        RepositoryState(root: root, itemPath: path, remoteName: remote, remoteNames: names, remoteURL: url, commit: commit ?? self.commit, isPushed: pushed, kind: kind)
     }
 
     private func plan(_ ref: ActionRef, _ items: [URL], states: [URL: RepositoryState]) throws -> LaunchPlan {
@@ -36,12 +36,12 @@ struct RepositoryPlanTests {
     }
 
     @Test func aFolderIsLinkedAsATreeAndSeveralItemsOnePerLine() throws {
-        let made = try plan(.copyRepositoryLink, [folder, file], states: [folder: state(), file: state()])
+        let made = try plan(.copyRepositoryLink, [folder, file], states: [folder: state(["src"], kind: .folder), file: state()])
         #expect(made.steps == [.copyToPasteboard("https://github.com/owner/app/tree/\(commit)/src\nhttps://github.com/owner/app/blob/\(commit)/src/main.swift")])
     }
 
     @Test func theRepositoryPageOpensForOneItemAndRefusesSeveral() throws {
-        let made = try plan(.openRepositoryPage, [root], states: [root: state()])
+        let made = try plan(.openRepositoryPage, [root], states: [root: state([], kind: .folder)])
         #expect(made.steps == [.openURL("https://github.com/owner/app/tree/\(commit)")])
         #expect(refusal(.openRepositoryPage, [folder, file], states: [folder: state(), file: state()])?.contains("one item") == true)
     }
@@ -61,10 +61,13 @@ struct RepositoryPlanTests {
         #expect(refusal(states: [file: state(url: "git" + "@" + "git.example.com:team/app.git")])?.contains("is on git.example.com") == true)
         #expect(refusal(states: [file: state(url: "ext::sh -c x")])?.contains("is not one of a repository") == true)
         #expect(refusal(states: [file: state(url: "file:///etc/app.git")])?.contains("is not one of a repository") == true)
-        #expect(refusal(states: [file: RepositoryState(root: root, remoteName: "origin", remoteNames: ["origin"], remoteURL: "https://github.com/o/a",
-                                                         commit: nil, isPushed: false, isInCommit: false)])?.contains("no commit") == true)
+        #expect(refusal(states: [file: RepositoryState(root: root, remoteName: "origin", remoteNames: ["origin"], remoteURL: "https://github.com/o/a")])?
+                .contains("no commit") == true)
         #expect(refusal(states: [file: state(pushed: false)])?.contains("Push it") == true)
-        #expect(refusal(states: [file: state(inCommit: false)])?.contains("not in the checked-out commit") == true)
+        #expect(refusal(states: [file: state(kind: nil)])?.contains("not in the checked-out commit") == true)
+        #expect(refusal(states: [file: state(kind: .submodule)])?.contains("is a submodule") == true)
+        #expect(refusal(states: [file: RepositoryState(root: nil, gitError: "fatal: not a git repository: /nonexistent")])?
+                .contains("fatal: not a git repository") == true, "git's own reason is not what the person is told")
     }
 
     @Test func onlyTheTwoRepositoryActionsReadTheRepository() {
@@ -72,5 +75,31 @@ struct RepositoryPlanTests {
         #expect(!ActionRef.copyPath(.absolute).readsRepository && !ActionRef.reveal.readsRepository)
         #expect(ActionRef(parsing: "repository.copy-link") == .copyRepositoryLink && ActionRef(parsing: "repository.open-page") == .openRepositoryPage)
         #expect(ActionRef(parsing: "repository.copy-link@ghostty") == nil && ActionRef(parsing: "repository") == nil)
+    }
+}
+
+@Suite("Planner: repository links, what the reader found")
+struct RepositoryPlanFromReaderTests {
+    private let commit = "d89f86032883bae7ef136d543343639777e2455a"
+
+    /// The link is made from the path git's top folder gives and the kind the commit gives, not from the `.git` entry on disk and whether the
+    /// disk holds a folder: an empty `sub/.git` folder is not a repository to git, and a committed link to a folder is a file in the commit.
+    @Test func theLinkUsesThePathAndTheKindTheReaderFound() throws {
+        let item = URL(fileURLWithPath: "/Users/tester/code/app/sub/alias")
+        let facts = FakeSystemFacts(directories: ["/Users/tester", "/Users/tester/code/app", "/Users/tester/code/app/sub", "/Users/tester/code/app/sub/alias"],
+                                    gitRoots: ["/Users/tester/code/app/sub"])
+        let state = RepositoryState(root: URL(fileURLWithPath: "/Users/tester/code/app"), itemPath: ["sub", "alias"], remoteName: "origin",
+                                    remoteNames: ["origin"], remoteURL: "https://github.com/o/app", commit: commit, isPushed: true, kind: .file)
+        let made = try Planner(facts: facts, repositories: [item: state]).plan(.copyRepositoryLink, context: HereContext(origin: .items, items: [item]))
+        #expect(made.steps == [.copyToPasteboard("https://github.com/o/app/blob/\(commit)/sub/alias")])
+    }
+
+    @Test func theMenuOffersTheRepositoryPageForOneItemOnly() {
+        let registry = ActionRegistry(config: .default, facts: FakeSystemFacts())
+        let one = HereContext(origin: .items, items: [URL(fileURLWithPath: "/a")])
+        let two = HereContext(origin: .items, items: [URL(fileURLWithPath: "/a"), URL(fileURLWithPath: "/b")])
+        #expect(registry.info(.openRepositoryPage, context: one).available)
+        #expect(!registry.info(.openRepositoryPage, context: two).available)
+        #expect(registry.info(.copyRepositoryLink, context: two).available)
     }
 }
