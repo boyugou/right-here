@@ -25,6 +25,10 @@ change them.
 10. **Show a flow as a diagram.** A flow with more than three steps is easier to read as a diagram than as text.
 11. **Do not use filler words.** For example: "simply", "just", "easily", "etc.", "in order to".
 12. **Use the same word for the same thing.** Use the words of the glossary below. Do not use synonyms.
+13. **Write what translates one way.** Every text goes into 29 languages, by machine first. A reading of all of them found the same
+    misreadings in many: "keep asking" became "always ask" in six, "says when it is on" became "says at what time it is on" in eight,
+    a bare "preset" became "default". Say "still", "whether", "agent preset"; give a verb its object ("the preset keeps the prompts on",
+    not "keeps them on"); and quote a button name inside a sentence.
 
 ## Words that do not change
 
