@@ -438,7 +438,7 @@ INDEX = f"""<main id="main">
 {tile("agent", "more-agents", body="body2")}
 {tile("preset", "more-agents", title="title2", body="body2")}
 {tile("newfile", "new-file", body="body2")}
-{tile("copy", "copy-path", body="body2")}
+{tile("copy", "copy-path", body="body3")}
 </div>
 <p class="plain-note" data-i18n="home.what.quick2"></p>
 </div>
@@ -450,7 +450,7 @@ __TRY__
 <h2 id="setup-h" data-i18n="home.setup.title2"></h2>
 <p class="section-lead" data-i18n="home.setup.lead"></p>
 <ol class="steps">
-<li><h3 data-i18n="home.setup.s0.title"></h3><p data-i18n="home.setup.s0.body"></p></li>
+<li><h3 data-i18n="home.setup.s0.title"></h3><p data-i18n="home.setup.s0.body2"></p></li>
 <li><h3 data-i18n="home.setup.s1.title"></h3><p data-i18n="home.setup.s1.body"></p></li>
 <li><h3 data-i18n="home.setup.s2.title"></h3><p data-i18n="home.setup.s2.body"></p></li>
 <li><h3 data-i18n="home.setup.s3.title"></h3><p data-i18n="home.setup.s3.body"></p></li>
@@ -483,7 +483,7 @@ rh setup</code></pre></article>
 <section class="block" id="status" aria-labelledby="status-h">
 <div class="wrap">
 <h2 id="status-h" data-i18n="home.status.title"></h2>
-<p class="section-lead" data-i18n="home.status.lead3"></p>
+<p class="section-lead" data-i18n="home.status.lead4"></p>
 <div class="status">
 <div class="status-col done"><h3 data-i18n="home.status.auto.title"></h3><ul>
 <li data-i18n="home.status.auto.1b"></li><li data-i18n="home.status.auto.2"></li></ul></div>
@@ -492,7 +492,7 @@ rh setup</code></pre></article>
 <div class="status-col open"><h3 data-i18n="home.status.open.title"></h3><ul>
 <li data-i18n="home.status.open.1"></li><li data-i18n="home.status.open.2"></li><li data-i18n="home.status.open.3b"></li><li data-i18n="home.status.open.4"></li></ul></div>
 <div class="status-col next"><h3 data-i18n="home.status.next.title"></h3><ul>
-<li data-i18n="home.status.next.1c"></li><li data-i18n="home.status.next.2"></li><li data-i18n="home.status.next.3"></li></ul></div>
+<li data-i18n="home.status.next.1d"></li><li data-i18n="home.status.next.2"></li><li data-i18n="home.status.next.3"></li></ul></div>
 </div>
 </div>
 </section>
@@ -691,7 +691,7 @@ TROUBLE = "".join([
     trouble("d.t8.title", "doc.t8.body"),
     '<h3 data-i18n="doc.t10.title"></h3>\n<p data-i18n="doc.t10.body"></p>\n'
     + items("doc.t10.a", "doc.t10.b", "doc.t10.c", "doc.t10.d") + "\n",
-    trouble("doc.t9.title", "doc.t9.body"),
+    trouble("doc.t9.title", "doc.t9.body2"),
 ])
 
 DOCS = f"""<main id="main" class="wrap docs">
@@ -714,12 +714,16 @@ DOCS = f"""<main id="main" class="wrap docs">
 <div class="doc-body">
 <h1 data-i18n="docs.title"></h1>
 <p class="lead" data-i18n="doc.lead"></p>
-<p class="banner" data-i18n="doc.status3"></p>
+<p class="banner" data-i18n="doc.status4"></p>
 <p><a href="index.html" data-keep-lang data-i18n="docs.home"></a></p>
 
 <section id="install" aria-labelledby="install-h">
 <h2 id="install-h" data-i18n="doc.install.title"></h2>
-{items("doc.install.1b", "doc.install.2", "doc.install.3", tag="ol", cls="numbered")}
+<ol class="numbered">
+<li><a href="https://github.com/boyugou/right-here/releases/latest" data-i18n="doc.install.1b"></a></li>
+<li data-i18n="doc.install.2"></li>
+<li data-i18n="doc.install.3"></li>
+</ol>
 <p data-i18n="doc.install.brew"></p>
 <pre><code>brew install --cask boyugou/tap/right-here</code></pre>
 <p data-i18n="doc.install.move"></p>
@@ -745,7 +749,7 @@ DOCS = f"""<main id="main" class="wrap docs">
 <p data-i18n="doc.first.p2"></p>
 <p data-i18n="doc.first.p3"></p>
 <p data-i18n="doc.first.p4"></p>
-<p class="beta" data-i18n="doc.first.beta"></p>
+<p class="beta" data-i18n="doc.first.tried"></p>
 <h3 id="ai-setup" data-i18n="doc.ai.title"></h3>
 <p data-i18n="doc.ai.p1"></p>
 <p data-i18n="doc.ai.steps"></p>
@@ -759,7 +763,7 @@ DOCS = f"""<main id="main" class="wrap docs">
 <p data-i18n="doc.use.p1"></p>
 <pre><code>{USE}</code></pre>
 <p data-i18n="doc.use.icloud"></p>
-<p data-i18n="doc.use.preview"></p>
+<p data-i18n="doc.use.preview2"></p>
 <p data-i18n="doc.use.completion"></p>
 </section>
 
@@ -775,7 +779,7 @@ DOCS = f"""<main id="main" class="wrap docs">
 <tr><td><code>open.app.&lt;app&gt;</code></td><td data-i18n="doc.actions.app"></td></tr>
 <tr><td><code>agent.claude</code></td><td data-i18n="doc.actions.agent"></td></tr>
 <tr><td><code>preset.review</code></td><td data-i18n="doc.actions.preset"></td></tr>
-<tr><td><code>copy-path.git-relative</code></td><td data-i18n="doc.actions.copy"></td></tr>
+<tr><td><code>copy-path.git-relative</code></td><td data-i18n="doc.actions.copy2"></td></tr>
 <tr><td><code>new-file.md</code></td><td data-i18n="doc.actions.newfile"></td></tr>
 <tr><td><code>reveal</code></td><td data-i18n="doc.actions.reveal"></td></tr>
 <tr><td><code>repository.copy-link</code></td><td data-i18n="doc.actions.repoCopy"></td></tr>
@@ -811,7 +815,7 @@ DOCS = f"""<main id="main" class="wrap docs">
 <p data-i18n="doc.presets.p5b"></p>
 <p data-i18n="doc.presets.p6"></p>
 <p data-i18n="doc.presets.p7"></p>
-<p class="beta" data-i18n="doc.presets.beta"></p>
+<p class="beta" data-i18n="doc.presets.tried"></p>
 </section>
 
 <section id="shortcuts" aria-labelledby="shortcuts-h">
@@ -825,7 +829,7 @@ DOCS = f"""<main id="main" class="wrap docs">
 <li>Create a new file with Right Here</li>
 <li>Copy a path with Right Here</li>
 </ul>
-<p class="beta" data-i18n="doc.shortcuts.beta"></p>
+<p class="beta" data-i18n="doc.shortcuts.tried"></p>
 </section>
 
 <section id="sync" aria-labelledby="sync-h">
@@ -846,7 +850,7 @@ DOCS = f"""<main id="main" class="wrap docs">
 {items("doc.sync.c1", "doc.sync.c2", "doc.sync.c3", "doc.sync.c4", "doc.sync.c5")}
 <p data-i18n="doc.sync.p9"></p>
 <p data-i18n="doc.sync.p6"></p>
-<p class="beta" data-i18n="doc.sync.beta"></p>
+<p class="beta" data-i18n="doc.sync.tried"></p>
 </section>
 
 <section id="terminals" aria-labelledby="terminals-h">

@@ -128,13 +128,13 @@
 <div class="doc-body">
 <h1 data-i18n="docs.title">Documentation</h1>
 <p class="lead" data-i18n="doc.lead">How to install, set up, configure and fix Right Here.</p>
-<p class="banner" data-i18n="doc.status3">Right Here 1.0 is the first public release. You need a Mac with Apple silicon and macOS 26 or later.</p>
+<p class="banner" data-i18n="doc.status4">Right Here has been public since version 1.0. You need a Mac with Apple silicon and macOS 26 or later.</p>
 <p><a href="index.html" data-keep-lang data-i18n="docs.home">Back to the overview</a></p>
 
 <section id="install" aria-labelledby="install-h">
 <h2 id="install-h" data-i18n="doc.install.title">Install</h2>
 <ol class="numbered">
-<li data-i18n="doc.install.1b">Download the DMG from the Releases page of the project on GitHub.</li>
+<li><a href="https://github.com/boyugou/right-here/releases/latest" data-i18n="doc.install.1b">Download the DMG from the Releases page of the project on GitHub.</a></li>
 <li data-i18n="doc.install.2">Open the DMG and drag Right Here to Applications.</li>
 <li data-i18n="doc.install.3">Open Right Here from Applications.</li>
 </ol>
@@ -181,7 +181,7 @@ rh setup --json               # the report, for a script or an AI assistant</cod
 <p data-i18n="doc.first.p2">Press Set Up. The window runs the same steps as <code>rh setup</code> and lists what it did.</p>
 <p data-i18n="doc.first.p3">Then a card shows three steps. Its button opens System Settings for the Finder extension. The window checks every two seconds, so the card changes when you turn the extension on.</p>
 <p data-i18n="doc.first.p4">After the first setup, the app changes your config file only when you change a setting. Open Config opens the file. Install or Repair runs the other steps of setup again, and leaves the config as it is. Use it after you replace the app with a newer copy.</p>
-<p class="beta" data-i18n="doc.first.beta">Beta: tests cover the setup with temporary folders and fake runners. Not tried yet: the first run in a real window, and the card when you turn the extension on.</p>
+<p class="beta" data-i18n="doc.first.tried">Tests cover the setup with temporary folders and fake runners. Not tried on a real Mac yet: the first run in a real window, and the card when you turn the extension on.</p>
 <h3 id="ai-setup" data-i18n="doc.ai.title">Set up with an AI assistant</h3>
 <p data-i18n="doc.ai.p1">In the app, open AI Assistants and press Copy Setup Prompt for AI. Paste the prompt into your assistant. An assistant that can run commands can also read the playbook with <code>rh docs agent-setup</code>.</p>
 <p data-i18n="doc.ai.steps">The assistant follows these steps:</p>
@@ -212,7 +212,7 @@ rh doctor                     # check the setup
 rh doctor --probe-launch      # test a click: a terminal window opens and closes
 rh config sync status         # compare this Mac's config with the sync folder</code></pre>
 <p data-i18n="doc.use.icloud">Finder shows no extension menu in iCloud Drive. This includes a Desktop or Documents folder that iCloud syncs. Use the Quick Actions there. You can give them keyboard shortcuts in System Settings › Keyboard › Keyboard Shortcuts › Services.</p>
-<p data-i18n="doc.use.preview">The Finder menu page of the setup window shows the menu for a folder. <code>rh menu --explain</code> says what the menu leaves out, and why.</p>
+<p data-i18n="doc.use.preview2">The Finder menu page of the setup window shows the menu for a folder. Press Edit Menu there to move lines, add them or take them out: Reveal in Finder, the repository links and more forms of Copy Path are not in the menu at first. <code>rh menu --explain</code> says what the menu leaves out, and why.</p>
 <p data-i18n="doc.use.completion"><code>rh --generate-completion-script zsh</code> prints a completion script for your shell. It also takes <code>bash</code> and <code>fish</code>.</p>
 </section>
 
@@ -228,7 +228,7 @@ rh config sync status         # compare this Mac's config with the sync folder</
 <tr><td><code>open.app.&lt;app&gt;</code></td><td data-i18n="doc.actions.app">Opens the selection in that app. <code>rh apps</code> lists the apps.</td></tr>
 <tr><td><code>agent.claude</code></td><td data-i18n="doc.actions.agent">Starts Claude Code in the folder, in your login shell.</td></tr>
 <tr><td><code>preset.review</code></td><td data-i18n="doc.actions.preset">Starts an agent with the Review prompt and the selected files.</td></tr>
-<tr><td><code>copy-path.git-relative</code></td><td data-i18n="doc.actions.copy">Copies the path from the git root. The other forms are: full, from your home, file name, shell-escaped, and <code>@path</code>.</td></tr>
+<tr><td><code>copy-path.git-relative</code></td><td data-i18n="doc.actions.copy2">Copies the path from the git root. The other forms are: full, from your home, file name, shell-escaped, and <code>@path</code>; with Edit Menu you can add the parent folder, a quoted path, a file URL and a Markdown link.</td></tr>
 <tr><td><code>new-file.md</code></td><td data-i18n="doc.actions.newfile">Makes an empty Markdown file. Then Finder shows it, or an app opens it.</td></tr>
 <tr><td><code>reveal</code></td><td data-i18n="doc.actions.reveal">Selects the items in Finder.</td></tr>
 <tr><td><code>repository.copy-link</code></td><td data-i18n="doc.actions.repoCopy">Copies the link to the selection's page on GitHub, GitLab, Codeberg or Bitbucket, at the checked-out commit. A commit that is not pushed yet has no page there, so it is refused.</td></tr>
@@ -309,7 +309,7 @@ prompt_arg = "--prompt"   # or "positional"</code></pre>
 <p data-i18n="doc.presets.p5b">The agent must take a first prompt as an argument. Claude Code, Codex, Antigravity, Gemini CLI, GitHub Copilot, Cursor CLI, Qwen Code, Factory Droid and Kiro CLI do. For another agent, set <code>prompt_arg</code> in its <code>[agent.&lt;id&gt;]</code> table to <code>"positional"</code>, or to the flag that carries the prompt. Right Here offers no preset for an agent that cannot take a prompt.</p>
 <p data-i18n="doc.presets.p6">A preset with <code>{files}</code> needs selected files, not folders, and at most <code>max_files</code> of them. If not, the menu leaves it out, or <code>rh</code> refuses it and says why. A prompt cannot contain a line break, another control character or a backslash, and it cannot start with a dash.</p>
 <p data-i18n="doc.presets.p7">The built-in prompts ask the agent not to change files. The agent and its permission settings decide whether it obeys. The prompt contains the file names, and it goes to the agent before you read it. So use presets in folders that you trust.</p>
-<p class="beta" data-i18n="doc.presets.beta">Beta: tests plan each preset and send unusual file names through real shells. Not tried yet: a preset in a real terminal.</p>
+<p class="beta" data-i18n="doc.presets.tried">Tests plan each preset and send unusual file names through real shells. Not tried on a real Mac yet: a preset in a real terminal.</p>
 </section>
 
 <section id="shortcuts" aria-labelledby="shortcuts-h">
@@ -323,7 +323,7 @@ prompt_arg = "--prompt"   # or "positional"</code></pre>
 <li>Create a new file with Right Here</li>
 <li>Copy a path with Right Here</li>
 </ul>
-<p class="beta" data-i18n="doc.shortcuts.beta">Beta: the app contains the four actions and their phrases, and tests cover the command that they make. Not tried yet: the actions in Shortcuts and in Spotlight.</p>
+<p class="beta" data-i18n="doc.shortcuts.tried">The app contains the four actions and their phrases, and tests cover the command that they make. Not tried on a real Mac yet: the actions in Shortcuts and in Spotlight.</p>
 </section>
 
 <section id="sync" aria-labelledby="sync-h">
@@ -371,7 +371,7 @@ rh config sync disable                    # forget the folder; both copies stay<
 </ul>
 <p data-i18n="doc.sync.p9">Read the list. If the changes are yours, run <code>rh config sync pull --allow-commands</code>. <code>rh config sync status</code> shows the same list before you pull. A first pull on a new Mac asks only about programs of your own, not about the built-in apps and agents.</p>
 <p data-i18n="doc.sync.p6">A dotfiles manager can keep <code>config.toml</code> as a link. <code>rh</code> follows the link, but the Finder extension may not, so copy the file instead. A git repository can be the sync folder: commit there.</p>
-<p class="beta" data-i18n="doc.sync.beta">Beta: tests use temporary folders and fake file systems. Not tried yet: real iCloud Drive.</p>
+<p class="beta" data-i18n="doc.sync.tried">Tests use temporary folders and fake file systems. Not tried on a real Mac yet: real iCloud Drive.</p>
 </section>
 
 <section id="terminals" aria-labelledby="terminals-h">
@@ -472,7 +472,7 @@ run_args = ["/usr/bin/open", "-n", "-b", "org.alacritty", "--args", "--working-d
 <li data-i18n="doc.t10.d">Another change of the config is in progress. Wait for it, and run <code>pull</code> again.</li>
 </ul>
 <h3 data-i18n="doc.t9.title">Remove Right Here</h3>
-<p data-i18n="doc.t9.body"><code>rh uninstall</code> removes the runner script, the Quick Actions, the command link and the registration of the extension. It keeps your config. Then delete Right Here.app.</p>
+<p data-i18n="doc.t9.body2"><code>rh uninstall</code> removes the runner script, the Quick Actions, the command link and the registration of the extension. It keeps your config. Then delete Right Here.app. With Homebrew, run <code>rh uninstall</code> first, then <code>brew uninstall --cask right-here</code>; adding <code>--zap</code> deletes your config too.</p>
 </section>
 </div>
 </main>
