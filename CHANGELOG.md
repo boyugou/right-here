@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- **The app builds with Xcode 26 again.** Swift 6.3 (Xcode 26) crashed while compiling the terminal and editor menus of the setup
+  window; Swift 6.4 did not. The gate now also builds with Xcode 26 when it is installed beside a newer one, and a failed app build
+  shows how the log ends.
+- **Homebrew**: `brew install --cask boyugou/tap/right-here` installs the app and `brew install boyugou/tap/rh` the command-line tool,
+  from the tap [boyugou/homebrew-tap](https://github.com/boyugou/homebrew-tap), which each release updates. The formula had a
+  placeholder checksum, installed from a folder that Swift 6.4's build system no longer uses, and asked for its shell completions in a
+  form that `rh` ignored. The cask's zap removes the extension's container and the app's preferences too, and it has a livecheck.
+- The app carries NOTICE beside LICENSE and the third-party notices.
+
 ## 1.0.0 (2026-10-29)
 
 The first public release, and the first version number of the public project: the repository, its releases and the website are

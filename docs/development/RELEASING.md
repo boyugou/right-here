@@ -65,6 +65,10 @@ Then it does these steps, and stops if a notarization fails or is not accepted:
    source archive of the tag into `rh.rb`.
 6. It copies both to the tap (`TAP`, by default `<owner>/homebrew-tap`) and pushes it, with this repository's git identity.
 
+If the copy to the tap fails, the release is already public and its tag cannot be moved, so do not run the script again: copy
+`packaging/homebrew/right-here.rb` to the tap's `Casks/` and `rh.rb` to its `Formula/` by hand, commit with this repository's identity
+and push, then commit `packaging/homebrew` here.
+
 `NOTARY_PROFILE=… ./script/package_dmg.sh` alone builds the DMG and does not publish it. Without `NOTARY_PROFILE`, it builds a signed DMG
 that is not notarized. With `SECURE_TIMESTAMP=0` as well, it needs no network once `uv` has dmgbuild: a dry run of the packaging.
 
