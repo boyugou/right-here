@@ -720,7 +720,7 @@ DOCS = f"""<main id="main" class="wrap docs">
 <section id="install" aria-labelledby="install-h">
 <h2 id="install-h" data-i18n="doc.install.title"></h2>
 <ol class="numbered">
-<li><a href="https://github.com/boyugou/right-here/releases/latest" data-i18n="doc.install.1b"></a></li>
+<li><a href="https://github.com/boyugou/right-here/releases/latest" rel="noopener" data-i18n="doc.install.1b"></a></li>
 <li data-i18n="doc.install.2"></li>
 <li data-i18n="doc.install.3"></li>
 </ol>
