@@ -62,6 +62,7 @@ Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement through GitHub's
 private reporting and contact options for this repository (the "Report content"
 option on a comment or issue, or the private report described in SECURITY.md).
+If neither fits, open an issue that asks for a private way to reach the maintainers, without the details.
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the

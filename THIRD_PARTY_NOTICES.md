@@ -38,5 +38,5 @@ exception below):
 - Icons of third-party apps shown in menus and in the setup window are read from the person's own installed apps at
   run time. The app and `rh` do not include them, and the pictures of the window in this repository and on the website
   draw plain tiles in their place.
-- Product names such as Ghostty, Claude, Claude Code, Codex, Gemini CLI, Terminal and Finder are used only to refer
-  to those products (nominative use). Right Here is not affiliated with, endorsed by or sponsored by their owners.
+- Product names such as Ghostty, Claude, Claude Code, Codex, Gemini CLI, Microsoft Word, Excel and PowerPoint, Terminal and Finder are
+  used only to refer to those products (nominative use). Right Here is not affiliated with, endorsed by or sponsored by their owners.

@@ -124,7 +124,8 @@ A person can also add an agent in the config, with no code.
 
 Right Here is in English and 29 other languages. Machines made all 29 translations, and they wait for review. A correction from a native speaker helps a lot.
 
-1. Open `Localization/Localizable.xcstrings`. The text of the permission prompts is in `Localization/InfoPlist.xcstrings`.
+1. Open `Localization/Localizable.xcstrings`. The text of the permission prompts is in `Localization/InfoPlist.xcstrings`, the
+   Shortcuts actions are in `Localization/AppIntents.xcstrings`, and their Siri and Spotlight phrases in `Localization/AppShortcuts.xcstrings`.
 2. Fix what reads badly. Use the words that macOS itself uses in that language.
 3. Change `"state"` to `"translated"` in each entry that you checked.
 4. Run `./script/compile_localizations.py` and `./script/verify_localizations.py`.

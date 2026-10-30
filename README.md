@@ -7,10 +7,10 @@
 **Right-click a folder. Open it in your terminal, your editor or an AI agent.**
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](LICENSE)
-[![Swift 6](https://img.shields.io/badge/Swift-6-F05138?style=flat-square&logo=swift&logoColor=white)](.)
-[![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-black?style=flat-square&logo=apple&logoColor=white)](.)
-[![MCP Server](https://img.shields.io/badge/MCP-server-6B57D2?style=flat-square)](.)
-[![Languages](https://img.shields.io/badge/languages-30-orange?style=flat-square)](.)
+[![Swift 6](https://img.shields.io/badge/Swift-6-F05138?style=flat-square&logo=swift&logoColor=white)](Package.swift)
+[![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-black?style=flat-square&logo=apple&logoColor=white)](#install)
+[![MCP Server](https://img.shields.io/badge/MCP-server-6B57D2?style=flat-square)](#use-with-ai-assistants)
+[![Languages](https://img.shields.io/badge/languages-30-orange?style=flat-square)](#languages)
 
 [Website](https://boyugou.github.io/right-here/) · [Install](#install) · [Set up](#set-up) · [Command line](#use-the-command-line) · [AI assistants](#use-with-ai-assistants) · [Documentation](docs/INDEX.md) · [Changelog](CHANGELOG.md)
 
@@ -169,7 +169,7 @@ To let an assistant set Right Here up, give it [`docs/AGENT_SETUP.md`](docs/AGEN
 
 ## Status
 
-Right Here is in beta. Tests cover the planning code, the command line, the Quick Actions, the MCP server and the plugin. They use temporary folders and real shells. Some parts need a real Finder and real terminals, and [`docs/development/MANUAL_CHECKS.md`](docs/development/MANUAL_CHECKS.md) lists them. Ghostty and Terminal were tried on a real Mac. The other terminals were not tried yet.
+Right Here 1.0 is the first public release. Config keys and the command line's output can still change from one version to the next, and the [CHANGELOG](CHANGELOG.md) says what changed. Tests cover the planning code, the command line, the Quick Actions, the MCP server and the plugin. They use temporary folders and real shells. Some parts need a real Finder and real terminals, and [`docs/development/MANUAL_CHECKS.md`](docs/development/MANUAL_CHECKS.md) lists them. Ghostty and Terminal were tried on a real Mac. The other terminals were not tried yet.
 
 ## Languages
 

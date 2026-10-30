@@ -112,7 +112,7 @@ package_mas() {
   mkdir -p "$APP/Contents/Helpers"
   cp "$RH_BINARY" "$APP/Contents/Helpers/rh"
   mkdir -p "$APP/Contents/Resources"
-  cp LICENSE THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/"
+  cp LICENSE NOTICE THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/"
 
   # Embed provisioning profiles if provided
   if [[ -n "${MAS_APP_PROVISIONING_PROFILE:-}" && -f "$MAS_APP_PROVISIONING_PROFILE" ]]; then

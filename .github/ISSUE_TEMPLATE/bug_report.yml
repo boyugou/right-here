@@ -37,5 +37,5 @@ body:
     id: config
     attributes:
       label: Relevant part of your config
-      description: The `[[app]]`, `[[agent]]` or other section involved, if any.
+      description: The `[[app]]`, `[agent.<id>]` or other section involved, if any.
       render: toml
