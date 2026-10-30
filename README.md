@@ -37,7 +37,8 @@ with another address), regenerates `sitemap.xml` and `robots.txt`, and makes the
 and loads `i18n/<lang>.json`. The HTML carries the English text; a key a language file lacks keeps its English text.
 `ar fa he ur` set `dir="rtl"`. In a string, text between backticks becomes `<code>`. Browsers do not allow
 `fetch` of local files, so from `file://` only English shows (the page says so); over http(s) every language works.
-The translations are machine-made and await review by native speakers.
+The translations are machine-made. In October 2026 every language was read through against the English, the app's own words and
+macOS's (the names of buttons, pages and menu items are the app's); a review by native speakers is still to come.
 
 ## Changing things
 
