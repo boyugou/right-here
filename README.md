@@ -33,8 +33,9 @@ Right Here adds a menu to Finder. Right-click a folder, a file or the empty part
 | **Open in an editor** | Opens the folder or the files in VS Code, Cursor, Zed, Xcode or another editor. |
 | **Start an AI agent** | Starts Claude Code, Codex, Gemini CLI or another agent in the folder. Your login shell runs it, with your `PATH` and aliases. |
 | **Agent presets** | Sends the selected files to an agent with a prompt: Review, Explain, Write Tests, or your own. |
-| **New File** | Makes a text file, a Markdown file, or a file from your own template. |
+| **New File** | Makes a text file, a Markdown file, a blank Word, Excel or PowerPoint document, or a file from your own template. |
 | **Copy Path** | Copies the path in the form that you need: full, from your home, from the git root, or as an `@` mention for an agent. |
+| **Repository link** | Copies or opens the page of the file on GitHub, GitLab, Codeberg or Bitbucket, at the commit that you have checked out. Add it to the menu in the menu editor. |
 
 The same actions run from the `rh` command, from Quick Actions (right-click, then **Quick Actions**), from the Shortcuts app, Siri and Spotlight (where a shortcut can also pick one of your pinned or recent folders) and from AI assistants.
 
