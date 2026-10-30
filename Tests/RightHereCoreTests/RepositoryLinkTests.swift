@@ -56,6 +56,8 @@ struct RepositoryLinkTests {
     @Test func aTransportPrefixIsNotAHost() {
         #expect(RepositoryLink.parse(remote: "ext::sh -c touch% /tmp/x") == .failure(.unreadableRemote))
         #expect(RepositoryLink.parse(remote: "fd::17") == .failure(.unreadableRemote))
+        // A helper whose name has a dot would otherwise read as the host before a colon (an address with "://" never gets that far).
+        #expect(RepositoryLink.parse(remote: "my.helper::/srv/owner/repo") == .failure(.unreadableRemote))
     }
 
     @Test func anotherHostIsNamedInTheRefusal() {

@@ -858,6 +858,20 @@ struct RepositoryReaderTests {
         #expect(states[item]?.gitError?.contains("not a git repository") == true, "\(String(describing: states[item]))")
     }
 
+    /// A submodule is a commit of another repository in this one's tree: told apart from a folder, since its pages are in that repository.
+    @Test func aSubmoduleIsToldApartFromAFolder() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        let head = try lab.git(["rev-parse", "HEAD"]).trimmingCharacters(in: .whitespacesAndNewlines)
+        try lab.git(["update-index", "--add", "--cacheinfo", "160000,\(head),mod"])
+        try lab.git(["commit", "-q", "-m", "submodule"])
+        let mod = lab.repository.appendingPathComponent("mod")
+        try FileManager.default.createDirectory(at: mod, withIntermediateDirectories: true)
+        let facts = FakeSystemFacts(directories: [lab.repository.path, mod.path], gitRoots: [lab.repository.path])
+        let states = try await RepositoryReader.read(items: [mod], facts: facts, runner: lab.runner)
+        #expect(states[mod]?.kind == .submodule, "\(String(describing: states[mod]))")
+    }
+
     /// git that does not precompose names (`core.precomposeunicode=false`) finds a precomposed file only by its precomposed name.
     @Test func theNameIsLookedUpPrecomposed() async throws {
         let lab = try Lab()
