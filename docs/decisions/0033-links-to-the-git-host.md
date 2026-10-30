@@ -1,6 +1,6 @@
 # 0033: A file's link on its git host, copied or opened
 
-Date: 2026-10-29. Status: decided, not built yet.
+Date: 2026-10-29. Status: built (after 1.0.0). The Codeberg folder and root forms were measured on 2026-10-30.
 
 ## Decision
 
@@ -27,13 +27,13 @@ when the item is clicked. For the same reason the titles name the repository, no
   reaches the clipboard, the browser or the log. Every segment of the owner and repository path must be letters, digits, `-`, `_` and
   `.`, and not `.` or `..`. Anything else stops the action.
 - **The hosts**: github.com, gitlab.com, codeberg.org and bitbucket.org, each with its own form. Tried on public repositories on
-  2026-10-29 with a commit's full hash; all answered 200, except where the table says otherwise:
+  2026-10-29 and 2026-10-30 with a commit's full hash; every form answered 200:
 
   | Host | File | Folder | Repository root |
   | --- | --- | --- | --- |
   | github.com | `/<owner>/<repo>/blob/<commit>/<path>` | `/tree/<commit>/<path>` | `/tree/<commit>` |
   | gitlab.com (groups may nest) | `/<group…>/<repo>/-/blob/<commit>/<path>` | `/-/tree/<commit>/<path>` | `/-/tree/<commit>` |
-  | codeberg.org | `/<owner>/<repo>/src/commit/<commit>/<path>` | the same (not measured: the host answered 429) | the same, no path (not measured) |
+  | codeberg.org | `/<owner>/<repo>/src/commit/<commit>/<path>` | the same | the same, no path |
   | bitbucket.org | `/<owner>/<repo>/src/<commit>/<path>` | the same | `/src/<commit>/` |
 
   Another host (a company's GitHub Enterprise or GitLab) stops the action with a sentence that names the host. A setting that maps such

@@ -16,6 +16,9 @@
   where; a change that renames or adds a Quick Action updates it at once.
 - **One copy of the app.** An older copy, or a second copy of one version, says which copy to keep and sets nothing up, from the window or from
   `rh setup`. The doctor lists the installed copies when there is more than one.
+- **Repository links**: Copy Repository Link and Open Repository Page give the selected item's page on GitHub, GitLab, Codeberg or
+  Bitbucket at the checked-out commit, and refuse a commit that is not pushed or a file that is not in it
+  ([ADR 0033](docs/decisions/0033-links-to-the-git-host.md)). Add them in the menu editor.
 - **Quick Actions**, made from the config. The doctor notices when they differ from it.
 - **Shortcuts and Spotlight.** Four App Intents: Open in Terminal, Start AI Agent, Create New File and Copy Path. Each can take a
   pinned or recent folder picked from a list (a Saved Folder) instead of a folder given as a file.
@@ -67,11 +70,8 @@ terminals.
 
 Each idea needs a short decision record before it is built.
 
-1. **A file's link on its git host**, copied (Copy Repository Link) or opened (Open Repository Page): the checked-out commit's page of
-   the item on GitHub, GitLab, Codeberg or Bitbucket, refused for a commit that is not pushed or a file that is not in it. Decided in
-   [ADR 0033](docs/decisions/0033-links-to-the-git-host.md); built, in the next release.
-2. **Self-hosted git hosts** for those links (a company's GitHub Enterprise or GitLab), as a setting that maps a host to one of the four
-   forms. After 1, when someone asks.
+1. **Self-hosted git hosts** for the repository links (a company's GitHub Enterprise or GitLab), as a setting that maps a host to one of
+   the four forms ([ADR 0033](docs/decisions/0033-links-to-the-git-host.md)). When someone asks.
 
 Project-local settings (a `.right-here.toml` at the git root, behind a step of trust) were considered and not built: the menu could not
 show them, what is left is a terminal placement, and an agent in the folder could grant the trust itself
