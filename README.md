@@ -6,6 +6,7 @@
 
 **Right-click a folder. Open it in your terminal, your editor or an AI agent.**
 
+[![CI](https://github.com/boyugou/right-here/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/boyugou/right-here/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](LICENSE)
 [![Swift 6](https://img.shields.io/badge/Swift-6-F05138?style=flat-square&logo=swift&logoColor=white)](Package.swift)
 [![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-black?style=flat-square&logo=apple&logoColor=white)](#install)
