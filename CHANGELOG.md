@@ -3,7 +3,7 @@
 ## 1.0.0 (2026-10-29)
 
 The first public release, and the first version number of the public project: the repository, its releases and the website are
-open to everyone, under the Apache License 2.0. The 0.x versions below were the private beta.
+open to everyone, under the Apache License 2.0. The 0.x versions before it, in CHANGELOG.md, were the private beta.
 
 - **Every language read through**: Hindi (112 corrections), Malay (138), Persian (78), Urdu (35), Bengali (48), Marathi (48), Tamil
   (24) and Telugu (28) join the 22 before them. In the languages macOS does not ship, the names of macOS's own places stay in English,
