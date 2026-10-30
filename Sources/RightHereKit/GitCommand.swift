@@ -14,6 +14,27 @@ import RightHereCore
 enum GitCommand {
     static let executable = "/usr/bin/git"
 
+    /// What a person is told when git is not there.
+    static let notInstalled = "git is not installed. It comes with the Command Line Tools: run `xcode-select --install` in Terminal, then try again."
+
+    /// Whether there is a git for `/usr/bin/git` to start. On a Mac without Xcode or the Command Line Tools, `/usr/bin/git` only forwards to
+    /// the git of the active developer folder, which is not there: it offers to install the tools and fails, so a click in Finder would end
+    /// in a system window. The folder is `DEVELOPER_DIR`, else the one `xcode-select` chose, which it keeps as the link
+    /// `/var/db/xcode_select_link` (measured), else where Xcode and the Command Line Tools install themselves. Read from the disk, so that
+    /// asking starts nothing.
+    static func gitIsInstalled(environment: [String: String] = ProcessInfo.processInfo.environment,
+                               linkTarget: (String) -> String? = { try? FileManager.default.destinationOfSymbolicLink(atPath: $0) },
+                               isExecutable: (String) -> Bool = { FileManager.default.isExecutableFile(atPath: $0) }) -> Bool {
+        if let folder = environment["DEVELOPER_DIR"], !folder.isEmpty { return isExecutable(folder + "/usr/bin/git") }
+        if let folder = linkTarget("/var/db/xcode_select_link") { return isExecutable(folder + "/usr/bin/git") }
+        return ["/Library/Developer/CommandLineTools", "/Applications/Xcode.app/Contents/Developer"].contains { isExecutable($0 + "/usr/bin/git") }
+    }
+
+    /// Throws `notInstalled` before any git command when there is no git to start.
+    static func requireInstalled(_ installed: Bool) throws {
+        guard installed else { throw ExecutionError.stepFailed(index: 0, step: "git", message: notInstalled) }
+    }
+
     /// How long a command that only reads (the list of worktrees, the configuration, deleting a branch) may take. A repository whose configuration includes
     /// a named pipe makes every git command in it wait for a writer, which would hold a request of the MCP server, or the setup window, for ever
     /// (measured: `git worktree list`, `git config` and `git status` all stay).

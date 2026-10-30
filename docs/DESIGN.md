@@ -162,6 +162,9 @@ Verified on macOS 26.x (build as reported by `sw_vers`):
   not find a precomposed name given as an argument and found it on its input (measured 2026-10-30 with Homebrew's git 2.54.0 and
   Apple's 2.50.1), so names that git has
   to look up go on its input (ADR 0033).
+- `xcode-select` keeps the active developer folder as the link `/var/db/xcode_select_link` (measured on macOS 27 with Xcode 27.1), and
+  `/usr/bin/git` starts the git in that folder's `usr/bin`. Right Here reads the link (or `DEVELOPER_DIR`) and looks for that git
+  before it starts one: without Xcode or the Command Line Tools, `/usr/bin/git` has none (not measured here: no Mac without them).
 
 Sourced:
 

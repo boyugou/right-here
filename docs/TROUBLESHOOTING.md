@@ -173,6 +173,12 @@ A repository can be another person's code. So for these commands, git runs with 
 monitor turned off, and fetches nothing. Your own git configuration still applies. Git LFS that you set up for your account
 (`git lfs install`) works.
 
+## An action says git is not installed
+
+The worktree actions and the repository links need git. macOS has it only with Xcode or the Command Line Tools: run
+`xcode-select --install` in Terminal, wait for the installation to finish, then try again. Right Here looks for git before it starts
+it, so a click never ends in macOS's window that offers the tools.
+
 ## WezTerm, kitty or Alacritty
 
 Right Here has built-in adapters for WezTerm, kitty and Alacritty. You do not need a template for them.

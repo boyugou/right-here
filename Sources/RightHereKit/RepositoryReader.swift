@@ -8,8 +8,15 @@ import RightHereCore
 public enum RepositoryReader {
     /// The state of each item that is in a repository, by the item's normalized URL (as the planner looks it up); an item outside any
     /// repository has no entry.
-    public static func read(items: [URL], facts: any SystemFacts, runner: any ProcessRunner = LiveProcessRunner()) async throws -> [URL: RepositoryState] {
+    public static func read(items: [URL], facts: any SystemFacts, runner: any ProcessRunner = LiveProcessRunner(),
+                            gitInstalled: Bool? = nil) async throws -> [URL: RepositoryState] {
         var states: [URL: RepositoryState] = [:]
+        guard gitInstalled ?? GitCommand.gitIsInstalled() else {
+            for item in items.map(\.lexicallyNormalized) where facts.gitRoot(containing: item) != nil {
+                states[item] = RepositoryState(root: nil, gitError: GitCommand.notInstalled)
+            }
+            return states
+        }
         var repositories: [String: RepositoryState] = [:]
         var found: [(item: URL, top: String, path: [String])] = []
         for item in items.map(\.lexicallyNormalized) {

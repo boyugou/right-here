@@ -102,7 +102,9 @@ public enum GitWorktreeManager {
         return base.appendingPathComponent(branch.replacingOccurrences(of: "/", with: "-"), isDirectory: true)
     }
 
-    public static func listWorktrees(in gitRoot: URL, runner: any ProcessRunner = LiveProcessRunner()) async throws -> [WorktreeEntry] {
+    public static func listWorktrees(in gitRoot: URL, runner: any ProcessRunner = LiveProcessRunner(),
+                                     gitInstalled: Bool? = nil) async throws -> [WorktreeEntry] {
+        try GitCommand.requireInstalled(gitInstalled ?? GitCommand.gitIsInstalled())
         // `-z`: without it a folder name with a line break in it reads as more lines of the list, and forges a worktree.
         let step = GitCommand.step(["worktree", "list", "--porcelain", "-z"], in: gitRoot.path, blanking: GitCommand.Defined())
         let result = try await runner.run(step, timeout: GitCommand.reading)
@@ -153,7 +155,9 @@ public enum GitWorktreeManager {
         return entries
     }
 
-    public static func prepareWorktree(gitRoot: URL, branch preferredBranch: String?, runner: any ProcessRunner = LiveProcessRunner()) async throws -> WorktreeResult {
+    public static func prepareWorktree(gitRoot: URL, branch preferredBranch: String?, runner: any ProcessRunner = LiveProcessRunner(),
+                                       gitInstalled: Bool? = nil) async throws -> WorktreeResult {
+        try GitCommand.requireInstalled(gitInstalled ?? GitCommand.gitIsInstalled())
         let branchName: String
         if let preferred = preferredBranch?.trimmingCharacters(in: .whitespacesAndNewlines), !preferred.isEmpty {
             if let refusal = branchNameRefusal(preferred) { throw WorktreeError.invalidBranch(refusal) }

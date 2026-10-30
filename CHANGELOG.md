@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Without Xcode or the Command Line Tools, the worktree actions and the repository links say that git is not installed and how to
+  get it, instead of starting `/usr/bin/git`, which only offers to install the tools.
+
 ## 1.1.1 (2026-10-30)
 
 The repository links where one check adds them, and clearer release notes.

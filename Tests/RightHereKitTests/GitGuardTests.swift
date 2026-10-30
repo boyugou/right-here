@@ -886,3 +886,31 @@ struct RepositoryReaderTests {
         #expect(states[item]?.kind == .file, "\(String(describing: states[item]))")
     }
 }
+
+/// On a Mac without Xcode or the Command Line Tools `/usr/bin/git` has no git to start: it offers to install the tools and fails. Right
+/// Here asks the disk first and says what to install, and starts nothing.
+@Suite("git guard: a Mac without git")
+struct GitNotInstalledTests {
+    @Test func whereGitIsComesFromDeveloperDirTheLinkOfXcodeSelectOrTheUsualFolders() {
+        let has: Set<String> = ["/opt/Xcode.app/Contents/Developer/usr/bin/git", "/Library/Developer/CommandLineTools/usr/bin/git"]
+        let executable: (String) -> Bool = { has.contains($0) }
+        #expect(GitCommand.gitIsInstalled(environment: ["DEVELOPER_DIR": "/opt/Xcode.app/Contents/Developer"], linkTarget: { _ in nil }, isExecutable: executable))
+        #expect(!GitCommand.gitIsInstalled(environment: ["DEVELOPER_DIR": "/nowhere"], linkTarget: { _ in "/opt/Xcode.app/Contents/Developer" }, isExecutable: executable))
+        #expect(GitCommand.gitIsInstalled(environment: [:], linkTarget: { _ in "/opt/Xcode.app/Contents/Developer" }, isExecutable: executable))
+        // The link names a folder that was removed (an Xcode moved to the Trash): no git, whatever else is there.
+        #expect(!GitCommand.gitIsInstalled(environment: [:], linkTarget: { _ in "/Applications/Old.app/Contents/Developer" }, isExecutable: executable))
+        #expect(GitCommand.gitIsInstalled(environment: [:], linkTarget: { _ in nil }, isExecutable: executable))
+        #expect(!GitCommand.gitIsInstalled(environment: [:], linkTarget: { _ in nil }, isExecutable: { _ in false }))
+    }
+
+    @Test func withoutGitNothingIsStartedAndThePersonIsToldWhatToInstall() async throws {
+        let runner = FakeProcessRunner(results: [])
+        let root = URL(fileURLWithPath: "/work/app")
+        let states = try await RepositoryReader.read(items: [root], facts: FakeSystemFacts(directories: ["/work/app"], gitRoots: ["/work/app"]),
+                                                     runner: runner, gitInstalled: false)
+        #expect(states[root]?.gitError?.contains("xcode-select --install") == true)
+        await #expect(throws: ExecutionError.self) { _ = try await GitWorktreeManager.listWorktrees(in: root, runner: runner, gitInstalled: false) }
+        await #expect(throws: ExecutionError.self) { _ = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: "x", runner: runner, gitInstalled: false) }
+        #expect(runner.recorded.isEmpty, "git was started without git: \(runner.recorded)")
+    }
+}
