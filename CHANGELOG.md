@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **New File's documents, from an independent review**: the blank PowerPoint presentation has the Presentation Properties part the
+  standard asks for (PowerPoint would likely have offered to repair the file); a template whose extension is docx, xlsx or pptx makes
+  that document without a `format` (it made an empty file); the window shows such a template's extension and no contents to edit
+  (every edit was refused); showing a template takes every mention of it out of `new_file.hidden`; a write that fails part-way leaves no
+  half document behind, and an interrupted one goes on; an AI assistant that changes the extension of a template with contents waits
+  for your approval, as for the contents.
 - Without Xcode or the Command Line Tools, the worktree actions and the repository links say that git is not installed and how to
   get it, instead of starting `/usr/bin/git`, which only offers to install the tools. When the menu has a repository link, the Checks
   page has a git row, and `rh doctor` a `git` check, that says whether git is there and how to get it.

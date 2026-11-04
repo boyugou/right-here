@@ -87,6 +87,15 @@ extension ConfigBuilder {
                 return nil
             }
         }
+        // An Office extension without a format would make an empty file that no Office app opens (the window's New Template and `rh config
+        // set …extension docx` make such a template): the extension says which document it is.
+        if format == nil, let implied = OfficeFormat(rawValue: ext.lowercased()) {
+            if !contents.isEmpty {
+                sink.error(reader.path + ["contents"], "a .\(ext) file is a \(implied.rawValue) document, not text: leave out contents, and Right Here makes a blank one")
+                return nil
+            }
+            format = implied
+        }
         return NewFileTemplate(
             id: id, title: title, baseName: baseName,
             fileExtension: ext, contents: contents, format: format, openWith: reader.string("open_with")

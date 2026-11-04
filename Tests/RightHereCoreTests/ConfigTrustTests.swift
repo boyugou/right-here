@@ -102,6 +102,8 @@ struct ConfigTrustTests {
         #expect(keys(head + "contents = \"print(2)\\n\"\n") == ["new_file.template.*.contents"])
         #expect(keys(head + "[[new_file.template]]\nid = \"plist\"\ntitle = \"P\"\nextension = \"plist\"\ncontents = \"<plist/>\"\n") == ["new_file.template.*.contents"], "a template that is new")
         #expect(keys(head).isEmpty, "contents taken out leaves an empty file")
+        // The same script under another extension is another file: as .command it runs when it is opened.
+        #expect(keys("[[new_file.template]]\nid = \"py\"\ntitle = \"Python\"\nextension = \"command\"\ncontents = \"print(1)\\n\"\n") == ["new_file.template.*.contents"])
         #expect(ConfigTrust.approvals(changingFrom: ConfigParser.parse("").config, to: ConfigParser.parse("").config).isEmpty, "the built-in templates are what they were")
     }
 

@@ -139,7 +139,8 @@ public struct LiveExecutor: Sendable {
 
     /// Creates the file only if it does not exist, so a name chosen while planning cannot overwrite
     /// a file that appeared in the meantime.
-    static func createFile(_ file: CreateFileStep) throws {
+    static func createFile(_ file: CreateFileStep,
+                           write: (Int32, UnsafeRawPointer?, Int) -> Int = { Darwin.write($0, $1, $2) }) throws {
         let descriptor = Darwin.open(file.path, O_WRONLY | O_CREAT | O_EXCL, 0o644)
         guard descriptor >= 0 else {
             if errno == EEXIST { throw ExecutionError.fileExists(path: file.path) }
@@ -149,9 +150,13 @@ public struct LiveExecutor: Sendable {
         let bytes = file.bytes
         var written = 0
         while written < bytes.count {
-            let count = bytes[written...].withUnsafeBytes { Darwin.write(descriptor, $0.baseAddress, $0.count) }
+            let count = bytes[written...].withUnsafeBytes { write(descriptor, $0.baseAddress, $0.count) }
+            if count < 0, errno == EINTR { continue }
             guard count > 0 else {
-                throw ExecutionError.stepFailed(index: 0, step: "create \(file.path)", message: String(cString: strerror(errno)))
+                let reason = count < 0 ? String(cString: strerror(errno)) : "nothing more could be written"
+                // A full disk or a quota ends the write part-way: the file is this action's own (O_EXCL made it), and part of a document is no document.
+                Darwin.unlink(file.path)
+                throw ExecutionError.stepFailed(index: 0, step: "create \(file.path)", message: reason)
             }
             written += count
         }

@@ -36,3 +36,12 @@ all five are shown at first, and each can be unchecked.
 ## Not checked
 
 - Opening each document in Word, Excel and PowerPoint: `docs/development/MANUAL_CHECKS.md`, section 6b.
+
+## After an independent review (2026-11-03)
+
+- The presentation gained `ppt/presProps.xml`: ECMA-376 Part 1, 13.3.7 asks every presentation for exactly one Presentation Properties
+  part; python-pptx and Quick Look did not miss it, PowerPoint likely would have.
+- An Office extension implies its format: a template with `extension = "docx"` and no `format` made an empty file. Text contents for
+  such an extension are refused.
+- A failed write removes the file it made (the write is exclusive, so the file is the action's own); an interrupted write goes on.
+

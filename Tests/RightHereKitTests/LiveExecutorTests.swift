@@ -109,6 +109,36 @@ struct LiveExecutorTests {
         #expect(try [UInt8](Data(contentsOf: URL(fileURLWithPath: path))) == OfficeDocument.bytes(.xlsx), "a workbook, not an empty file named .xlsx")
     }
 
+    /// A full disk ends a write part-way: the half-written document was left in the folder, under the name the next try would have used.
+    @Test func aWriteThatFailsPartWayLeavesNoFileBehind() throws {
+        let directory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let path = directory.appendingPathComponent("untitled.docx").path
+        var calls = 0
+        let failing: (Int32, UnsafeRawPointer?, Int) -> Int = { descriptor, buffer, count in
+            calls += 1
+            if calls == 1 { return Darwin.write(descriptor, buffer, min(count, 100)) }
+            errno = ENOSPC
+            return -1
+        }
+        #expect(throws: ExecutionError.self) { try LiveExecutor.createFile(CreateFileStep(path: path, format: .docx), write: failing) }
+        #expect(!FileManager.default.fileExists(atPath: path), "part of a document was left behind")
+    }
+
+    /// A signal that interrupts the write is no failure: the write goes on, and the whole document is there.
+    @Test func anInterruptedWriteGoesOn() throws {
+        let directory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let path = directory.appendingPathComponent("untitled.pptx").path
+        var interrupted = false
+        let interrupting: (Int32, UnsafeRawPointer?, Int) -> Int = { descriptor, buffer, count in
+            if !interrupted { interrupted = true; errno = EINTR; return -1 }
+            return Darwin.write(descriptor, buffer, count)
+        }
+        try LiveExecutor.createFile(CreateFileStep(path: path, format: .pptx), write: interrupting)
+        #expect(try [UInt8](Data(contentsOf: URL(fileURLWithPath: path))) == OfficeDocument.bytes(.pptx))
+    }
+
     @Test func createFileInAMissingFolderFails() async {
         let plan = LaunchPlan(action: "t", summary: "t", steps: [.createFile(CreateFileStep(path: "/nonexistent-rh-test-folder/x.txt"))])
         await #expect(throws: ExecutionError.self) { try await executor(FakeProcessRunner()).execute(plan) }

@@ -65,6 +65,26 @@ struct OfficeDocumentTests {
         #expect(json.contains("\"format\":\"docx\"") && json.count < 1_000, "the plan says the format, not kilobytes of a package: \(json.count) bytes")
     }
 
+    /// A template the window's New Template form or `rh config` makes with the extension docx and no format made a file of 0 bytes, which no
+    /// Office app opens: the extension now says which document it is, and text contents for it are refused.
+    /// `hidden = ["pptx", "pptx"]`: checking the template took out only the first, and the second kept it hidden.
+    @Test func showingATemplateTakesEveryMentionOutOfHidden() throws {
+        let parsed = ConfigParser.parse("[new_file]\nhidden = [\"pptx\", \"md\", \"pptx\"]\n")
+        let state = NewFileOptions.state(config: parsed.config, entries: [:], facts: FakeSystemFacts(), localizer: .english)
+        let pptx = try #require(state.row(id: "pptx"))
+        #expect(NewFileOptions.operations(settingShown: true, of: pptx, in: state)
+                == [.expect(["pptx", "md", "pptx"], in: "new_file.hidden"), .remove(at: 3, from: "new_file.hidden"), .remove(at: 1, from: "new_file.hidden")])
+    }
+
+    @Test func anOfficeExtensionWithoutAFormatMakesThatDocument() throws {
+        let parsed = ConfigParser.parse("[[new_file.template]]\nid = \"report\"\ntitle = \"Report\"\nextension = \"docx\"\n")
+        #expect(parsed.diagnostics.isEmpty, "\(parsed.diagnostics)")
+        let report = try #require(parsed.config.newFile.templates.first { $0.id == "report" })
+        #expect(report.format == .docx)
+        let texted = ConfigParser.parse("[[new_file.template]]\nid = \"report\"\ntitle = \"Report\"\nextension = \"xlsx\"\ncontents = \"a,b\"\n")
+        #expect(texted.diagnostics.contains { $0.message.contains("not text") }, "\(texted.diagnostics)")
+    }
+
     @Test func aTemplatesFormatMatchesItsExtensionAndHasNoContents() {
         let base = "[[new_file.template]]\nid = \"w\"\ntitle = \"W\"\n"
         let good = ConfigParser.parse(base + "extension = \"docx\"\nformat = \"docx\"\n")

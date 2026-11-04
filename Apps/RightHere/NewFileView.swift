@@ -193,17 +193,27 @@ struct TemplatePage: View {
                              commit: { typed, _ in await model.setTemplateBaseName(id, typed) })
             }
             RowDivider()
-            OptionRow(label: l10n.string(.appTemplateExtension)) {
-                EditableText(label: l10n.string(.appTemplateExtension), prompt: "txt", monospaced: true, current: { model.template(id)?.fileExtension ?? "" },
-                             commit: { typed, _ in await model.setTemplateExtension(id, typed) })
+            if row.format != nil {
+                // A Word, Excel or PowerPoint document: its extension is the format's, and it has no contents to edit (the config refuses both).
+                OptionRow(label: l10n.string(.appTemplateExtension)) {
+                    Text(verbatim: row.fileExtension)
+                        .font(.body.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+                RowDivider()
+            } else {
+                OptionRow(label: l10n.string(.appTemplateExtension)) {
+                    EditableText(label: l10n.string(.appTemplateExtension), prompt: "txt", monospaced: true, current: { model.template(id)?.fileExtension ?? "" },
+                                 commit: { typed, _ in await model.setTemplateExtension(id, typed) })
+                }
+                RowDivider()
+                OptionRow(label: l10n.string(.appTemplateContents), help: l10n.string(.appTemplateContentsHelp), stacked: true) {
+                    EditableText(label: l10n.string(.appTemplateContents), prompt: "", monospaced: true, block: true, current: { model.template(id)?.contents ?? "" },
+                                 commit: { typed, _ in await model.setTemplateContents(id, typed) },
+                                 restCommit: { typed, _ in await model.setTemplateContents(id, typed, announcing: false) })
+                }
+                RowDivider()
             }
-            RowDivider()
-            OptionRow(label: l10n.string(.appTemplateContents), help: l10n.string(.appTemplateContentsHelp), stacked: true) {
-                EditableText(label: l10n.string(.appTemplateContents), prompt: "", monospaced: true, block: true, current: { model.template(id)?.contents ?? "" },
-                             commit: { typed, _ in await model.setTemplateContents(id, typed) },
-                             restCommit: { typed, _ in await model.setTemplateContents(id, typed, announcing: false) })
-            }
-            RowDivider()
             OptionRow(label: l10n.string(.appTemplateOpensWith)) {
                 ChoiceMenu(shown: appName(row, state), font: .body, accessibilityLabel: l10n.string(.appTemplateOpensWith)) {
                     Picker(selection: Binding(get: { row.openWith ?? "" }, set: { app in Task { await model.setTemplateOpensWith(id, app.isEmpty ? nil : app) } })) {

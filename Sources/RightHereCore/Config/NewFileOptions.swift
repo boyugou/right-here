@@ -172,8 +172,10 @@ public enum NewFileOptions {
         guard shown != row.shown else { return [] }
         let guardList: ConfigOperation = .expect(state.hidden.isEmpty && !state.writesHidden ? nil : state.hidden, in: hiddenKey)
         if shown {
-            guard let index = state.hidden.firstIndex(of: row.id) else { return [] }
-            return [guardList, .remove(at: index + 1, from: hiddenKey)]
+            // Every time the list names it, the last first so that the places of the others stay: one left behind keeps it hidden.
+            let places = state.hidden.indices.filter { state.hidden[$0] == row.id }.reversed()
+            guard !places.isEmpty else { return [] }
+            return [guardList] + places.map { .remove(at: $0 + 1, from: hiddenKey) }
         }
         return [guardList, .insert(row.id, into: hiddenKey)]
     }

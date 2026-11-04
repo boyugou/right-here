@@ -175,8 +175,10 @@ public enum ConfigTrust {
             if let flag, flag != was { need("agent.*.bypass_permissions") }
         }
         if !PromptEffects.newlyWithoutAsking(from: before, to: after).isEmpty { need("agent.*.bypass_permissions") }
-        for template in after.newFile.templates where !template.contents.isEmpty && template.contents != before.newFile.templates.first(where: { $0.id == template.id })?.contents {
-            need("new_file.template.*.contents")
+        for template in after.newFile.templates where !template.contents.isEmpty {
+            let was = before.newFile.templates.first(where: { $0.id == template.id })
+            // The same text under another extension is another file: a script that was `.txt` opens in an editor, as `.command` it runs.
+            if template.contents != was?.contents || template.fileExtension != was?.fileExtension { need("new_file.template.*.contents") }
         }
         return found
     }
