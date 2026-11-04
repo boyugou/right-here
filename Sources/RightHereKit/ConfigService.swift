@@ -726,7 +726,7 @@ extension ConfigService.Failure: LocalizedFailure {
     public var sentences: [LocalizedMessage] {
         switch self {
         case .noConfig(let file): [.configNoConfig(file)]
-        case .unreadable(let file, let reason): [.configCannotRead(file, reason)]
+        case .unreadable(let file, let reason): [.configCannotBeUsed(file, reason)]
         case .editedMeanwhile(let file): [.configEditedMeanwhile(file)]
         case .lockUnavailable(let file): [.configLockUnavailable(file)]
         case .readOnly(let file): [.configReadOnly(file)]

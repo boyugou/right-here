@@ -866,7 +866,7 @@ struct SetupModelConfigPageTests {
         let mac = try Mac(); defer { mac.cleanUp() }
         await mac.model.refresh()
         await mac.model.openConfigPage()
-        #expect(mac.model.configPage?.text == nil && mac.model.configPage?.problem?.contains("rh setup") == true && !mac.model.textHasChanges)
+        #expect(mac.model.configPage?.text == nil && mac.model.configPage?.problem?.text(in: .english).contains("rh setup") == true && !mac.model.textHasChanges)
         await mac.model.saveConfigText()
         #expect(!mac.configExists, "a first run is not skipped by a save")
     }

@@ -41,6 +41,13 @@ public struct LocalizedMessage: Sendable, Equatable {
     }
 }
 
+extension LocalizedMessage {
+    /// The message with its values' control and invisible characters as escapes, except the scalars in `kept`.
+    public func escapingValues(keeping kept: Set<Unicode.Scalar> = []) -> LocalizedMessage {
+        LocalizedMessage(key, arguments.map { $0.escapingControlCharacters(keeping: kept) })
+    }
+}
+
 /// `{"code": "doctor.config.missing", "args": ["/path"], "text": "none at /path; defaults apply"}`: the code and the values
 /// identify the sentence for a program, and the text is its English wording for a person or an AI agent.
 extension LocalizedMessage: Encodable {

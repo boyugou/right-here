@@ -30,7 +30,7 @@ public enum WorktreeListing: Sendable, Equatable {
     case loading
     case loaded([WorktreeRow])
     /// git said no, or could not be started: the sentences the window writes in the person's language, with git's or the system's words
-    /// in them.
+    /// in them, escaped already.
     case failed([LocalizedMessage])
 }
 

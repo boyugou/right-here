@@ -27,6 +27,8 @@ public enum SetupNotice: Sendable, Equatable {
     case undoRefused
     /// The file was changed after the card of a proposal was drawn, so applying it was refused: the card is drawn again.
     case proposalStale
+    /// The proposal is no longer waiting (made or dismissed elsewhere, or expired), so there was nothing to apply.
+    case proposalGone
     /// Something else kept the window busy for as long as a change waits, so the change was not made.
     case busy
     /// The app that was chosen to be added is available already (built in, or in the config), by this name.
@@ -43,8 +45,16 @@ public enum SetupNotice: Sendable, Equatable {
     /// The notice for an error: its sentences when the catalog has them, else its own words, escaped (they may quote a value that
     /// somebody else wrote).
     public static func failure(_ error: any Error) -> SetupNotice {
-        if let failure = error as? any LocalizedFailure { return .explained(failure.sentences) }
+        if let failure = error as? any LocalizedFailure { return .explained(failure.shownSentences) }
         return .failed(((error as? LocalizedError)?.errorDescription ?? error.localizedDescription).withControlCharactersEscaped)
+    }
+
+    /// What the window shows, in the localizer's language: a step's detail starts in lower case beside the step's name, and here it stands
+    /// alone, so the first letter is a capital. The values are as the notice holds them (a failure's are escaped already).
+    public func text(in localizer: Localizer, isolatingValues: Bool = true) -> String {
+        let text = localizer.render(sentences: messages, isolatingValues: isolatingValues)
+        guard let first = text.first, first.isLowercase else { return text }
+        return String(first).uppercased(with: Locale(identifier: localizer.resolvedLanguage)) + text.dropFirst()
     }
 
     /// What the window says, one sentence after another.
@@ -67,6 +77,7 @@ public enum SetupNotice: Sendable, Equatable {
         case .listChanged: .appListChanged
         case .undoRefused: .appUndoRefused
         case .proposalStale: .appProposalStale
+        case .proposalGone: .appProposalGone
         case .busy: .appEditBusy
         case .appAlreadyAvailable(let name): .appAppAlreadyAvailable(name)
         case .appTurnedOff(let name): .appAppTurnedOff(name)
@@ -79,7 +90,7 @@ public enum SetupNotice: Sendable, Equatable {
     /// Whether this tells of something that did not work, so that the window shows it as a problem.
     public var isProblem: Bool {
         switch self {
-        case .failed, .explained, .stopped, .notARepository, .notRemovable, .listChanged, .undoRefused, .proposalStale, .busy, .appNotFound, .appAlreadyAvailable, .appTurnedOff, .repairLeft: true
+        case .failed, .explained, .stopped, .notARepository, .notRemovable, .listChanged, .undoRefused, .proposalStale, .proposalGone, .busy, .appNotFound, .appAlreadyAvailable, .appTurnedOff, .repairLeft: true
         case .promptCopied, .mcpConfigurationCopied, .pluginCommandsCopied, .worktreeRemoved, .repaired: false
         }
     }

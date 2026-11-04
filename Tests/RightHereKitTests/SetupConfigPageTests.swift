@@ -68,7 +68,7 @@ struct SetupConfigPageTests {
     @Test func withNoConfigThePageSaysSoAndHasNothingToEdit() async throws {
         let machine = try Home(config: nil); defer { machine.cleanUp() }
         let page = await machine.actions.configPage(target: .shared)
-        #expect(page.text == nil && page.problem?.contains("rh setup") == true && page.proposals.isEmpty && page.history.isEmpty)
+        #expect(page.text == nil && page.problem?.text(in: .english).contains("rh setup") == true && page.proposals.isEmpty && page.history.isEmpty)
     }
 
     @Test func aProposalThatCannotBeMadeAnyMoreShowsWhyInsteadOfAChange() async throws {
@@ -78,7 +78,7 @@ struct SetupConfigPageTests {
         try (Self.sample + "\n[[app]]\nid = \"tower\"\nname = \"Tower\"\nbundle_id = \"com.fournova.Tower3\"\n").write(to: machine.paths.configFile, atomically: true, encoding: .utf8)
         let page = await machine.actions.configPage(target: .shared)
         let preview = try #require(page.proposals.first)
-        #expect(preview.proposal.id == proposal.id && preview.change == nil && preview.problem?.isEmpty == false)
+        #expect(preview.proposal.id == proposal.id && preview.change == nil && preview.problem?.isProblem == true)
     }
 
     @Test func aSavedTextReplacesTheFileAndIsOnTheHistoryAndCanBeTakenBack() async throws {
@@ -117,9 +117,32 @@ struct SetupConfigPageTests {
         #expect(machine.service.history().map(\.actor) == [.window], "the person made it")
         #expect(await machine.actions.dismissProposal(second.id) == nil)
         #expect(!machine.text.contains("/tmp/other") && machine.service.pending().isEmpty)
+        // A proposal that is gone says so in the window's words (it was English, with an id and a command), and dismissing it again is
+        // what was asked for already.
         let gone = await machine.actions.approveProposal(first.id)
-        #expect(gone.change == nil && gone.notice?.isProblem == true)
-        #expect(await machine.actions.dismissProposal(first.id)?.isProblem == true)
+        #expect(gone.change == nil && gone.notice == .proposalGone)
+        #expect(await machine.actions.dismissProposal(first.id) == nil)
+    }
+
+    /// The Undo button after the file was changed by hand: the window's own sentence, not the command line's advice to use --force.
+    @Test func undoAfterAHandMadeChangeIsRefusedInTheWindowsWords() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        _ = try machine.service.apply(.set("general.terminal", .string("terminal")), actor: .window)
+        try (machine.text + "# mine\n").write(to: machine.paths.configFile, atomically: true, encoding: .utf8)
+        let undone = await machine.actions.undoConfigEdit(target: .shared)
+        #expect(undone.change == nil && undone.notice == .undoRefused, "\(String(describing: undone.notice))")
+        #expect(machine.text.hasSuffix("# mine\n"))
+    }
+
+    /// A config the page cannot read says why in the person's language, once ("cannot read" was said twice).
+    @Test func aConfigThatCannotBeReadIsSaidOnTheConfigPage() async throws {
+        let machine = try Home(config: nil); defer { machine.cleanUp() }
+        try FileManager.default.createDirectory(at: machine.paths.configFile, withIntermediateDirectories: true)
+        let page = await machine.actions.configPage(target: .shared)
+        let problem = try #require(page.problem)
+        let english = problem.text(in: .english)
+        #expect(english.components(separatedBy: "annot read").count <= 2, Comment(rawValue: english))
+        #expect(problem.text(in: Localizer(languages: ["de"])) != english, Comment(rawValue: english))
     }
 
     @Test func theSnapshotCarriesTheWaitingProposals() async throws {

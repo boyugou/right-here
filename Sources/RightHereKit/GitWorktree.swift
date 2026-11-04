@@ -110,7 +110,7 @@ public enum GitWorktreeManager {
         let result = try await runner.run(step, timeout: GitCommand.reading)
         try GitCommand.requireFinished(result, "git worktree list")
         guard result.status == 0 else {
-            throw ExecutionError.stepFailed(index: 0, step: "git worktree list", message: result.standardError)
+            throw ExecutionError.stepFailed(index: 0, step: "git worktree list", message: result.standardError.trimmingCharacters(in: .whitespacesAndNewlines))
         }
         return parsePorcelain(result.standardOutput, gitRoot: gitRoot)
     }

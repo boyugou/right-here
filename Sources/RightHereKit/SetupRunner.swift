@@ -390,7 +390,7 @@ public struct SetupRunner: Sendable {
 
     /// Why a step failed: the error's sentence when the catalog has it, else its own words (the system writes those in its language).
     static func detail(of error: any Error) -> LocalizedMessage {
-        if let failure = error as? any LocalizedFailure, failure.sentences.count == 1 { return failure.sentences[0] }
+        if let failure = error as? any LocalizedFailure, failure.shownSentences.count == 1 { return failure.shownSentences[0] }
         return .doctorVerbatim(error.localizedDescription)
     }
 }

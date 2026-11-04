@@ -47059,6 +47059,192 @@
         }
       }
     },
+    "app.proposalGone": {
+      "comment": "Shown in the setup window's Config page when the person applies a change an AI assistant proposed, and the proposal is no longer there.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "لم يعد هذا التغيير ينتظر قرارك: فقد تم تطبيقه أو تجاهله في مكان آخر، أو انتهت صلاحيته."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "এই পরিবর্তনটি আর অপেক্ষায় নেই: এটি অন্য কোথাও প্রয়োগ বা খারিজ করা হয়েছে, অথবা এর মেয়াদ শেষ হয়ে গেছে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Diese Änderung wartet nicht mehr: Sie wurde anderswo angewendet oder verworfen, oder sie ist abgelaufen."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Αυτή η αλλαγή δεν περιμένει πια: εφαρμόστηκε ή απορρίφθηκε αλλού, ή έληξε."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This change is no longer waiting: it was made or dismissed elsewhere, or it expired."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Este cambio ya no espera tu decisión: se aplicó o se descartó en otro lugar, o caducó."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "این تغییر دیگر منتظر تصمیم شما نیست: در جای دیگری اعمال شده یا از آن صرف‌نظر شده، یا منقضی شده است."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cette modification n’attend plus votre décision : elle a été appliquée ou ignorée ailleurs, ou elle a expiré."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "השינוי הזה כבר לא ממתין: הוא הוחל או נדחה במקום אחר, או שתוקפו פג."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "यह बदलाव अब इंतज़ार में नहीं है: इसे कहीं और लागू या ख़ारिज कर दिया गया, या इसकी अवधि समाप्त हो गई।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Perubahan ini tidak lagi menunggu keputusan Anda: perubahan ini sudah diterapkan atau diabaikan di tempat lain, atau sudah kedaluwarsa."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Questa modifica non è più in attesa: è stata applicata o ignorata altrove, oppure è scaduta."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "この変更は確認待ちではなくなりました。ほかの場所で適用または却下されたか、有効期限が切れています。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "이 변경 사항은 더 이상 확인을 기다리지 않습니다. 다른 곳에서 적용되거나 무시되었거나, 만료되었습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "हा बदल आता प्रतीक्षेत नाही: तो दुसरीकडे लागू केला गेला किंवा नाकारला गेला, किंवा त्याची मुदत संपली."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Perubahan ini tidak lagi menunggu: ia telah digunakan atau diketepikan di tempat lain, atau telah tamat tempoh."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Deze wijziging wacht niet meer: ze is elders toegepast of genegeerd, of ze is verlopen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ta zmiana nie czeka już na decyzję: została zastosowana lub odrzucona w innym miejscu albo wygasła."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Esta alteração não aguarda mais sua decisão: ela foi aplicada ou descartada em outro lugar, ou expirou."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Această modificare nu mai așteaptă o decizie: a fost aplicată sau ignorată în altă parte ori a expirat."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Это изменение больше не ждет Вашего решения: его применили или отклонили в другом месте, либо истек срок его действия."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "இந்த மாற்றம் இனி காத்திருக்கவில்லை: இது வேறு இடத்தில் பயன்படுத்தப்பட்டது அல்லது நிராகரிக்கப்பட்டது, அல்லது காலாவதியாகிவிட்டது."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఈ మార్పు ఇక వేచి ఉండటం లేదు: దీన్ని వేరే చోట వర్తింపజేశారు లేదా విస్మరించారు, లేదా దీని గడువు ముగిసింది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "การเปลี่ยนแปลงนี้ไม่ได้รอการตัดสินใจแล้ว เนื่องจากถูกปรับใช้หรือปิดทิ้งจากที่อื่น หรือหมดอายุแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bu değişiklik artık beklemiyor: başka bir yerde uygulandı ya da yoksayıldı veya süresi doldu."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ця зміна більше не чекає на ваше рішення: її застосували або відхилили деінде, або термін її дії минув."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "یہ تبدیلی اب منتظر نہیں ہے: اسے کہیں اور لاگو یا نظر انداز کر دیا گیا، یا اس کی میعاد ختم ہو گئی۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thay đổi này không còn chờ bạn quyết định nữa: nó đã được áp dụng hoặc bỏ qua ở nơi khác, hoặc đã hết hạn."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "这项更改已不再等待确认：它已在别处被应用或忽略，或者已过期。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "這項變更已不再等待確認：它已在別處被套用或忽略，或者已過期。"
+          }
+        }
+      }
+    },
     "app.proposalStale": {
       "comment": "Said when the person presses Apply on the card of a change an AI assistant proposed, but the config file had been changed after the card was drawn, so nothing was applied. The card is drawn again.",
       "extractionState": "manual",
@@ -65473,188 +65659,188 @@
         }
       }
     },
-    "config.cannotRead": {
-      "comment": "Shown in the setup window (and, in English, by the command line) when a change or a setup did not work. %1$@ is the path of a config file; %2$@ is why, in the system's or the config check's own words.",
+    "config.cannotBeUsed": {
+      "comment": "Shown in the setup window (and, in English, by the command line) when a change or a setup did not work. %1$@ is the path of a config file; %2$@ is why, in the config check's or the system's own English words (it may itself start with \"cannot read\").",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "تعذّرت قراءة الملف %1$@: %2$@"
+            "value": "ملف الإعداد %1$@ غير قابل للاستخدام: %2$@"
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@ ফাইলটি পড়া যাচ্ছে না: %2$@"
+            "value": "কনফিগারেশন ফাইল %1$@ ব্যবহার করা যাচ্ছে না: %2$@"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Die Datei %1$@ kann nicht gelesen werden: %2$@"
+            "value": "Die Konfigurationsdatei %1$@ kann nicht verwendet werden: %2$@"
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Δεν είναι δυνατή η ανάγνωση του αρχείου %1$@: %2$@"
+            "value": "Το αρχείο ρυθμίσεων %1$@ δεν μπορεί να χρησιμοποιηθεί: %2$@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cannot read %1$@: %2$@"
+            "value": "%1$@ cannot be used: %2$@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "No se puede leer el archivo %1$@: %2$@"
+            "value": "El archivo de configuración %1$@ no se puede usar: %2$@"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "خواندن فایل %1$@ ممکن نیست: %2$@"
+            "value": "فایل پیکربندی %1$@ قابل استفاده نیست: %2$@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Impossible de lire le fichier %1$@ : %2$@"
+            "value": "Le fichier de configuration %1$@ est inutilisable : %2$@"
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "לא ניתן לקרוא את הקובץ %1$@: %2$@"
+            "value": "לא ניתן להשתמש בקובץ התצורה %1$@: %2$@"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "फ़ाइल %1$@ पढ़ी नहीं जा सकती: %2$@"
+            "value": "कॉन्फ़िगरेशन फ़ाइल %1$@ का इस्तेमाल नहीं किया जा सकता: %2$@"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tidak dapat membaca file %1$@: %2$@"
+            "value": "File konfigurasi %1$@ tidak dapat digunakan: %2$@"
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Impossibile leggere il file %1$@: %2$@"
+            "value": "Il file di configurazione %1$@ non può essere usato: %2$@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ファイル %1$@ を読み込めません：%2$@"
+            "value": "設定ファイル %1$@ は使用できません：%2$@"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@ 파일을 읽을 수 없습니다: %2$@"
+            "value": "%1$@ 설정 파일을 사용할 수 없습니다: %2$@"
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@ ही फाइल वाचता येत नाही: %2$@"
+            "value": "कॉन्फिगरेशन फाइल %1$@ वापरता येत नाही: %2$@"
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tidak dapat membaca fail %1$@: %2$@"
+            "value": "Fail konfigurasi %1$@ tidak dapat digunakan: %2$@"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Kan het bestand %1$@ niet lezen: %2$@"
+            "value": "Het configuratiebestand %1$@ is niet bruikbaar: %2$@"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Nie można odczytać pliku %1$@: %2$@"
+            "value": "Pliku konfiguracji %1$@ nie można użyć: %2$@"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Não é possível ler o arquivo %1$@: %2$@"
+            "value": "Não é possível usar o arquivo de configuração %1$@: %2$@"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Fișierul %1$@ nu poate fi citit: %2$@"
+            "value": "Fișierul de configurare %1$@ nu poate fi folosit: %2$@"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Не удается прочитать файл %1$@: %2$@"
+            "value": "Файл конфигурации %1$@ нельзя использовать: %2$@"
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@ கோப்பைப் படிக்க முடியவில்லை: %2$@"
+            "value": "%1$@ உள்ளமைவுக் கோப்பைப் பயன்படுத்த முடியாது: %2$@"
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@ ఫైల్‌ను చదవలేము: %2$@"
+            "value": "%1$@ కాన్ఫిగరేషన్ ఫైల్‌ను ఉపయోగించలేము: %2$@"
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "อ่านไฟล์ %1$@ ไม่ได้: %2$@"
+            "value": "ใช้ไฟล์การกำหนดค่า %1$@ ไม่ได้: %2$@"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "%1$@ dosyası okunamıyor: %2$@"
+            "value": "%1$@ yapılandırma dosyası kullanılamıyor: %2$@"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Не вдається прочитати файл %1$@: %2$@"
+            "value": "Файл конфігурації %1$@ не можна використати: %2$@"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "فائل %1$@ پڑھی نہیں جا سکتی: %2$@"
+            "value": "کنفیگریشن فائل %1$@ استعمال نہیں کی جا سکتی: %2$@"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Không thể đọc tệp %1$@: %2$@"
+            "value": "Không thể dùng tệp cấu hình %1$@: %2$@"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "无法读取文件 %1$@：%2$@"
+            "value": "配置文件 %1$@ 无法使用：%2$@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "無法讀取檔案 %1$@：%2$@"
+            "value": "設定檔 %1$@ 無法使用：%2$@"
           }
         }
       }

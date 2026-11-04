@@ -140,7 +140,7 @@ public struct IntentRunner: Sendable {
         public var errorDescription: String? { text }
 
         public func text(in localizer: Localizer) -> String {
-            sentences.isEmpty ? text : localizer.render(sentences: sentences, isolatingValues: true, escapingValues: true)
+            sentences.isEmpty ? text : localizer.render(sentences: shownSentences, isolatingValues: true)
         }
     }
 

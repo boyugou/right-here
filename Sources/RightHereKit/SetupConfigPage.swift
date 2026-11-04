@@ -6,13 +6,13 @@ public struct ProposalPreview: Sendable, Equatable, Identifiable {
     public var proposal: ConfigProposal
     /// The change as a dry run; `nil` when it can no longer be made (the file was edited since), with `problem` saying why.
     public var change: ConfigChange?
-    public var problem: String?
+    public var problem: SetupNotice?
     /// The digest of the text of the file the change was computed against, which applying it is held to.
     public var digest: String?
 
     public var id: String { proposal.id }
 
-    public init(proposal: ConfigProposal, change: ConfigChange?, problem: String?, digest: String? = nil) {
+    public init(proposal: ConfigProposal, change: ConfigChange?, problem: SetupNotice?, digest: String? = nil) {
         self.proposal = proposal
         self.change = change
         self.problem = problem
@@ -25,14 +25,14 @@ public struct ConfigPageState: Sendable, Equatable {
     public var target: ConfigTarget
     /// The file's text and the digest a save of it is guarded with; `nil` when there is no config yet or it cannot be read, with `problem` saying why.
     public var text: ConfigService.ConfigText?
-    public var problem: String?
+    public var problem: SetupNotice?
     public var proposals: [ProposalPreview]
     public var history: [ConfigService.HistoryItem]
     public var validation: ConfigDocument.Validation?
     /// The text above is the one a draft being typed started from, and the file has been changed by something else since: a save is refused until the person has seen it.
     public var fileMovedUnderDraft = false
 
-    public init(target: ConfigTarget, text: ConfigService.ConfigText?, problem: String?, proposals: [ProposalPreview], history: [ConfigService.HistoryItem], validation: ConfigDocument.Validation?,
+    public init(target: ConfigTarget, text: ConfigService.ConfigText?, problem: SetupNotice?, proposals: [ProposalPreview], history: [ConfigService.HistoryItem], validation: ConfigDocument.Validation?,
                 fileMovedUnderDraft: Bool = false) {
         self.fileMovedUnderDraft = fileMovedUnderDraft
         self.target = target
@@ -54,20 +54,20 @@ extension SetupActions {
     public func configPage(target: ConfigTarget) async -> ConfigPageState {
         let service = ConfigService(paths: paths)
         var text: ConfigService.ConfigText?
-        var problem: String?
+        var problem: SetupNotice?
         var validation: ConfigDocument.Validation?
         do {
             text = try service.text(of: target)
             validation = try service.validation(for: target)
         } catch {
-            problem = Self.describe(error)
+            problem = .failure(error)
         }
         let previews = service.pending().map { proposal -> ProposalPreview in
             do {
                 let preview = try service.preview(proposal: proposal.id)
                 return ProposalPreview(proposal: proposal, change: preview.change, problem: nil, digest: preview.digest)
             } catch {
-                return ProposalPreview(proposal: proposal, change: nil, problem: Self.describe(error))
+                return ProposalPreview(proposal: proposal, change: nil, problem: .failure(error))
             }
         }
         return ConfigPageState(target: target, text: text, problem: problem, proposals: previews, history: service.history(of: target), validation: validation)
@@ -89,7 +89,8 @@ extension SetupActions {
         let service = ConfigService(paths: paths)
         do {
             return ConfigEditResult(change: try service.undo(target: target, expecting: digest, replacing: before), notice: nil)
-        } catch ConfigService.Failure.notTheLast {
+        } catch ConfigService.Failure.notTheLast, ConfigService.Failure.changedSince {
+            // Changed by hand after the last edit: taking that edit back would take the hand-made change too.
             return ConfigEditResult(change: nil, notice: .undoRefused)
         } catch {
             return ConfigEditResult(change: nil, notice: .failure(error))
@@ -102,6 +103,8 @@ extension SetupActions {
             return ConfigEditResult(change: try ConfigService(paths: paths).approve(id, actor: .window, unchangedSince: digest), notice: nil)
         } catch ConfigService.Failure.editedMeanwhile {
             return ConfigEditResult(change: nil, notice: .proposalStale)
+        } catch ConfigService.Failure.noProposal {
+            return ConfigEditResult(change: nil, notice: .proposalGone)
         } catch {
             return ConfigEditResult(change: nil, notice: .failure(error))
         }
@@ -111,6 +114,9 @@ extension SetupActions {
     public func dismissProposal(_ id: String) async -> SetupNotice? {
         do {
             try ConfigService(paths: paths).dismiss(id)
+            return nil
+        } catch ConfigService.Failure.noProposal {
+            // Gone already: what the person asked for is so.
             return nil
         } catch {
             return .failure(error)

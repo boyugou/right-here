@@ -507,6 +507,8 @@ extension LocalizedMessage {
     public static var appPresetsCaption2: LocalizedMessage { LocalizedMessage(.appPresetsCaption2) }
     /// Setup prompt copied. Paste it into your AI assistant.
     public static var appPromptCopied: LocalizedMessage { LocalizedMessage(.appPromptCopied) }
+    /// This change is no longer waiting: it was made or dismissed elsewhere, or it expired.
+    public static var appProposalGone: LocalizedMessage { LocalizedMessage(.appProposalGone) }
     /// The file changed after this card was drawn, so the change was not made. The card now shows the change against the file as it is.
     public static var appProposalStale: LocalizedMessage { LocalizedMessage(.appProposalStale) }
     /// Review
@@ -705,8 +707,8 @@ extension LocalizedMessage {
     public static var appWorktreesRepository: LocalizedMessage { LocalizedMessage(.appWorktreesRepository) }
     /// The config cannot be edited as it is: %@ Fix that first (`rh config validate` says where).
     public static func configCannotBeEdited(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.configCannotBeEdited, [argument1]) }
-    /// Cannot read %1$@: %2$@
-    public static func configCannotRead(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.configCannotRead, [argument1, argument2]) }
+    /// %1$@ cannot be used: %2$@
+    public static func configCannotBeUsed(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.configCannotBeUsed, [argument1, argument2]) }
     /// %@ was changed while you were editing it, so nothing was saved. Copy what you wrote, reload the file, and make the change again.
     public static func configEditedMeanwhile(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.configEditedMeanwhile, [argument1]) }
     /// The lock %@ cannot be taken (it is a link, or its folder cannot be written to), so the config was not changed: two edits made at once could not be told apart.

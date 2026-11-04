@@ -30,12 +30,8 @@ public enum ExecutionError: Error, Equatable, Sendable, LocalizedError, Localize
 
     /// What a step says is what a program, a file or git wrote (git's own words name branches and paths), so its line breaks stay and every other control or
     /// invisible character is shown as an escape.
-    public func text(in localizer: Localizer) -> String {
-        guard case .stepFailed(let index, let step, let message) = self else {
-            return localizer.render(sentences: sentences, isolatingValues: true, escapingValues: true)
-        }
-        let values = [String(index + 1), step, message].map { $0.escapingControlCharacters(keeping: ["\n"]) }
-        return localizer.render(.refusalStepFailed(values[0], values[1], values[2]), isolatingValues: true)
+    public var shownSentences: [LocalizedMessage] {
+        sentences.map { $0.escapingValues(keeping: $0.key == .refusalStepFailed ? ["\n"] : []) }
     }
 }
 

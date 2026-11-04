@@ -447,7 +447,7 @@ final class SetupModel {
         if selectedTab == pressedOn { repairOutcome = outcome }
         if let outcome {
             let state = outcome.isProblem || summary.state == .checking ? nil : localizer.string(summary.state.titleKey)
-            announce([localizer.render(sentences: outcome.messages, escapingValues: true), state].compactMap(\.self).joined(separator: " "))
+            announce([outcome.text(in: localizer, isolatingValues: false), state].compactMap(\.self).joined(separator: " "))
         }
     }
 
@@ -1067,7 +1067,7 @@ final class SetupModel {
     func say(_ new: SetupNotice?) {
         notice = new
         if new != nil { repairOutcome = nil }
-        if let new { announce(localizer.render(sentences: new.messages, escapingValues: true)) }
+        if let new { announce(new.text(in: localizer, isolatingValues: false)) }
     }
 
     /// How the setup stands after a setup or a repair that raised no notice of its own, said aloud: "Everything is set up." or "Some checks need your attention."

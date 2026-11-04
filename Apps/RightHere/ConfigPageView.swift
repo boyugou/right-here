@@ -39,7 +39,7 @@ struct ConfigPage: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     if let problem = page.problem {
-                        Text(verbatim: problem)
+                        Text(problem.text(in: l10n))
                             .font(.callout)
                             .fixedSize(horizontal: false, vertical: true)
                     } else {
@@ -207,7 +207,7 @@ private struct ProposalCard: View {
             if let change = preview.change {
                 DiffLines(lines: change.diff)
             } else if let problem = preview.problem {
-                Text(verbatim: problem)
+                Text(problem.text(in: l10n))
                     .font(.callout)
                     .fixedSize(horizontal: false, vertical: true)
             }
