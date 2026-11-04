@@ -323,7 +323,9 @@ struct MenuExplainTests {
         let toml = "[general]\nagents = [\"claude\"]\n"
         for context in [folder, HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code")])] {
             let explained = explain(toml, FakeSystemFacts(directories: ["/Users/tester/code"], applications: machine.applications, bundleVersions: machine.bundleVersions), context)
-            #expect(explained.leftOut.contains { $0.entry == "Agent Presets" && $0.reason.contains("select one or more files") }, "\(explained.leftOut.map(\.line))")
+            // The note is the submenu's, so it names the preset it is about.
+            #expect(explained.leftOut.contains { $0.entry == "Agent Presets" && $0.reason.hasPrefix("Review: ") && $0.reason.contains("select one or more files") },
+                    "\(explained.leftOut.map(\.line))")
         }
     }
 

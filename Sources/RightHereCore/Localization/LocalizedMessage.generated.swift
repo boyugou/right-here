@@ -1033,6 +1033,8 @@ extension LocalizedMessage {
     public static func refusalPromptTooLong(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalPromptTooLong, [argument1]) }
     /// git could not read the repository of %1$@: %2$@
     public static func refusalRepositoryGitError(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryGitError, [argument1, argument2]) }
+    /// git could not read the repository of %@.
+    public static func refusalRepositoryGitFailed(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryGitFailed, [argument1]) }
     /// The repository has no commit yet.
     public static var refusalRepositoryNoCommit: LocalizedMessage { LocalizedMessage(.refusalRepositoryNoCommit) }
     /// The repository has no remote, so it has no page on a git host.
@@ -1047,6 +1049,8 @@ extension LocalizedMessage {
     public static func refusalRepositoryNotRead(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryNotRead, [argument1]) }
     /// Open Repository Page opens the page of one item. To get the links of several, use Copy Repository Link.
     public static var refusalRepositoryOneItem: LocalizedMessage { LocalizedMessage(.refusalRepositoryOneItem) }
+    /// %1$@ is outside the repository git found, %2$@.
+    public static func refusalRepositoryOutside(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryOutside, [argument1, argument2]) }
     /// The repository has several remotes (%@), none of them origin or the branch's upstream or push remote, so it is not clear which one to link to.
     public static func refusalRepositorySeveralRemotes(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositorySeveralRemotes, [argument1]) }
     /// %@ is a submodule: its pages are in its own repository. Select an item inside it.

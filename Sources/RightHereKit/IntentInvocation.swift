@@ -40,7 +40,7 @@ public enum IntentCommand: Sendable, Equatable {
     private static func run(_ action: String, path: String, languages: [String]) throws -> [String] {
         guard ActionRef(parsing: action) != nil else { throw Invalid.notAnActionID(action) }
         guard path.hasPrefix("/"), !path.contains("\0") else { throw Invalid.notAbsolute(path) }
-        return ["run", action, "--origin", "cli"] + languages.flatMap { ["--language", $0] } + ["--", path]
+        return ["run", action, "--origin", "cli", "--json"] + languages.flatMap { ["--language", $0] } + ["--", path]
     }
 
     /// An id from the config goes into an action id only when `ActionRef` reads it back as one word.
@@ -132,9 +132,26 @@ public enum IntentCatalog {
 
 /// Starts the bundled `rh` for an intent and turns what it says into a short result.
 public struct IntentRunner: Sendable {
-    public struct Failure: Error, LocalizedError, Equatable {
+    public struct Failure: Error, LocalizedError, Equatable, LocalizedFailure {
+        /// rh's own line, in English.
         public var text: String
+        /// The same as sentences of the catalog, when rh gave them, which the app writes in the person's language.
+        public var sentences: [LocalizedMessage] = []
         public var errorDescription: String? { text }
+
+        public func text(in localizer: Localizer) -> String {
+            sentences.isEmpty ? text : localizer.render(sentences: sentences, isolatingValues: true, escapingValues: true)
+        }
+    }
+
+    /// What `rh run --json` writes: the plan on success, the reason's sentences on failure.
+    private struct Answer: Decodable {
+        struct Plan: Decodable {
+            var summary: String
+        }
+
+        var plan: Plan?
+        var messages: [LocalizedMessage]?
     }
 
     public let helper: String
@@ -171,9 +188,11 @@ public struct IntentRunner: Sendable {
             throw Failure(text: "rh did not finish within \(limit.components.seconds) seconds and was stopped.")
         }
         let out = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+        let answer = try? JSONDecoder().decode(Answer.self, from: Data(out.utf8))
         guard result.status == 0 else {
-            throw Failure(text: failureReason(standardError: result.standardError) ?? "rh exited with status \(result.status).")
+            throw Failure(text: failureReason(standardError: result.standardError) ?? "rh exited with status \(result.status).", sentences: answer?.messages ?? [])
         }
+        if let summary = answer?.plan?.summary { return summary }
         let line = out.split(separator: "\n").last.map(String.init) ?? ""
         return line.hasPrefix("ok: ") ? String(line.dropFirst(4)) : line
     }

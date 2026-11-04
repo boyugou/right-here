@@ -95977,6 +95977,192 @@
         }
       }
     },
+    "refusal.repository.gitFailed": {
+      "comment": "Why an action did nothing, shown in the alert after a click in Finder (and, in English, by the command line). %@ is a file or folder name. Said when git failed without a message; refusal.repository.gitError is the same with git's message.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تعذّر على git قراءة مستودع %@."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git %@-এর রিপোজিটরি পড়তে পারেনি।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git konnte das Repository von %@ nicht lesen."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το git δεν μπόρεσε να διαβάσει το αποθετήριο του %@."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "git could not read the repository of %@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git no pudo leer el repositorio de %@."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏git نتوانست مخزن %@ را بخواند."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git n’a pas pu lire le dépôt de %@."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏git לא הצליח לקרוא את המאגר של %@."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git %@ की रिपॉज़िटरी नहीं पढ़ सका।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git tidak dapat membaca repositori %@."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git non è riuscito a leggere il repository di %@."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "gitが%@のリポジトリを読み取れませんでした。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git이 %@ 항목의 저장소를 읽을 수 없습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git ला %@ ची रेपॉझिटरी वाचता आली नाही."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git tidak dapat membaca repositori bagi %@."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git kon de repository van %@ niet lezen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git nie mógł odczytać repozytorium, w którym jest %@."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "O git não conseguiu ler o repositório de %@."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git nu a putut citi depozitul pentru %@."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git не смог прочитать репозиторий объекта %@."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ இன் repository-ஐ git ஆல் படிக்க முடியவில்லை."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ యొక్క రిపోజిటరీని git చదవలేకపోయింది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git อ่านรีโพซิทอรีของ %@ ไม่ได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git, %@ öğesinin deposunu okuyamadı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git не може прочитати репозиторій для %@."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ کی ریپازٹری git سے نہیں پڑھی جا سکی۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git không thể đọc kho git của %@."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git 无法读取 %@ 所在的仓库。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "git 無法讀取 %@ 所在的儲存庫。"
+          }
+        }
+      }
+    },
     "refusal.repository.noCommit": {
       "comment": "Why an action did nothing, shown in the alert after a click in Finder (and, in English, by the command line).",
       "extractionState": "manual",
@@ -97275,6 +97461,192 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "「打開儲存庫頁面」只會打開一個項目的頁面。要取得多個項目的連結，請使用「拷貝儲存庫連結」。"
+          }
+        }
+      }
+    },
+    "refusal.repository.outside": {
+      "comment": "Why an action did nothing, shown in the alert after a click in Finder (and, in English, by the command line). %1$@ is a path, %2$@ the path of the repository's top folder: the item is a link that leads out of the repository.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ خارج المستودع الذي وجده git، وهو %2$@."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ git-এর খুঁজে পাওয়া রিপোজিটরি %2$@-এর বাইরে আছে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ liegt außerhalb des von git gefundenen Repositorys %2$@."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το %1$@ βρίσκεται έξω από το αποθετήριο %2$@ που βρήκε το git."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ is outside the repository git found, %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ está fuera del repositorio %2$@, que encontró git."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ بیرون از مخزنی است که git پیدا کرد، یعنی %2$@."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ se trouve en dehors du dépôt %2$@ trouvé par git."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ נמצא מחוץ למאגר ש-git מצא, %2$@."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ git को मिली रिपॉज़िटरी %2$@ के बाहर है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ berada di luar repositori %2$@ yang ditemukan git."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ si trova fuori dal repository %2$@ trovato da git."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@は、gitが見つけたリポジトリ%2$@の外にあります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 경로는 git이 찾은 저장소 %2$@ 밖에 있습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ हे git ला सापडलेल्या रेपॉझिटरी %2$@ च्या बाहेर आहे."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ berada di luar repositori %2$@ yang ditemui oleh git."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ligt buiten de door git gevonden repository %2$@."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Element %1$@ znajduje się poza repozytorium, które znalazł git: %2$@."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ está fora do repositório encontrado pelo git, %2$@."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ se află în afara depozitului %2$@ găsit de git."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Объект %1$@ находится вне репозитория, который нашел git: %2$@."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, git கண்டறிந்த repository-க்கு (%2$@) வெளியே உள்ளது."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, git కనుగొన్న రిపోజిటరీ %2$@ వెలుపల ఉంది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ อยู่นอกรีโพซิทอรีที่ git พบ (%2$@)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, git’in bulduğu %2$@ deposunun dışında."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Елемент %1$@ розташований поза репозиторієм, який знайшов git: %2$@."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ اس ریپازٹری سے باہر ہے جو git کو ملی، یعنی %2$@۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ nằm ngoài kho git %2$@ mà git đã tìm thấy."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 位于 git 找到的仓库 %2$@ 之外。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 位於 git 找到的儲存庫 %2$@ 之外。"
           }
         }
       }

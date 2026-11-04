@@ -220,7 +220,8 @@ public struct MenuBuilder: Sendable {
         let infos = config.presets.compactMap { preset -> (agent: String, info: ActionInfo)? in
             guard let agent = config.agent(for: preset), config.enabledAgents.contains(agent.id) else { return nil }
             let info = registry.info(.preset(id: preset.id, terminal: nil), context: context)
-            if !info.available, firstRefusal == nil { firstRefusal = info.unavailableReason }
+            // The note is the whole submenu's, so it says which preset it is about.
+            if !info.available, firstRefusal == nil, let reason = info.unavailableReason { firstRefusal = info.shortTitle + ": " + reason }
             return info.available ? (agent.id, info) : nil
         }
         // With several agents in play the agent's name is part of the title; with one it is just noise.

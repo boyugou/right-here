@@ -233,7 +233,8 @@ public struct ActionRegistry: Sendable {
             info.shortTitle = title
         }
         info.available = false
-        info.unavailableReason = PlanError.refused(reason).text(in: .english)
+        // Unescaped, as every other text of the JSON: `rh actions` and the MCP server escape what they print.
+        info.unavailableReason = Localizer.english.render(reason)
         info.unavailableMessage = message ?? reason
     }
 

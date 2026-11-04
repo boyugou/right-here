@@ -14,8 +14,6 @@ import RightHereCore
 enum GitCommand {
     static let executable = "/usr/bin/git"
 
-    /// What a person is told when git is not there.
-
     /// Whether there is a git for `/usr/bin/git` to start. On a Mac without Xcode or the Command Line Tools, `/usr/bin/git` only forwards to
     /// the git of the active developer folder, which is not there: it offers to install the tools and fails, so a click in Finder would end
     /// in a system window. The folder is `DEVELOPER_DIR`, else the one `xcode-select` chose, which it keeps as the link

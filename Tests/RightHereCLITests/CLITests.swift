@@ -773,6 +773,20 @@ struct CLITests {
         #expect(german.standardOutput.contains("/unbenannt.md"), Comment(rawValue: german.standardOutput))
     }
 
+    /// The Shortcuts actions start `rh run --json`: a refusal comes back as sentences of the catalog, which the app writes in the person's
+    /// language, beside the English for a script.
+    @Test func aRefusalInJSONCarriesItsSentences() throws {
+        let rh = try RH(config: "[general]\nterminal = \"terminal\"\n"); defer { rh.cleanUp() }
+        let refused = try rh.run(["run", "open.terminal@nowhere", "--dry-run", "--json", rh.configDirectory.path])
+        #expect(refused.status == 1)
+        struct Failure: Decodable { var ok: Bool; var error: String; var messages: [LocalizedMessage] }
+        let failure = try JSONDecoder().decode(Failure.self, from: Data(refused.standardOutput.utf8))
+        #expect(!failure.ok && failure.error.hasPrefix("Unknown terminal \"nowhere\"."), Comment(rawValue: failure.error))
+        #expect(failure.messages == [.refusalUnknownTerminal("nowhere")])
+        let german = Localizer(languages: ["de"]).render(sentences: failure.messages)
+        #expect(!german.hasPrefix("Unknown terminal") && german.contains("nowhere"), Comment(rawValue: german))
+    }
+
     @Test func aRefusalNamesTheFileOrFolderThatIsWrongAndQuotesItOnce() throws {
         let rh = try RH(config: "[general]\nterminal = \"terminal\"\nagents = [\"claude\"]\n"); defer { rh.cleanUp() }
         let folder = rh.configDirectory.appendingPathComponent("nl\nfolder")

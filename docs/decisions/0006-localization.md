@@ -48,15 +48,17 @@ of `InfoPlist.strings`, the names of the App Shortcuts) stays in the system lang
 The alert after a click in Finder had its title in the person's language and its body in English: the body was the English of the
 error, so a German Mac that clicked Copy Repository Link on a commit that was not pushed read why in English. Every sentence a refusal
 can say is now a message of the catalog (`refusal.*`, with the doctor's own sentence where one says the same), and `PlanError` and
-`ExecutionError` are `LocalizedFailure`s: each gives its sentences, and `Localizer.describe` writes them in a language. The alert, the
-Shortcuts actions' failure and the reasons the window gives for an action that cannot start use it; the command line and the MCP
-server print the same sentences in English (`localizedDescription`), as before. A text of the catalog is never put together from
+`ExecutionError` are `LocalizedFailure`s: each gives its sentences, and `Localizer.describe` writes them in a language. The alert and
+the reasons the window gives for an action that cannot start use it; the command line and the MCP server print the same sentences in
+English (`localizedDescription`), as before. The Shortcuts actions start `rh run --json`, whose failure carries the sentences as codes
+and values (`messages`, beside the English `error`), and the app writes them in its language. A text of the catalog is never put together from
 pieces of a sentence: a refusal with more to say is several whole sentences, written one after the other as the language writes them
 (no space between two in Chinese and Japanese). The values (a path, a name, what git said) are shown with their control and invisible
 characters as escapes, as the English was, and isolated in a right-to-left sentence.
 
-What stays English: what a program, git or the config parser wrote (it is a value of the sentence), the step of a plan that failed (its
-heading), and the errors of setup, worktrees and config sync, which the window shows from places that do not yet speak messages.
+What stays English: what a program, git or the config parser wrote (it is a value of the sentence, and so is the exit status a program
+that said nothing ended with), the step of a plan that failed (its heading), and the errors of setup, worktrees and config sync, which the
+window shows from places that do not yet speak messages.
 A `LocalizedMessage` cannot be interpolated into a string (`"\(message)"` does not compile), so a sentence cannot slip into the English
 as its structure.
 

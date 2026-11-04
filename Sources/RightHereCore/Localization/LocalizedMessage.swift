@@ -56,6 +56,19 @@ extension LocalizedMessage: Encodable {
     }
 }
 
+/// A sentence read back from what `rh` wrote (the `code` and the `args`), so a process that started `rh` can say it in its own language.
+extension LocalizedMessage: Decodable {
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let code = try container.decode(String.self, forKey: .code)
+        let arguments = try container.decode([String].self, forKey: .args)
+        guard let key = LocalizationKey(rawValue: code), key.arity == arguments.count else {
+            throw DecodingError.dataCorruptedError(forKey: .code, in: container, debugDescription: "no sentence \(code) with \(arguments.count) values")
+        }
+        self.init(key, arguments)
+    }
+}
+
 extension DefaultStringInterpolation {
     /// A message is not text until a localizer writes it: `"\(message)"` would print the structure. Say `english()` or `render`.
     @available(*, unavailable, message: "write the message with english() or a Localizer")

@@ -29,6 +29,22 @@ struct RepositoryPlanTests {
         }
     }
 
+    /// What the reader says of its own (git said nothing; a link leads out of the repository) is a sentence of the catalog, not English
+    /// inside another language's sentence.
+    @Test func whatTheReaderSaysOfItsOwnIsInThePersonsLanguage() throws {
+        let cases: [(RepositoryState.GitProblem, String)] = [
+            (.failedSilently, "git could not read the repository of main.swift."),
+            (.outside(item: "/elsewhere/main.swift", root: "/Users/tester/code/app"), "/elsewhere/main.swift is outside the repository git found, /Users/tester/code/app.")
+        ]
+        for (problem, english) in cases {
+            let states = [file: RepositoryState(root: nil, gitError: problem)]
+            #expect(refusal(states: states) == english)
+            let error = try #require(#expect(throws: PlanError.self) { try plan(.copyRepositoryLink, [file], states: states) })
+            let german = error.text(in: Localizer(languages: ["de"]))
+            #expect(!german.contains("could not read") && !german.contains("is outside"), Comment(rawValue: german))
+        }
+    }
+
     @Test func aFileIsCopiedAsItsPageAtTheCheckedOutCommit() throws {
         let made = try plan(.copyRepositoryLink, [file], states: [file: state()])
         #expect(made.steps == [.copyToPasteboard("https://github.com/owner/app/blob/\(commit)/src/main.swift")])

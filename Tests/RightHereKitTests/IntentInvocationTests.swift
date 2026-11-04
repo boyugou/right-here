@@ -7,10 +7,10 @@ import RightHereCore
 struct IntentInvocationTests {
     @Test func aFolderTravelsAfterADoubleDashAsOneArgument() throws {
         let folder = "/Users/me/my code/-rf; touch x"
-        #expect(try IntentCommand.openTerminal(folder: folder).arguments() == ["run", "open.terminal", "--origin", "cli", "--", folder])
-        #expect(try IntentCommand.startAgent(agent: "claude", folder: folder).arguments() == ["run", "agent.claude", "--origin", "cli", "--", folder])
-        #expect(try IntentCommand.newFile(template: "md", folder: folder).arguments() == ["run", "new-file.md", "--origin", "cli", "--", folder])
-        #expect(try IntentCommand.copyPath(style: .gitRelative, path: folder).arguments() == ["run", "copy-path.git-relative", "--origin", "cli", "--", folder])
+        #expect(try IntentCommand.openTerminal(folder: folder).arguments() == ["run", "open.terminal", "--origin", "cli", "--json", "--", folder])
+        #expect(try IntentCommand.startAgent(agent: "claude", folder: folder).arguments() == ["run", "agent.claude", "--origin", "cli", "--json", "--", folder])
+        #expect(try IntentCommand.newFile(template: "md", folder: folder).arguments() == ["run", "new-file.md", "--origin", "cli", "--json", "--", folder])
+        #expect(try IntentCommand.copyPath(style: .gitRelative, path: folder).arguments() == ["run", "copy-path.git-relative", "--origin", "cli", "--json", "--", folder])
     }
 
     @Test func anIdThatIsNotOneWordIsRefused() {
@@ -50,8 +50,8 @@ struct IntentInvocationTests {
         // Shortcuts ran `rh` without a language, so "Create New File" named the file in English while the Finder menu used the system's.
         let folder = "/Users/me/notes"
         #expect(try IntentCommand.newFile(template: "md", folder: folder).arguments(languages: ["de-DE", "en-US"])
-            == ["run", "new-file.md", "--origin", "cli", "--language", "de-DE", "--language", "en-US", "--", folder])
-        #expect(try IntentCommand.newFile(template: "md", folder: folder).arguments() == ["run", "new-file.md", "--origin", "cli", "--", folder])
+            == ["run", "new-file.md", "--origin", "cli", "--json", "--language", "de-DE", "--language", "en-US", "--", folder])
+        #expect(try IntentCommand.newFile(template: "md", folder: folder).arguments() == ["run", "new-file.md", "--origin", "cli", "--json", "--", folder])
     }
 
     @Test func theRunnerHandsRhThePersonsLanguages() async throws {
@@ -59,7 +59,7 @@ struct IntentInvocationTests {
         let answer = try await IntentRunner(helper: "/Applications/Right Here.app/Contents/Helpers/rh", runner: runner, languages: ["de-DE"])
             .perform(.newFile(template: "md", folder: "/Users/me/notes"))
         #expect(answer == "Create unbenannt.md")
-        #expect(runner.recorded.first?.arguments == ["run", "new-file.md", "--origin", "cli", "--language", "de-DE", "--", "/Users/me/notes"])
+        #expect(runner.recorded.first?.arguments == ["run", "new-file.md", "--origin", "cli", "--json", "--language", "de-DE", "--", "/Users/me/notes"])
     }
 
     @Test func everyIntentKeyOfTheCompiledCatalogIsSaidByTheApp() throws {
@@ -102,6 +102,19 @@ struct IntentInvocationTests {
          {"id":"new-file.bad","title":"New Bad","shortTitle":"Bad","group":"new-file","available":false}]
         """
         #expect(IntentCatalog.templates(fromJSON: Data(json.utf8)) == [IntentChoice(id: "md", name: "Markdown")])
+    }
+
+    @Test func aRefusalComesBackAsSentencesTheAppWritesInItsLanguage() throws {
+        let json = #"{"ok":false,"error":"Unknown terminal \"nowhere\".","messages":[{"code":"refusal.unknownTerminal","args":["nowhere"],"text":"Unknown terminal \"nowhere\"."}]}"#
+        let failed = ProcessResult(status: 1, standardOutput: json, standardError: "error: Unknown terminal \"nowhere\".\n")
+        let failure = try #require(#expect(throws: IntentRunner.Failure.self) { try IntentRunner.interpret(failed) })
+        #expect(failure.localizedDescription == "error: Unknown terminal \"nowhere\".")
+        let german = Localizer(languages: ["de"]).describe(failure)
+        #expect(german == Localizer(languages: ["de"]).render(.refusalUnknownTerminal("nowhere"), isolatingValues: true, escapingValues: true))
+        #expect(!german.contains("Unknown terminal"), Comment(rawValue: german))
+        // A success in JSON gives the plan's summary, as the text line did.
+        let ok = ProcessResult(status: 0, standardOutput: #"{"ok":true,"plan":{"action":"open.terminal","summary":"Open in Ghostty","steps":[]},"report":{}}"#)
+        #expect(try IntentRunner.interpret(ok) == "Open in Ghostty")
     }
 
     @Test func rhsOwnWordsComeBackOnSuccessAndFailure() async throws {

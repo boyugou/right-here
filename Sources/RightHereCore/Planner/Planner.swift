@@ -80,6 +80,8 @@ public struct Planner: Sendable {
         switch state.gitError {
         case .notInstalled?: throw PlanError.refused(.refusalGitNotInstalled)
         case .said(let words)?: throw PlanError.refused(.refusalRepositoryGitError(target.lastPathComponent, words))
+        case .failedSilently?: throw PlanError.refused(.refusalRepositoryGitFailed(target.lastPathComponent))
+        case .outside(let item, let root)?: throw PlanError.refused(.refusalRepositoryOutside(item, root))
         case nil: break
         }
         guard let remote = state.remoteName else {

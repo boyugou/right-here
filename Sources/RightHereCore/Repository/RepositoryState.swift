@@ -20,6 +20,10 @@ public struct RepositoryState: Sendable, Equatable {
         case notInstalled
         /// What git said.
         case said(String)
+        /// git failed and said nothing.
+        case failedSilently
+        /// The item resolves to a place outside the repository git found for it (a link that leads out of it).
+        case outside(item: String, root: String)
     }
 
     /// Why git could not read the repository; the other fields are then empty.
