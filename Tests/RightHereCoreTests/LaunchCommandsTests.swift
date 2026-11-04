@@ -73,9 +73,11 @@ struct LaunchCommandsTests {
         #expect(found == [#"[[app]] terminal run_args = ["/bin/zsh", "-c", "{command}"] (was ["/bin/sh", "-c", "{command}"])"#], "\(found)")
     }
 
-    @Test func aPlainAppWithoutTemplatesStartsNothingOfItsOwn() {
+    /// An app without templates starts nothing of its own, but its bundle identifier decides which app a click hands the selection to, and an
+    /// app that runs what it is handed (Python Launcher) runs it: it is listed, as an assistant's change of it waits for the person.
+    @Test func aPlainAppIsListedByTheAppItIsHandedTo() {
         let found = lines("[[app]]\nid = \"mine\"\nname = \"Mine\"\nbundle_id = \"com.example.mine\"\nrole = \"editor\"\n")
-        #expect(found.isEmpty, "\(found)")
+        #expect(found == [#"[[app]] mine bundle_ids = ["com.example.mine"]"#], "\(found)")
     }
 
     @Test func anAgentCommandIsListedWhetherCustomOrACallOnABuiltInOne() {
@@ -109,12 +111,13 @@ struct LaunchCommandsTests {
         #expect(ConfigParser.parse(alias).hasErrors && lines(alias).isEmpty)
         // A terminal that the config defines itself is not known to the config's builder as one, so the guard of a pull lists what carries its bundle identifier with another role, in any case.
         let own = "[[app]]\nid = \"mine\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"terminal\"\n[[app]]\nid = \"mine-too\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"general\"\n"
-        #expect(lines(own) == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#])
-        #expect(lines(own.replacingOccurrences(of: "bundle_id = \"com.example.term\"\nrole = \"general\"", with: "bundle_id = \"Com.Example.TERM\"\nrole = \"general\"")) == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#],
+        func roles(_ text: String) -> [String] { lines(text).filter { $0.contains(" role ") } }
+        #expect(roles(own) == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#])
+        #expect(roles(own.replacingOccurrences(of: "bundle_id = \"com.example.term\"\nrole = \"general\"", with: "bundle_id = \"Com.Example.TERM\"\nrole = \"general\"")) == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#],
                 "the system finds an app by its bundle identifier whatever the case")
-        // A terminal that stays one, an editor with a bundle identifier of its own, and what the other config already has are not listed.
-        #expect(lines("[[app]]\nid = \"terminal\"\nname = \"Terminal\"\nbundle_id = \"com.apple.Terminal\"\nrole = \"terminal\"\n").isEmpty)
-        #expect(lines("[[app]]\nid = \"mine\"\nname = \"M\"\nbundle_id = \"com.example.editor\"\nrole = \"editor\"\n").isEmpty)
+        // A terminal that stays one, an editor with a bundle identifier of its own, and what the other config already has are not listed as a terminal handed files.
+        #expect(roles("[[app]]\nid = \"terminal\"\nname = \"Terminal\"\nbundle_id = \"com.apple.Terminal\"\nrole = \"terminal\"\n").isEmpty)
+        #expect(roles("[[app]]\nid = \"mine\"\nname = \"M\"\nbundle_id = \"com.example.editor\"\nrole = \"editor\"\n").isEmpty)
         #expect(lines(relabeled, over: relabeled).isEmpty)
     }
 
@@ -244,7 +247,7 @@ struct LaunchCommandsTests {
         let long = "#!/bin/sh\n" + String(repeating: "x", count: 300)
         let config = "[[new_file.template]]\nid = \"notes\"\ntitle = \"Notes\"\nextension = \"sh\"\ncontents = \"\"\"\n\(long)\"\"\"\n"
         let entry = LaunchCommands(configText: config).entries.first { $0.place.hasPrefix("[[new_file.template]] notes contents") }
-        #expect(entry?.identity == long && entry?.value != long, "\(String(describing: entry))")
+        #expect(entry?.identity == "sh\u{0}" + long && entry?.value != long, "\(String(describing: entry))")
     }
 }
 

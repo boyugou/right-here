@@ -191,11 +191,13 @@ names only: with such a folder config, `rh config sync pull` exited 0 with "Pull
 **Decision.** `pull` reads the incoming bytes and the config they would replace through `LaunchCommands` (pure, in
 `RightHereCore`) and refuses, listing every setting, unless `--allow-commands` is passed.
 
-- Compared, as each config reads when parsed alone (the overlay is left out: `pull` replaces `config.toml` only): the
-  `open_args`, `run_args` and bundle identifiers of every `[[app]]` that has a template (`{app}` resolves through the
-  bundle identifiers); for every agent as it will run, built-in or not, its `command`, `prompt_arg` (a flag is typed
+- Compared twice: as each config reads alone, and as each reads with this Mac's `config.local.toml` laid over it, as a
+  click reads it; what either reading finds is listed (see the revision of 2026-11-03 below). Compared: the `open_args` and
+  `run_args` of every `[[app]]` that has a template, and the bundle identifiers of every `[[app]]` (they decide which app a
+  click hands the selection or the folder to, and what `{app}` in a template resolves to); for every agent as it will run, built-in or not, its `command`, `prompt_arg` (a flag is typed
   before the prompt) and each variant's `arguments`; `general.terminal` when that terminal starts through a template;
-  and the role of an `[[app]]` that carries the bundle identifier of a terminal but is not one. (Hard rule 3: a
+  and the role of an `[[app]]` that carries the bundle identifier of a terminal (a built-in one, or one either config
+  defines) but is not one. (Hard rule 3: a
   terminal is only ever handed a folder, since handed a file it runs it. What says an app is a terminal is its `role`,
   and an `[[app]]` under a built-in id replaces the built-in, role included, so `[[app]] id = "terminal"` without a
   role is a `general` app, which the planner hands the selected files. Whether Terminal then runs a given file depends
@@ -232,10 +234,10 @@ names only: with such a folder config, `rh config sync pull` exited 0 with "Pull
 - Preset prompts (`[[preset]]`): text typed to an agent as one quoted word. They can tell an agent to do something, but
   the agent's own permission prompts stand between that and a command, and DESIGN section 9, item 2 already says
   presets are for folders the person trusts.
-- Which installed app opens a file or a folder (`open_with`, the bundle identifiers of an `[[app]]`, `general.editor`):
+- Which installed app opens a file or a folder among the ones the config already names (`open_with`, `general.editor`):
   the config chooses among apps already on this Mac, and a terminal redefined without templates keeps the driver Right
-  Here has for that id; neither gets new code from the config. The one such choice that matters most, a terminal listed
-  as another kind of app, is guarded (above). An app that is not a known terminal but runs what it is handed is not.
+  Here has for that id; neither gets new code from the config. What an `[[app]]` entry points at, its bundle
+  identifiers, is guarded since 2026-11-03 (above), as is a terminal listed as another kind of app.
   A file New File creates is never opened with no app named: the template chooses the file's extension and contents, so
   `open <file>` would hand them to whatever the system opens that extension with. With no installed editor the plan
   creates the file and selects it in Finder, with a note (a test with a `.terminal` template holds it, and so does a
@@ -243,6 +245,23 @@ names only: with such a folder config, `rh config sync pull` exited 0 with "Pull
 - Edits made to the local config by hand or by another tool (a dotfiles repository): SECURITY.md puts write access to
   the person's own config out of scope. Only the sync folder is a boundary, because other things write to it.
 - What runs after `--allow-commands`: that is the person's decision, made with the list in front of them.
+
+### Revision 2026-11-03: what an independent review found
+
+- **The overlay hid what a pull takes.** Both copies were compared with this Mac's `config.local.toml` laid over them only, so a
+  program the overlay set itself, replaced by id or disabled never showed: an overlay that pins `[agent.claude] command` to a path
+  let a copy whose `command` runs `curl … | sh` be pulled with no question, and the copy's command was live as soon as the overlay
+  changed (an edit, or a typo that leaves the whole overlay out). Each config is now read both ways, and the changes of both are
+  listed; the doctor's `sync.commands` row lists what this Mac's config starts read both ways too.
+- **Two gaps against the assistant's gate (`ConfigTrust`).** A terminal this Mac's config defines, which the copy turns into a general
+  app, was not seen, because the terminals were taken from the incoming config alone; they are taken from both. A new-file template's
+  extension was not compared (a `.txt` that becomes a `.command` runs); it is. And what an `[[app]]` points at, which this record left
+  unguarded on purpose, is guarded: an app pointed at Python Launcher runs the scripts it is handed, and the assistant's gate already
+  waits for that change. A first pull of a config with apps of its own now asks once.
+- **Between reading and replacing.** A Mac with no config takes no lock, so a pull made the file only if nothing has its name
+  (`AtomicFile.createExclusively`): a config `rh setup` made meanwhile is kept. A push reads the folder's copy again just before it
+  replaces it and stops when another Mac changed it; the rename itself remains a moment that a folder other machines write cannot be
+  locked through. A pull leaves a read-only `config.toml` alone, as an edit does.
 
 ## Verified and not verified
 

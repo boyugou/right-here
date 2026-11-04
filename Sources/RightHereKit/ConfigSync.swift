@@ -24,6 +24,10 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
     case configBusy(file: String)
     /// The lock of the config cannot be taken at all: it is a link, or its folder cannot be written to.
     case lockUnavailable(file: String)
+    /// This Mac's config is read-only: whoever made it so meant it to be left alone, as an edit leaves it (`ConfigService`).
+    case readOnly(file: String)
+    /// A config appeared on this Mac, which had none, while the pull was under way: it is the person's, and it stays.
+    case appearedMeanwhile(file: String)
 
     /// How many changed settings a message lists before saying "and N more".
     public static let listedChanges = 12
@@ -70,6 +74,10 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
             "Another Right Here process is changing the config (it holds \(file.withControlCharactersEscaped)) and did not finish in time. Nothing was changed; try again in a moment."
         case .lockUnavailable(let file):
             "The lock \(file.withControlCharactersEscaped) cannot be taken (it is a link, or its folder cannot be written to), so the config was not replaced: a change made at the same moment could not be told apart. Nothing was changed."
+        case .readOnly(let file):
+            "\(file.withControlCharactersEscaped) is read-only, so it was not replaced. Make it writable to let `rh config sync pull` replace it. Nothing was changed."
+        case .appearedMeanwhile(let file):
+            "\(file.withControlCharactersEscaped) was made while the pull was under way (by `rh setup` or the setup window), so it was kept and nothing was pulled. Run `rh config sync status` to compare it with the copy in the sync folder."
         }
     }
 }
@@ -291,11 +299,13 @@ public struct ConfigSync: Sendable {
         var pending: [LaunchCommands.Change] = []
         var remoteProblems: [SyncValidation.Problem] = []
         if let remoteData = inspection.remoteData {
-            // Both copies are read with this Mac's own file laid over them, as a click reads the config: the switch that starts agents without asking, or a terminal that only that file defines, decides
-            // what the copy would start.
+            // Both copies are read twice. With this Mac's own file laid over them, as a click reads the config: the switch that starts agents without
+            // asking, or a terminal that only that file defines, decides what the copy would start. And alone: what that file sets itself, replaces
+            // or disables would hide a program the copy brings, and the copy is what `config.toml` becomes, live as soon as that file changes.
             let overlay = inspection.localOverlayData
-            let known = inspection.localData.map { LaunchCommands(configData: $0, overlay: overlay) } ?? LaunchCommands(.default)
-            pending = LaunchCommands(configData: remoteData, overlay: overlay).additions(to: known)
+            var seen = Set<String>()
+            pending = (LaunchCommands.changes(from: inspection.localData, to: remoteData, overlay: nil)
+                + LaunchCommands.changes(from: inspection.localData, to: remoteData, overlay: overlay)).filter { seen.insert($0.place + "\u{0}" + $0.value).inserted }
             remoteProblems = SyncValidation.check(remoteData)
         } else if case .tooLarge(let bytes) = inspection.remote {
             remoteProblems = [.tooLarge(bytes: bytes)]
@@ -407,6 +417,7 @@ public struct ConfigSync: Sendable {
         let destination = paths.configFile.resolvingSymlinksInPath()
         // The lock of the config, which a pull has taken, is in the folder of the record of what was synced, so one question covers that; the file the config is a link to may be elsewhere.
         try checkWriting(destination)
+        if inspection.localData != nil, !FileManager.default.isWritableFile(atPath: destination.path) { throw ConfigSyncError.readOnly(file: destination.path) }
         var backup: URL?
         do {
             try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -415,7 +426,17 @@ public struct ConfigSync: Sendable {
                 try FileManager.default.copyItem(at: destination, to: copy)
                 backup = copy
             }
-            try AtomicFile.write(data, to: destination, beforeRename: beforeRename)
+            if inspection.localData == nil {
+                // A Mac with no config takes no lock (it would make the config's folder), so the file is made only if nothing has its name:
+                // one that `rh setup` made meanwhile is the person's, and a rename would replace it with no saved copy.
+                if try AtomicFile.createExclusively(data, at: destination, beforeLink: beforeRename) == .exists {
+                    throw ConfigSyncError.appearedMeanwhile(file: destination.path)
+                }
+            } else {
+                try AtomicFile.write(data, to: destination, beforeRename: beforeRename)
+            }
+        } catch let error as ConfigSyncError {
+            throw error
         } catch {
             throw ConfigSyncError.writeFailed("\(destination.path): \(error)")
         }
@@ -469,7 +490,14 @@ public struct ConfigSync: Sendable {
                 try FileManager.default.copyItem(at: destination, to: copy)
                 backup = copy
             }
-            try AtomicFile.write(data, to: destination, beforeRename: beforeRename)
+            // Another Mac may have written the copy since it was read: it is read again just before it is replaced, which narrows the moment
+            // in which a copy written from elsewhere is lost to the rename itself (a folder other machines write cannot be locked from here).
+            try AtomicFile.write(data, to: destination) { staged in
+                try beforeRename?(staged)
+                if inspect(folder: folder).remoteData != inspection.remoteData { throw ConfigSyncError.refused(.remoteChanged, folder: settings.folder) }
+            }
+        } catch let error as ConfigSyncError {
+            throw error
         } catch {
             throw ConfigSyncError.writeFailed("\(destination.path): \(error)")
         }
@@ -574,7 +602,10 @@ public struct ConfigSync: Sendable {
             return DoctorCheck(.syncCommands, status: .warn, detail: .doctorSyncCommandsPending(String(changes.count), listed(changes)),
                                notes: more(changes), fix: .doctorFixSyncCommands)
         }
-        let custom = localData.map { LaunchCommands(configData: $0, overlay: overlay).custom } ?? []
+        // Read alone and with this Mac's own file, as the comparison is: what that file hides is still in `config.toml`.
+        var seen = Set<String>()
+        let custom = (localData.map { LaunchCommands(configData: $0).custom + LaunchCommands(configData: $0, overlay: overlay).custom } ?? [])
+            .filter { seen.insert($0.place + "\u{0}" + $0.value).inserted }
         guard !custom.isEmpty else { return nil }
         return DoctorCheck(.syncCommands, status: .ok, detail: .doctorSyncCommandsOwn(String(custom.count), listed(custom)), notes: more(custom))
     }

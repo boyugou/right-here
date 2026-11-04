@@ -820,7 +820,7 @@ struct ConfigSyncTrustTests {
         let relabeled = "[[app]]\nid = \"mine\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"terminal\"\n\n[[app]]\nid = \"mine-too\"\nname = \"Mine too\"\nbundle_id = \"Com.Example.TERM\"\nrole = \"general\"\n"
         let f = try machine(folder: relabeled); defer { f.cleanUp() }
         let changes = try #require(refusal { try f.sync.pull() })
-        #expect(changes.map(\.line) == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#])
+        #expect(changes.map(\.line).filter { $0.contains(" role ") } == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#])
         #expect(try f.read(f.local) == one)
         #expect(try f.sync.pull(allowCommands: true) == .pulled(backup: nil))
     }

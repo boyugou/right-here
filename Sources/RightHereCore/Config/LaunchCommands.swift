@@ -21,6 +21,8 @@ public struct LaunchCommands: Sendable, Equatable {
         /// that kept the start, the length and a short digest of a text would otherwise pass for the same.
         public var identity: String
 
+        var isBundle: Bool { place.hasSuffix(" bundle_ids") }
+
         public init(place: String, value: String, identity: String? = nil) {
             self.place = place
             self.value = value
@@ -41,24 +43,28 @@ public struct LaunchCommands: Sendable, Equatable {
         }
     }
 
-    /// Sorted by place; every place once.
+    /// Sorted by place, the bundle identifiers of the apps last; every place once.
     public let entries: [Entry]
 
-    public init(_ config: Config) {
+    /// - Parameter terminals: Bundle identifiers that count as a terminal's besides the built-in terminals and the ones this config defines: a
+    ///   comparison passes those of the other config, so that a copy that turns a terminal this Mac's config defines into another kind of app is
+    ///   seen, though the copy itself no longer says it is a terminal.
+    public init(_ config: Config, terminals: Set<String> = []) {
         var found: [Entry] = []
         for app in config.apps {
+            // The bundle identifiers decide which app a click hands the selection or the folder to (an app that runs what it is handed, such as
+            // Python Launcher, runs it), and for an app with a template what `{app}` resolves to.
+            found.append(Entry(place: "[[app]] \(app.id) bundle_ids", value: Self.list(app.bundleIDs)))
             // Only an app with a template starts a program of its own; the others are driven by code Right Here has or are
             // handed the folder.
             guard case .template(let launch) = app.driver else { continue }
             if let open = launch.open { found.append(Entry(place: "[[app]] \(app.id) open_args", value: Self.list(open))) }
             if let run = launch.run { found.append(Entry(place: "[[app]] \(app.id) run_args", value: Self.list(run))) }
-            // `{app}` in a template resolves through the bundle identifiers, so they decide which program runs.
-            found.append(Entry(place: "[[app]] \(app.id) bundle_ids", value: Self.list(app.bundleIDs)))
         }
         // A terminal is only ever handed a folder, because handed a file it runs it, and what says an app is a terminal is
         // its role. An `[[app]]` that carries a terminal's bundle identifier with another role makes Right Here hand it files.
         // The system finds an app by its bundle identifier whatever the case, so the identifiers are compared without regard to it.
-        let terminalBundles = Set((KnownApps.terminals.flatMap(\.bundleIDs) + config.apps.filter { $0.role == .terminal }.flatMap(\.bundleIDs)).map { $0.lowercased() })
+        let terminalBundles = Self.terminalBundles(of: config).union(terminals)
         for app in config.apps where app.role != .terminal && !terminalBundles.isDisjoint(with: app.bundleIDs.map { $0.lowercased() }) {
             found.append(Entry(place: "[[app]] \(app.id) role (a terminal handed a file runs it)", value: Self.quoted(app.role.rawValue)))
         }
@@ -89,9 +95,10 @@ public struct LaunchCommands: Sendable, Equatable {
         }
         // What a new file holds becomes a file that something may run (a script, a login item) in any folder the tool that makes it is given, so it is listed as well. A long text is shown by its
         // start and a digest, and compared whole.
+        // Its extension decides what runs it: a script that was a `.txt` opens in an editor, and as a `.command` it runs.
         for template in config.newFile.templates where !template.contents.isEmpty {
-            found.append(Entry(place: "[[new_file.template]] \(template.id) contents (becomes a file that something on this Mac may run)", value: Self.digested(template.contents),
-                               identity: template.contents))
+            found.append(Entry(place: "[[new_file.template]] \(template.id) contents (becomes a file that something on this Mac may run)",
+                               value: ".\(template.fileExtension) " + Self.digested(template.contents), identity: template.fileExtension + "\u{0}" + template.contents))
         }
         // The choice alone starts nothing, so a built-in terminal is not listed; one that starts through a template is, whoever makes the choice: the default terminal, an agent's own terminal, an item of
         // the menu or of the Quick Actions that names one.
@@ -99,12 +106,34 @@ public struct LaunchCommands: Sendable, Equatable {
             found.append(Entry(place: "\(use.place) (starts through a command template)", value: Self.quoted(use.terminal)))
         }
         var seen = Set<String>()
-        entries = found.filter { seen.insert($0.place).inserted }.sorted { $0.place < $1.place }
+        // What runs a program of its own first: a list that shows only its first lines shows those, and the apps a click hands things to after.
+        entries = found.filter { seen.insert($0.place).inserted }.sorted { ($0.isBundle ? 1 : 0, $0.place) < ($1.isBundle ? 1 : 0, $1.place) }
     }
 
     /// For tests: entries as they are given.
     init(entries: [Entry]) {
         self.entries = entries
+    }
+
+    /// The bundle identifiers of the terminals: the built-in ones and the ones `config` defines, without regard to case.
+    static func terminalBundles(of config: Config) -> Set<String> {
+        Set((KnownApps.terminals.flatMap(\.bundleIDs) + config.apps.filter { $0.role == .terminal }.flatMap(\.bundleIDs)).map { $0.lowercased() })
+    }
+
+    /// What the config in `incoming` would start that the one in `known` does not (`nil`: there is none), each read the same way: alone, or with
+    /// the same `overlay`. A terminal either one defines counts as a terminal in both.
+    public static func changes(from known: Data?, to incoming: Data, overlay: Data?) -> [Change] {
+        let before = known.map { config(of: $0, overlay: overlay) } ?? .default
+        let after = config(of: incoming, overlay: overlay)
+        let terminals = terminalBundles(of: before).union(terminalBundles(of: after))
+        return LaunchCommands(after, terminals: terminals).additions(to: LaunchCommands(before, terminals: terminals))
+    }
+
+    private static func config(of data: Data, overlay: Data?) -> Config {
+        guard let shared = text(of: data) else { return .default }
+        guard let overlay else { return ConfigParser.parse(shared).config }
+        let local = text(of: overlay).map(ConfigSource.text) ?? .absent
+        return ConfigLayers.load(base: .text(shared), local: local).config
     }
 
     /// The config in `text`, as it applies when read alone (the same reading that validated it).
