@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Check our wording against macOS's own, as shipped on this Mac.
 
-1. The Settings path the permission alert quotes (System Settings > Privacy & Security > Automation). macOS
-   ships those names in its own languages (inside System Settings and its Privacy & Security extension), so
-   this reads them and checks each translation of `alert.permissionMessage` and `alert.openSettings` uses
-   the same words. Languages macOS does not ship (Bengali, Persian, Marathi, Tamil, Telugu, Urdu) show an
-   English Settings, so their alert must quote the English path.
+1. The Settings paths the alerts quote: System Settings > Privacy & Security > Automation (`alert.permissionMessage`,
+   `refusal.automationDenied`) and > Files & Folders, or Full Disk Access (`refusal.unreadable`). macOS ships those names in
+   its own languages (inside System Settings and its Privacy & Security extension), so this reads them and checks each
+   translation of those texts and of `alert.openSettings` uses the same words. A name between two separators is the whole
+   segment, so a longer stale name ("隐私与安全性" where macOS now says "隐私与安全") does not pass for it. Languages macOS does
+   not ship (Bengali, Persian, Marathi, Tamil, Telugu, Urdu) show an English Settings, so their text must quote the English path.
 2. The other two Settings paths the app names: where to switch the Finder extension on (General > Login Items & Extensions >
    Finder, in `app.fixExtensionEnable` and `doctor.fix.extensionEnable`) and where a Quick Action gets its keyboard shortcut
    (Keyboard > Keyboard Shortcuts > Services, in `app.quickActionsBody`). The same rule: the words macOS ships, or the English
@@ -30,7 +31,14 @@ PANE = Path("/System/Library/ExtensionKit/Extensions/SecurityPrivacyExtension.ap
 SETTINGS = Path("/System/Applications/System Settings.app/Contents/Resources")
 EXTENSIONS = Path("/System/Library/ExtensionKit/Extensions")
 ALIASES = {"pt-BR": ["pt_BR"], "zh-Hans": ["zh_CN"], "zh-Hant": ["zh_TW", "zh_HK"]}
-ENGLISH_PATH = "System Settings › Privacy & Security › Automation"
+# The texts that quote a path in Privacy & Security: the English path, and the keys of the pane's own table for the names after it.
+PRIVACY_PATHS = {
+    "alert.permissionMessage": ("System Settings › Privacy & Security › Automation", (("Automation", "AUTOMATION"),)),
+    "refusal.automationDenied": ("System Settings › Privacy & Security › Automation", (("Automation", "AUTOMATION"),)),
+    "refusal.unreadable": ("System Settings › Privacy & Security › Files & Folders", (("Files & Folders", "FILE_ACCESS_COMBINED"), ("Full Disk Access", "ALL_FILES"))),
+}
+# What may stand around a name in a path: the quotation marks of the languages, and spaces.
+AROUND_A_NAME = "“”„\"'«»「」『』‘’‚ "
 # Languages that inflect the app's name inside a sentence (a case ending), so the dictionary form is not
 # found as such. Each form below is the name as the sentence or the button correctly writes it.
 INFLECTED = {
@@ -164,26 +172,31 @@ def main() -> int:
     message = strings["alert.permissionMessage"]["localizations"]
     button = strings["alert.openSettings"]["localizations"]
     problems = []
-    for language in sorted(message):
-        if language == "en":
-            continue
-        text = normalize(message[language]["stringUnit"]["value"])
-        names = (
-            lookup(settings, language, "CFBundleDisplayName") or lookup(settings, language, "CFBundleName"),
-            lookup(pane_info, language, "CFBundleDisplayName"),
-            lookup(pane_loc, language, "AUTOMATION"),
-        )
-        if not all(names):
-            if ENGLISH_PATH not in text:
-                problems.append(f"{language}: macOS does not ship this language, so the alert should quote the English path")
-            continue
-        def uses(name: str, where: str) -> bool:
-            return normalize(name) in where or any(form in where for form in INFLECTED.get(language, []))
-        for label, name in zip(("System Settings", "Privacy & Security", "Automation"), names):
-            if not uses(name, text):
-                problems.append(f"{language}: the alert does not use macOS's word for {label}: {name}")
-        if not uses(names[0], normalize(button[language]["stringUnit"]["value"])):
-            problems.append(f"{language}: alert.openSettings does not use macOS's name for the app: {names[0]}")
+    for key, (english_path, after) in PRIVACY_PATHS.items():
+        localizations = strings[key]["localizations"]
+        for language in sorted(localizations):
+            if language == "en":
+                continue
+            text = normalize(localizations[language]["stringUnit"]["value"])
+            names = (
+                lookup(settings, language, "CFBundleDisplayName") or lookup(settings, language, "CFBundleName"),
+                lookup(pane_info, language, "CFBundleDisplayName"),
+                *(lookup(pane_loc, language, table_key) for _, table_key in after),
+            )
+            if not all(names):
+                if english_path not in text or not all(label in text for label, _ in after):
+                    problems.append(f"{language}: macOS does not ship this language, so {key} should quote the English path")
+                continue
+            def uses(name: str, where: str) -> bool:
+                return normalize(name) in where or any(form in where for form in INFLECTED.get(language, []))
+            for label, name in zip(("System Settings", "Privacy & Security", *(label for label, _ in after)), names):
+                if not uses(name, text):
+                    problems.append(f"{language}: {key} does not use macOS's word for {label}: {name}")
+            between = [segment.strip(AROUND_A_NAME) for segment in text.split("›")[1:-1]]
+            if between != [normalize(names[1])]:
+                problems.append(f"{language}: {key} has {between} between the separators, where macOS says {normalize(names[1])!r}")
+            if key == "alert.permissionMessage" and not uses(names[0], normalize(button[language]["stringUnit"]["value"])):
+                problems.append(f"{language}: alert.openSettings does not use macOS's name for the app: {names[0]}")
     problems += settings_path_problems(strings, settings, message)
     finder_checked = 0
     for language in sorted(message):
@@ -208,7 +221,7 @@ def main() -> int:
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
-    print(f"ok: the permission alert uses macOS's own wording in {sum(1 for l in message if l != 'en')} languages; "
+    print(f"ok: the Settings paths of the permission alert and the two refusals that name one use macOS's own wording in {sum(1 for l in message if l != 'en')} languages; "
           f"Open With, Show in Finder and Quick Actions match Finder's in {finder_checked}")
     return 0
 

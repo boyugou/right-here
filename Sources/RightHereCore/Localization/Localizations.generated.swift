@@ -801,7 +801,7 @@ enum Localizations {
         "uk": "macOS не дозволила Right Here керувати %@. Дозвольте це в Системних параметрах › Приватність і безпека › Автоматизація та повторіть спробу.",
         "ur": "‏macOS نے Right Here کو %@ کنٹرول کرنے سے روک دیا۔ System Settings › Privacy & Security › Automation میں اجازت دیں، پھر دوبارہ کوشش کریں۔",
         "vi": "macOS đã chặn Right Here điều khiển %@. Hãy cho phép trong Cài đặt hệ thống › Quyền riêng tư & Bảo mật › Tự động hóa, rồi thử lại.",
-        "zh-Hans": "macOS 阻止了 Right Here 控制%@。请在“系统设置” › “隐私与安全性” › “自动化”中允许，然后重试。",
+        "zh-Hans": "macOS 阻止了 Right Here 控制%@。请在“系统设置” › “隐私与安全” › “自动化”中允许，然后重试。",
         "zh-Hant": "macOS 阻止了 Right Here 控制%@。請在「系統設定」›「隱私權與安全性」›「自動化」中允許，然後重試。",
     ]
 

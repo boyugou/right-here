@@ -1292,7 +1292,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "macOS 阻止了 Right Here 控制%@。请在“系统设置” › “隐私与安全性” › “自动化”中允许，然后重试。"
+            "value": "macOS 阻止了 Right Here 控制%@。请在“系统设置” › “隐私与安全” › “自动化”中允许，然后重试。"
           }
         },
         "zh-Hant": {
