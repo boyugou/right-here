@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.2.0 (2026-11-03)
+
+Why something did not work, in your language.
+
 - When an action from Finder does nothing, the alert says why in your language, not only its title: every reason an action can be
   refused (a commit that is not pushed, a folder macOS will not show, a terminal that cannot run commands, an app that is not
   installed, a name that cannot be typed) is translated into the thirty languages. The command line and the MCP server still say it in
