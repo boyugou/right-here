@@ -55,3 +55,9 @@ extension LocalizedMessage: Encodable {
         try container.encode(english(), forKey: .text)
     }
 }
+
+extension DefaultStringInterpolation {
+    /// A message is not text until a localizer writes it: `"\(message)"` would print the structure. Say `english()` or `render`.
+    @available(*, unavailable, message: "write the message with english() or a Localizer")
+    public mutating func appendInterpolation(_ message: LocalizedMessage) {}
+}

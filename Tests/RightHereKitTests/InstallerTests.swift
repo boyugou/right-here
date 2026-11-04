@@ -448,6 +448,33 @@ struct FailureAlertTests {
         #expect(FailureAlert.iconFile(of: URL(fileURLWithPath: "/Applications/Right Here.app")).path == "/Applications/Right Here.app/Contents/Resources/AppIcon.icns")
     }
 
+    /// The body is in the language of the config, not only the title: a German Mac that clicks Copy Repository Link on a commit that is not
+    /// pushed reads why in German. `rh run` says the same in English.
+    @Test func theBodyIsInThePersonsLanguage() throws {
+        let file = URL(fileURLWithPath: "/work/app/README.md")
+        let facts = FakeSystemFacts(directories: ["/work/app"], files: [file.path], gitRoots: ["/work/app"])
+        let state = RepositoryState(root: URL(fileURLWithPath: "/work/app"), itemPath: ["README.md"], remoteName: "origin", remoteNames: ["origin"],
+                                    remoteURL: "git@github.com:owner/app.git", commit: String(repeating: "a", count: 40), isPushed: false, kind: .file)
+        let error = try #require(#expect(throws: PlanError.self) {
+            try Planner(facts: facts, repositories: [file: state]).plan(.copyRepositoryLink, context: HereContext(origin: .items, items: [file]))
+        })
+        #expect(error.localizedDescription.hasPrefix("The checked-out commit is not on remote \"origin\" yet"), Comment(rawValue: error.localizedDescription))
+        for language in ["de", "ja", "ar"] {
+            let message = FailureAlert.content(for: error, action: "repository.copy-link", localizer: Localizer(languages: [language])).message
+            #expect(!message.contains("checked-out commit"), "\(language): \(message)")
+            #expect(message.contains("origin") && message.hasSuffix("(repository.copy-link)"), "\(language): \(message)")
+        }
+        let english = FailureAlert.content(for: error, action: "repository.copy-link").message
+        #expect(english == error.localizedDescription + "\n\n(repository.copy-link)")
+    }
+
+    /// A name with a direction override cannot turn the alert's sentence around: it is shown escaped, in every language.
+    @Test func aNameInTheBodyIsShownEscaped() {
+        let content = FailureAlert.content(for: PlanError.pathNotFound("/work/report\u{202E}fdp.exe"), action: "open.terminal", localizer: Localizer(languages: ["he"]))
+        #expect(!content.message.unicodeScalars.contains("\u{202E}"), Comment(rawValue: content.message))
+        #expect(content.message.contains("\\u202E") || content.message.contains("\\u{202E}") || content.message.contains("\\u202e"), Comment(rawValue: content.message))
+    }
+
     @Test func otherFailuresNameTheAction() {
         let content = FailureAlert.content(for: PlanError.appNotInstalled("Zed"), action: "open.app.zed")
         #expect(content.message.contains("Zed is not installed."))

@@ -203,12 +203,12 @@ struct PresetPlannerTests {
         let config = Config(enabledAgents: ["claude"], presets: [review])
         let facts = machine(files: [name])
         do { _ = try Planner(config: config, facts: facts).plan(.preset(id: "review", terminal: nil), context: selection([name])); Issue.record("expected a refusal") } catch let error as PlanError {
-            guard case .unsafePresetName(let preset, let subject, _) = error else { Issue.record("expected .unsafePresetName, got \(error)"); return }
+            guard case .unsafePresetName(let preset, let carried, _) = error else { Issue.record("expected .unsafePresetName, got \(error)"); return }
             #expect(preset == "review")
             // The file is the one named, by its own name, quoted once.
-            #expect(subject == "the file " + name.jsonQuoted)
+            #expect(carried.kind == .file && carried.name == name)
             let message = error.errorDescription ?? ""
-            #expect(message.hasPrefix("the file " + name.jsonQuoted + " cannot be named in the prompt of preset \"review\": "), Comment(rawValue: message))
+            #expect(message.hasPrefix("The file " + name.jsonQuoted + " cannot be named in the prompt of preset \"review\". "), Comment(rawValue: message))
             #expect(!message.hasPrefix("The prompt of preset"))
             #expect(!message.contains("\"\""))
             // Whatever the name held, the message shows it escaped, never as a raw line break.
@@ -223,9 +223,9 @@ struct PresetPlannerTests {
     func misleadingFileNamesAreRefused(name: String) {
         let config = Config(enabledAgents: ["claude"], presets: [review])
         do { _ = try Planner(config: config, facts: machine(files: [name])).plan(.preset(id: "review", terminal: nil), context: selection([name])); Issue.record("expected a refusal") } catch let error as PlanError {
-            guard case .unsafePresetName(_, let subject, let reason) = error else { Issue.record("expected .unsafePresetName, got \(error)"); return }
-            #expect(subject == "the file " + name.jsonQuoted)
-            #expect(reason.hasPrefix("its name has a character that shows nothing or changes how it reads"), Comment(rawValue: reason))
+            guard case .unsafePresetName(_, let carried, let problem) = error else { Issue.record("expected .unsafePresetName, got \(error)"); return }
+            #expect(carried.kind == .file && carried.name == name)
+            #expect(problem == .misleadingCharacter)
             let message = error.errorDescription ?? ""
             #expect(!message.unicodeScalars.contains(where: ConfigBuilder.changesHowTextReads), "the message shows the character escaped, as the person could not see it otherwise: \(message)")
         } catch { Issue.record("\(error)") }
@@ -427,7 +427,9 @@ struct PresetPlannerTests {
         let config = Config(enabledAgents: ["claude"], presets: [review])
         let facts = machine(files: ["fine.txt", "two\nlines.txt", "also fine.txt"])
         do { _ = try Planner(config: config, facts: facts).plan(.preset(id: "review", terminal: nil), context: selection(["fine.txt", "two\nlines.txt", "also fine.txt"])); Issue.record("expected a refusal") } catch let error as PlanError {
-            #expect(error == .unsafePresetName(preset: "review", subject: "the file \"two\\nlines.txt\"", reason: "its name has a line break or another control character"))
+            guard case .unsafePresetName("review", let carried, .controlCharacter) = error else { Issue.record("\(error)"); return }
+            #expect(carried.kind == .file && carried.name == "two\nlines.txt")
+            #expect(error.localizedDescription == "The file \"two\\nlines.txt\" cannot be named in the prompt of preset \"review\". Its name has a line break or another control character.")
         } catch { Issue.record("\(error)") }
     }
 
@@ -438,7 +440,8 @@ struct PresetPlannerTests {
                                     applications: ["com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app")])
         let context = HereContext(origin: .items, items: [URL(fileURLWithPath: "/Users/tester/code/odd\nfolder/a.txt")])
         do { _ = try Planner(config: config, facts: facts).plan(.preset(id: "p", terminal: nil), context: context); Issue.record("expected a refusal") } catch let error as PlanError {
-            #expect(error == .unsafePresetName(preset: "p", subject: "the folder \"odd\\nfolder\"", reason: "its name has a line break or another control character"))
+            guard case .unsafePresetName("p", let carried, .controlCharacter) = error else { Issue.record("\(error)"); return }
+            #expect(carried.kind == .folder && carried.name == "odd\nfolder")
         } catch { Issue.record("\(error)") }
     }
 
@@ -455,7 +458,8 @@ struct PresetPlannerTests {
         let config = Config(enabledAgents: ["claude"], presets: [preset])
         let facts = machine(files: ["--version"])
         do { _ = try Planner(config: config, facts: facts).plan(.preset(id: "p", terminal: nil), context: selection(["--version"])); Issue.record("expected a refusal") } catch let error as PlanError {
-            #expect(error == .unsafePresetName(preset: "p", subject: "the selected item \"--version\"", reason: "its name would start the prompt with a dash, which the agent would read as an option"))
+            guard case .unsafePresetName("p", let carried, .leadingDash) = error else { Issue.record("\(error)"); return }
+            #expect(carried.kind == .item && carried.name == "--version")
         } catch { Issue.record("\(error)") }
     }
 
@@ -464,7 +468,7 @@ struct PresetPlannerTests {
         let preset = AgentPreset(id: "p", title: "P", prompt: "line one\nline two {files}")
         let config = Config(enabledAgents: ["claude"], presets: [preset])
         do { _ = try Planner(config: config, facts: machine(files: ["a.txt"])).plan(.preset(id: "p", terminal: nil), context: selection(["a.txt"])); Issue.record("expected a refusal") } catch let error as PlanError {
-            #expect(error == .unsafePrompt(preset: "p", reason: "it has a line break or another control character"))
+            #expect(error == .unsafePrompt(preset: "p", problem: .controlCharacter))
         } catch { Issue.record("\(error)") }
     }
 
@@ -717,7 +721,7 @@ struct PresetMenuTests {
         let facts = machine(files: ["a.txt"])
         let ref = try #require(ActionRef(parsing: "preset.review@\(word)"))
         let error = #expect(throws: PlanError.self) { try Planner(config: config, facts: facts).plan(ref, context: selection(["a.txt"])) }
-        #expect(error?.message.contains("typed into a terminal") == true, Comment(rawValue: "\(String(describing: error?.message))"))
+        #expect(error?.localizedDescription.contains("typed into a terminal") == true, Comment(rawValue: "\(String(describing: error?.localizedDescription))"))
         let info = ActionRegistry(config: config, facts: facts).info(ref)
         #expect(!info.available && info.unavailableReason?.contains("typed into a terminal") == true)
     }
@@ -805,7 +809,7 @@ struct PresetMenuTests {
             let info = ActionRegistry(config: config, facts: facts).info(ref, context: selection(names))
             #expect(!info.available)
             // What `rh run` refuses with, in the same words.
-            #expect(throws: PlanError.unsupported(info.unavailableReason ?? "")) { try Planner(config: config, facts: facts).plan(ref, context: selection(names)) }
+            #expect(performing: { try Planner(config: config, facts: facts).plan(ref, context: selection(names)) }, throws: { $0.localizedDescription == info.unavailableReason })
         }
     }
 

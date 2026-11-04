@@ -751,7 +751,7 @@ struct CLITests {
 
         let refused = try rh.run(["run", "preset.review", "--dry-run", hostile.path])
         #expect(refused.status != 0)
-        #expect(refused.standardError.contains("the file \"two\\nlines.txt\" cannot be named in the prompt of preset \"review\""), Comment(rawValue: refused.standardError))
+        #expect(refused.standardError.contains("The file \"two\\nlines.txt\" cannot be named in the prompt of preset \"review\"."), Comment(rawValue: refused.standardError))
         #expect(!refused.standardOutput.contains("claude '"))
 
         let noFiles = try rh.run(["run", "preset.review", "--dry-run", "--container", folder.path])
@@ -789,7 +789,7 @@ struct CLITests {
         // A file in the prompt of a preset: the file is named, and the prompt (which is fine) is not blamed.
         let preset = try rh.run(["run", "preset.review@terminal", "--dry-run", file.path])
         #expect(preset.status == 1)
-        #expect(preset.standardError.contains("the file \"two\\nlines.txt\" cannot be named in the prompt of preset \"review\""), Comment(rawValue: preset.standardError))
+        #expect(preset.standardError.contains("The file \"two\\nlines.txt\" cannot be named in the prompt of preset \"review\"."), Comment(rawValue: preset.standardError))
         #expect(!preset.standardError.contains("The prompt of preset"), Comment(rawValue: preset.standardError))
     }
 

@@ -103,7 +103,7 @@ public struct DefaultApps: Sendable {
         guard let app = config.app(id: id) else { throw PlanError.unknownApp(id) }
         if role == .terminal, app.role != .terminal { throw PlanError.notATerminal(app) }
         if role == .editor, app.role == .terminal {
-            throw PlanError.unsupported("\(app.name) is a terminal, not an editor. Use open.terminal@\(app.id) to open a folder in it.")
+            throw PlanError.refused(.refusalTerminalNotEditor(app.name, "open.terminal@\(app.id)"))
         }
         return app
     }

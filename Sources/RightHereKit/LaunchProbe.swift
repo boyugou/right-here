@@ -93,7 +93,7 @@ public struct LaunchProbe: Sendable {
     public func run(terminal app: AppDescriptor, bundleID: String, placement: TerminalPlacement = .newWindow, timeout: Duration = .seconds(15)) async -> Result {
         let adapter = TerminalAdapters.adapter(for: app)
         if let refusal = adapter.commandRefusal {
-            return Result(application: app.name, outcome: .unsupported, detail: refusal)
+            return Result(application: app.name, outcome: .unsupported, detail: refusal.english())
         }
         let folder = folder(typesTheFolder: adapter.typesTheFolder)
         let root = folder.deletingLastPathComponent()

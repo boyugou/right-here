@@ -29,7 +29,7 @@ private enum Bundled {
             let answer = try await runner.perform(command)
             return .result(dialog: IntentDialog(stringLiteral: success(answer)))
         } catch {
-            throw IntentFailure(text: Bundled.localizer.render(.intentFailed(error.localizedDescription)))
+            throw IntentFailure(text: Bundled.localizer.render(.intentFailed(Bundled.localizer.describe(error))))
         }
     }
 

@@ -59,7 +59,7 @@ public enum FailureAlert {
         if let plan = error as? PlanError, case .unreadable = plan { settingsURL = filesAndFoldersSettingsURL }
         return Content(
             title: localizer.string(.alertFailedTitle),
-            message: error.localizedDescription + "\n\n(\(action))",
+            message: localizer.describe(error) + "\n\n(\(action))",
             okTitle: localizer.string(.alertOk),
             settingsTitle: localizer.string(.alertOpenSettings),
             settingsURL: settingsURL,

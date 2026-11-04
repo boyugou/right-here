@@ -5,7 +5,7 @@ extension TerminalSession {
     /// app would run it, so an adapter never passes on anything else.
     public func requireDirectory(_ facts: any SystemFacts) throws -> String {
         guard facts.isDirectory(directory) == true else {
-            throw PlanError.unsupported("\(directory.path) is not a folder.")
+            throw PlanError.refused(.refusalNotAFolder(directory.path))
         }
         return directory.path
     }
@@ -68,7 +68,7 @@ public struct TerminalSession: Sendable, Equatable {
 public protocol TerminalAdapter: Sendable {
     var terminalID: String { get }
     /// Why this terminal has no way to run a command in a new session, which agents need; `nil` when it has one.
-    var commandRefusal: String? { get }
+    var commandRefusal: LocalizedMessage? { get }
     /// Whether the folder may reach a shell as typed text (`cd …`) rather than as the session's working directory, which
     /// the terminal is handed as an argument and which nothing types. Typed text is read by a shell the adapter cannot see,
     /// so such an adapter refuses folder names with a control character, and the common shells read some others differently.
@@ -80,15 +80,15 @@ public protocol TerminalAdapter: Sendable {
     var supportedPlacements: [TerminalPlacement] { get }
     /// Why this installed terminal cannot run a command on this machine even though it normally can
     /// (an old version, say), or `nil` when nothing stands in the way.
-    func commandBlocker(bundleID: String, facts: any SystemFacts) -> String?
+    func commandBlocker(bundleID: String, facts: any SystemFacts) -> LocalizedMessage?
     func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step]
 }
 
 extension TerminalAdapter {
-    public var commandRefusal: String? { nil }
+    public var commandRefusal: LocalizedMessage? { nil }
     /// Whether the terminal can run a command in the new session.
     public var supportsCommands: Bool { commandRefusal == nil }
-    public func commandBlocker(bundleID: String, facts: any SystemFacts) -> String? { nil }
+    public func commandBlocker(bundleID: String, facts: any SystemFacts) -> LocalizedMessage? { nil }
     public var typesTheFolder: Bool { true }
     public var supportedPlacements: [TerminalPlacement] { [.newWindow] }
 }
@@ -97,7 +97,7 @@ extension TerminalAdapter {
 public struct OpenFolderTerminalAdapter: TerminalAdapter {
     public let terminalID: String
     public let displayName: String
-    public var commandRefusal: String? { "\(displayName) cannot run commands yet. Choose another terminal for this agent." }
+    public var commandRefusal: LocalizedMessage? { .refusalCannotRunCommandsYet(displayName) }
     public var typesTheFolder: Bool { false }
 
     public init(terminalID: String, displayName: String) {
@@ -106,7 +106,7 @@ public struct OpenFolderTerminalAdapter: TerminalAdapter {
     }
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
-        if session.typedInput != nil, let refusal = commandRefusal { throw PlanError.unsupported(refusal) }
+        if session.typedInput != nil, let refusal = commandRefusal { throw PlanError.refused(refusal) }
         return [.open(OpenStep(bundleID: bundleID, targets: [try session.requireDirectory(facts)]))]
     }
 }

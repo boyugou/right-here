@@ -65,18 +65,18 @@ public struct AgentPreset: Sendable, Equatable, Identifiable {
 
     /// Why a selection of `count` files does not suit this preset, or `nil`. The count alone, so the menu can decide
     /// without looking at the files.
-    public func refusal(forFileCount count: Int) -> String? {
+    public func refusal(forFileCount count: Int) -> LocalizedMessage? {
         guard needsFiles else { return nil }
-        if count == 0 { return "\"\(title)\" works on selected files; select one or more files (folders do not count)." }
-        if count > maxFiles { return "\(count) files are selected and \"\(title)\" takes at most \(maxFiles) (max_files)." }
+        if count == 0 { return .refusalPresetNeedsFiles }
+        if count > maxFiles { return .refusalPresetTooManyFiles(String(count), String(maxFiles)) }
         return nil
     }
 
     /// Why a launcher word that only an agent entry understands cannot follow `preset.<id>@`, or `nil`. A preset is
     /// always typed into a terminal; the agent's own deep link and its desktop app do not take a prompt this way.
-    public static func launcherRefusal(_ terminal: String?) -> String? {
+    public static func launcherRefusal(_ terminal: String?) -> LocalizedMessage? {
         guard let terminal, terminal == AgentLauncher.linkWord || terminal == AgentLauncher.desktopWord else { return nil }
-        return "A preset is typed into a terminal, so @\(terminal) does not apply. Name a terminal from `rh apps` (preset.<id>@<terminal>) or leave the suffix out."
+        return .refusalPresetLauncher("@\(terminal)", "preset.<id>@<terminal>")
     }
 
     public static let builtIn: [AgentPreset] = [
@@ -183,14 +183,26 @@ public enum PresetTemplate {
             }
         }
 
-        /// The sentence about one name the prompt carries that causes this, or `nil` when no single name does.
-        var aboutAName: String? {
+        /// The same as a sentence that follows `refusalPresetPrompt`.
+        var sentence: LocalizedMessage {
             switch self {
-            case .controlCharacter: return "its name has a line break or another control character"
-            case .misleadingCharacter: return "its name has a character that shows nothing or changes how it reads (a direction override, a zero-width space, a tag character), and the agent would read what the person cannot see"
-            case .backslash: return "naming it would put a backslash in the prompt (its name has one, or a quote and a space), which shells do not all read the same way inside quotes"
-            case .leadingDash: return "its name would start the prompt with a dash, which the agent would read as an option"
-            case .empty, .tooLong: return nil
+            case .empty: .refusalPromptEmpty
+            case .controlCharacter: .refusalPromptControlCharacter
+            case .misleadingCharacter: .refusalPromptMisleadingCharacter
+            case .backslash: .refusalPromptBackslash
+            case .leadingDash: .refusalPromptLeadingDash
+            case .tooLong: .refusalPromptTooLong(String(AgentPreset.maxPromptBytes))
+            }
+        }
+
+        /// The sentence about one name the prompt carries that causes this, or `nil` when no single name does.
+        var aboutAName: LocalizedMessage? {
+            switch self {
+            case .controlCharacter: .refusalNameControlCharacter
+            case .misleadingCharacter: .refusalNameMisleadingCharacter
+            case .backslash: .refusalNameBackslash
+            case .leadingDash: .refusalNameLeadingDash
+            case .empty, .tooLong: nil
             }
         }
     }
@@ -225,12 +237,12 @@ public enum PresetTemplate {
             self.text = text
         }
 
-        /// How a message names it: the file, the folder, the selected item.
-        public var subject: String {
+        /// The sentence that says this name cannot be in the prompt of `preset`.
+        func cannotBeNamed(inPreset preset: String) -> LocalizedMessage {
             switch kind {
-            case .file: return "the file " + name.jsonQuoted
-            case .folder: return "the folder " + name.jsonQuoted
-            case .item: return "the selected item " + name.jsonQuoted
+            case .file: .refusalPresetFileName(name.jsonQuoted, preset)
+            case .folder: .refusalPresetFolderName(name.jsonQuoted, preset)
+            case .item: .refusalPresetItemName(name.jsonQuoted, preset)
             }
         }
     }

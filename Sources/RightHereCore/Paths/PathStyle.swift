@@ -102,12 +102,12 @@ public struct PathRenderer: Sendable {
     /// backslash is escaped with backslashes (fish reads a backslash inside single quotes as an escape, the other
     /// shells do not), and a name with a control character cannot be backslash-escaped at all, so a name with both has
     /// no form that is safe to paste into any shell: it is refused, and the person can copy it another way.
-    public static func shellFormRefusal(for urls: [URL], style: PathStyle) -> String? {
+    public static func shellFormRefusal(for urls: [URL], style: PathStyle) -> LocalizedMessage? {
         guard style == .shellEscaped || style == .shellQuoted else { return nil }
         for url in urls {
             let path = url.lexicallyNormalized.path
             if path.unicodeScalars.contains("\\") && ShellQuoting.containsControlCharacter(path) {
-                return "\(url.lastPathComponent.withControlCharactersEscaped) has a backslash and a control character, and no single quoting of that reads the same in every shell (fish reads a backslash inside quotes differently). Copy it as an absolute path instead."
+                return .refusalShellForm(url.lastPathComponent)
             }
         }
         return nil

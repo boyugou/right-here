@@ -83,7 +83,7 @@ struct VariantArgumentTests {
         let config = printingConfig(["--pattern", "a\\'b"])
         let reason = try #require(ActionRegistry(config: config, facts: machine).info(mine).unavailableReason)
         #expect(reason.contains("has a backslash") && reason.contains("`command`") && reason.contains("\"mine\""), Comment(rawValue: reason))
-        #expect(throws: PlanError.unsupported(reason)) { try Planner(config: config, facts: machine).plan(mine, context: folder) }
+        #expect(performing: { try Planner(config: config, facts: machine).plan(mine, context: folder) }, throws: { $0.localizedDescription == reason })
         // The agent's plain entry does not use the variant and stays available.
         #expect(ActionRegistry(config: config, facts: machine).info(.agent(id: "claude", variant: nil, launcher: nil)).available)
     }

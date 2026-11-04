@@ -98,8 +98,8 @@ so neither is used. The commands still run through `GitCommand`, with its guards
 
 ## Consequences
 
-- Two action ids and their two titles in every language; the refusals are English, as every sentence of `rh` that reaches an alert
-  is. The actions in the docs and the menu's catalog.
+- Two action ids and their two titles in every language, and the refusals as sentences of the catalog, which the alert writes in the
+  person's language (ADR 0006, 2026-11-03; until then they were English). The actions in the docs and the menu's catalog.
 - An independent review (2026-10-30) found the wrong repository (an empty `.git` folder, an inherited `GIT_DIR`), a token's remnant
   in a refusal, replace refs, the upstream missed beside a tag, decomposed names, the kind taken from the disk and refusals with the
   wrong reason; each is fixed with a test that fails without the fix and a mutation entry.

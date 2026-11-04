@@ -14,8 +14,16 @@ public struct RepositoryState: Sendable, Equatable {
     /// The repository's top folder, as git names it (`rev-parse --show-toplevel`): git's own idea of the repository, which a `.git`
     /// folder that is not one does not change.
     public var root: URL?
-    /// What git said when it could not read the repository; the other fields are then empty.
-    public var gitError: String?
+    /// Why git could not read the repository.
+    public enum GitProblem: Sendable, Equatable {
+        /// There is no git to start: the Command Line Tools are not installed.
+        case notInstalled
+        /// What git said.
+        case said(String)
+    }
+
+    /// Why git could not read the repository; the other fields are then empty.
+    public var gitError: GitProblem?
     /// The item's path from the top folder, by segment, as the names are on disk; empty for the top folder.
     public var itemPath: [String]
     /// The remote the link goes to: the first of the branch's upstream, its push remote, `origin` and the only remote that has the
@@ -32,7 +40,7 @@ public struct RepositoryState: Sendable, Equatable {
     /// What the item is in that commit; nil when it is not in it (a new or untracked file).
     public var kind: Kind?
 
-    public init(root: URL?, gitError: String? = nil, itemPath: [String] = [], remoteName: String? = nil, remoteNames: [String] = [],
+    public init(root: URL?, gitError: GitProblem? = nil, itemPath: [String] = [], remoteName: String? = nil, remoteNames: [String] = [],
                 remoteURL: String? = nil, commit: String? = nil, isPushed: Bool = false, kind: Kind? = nil) {
         self.root = root
         self.gitError = gitError

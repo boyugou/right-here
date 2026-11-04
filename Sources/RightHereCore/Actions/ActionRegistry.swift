@@ -11,8 +11,7 @@ public struct ActionInfo: Sendable, Equatable, Codable {
     public var icon: Icon?
     public var available: Bool
     public var unavailableReason: String?
-    /// The reason as a sentence of the catalog, for the window, when it is one a person meets (a terminal that only opens folders, an app
-    /// that is not installed); `nil` for the others, whose English `unavailableReason` is shown. Not in the JSON, which has the English.
+    /// The reason as a sentence of the catalog, which the window writes in the person's language. Not in the JSON, which has the English.
     public var unavailableMessage: LocalizedMessage? = nil
 
     private enum CodingKeys: String, CodingKey {
@@ -58,7 +57,7 @@ public struct ActionRegistry: Sendable {
             info.group = "open"
             switch defaultApp(.editor, configured: config.editor) {
             case .success(let app): describeApp(&info, app: app)
-            case .failure(let error): unavailable(&info, title: localizer.openIn("Editor"), reason: error.message)
+            case .failure(let error): unavailable(&info, title: localizer.openIn("Editor"), reason: error.sentence)
             }
 
         case .openApp(let id):
@@ -66,7 +65,7 @@ public struct ActionRegistry: Sendable {
             if let app = config.app(id: id) {
                 describeApp(&info, app: app)
             } else {
-                unavailable(&info, title: localizer.openIn(id), reason: PlanError.unknownApp(id).message)
+                unavailable(&info, title: localizer.openIn(id), reason: PlanError.unknownApp(id).sentence)
             }
 
         case .agent(let id, let variantID, let launcher):
@@ -85,7 +84,7 @@ public struct ActionRegistry: Sendable {
                 // The icon of the kind of file it makes: a Markdown document and a text document are told apart at a glance.
                 info.icon = template.fileExtension.isEmpty ? .symbol("doc.badge.plus") : .fileType(template.fileExtension)
             } else {
-                unavailable(&info, title: localizer.newFile(id), reason: "Unknown template \"\(id)\".")
+                unavailable(&info, title: localizer.newFile(id), reason: .refusalUnknownTemplate(id))
             }
 
         case .reveal:
@@ -122,12 +121,12 @@ public struct ActionRegistry: Sendable {
         var info = info(ref)
         // Counted, not looked at: a menu offers the page of one item only, as the action opens no more than one.
         if ref == .openRepositoryPage, context.items.count > 1 {
-            unavailable(&info, reason: "Open Repository Page opens one item's page.")
+            unavailable(&info, reason: .refusalRepositoryOneItem)
             return info
         }
         guard info.available, case .preset(let id, _) = ref, let preset = config.preset(id: id) else { return info }
         if context.items.isEmpty, context.container == nil, context.origin != .cli {
-            unavailable(&info, reason: "There is no folder to run in.")
+            unavailable(&info, reason: .refusalNoTarget)
         } else if let refusal = preset.refusal(forFileCount: context.items.count) {
             unavailable(&info, reason: refusal)
         } else if !context.items.isEmpty, let refusal = preset.refusal(forFileCount: 0), context.items.allSatisfy({ facts.isDirectory($0) == true }) {
@@ -141,7 +140,7 @@ public struct ActionRegistry: Sendable {
 
     private func describePreset(_ info: inout ActionInfo, id: String, terminal terminalID: String?) {
         guard let preset = config.preset(id: id) else {
-            unavailable(&info, title: id, reason: "Unknown preset \"\(id)\".")
+            unavailable(&info, title: id, reason: .refusalUnknownPreset(id))
             return
         }
         let presetTitle = preset.localizedTitle(localizer)
@@ -159,14 +158,14 @@ public struct ActionRegistry: Sendable {
         info.title = localizer.agentVariant(agent.name, presetTitle)
         info.icon = icon(of: agent)
         let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: true, explicit: terminalID.map { .terminal($0) }, config: config, facts: facts)
-        if case .failure(let why) = resolution.route { unavailable(&info, reason: why.text, message: why.message) }
+        if case .failure(let why) = resolution.route { unavailable(&info, reason: why.sentence, message: why.message) }
     }
 
     private func describeApp(_ info: inout ActionInfo, terminal id: String?) {
         do throws(PlanError) {
             describeApp(&info, app: try defaults.terminal(id: id))
         } catch {
-            unavailable(&info, title: localizer.openIn(id ?? "Terminal"), reason: error.message)
+            unavailable(&info, title: localizer.openIn(id ?? "Terminal"), reason: error.sentence)
         }
     }
 
@@ -176,21 +175,19 @@ public struct ActionRegistry: Sendable {
         if let bundleID = app.installedBundleID(facts: facts) {
             info.icon = .app(bundleID)
         } else {
-            info.available = false
-            info.unavailableReason = PlanError.appNotInstalled(app.name).message
-            info.unavailableMessage = .doctorAppNotInstalled(app.name)
+            unavailable(&info, reason: PlanError.appNotInstalled(app.name).sentence)
         }
     }
 
     private func describeAgent(_ info: inout ActionInfo, id: String, variantID: String?, launcher: AgentLauncher?) {
         guard let agent = config.agent(id: id) else {
-            unavailable(&info, title: localizer.agentHere(id), reason: "Unknown agent \"\(id)\".")
+            unavailable(&info, title: localizer.agentHere(id), reason: .refusalUnknownAgent(id))
             return
         }
         var variant: AgentDescriptor.Variant?
         if let variantID {
             guard let found = agent.variants.first(where: { $0.id == variantID }) else {
-                unavailable(&info, title: localizer.agentHere(agent.name), reason: "\(agent.name) has no variant \"\(variantID)\".")
+                unavailable(&info, title: localizer.agentHere(agent.name), reason: .refusalUnknownVariant(agent.id, variantID))
                 return
             }
             variant = found
@@ -218,9 +215,9 @@ public struct ActionRegistry: Sendable {
             }
         }
         if case .failure(let why) = resolution.route {
-            unavailable(&info, reason: why.text, message: why.message)
+            unavailable(&info, reason: why.sentence, message: why.message)
         } else if case .terminal = resolution.launcher, case .failure(let why) = AgentLaunchResolution.typedLine(agent: agent, variant: variant, options: config.launchOptions(for: agent)) {
-            unavailable(&info, reason: why.text, message: why.message)
+            unavailable(&info, reason: why.sentence, message: why.message)
         }
     }
 
@@ -229,15 +226,15 @@ public struct ActionRegistry: Sendable {
         agent.iconBundleID.flatMap { facts.applicationURL(bundleID: $0) != nil ? Icon.app($0) : nil } ?? .symbol("terminal")
     }
 
-    private func unavailable(_ info: inout ActionInfo, title: String? = nil, reason: String, message: LocalizedMessage? = nil) {
+    /// `message` is the window's sentence when it says more than the reason a run would give.
+    private func unavailable(_ info: inout ActionInfo, title: String? = nil, reason: LocalizedMessage, message: LocalizedMessage? = nil) {
         if let title {
             info.title = title
             info.shortTitle = title
         }
         info.available = false
-        info.unavailableReason = reason
-        // A message whose English is the reason itself says nothing more; the window shows the reason.
-        info.unavailableMessage = message?.key == .doctorVerbatim ? nil : message
+        info.unavailableReason = PlanError.refused(reason).text(in: .english)
+        info.unavailableMessage = message ?? reason
     }
 
     // MARK: Defaults

@@ -9,17 +9,17 @@ import Foundation
 /// Before this adapter Warp was handed the folder with `open`, which nothing documents.
 public struct WarpAdapter: TerminalAdapter {
     public let terminalID = "warp"
-    public var commandRefusal: String? { "Warp cannot run commands yet. Choose another terminal for this agent." }
+    public var commandRefusal: LocalizedMessage? { .refusalCannotRunCommandsYet("Warp") }
     public var supportedPlacements: [TerminalPlacement] { [.newWindow, .newTab] }
 
     public init() {}
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
-        if session.typedInput != nil, let refusal = commandRefusal { throw PlanError.unsupported(refusal) }
+        if session.typedInput != nil, let refusal = commandRefusal { throw PlanError.refused(refusal) }
         let directory = try session.requireDirectory(facts)
         do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeFolder(directory) }
         let action = session.placement == .newTab ? "new_tab" : "new_window"
-        guard let path = Self.queryValue(directory) else { throw PlanError.unsupported("The folder \(directory.jsonQuoted) cannot be written into a link for Warp.") }
+        guard let path = Self.queryValue(directory) else { throw PlanError.refused(.refusalWarpLink(directory.jsonQuoted)) }
         return [.open(OpenStep(bundleID: bundleID, targets: ["\(Self.scheme(bundleID: bundleID))://action/\(action)?path=" + path]))]
     }
 

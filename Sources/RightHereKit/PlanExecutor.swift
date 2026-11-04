@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import RightHereCore
 
-public enum ExecutionError: Error, Equatable, Sendable, LocalizedError {
+public enum ExecutionError: Error, Equatable, Sendable, LocalizedError, LocalizedFailure {
     case stepFailed(index: Int, step: String, message: String)
     /// macOS refused to let the caller control an application (Automation permission).
     case automationDenied(application: String?)
@@ -10,23 +10,32 @@ public enum ExecutionError: Error, Equatable, Sendable, LocalizedError {
     /// A step was stopped because it ran past its limit; most often macOS is waiting for the person to answer a
     /// permission prompt.
     case timedOut(step: String, seconds: Int)
+    /// There is no git to start (`GitCommand.gitIsInstalled`).
+    case gitNotInstalled
 
-    /// What a step says is what a program, a file or git wrote (git's own words name branches and paths), so the line breaks stay and every other control or
-    /// invisible character is shown as an escape.
     public var errorDescription: String? {
-        let text: String
+        text(in: .english)
+    }
+
+    public var sentences: [LocalizedMessage] {
         switch self {
-        case .stepFailed(let index, let step, let message):
-            text = "Step \(index + 1) (\(step)) failed: \(message)"
-        case .automationDenied(let application):
-            let target = application.map { " \($0)" } ?? " the application"
-            text = "macOS blocked controlling\(target). Allow it in System Settings › Privacy & Security › Automation, then try again."
-        case .fileExists(let path):
-            text = "\(path) already exists."
-        case .timedOut(let step, let seconds):
-            text = "\(step) did not finish within \(seconds) seconds and was stopped. If macOS is waiting for you to allow Right Here to control an app (a permission prompt), answer it and try again."
+        case .stepFailed(let index, let step, let message): [.refusalStepFailed(String(index + 1), step, message)]
+        case .automationDenied(let application?): [.alertPermissionMessage(application)]
+        case .automationDenied(nil): [.refusalAutomationDenied]
+        case .fileExists(let path): [.refusalFileExists(path)]
+        case .timedOut(let step, let seconds): [.refusalTimedOut(step, String(seconds))]
+        case .gitNotInstalled: [.refusalGitNotInstalled]
         }
-        return text.escapingControlCharacters(keeping: ["\n"])
+    }
+
+    /// What a step says is what a program, a file or git wrote (git's own words name branches and paths), so its line breaks stay and every other control or
+    /// invisible character is shown as an escape.
+    public func text(in localizer: Localizer) -> String {
+        guard case .stepFailed(let index, let step, let message) = self else {
+            return localizer.render(sentences: sentences, isolatingValues: true, escapingValues: true)
+        }
+        let values = [String(index + 1), step, message].map { $0.escapingControlCharacters(keeping: ["\n"]) }
+        return localizer.render(.refusalStepFailed(values[0], values[1], values[2]), isolatingValues: true)
     }
 }
 

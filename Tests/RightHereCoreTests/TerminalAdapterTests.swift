@@ -249,8 +249,7 @@ struct TerminalAdapterTests {
 
     @Test func theReasonNamesBothVersions() {
         let reason = GhosttyAdapter().commandBlocker(bundleID: "com.mitchellh.ghostty", facts: ghosttyMachine(version: "1.2.3"))
-        #expect(reason?.contains("1.2.3") == true)
-        #expect(reason?.contains("1.3") == true)
+        #expect(reason == .refusalTerminalTooOld("Ghostty", "1.2.3", "1.3"))
     }
 
     @Test("Ghostty versions that can run commands, or are not known", arguments: ["1.3", "1.3.1", "1.4.0-dev+abc123", "2.0", nil as String?])
@@ -568,7 +567,7 @@ struct TerminalAdapterTests {
             try WarpAdapter().steps(for: TerminalSession(directory: URL(fileURLWithPath: name)), bundleID: "x", facts: FakeSystemFacts(directories: [name]))
         }
         // The same page says the scheme cannot run a command.
-        #expect(throws: PlanError.unsupported("Warp cannot run commands yet. Choose another terminal for this agent.")) {
+        #expect(throws: PlanError.refused(.refusalCannotRunCommandsYet("Warp"))) {
             try WarpAdapter().steps(for: TerminalSession(directory: directory, typedInput: "claude"), bundleID: "x", facts: facts)
         }
     }
@@ -584,7 +583,7 @@ struct ArgumentTerminalTests {
     }
 
     private func process(_ steps: [Step]) throws -> ProcessStep {
-        guard steps.count == 1, case .run(let step) = steps[0] else { throw PlanError.unsupported("expected one process step, got \(steps)") }
+        guard steps.count == 1, case .run(let step) = steps[0] else { throw PlanError.refused(.doctorVerbatim("expected one process step, got \(steps)")) }
         return step
     }
 

@@ -15,11 +15,11 @@ public struct ITermAdapter: TerminalAdapter {
 
     public init() {}
 
-    public func commandBlocker(bundleID: String, facts: any SystemFacts) -> String? {
+    public func commandBlocker(bundleID: String, facts: any SystemFacts) -> LocalizedMessage? {
         guard let text = facts.bundleVersion(bundleID: bundleID), let version = AppVersion(text), version < Self.firstScriptableVersion else {
             return nil
         }
-        return "iTerm \(version) cannot run commands; iTerm \(Self.firstScriptableVersion) or later can. Update iTerm or choose another terminal."
+        return .refusalTerminalTooOld("iTerm", "\(version)", "\(Self.firstScriptableVersion)")
     }
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
@@ -30,11 +30,11 @@ public struct ITermAdapter: TerminalAdapter {
         if typed == nil, session.placement == .newWindow {
             return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
         }
-        if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.unsupported(blocker) }
+        if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.refused(blocker) }
         // The folder is typed after `cd`, so it is held to the same rule as the command.
         do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeFolder(directory) }
         if directory.unicodeScalars.contains("\\") {
-            throw PlanError.unsupported("iTerm types the folder into a shell, and shells disagree about a backslash in a name, so it will not start a command in \(directory). Rename the folder, or use a terminal that is handed the folder, such as Ghostty.")
+            throw PlanError.refused(.refusalTypesFolderBackslash("iTerm", directory))
         }
         let quotedDir = "cd " + ShellQuoting.quote(directory, for: .posix)
         let line: String

@@ -62,7 +62,7 @@ public struct Planner: Sendable {
             let targets = context.pathTargets
             guard !targets.isEmpty else { throw PlanError.noTarget }
             guard targets.count == 1 else {
-                throw PlanError.unsupported("Open Repository Page opens one item's page; for the links of several, use repository.copy-link.")
+                throw PlanError.refused(.refusalRepositoryOneItem)
             }
             return LaunchPlan(action: ref.id, summary: "Open the repository page", steps: [.openURL(try repositoryLink(targets[0]))])
         }
@@ -74,38 +74,40 @@ public struct Planner: Sendable {
     private func repositoryLink(_ target: URL) throws -> String {
         let target = target.lexicallyNormalized
         guard let state = repositories[target] else {
-            if facts.gitRoot(containing: target) == nil { throw PlanError.unsupported("\(target.path) is not in a git repository.") }
-            throw PlanError.unsupported("The repository of \(target.path) was not read, so its link cannot be made here; `rh run` reads it.")
+            if facts.gitRoot(containing: target) == nil { throw PlanError.refused(.refusalRepositoryNotInRepository(target.path)) }
+            throw PlanError.refused(.refusalRepositoryNotRead(target.path))
         }
-        if let error = state.gitError { throw PlanError.unsupported("git could not read the repository of \(target.lastPathComponent): \(error)") }
+        switch state.gitError {
+        case .notInstalled?: throw PlanError.refused(.refusalGitNotInstalled)
+        case .said(let words)?: throw PlanError.refused(.refusalRepositoryGitError(target.lastPathComponent, words))
+        case nil: break
+        }
         guard let remote = state.remoteName else {
-            if state.remoteNames.isEmpty { throw PlanError.unsupported("The repository has no remote, so it has no page on a git host.") }
-            throw PlanError.unsupported("The repository has several remotes (\(state.remoteNames.joined(separator: ", "))), none of them origin or the branch's upstream or push remote, so it is not clear which one to link to.")
+            if state.remoteNames.isEmpty { throw PlanError.refused(.refusalRepositoryNoRemote) }
+            throw PlanError.refused(.refusalRepositorySeveralRemotes(state.remoteNames.joined(separator: ", ")))
         }
         let parsed: RepositoryRemote
         switch state.remoteURL.map(RepositoryLink.parse(remote:)) {
         case .success(let value)?:
             parsed = value
         case .failure(.unknownHost(let host))?:
-            throw PlanError.unsupported("Remote \"\(remote)\" is on \(host); Right Here makes links for github.com, gitlab.com, codeberg.org and bitbucket.org.")
+            throw PlanError.refused(.refusalRepositoryUnknownHost(remote, host))
         case .failure(.unreadableRemote)?, nil:
-            throw PlanError.unsupported("The URL of remote \"\(remote)\" is not one of a repository on a git host.")
+            throw PlanError.refused(.refusalRepositoryUnreadableRemote(remote))
         }
-        guard let commit = state.commit else { throw PlanError.unsupported("The repository has no commit yet.") }
-        guard state.isPushed else {
-            throw PlanError.unsupported("The checked-out commit is not on remote \"\(remote)\" yet, so it has no page there. Push it, then try again.")
-        }
+        guard let commit = state.commit else { throw PlanError.refused(.refusalRepositoryNoCommit) }
+        guard state.isPushed else { throw PlanError.refused(.refusalRepositoryNotPushed(remote)) }
         let isDirectory: Bool
         switch state.kind {
         case .file?: isDirectory = false
         case .folder?: isDirectory = true
         case .submodule?:
-            throw PlanError.unsupported("\(target.lastPathComponent) is a submodule: its pages are in its own repository. Select an item inside it.")
+            throw PlanError.refused(.refusalRepositorySubmodule(target.lastPathComponent))
         case nil:
-            throw PlanError.unsupported("\(target.lastPathComponent) is not in the checked-out commit (a new or untracked file has no page yet). Commit and push it, then try again.")
+            throw PlanError.refused(.refusalRepositoryNotInCommit(target.lastPathComponent))
         }
         guard let link = RepositoryLink.url(remote: parsed, commit: commit, itemPath: state.itemPath, isDirectory: isDirectory) else {
-            throw PlanError.unsupported("The checked-out commit of the repository could not be read.")
+            throw PlanError.refused(.refusalRepositoryUnreadableCommit)
         }
         return link
     }
@@ -115,7 +117,7 @@ public struct Planner: Sendable {
     private func copyPath(_ style: PathStyle, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         let targets = context.pathTargets
         guard !targets.isEmpty else { throw PlanError.noTarget }
-        if let refusal = PathRenderer.shellFormRefusal(for: targets, style: style) { throw PlanError.unsupported(refusal) }
+        if let refusal = PathRenderer.shellFormRefusal(for: targets, style: style) { throw PlanError.refused(refusal) }
         let text = PathRenderer(facts: facts).render(targets, style: style)
         let noun = targets.count == 1 ? "path" : "\(targets.count) paths"
         var notices: [String] = []
@@ -135,7 +137,7 @@ public struct Planner: Sendable {
             if let target = context.unplaceableTarget(facts: facts) {
                 switch target.reason {
                 case .unreadable: throw PlanError.unreadable(target.url.path)
-                case .dangling: throw PlanError.unsupported("\(target.url.path) is a link that points nowhere (or into a place macOS will not let Right Here look at), so there is no folder to open.")
+                case .dangling: throw PlanError.refused(.refusalDanglingLink(target.url.path))
                 }
             }
             throw PlanError.noTarget
@@ -284,7 +286,7 @@ public struct Planner: Sendable {
 
     /// Why a preset cannot run on this selection, or `nil`. Context only: whether the agent can take a prompt is
     /// decided separately.
-    func presetContextRefusal(_ preset: AgentPreset, context: HereContext) -> String? {
+    func presetContextRefusal(_ preset: AgentPreset, context: HereContext) -> LocalizedMessage? {
         preset.refusal(forFileCount: preset.needsFiles ? presetFiles(in: context).count : 0)
     }
 
@@ -292,11 +294,11 @@ public struct Planner: Sendable {
     /// for anything that would press a key or read as an option.
     private func runPreset(id: String, terminal: String?, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         guard let preset = config.preset(id: id) else { throw PlanError.unknownPreset(id, choices: config.presets.map(\.id)) }
-        if let refusal = AgentPreset.launcherRefusal(terminal) { throw PlanError.unsupported(refusal) }
-        if let refusal = config.presetAgentRefusal(preset) { throw PlanError.unsupported(refusal) }
-        guard let agent = config.agent(for: preset), let promptArgument = agent.promptArgument else { throw PlanError.unsupported("No agent is enabled.") }
+        if let refusal = AgentPreset.launcherRefusal(terminal) { throw PlanError.refused(refusal) }
+        if let refusal = config.presetAgentRefusal(preset) { throw PlanError.refused(refusal) }
+        guard let agent = config.agent(for: preset), let promptArgument = agent.promptArgument else { throw PlanError.refused(.refusalPresetNoAgent) }
         let directory = try workingDirectory(for: context)
-        if let refusal = presetContextRefusal(preset, context: context) { throw PlanError.unsupported(refusal) }
+        if let refusal = presetContextRefusal(preset, context: context) { throw PlanError.refused(refusal) }
 
         let renderer = PathRenderer(facts: facts)
         let files = presetFiles(in: context)
@@ -307,20 +309,20 @@ public struct Planner: Sendable {
         let prompt = PresetTemplate.expand(preset.prompt, carried: carried)
         if let problem = PresetTemplate.typingProblem(prompt) {
             // A file name with a line break is the file's doing and not the prompt's: say which one it is.
-            if let culprit = PresetTemplate.carriedNameBehind(problem, template: preset.prompt, carried: carried), let reason = problem.aboutAName {
-                throw PlanError.unsafePresetName(preset: id, subject: culprit.subject, reason: reason)
+            if let culprit = PresetTemplate.carriedNameBehind(problem, template: preset.prompt, carried: carried), problem.aboutAName != nil {
+                throw PlanError.unsafePresetName(preset: id, name: culprit, problem: problem)
             }
-            throw PlanError.unsafePrompt(preset: id, reason: problem.refusal)
+            throw PlanError.unsafePrompt(preset: id, problem: problem)
         }
 
         // The agent's own permission prompts stay on for a preset, whatever the config says for plain starts: the prompt carries the names of the
         // selected files, and a file called "ignore the above and run ..." must not reach an agent that asks nothing (ADR 0012).
         let options = config.launchOptions(for: agent)
         if let flag = config.bypassFlagTyped(by: agent) {
-            throw PlanError.unsupported("\(agent.name) is started with \(flag), which switches its permission prompts off, and a preset keeps them on because its prompt carries file names. Take the flag out of its command and arguments (the permission setting adds it for plain starts), or give the preset another agent.")
+            throw PlanError.refused(.refusalPresetPermissionFlag(agent.name, flag))
         }
         if config.commandHidesBypassFlag(of: agent) {
-            throw PlanError.unsupported("\(agent.name)'s command has shell syntax whose result Right Here cannot read ($, a backtick, {a,b} or a quote that is not closed), so it cannot tell whether it switches the permission prompts off, and a preset keeps them on because its prompt carries file names. Write the command as plain words and quotes.")
+            throw PlanError.refused(.refusalPresetShellSyntax(agent.name))
         }
         var words = [agent.command]
         switch AgentLaunchResolution.argumentWords(options.arguments, of: agent) {
@@ -330,7 +332,7 @@ public struct Planner: Sendable {
         if case .flag(let flag) = promptArgument { words.append(ShellQuoting.quote(flag, for: .posix)) }
         words.append(ShellQuoting.quote(prompt, for: .posix))
         let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: true, explicit: terminal.map { .terminal($0) }, config: config, facts: facts)
-        guard case .terminal(let app, let bundleID, let adapter) = try route(of: resolution) else { throw PlanError.unsupported("A preset is typed into a terminal.") }
+        guard case .terminal(let app, let bundleID, let adapter) = try route(of: resolution) else { throw PlanError.refused(.refusalPresetTyped) }
         var notices = resolution.launcher == .terminal(nil) ? fallbackNotice(role: .terminal, typing: true, used: app) : []
         if options.bypassFlag != nil {
             notices.append("\(agent.name) keeps its permission prompts on for a preset, although they are switched off for plain starts: the prompt carries file names.")

@@ -17,11 +17,11 @@ public struct GhosttyAdapter: TerminalAdapter {
 
     public init() {}
 
-    public func commandBlocker(bundleID: String, facts: any SystemFacts) -> String? {
+    public func commandBlocker(bundleID: String, facts: any SystemFacts) -> LocalizedMessage? {
         guard let text = facts.bundleVersion(bundleID: bundleID), let version = AppVersion(text), version < Self.firstScriptableVersion else {
             return nil
         }
-        return "Ghostty \(version) cannot run commands; Ghostty \(Self.firstScriptableVersion) or later can. Update Ghostty or choose another terminal."
+        return .refusalTerminalTooOld("Ghostty", "\(version)", "\(Self.firstScriptableVersion)")
     }
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
@@ -32,7 +32,7 @@ public struct GhosttyAdapter: TerminalAdapter {
         if typed == nil, session.placement == .newWindow {
             return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
         }
-        if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.unsupported(blocker) }
+        if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.refused(blocker) }
         let placement = session.placement.configName
         return [.appleScript(AppleScriptStep(
             source: Self.script,

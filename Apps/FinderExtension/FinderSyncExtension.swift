@@ -214,7 +214,7 @@ final class FinderSyncExtension: FIFinderSync {
         let targets = context.pathTargets
         guard !targets.isEmpty else { return }
         if let refusal = PathRenderer.shellFormRefusal(for: targets, style: style) {
-            log.error("copy refused: \(refusal, privacy: .private)")
+            log.error("copy refused: \(refusal.english(), privacy: .private)")
             NSSound.beep()
             return
         }

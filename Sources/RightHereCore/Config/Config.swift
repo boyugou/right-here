@@ -163,13 +163,11 @@ public struct Config: Sendable, Equatable {
     /// How an agent action starts. Variants are command-line options typed into a shell, so an action with
     /// a variant always types, even when the agent's default launcher is its deep link or desktop app;
     /// naming such a launcher together with a variant has no meaning and is reported as `conflict`.
-    public func launcher(forAgent id: String, explicit: AgentLauncher?, hasVariant: Bool) -> (launcher: AgentLauncher, conflict: String?) {
+    public func launcher(forAgent id: String, explicit: AgentLauncher?, hasVariant: Bool) -> (launcher: AgentLauncher, conflict: LocalizedMessage?) {
         let wanted = explicit ?? agents[id]?.launcher ?? .terminal(nil)
         guard hasVariant else { return (wanted, nil) }
         if case .terminal = wanted { return (wanted, nil) }
-        let conflict = explicit.map { _ in
-            "A variant adds command-line options, so it can only start in a terminal, not through \(wanted == .desktop ? "the desktop app" : "the agent's own terminal link")."
-        }
+        let conflict: LocalizedMessage? = explicit.map { _ in wanted == .desktop ? .refusalAgentVariantNotDesktop : .refusalAgentVariantNotLink }
         return (.terminal(nil), conflict)
     }
 
@@ -278,11 +276,11 @@ public struct Config: Sendable, Equatable {
     }
 
     /// Why a preset's agent cannot be given its prompt, or `nil`.
-    func presetAgentRefusal(_ preset: AgentPreset) -> String? {
+    func presetAgentRefusal(_ preset: AgentPreset) -> LocalizedMessage? {
         guard let agent = agent(for: preset) else {
-            return preset.agent.map { "Unknown agent \"\($0)\"." } ?? "No agent is enabled; list one in general.agents, or name an agent in the preset."
+            return preset.agent.map { .refusalUnknownAgent($0) } ?? .refusalPresetNoAgent
         }
-        if agent.promptArgument == nil { return "\(agent.name) is not known to take a first prompt. Set prompt_arg in [agent.\(agent.id)] (\"positional\" or a flag such as \"--prompt\")." }
+        if agent.promptArgument == nil { return .refusalPresetNoPromptArgument(agent.name, "[agent.\(agent.id)]", "\"positional\"", "\"--prompt\"") }
         return nil
     }
 }

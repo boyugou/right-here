@@ -450,3 +450,24 @@ struct LocalizationIsolationTests {
         }
     }
 }
+
+@Suite("Refusals in the person's language")
+struct RefusalLanguageTests {
+    @Test func theCommandLineKeepsItsEnglishAndAnAlertGetsTheLanguage() {
+        let error = PlanError.unknownAgent("claud", choices: ["claude", "codex"])
+        #expect(error.localizedDescription == "Unknown agent \"claud\". Did you mean \"claude\"? Known: claude, codex. `rh agents` lists them.")
+        let german = error.text(in: Localizer(languages: ["de"]))
+        #expect(german != error.localizedDescription && german.contains("claud") && german.contains("`rh agents`"), Comment(rawValue: german))
+    }
+
+    @Test func sentencesAreJoinedAsTheLanguageWritesThem() {
+        let error = PlanError.unsafePrompt(preset: "review", problem: .tooLong)
+        for language in ["zh-Hans", "zh-Hant", "ja", "de", "th"] {
+            let localizer = Localizer(languages: [language])
+            let sentences = error.sentences.map { localizer.render($0, isolatingValues: true, escapingValues: true) }
+            let separator = ["zh-Hans", "zh-Hant", "ja"].contains(language) ? "" : " "
+            #expect(error.text(in: localizer) == sentences.joined(separator: separator), "\(language)")
+        }
+        #expect(error.text(in: .english) == "The prompt of preset \"review\" cannot be typed into a terminal. It is longer than 4000 bytes.")
+    }
+}

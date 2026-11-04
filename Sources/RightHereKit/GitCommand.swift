@@ -15,7 +15,6 @@ enum GitCommand {
     static let executable = "/usr/bin/git"
 
     /// What a person is told when git is not there.
-    static let notInstalled = "git is not installed. It comes with the Command Line Tools: run `xcode-select --install` in Terminal, then try again."
 
     /// Whether there is a git for `/usr/bin/git` to start. On a Mac without Xcode or the Command Line Tools, `/usr/bin/git` only forwards to
     /// the git of the active developer folder, which is not there: it offers to install the tools and fails, so a click in Finder would end
@@ -30,9 +29,9 @@ enum GitCommand {
         return ["/Library/Developer/CommandLineTools", "/Applications/Xcode.app/Contents/Developer"].contains { isExecutable($0 + "/usr/bin/git") }
     }
 
-    /// Throws `notInstalled` before any git command when there is no git to start.
+    /// Throws `gitNotInstalled` before any git command when there is no git to start.
     static func requireInstalled(_ installed: Bool) throws {
-        guard installed else { throw ExecutionError.stepFailed(index: 0, step: "git", message: notInstalled) }
+        guard installed else { throw ExecutionError.gitNotInstalled }
     }
 
     /// How long a command that only reads (the list of worktrees, the configuration, deleting a branch) may take. A repository whose configuration includes

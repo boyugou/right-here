@@ -56,26 +56,26 @@ struct AgentLaunchResolutionTests {
     @Test func aTerminalIdThatIsNoTerminalIsUnknown() throws {
         #expect(unavailable(try resolve(launcher: .terminal("nowhere"), installed: [terminalApp])) == .unknownTerminal("nowhere"))
         #expect(unavailable(try resolve(launcher: .terminal("zed"), installed: ["dev.zed.Zed"])) == .unknownTerminal("zed"), "an editor is not a terminal")
-        let text = try #require(unavailable(try resolve(launcher: .terminal("nowhere")))).text
+        let text = try #require(unavailable(try resolve(launcher: .terminal("nowhere")))).sentence.english()
         #expect(text.hasPrefix("Unknown terminal \"nowhere\"."), Comment(rawValue: text))
     }
 
     @Test func noTerminalInstalledMeansThereIsNoDefault() throws {
         let why = try #require(unavailable(try resolve()))
         #expect(why == .noDefaultTerminal(.noDefaultApp(.terminal)))
-        #expect(why.text == "No terminal is installed.")
+        #expect(why.sentence.english() == "No terminal is installed.")
     }
 
     @Test func aDefaultTheConfigMadeUnusableSaysWhy() throws {
         let config = Config(terminal: "ghostty", apps: [AppDescriptor(id: "ghostty", name: "Ghostty", bundleIDs: [ghostty], role: .editor)])
         let why = try #require(unavailable(try resolve(config: config, installed: [ghostty])))
-        #expect(why.text == "Ghostty is not a terminal. Use open.app.ghostty to open files with it.")
+        #expect(why.sentence.english() == "Ghostty is not a terminal. Use open.app.ghostty to open files with it.")
     }
 
     @Test func aTerminalThatIsNotInstalledIsNamed() throws {
         let why = try #require(unavailable(try resolve(launcher: .terminal("iterm"), installed: [terminalApp])))
         #expect(why == .terminalNotInstalled("iTerm"))
-        #expect(why.text == "iTerm is not installed.")
+        #expect(why.sentence.english() == "iTerm is not installed.")
     }
 
     @Test func aConfiguredDefaultThatIsNotInstalledGivesWayToTheFirstTerminalThatCanRunACommand() throws {
@@ -89,7 +89,7 @@ struct AgentLaunchResolutionTests {
 
     @Test func aTerminalThatCannotRunCommandsSaysSoInTheAdaptersWords() throws {
         let folderOnly = try #require(unavailable(try resolve(launcher: .terminal("warp"), installed: ["dev.warp.Warp-Stable"])))
-        #expect(folderOnly.text == "Warp cannot run commands yet. Choose another terminal for this agent.")
+        #expect(folderOnly.sentence.english() == "Warp cannot run commands yet. Choose another terminal for this agent.")
         let template = parsed("""
             [[app]]
             id = "wezterm"
@@ -99,12 +99,12 @@ struct AgentLaunchResolutionTests {
             open_args = ["{app}/Contents/MacOS/wezterm", "start", "--cwd", "{dir}"]
             """)
         let noRun = try #require(unavailable(try resolve(launcher: .terminal("wezterm"), config: template, installed: ["com.github.wez.wezterm"])))
-        #expect(noRun.text.contains("run_args"), Comment(rawValue: noRun.text))
+        #expect(noRun.sentence.english().contains("run_args"), Comment(rawValue: noRun.sentence.english()))
     }
 
     @Test func aGhosttyThatCannotBeScriptedIsBlockedOnThisMachine() throws {
         let why = try #require(unavailable(try resolve(launcher: .terminal("ghostty"), installed: [ghostty], versions: [ghostty: "1.2.3"])))
-        #expect(why.text.contains("1.2.3") && why.text.contains("1.3"), Comment(rawValue: why.text))
+        #expect(why.sentence.english().contains("1.2.3") && why.sentence.english().contains("1.3"), Comment(rawValue: why.sentence.english()))
         #expect(unavailable(try resolve(launcher: .terminal("ghostty"), installed: [ghostty], versions: [ghostty: "1.3"])) == nil)
     }
 
@@ -113,14 +113,14 @@ struct AgentLaunchResolutionTests {
         #expect(link.template.hasPrefix("claude-cli://"))
         let why = try #require(unavailable(try resolve("codex", launcher: .terminalLink)))
         #expect(why == .noTerminalLink(agent: "Codex"))
-        #expect(why.text == "Codex has no terminal link. Use a terminal launcher instead.")
+        #expect(why.sentence.english() == "Codex has no terminal link. Use a terminal launcher instead.")
         #expect(unavailable(try resolve("aider", launcher: .desktop)) == .noDesktopLink(agent: "aider"))
     }
 
     @Test func aDesktopLaunchNeedsItsAppInstalled() throws {
         let why = try #require(unavailable(try resolve(launcher: .desktop)))
         #expect(why == .desktopAppNotInstalled(agent: "Claude Code"))
-        #expect(why.text == "The Claude Code desktop app is not installed.")
+        #expect(why.sentence.english() == "The Claude Code desktop app is not installed.")
         guard case .success(.desktop(let link)) = try resolve(launcher: .desktop, installed: ["com.anthropic.claudefordesktop"]).route else { Issue.record("no desktop route"); return }
         #expect(link.template.hasPrefix("claude://"))
     }
@@ -133,7 +133,7 @@ struct AgentLaunchResolutionTests {
         let conflict = try resolve(variant: true, launcher: .desktop, installed: [terminalApp, "com.anthropic.claudefordesktop"])
         #expect(conflict.launcher == .terminal(nil))
         guard case .launcherConflict(let text)? = unavailable(conflict) else { Issue.record("no conflict: \(conflict.route)"); return }
-        #expect(text.contains("variant"))
+        #expect(text.english().contains("variant"))
     }
 
     @Test func aPresetIsTypedLikeAVariantWhateverTheAgentsLauncherIs() throws {
@@ -149,7 +149,7 @@ struct AgentLaunchResolutionTests {
         for ref in [ActionRef.agent(id: "claude", variant: nil, launcher: .desktop), .agent(id: "codex", variant: nil, launcher: .terminalLink),
                     .agent(id: "claude", variant: nil, launcher: .terminal("warp")), .agent(id: "claude", variant: "continue", launcher: .desktop)] {
             let reason = try #require(ActionRegistry(config: .default, facts: machine).info(ref).unavailableReason)
-            #expect(throws: PlanError.unsupported(reason), "\(ref.id)") { try Planner(facts: machine).plan(ref, context: context) }
+            #expect("\(ref.id)", performing: { try Planner(facts: machine).plan(ref, context: context) }, throws: { $0.localizedDescription == reason })
         }
     }
 

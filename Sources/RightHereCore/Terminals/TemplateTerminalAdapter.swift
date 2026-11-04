@@ -11,8 +11,7 @@ public struct TemplateTerminalAdapter: TerminalAdapter {
     public let displayName: String
     private let launch: TerminalLaunch
 
-    private var noRunArgs: String { "\(displayName) has no run_args in the config, so it cannot start a command. Add run_args, or choose another terminal for this agent." }
-    public var commandRefusal: String? { launch.run == nil ? noRunArgs : nil }
+    public var commandRefusal: LocalizedMessage? { launch.run == nil ? .refusalNoRunArgs(displayName) : nil }
 
     public init(terminalID: String, displayName: String, launch: TerminalLaunch) {
         self.terminalID = terminalID
@@ -30,7 +29,7 @@ public struct TemplateTerminalAdapter: TerminalAdapter {
         let typed = try session.requireTypeableInput()
         let template: [String]
         if typed != nil {
-            guard let run = launch.run else { throw PlanError.unsupported(noRunArgs) }
+            guard let run = launch.run else { throw PlanError.refused(.refusalNoRunArgs(displayName)) }
             template = run
         } else if let open = launch.open {
             template = open
@@ -38,7 +37,7 @@ public struct TemplateTerminalAdapter: TerminalAdapter {
             return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
         }
         guard let program = template.first, Self.isValidExecutable(program) else {
-            throw PlanError.unsupported("The first element of \(displayName)'s launch arguments must be an absolute path or start with {app}/.")
+            throw PlanError.refused(.refusalLaunchFirstArgument(displayName, "{app}/"))
         }
         let appPath = facts.applicationURL(bundleID: bundleID)?.path ?? ""
         if template.joined().contains("{app}"), appPath.isEmpty { throw PlanError.appNotInstalled(displayName) }

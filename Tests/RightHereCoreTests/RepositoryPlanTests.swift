@@ -66,7 +66,7 @@ struct RepositoryPlanTests {
         #expect(refusal(states: [file: state(pushed: false)])?.contains("Push it") == true)
         #expect(refusal(states: [file: state(kind: nil)])?.contains("not in the checked-out commit") == true)
         #expect(refusal(states: [file: state(kind: .submodule)])?.contains("is a submodule") == true)
-        #expect(refusal(states: [file: RepositoryState(root: nil, gitError: "fatal: not a git repository: /nonexistent")])?
+        #expect(refusal(states: [file: RepositoryState(root: nil, gitError: .said("fatal: not a git repository: /nonexistent"))])?
                 .contains("fatal: not a git repository") == true, "git's own reason is not what the person is told")
     }
 

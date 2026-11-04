@@ -10,10 +10,10 @@ struct AgentLaunchResolution: Sendable {
         case terminal(app: AppDescriptor, bundleID: String, adapter: any TerminalAdapter)
     }
 
-    /// Why a launch cannot start, with the English text every surface shows for it.
+    /// Why a launch cannot start, with the sentence every surface shows for it.
     enum Unavailable: Error, Sendable, Equatable {
         /// The launcher asked for cannot be combined with a variant (`Config.launcher` words it).
-        case launcherConflict(String)
+        case launcherConflict(LocalizedMessage)
         case noDesktopLink(agent: String)
         case desktopAppNotInstalled(agent: String)
         case noTerminalLink(agent: String)
@@ -22,29 +22,28 @@ struct AgentLaunchResolution: Sendable {
         case noDefaultTerminal(PlanError)
         case terminalNotInstalled(String)
         /// The terminal only opens folders (Warp, cmux): the adapter's refusal, and the app's name for the window's sentence.
-        case terminalOnlyOpensFolders(app: String, refusal: String)
+        case terminalOnlyOpensFolders(app: String, refusal: LocalizedMessage)
         /// The terminal can run commands, but not on this machine (an old version): the adapter says why.
-        case terminalCannotRunCommands(String)
+        case terminalCannotRunCommands(LocalizedMessage)
         /// An argument of a variant cannot be quoted so that every shell reads it back the same.
         case variantArgument(variant: String, argument: String)
         /// The same for an argument of `[agent.<id>] args`.
         case agentArgument(agent: String, argument: String)
 
-        var text: String {
+        /// What a run that meets it says.
+        var sentence: LocalizedMessage {
             switch self {
-            case .launcherConflict(let text): return text
-            case .noDesktopLink(let agent): return "\(agent) has no desktop app link."
-            case .desktopAppNotInstalled(let agent): return "The \(agent) desktop app is not installed."
-            case .noTerminalLink(let agent): return "\(agent) has no terminal link. Use a terminal launcher instead."
-            case .unknownTerminal(let id): return PlanError.unknownTerminal(id).message
-            case .noDefaultTerminal(let error): return error.message
-            case .terminalNotInstalled(let name): return PlanError.appNotInstalled(name).message
-            case .terminalOnlyOpensFolders(_, let refusal): return refusal
-            case .terminalCannotRunCommands(let text): return text
-            case .variantArgument(let variant, let argument):
-                return "The argument \"\(argument)\" of the variant \"\(variant)\" has a backslash, which shells do not all read the same way inside quotes. Put the whole command in the agent's `command`, which is typed as written."
-            case .agentArgument(let agent, let argument):
-                return "The argument \"\(argument)\" in args of [agent.\(agent)] has a backslash, which shells do not all read the same way inside quotes. Put the whole command in the agent's `command`, which is typed as written."
+            case .launcherConflict(let sentence): sentence
+            case .noDesktopLink(let agent): .refusalAgentNoDesktopLink(agent)
+            case .desktopAppNotInstalled(let agent): .refusalAgentDesktopAppNotInstalled(agent)
+            case .noTerminalLink(let agent): .refusalAgentNoTerminalLink(agent)
+            case .unknownTerminal(let id): PlanError.unknownTerminal(id).sentence
+            case .noDefaultTerminal(let error): error.sentence
+            case .terminalNotInstalled(let name): PlanError.appNotInstalled(name).sentence
+            case .terminalOnlyOpensFolders(_, let refusal): refusal
+            case .terminalCannotRunCommands(let sentence): sentence
+            case .variantArgument(let variant, let argument): .refusalAgentVariantBackslash(argument, variant)
+            case .agentArgument(let agent, let argument): .refusalAgentArgumentBackslash(argument, "[agent.\(agent)]")
             }
         }
     }
@@ -131,18 +130,16 @@ struct AgentLaunchResolution: Sendable {
 
 extension PlanError {
     init(_ unavailable: AgentLaunchResolution.Unavailable) {
-        self = .unsupported(unavailable.text)
+        self = .refused(unavailable.sentence)
     }
 }
 
 extension AgentLaunchResolution.Unavailable {
-    /// The reasons a person meets as sentences of the catalog, which the window writes in their language; the others are their English.
+    /// The sentence of the window, which says of a terminal that only opens folders what it means for the agents.
     var message: LocalizedMessage {
         switch self {
-        case .terminalOnlyOpensFolders(let app, _): return .appTerminalNoAgents(app)
-        case .terminalNotInstalled(let name): return .doctorAppNotInstalled(name)
-        case .noDefaultTerminal(.noDefaultApp(.terminal)): return .doctorTerminalNone
-        default: return .doctorVerbatim(text)
+        case .terminalOnlyOpensFolders(let app, _): .appTerminalNoAgents(app)
+        default: sentence
         }
     }
 }

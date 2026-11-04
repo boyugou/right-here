@@ -26,7 +26,7 @@ public struct AppleTerminalAdapter: TerminalAdapter {
         // as this used to, breaks as soon as the profile runs a different one, and AppleScript's
         // `quoted form of` is not used for the same reason.
         if directory.unicodeScalars.contains("\\") {
-            throw PlanError.unsupported("Terminal types the folder into a shell, and shells disagree about a backslash in a name, so it will not start a command in \(directory). Rename the folder, or use a terminal that is handed the folder, such as Ghostty.")
+            throw PlanError.refused(.refusalTypesFolderBackslash("Terminal", directory))
         }
         let line = "cd " + ShellQuoting.quote(directory, for: .posix) + " && " + typed
         return [.appleScript(AppleScriptStep(source: Self.script, arguments: [line], controls: "Terminal"))]

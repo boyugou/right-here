@@ -166,6 +166,6 @@ struct DefaultAppsTests {
         let machine = facts(installed: ["com.mitchellh.ghostty", "com.apple.Terminal"])
         let reason = ActionRegistry(config: config, facts: machine).info(.openTerminal(nil)).unavailableReason
         #expect(reason == "Ghostty is not a terminal. Use open.app.ghostty to open files with it.")
-        #expect(throws: PlanError.unsupported(reason ?? "")) { try Planner(config: config, facts: machine).plan(.openTerminal(nil), context: folder) }
+        #expect(throws: PlanError.refused(.refusalNotATerminal("Ghostty", "open.app.ghostty"))) { try Planner(config: config, facts: machine).plan(.openTerminal(nil), context: folder) }
     }
 }

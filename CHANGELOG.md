@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- When an action from Finder does nothing, the alert says why in your language, not only its title: every reason an action can be
+  refused (a commit that is not pushed, a folder macOS will not show, a terminal that cannot run commands, an app that is not
+  installed, a name that cannot be typed) is translated into the thirty languages. The command line and the MCP server still say it in
+  English. The Shortcuts actions say why they failed in your language too.
+
 ## 1.1.2 (2026-11-03)
 
 Fixes for New File's Office documents and for a Mac without git.

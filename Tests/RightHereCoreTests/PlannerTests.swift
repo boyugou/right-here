@@ -241,7 +241,7 @@ struct PlannerTests {
         #expect(throws: PlanError.unknownTerminal("nope")) {
             try Planner(facts: machine()).plan(.openTerminal("nope"), context: folder("/Users/tester/code/app"))
         }
-        #expect(throws: PlanError.unsupported(PlanError.unknownTerminal("nowhere").localizedDescription)) {
+        #expect(throws: PlanError.refused(.refusalUnknownTerminal("nowhere"))) {
             try Planner(facts: machine()).plan(.agent(id: "claude", variant: nil, launcher: .terminal("nowhere")), context: folder("/Users/tester/code/app"))
         }
     }
@@ -400,7 +400,7 @@ struct PlannerTests {
         let info = registry.info(.openTerminal("vscode"))
         #expect(!info.available)
         // An editor is as unknown a terminal as a word that names nothing, in the planner's words and the registry's alike.
-        #expect(info.unavailableReason == PlanError.unknownTerminal("vscode").message)
+        #expect(info.unavailableReason == PlanError.unknownTerminal("vscode").localizedDescription)
         #expect(throws: PlanError.unknownTerminal("vscode")) {
             try Planner(facts: machine(installed: ["com.microsoft.VSCode", "com.apple.Terminal"])).plan(.openTerminal("vscode"), context: folder("/Users/tester/code/app"))
         }

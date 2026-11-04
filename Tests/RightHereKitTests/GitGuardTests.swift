@@ -855,7 +855,8 @@ struct RepositoryReaderTests {
         try "gitdir: /nonexistent\n".write(to: lab.repository.appendingPathComponent(".git"), atomically: true, encoding: .utf8)
         let item = lab.repository
         let states = try await RepositoryReader.read(items: [item], facts: FakeSystemFacts(directories: [item.path], gitRoots: [item.path]), runner: lab.runner)
-        #expect(states[item]?.gitError?.contains("not a git repository") == true, "\(String(describing: states[item]))")
+        guard case .said(let words)? = states[item]?.gitError else { Issue.record("\(String(describing: states[item]))"); return }
+        #expect(words.contains("not a git repository"), Comment(rawValue: words))
     }
 
     /// A submodule is a commit of another repository in this one's tree: told apart from a folder, since its pages are in that repository.
@@ -908,9 +909,10 @@ struct GitNotInstalledTests {
         let root = URL(fileURLWithPath: "/work/app")
         let states = try await RepositoryReader.read(items: [root], facts: FakeSystemFacts(directories: ["/work/app"], gitRoots: ["/work/app"]),
                                                      runner: runner, gitInstalled: false)
-        #expect(states[root]?.gitError?.contains("xcode-select --install") == true)
-        await #expect(throws: ExecutionError.self) { _ = try await GitWorktreeManager.listWorktrees(in: root, runner: runner, gitInstalled: false) }
-        await #expect(throws: ExecutionError.self) { _ = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: "x", runner: runner, gitInstalled: false) }
+        #expect(states[root]?.gitError == .notInstalled)
+        await #expect(throws: ExecutionError.gitNotInstalled) { _ = try await GitWorktreeManager.listWorktrees(in: root, runner: runner, gitInstalled: false) }
+        await #expect(throws: ExecutionError.gitNotInstalled) { _ = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: "x", runner: runner, gitInstalled: false) }
+        #expect(ExecutionError.gitNotInstalled.localizedDescription.contains("xcode-select --install"))
         #expect(runner.recorded.isEmpty, "git was started without git: \(runner.recorded)")
     }
 }

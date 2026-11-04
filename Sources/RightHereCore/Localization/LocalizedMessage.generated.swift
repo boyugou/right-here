@@ -937,6 +937,160 @@ extension LocalizedMessage {
     public static var presetReview: LocalizedMessage { LocalizedMessage(.presetReview) }
     /// Write Tests
     public static var presetTests: LocalizedMessage { LocalizedMessage(.presetTests) }
+    /// The argument "%1$@" in the args of %2$@ has a backslash, which shells do not all read the same way inside quotes. Put the whole command in the agent's `command`, which is typed as written.
+    public static func refusalAgentArgumentBackslash(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalAgentArgumentBackslash, [argument1, argument2]) }
+    /// The %@ desktop app is not installed.
+    public static func refusalAgentDesktopAppNotInstalled(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalAgentDesktopAppNotInstalled, [argument1]) }
+    /// %@ has no desktop app link.
+    public static func refusalAgentNoDesktopLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalAgentNoDesktopLink, [argument1]) }
+    /// %@ has no terminal link. Use a terminal launcher instead.
+    public static func refusalAgentNoTerminalLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalAgentNoTerminalLink, [argument1]) }
+    /// The argument "%1$@" of the variant "%2$@" has a backslash, which shells do not all read the same way inside quotes. Put the whole command in the agent's `command`, which is typed as written.
+    public static func refusalAgentVariantBackslash(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalAgentVariantBackslash, [argument1, argument2]) }
+    /// A variant adds command-line options, so it can only start in a terminal, not through the desktop app.
+    public static var refusalAgentVariantNotDesktop: LocalizedMessage { LocalizedMessage(.refusalAgentVariantNotDesktop) }
+    /// A variant adds command-line options, so it can only start in a terminal, not through the agent's own terminal link.
+    public static var refusalAgentVariantNotLink: LocalizedMessage { LocalizedMessage(.refusalAgentVariantNotLink) }
+    /// `rh agents` lists them.
+    public static var refusalAgentsListed: LocalizedMessage { LocalizedMessage(.refusalAgentsListed) }
+    /// macOS blocked Right Here from controlling an app. Allow it in System Settings › Privacy & Security › Automation, then try again.
+    public static var refusalAutomationDenied: LocalizedMessage { LocalizedMessage(.refusalAutomationDenied) }
+    /// %@ cannot run commands yet. Choose another terminal for this agent.
+    public static func refusalCannotRunCommandsYet(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalCannotRunCommandsYet, [argument1]) }
+    /// %@ is a link that points nowhere (or into a place macOS will not let Right Here look at), so there is no folder to open.
+    public static func refusalDanglingLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalDanglingLink, [argument1]) }
+    /// Did you mean "%@"?
+    public static func refusalDidYouMean(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalDidYouMean, [argument1]) }
+    /// %@ already exists.
+    public static func refusalFileExists(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalFileExists, [argument1]) }
+    /// git is not installed. It comes with the Command Line Tools: run `xcode-select --install` in Terminal, then try again.
+    public static var refusalGitNotInstalled: LocalizedMessage { LocalizedMessage(.refusalGitNotInstalled) }
+    /// Known: %@.
+    public static func refusalKnown(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalKnown, [argument1]) }
+    /// The first launch argument of %1$@ must be an absolute path or start with %2$@.
+    public static func refusalLaunchFirstArgument(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalLaunchFirstArgument, [argument1, argument2]) }
+    /// Naming it would put a backslash in the prompt (its name has one, or a quote and a space), which shells do not all read the same way inside quotes.
+    public static var refusalNameBackslash: LocalizedMessage { LocalizedMessage(.refusalNameBackslash) }
+    /// Its name has a line break or another control character.
+    public static var refusalNameControlCharacter: LocalizedMessage { LocalizedMessage(.refusalNameControlCharacter) }
+    /// Its name would start the prompt with a dash, which the agent would read as an option.
+    public static var refusalNameLeadingDash: LocalizedMessage { LocalizedMessage(.refusalNameLeadingDash) }
+    /// Its name has a character that shows nothing or changes how it reads (a direction override, a zero-width space, a tag character), and the agent would read what the person cannot see.
+    public static var refusalNameMisleadingCharacter: LocalizedMessage { LocalizedMessage(.refusalNameMisleadingCharacter) }
+    /// No free file name was found.
+    public static var refusalNameExhausted: LocalizedMessage { LocalizedMessage(.refusalNameExhausted) }
+    /// No app is installed.
+    public static var refusalNoApp: LocalizedMessage { LocalizedMessage(.refusalNoApp) }
+    /// No editor is installed.
+    public static var refusalNoEditor: LocalizedMessage { LocalizedMessage(.refusalNoEditor) }
+    /// %@ has no run_args in the config, so it cannot start a command. Add run_args, or choose another terminal for this agent.
+    public static func refusalNoRunArgs(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalNoRunArgs, [argument1]) }
+    /// There is no folder or selection to act on.
+    public static var refusalNoTarget: LocalizedMessage { LocalizedMessage(.refusalNoTarget) }
+    /// %@ is not a folder.
+    public static func refusalNotAFolder(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalNotAFolder, [argument1]) }
+    /// %1$@ is not a terminal. Use %2$@ to open files with it.
+    public static func refusalNotATerminal(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalNotATerminal, [argument1, argument2]) }
+    /// %@ does not exist.
+    public static func refusalPathNotFound(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalPathNotFound, [argument1]) }
+    /// A preset is typed into a terminal, so %1$@ does not apply. Name a terminal from `rh apps` (%2$@) or leave the suffix out.
+    public static func refusalPresetLauncher(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetLauncher, [argument1, argument2]) }
+    /// This preset works on selected files; select one or more files (folders do not count).
+    public static var refusalPresetNeedsFiles: LocalizedMessage { LocalizedMessage(.refusalPresetNeedsFiles) }
+    /// No agent is enabled; list one in general.agents, or name an agent in the preset.
+    public static var refusalPresetNoAgent: LocalizedMessage { LocalizedMessage(.refusalPresetNoAgent) }
+    /// %1$@ is not known to take a first prompt. Set prompt_arg in %2$@ (%3$@ or a flag such as %4$@).
+    public static func refusalPresetNoPromptArgument(_ argument1: String, _ argument2: String, _ argument3: String, _ argument4: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetNoPromptArgument, [argument1, argument2, argument3, argument4]) }
+    /// %1$@ is started with %2$@, which switches its permission prompts off, and a preset keeps them on because its prompt carries file names. Take the flag out of its command and arguments (the permission setting adds it for plain starts), or give the preset another agent.
+    public static func refusalPresetPermissionFlag(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetPermissionFlag, [argument1, argument2]) }
+    /// The command of %@ has shell syntax whose result Right Here cannot read ($, a backtick, {a,b} or a quote that is not closed), so it cannot tell whether it switches the permission prompts off, and a preset keeps them on because its prompt carries file names. Write the command as plain words and quotes.
+    public static func refusalPresetShellSyntax(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetShellSyntax, [argument1]) }
+    /// Too many files are selected: %1$@. This preset takes at most %2$@ (max_files).
+    public static func refusalPresetTooManyFiles(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetTooManyFiles, [argument1, argument2]) }
+    /// A preset is typed into a terminal.
+    public static var refusalPresetTyped: LocalizedMessage { LocalizedMessage(.refusalPresetTyped) }
+    /// The file %1$@ cannot be named in the prompt of preset "%2$@".
+    public static func refusalPresetFileName(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetFileName, [argument1, argument2]) }
+    /// The folder %1$@ cannot be named in the prompt of preset "%2$@".
+    public static func refusalPresetFolderName(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetFolderName, [argument1, argument2]) }
+    /// The selected item %1$@ cannot be named in the prompt of preset "%2$@".
+    public static func refusalPresetItemName(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetItemName, [argument1, argument2]) }
+    /// The prompt of preset "%@" cannot be typed into a terminal.
+    public static func refusalPresetPrompt(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetPrompt, [argument1]) }
+    /// A %@ in the config adds or replaces one.
+    public static func refusalPresetsAdd(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalPresetsAdd, [argument1]) }
+    /// It has a backslash, which shells do not all read the same way inside quotes.
+    public static var refusalPromptBackslash: LocalizedMessage { LocalizedMessage(.refusalPromptBackslash) }
+    /// It has a line break or another control character.
+    public static var refusalPromptControlCharacter: LocalizedMessage { LocalizedMessage(.refusalPromptControlCharacter) }
+    /// The prompt is empty.
+    public static var refusalPromptEmpty: LocalizedMessage { LocalizedMessage(.refusalPromptEmpty) }
+    /// It starts with a dash, which the agent would read as an option.
+    public static var refusalPromptLeadingDash: LocalizedMessage { LocalizedMessage(.refusalPromptLeadingDash) }
+    /// It has a character that shows nothing or changes how the text reads (a direction override, a zero-width space, a tag character).
+    public static var refusalPromptMisleadingCharacter: LocalizedMessage { LocalizedMessage(.refusalPromptMisleadingCharacter) }
+    /// It is longer than %@ bytes.
+    public static func refusalPromptTooLong(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalPromptTooLong, [argument1]) }
+    /// git could not read the repository of %1$@: %2$@
+    public static func refusalRepositoryGitError(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryGitError, [argument1, argument2]) }
+    /// The repository has no commit yet.
+    public static var refusalRepositoryNoCommit: LocalizedMessage { LocalizedMessage(.refusalRepositoryNoCommit) }
+    /// The repository has no remote, so it has no page on a git host.
+    public static var refusalRepositoryNoRemote: LocalizedMessage { LocalizedMessage(.refusalRepositoryNoRemote) }
+    /// %@ is not in the checked-out commit (a new or untracked file has no page yet). Commit and push it, then try again.
+    public static func refusalRepositoryNotInCommit(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryNotInCommit, [argument1]) }
+    /// %@ is not in a git repository.
+    public static func refusalRepositoryNotInRepository(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryNotInRepository, [argument1]) }
+    /// The checked-out commit is not on remote "%@" yet, so it has no page there. Push it, then try again.
+    public static func refusalRepositoryNotPushed(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryNotPushed, [argument1]) }
+    /// The repository of %@ was not read, so its link cannot be made here; `rh run` reads it.
+    public static func refusalRepositoryNotRead(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryNotRead, [argument1]) }
+    /// Open Repository Page opens the page of one item. To get the links of several, use Copy Repository Link.
+    public static var refusalRepositoryOneItem: LocalizedMessage { LocalizedMessage(.refusalRepositoryOneItem) }
+    /// The repository has several remotes (%@), none of them origin or the branch's upstream or push remote, so it is not clear which one to link to.
+    public static func refusalRepositorySeveralRemotes(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositorySeveralRemotes, [argument1]) }
+    /// %@ is a submodule: its pages are in its own repository. Select an item inside it.
+    public static func refusalRepositorySubmodule(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositorySubmodule, [argument1]) }
+    /// Remote "%1$@" is on %2$@; Right Here makes links for github.com, gitlab.com, codeberg.org and bitbucket.org.
+    public static func refusalRepositoryUnknownHost(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryUnknownHost, [argument1, argument2]) }
+    /// The checked-out commit of the repository could not be read.
+    public static var refusalRepositoryUnreadableCommit: LocalizedMessage { LocalizedMessage(.refusalRepositoryUnreadableCommit) }
+    /// The URL of remote "%@" is not one of a repository on a git host.
+    public static func refusalRepositoryUnreadableRemote(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryUnreadableRemote, [argument1]) }
+    /// %@ has a backslash and a control character, and no single quoting of that reads the same in every shell (fish reads a backslash inside quotes differently). Copy it as an absolute path instead.
+    public static func refusalShellForm(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalShellForm, [argument1]) }
+    /// Step %1$@ (%2$@) failed: %3$@
+    public static func refusalStepFailed(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.refusalStepFailed, [argument1, argument2, argument3]) }
+    /// A %@ in the config replaces the built-in ones.
+    public static func refusalTemplatesReplace(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalTemplatesReplace, [argument1]) }
+    /// %1$@ is a terminal, not an editor. Use %2$@ to open a folder in it.
+    public static func refusalTerminalNotEditor(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalTerminalNotEditor, [argument1, argument2]) }
+    /// %1$@ %2$@ cannot run commands; version %3$@ or later can. Update it or choose another terminal.
+    public static func refusalTerminalTooOld(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.refusalTerminalTooOld, [argument1, argument2, argument3]) }
+    /// %1$@ did not finish in time and was stopped (limit: %2$@ s). If macOS is waiting for you to allow Right Here to control an app (a permission prompt), answer it and try again.
+    public static func refusalTimedOut(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalTimedOut, [argument1, argument2]) }
+    /// %1$@ types the folder into a shell, and shells disagree about a backslash in a name, so it will not start a command in %2$@. Rename the folder, or use a terminal that is handed the folder, such as Ghostty.
+    public static func refusalTypesFolderBackslash(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalTypesFolderBackslash, [argument1, argument2]) }
+    /// Unknown agent "%@".
+    public static func refusalUnknownAgent(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnknownAgent, [argument1]) }
+    /// Unknown app "%@".
+    public static func refusalUnknownApp(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnknownApp, [argument1]) }
+    /// Unknown preset "%@".
+    public static func refusalUnknownPreset(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnknownPreset, [argument1]) }
+    /// Unknown new-file template "%@".
+    public static func refusalUnknownTemplate(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnknownTemplate, [argument1]) }
+    /// Unknown terminal "%@". Run `rh apps` to list them; an agent's launcher can also be default, link or desktop.
+    public static func refusalUnknownTerminal(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnknownTerminal, [argument1]) }
+    /// Agent "%1$@" has no variant "%2$@".
+    public static func refusalUnknownVariant(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalUnknownVariant, [argument1, argument2]) }
+    /// macOS did not let Right Here look at %@, so it cannot tell whether it is a folder. Allow access to that folder under System Settings, Privacy & Security, Files & Folders (or Full Disk Access), then try again.
+    public static func refusalUnreadable(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnreadable, [argument1]) }
+    /// The folder %@ has a line break or another control character in its path, so it cannot be typed into a terminal. Rename it, or use a terminal that is handed the folder, such as Ghostty.
+    public static func refusalUnsafeFolder(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnsafeFolder, [argument1]) }
+    /// %@ contains line breaks or control characters and cannot be typed into a terminal.
+    public static func refusalUnsafeText(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnsafeText, [argument1]) }
+    /// The folder %@ cannot be written into a link for Warp.
+    public static func refusalWarpLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalWarpLink, [argument1]) }
     /// Excel Workbook
     public static var templateExcel: LocalizedMessage { LocalizedMessage(.templateExcel) }
     /// Markdown Document

@@ -13,7 +13,7 @@ public enum RepositoryReader {
         var states: [URL: RepositoryState] = [:]
         guard gitInstalled ?? GitCommand.gitIsInstalled() else {
             for item in items.map(\.lexicallyNormalized) where facts.gitRoot(containing: item) != nil {
-                states[item] = RepositoryState(root: nil, gitError: GitCommand.notInstalled)
+                states[item] = RepositoryState(root: nil, gitError: .notInstalled)
             }
             return states
         }
@@ -25,13 +25,13 @@ public enum RepositoryReader {
             let isFolder = facts.isDirectory(item) == true
             let top = try await git(["rev-parse", "--show-toplevel"], in: isFolder ? item : item.deletingLastPathComponent(), runner: runner)
             guard top.status == 0, let topPath = line(top) else {
-                states[item] = RepositoryState(root: nil, gitError: firstLine(top.standardError) ?? "git could not read the repository.")
+                states[item] = RepositoryState(root: nil, gitError: .said(firstLine(top.standardError) ?? "git could not read the repository."))
                 continue
             }
             let root = URL(fileURLWithPath: topPath)
             if repositories[topPath] == nil { repositories[topPath] = try await readRepository(root, runner: runner) }
             guard let path = itemPath(of: item, facts: facts, inRepository: root) else {
-                states[item] = RepositoryState(root: root, gitError: "\(item.path) is outside the repository git found, \(topPath).")
+                states[item] = RepositoryState(root: root, gitError: .said("\(item.path) is outside the repository git found, \(topPath)."))
                 continue
             }
             found.append((item, topPath, path))

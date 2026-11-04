@@ -37,7 +37,7 @@ public struct SetupChoices: Sendable, Equatable {
         guard !agents.isEmpty, let terminal, let app = KnownApps.terminal(id: terminal) else { return nil }
         guard let refusal = TerminalAdapters.adapter(for: app).commandRefusal else { return nil }
         let capable = KnownApps.terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.id).joined(separator: ", ")
-        return "\(refusal) Agents start in a terminal that can run commands (\(capable)): choose one of those with --terminal."
+        return "\(refusal.english()) Agents start in a terminal that can run commands (\(capable)): choose one of those with --terminal."
     }
 
     private static func knownApp(_ word: String, role: AppDescriptor.Role) throws -> String {

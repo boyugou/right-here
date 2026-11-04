@@ -413,7 +413,7 @@ MUTANTS = [
     ("rh worktree list prints a path with its line break, which forges a line", "Sources/rh/Commands/WorktreeCommand.swift",
      'Output.print("\\(entry.path.withControlCharactersEscaped)', 'Output.print("\\(entry.path)'),
     ("the description of a step that failed holds what the program wrote as it is", "Sources/RightHereKit/PlanExecutor.swift",
-     'return text.escapingControlCharacters(keeping: ["\\n"])', "return text"),
+     '.map { $0.escapingControlCharacters(keeping: ["\\n"]) }', ""),
     ("the text of a tool's failure is not marked as data when git or a plan quotes names in it", "Sources/RightHereMCP/MCPServer.swift",
      "text: Fence.block(error.localizedDescription))", "text: error.localizedDescription)"),
     ("the plan in the text of a run is not marked as data", "Sources/RightHereMCP/Tools.swift",
@@ -786,7 +786,7 @@ MUTANTS = [
     ("a submodule is linked as a folder of this repository", "Sources/RightHereKit/RepositoryReader.swift",
      "case \"commit\": .submodule", "case \"commit\": .folder"),
     ("Open Repository Page opens a page for each of several items", "Sources/RightHereCore/Planner/Planner.swift",
-     "guard targets.count == 1 else {\n                throw PlanError.unsupported(\"Open Repository Page", "guard !targets.isEmpty else {\n                throw PlanError.unsupported(\"Open Repository Page"),
+     "guard targets.count == 1 else {\n                throw PlanError.refused(.refusalRepositoryOneItem)", "guard !targets.isEmpty else {\n                throw PlanError.refused(.refusalRepositoryOneItem)"),
     ("the repository reader runs git without GitCommand's guards", "Sources/RightHereKit/RepositoryReader.swift",
      "runner.run(GitCommand.step(arguments, in: directory.path, blanking: GitCommand.Defined()), timeout: GitCommand.reading)",
      "runner.run(ProcessStep(executable: GitCommand.executable, arguments: [\"--no-pager\", \"-C\", directory.path] + arguments), timeout: GitCommand.reading)"),
@@ -805,7 +805,7 @@ MUTANTS = [
     ("the repository actions are offered only inside the submenus of Add to Menu", "Sources/RightHereCore/Menu/MenuEditor.swift",
      'case "reveal", "repository": return .reveal', 'case "reveal": return .reveal'),
     ("git is started where there is none (no Xcode, no Command Line Tools)", "Sources/RightHereKit/GitCommand.swift",
-     "guard installed else { throw ExecutionError.stepFailed", "guard true else { throw ExecutionError.stepFailed"),
+     "guard installed else { throw ExecutionError.gitNotInstalled }", "guard true else { throw ExecutionError.gitNotInstalled }"),
     ("the repository reader starts git where there is none", "Sources/RightHereKit/RepositoryReader.swift",
      "guard gitInstalled ?? GitCommand.gitIsInstalled() else {", "guard true else {"),
     ("the developer folder xcode-select chose is not asked, so a removed Xcode's git counts", "Sources/RightHereKit/GitCommand.swift",
@@ -2093,6 +2093,10 @@ MUTANTS = [
      'let flag = config.flagThatSkipsPrompts(for: agent) else { continue }', 'let flag = config.launchOptions(for: agent).bypassFlag else { continue }'),
     ("rh run says nothing of a flag the agent's own command or start option types", 'Sources/RightHereCore/Planner/Planner.swift',
      '            } else if let flag = config.bypassFlag(inTypedLine: typed, of: agent) {', '            } else if false, let flag = config.bypassFlag(inTypedLine: typed, of: agent) {'),
+    ("the alert after a click in Finder shows a name's direction override as it is", 'Sources/RightHereCore/Localization/LocalizedFailure.swift',
+     'localizer.render(sentences: sentences, isolatingValues: true, escapingValues: true)', 'localizer.render(sentences: sentences, isolatingValues: true)'),
+    ("the alert after a click in Finder says why in English whatever the language", 'Sources/RightHereKit/FailureAlert.swift',
+     'message: localizer.describe(error) + ', 'message: error.localizedDescription + '),
 ]
 
 

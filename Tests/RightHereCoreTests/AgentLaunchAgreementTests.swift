@@ -132,14 +132,14 @@ struct AgentLaunchAgreementTests {
                     // What cannot start is explained in the same words by `rh actions` and by `rh run`.
                     switch ref {
                     case .agent, .preset:
-                        if case .unsupported(let text)? = refusal, text != info.unavailableReason {
+                        if case .refused? = refusal, let text = refusal?.localizedDescription, text != info.unavailableReason {
                             disagreements.append("\(machine.name) / \(configName) / \(ref.id): the planner says \"\(text)\", the registry \"\(info.unavailableReason ?? "nothing")\"")
                         }
                     case .openTerminal, .openEditor, .openApp:
                         // The terminal named by `open.terminal@editor`, an app that is not there, a default that cannot be chosen:
                         // each is decided in one place and worded once.
-                        if let refusal, refusal.message != info.unavailableReason {
-                            disagreements.append("\(machine.name) / \(configName) / \(ref.id): the planner says \"\(refusal.message)\", the registry \"\(info.unavailableReason ?? "nothing")\"")
+                        if let refusal, refusal.localizedDescription != info.unavailableReason {
+                            disagreements.append("\(machine.name) / \(configName) / \(ref.id): the planner says \"\(refusal.localizedDescription)\", the registry \"\(info.unavailableReason ?? "nothing")\"")
                         }
                     default: break
                     }
