@@ -2,9 +2,17 @@
 
 ## Unreleased
 
+## 1.2.1 (2026-11-03)
+
+More of the setup window in your language, and what a review of 1.2.0 found.
+
 - Install or Repair says in your language why it cannot start (the app is still where macOS put the download, on a disk image or
   in the Trash, or another setup is running) and why a step it could not do failed (a config that does not read, a file in the way of
   the command-line tool).
+- The Config page says in your language why it cannot read the config (it said "cannot read" twice, in English); Undo after you changed
+  the file by hand, and a change an assistant proposed that is no longer waiting, say the window's own sentences instead of the command
+  line's advice to use `--force`.
+- What git says on the Worktrees page keeps its lines (1.2.0 showed them as `\n`), and a name in a notice keeps the marks it has.
 
 ## 1.2.0 (2026-11-03)
 
