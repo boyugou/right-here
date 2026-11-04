@@ -39,9 +39,21 @@ Right Here adds a menu to Finder. Right-click a folder, a file or the empty part
 | **Reveal in Finder** | Selects the items in a Finder window. Not in the menu at first. |
 | **Repository link** | Copies or opens the page of the file on GitHub, GitLab, Codeberg or Bitbucket, at the commit that you have checked out. Not in the menu at first: see below. |
 
-To change the menu, open Right Here, go to the **Finder Menu** page and press **Edit Menu**: drag a line to move it, uncheck it to take it out, and under **Not in the Menu** check Reveal in Finder, Copy Repository Link, Open Repository Page or a group to put it in. From a terminal: `rh config add menu.items repository.copy-link`.
+To change the menu:
 
-The same actions run from the `rh` command, from Quick Actions (right-click, then **Quick Actions**), from the Shortcuts app, Siri and Spotlight (where a shortcut can also pick one of your pinned or recent folders) and from AI assistants.
+1. Open Right Here and go to the **Finder Menu** page.
+2. Press **Edit Menu**.
+3. Drag a line to move it. Uncheck a line to take it out.
+4. Under **Not in the Menu**, check an item to put it in: Reveal in Finder, Copy Repository Link, Open Repository Page or a group.
+
+From a terminal: `rh config add menu.items repository.copy-link`.
+
+The same actions also run from:
+
+- the `rh` command;
+- Quick Actions (right-click, then **Quick Actions**);
+- the Shortcuts app, Siri and Spotlight, where a shortcut can also pick one of your pinned or recent folders;
+- AI assistants.
 
 ## How it works
 
