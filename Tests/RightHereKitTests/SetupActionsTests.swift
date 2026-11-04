@@ -219,8 +219,9 @@ struct SetupNoticeTests {
     /// git's lines stay lines, a name keeps the marks it has, and a failure's direction override is shown as an escape; a step's detail
     /// that becomes the whole notice starts with a capital.
     @Test func theWindowShowsANoticeAsAPersonReadsIt() {
-        let git = SetupNotice.failure(ExecutionError.stepFailed(index: 0, step: "git worktree list", message: "fatal: detected dubious ownership\nTo add an exception:"))
+        let git = SetupNotice.failure(ExecutionError.stepFailed(index: 0, step: "git worktree list", message: "fatal: detected dubious ownership\nTo add an exception:\n\tgit config"))
         #expect(git.text(in: Localizer(languages: ["de"])).contains("ownership\nTo add"), "a real line break")
+        #expect(git.text(in: .english).contains("\n\tgit config"), "a real tab")
         #expect(!git.text(in: .english).contains("\\n"))
         let hebrew = SetupNotice.worktreeRemoved("~/\u{05E4}\u{05E8}\u{05D5}\u{05D9}\u{05E7}\u{05D8}\u{200F}")
         #expect(hebrew.text(in: .english).unicodeScalars.contains("\u{200F}"), "the name's own mark, not an escape")
@@ -228,6 +229,8 @@ struct SetupNoticeTests {
         #expect(!override.text(in: .english).unicodeScalars.contains("\u{202E}"))
         let italian = SetupNotice.explained([.setupConfigUnusable("/x/config.toml", "line 1: TOML syntax error")]).text(in: Localizer(languages: ["it"]))
         #expect(italian.first?.isUppercase == true, Comment(rawValue: italian))
+        // Another program's words are left as it wrote them.
+        #expect(SetupNotice.failed("error: something git said").text(in: .english) == "error: something git said")
     }
 
     @Test func onlyWhatDidNotWorkIsAProblem() {

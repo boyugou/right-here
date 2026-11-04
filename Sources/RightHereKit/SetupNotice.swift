@@ -49,11 +49,12 @@ public enum SetupNotice: Sendable, Equatable {
         return .failed(((error as? LocalizedError)?.errorDescription ?? error.localizedDescription).withControlCharactersEscaped)
     }
 
-    /// What the window shows, in the localizer's language: a step's detail starts in lower case beside the step's name, and here it stands
-    /// alone, so the first letter is a capital. The values are as the notice holds them (a failure's are escaped already).
+    /// What the window shows, in the localizer's language. A step's detail starts in lower case beside the step's name, and as a notice it
+    /// stands alone, so the first letter of a failure's sentences is a capital; another program's words (`failed`) are left as it wrote them.
+    /// The values are as the notice holds them (a failure's are escaped already).
     public func text(in localizer: Localizer, isolatingValues: Bool = true) -> String {
         let text = localizer.render(sentences: messages, isolatingValues: isolatingValues)
-        guard let first = text.first, first.isLowercase else { return text }
+        guard case .explained = self, let first = text.first, first.isLowercase else { return text }
         return String(first).uppercased(with: Locale(identifier: localizer.resolvedLanguage)) + text.dropFirst()
     }
 

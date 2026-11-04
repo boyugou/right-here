@@ -14,6 +14,9 @@
 #   ./script/preview_setup.sh out.png en --failed-set-up    the first run after a Set Up that did not come out: the chooser, and what went wrong above it
 #   ./script/preview_setup.sh out.png en --first-run --shell-silent  the first run when the login shell said nothing about the agents
 #   ./script/preview_setup.sh out.png en --location         the app runs from a disk image: the card that says to move it, with Set Up off
+#   ./script/preview_setup.sh out.png de --demo --long-notice  the sidebar's notice at its longest: setup refused in an older copy of the app
+#   ./script/preview_setup.sh out.png de --demo --tab worktrees --worktrees-failed  git's refusal to list the worktrees, several lines long
+#   ./script/preview_setup.sh out.png de --demo --tab config --config-unreadable  the Config page when the config cannot be read
 #   ./script/preview_setup.sh out.png en --picks-not-applied  after a setup that kept a config that was there: the choices it could not apply, with the edits, and a warning
 #   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
 #   ./script/preview_setup.sh out.png en --demo --tab folders
@@ -86,7 +89,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       FLAGS+=(--app "${args[$i]:?preview_setup.sh: --app needs an app id}")
       ;;
     --details) TAB="checks" ;;
-    --older-copy | --repairing | --repaired | --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --long-titles | --empty | --wide | --submenus | --editing | --proposals | --switch-on | --edited | --gallery | --minimum | --default-window | --large-text | --titlebar-ltr | --titlebar-rtl | --real-controls) FLAGS+=("$argument") ;;
+    --older-copy | --repairing | --repaired | --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --long-titles | --empty | --wide | --submenus | --editing | --proposals | --switch-on | --edited | --gallery | --long-notice | --worktrees-failed | --config-unreadable | --minimum | --default-window | --large-text | --titlebar-ltr | --titlebar-rtl | --real-controls) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -509,10 +512,10 @@ func demoSetupReport() -> SetupReport {
 /// A first setup in which the config step failed (a file in the way) and the others did not: what the chooser stays above.
 func demoFailedSetupReport() -> SetupReport {
     SetupReport(steps: [
-        SetupStep(.config, .failed, detail: .doctorVerbatim("~/.config/right-here/config.toml cannot be used (line 1: TOML syntax error)")),
+        SetupStep(.config, .failed, detail: .setupConfigUnusable("~/.config/right-here/config.toml", "line 1: TOML syntax error")),
         SetupStep(.runnerScript, .created, detail: .doctorVerbatim("~/Library/Application Scripts/com.boyugou.righthere.FinderExtension/rh-run")),
         SetupStep(.cliLink, .created, detail: .doctorVerbatim("~/.local/bin/rh")),
-        SetupStep(.services, .skipped, detail: .doctorVerbatim("they are made from the config, which cannot be used (see the config file above)")),
+        SetupStep(.services, .skipped, detail: .setupServicesSkipped),
         SetupStep(.finderExtension, .created, detail: .doctorVerbatim("\(appContents)/PlugIns/FinderExtension.appex"))
     ])
 }
@@ -681,8 +684,10 @@ func render(to path: String) async {
                                      configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: .overview, icons: IconProvider(facts: demoFacts()))
     } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") {
         let facts = demoFacts()
-        model.simulate(demoSnapshot(facts), tab: tab, icons: IconProvider(facts: facts), worktrees: flag("--empty") ? .idle : await demoWorktrees(),
-                       repository: flag("--empty") ? nil : demoRepository)
+        let worktrees: WorktreeListing = flag("--worktrees-failed") ? .failed(SetupNotice.failure(ExecutionError.stepFailed(index: 0, step: "git worktree list",
+            message: "fatal: detected dubious ownership in repository at '\(demoHome)/code/app'\nTo add an exception for this directory, call:\n\n\tgit config --global --add safe.directory \(demoHome)/code/app")).messages)
+            : flag("--empty") ? .idle : await demoWorktrees()
+        model.simulate(demoSnapshot(facts), tab: tab, icons: IconProvider(facts: facts), worktrees: worktrees, repository: flag("--empty") ? nil : demoRepository)
     } else {
         await model.refresh()
         model.selectedTab = tab
@@ -698,7 +703,16 @@ func render(to path: String) async {
     if flag("--repaired") { model.simulate(repaired: SetupReport(steps: [
         SetupStep(.config, .unchanged), SetupStep(.runnerScript, .updated), SetupStep(.cliLink, .unchanged), SetupStep(.services, .updated), SetupStep(.finderExtension, .unchanged)])) }
     if flag("--submenus") { model.simulate(openSubmenus: allSubmenus(model.snapshot?.menu ?? [])) }
-    if flag("--demo") && tab == .config { model.simulate(configPage: demoConfigPage()) }
+    if flag("--demo") && tab == .config {
+        model.simulate(configPage: flag("--config-unreadable")
+            ? ConfigPageState(target: .shared, text: nil, problem: .failure(ConfigService.Failure.unreadable(file: "\(demoHome)/.config/right-here/config.toml",
+                reason: "line 1: TOML syntax error: table header not closed: missing `]`")), proposals: [], history: [], validation: nil)
+            : demoConfigPage())
+    }
+    if flag("--long-notice") {
+        model.say(.failure(InstallError.notTheCopyToKeep(copy: "\(demoHome)/Downloads/Right Here.app", version: "1.1.2", keep: "/Applications/Right Here.app",
+                                                          keepVersion: AppIdentity.version)))
+    }
     if flag("--demo") && flag("--proposals") && tab != .config {
         model.simulate(configPage: demoConfigPage())
         model.selectedTab = tab

@@ -413,7 +413,7 @@ MUTANTS = [
     ("rh worktree list prints a path with its line break, which forges a line", "Sources/rh/Commands/WorktreeCommand.swift",
      'Output.print("\\(entry.path.withControlCharactersEscaped)', 'Output.print("\\(entry.path)'),
     ("the description of a step that failed holds what the program wrote as it is", "Sources/RightHereKit/PlanExecutor.swift",
-     'sentences.map { $0.escapingValues(keeping: $0.key == .refusalStepFailed ? ["\\n"] : []) }', 'sentences'),
+     'sentences.map { $0.escapingValues(keeping: $0.key == .refusalStepFailed ? ["\\n", "\\t"] : []) }', 'sentences'),
     ("the text of a tool's failure is not marked as data when git or a plan quotes names in it", "Sources/RightHereMCP/MCPServer.swift",
      "text: Fence.block(error.localizedDescription))", "text: error.localizedDescription)"),
     ("the plan in the text of a run is not marked as data", "Sources/RightHereMCP/Tools.swift",
@@ -2096,7 +2096,7 @@ MUTANTS = [
     ("the alert after a click in Finder shows a name's direction override as it is", 'Sources/RightHereCore/Localization/LocalizedFailure.swift',
      'sentences.map { $0.escapingValues() }', 'sentences'),
     ("the setup window shows git's line breaks as escapes", 'Sources/RightHereKit/PlanExecutor.swift',
-     'escapingValues(keeping: $0.key == .refusalStepFailed ? ["\\n"] : [])', 'escapingValues()'),
+     'escapingValues(keeping: $0.key == .refusalStepFailed ? ["\\n", "\\t"] : [])', 'escapingValues()'),
     ("the alert after a click in Finder says why in English whatever the language", 'Sources/RightHereKit/FailureAlert.swift',
      'message: localizer.describe(error) + ', 'message: error.localizedDescription + '),
 ]

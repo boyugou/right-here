@@ -11,7 +11,9 @@
    Finder, in `app.fixExtensionEnable` and `doctor.fix.extensionEnable`) and where a Quick Action gets its keyboard shortcut
    (Keyboard > Keyboard Shortcuts > Services, in `app.quickActionsBody`). The same rule: the words macOS ships, or the English
    path for a language it does not ship.
-3. Three menu items Finder has itself: "Open With" (`group.openWith`), "Show in Finder" (`action.reveal`) and
+3. The Applications folder and the Trash, in the texts that tell a person to move the app (`install.translocated`,
+   `install.onAnotherVolume`, `install.inTrash`): Finder's own names, or the English ones for a language macOS does not ship.
+4. Three menu items Finder has itself: "Open With" (`group.openWith`), "Show in Finder" (`action.reveal`) and
    "Quick Actions" (`app.quickActionsHeading`, the submenu where they are) read exactly as Finder's own menus do, so ours
    sits comfortably beside them and a person finds the Quick Actions where the window says.
 
@@ -144,6 +146,36 @@ def settings_path_problems(strings: dict, settings: dict, languages: dict) -> li
     return problems
 
 
+# The Finder folders the refusals of Install or Repair name, by the key of the text and Finder's key of the name.
+FINDER_FOLDERS = {
+    "install.translocated": ("Applications",),
+    "install.onAnotherVolume": ("Applications",),
+    "install.inTrash": ("Applications", "Trash"),
+}
+# A name in a sentence may take a case ending ("z Kosza", "из Корзины"), so its last letter is not looked for; these are the forms where
+# more of it changes, as the sentence correctly writes them.
+INFLECTED_FOLDERS = {"he": {"Trash": ["פח האשפה"]}}
+
+
+def finder_folder_problems(strings: dict) -> list[str]:
+    """Each text that tells a person to move the app names the Applications folder and the Trash as Finder does in that language, or in
+    English for a language macOS does not ship."""
+    problems = []
+    for key, folders in FINDER_FOLDERS.items():
+        for language, localization in sorted(strings[key]["localizations"].items()):
+            if language == "en":
+                continue
+            text = normalize(localization["stringUnit"]["value"]).lower()
+            names = finder_strings(language, "Localizable.strings") or {}
+            for folder in folders:
+                name = normalize(names.get(folder, folder)).lower()
+                stem = name[:-1] if len(name) >= 4 else name
+                forms = [form.lower() for form in INFLECTED_FOLDERS.get(language, {}).get(folder, [])]
+                if stem not in text and not any(form in text for form in forms):
+                    problems.append(f"{language}: {key} does not name the {folder} folder as Finder does: {name}")
+    return problems
+
+
 def layout() -> int:
     """What the Settings panes' folders hold on this macOS, for when a table is not where `settings_path_problems` looks."""
     print("macOS", subprocess.run(["sw_vers", "-productVersion"], capture_output=True, text=True).stdout.strip())
@@ -218,6 +250,7 @@ def main() -> int:
         quick = normalize(strings["app.quickActionsHeading"]["localizations"][language]["stringUnit"]["value"])
         if normalize(merged.get("QK1", quick)) != quick:
             problems.append(f"{language}: app.quickActionsHeading is {quick!r} but Finder's Quick Actions is {normalize(merged['QK1'])!r}")
+    problems += finder_folder_problems(strings)
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
