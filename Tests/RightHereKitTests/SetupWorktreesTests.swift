@@ -141,7 +141,8 @@ struct WorktreeBrowserTests {
     @Test func gitThatSaysNoIsShownInItsWords() async {
         let runner = FakeProcessRunner(results: [ProcessResult(status: 128, standardError: "fatal: not a git repository")])
         let listing = await WorktreeBrowser(runner: runner).list(in: root)
-        guard case .failed(let message) = listing else { Issue.record("not failed: \(listing)"); return }
+        guard case .failed(let sentences) = listing else { Issue.record("not failed: \(listing)"); return }
+        let message = Localizer.english.render(sentences: sentences)
         #expect(message.contains("not a git repository"))
     }
 
@@ -168,7 +169,8 @@ struct WorktreeBrowserTests {
         let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: porcelain), ProcessResult(status: 1), ProcessResult(status: 128, standardError: refusal)])
         let row = try #require(WorktreeBrowser.rows(GitWorktreeManager.parsePorcelain(porcelain, gitRoot: root), in: root).first { $0.id == target })
         let notice = await WorktreeBrowser(runner: runner).remove(row, in: root)
-        guard case .failed(let message) = notice else { Issue.record("not a failure: \(notice)"); return }
+        guard notice.isProblem else { Issue.record("not a failure: \(notice)"); return }
+        let message = Localizer.english.render(sentences: notice.messages)
         #expect(message.contains("contains modified or untracked files"))
         #expect(message.contains("never discarded without --force"))
         #expect(runner.recorded.filter { $0.arguments.contains("remove") }.count == 1, "git was asked to remove once and not again")
@@ -220,7 +222,8 @@ struct WorktreeBrowserGitTests {
         let note = made.worktreeURL.appendingPathComponent("notes.txt")
         try "unsaved thoughts".write(to: note, atomically: true, encoding: .utf8)
         let refused = await browser.remove(row, in: repository)
-        guard case .failed(let message) = refused else { Issue.record("not refused: \(refused)"); return }
+        guard refused.isProblem else { Issue.record("not refused: \(refused)"); return }
+        let message = Localizer.english.render(sentences: refused.messages)
         #expect(message.contains("untracked") || message.contains("modified"), "\(message)")
         #expect(FileManager.default.fileExists(atPath: note.path))
 

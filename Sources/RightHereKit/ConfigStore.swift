@@ -194,11 +194,10 @@ public enum ConfigStore {
 
     /// `.config.lock` cannot be taken (it is a link, or its folder cannot be written to), so a forced replacement could not be told apart from an edit made at the
     /// same moment.
-    public struct LockUnavailable: Error, LocalizedError, Equatable {
+    public struct LockUnavailable: Error, LocalizedError, Equatable, LocalizedFailure {
         public var file: String
-        public var errorDescription: String? {
-            "The lock \(file.withControlCharactersEscaped) cannot be taken (it is a link, or its folder cannot be written to), so the config was not replaced: a change made at the same moment could not be told apart. Nothing was changed."
-        }
+        public var sentences: [LocalizedMessage] { [.configReplaceLockUnavailable(file)] }
+        public var errorDescription: String? { text(in: .english) }
     }
 
     /// Writes a fresh config file unless one exists. The file is created only if nothing has its name, in one step (`link`

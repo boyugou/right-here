@@ -184,20 +184,36 @@ struct SetupActionsConfigEditTests {
 @Suite("SetupNotice")
 struct SetupNoticeTests {
     @Test func everyNoticeIsACatalogMessageInEnglish() {
-        #expect(SetupNotice.promptCopied.message.english() == "Setup prompt copied. Paste it into your AI assistant.")
-        #expect(SetupNotice.mcpConfigurationCopied.message.english() == "MCP configuration copied. Paste it into your assistant's MCP settings.")
-        #expect(SetupNotice.pluginCommandsCopied.message.english() == "Plugin commands copied. Paste them into Claude Code.")
-        #expect(SetupNotice.worktreeRemoved("~/work/.right-here/worktrees/x").message.english() == "Removed the worktree ~/work/.right-here/worktrees/x.")
-        #expect(SetupNotice.notARepository("~/notes").message.english() == "~/notes is not in a git repository.")
-        #expect(SetupNotice.stopped(status: 3).message.english() == "It did not finish (exit status 3).")
-        #expect(SetupNotice.notRemovable.message.english() == "Right Here did not remove this worktree: it is not one Right Here made, so it is left alone.")
+        #expect(SetupNotice.promptCopied.messages.map { $0.english() } == ["Setup prompt copied. Paste it into your AI assistant."])
+        #expect(SetupNotice.mcpConfigurationCopied.messages.map { $0.english() } == ["MCP configuration copied. Paste it into your assistant's MCP settings."])
+        #expect(SetupNotice.pluginCommandsCopied.messages.map { $0.english() } == ["Plugin commands copied. Paste them into Claude Code."])
+        #expect(SetupNotice.worktreeRemoved("~/work/.right-here/worktrees/x").messages.map { $0.english() } == ["Removed the worktree ~/work/.right-here/worktrees/x."])
+        #expect(SetupNotice.notARepository("~/notes").messages.map { $0.english() } == ["~/notes is not in a git repository."])
+        #expect(SetupNotice.stopped(status: 3).messages.map { $0.english() } == ["It did not finish (exit status 3)."])
+        #expect(SetupNotice.notRemovable.messages.map { $0.english() } == ["Right Here did not remove this worktree: it is not one Right Here made, so it is left alone."])
     }
 
     @Test func aFailureIsShownAsItsOwnWordsInEveryLanguage() {
         let notice = SetupNotice.failed("error: something git said")
         for language in Localizer.supportedLanguages {
-            #expect(Localizer(languages: [language]).render(notice.message) == "error: something git said", "\(language)")
+            #expect(Localizer(languages: [language]).render(sentences: notice.messages) == "error: something git said", "\(language)")
         }
+    }
+
+    /// A failure whose sentences the catalog has is shown in the person's language: an Install or Repair that stopped, a config text the
+    /// Config page would save that does not read, a lock that cannot be taken.
+    @Test func aFailureTheCatalogKnowsIsInThePersonsLanguage() {
+        for error: any Error in [ConfigDocument.EditError.wouldBeInvalid("config.toml: [general.terminal] unknown terminal \"nope\""),
+                                 ConfigService.Failure.readOnly("/Users/me/.config/right-here/config.toml"), ConfigStore.LockUnavailable(file: "/x/.config.lock"),
+                                 ExecutionError.gitNotInstalled] {
+            let notice = SetupNotice.failure(error)
+            let english = Localizer.english.render(sentences: notice.messages)
+            #expect(english == error.localizedDescription, "\(error)")
+            let german = Localizer(languages: ["de"]).render(sentences: notice.messages)
+            #expect(german != english, "\(error): \(german)")
+        }
+        // An error the catalog does not have keeps its own words, escaped.
+        #expect(SetupNotice.failure(CocoaError(.fileWriteNoPermission)).messages.first?.key == .doctorVerbatim)
     }
 
     @Test func onlyWhatDidNotWorkIsAProblem() {
@@ -243,7 +259,7 @@ struct SetupActionsTests {
         try FileManager.default.createDirectory(at: installer.locations.localBin, withIntermediateDirectories: true)
         try "mine".write(to: installer.cliLink, atomically: true, encoding: .utf8)
         let result = await machine.actions(FakeProcessRunner()).setUp()
-        guard case .failed(let text)? = result.notice else { Issue.record("no failure was reported: \(String(describing: result.notice))"); return }
+        guard let text = problem(result.notice) else { Issue.record("no failure was reported: \(String(describing: result.notice))"); return }
         #expect(text.contains("left alone"), "\(text)")
         #expect(result.report?.step(.config)?.outcome == .created, "the other steps still ran")
     }
@@ -258,7 +274,7 @@ struct SetupActionsTests {
             let result = await machine.actions(FakeProcessRunner()).setUp(choices)
             let report = try #require(result.report)
             #expect(!report.ok && report.step(.config)?.outcome == .failed && report.step(.services)?.outcome == .skipped)
-            guard case .failed(let said)? = result.notice else { Issue.record("no failure was reported: \(String(describing: result.notice))"); return }
+            guard let said = problem(result.notice) else { Issue.record("no failure was reported: \(String(describing: result.notice))"); return }
             #expect(said.contains("line 1: TOML syntax error") && said.contains(machine.paths.configFile.path), "\(said)")
             #expect(result.notice?.isProblem == true)
             #expect(try String(contentsOf: machine.paths.configFile, encoding: .utf8) == text)
@@ -271,7 +287,7 @@ struct SetupActionsTests {
         let actions = SetupActions(facts: FakeSystemFacts(homeDirectory: machine.home), paths: machine.paths, runner: FakeProcessRunner(), helperPath: translocated, trialHome: machine.home)
         let result = await actions.setUp()
         #expect(result.report == nil)
-        guard case .failed(let text)? = result.notice else { Issue.record("no failure was reported"); return }
+        guard let text = problem(result.notice) else { Issue.record("no failure was reported"); return }
         #expect(text.contains("Move Right Here.app into your Applications folder"))
         #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
     }
@@ -294,7 +310,7 @@ struct SetupActionsTests {
         let machine = try Home(); defer { machine.cleanUp() }
         let runner = FakeProcessRunner()
         // The first run makes the config from what the person chooses; a button that made it from what was found would skip that choice.
-        guard case .failed(let said)? = await machine.actions(runner).openConfig() else { Issue.record("no failure was reported"); return }
+        guard let said = problem(await machine.actions(runner).openConfig()) else { Issue.record("no failure was reported"); return }
         #expect(said.contains("press Set Up"), "\(said)")
         #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
         #expect(runner.recorded.isEmpty)
@@ -305,7 +321,7 @@ struct SetupActionsTests {
         let runner = FakeProcessRunner()
         let result = await machine.actions(runner).repair()
         #expect(result.report == nil)
-        guard case .failed(let said)? = result.notice else { Issue.record("no failure was reported"); return }
+        guard let said = problem(result.notice) else { Issue.record("no failure was reported"); return }
         #expect(said.contains("press Set Up"), "\(said)")
         #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
         #expect(!FileManager.default.fileExists(atPath: Installer(home: machine.home).runnerScript.path), "nothing was installed either")
@@ -414,4 +430,10 @@ struct SetupFolderEditTests {
         #expect(notice?.isProblem == true)
         #expect(StateStore.load(paths: machine.paths).recents == ["/work/notes", "/work/app"], "the window must not claim a clear that did not happen")
     }
+}
+
+/// What a notice of a problem says, in English; nil for a notice that is no problem, and for none.
+private func problem(_ notice: SetupNotice?) -> String? {
+    guard let notice, notice.isProblem else { return nil }
+    return Localizer.english.render(sentences: notice.messages)
 }

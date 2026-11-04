@@ -241,7 +241,7 @@ struct NoticeLine: View {
             Image(systemName: notice.isProblem ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                 .foregroundStyle(notice.isProblem ? Color.orange : Color.green)
                 .accessibilityHidden(true)
-            Text(l10n.render(notice.message, isolatingValues: true))
+            Text(l10n.render(sentences: notice.messages, isolatingValues: true, escapingValues: true))
                 .font(font)
                 .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
@@ -1000,8 +1000,8 @@ struct WorktreesPage: View {
             EmptyList { Text(l10n.string(.appWorktreesNoRepository)) }
         case .loading:
             ProgressRow(message: .appLoading)
-        case .failed(let text):
-            Text(verbatim: text)
+        case .failed(let sentences):
+            Text(l10n.render(sentences: sentences, isolatingValues: true, escapingValues: true))
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

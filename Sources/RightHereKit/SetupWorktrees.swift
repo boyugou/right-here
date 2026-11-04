@@ -29,8 +29,9 @@ public enum WorktreeListing: Sendable, Equatable {
     case idle
     case loading
     case loaded([WorktreeRow])
-    /// git said no, or could not be started: its words, or the system's.
-    case failed(String)
+    /// git said no, or could not be started: the sentences the window writes in the person's language, with git's or the system's words
+    /// in them.
+    case failed([LocalizedMessage])
 }
 
 public enum WorktreeRepositories {
@@ -68,7 +69,7 @@ public struct WorktreeBrowser: Sendable {
         do {
             return .loaded(Self.rows(try await GitWorktreeManager.listWorktrees(in: root, runner: runner), in: root))
         } catch {
-            return .failed(error.localizedDescription)
+            return .failed(SetupNotice.failure(error).messages)
         }
     }
 
@@ -87,7 +88,7 @@ public struct WorktreeBrowser: Sendable {
             let removal = try await GitWorktreeManager.removeWorktree(worktreePath: row.entry.path, gitRoot: root, deleteBranch: false, force: false, runner: runner)
             return .worktreeRemoved(removal.path)
         } catch {
-            return .failed(error.localizedDescription)
+            return .failure(error)
         }
     }
 }

@@ -703,6 +703,24 @@ extension LocalizedMessage {
     public static var appWorktreesNoRepository: LocalizedMessage { LocalizedMessage(.appWorktreesNoRepository) }
     /// Repository
     public static var appWorktreesRepository: LocalizedMessage { LocalizedMessage(.appWorktreesRepository) }
+    /// The config cannot be edited as it is: %@ Fix that first (`rh config validate` says where).
+    public static func configCannotBeEdited(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.configCannotBeEdited, [argument1]) }
+    /// Cannot read %1$@: %2$@
+    public static func configCannotRead(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.configCannotRead, [argument1, argument2]) }
+    /// %@ was changed while you were editing it, so nothing was saved. Copy what you wrote, reload the file, and make the change again.
+    public static func configEditedMeanwhile(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.configEditedMeanwhile, [argument1]) }
+    /// The lock %@ cannot be taken (it is a link, or its folder cannot be written to), so the config was not changed: two edits made at once could not be told apart.
+    public static func configLockUnavailable(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.configLockUnavailable, [argument1]) }
+    /// There is no config file at %@ yet. Run `rh setup` to make one, then change it.
+    public static func configNoConfig(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.configNoConfig, [argument1]) }
+    /// %@ is read-only, so it was not changed. Make it writable to let `rh config` and the window change it.
+    public static func configReadOnly(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.configReadOnly, [argument1]) }
+    /// The lock %@ cannot be taken (it is a link, or its folder cannot be written to), so the config was not replaced: a change made at the same moment could not be told apart. Nothing was changed.
+    public static func configReplaceLockUnavailable(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.configReplaceLockUnavailable, [argument1]) }
+    /// The config would be %1$@ KB, and Right Here reads at most %2$@ KB: a config is a few kilobytes.
+    public static func configTooLarge(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.configTooLarge, [argument1, argument2]) }
+    /// That change would make the config invalid: %@
+    public static func configWouldBeInvalid(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.configWouldBeInvalid, [argument1]) }
     /// Full Path
     public static var copyPathAbsolute: LocalizedMessage { LocalizedMessage(.copyPathAbsolute) }
     /// @ Mention for AI
@@ -1095,6 +1113,10 @@ extension LocalizedMessage {
     public static func refusalUnsafeText(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnsafeText, [argument1]) }
     /// The folder %@ cannot be written into a link for Warp.
     public static func refusalWarpLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalWarpLink, [argument1]) }
+    /// Setup did not finish.
+    public static var setupDidNotFinish: LocalizedMessage { LocalizedMessage(.setupDidNotFinish) }
+    /// There is no config file yet. Choose what you use and press Set Up: the file is made from your choices.
+    public static var setupNoConfigYet: LocalizedMessage { LocalizedMessage(.setupNoConfigYet) }
     /// Excel Workbook
     public static var templateExcel: LocalizedMessage { LocalizedMessage(.templateExcel) }
     /// Markdown Document

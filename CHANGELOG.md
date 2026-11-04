@@ -6,6 +6,9 @@
   refused (a commit that is not pushed, a folder macOS will not show, a terminal that cannot run commands, an app that is not
   installed, a name that cannot be typed) is translated into the thirty languages. The command line and the MCP server still say it in
   English. The Shortcuts actions say why they failed in your language too.
+- The setup window says in your language why something it did failed: an Install or Repair that stopped, a config text the Config page
+  will not save because it does not read, a config file that is read-only, a worktree git would not remove.
+- The Simplified Chinese alert names 隐私与安全 as macOS 27 does.
 
 ## 1.1.2 (2026-11-03)
 

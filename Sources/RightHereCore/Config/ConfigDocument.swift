@@ -70,8 +70,8 @@ public struct ConfigDocument: Sendable, Equatable {
 
         public var errorDescription: String? {
             switch self {
-            case .unreadable(let why):
-                return "The config cannot be edited as it is: \(why) Fix that first (`rh config validate` says where)."
+            case .unreadable, .wouldBeInvalid, .tooLarge:
+                return text(in: .english)
             case .invalidPath(let path):
                 return "\"\(path.withControlCharactersEscaped)\" is not a path: use the names of `rh docs config` joined by dots, and the position of an entry as a number (preset.2.title)."
             case .unknownKey(let path):
@@ -86,12 +86,8 @@ public struct ConfigDocument: Sendable, Equatable {
                 return "\"\(path)\" has \(count) \(count == 1 ? "item" : "items"): there is no position \(position)."
             case .inlineTable(let path):
                 return "\"\(path)\" is written as an inline table or with dotted keys, which an edit leaves alone: change that line as text."
-            case .wouldBeInvalid(let message):
-                return "That change would make the config invalid: \(message)"
             case .changedMeanwhile(let path):
                 return "\"\(path)\" is not what it was when it was read: something changed it since. Read it again and repeat the change."
-            case .tooLarge(let bytes):
-                return "The config would be \(bytes / 1024) KB, and Right Here reads at most \(ConfigParser.maxBytes / 1024) KB: a config is a few kilobytes."
             case .exists(let path):
                 return "\"\(path)\" is in the config already."
             }
@@ -492,5 +488,19 @@ public struct ConfigDocument: Sendable, Equatable {
         }
         guard case .string(let decoded)? = ConfigParser.readTree("v = " + text).tree?["v"] else { return nil }
         return decoded
+    }
+}
+
+/// The window meets the first three, when its text or a change would leave a config that does not read, and says them in the person's language;
+/// the others are what the command line and an AI assistant meet, in English.
+extension ConfigDocument.EditError: LocalizedFailure {
+    public var sentences: [LocalizedMessage] {
+        switch self {
+        case .unreadable(let why): [.configCannotBeEdited(why)]
+        case .wouldBeInvalid(let problem): [.configWouldBeInvalid(problem)]
+        case .tooLarge(let bytes): [.configTooLarge(String(bytes / 1024), String(ConfigParser.maxBytes / 1024))]
+        case .invalidPath, .unknownKey, .wrongKind, .invalidValue, .notFound, .outOfRange, .inlineTable, .changedMeanwhile, .exists:
+            [.doctorVerbatim(errorDescription ?? "")]
+        }
     }
 }

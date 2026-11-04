@@ -16,6 +16,9 @@ public enum SetupNotice: Sendable, Equatable {
     /// A helper or git ended with an error and said why, in its own words (English, or the system's own wording for an error
     /// that never reached it). Shown as it is.
     case failed(String)
+    /// Something failed for a reason the catalog has the sentences of (a refusal of a plan, a change the config would refuse), which the
+    /// window writes in the person's language.
+    case explained([LocalizedMessage])
     /// A helper ended with an error and said nothing.
     case stopped(status: Int32)
     /// A list the window showed was changed by something else before the person's change reached the file, so the change was not made (`ConfigOperation.expect`).
@@ -37,7 +40,20 @@ public enum SetupNotice: Sendable, Equatable {
     /// Install or Repair ended, and these checks (their titles) still ask for it: it could not put them right.
     case repairLeft([String])
 
-    public var message: LocalizedMessage {
+    /// The notice for an error: its sentences when the catalog has them, else its own words, escaped (they may quote a value that
+    /// somebody else wrote).
+    public static func failure(_ error: any Error) -> SetupNotice {
+        if let failure = error as? any LocalizedFailure { return .explained(failure.sentences) }
+        return .failed(((error as? LocalizedError)?.errorDescription ?? error.localizedDescription).withControlCharactersEscaped)
+    }
+
+    /// What the window says, one sentence after another.
+    public var messages: [LocalizedMessage] {
+        if case .explained(let sentences) = self { return sentences }
+        return [message]
+    }
+
+    private var message: LocalizedMessage {
         switch self {
         case .promptCopied: .appPromptCopied
         case .mcpConfigurationCopied: .appMcpCopied
@@ -46,6 +62,7 @@ public enum SetupNotice: Sendable, Equatable {
         case .notARepository(let folder): .appNotARepository(folder)
         case .notRemovable: .appWorktreeNotRemovable
         case .failed(let text): .doctorVerbatim(text)
+        case .explained(let sentences): .doctorVerbatim(Localizer.english.render(sentences: sentences))
         case .stopped(let status): .appCommandStopped(String(status))
         case .listChanged: .appListChanged
         case .undoRefused: .appUndoRefused
@@ -62,7 +79,7 @@ public enum SetupNotice: Sendable, Equatable {
     /// Whether this tells of something that did not work, so that the window shows it as a problem.
     public var isProblem: Bool {
         switch self {
-        case .failed, .stopped, .notARepository, .notRemovable, .listChanged, .undoRefused, .proposalStale, .busy, .appNotFound, .appAlreadyAvailable, .appTurnedOff, .repairLeft: true
+        case .failed, .explained, .stopped, .notARepository, .notRemovable, .listChanged, .undoRefused, .proposalStale, .busy, .appNotFound, .appAlreadyAvailable, .appTurnedOff, .repairLeft: true
         case .promptCopied, .mcpConfigurationCopied, .pluginCommandsCopied, .worktreeRemoved, .repaired: false
         }
     }

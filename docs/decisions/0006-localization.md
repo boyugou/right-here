@@ -56,9 +56,12 @@ pieces of a sentence: a refusal with more to say is several whole sentences, wri
 (no space between two in Chinese and Japanese). The values (a path, a name, what git said) are shown with their control and invisible
 characters as escapes, as the English was, and isolated in a right-to-left sentence.
 
-What stays English: what a program, git or the config parser wrote (it is a value of the sentence, and so is the exit status a program
-that said nothing ended with), the step of a plan that failed (its heading), and the errors of setup, worktrees and config sync, which the
-window shows from places that do not yet speak messages.
+The setup window's notices go the same way (`SetupNotice.failure`): an Install or Repair that stopped says its step's sentence, a config text
+the Config page would save that does not read, a file that is read-only, a lock that cannot be taken and a worktree git would not remove are
+sentences of the catalog (`config.*`, `setup.*`). What stays English: what a program, git or the config parser wrote (it is a value of the
+sentence, and so is the exit status a program that said nothing ended with), the step of a plan that failed (its heading), the detail of a
+setup step that quotes an error (a config the check cannot read, a file the system would not write), and what only the command line and an
+AI assistant meet (worktrees, undo, proposals, config sync), which their callers read in English anyway.
 A `LocalizedMessage` cannot be interpolated into a string (`"\(message)"` does not compile), so a sentence cannot slip into the English
 as its structure.
 
@@ -137,12 +140,13 @@ translated too. Thirty languages each, checked like every other string.
 
 What stays English in every language, on purpose: the two probes, `finder.chain` and `finder.launch`, which say what the
 Finder extension reported and which a person runs from a terminal; and text that comes from outside the catalog and is
-shown as it is through `doctor.verbatim`: the parser's description of the first error of a config and the planner's
-reason an agent cannot start (each sits above its translated fix line), a bare path, and the config lines the
+shown as it is through `doctor.verbatim`: the parser's description of the first error of a config (it sits above its translated fix
+line), a bare path, and the config lines the
 launch-settings row quotes. Two small things inside translated sentences are not translated either: the menu a click
 came from in the last-action sentence (`container`, an id of Right Here) and its relative time, which is formatted when the
-doctor runs, in the locale of that process. The parser's and the planner's sentences are not Right Here's own words, and
-translating them would need the same split in those layers. The two reasons the default terminal or editor row can give
+doctor runs, in the locale of that process. The parser's sentences are not Right Here's own words, and translating them would need
+the same split in that layer. The planner's reason an agent cannot start was in this list until 2026-11-03; it is a sentence of the
+catalog now. The two reasons the default terminal or editor row can give
 (nothing of the role is installed, the configured app is not) are the exception: the catalog has them word for word as the
 planner says them (`PlanError`), which a test holds, so `rh run`, `rh actions` and the window say one sentence. A config
 that names an unknown app, or a terminal as the editor, is refused when it is read and the default is used instead, so no

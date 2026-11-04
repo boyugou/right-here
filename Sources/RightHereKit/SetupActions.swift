@@ -52,11 +52,11 @@ public struct SetupActions: Sendable {
         let setup = lockTimeout.map { SetupRunner(facts: facts, paths: paths, runner: runner, rhPath: helperPath, app: app, trialHome: trialHome, lockTimeout: $0) } ?? self.setup
         do {
             let report = try await setup.run(request, progress: progress)
-            let failure = report.steps.first { $0.outcome == .failed }?.detail?.english()
-            return SetupResult(report: report, notice: report.ok ? nil : .failed(failure ?? "Setup did not finish."))
+            let failure = report.steps.first { $0.outcome == .failed }?.detail
+            return SetupResult(report: report, notice: report.ok ? nil : .explained([failure ?? .setupDidNotFinish]))
         } catch {
-            // The system's own wording, in the system language; setup did not start.
-            return SetupResult(report: nil, notice: .failed(error.localizedDescription))
+            // Setup did not start: the lock's sentence, or the system's own wording in the system language.
+            return SetupResult(report: nil, notice: .failure(error))
         }
     }
 
@@ -64,7 +64,7 @@ public struct SetupActions: Sendable {
     /// and never makes the config: a config made from what was found, without the choice the first run asks for, is not what the person would
     /// have chosen, and the window that is not sure yet whether there is one (it has not looked) must not make it.
     public func repair(progress: @Sendable (SetupPhase) async -> Void = { _ in }) async -> SetupResult {
-        guard existingConfigFile != nil else { return SetupResult(report: nil, notice: .failed(Self.noConfigYet)) }
+        guard existingConfigFile != nil else { return SetupResult(report: nil, notice: .explained([.setupNoConfigYet])) }
         return await run(.repair(), progress: progress)
     }
 
@@ -78,11 +78,11 @@ public struct SetupActions: Sendable {
     /// Opens the config file in the default text editor. A Mac with no config is told to choose first and press Set Up, which makes the file
     /// from the choices; this does not. `nil` when it worked.
     public func openConfig() async -> SetupNotice? {
-        guard let file = existingConfigFile else { return .failed(Self.noConfigYet) }
+        guard let file = existingConfigFile else { return .explained([.setupNoConfigYet]) }
         do {
             return Self.failure(of: try await runner.run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", file.path])))
         } catch {
-            return .failed(error.localizedDescription)
+            return .failure(error)
         }
     }
 
@@ -93,7 +93,6 @@ public struct SetupActions: Sendable {
         return loaded.localFileExists && !loaded.fileExists ? paths.localConfigFile : paths.configFile
     }
 
-    static let noConfigYet = "There is no config file yet. Choose what you use and press Set Up: the file is made from your choices."
 
     /// What a change of the config made in the window came to: what it did, so that it can be said and taken back, or why it was refused.
     public struct ConfigEditResult: Sendable, Equatable {
@@ -112,7 +111,7 @@ public struct SetupActions: Sendable {
         } catch ConfigDocument.EditError.changedMeanwhile {
             return ConfigEditResult(change: nil, notice: .listChanged)
         } catch {
-            return ConfigEditResult(change: nil, notice: .failed(Self.describe(error)))
+            return ConfigEditResult(change: nil, notice: .failure(error))
         }
     }
 
@@ -205,7 +204,7 @@ public struct SetupActions: Sendable {
             try StateStore.update(paths: paths) { _ = change(&$0) }
             return nil
         } catch {
-            return .failed(error.localizedDescription)
+            return .failure(error)
         }
     }
 }

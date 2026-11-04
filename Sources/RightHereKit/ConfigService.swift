@@ -66,16 +66,12 @@ public struct ConfigService: Sendable {
 
         public var errorDescription: String? {
             switch self {
-            case .noConfig(let file):
-                return "There is no config file at \(file.withControlCharactersEscaped) yet. Run `rh setup` to make one, then change it."
-            case .unreadable(let file, let reason):
-                return "Cannot read \(file.withControlCharactersEscaped): \(reason.withControlCharactersEscaped)"
+            case .noConfig, .unreadable, .editedMeanwhile, .lockUnavailable, .readOnly:
+                return text(in: .english)
             case .nothingToUndo(let target):
                 return "There is no edit of \(target == .shared ? "config.toml" : "config.local.toml") to undo."
             case .changedSince(let file):
                 return "\(file.withControlCharactersEscaped) was changed after the last edit, so undoing it would undo that change too. Look at it with `rh config show`, or undo anyway with --force."
-            case .editedMeanwhile(let file):
-                return "\(file.withControlCharactersEscaped) was changed while you were editing it, so nothing was saved. Copy what you wrote, reload the file, and make the change again."
             case .notYours(let target):
                 return "The last edit of \(target == .shared ? "config.toml" : "config.local.toml") was not made by you, so it is not yours to take back. Ask the person."
             case .notTheLast(let target):
@@ -88,10 +84,6 @@ public struct ConfigService: Sendable {
                 return "The config changed after you looked at \"\(id.withControlCharactersEscaped)\", and what applying it would do may not be what you saw (an agent put in the menu meanwhile starts the same way). Look at it again with `rh config pending show \(id.withControlCharactersEscaped)`. Nothing was changed."
             case .tooManyProposals:
                 return "\(ConfigProposals.keep) changes are waiting for the person already. Ask them to look at `rh config pending` before proposing more."
-            case .lockUnavailable(let file):
-                return "The lock \(file.withControlCharactersEscaped) cannot be taken (it is a link, or its folder cannot be written to), so the config was not changed: two edits made at once could not be told apart."
-            case .readOnly(let file):
-                return "\(file.withControlCharactersEscaped) is read-only, so it was not changed. Make it writable to let `rh config` and the window change it."
             case .undoNeedsPerson(let target, let keys):
                 return "Taking back the last edit of \(target == .shared ? "config.toml" : "config.local.toml") would change what decides which program starts or whether an agent asks before it acts (\(keys.joined(separator: ", "))), "
                     + "and that waits for the person, as the same change would. They can take it back in the setup window or with `rh config undo`."
@@ -724,6 +716,22 @@ public struct ConfigService: Sendable {
         case .moveEntry(let from, _, let table): (table, from)
         case .set(let path, _), .unset(let path): entryPlace(of: path)
         default: nil
+        }
+    }
+}
+
+/// The window meets the first five, and says them in the person's language; the others are what the command line and an AI assistant
+/// meet, in English.
+extension ConfigService.Failure: LocalizedFailure {
+    public var sentences: [LocalizedMessage] {
+        switch self {
+        case .noConfig(let file): [.configNoConfig(file)]
+        case .unreadable(let file, let reason): [.configCannotRead(file, reason)]
+        case .editedMeanwhile(let file): [.configEditedMeanwhile(file)]
+        case .lockUnavailable(let file): [.configLockUnavailable(file)]
+        case .readOnly(let file): [.configReadOnly(file)]
+        case .nothingToUndo, .changedSince, .notYours, .notTheLast, .noProposal, .notLookedAt, .editedSinceLooked, .tooManyProposals, .undoNeedsPerson:
+            [.doctorVerbatim(errorDescription ?? "")]
         }
     }
 }

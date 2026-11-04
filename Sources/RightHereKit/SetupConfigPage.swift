@@ -79,7 +79,7 @@ extension SetupActions {
         do {
             return ConfigEditResult(change: try service.apply([.replaceText(text)], target: target, actor: .window, unchangedSince: digest), notice: nil)
         } catch {
-            return ConfigEditResult(change: nil, notice: .failed(Self.describe(error)))
+            return ConfigEditResult(change: nil, notice: .failure(error))
         }
     }
 
@@ -92,7 +92,7 @@ extension SetupActions {
         } catch ConfigService.Failure.notTheLast {
             return ConfigEditResult(change: nil, notice: .undoRefused)
         } catch {
-            return ConfigEditResult(change: nil, notice: .failed(Self.describe(error)))
+            return ConfigEditResult(change: nil, notice: .failure(error))
         }
     }
 
@@ -103,7 +103,7 @@ extension SetupActions {
         } catch ConfigService.Failure.editedMeanwhile {
             return ConfigEditResult(change: nil, notice: .proposalStale)
         } catch {
-            return ConfigEditResult(change: nil, notice: .failed(Self.describe(error)))
+            return ConfigEditResult(change: nil, notice: .failure(error))
         }
     }
 
@@ -113,7 +113,7 @@ extension SetupActions {
             try ConfigService(paths: paths).dismiss(id)
             return nil
         } catch {
-            return .failed(Self.describe(error))
+            return .failure(error)
         }
     }
 }
