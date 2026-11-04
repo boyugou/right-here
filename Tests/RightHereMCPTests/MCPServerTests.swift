@@ -1198,7 +1198,7 @@ struct MCPConfigToolTests {
         #expect(file(harness) == Self.sample.replacingOccurrences(of: "[\"open-terminal\", ", with: "[\"open-terminal\", \"copy-path\", "))
         let structured = try #require(result["structuredContent"])
         #expect(structured["changed"]?.boolValue == true && structured["written"]?.boolValue == true && structured["summary"]?.stringValue == "add \"copy-path\" to menu.items at 2")
-        #expect(text(result).hasPrefix("Changed config.toml: add \"copy-path\" to menu.items at 2\n\(Fence.open)@@"), "\(text(result))")
+        #expect(text(result).hasPrefix("Changed config.toml: " + Fence.wrap("add \"copy-path\" to menu.items at 2") + "\n\(Fence.open)@@"), "\(text(result))")
     }
 
     @Test func aDryRunChangesNothing() async throws {

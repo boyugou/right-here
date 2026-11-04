@@ -115,11 +115,15 @@ public struct ConfigService: Sendable {
     private let now: @Sendable () -> Date
     private let environment: [String: String]
     private let realHome: URL
+    /// What this Mac has installed, for the changes whose effect depends on it (`ConfigTrust.approvals(changingFrom:to:facts:)`): the MCP server
+    /// gives it; without it those are judged by the files alone.
+    private let facts: (any SystemFacts)?
 
     /// `environment` and `realHome` are what `RealHomeGuard` reads; the process's own, but for a test of the guard.
-    public init(paths: RHPaths, now: @escaping @Sendable () -> Date = { Date() }, environment: [String: String] = ProcessInfo.processInfo.environment,
+    public init(paths: RHPaths, facts: (any SystemFacts)? = nil, now: @escaping @Sendable () -> Date = { Date() }, environment: [String: String] = ProcessInfo.processInfo.environment,
                 realHome: URL = LiveSystemFacts.realHomeDirectory) {
         self.paths = paths
+        self.facts = facts
         self.now = now
         self.environment = environment
         self.realHome = realHome
@@ -474,7 +478,11 @@ public struct ConfigService: Sendable {
     /// What the edit would do to the agents once it is made, as `ConfigTrust` reads it (`approvals(changingFrom:to:)`): the two files laid over each other before and after.
     private func effectApprovals(of operations: [ConfigOperation], target: ConfigTarget) throws -> [ConfigTrust.Approval] {
         let both = try configs(of: operations, target: target)
-        return ConfigTrust.approvals(changingFrom: both.before, to: both.after)
+        return trustApprovals(changingFrom: both.before, to: both.after)
+    }
+
+    private func trustApprovals(changingFrom before: Config, to after: Config) -> [ConfigTrust.Approval] {
+        facts.map { ConfigTrust.approvals(changingFrom: before, to: after, facts: $0) } ?? ConfigTrust.approvals(changingFrom: before, to: after)
     }
 
     /// The agents that the edit would make start without their permission prompts, and did not: what the person is asked about before a change of the window is made (the window is the person,
@@ -587,7 +595,7 @@ public struct ConfigService: Sendable {
             // prompts off) can make the text of this file mean something that nobody approved.
             if actor == .mcp {
                 let both = try configs(replacing: target, with: entry.existed ? entry.before : nil)
-                let waits = ConfigTrust.approvals(changingFrom: both.before, to: both.after)
+                let waits = trustApprovals(changingFrom: both.before, to: both.after)
                 if !waits.isEmpty { throw Failure.undoNeedsPerson(target, waits.map(\.key)) }
             }
             var change = ConfigChange(target: target, file: file.path, summary: "undo: " + entry.summary, changed: current != entry.before, written: false,

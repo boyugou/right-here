@@ -913,7 +913,7 @@ MUTANTS = [
      "do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeFolder(directory) }", 'do { try ShellQuoting.validateForTyping("") } catch { throw PlanError.unsafeFolder(directory) }'),
     # 20. item 6: the tool never removes a worktree with uncommitted work
     ("the MCP worktree tool removes a worktree that has uncommitted work", "Sources/RightHereMCP/Tools.swift",
-     "deleteBranch: deleteBranch, force: false, runner: server.runner)", "deleteBranch: deleteBranch, force: true, runner: server.runner)"),
+     "deleteBranch: deleteBranch, force: false,\n", "deleteBranch: deleteBranch, force: true,\n"),
     # 21. item 7: every setting that decides what a click starts is listed when a config is pulled
     ("the bundle identifiers of an app with a template, which decide what {app} is, are not listed as something a config can make Right Here start", "Sources/RightHereCore/Config/LaunchCommands.swift",
      r'''found.append(Entry(place: "[[app]] \(app.id) bundle_ids", value: Self.list(app.bundleIDs)))''', "_ = app.bundleIDs"),
@@ -2109,6 +2109,14 @@ MUTANTS = [
      'if inspect(folder: folder).remoteData != inspection.remoteData {', 'if false {'),
     ("a pull replaces a read-only config", 'Sources/RightHereKit/ConfigSync.swift',
      'if inspection.localData != nil, !FileManager.default.isWritableFile(atPath: destination.path) {', 'if false {'),
+    ("an assistant hands the terminal a click falls back to to a command template without a proposal", 'Sources/RightHereKit/ConfigService.swift',
+     'facts.map { ConfigTrust.approvals(changingFrom: before, to: after, facts: $0) } ?? ConfigTrust.approvals(changingFrom: before, to: after)', 'ConfigTrust.approvals(changingFrom: before, to: after)'),
+    ("the worktree tool runs git with no time limit", 'Sources/RightHereMCP/Tools.swift',
+     'prepareWorktree(gitRoot: root, branch: branch, runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit))', 'prepareWorktree(gitRoot: root, branch: branch, runner: server.runner)'),
+    ("a built-in agent this Mac turns off is started by its id", 'Sources/RightHereCore/Config/Config.swift',
+     'guard !disabledAgents.contains(id), var agent', 'guard var agent'),
+    ("the config tool's answer quotes what the files hold outside a fence", 'Sources/RightHereMCP/Tools.swift',
+     '+ ": " + Fence.wrap(change.summary)]', '+ ": " + change.summary]'),
     ("the setup window shows git's line breaks as escapes", 'Sources/RightHereKit/PlanExecutor.swift',
      'escapingValues(keeping: $0.key == .refusalStepFailed ? ["\\n", "\\t"] : [])', 'escapingValues()'),
     ("the alert after a click in Finder says why in English whatever the language", 'Sources/RightHereKit/FailureAlert.swift',

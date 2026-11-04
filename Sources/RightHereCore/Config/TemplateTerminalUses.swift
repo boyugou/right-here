@@ -14,10 +14,16 @@ extension Config {
     /// Where the config chooses a terminal that starts through a command template: the default terminal, the terminal an agent is given, and an item of the menu or of the Quick Actions that names
     /// one (`open.terminal@remote`, `agent.claude@remote`, `preset.review@remote`). Choosing such a terminal is choosing a program, whichever of these says it, and which program an id means can
     /// change without the choice changing (an app that takes the id of another).
+    /// What the app with this id starts through its command template, as one text; `nil` for an app without one (or no app).
+    public func templateProgram(of id: String) -> String? {
+        guard let app = app(id: id), case .template(let launch) = app.driver else { return nil }
+        return [launch.open, launch.run].map { $0.map { "[" + $0.joined(separator: "\u{1F}") + "]" } ?? "-" }.joined(separator: "\u{1E}") + "\u{1D}" + app.bundleIDs.joined(separator: "\u{1F}")
+    }
+
     public var templateTerminalUses: [TemplateTerminalUse] {
         func program(of id: String?) -> (id: String, program: String)? {
-            guard let id, let app = app(id: id), case .template(let launch) = app.driver else { return nil }
-            return (id, [launch.open, launch.run].map { $0.map { "[" + $0.joined(separator: "\u{1F}") + "]" } ?? "-" }.joined(separator: "\u{1E}") + "\u{1D}" + app.bundleIDs.joined(separator: "\u{1F}"))
+            guard let id, let program = templateProgram(of: id) else { return nil }
+            return (id, program)
         }
         var uses: [TemplateTerminalUse] = []
         if let found = program(of: terminal) { uses.append(TemplateTerminalUse(place: "[general] terminal", terminal: found.id, program: found.program)) }

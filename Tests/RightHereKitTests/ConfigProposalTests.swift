@@ -132,13 +132,12 @@ struct ConfigProposalTests {
     }
 
     @Test func turningAnAgentsDefinitionOffOnThisMacIsNotAWayAroundTheOverride() throws {
-        // `disabled` in this Mac's own file takes the agent's table out of the merged config, override and all, and the built-in agent that is left follows the general switch.
+        // `disabled` in this Mac's own file takes the agent out of the merged config, override and all: nothing starts it, so it cannot start without
+        // asking either, and an assistant may turn it off by itself.
         let work = try Workspace(config: Self.carvedOut); defer { work.clean() }
         let merged = ConfigLayers.load(base: .text(Self.carvedOut), local: .text("disabled = [\"claude\"]\n")).config
-        #expect(merged.agent(id: "claude").map { merged.launchOptions(for: $0).bypassFlag != nil } == true, "this is a way for claude to start without asking")
-        guard case .proposed(let proposal, _) = try work.service.submit([.insert("claude", into: "disabled", at: nil)], target: .local, actor: .mcp) else { Issue.record("it was not proposed"); return }
-        #expect(proposal.approvals.map(\.key) == ["agent.*.bypass_permissions"])
-        #expect(!FileManager.default.fileExists(atPath: work.paths.localConfigFile.path), "nothing was written")
+        #expect(merged.agent(id: "claude") == nil && !merged.allAgents.contains { $0.id == "claude" })
+        guard case .applied = try work.service.submit([.insert("claude", into: "disabled", at: nil)], target: .local, actor: .mcp) else { Issue.record("it was not applied"); return }
     }
 
     @Test func aProposalIsAppliedOnlyToTheFileThatWasLookedAt() throws {

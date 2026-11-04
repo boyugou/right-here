@@ -403,7 +403,8 @@ enum Tools {
                 throw ToolError("Too many worktrees and windows were created by tool calls in the last minute. Ask the person before making more.")
             }
             let branch = arguments["branch"]?.stringValue
-            let res = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch, runner: server.runner)
+            // git can wait for ever (a filter or a hook of the repository's own that waits for a server): the call has the server's limit, as a run has.
+            let res = try await GitWorktreeManager.prepareWorktree(gitRoot: root, branch: branch, runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit))
             let json = try JSONValue(encoding: res)
             return ToolOutput(text: "Prepared worktree at " + Fence.wrap(res.worktreeURL.path) + " on branch " + Fence.wrap(res.branch), structured: json)
         case "remove":
@@ -412,7 +413,8 @@ enum Tools {
             }
             let deleteBranch = arguments["delete_branch"]?.boolValue ?? false
             // Never forced: a worktree with uncommitted work is kept and the refusal is the answer. Only worktrees Right Here created are removable.
-            let removal = try await GitWorktreeManager.removeWorktree(worktreePath: worktreePath, gitRoot: root, deleteBranch: deleteBranch, force: false, runner: server.runner)
+            let removal = try await GitWorktreeManager.removeWorktree(worktreePath: worktreePath, gitRoot: root, deleteBranch: deleteBranch, force: false,
+                                                                    runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit))
             var text = "Removed worktree at " + Fence.wrap(removal.path)
             if removal.branchDeleted { text += "; its branch was deleted" }
             if let kept = removal.branchKept { text += "; its branch was kept: " + Fence.wrap(kept) }
@@ -431,7 +433,7 @@ enum Tools {
     }
 
     private static func configGet(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
-        let service = ConfigService(paths: server.paths)
+        let service = ConfigService(paths: server.paths, facts: server.facts)
         let target: ConfigTarget = arguments["local"]?.boolValue == true ? .local : .shared
         if let key = arguments["key"]?.stringValue {
             let document: ConfigDocument
@@ -470,7 +472,7 @@ enum Tools {
         let name = arguments["operation"]?.stringValue ?? ""
         let target: ConfigTarget = arguments["local"]?.boolValue == true ? .local : .shared
         let dryRun = arguments["dry_run"]?.boolValue ?? false
-        let service = ConfigService(paths: server.paths)
+        let service = ConfigService(paths: server.paths, facts: server.facts)
         // Charged before anything is read or written, so that a loop of calls costs the same whatever they say.
         switch await server.launchLimiter.allow(cost: LaunchCost.configEdit) {
         case .allowed: break
@@ -515,9 +517,10 @@ enum Tools {
     private static func configOutput(_ change: ConfigChange, dryRun: Bool) -> ToolOutput {
         var lines: [String]
         if !change.changed {
-            lines = ["The file already says that: \(change.summary)"]
+            lines = ["The file already says that: " + Fence.wrap(change.summary)]
         } else {
-            lines = [(dryRun ? "Would change " : "Changed ") + URL(fileURLWithPath: change.file).lastPathComponent + ": " + change.summary]
+            // The summary quotes values the files hold, and the shared file can come from a sync folder: it is fenced as data.
+            lines = [(dryRun ? "Would change " : "Changed ") + URL(fileURLWithPath: change.file).lastPathComponent + ": " + Fence.wrap(change.summary)]
             lines.append(Fence.block(change.diff.joined(separator: "\n")))
             if dryRun { lines.append("(dry run: nothing was written)") }
         }

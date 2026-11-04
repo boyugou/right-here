@@ -378,6 +378,20 @@ The review covered entries, places and the apps; the model and the views; and tr
   made elsewhere (a text editor, `rh config`, a sync) still waits for Install or Repair, which the check says.
 - `general.language` (ADR 0006) has a menu on the Overview; its parity entry is that control.
 
+## As built, a review of the MCP server's trust boundary (2026-11-03)
+
+- **The terminal a click falls back to.** What an assistant may not change by itself was judged by the two files alone, and the terminal a
+  click starts when it names none is the configured one only when it is installed, else the first installed one. Turning the built-in
+  terminal off (`disabled`), unsetting `general.terminal`, or naming one that is not installed handed every such click, and every agent, to a
+  terminal of the person's that starts through a command template (an `ssh` to another machine), with no proposal. The MCP server gives
+  `ConfigService` this Mac's facts, and `ConfigTrust.approvals(changingFrom:to:facts:)` waits when the terminal a click falls back to (for a
+  folder, and for an agent) becomes one that starts through a template it did not start through before. The command line and the window are
+  the person, and are not asked.
+- **A built-in agent this Mac turns off** is not an agent here (`Config.agent(id:)` has none): the catalog hid it, and the run tool still
+  started it, with the switch that turns its prompts off.
+- **The worktree tool** runs git with the server's time limit, as the run tool does; **the config tool** fences the summary of a change,
+  which quotes what the files hold.
+
 ## Consequences
 
 - The hard rules stand: the window never types user text into a shell, the core stays pure (the editor is a function from text and an operation to text), and an edit that makes the config invalid is

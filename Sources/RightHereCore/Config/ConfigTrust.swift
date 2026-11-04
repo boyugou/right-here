@@ -182,4 +182,22 @@ public enum ConfigTrust {
         }
         return found
     }
+
+    /// The same on this Mac, with what it has installed. The terminal a click starts when it names none is the configured one when it is
+    /// installed, else the first installed one (for an agent, the first that can run a command): turning a terminal off, unsetting the default
+    /// or naming one that is not installed can hand every such click to a terminal that starts through a command template, though no setting
+    /// names it. That is choosing its program, and it waits for the person as naming it would.
+    public static func approvals(changingFrom before: Config, to after: Config, facts: any SystemFacts) -> [Approval] {
+        var found = approvals(changingFrom: before, to: after)
+        func programs(_ config: Config) -> [String?] {
+            let apps = DefaultApps(config: config, facts: facts)
+            return [try? apps.terminal(id: nil), try? apps.commandTerminal()].map { $0.flatMap { config.templateProgram(of: $0.id) } }
+        }
+        let key = "terminal.*.template"
+        if zip(programs(after), programs(before)).contains(where: { new, old in new != nil && new != old }), !found.contains(where: { $0.key == key }),
+           let reason = programKeys[key] ?? effectKeys[key] {
+            found.append(Approval(key: key, reason: reason))
+        }
+        return found
+    }
 }

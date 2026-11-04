@@ -176,8 +176,10 @@ public struct Config: Sendable, Equatable {
         (customAgents + KnownAgents.all).compactMap { agent(id: $0.id) }
     }
 
+    /// The agent with this id as the config makes it; `nil` for one the config does not know, and for a built-in one this Mac turns off
+    /// (`disabled`), which nothing here starts, whatever asks for it.
     public func agent(id: String) -> AgentDescriptor? {
-        guard var agent = customAgents.first(where: { $0.id == id }) ?? KnownAgents.agent(id: id) else { return nil }
+        guard !disabledAgents.contains(id), var agent = customAgents.first(where: { $0.id == id }) ?? KnownAgents.agent(id: id) else { return nil }
         let settings = agents[id]
         if let settings {
             if let command = settings.command { agent.command = command }

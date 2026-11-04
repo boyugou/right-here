@@ -40,8 +40,9 @@ Rules (`ConfigMerge`, pure, in `RightHereCore`):
     disabled terminal is not offered, cannot be named (`open.terminal@ghostty` is an unknown terminal even with Ghostty
     installed) and is no longer the default. (An earlier reading said a built-in app "has no list to remove it from"
     and could only be left out of the menu; that left the default terminal unchanged and no warning, which is not what
-    "disabled" says.) A built-in agent is only taken out of `general.agents` and every list that names it: agents are
-    offered by that list, and the registry keeps listing every defined agent.
+    "disabled" says.) A built-in agent is taken out the same way: `Config.agent(id:)` and `Config.allAgents` no longer
+    have it, so nothing starts it, and it is taken out of `general.agents` and every list that names it. (Until
+    2026-11-03 only the lists lost it: the catalog hid it and the MCP server's run tool still started it.)
   - **A preset whose `agent` is disabled is dropped, with a note** on the overlay's `disabled` (it cannot run here,
     and keeping it would be an error about something removed on purpose), together with the menu and Services entries
     that name it. If it replaced a built-in preset (`review`), the built-in one is back, and entries naming it stay.
