@@ -37,10 +37,15 @@ struct OfficeDocumentTests {
         case .xlsx: ["[Content_Types].xml", "_rels/.rels", "xl/workbook.xml", "xl/_rels/workbook.xml.rels", "xl/worksheets/sheet1.xml"]
         case .pptx: ["[Content_Types].xml", "_rels/.rels", "ppt/presentation.xml", "ppt/_rels/presentation.xml.rels", "ppt/slides/slide1.xml", "ppt/slides/_rels/slide1.xml.rels",
                      "ppt/slideMasters/slideMaster1.xml", "ppt/slideMasters/_rels/slideMaster1.xml.rels", "ppt/slideLayouts/slideLayout1.xml",
-                     "ppt/slideLayouts/_rels/slideLayout1.xml.rels", "ppt/theme/theme1.xml"]
+                     "ppt/slideLayouts/_rels/slideLayout1.xml.rels", "ppt/theme/theme1.xml", "ppt/presProps.xml"]
         }
         #expect(names == expected)
         #expect(OfficeDocument.bytes(format) == OfficeDocument.bytes(format), "the same bytes every time: stored entries with a fixed date")
+        if format == .pptx {
+            // Stored, not compressed, so the parts' text is in the bytes: the properties part needs its content type and the presentation's relationship.
+            let text = String(decoding: OfficeDocument.bytes(format), as: UTF8.self)
+            #expect(text.contains(#"PartName="/ppt/presProps.xml""#) && text.contains(#"relationships/presProps" Target="presProps.xml""#))
+        }
     }
 
     @Test func theChecksumIsTheStandardCRC32() {

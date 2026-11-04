@@ -60,10 +60,12 @@ public enum OfficeDocument {
                                                ("/ppt/slides/slide1.xml", "\(officeML).presentationml.slide+xml"),
                                                ("/ppt/slideMasters/slideMaster1.xml", "\(officeML).presentationml.slideMaster+xml"),
                                                ("/ppt/slideLayouts/slideLayout1.xml", "\(officeML).presentationml.slideLayout+xml"),
-                                               ("/ppt/theme/theme1.xml", "\(officeML).theme+xml")])),
+                                               ("/ppt/theme/theme1.xml", "\(officeML).theme+xml"),
+                                               ("/ppt/presProps.xml", "\(officeML).presentationml.presProps+xml")])),
                 ("_rels/.rels", rels([("officeDocument", "ppt/presentation.xml")])),
                 ("ppt/presentation.xml", declaration + #"<p:presentation \#(namespaces)><p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst><p:sldIdLst><p:sldId id="256" r:id="rId3"/></p:sldIdLst><p:sldSz cx="12192000" cy="6858000"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>"#),
-                ("ppt/_rels/presentation.xml.rels", rels([("slideMaster", "slideMasters/slideMaster1.xml"), ("theme", "theme/theme1.xml"), ("slide", "slides/slide1.xml")])),
+                ("ppt/_rels/presentation.xml.rels", rels([("slideMaster", "slideMasters/slideMaster1.xml"), ("theme", "theme/theme1.xml"), ("slide", "slides/slide1.xml"),
+                                                          ("presProps", "presProps.xml")])),
                 // One empty slide, as a new presentation starts with: a presentation of none showed nothing, not even in Quick Look.
                 ("ppt/slides/slide1.xml", declaration + #"<p:sld \#(namespaces)><p:cSld>\#(emptyTree)</p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>"#),
                 ("ppt/slides/_rels/slide1.xml.rels", rels([("slideLayout", "../slideLayouts/slideLayout1.xml")])),
@@ -72,6 +74,8 @@ public enum OfficeDocument {
                 ("ppt/slideLayouts/slideLayout1.xml", declaration + #"<p:sldLayout \#(namespaces) type="blank" preserve="1"><p:cSld name="Blank">\#(emptyTree)</p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>"#),
                 ("ppt/slideLayouts/_rels/slideLayout1.xml.rels", rels([("slideMaster", "../slideMasters/slideMaster1.xml")])),
                 ("ppt/theme/theme1.xml", declaration + theme),
+                // ECMA-376 Part 1, 13.3.7: a package has exactly one Presentation Properties part, the target of the presentation's relationship.
+                ("ppt/presProps.xml", declaration + #"<p:presentationPr \#(namespaces)/>"#),
             ]
         }
     }
