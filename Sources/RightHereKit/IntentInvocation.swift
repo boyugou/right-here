@@ -183,7 +183,8 @@ public struct IntentRunner: Sendable {
         return Data(result.standardOutput.utf8)
     }
 
-    static func interpret(_ result: ProcessResult) throws -> String {
+    /// What an intent shows for what `rh run --json` wrote: the plan's summary, or a `Failure`.
+    public static func interpret(_ result: ProcessResult) throws -> String {
         if let limit = result.terminatedAfter {
             throw Failure(text: "rh did not finish within \(limit.components.seconds) seconds and was stopped.")
         }

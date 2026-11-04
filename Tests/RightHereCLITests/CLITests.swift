@@ -773,6 +773,22 @@ struct CLITests {
         #expect(german.standardOutput.contains("/unbenannt.md"), Comment(rawValue: german.standardOutput))
     }
 
+    /// What a Shortcuts action shows after a run that worked is the plan's summary, read from what `rh run --json` really writes (it used
+    /// to read the last line of the text output, which for JSON is a brace).
+    @Test func aRunThatWorkedGivesTheShortcutItsSummary() throws {
+        let rh = try RH(config: "[new_file]\nthen = \"nothing\"\n"); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("work")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let arguments = try IntentCommand.newFile(template: "md", folder: folder.path).arguments()
+        let result = try rh.run(arguments)
+        #expect(result.status == 0, "\(result.standardError)")
+        let answer = try IntentRunner.interpret(ProcessResult(status: result.status, standardOutput: result.standardOutput, standardError: result.standardError))
+        let plan = try #require(try JSONSerialization.jsonObject(with: Data(result.standardOutput.utf8)) as? [String: Any])
+        let summary = try #require((plan["plan"] as? [String: Any])?["summary"] as? String)
+        #expect(answer == summary && answer.contains("untitled.md"), Comment(rawValue: answer))
+        #expect(FileManager.default.fileExists(atPath: folder.appendingPathComponent("untitled.md").path))
+    }
+
     /// The Shortcuts actions start `rh run --json`: a refusal comes back as sentences of the catalog, which the app writes in the person's
     /// language, beside the English for a script.
     @Test func aRefusalInJSONCarriesItsSentences() throws {

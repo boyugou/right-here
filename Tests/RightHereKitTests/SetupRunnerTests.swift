@@ -715,11 +715,11 @@ struct SetupRunnerTests {
         await #expect(throws: InstallError.anotherSetupIsRunning) { _ = try await machine.runner(lockTimeout: .milliseconds(300)).run(.setup()) }
         #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
         #expect(InstallError.anotherSetupIsRunning.errorDescription?.contains("run `rh setup` again") == true)
-        // The window says it in the same words: it shows the error of a setup that did not start.
+        // The window says it in the same words, in the person's language: it shows the error of a setup that did not start.
         let window = SetupActions(facts: machine.facts, paths: machine.paths, runner: machine.processRunner, helperPath: machine.rh, trialHome: machine.home, lockTimeout: .milliseconds(200))
         let result = await window.setUp()
-        guard case .failed(let said)? = result.notice else { Issue.record("no failure was reported: \(String(describing: result.notice))"); return }
-        #expect(said == InstallError.anotherSetupIsRunning.errorDescription && result.report == nil)
+        #expect(result.notice == .explained([.installAnotherSetupIsRunning]) && result.report == nil, "\(String(describing: result.notice))")
+        #expect(Localizer.english.render(sentences: result.notice?.messages ?? []) == InstallError.anotherSetupIsRunning.errorDescription)
     }
 
     @Test func aSetupSaysEachPhaseBeforeItStartsAndThatItWaitsWhenAnotherHoldsTheTurn() async throws {

@@ -1875,7 +1875,7 @@ MUTANTS = [
     ("a copy of the same version that is not the one to keep sets Right Here up", "Sources/RightHereCore/System/AppCopies.swift",
      "        if installed.contains(where: { $0.path == running.path }) { return first }\n", ""),
     ("the command the refusal of an older copy names cannot be pasted (its path has a space)", "Sources/RightHereKit/Installer.swift",
-     "let command = ShellQuoting.quote(keep + \"/Contents/Helpers/rh\")", "let command = keep + \"/Contents/Helpers/rh\""),
+     "ShellQuoting.quote(keep + \"/Contents/Helpers/rh\") + \" setup\"", "keep + \"/Contents/Helpers/rh\" + \" setup\""),
     ("a copy that runs from the Trash sets Right Here up", "Sources/RightHereKit/Installer.swift",
      "        if helper.contains(\"/.Trash/\") { return .inTrash }\n", ""),
     ("the window says an agent is not installed when the login shell did not answer", "Apps/RightHere/SetupModel+Agents.swift",

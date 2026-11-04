@@ -911,6 +911,20 @@ extension LocalizedMessage {
     public static var groupOpenWith: LocalizedMessage { LocalizedMessage(.groupOpenWith) }
     /// Agent Presets
     public static var groupPresets: LocalizedMessage { LocalizedMessage(.groupPresets) }
+    /// Another setup is running (the setup window, `rh setup` in another terminal, or an AI agent's) and did not finish in time, so this one did not start. Wait for it to finish, then run `rh setup` again.
+    public static var installAnotherSetupIsRunning: LocalizedMessage { LocalizedMessage(.installAnotherSetupIsRunning) }
+    /// Right Here.app was not found. Install the app, then run `rh setup`.
+    public static var installAppNotFound: LocalizedMessage { LocalizedMessage(.installAppNotFound) }
+    /// Right Here is running from the Trash. What it sets up would stop working when the Trash is emptied. Open the copy in your Applications folder.
+    public static var installInTrash: LocalizedMessage { LocalizedMessage(.installInTrash) }
+    /// %@ exists and is not a link, so it was left alone. Move it away, then run `rh setup` again.
+    public static func installNotALink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.installNotALink, [argument1]) }
+    /// This rh is in %1$@ (%2$@), and the copy of Right Here to keep is %3$@ (%4$@). Setting up from this one would make every click run it, so nothing was changed. Run the other copy's rh: %5$@
+    public static func installNotTheCopyToKeep(_ argument1: String, _ argument2: String, _ argument3: String, _ argument4: String, _ argument5: String) -> LocalizedMessage { LocalizedMessage(.installNotTheCopyToKeep, [argument1, argument2, argument3, argument4, argument5]) }
+    /// Right Here is running from %@, which is a disk image or another volume. Drag Right Here.app into your Applications folder, eject the disk image, open the app from Applications, and install again.
+    public static func installOnAnotherVolume(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.installOnAnotherVolume, [argument1]) }
+    /// Right Here is running from the temporary location macOS uses for a downloaded app. Move Right Here.app into your Applications folder, open it from there, and install again.
+    public static var installTranslocated: LocalizedMessage { LocalizedMessage(.installTranslocated) }
     /// Path copied.
     public static var intentCopied: LocalizedMessage { LocalizedMessage(.intentCopied) }
     /// Done: %@
@@ -1113,10 +1127,18 @@ extension LocalizedMessage {
     public static func refusalUnsafeText(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnsafeText, [argument1]) }
     /// The folder %@ cannot be written into a link for Warp.
     public static func refusalWarpLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalWarpLink, [argument1]) }
+    /// %1$@ cannot be used (%2$@), so setup left it as it is and made nothing from it
+    public static func setupConfigUnusable(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.setupConfigUnusable, [argument1, argument2]) }
     /// Setup did not finish.
     public static var setupDidNotFinish: LocalizedMessage { LocalizedMessage(.setupDidNotFinish) }
+    /// there is no %@; the first run's Set Up makes it from your choices
+    public static func setupNoConfigToRepair(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.setupNoConfigToRepair, [argument1]) }
     /// There is no config file yet. Choose what you use and press Set Up: the file is made from your choices.
     public static var setupNoConfigYet: LocalizedMessage { LocalizedMessage(.setupNoConfigYet) }
+    /// they are made from the config, and %1$@ cannot be used (%2$@); the ones that are there were left as they are
+    public static func setupServicesConfigUnusable(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.setupServicesConfigUnusable, [argument1, argument2]) }
+    /// they are made from the config, which cannot be used (see the config file above); the ones that are there were left as they are
+    public static var setupServicesSkipped: LocalizedMessage { LocalizedMessage(.setupServicesSkipped) }
     /// Excel Workbook
     public static var templateExcel: LocalizedMessage { LocalizedMessage(.templateExcel) }
     /// Markdown Document

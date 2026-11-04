@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Install or Repair says in your language why it cannot start (the app is still where macOS put the download, on a disk image or
+  in the Trash, or another setup is running) and why a step it could not do failed (a config that does not read, a file in the way of
+  the command-line tool).
+
 ## 1.2.0 (2026-11-03)
 
 Why something did not work, in your language.

@@ -205,7 +205,7 @@ struct SetupNoticeTests {
     @Test func aFailureTheCatalogKnowsIsInThePersonsLanguage() {
         for error: any Error in [ConfigDocument.EditError.wouldBeInvalid("config.toml: [general.terminal] unknown terminal \"nope\""),
                                  ConfigService.Failure.readOnly("/Users/me/.config/right-here/config.toml"), ConfigStore.LockUnavailable(file: "/x/.config.lock"),
-                                 ExecutionError.gitNotInstalled] {
+                                 ExecutionError.gitNotInstalled, InstallError.translocated, InstallError.inTrash, InstallError.onAnotherVolume(path: "/Volumes/Right Here")] {
             let notice = SetupNotice.failure(error)
             let english = Localizer.english.render(sentences: notice.messages)
             #expect(english == error.localizedDescription, "\(error)")
@@ -276,6 +276,9 @@ struct SetupActionsTests {
             #expect(!report.ok && report.step(.config)?.outcome == .failed && report.step(.services)?.outcome == .skipped)
             guard let said = problem(result.notice) else { Issue.record("no failure was reported: \(String(describing: result.notice))"); return }
             #expect(said.contains("line 1: TOML syntax error") && said.contains(machine.paths.configFile.path), "\(said)")
+            // In the person's language, with the config check's words as they are.
+            let german = Localizer(languages: ["de"]).render(sentences: result.notice?.messages ?? [])
+            #expect(!german.contains("cannot be used") && german.contains("line 1: TOML syntax error"), "\(german)")
             #expect(result.notice?.isProblem == true)
             #expect(try String(contentsOf: machine.paths.configFile, encoding: .utf8) == text)
         }

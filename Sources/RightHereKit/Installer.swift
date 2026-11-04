@@ -1,7 +1,7 @@
 import Foundation
 import RightHereCore
 
-public enum InstallError: Error, Equatable, LocalizedError {
+public enum InstallError: Error, Equatable, LocalizedError, LocalizedFailure {
     /// Something that is not a link already sits where the command link goes.
     case notALink(path: String)
     case appNotFound
@@ -21,25 +21,21 @@ public enum InstallError: Error, Equatable, LocalizedError {
     case inTrash
 
     public var errorDescription: String? {
+        text(in: .english)
+    }
+
+    public var sentences: [LocalizedMessage] {
         switch self {
-        case .notALink(let path):
-            return "\(path) exists and is not a link, so it was left alone. Move it away, then run `rh setup` again."
-        case .appNotFound:
-            return "Right Here.app was not found. Install the app, then run `rh setup`."
-        case .extensionMissing(let path):
-            return "\(path) does not exist."
-        case .translocated:
-            return "Right Here is running from the temporary location macOS uses for a downloaded app. Move Right Here.app into your Applications folder, open it from there, and install again."
-        case .onAnotherVolume(let path):
-            return "Right Here is running from \(path), which is a disk image or another volume. Drag Right Here.app into your Applications folder, eject the disk image, open the app from Applications, and install again."
-        case .anotherSetupIsRunning:
-            return "Another setup is running (the setup window, `rh setup` in another terminal, or an AI agent's) and did not finish in time, so this one did not start. Wait for it to finish, then run `rh setup` again."
+        case .notALink(let path): [.installNotALink(path)]
+        case .appNotFound: [.installAppNotFound]
+        case .extensionMissing(let path): [.refusalPathNotFound(path)]
+        case .translocated: [.installTranslocated]
+        case .onAnotherVolume(let path): [.installOnAnotherVolume(path)]
+        case .anotherSetupIsRunning: [.installAnotherSetupIsRunning]
         case .notTheCopyToKeep(let copy, let version, let keep, let keepVersion):
-            // The paths are other copies' folder names: quoted for the shell (one has a space in "Right Here.app") and with their control characters shown.
-            let command = ShellQuoting.quote(keep + "/Contents/Helpers/rh")
-            return "This rh is in \(copy.withControlCharactersEscaped) (\(version)), and the copy of Right Here to keep is \(keep.withControlCharactersEscaped) (\(keepVersion)). Setting up from this one would make every click run it, so nothing was changed. Run the other copy's rh: \(command.withControlCharactersEscaped) setup"
-        case .inTrash:
-            return "Right Here is running from the Trash. What it sets up would stop working when the Trash is emptied. Open the copy in your Applications folder."
+            // The other copy's folder name is quoted for the shell: one has a space in "Right Here.app".
+            [.installNotTheCopyToKeep(copy, version, keep, keepVersion, ShellQuoting.quote(keep + "/Contents/Helpers/rh") + " setup")]
+        case .inTrash: [.installInTrash]
         }
     }
 

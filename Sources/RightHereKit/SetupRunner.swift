@@ -206,7 +206,7 @@ public struct SetupRunner: Sendable {
         }
         // Only the per-machine overlay is there, or nothing: a repair does not make the base config from what it found.
         if !exists, !request.createsConfig {
-            report.steps.append(SetupStep(.config, .skipped, detail: .doctorVerbatim("there is no \(paths.configFile.lastPathComponent); the first run's Set Up makes it from your choices")))
+            report.steps.append(SetupStep(.config, .skipped, detail: .setupNoConfigToRepair(paths.configFile.lastPathComponent)))
             return nil
         }
 
@@ -240,7 +240,7 @@ public struct SetupRunner: Sendable {
                 existingConfigStep(request, into: &report, madeJustNow: true)
             }
         } catch {
-            report.steps.append(SetupStep(.config, .failed, detail: .doctorVerbatim(error.localizedDescription)))
+            report.steps.append(SetupStep(.config, .failed, detail: Self.detail(of: error)))
             report.chosen = nil
         }
         return nil
@@ -251,7 +251,7 @@ public struct SetupRunner: Sendable {
     private func existingConfigStep(_ request: SetupRequest, into report: inout SetupReport, madeJustNow: Bool) {
         let loaded = ConfigStore.load(paths: paths)
         if let problem = ConfigProblem(loaded.result, paths: paths) {
-            report.steps.append(SetupStep(.config, .failed, detail: .doctorVerbatim("\(problem.sentence), so setup left it as it is and made nothing from it")))
+            report.steps.append(SetupStep(.config, .failed, detail: .setupConfigUnusable(problem.file.path, problem.reason)))
             return
         }
         let detail = madeJustNow ? "\(paths.configFile.path) was made a moment ago by something else: it is kept" : "\(paths.configFile.path); it is yours, so setup never rewrites it"
@@ -295,7 +295,7 @@ public struct SetupRunner: Sendable {
             try installer.installRunnerScript(rhPath: rhPath)
             return SetupStep(.runnerScript, outcome, detail: detail)
         } catch {
-            return SetupStep(.runnerScript, .failed, detail: .doctorVerbatim(error.localizedDescription))
+            return SetupStep(.runnerScript, .failed, detail: Self.detail(of: error))
         }
     }
 
@@ -307,14 +307,14 @@ public struct SetupRunner: Sendable {
         let replaced = existing.map { "; it replaced a link to \($0)" } ?? ""
         if dryRun {
             // A real file or folder with that name is the person's: the link is refused, and a dry run says so.
-            if existing == nil, entryExists(installer.cliLink) { return SetupStep(.cliLink, .failed, detail: .doctorVerbatim(InstallError.notALink(path: link).localizedDescription)) }
+            if existing == nil, entryExists(installer.cliLink) { return SetupStep(.cliLink, .failed, detail: .installNotALink(link)) }
             return SetupStep(.cliLink, outcome, detail: .doctorVerbatim(link + replaced))
         }
         do {
             try installer.installCLILink(rhPath: rhPath)
             return SetupStep(.cliLink, outcome, detail: .doctorVerbatim(link + replaced))
         } catch {
-            return SetupStep(.cliLink, .failed, detail: .doctorVerbatim(error.localizedDescription))
+            return SetupStep(.cliLink, .failed, detail: Self.detail(of: error))
         }
     }
 
@@ -326,9 +326,9 @@ public struct SetupRunner: Sendable {
         // overlay is what cannot be used), it is the step that cannot be done.
         if let problem = ConfigProblem(loaded, paths: paths) {
             if configReported {
-                return SetupStep(.services, .skipped, detail: .doctorVerbatim("they are made from the config, which cannot be used (see the config file above); the ones that are there were left as they are"))
+                return SetupStep(.services, .skipped, detail: .setupServicesSkipped)
             }
-            return SetupStep(.services, .failed, detail: .doctorVerbatim("they are made from the config, and \(problem.sentence); the ones that are there were left as they are"))
+            return SetupStep(.services, .failed, detail: .setupServicesConfigUnusable(problem.file.path, problem.reason))
         }
         let config = loaded.config
         let specs = ActionRegistry(config: config, facts: facts, localizer: localizer ?? config.localizer).serviceSpecs(rhPath: rhPath)
@@ -345,7 +345,7 @@ public struct SetupRunner: Sendable {
             }
             return SetupStep(.services, outcome, detail: detail)
         } catch {
-            return SetupStep(.services, .failed, detail: .doctorVerbatim(error.localizedDescription))
+            return SetupStep(.services, .failed, detail: Self.detail(of: error))
         }
     }
 
@@ -354,12 +354,12 @@ public struct SetupRunner: Sendable {
             return SetupStep(.finderExtension, .skipped, detail: .doctorVerbatim("RH_HOME is set, and the extension's registration is for the whole Mac, so a trial leaves it alone"))
         }
         guard let app else {
-            if strict { return SetupStep(.finderExtension, .failed, detail: .doctorVerbatim(InstallError.appNotFound.localizedDescription)) }
+            if strict { return SetupStep(.finderExtension, .failed, detail: .installAppNotFound) }
             return SetupStep(.finderExtension, .skipped, detail: .doctorVerbatim("Right Here.app is not installed. Quick Actions work without it"))
         }
         let appex = HostApp.extensionURL(in: app).path
         guard FileManager.default.fileExists(atPath: appex) else {
-            return SetupStep(.finderExtension, .failed, detail: .doctorVerbatim(InstallError.extensionMissing(path: appex).localizedDescription))
+            return SetupStep(.finderExtension, .failed, detail: .refusalPathNotFound(appex))
         }
         let manager = FinderExtensionManager(runner: runner)
         let status = await manager.status()
@@ -384,7 +384,13 @@ public struct SetupRunner: Sendable {
             if again { text += "; the first registration did not stay, so it was registered again" }
             return SetupStep(.finderExtension, outcome, detail: .doctorVerbatim(text))
         } catch {
-            return SetupStep(.finderExtension, .failed, detail: .doctorVerbatim(error.localizedDescription))
+            return SetupStep(.finderExtension, .failed, detail: Self.detail(of: error))
         }
+    }
+
+    /// Why a step failed: the error's sentence when the catalog has it, else its own words (the system writes those in its language).
+    static func detail(of error: any Error) -> LocalizedMessage {
+        if let failure = error as? any LocalizedFailure, failure.sentences.count == 1 { return failure.sentences[0] }
+        return .doctorVerbatim(error.localizedDescription)
     }
 }

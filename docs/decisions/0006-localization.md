@@ -58,9 +58,10 @@ characters as escapes, as the English was, and isolated in a right-to-left sente
 
 The setup window's notices go the same way (`SetupNotice.failure`): an Install or Repair that stopped says its step's sentence, a config text
 the Config page would save that does not read, a file that is read-only, a lock that cannot be taken and a worktree git would not remove are
-sentences of the catalog (`config.*`, `setup.*`). What stays English: what a program, git or the config parser wrote (it is a value of the
-sentence, and so is the exit status a program that said nothing ended with), the step of a plan that failed (its heading), the detail of a
-setup step that quotes an error (a config the check cannot read, a file the system would not write), and what only the command line and an
+sentences of the catalog (`config.*`, `setup.*`), and so are the reasons Install or Repair does not start (a download macOS has not moved,
+a disk image, the Trash, another setup that holds the turn: `install.*`) and the details of the steps it could not do. What stays English: what a program, git or the config parser wrote (it is a value of the
+sentence, and so is the exit status a program that said nothing ended with), the step of a plan that failed (its heading), the config check's own words inside a
+setup step's sentence, and what only the command line and an
 AI assistant meet (worktrees, undo, proposals, config sync), which their callers read in English anyway.
 A `LocalizedMessage` cannot be interpolated into a string (`"\(message)"` does not compile), so a sentence cannot slip into the English
 as its structure.
