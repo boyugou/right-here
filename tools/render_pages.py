@@ -847,7 +847,8 @@ DOCS = f"""<main id="main" class="wrap docs">
 {items("doc.sync.rule1", "doc.sync.rule2", "doc.sync.rule3", "doc.sync.rule4")}
 <h3 data-i18n="doc.sync.h3"></h3>
 <p data-i18n="doc.sync.p8"></p>
-{items("doc.sync.c1", "doc.sync.c2", "doc.sync.c3", "doc.sync.c4", "doc.sync.c5")}
+{items("doc.sync.c1", "doc.sync.c2", "doc.sync.c3", "doc.sync.c4", "doc.sync.c5b", "doc.sync.c6")}
+<p data-i18n="doc.sync.p10"></p>
 <p data-i18n="doc.sync.p9"></p>
 <p data-i18n="doc.sync.p6"></p>
 <p class="beta" data-i18n="doc.sync.tried"></p>

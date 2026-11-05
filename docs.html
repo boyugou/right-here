@@ -367,8 +367,10 @@ rh config sync disable                    # forget the folder; both copies stay<
 <li data-i18n="doc.sync.c2">a terminal that starts through a template, where Right Here uses it</li>
 <li data-i18n="doc.sync.c3">the <code>command</code>, <code>args</code>, <code>prompt_arg</code>, start options, <code>bypass_permissions</code> or <code>bypass_permission_arg</code> of an agent</li>
 <li data-i18n="doc.sync.c4">an agent in the menu or in the Quick Actions that starts without its permission prompts</li>
-<li data-i18n="doc.sync.c5">the contents of a New File template</li>
+<li data-i18n="doc.sync.c5b">the contents or the extension of a New File template</li>
+<li data-i18n="doc.sync.c6">the app that an <code>[[app]]</code> entry opens (its bundle identifier)</li>
 </ul>
+<p data-i18n="doc.sync.p10"><code>pull</code> compares the copy twice: as it is, and with this Mac's <code>config.local.toml</code> over it. A setting of that file cannot hide a program that the copy brings.</p>
 <p data-i18n="doc.sync.p9">Read the list. If the changes are yours, run <code>rh config sync pull --allow-commands</code>. <code>rh config sync status</code> shows the same list before you pull. A first pull on a new Mac asks only about programs of your own, not about the built-in apps and agents.</p>
 <p data-i18n="doc.sync.p6">A dotfiles manager can keep <code>config.toml</code> as a link. <code>rh</code> follows the link, but the Finder extension may not, so copy the file instead. A git repository can be the sync folder: commit there.</p>
 <p class="beta" data-i18n="doc.sync.tried">Tests use temporary folders and fake file systems. Not tried on a real Mac yet: real iCloud Drive.</p>
