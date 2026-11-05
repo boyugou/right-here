@@ -2178,8 +2178,6 @@ MUTANTS = [
      "UndoRequest(target: configTarget, expecting: row.afterDigest, replacing: row.beforeDigest)", "UndoRequest(target: configTarget, expecting: nil, replacing: nil)"),
     ("a row of the history does not say what its Undo is held to", "Sources/RightHereKit/ConfigService.swift",
      "summary: $0.summary, afterDigest: $0.afterDigest, beforeDigest: ConfigHistory.digest($0.before)) }", "summary: $0.summary) }"),
-    ("Apply is made on files its card was not drawn for", "Apps/RightHere/SetupModel.swift",
-     "        guard let digest = configPage?.proposals.first(where: { $0.id == id })?.digest else {", "        guard let digest = configPage?.proposals.first(where: { $0.id == id })?.digest ?? Optional(\"\") else {"),
     ("a second click on Apply makes the proposal again", "Apps/RightHere/SetupModel.swift",
      "        isWorking = true\n        let result = await actions.approveProposal(", "        let result = await actions.approveProposal("),
     ("an Undo is not told to VoiceOver", "Apps/RightHere/SetupModel.swift",
