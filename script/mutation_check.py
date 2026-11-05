@@ -2125,8 +2125,13 @@ MUTANTS = [
 
 
 # Tests whose result depends on how busy the machine is (they leave a margin of a second or two for a process to be
-# stopped), so on a loaded one they fail whatever the code does.
-LOAD_SENSITIVE: set[str] = set()
+# stopped), so on a loaded one they fail whatever the code does. Both of these hold the window busy with slow answers and
+# then wait on it: with every suite running at once they were the only "killers" of three sync mutants (2026-11-04), which on
+# an idle machine the tests written for them killed in seconds while these two passed.
+LOAD_SENSITIVE: set[str] = {
+    "aBlockThatRestsWhileTheWindowIsBusyIsWrittenWhenThePageIsLeftAsWell",
+    "aChangeThatIsCalledOffWhileItWaitsIsNotSaidToBeBusyAndDoesNotSpinForTheRest",
+}
 
 
 def failed_tests(output: str) -> set[str]:

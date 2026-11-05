@@ -344,11 +344,13 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    first-prompt flags, an agent's own `args`, its `bypass_permissions` and the flag it types (`bypass_permission_arg`), and the contents of a new-file template (written into a file that is then opened)
    decide which program a click starts, and how, and a terminal listed as another kind of app is handed
    files, which it runs (item 0): the config refuses an `[[app]]` with a built-in terminal's bundle identifier (in any case, as the system finds an app by it whatever the case) and another role, and a pull lists one
-   that carries the identifier of a terminal the config defines. An assistant that changes one of them, or undoes a change of one, waits for the person's yes (`ConfigTrust`; see [0026](decisions/0026-one-config-two-editors.md)),
+   that carries the identifier of a terminal either config defines. What an `[[app]]` points at (its bundle identifiers: an app such as
+   Python Launcher runs what it is handed) and a new-file template's extension are listed too. An assistant that changes one of them, or undoes a change of one, waits for the person's yes (`ConfigTrust`; see [0026](decisions/0026-one-config-two-editors.md)),
    and a proposal that switches the prompts off says which agents would start with which flag, and is applied only to the two files as they were when it was looked at (and, in the window, after the alert that names them).
    A pulled config that puts an agent in the menu or the Quick Actions while the prompts are off is listed too, and a pull is made under the lock that every change of the config takes, so an edit made while it compares and replaces the file is not written over. The sync folder can be written by things this Mac does not
    control (another machine, a sync service, a shared drive), so a config that arrives through it is untrusted input.
-   `rh config sync pull` compares it with the config it replaces and refuses, listing what it would add or change (and an agent's
+   `rh config sync pull` compares it with the config it replaces, each read alone and each read with this Mac's `config.local.toml` laid
+   over it (what that file pins or disables would otherwise hide a program the copy brings), and refuses, listing what it would add or change (and an agent's
    arguments that it empties: `--sandbox read-only` may be what keeps the agent in its sandbox),
    unless `--allow-commands` is passed; that flag is separate from `--force`, and a refusal writes nothing. `status`
    and `enable` show the same list, and every value in it is printed with control characters escaped. Preset prompts
