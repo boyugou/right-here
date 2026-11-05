@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 1.2.2 (2026-11-04)
+
+What a copy from the sync folder and an AI assistant can change, after an independent review of each.
+
+- `rh config sync pull` asks about more of what a copy from the sync folder would change: a program that this Mac's own
+  `config.local.toml` hides for now (it would have run as soon as that file changed), an app pointed at another program (an app such
+  as Python Launcher runs what it is handed), a terminal of this Mac's config turned into another kind of app, and a new-file template
+  whose extension changes. A pull on a Mac with no config keeps one that `rh setup` made meanwhile, a push stops when another Mac
+  changed the copy a moment before, and a pull leaves a read-only config alone.
+- An AI assistant connected over MCP can no longer make the terminal a click falls back to (when the default is turned off, unset or
+  not installed) one of yours that starts through a command template without your yes. The assistant's run tool does not start a
+  built-in agent this Mac turns off; its worktree tool stops git at the server's time limit; its config tool marks what it quotes from
+  your files as data.
+
 ## 1.2.1 (2026-11-03)
 
 More of the setup window in your language, and what a review of 1.2.0 found.
