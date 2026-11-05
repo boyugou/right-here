@@ -18,7 +18,7 @@ public enum InvocationCheck {
     /// The options of `rh run`, its path arguments included. A test holds this list to `rh run --help`.
     public static let runOptions = Options(
         flags: ["--dry-run", "--json", "--alert", "--worktree", "--bypass-permissions", "--safe", "--help", "-h", "--version"],
-        values: ["--origin", "--container", "--branch", "--arg", "--language"]
+        values: ["--origin", "--container", "--branch", "--arg", "--language", "--time-limit"]
     )
 
     /// The options of `rh menu`. A test holds this list to `rh menu --help`.

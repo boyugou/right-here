@@ -2117,6 +2117,12 @@ MUTANTS = [
      'guard !disabledAgents.contains(id), var agent', 'guard var agent'),
     ("the config tool's answer quotes what the files hold outside a fence", 'Sources/RightHereMCP/Tools.swift',
      '+ ": " + Fence.wrap(change.summary)]', '+ ": " + change.summary]'),
+    ("a Shortcuts action stopped at its limit leaves what rh started running", 'Sources/rh/Commands/Run.swift',
+     'let executor = timeLimit.map { LiveExecutor(runner: TimeLimitedRunner(base: LiveProcessRunner(), limit: .seconds($0))) } ?? LiveExecutor()', 'let executor = LiveExecutor()'),
+    ("a Shortcuts action that takes a folder hands rh a file", 'Sources/RightHereKit/IntentInvocation.swift',
+     'if FileManager.default.fileExists(atPath: folder, isDirectory: &isDirectory), !isDirectory.boolValue {', 'if false {'),
+    ("rh run --json says nothing on standard output for a failure before its plan", 'Sources/rh/Commands/Run.swift',
+     '} catch let error where json && !(error is ExitCode) {', '} catch let error where false {'),
     ("the setup window shows git's line breaks as escapes", 'Sources/RightHereKit/PlanExecutor.swift',
      'escapingValues(keeping: $0.key == .refusalStepFailed ? ["\\n", "\\t"] : [])', 'escapingValues()'),
     ("the alert after a click in Finder says why in English whatever the language", 'Sources/RightHereKit/FailureAlert.swift',
@@ -2131,6 +2137,8 @@ MUTANTS = [
 LOAD_SENSITIVE: set[str] = {
     "aBlockThatRestsWhileTheWindowIsBusyIsWrittenWhenThePageIsLeftAsWell",
     "aChangeThatIsCalledOffWhileItWaitsIsNotSaidToBeBusyAndDoesNotSpinForTheRest",
+    # Times a real `rh` against a two-second limit.
+    "aShortcutStoppedAtItsLimitLeavesNothingOfItsActionRunning",
 }
 
 

@@ -213,6 +213,14 @@ they never open one. The preview is the same code as the extension's, not Finder
       action asks for a Saved Folder, saying "Choose a folder, or one of your saved folders.", and runs with the one picked; the same
       when the phrase is said to Siri or typed in Spotlight. Unpin the folder, run the shortcut again: it still works, and the folder
       now shows a plain folder instead of a pin.
+    - With a terminal Right Here has never controlled (Terminal or iTerm, so that macOS asks for Automation), run Open in Terminal from
+      Shortcuts and leave the "Right Here wants to control …" prompt unanswered for a minute. After about 50 seconds the shortcut says that
+      the step did not finish and that macOS may be waiting for a permission prompt (in the language of the app). Then click Allow: no
+      terminal window may open, since the step was stopped. Run the shortcut again: the window opens.
+    - Pin a folder, then replace it with a file of the same name. Run Start AI Agent with that Saved Folder: it refuses ("… is not a
+      folder.") and starts nothing, not even in the folder around it.
+    - With the app's language set to German, the File Template list of Create New File names the templates as the Finder menu does
+      ("Textdokument").
 14. Update the way the README says, in Finder. Drag the newer Right Here.app over the old one in Applications.
     - Look at the dialog that Finder shows. It must offer "Replace".
     - After "Replace", open the app and press Install or Repair, or run `rh setup`. `rh doctor` is then all ok.

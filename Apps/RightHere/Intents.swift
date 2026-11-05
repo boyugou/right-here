@@ -29,7 +29,7 @@ private enum Bundled {
             let answer = try await runner.perform(command)
             return .result(dialog: IntentDialog(stringLiteral: success(answer)))
         } catch {
-            throw IntentFailure(text: Bundled.localizer.render(.intentFailed(Bundled.localizer.describe(error))))
+            throw IntentFailure(text: Bundled.localizer.render(.intentFailed(Bundled.localizer.describe(error)), isolatingValues: true))
         }
     }
 
@@ -72,7 +72,7 @@ struct OpenInTerminalIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let path = try Bundled.path(folder: folder, saved: savedFolder) else { throw $savedFolder.needsValueError(Bundled.askForFolder) }
-        return try await Bundled.perform(.openTerminal(folder: path)) { Bundled.localizer.render(.intentDone($0)) }
+        return try await Bundled.perform(.openTerminal(folder: path)) { Bundled.localizer.render(.intentDone($0), isolatingValues: true) }
     }
 }
 
@@ -91,7 +91,7 @@ struct StartAgentIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let path = try Bundled.path(folder: folder, saved: savedFolder) else { throw $savedFolder.needsValueError(Bundled.askForFolder) }
-        return try await Bundled.perform(.startAgent(agent: agent.id, folder: path)) { Bundled.localizer.render(.intentDone($0)) }
+        return try await Bundled.perform(.startAgent(agent: agent.id, folder: path)) { Bundled.localizer.render(.intentDone($0), isolatingValues: true) }
     }
 }
 
@@ -110,7 +110,7 @@ struct NewFileIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let path = try Bundled.path(folder: folder, saved: savedFolder) else { throw $savedFolder.needsValueError(Bundled.askForFolder) }
-        return try await Bundled.perform(.newFile(template: template.id, folder: path)) { Bundled.localizer.render(.intentDone($0)) }
+        return try await Bundled.perform(.newFile(template: template.id, folder: path)) { Bundled.localizer.render(.intentDone($0), isolatingValues: true) }
     }
 }
 
@@ -174,8 +174,7 @@ struct TemplateEntity: AppEntity {
 /// The templates of the person's config, as `rh actions --json` lists them.
 struct TemplateQuery: EntityQuery {
     func suggestedEntities() async throws -> [TemplateEntity] {
-        let data = await Bundled.runner.output(["actions", "--json"])
-        return IntentCatalog.templates(fromJSON: data).map { TemplateEntity(id: $0.id, name: $0.name) }
+        await Bundled.runner.templates().map { TemplateEntity(id: $0.id, name: $0.name) }
     }
 
     func entities(for identifiers: [String]) async throws -> [TemplateEntity] {

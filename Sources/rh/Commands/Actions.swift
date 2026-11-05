@@ -15,9 +15,12 @@ struct Actions: ParsableCommand {
     @Flag(help: "Include actions that cannot run here, with the reason.")
     var all = false
 
+    @Option(name: .customLong("language"), help: "Write the titles in this language, most preferred first (repeat the option), as the Finder menu does. The Shortcuts actions pass the person's. Without it they are English.")
+    var languages: [String] = []
+
     func run() throws {
         let runtime = Runtime()
-        let registry = ActionRegistry(config: runtime.config, facts: runtime.facts)
+        let registry = ActionRegistry(config: runtime.config, facts: runtime.facts, localizer: languages.isEmpty ? .english : Localizer(languages: languages))
         let infos = registry.catalog().filter { all || $0.available }
         if json {
             try Output.json(infos)

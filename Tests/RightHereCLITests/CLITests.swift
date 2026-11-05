@@ -2740,3 +2740,123 @@ struct ConfigEditCLITests {
         #expect(diff.contains("+nonsense-x") == false && diff.contains { $0.hasPrefix("+") && $0.contains("nonsense-x") })
     }
 }
+
+// MARK: The Shortcuts path (an independent review, 2026-11-04)
+
+/// Starts what an intent starts (`IntentRunner`) with the harness's environment and nothing else: what `RH.environment()` sets, and none of
+/// the test process's own variables that it leaves out (`RH_CONFIG`, `XDG_CONFIG_HOME`, `RH_HOME` would point the `rh` at the real config and
+/// state). A merge alone cannot remove a variable, so the rest is unset.
+private struct HarnessRunner: ProcessRunner {
+    let environment: [String: String]
+
+    func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
+        var step = step
+        step.environment = environment
+        step.unsetEnvironment = ProcessInfo.processInfo.environment.keys.filter { environment[$0] == nil }
+        return try await LiveProcessRunner(environment: environment).run(step, timeout: timeout)
+    }
+}
+
+extension CLITests {
+    /// Load-sensitive: it times a run against a limit. When the limit of a Shortcuts action stopped `rh`, what `rh` had started for the action (in
+    /// real use an `osascript` that waits for the person to allow an Apple event to Terminal or iTerm, or a terminal's own program) led a process
+    /// group of its own, as every child of `Process` does, and went on: the action happened after the shortcut had said that it was stopped.
+    /// `rh` is now given a limit below the app's (`--time-limit`), and stops what it started there.
+    @Test func aShortcutStoppedAtItsLimitLeavesNothingOfItsActionRunning() async throws {
+        let rh = try RH(config: """
+        [general]
+        terminal = "slowterm"
+        [[app]]
+        id = "slowterm"
+        name = "Slow"
+        bundle_id = "com.apple.finder"
+        role = "terminal"
+        open_args = ["/bin/sh", "-c", '/usr/bin/touch "$0/started"; /bin/sleep 5; /usr/bin/touch "$0/late"', "{dir}"]
+        """); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("work")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let begun = ContinuousClock.now
+        let runner = IntentRunner(helper: rh.binary.path, runner: HarnessRunner(environment: rh.environment()), timeout: .seconds(2), languages: [])
+        let failure = try #require(await #expect(throws: IntentRunner.Failure.self) { try await runner.perform(.openTerminal(folder: folder.path)) })
+        #expect(failure.text.contains("did not finish"), Comment(rawValue: failure.text))
+        try #require(FileManager.default.fileExists(atPath: folder.appendingPathComponent("started").path), "rh did not reach the step within the limit: on a machine this slow the test shows nothing")
+        // Past the step's own five seconds, with room to spare.
+        try await Task.sleep(until: begun + .seconds(8))
+        #expect(!FileManager.default.fileExists(atPath: folder.appendingPathComponent("late").path), "the action went on after the shortcut said that rh was stopped")
+    }
+
+    /// The File Template picker of Create New File listed what `rh actions --json` says, and the command line is English, so a person whose
+    /// Finder menu says "Textdokument" picked "Text Document" in Shortcuts. Read here the way `TemplateQuery` reads it.
+    @Test func theTemplatesAShortcutOffersAreInThePersonsLanguage() async throws {
+        let rh = try RH(config: "[general]\nlanguage = \"de\"\n"); defer { rh.cleanUp() }
+        let runner = IntentRunner(helper: rh.binary.path, runner: HarnessRunner(environment: rh.environment()), languages: ["de"])
+        let offered = await runner.templates()
+        let text = try #require(offered.first { $0.id == "txt" }, "\(offered)")
+        #expect(text.name == NewFileTemplate.text.localizedTitle(Localizer(languages: ["de"])), "\(offered)")
+    }
+
+    /// A pinned folder that is now a file is still that Saved Folder (the query does not look at a listed one again), and `rh` reads a file
+    /// as "the folder that holds it": Start AI Agent started the agent in the folder around the one the person picked.
+    @Test func aSavedFolderThatBecameAFileDoesNotStartTheAgentInTheFolderAroundIt() async throws {
+        let rh = try RH(config: """
+        [general]
+        terminal = "faketerm"
+        agents = ["marker"]
+        [[app]]
+        id = "faketerm"
+        name = "Fake"
+        bundle_id = "com.apple.finder"
+        role = "terminal"
+        run_args = ["/usr/bin/touch", "{dir}/ran-{command}"]
+        [agent.marker]
+        name = "marker"
+        command = "marker"
+        """); defer { rh.cleanUp() }
+        let around = rh.configDirectory.appendingPathComponent("person")
+        try FileManager.default.createDirectory(at: around, withIntermediateDirectories: true)
+        let pinned = around.appendingPathComponent("proj")
+        try Data().write(to: pinned)
+        let runner = IntentRunner(helper: rh.binary.path, runner: HarnessRunner(environment: rh.environment()), languages: [])
+        let answer: String
+        do { answer = try await runner.perform(.startAgent(agent: "marker", folder: pinned.path)) } catch { answer = "\(error)" }
+        #expect(!FileManager.default.fileExists(atPath: around.appendingPathComponent("ran-marker").path), "the agent started in the folder around the saved folder: \(answer)")
+    }
+
+    /// `--time-limit` stops a step that runs past it, with what it started, and the answer is the catalog's sentence for a step that did not
+    /// finish. The margins are wide (a one-second limit on a twenty-second step), so no load makes it pass or fail by chance: without the limit
+    /// the step runs its twenty seconds and the run succeeds.
+    @Test func aRunWithATimeLimitStopsItsStepAndSaysSo() throws {
+        let rh = try RH(config: """
+        [general]
+        terminal = "slowterm"
+        [[app]]
+        id = "slowterm"
+        name = "Slow"
+        bundle_id = "com.apple.finder"
+        role = "terminal"
+        open_args = ["/bin/sh", "-c", '/bin/sleep 20; /usr/bin/touch "$0/late"', "{dir}"]
+        """); defer { rh.cleanUp() }
+        let folder = rh.configDirectory.appendingPathComponent("work")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let begun = ContinuousClock.now
+        let stopped = try rh.run(["run", "open.terminal", "--json", "--time-limit", "1", "--", folder.path])
+        #expect(ContinuousClock.now - begun < .seconds(15), "the step ran its twenty seconds")
+        let answer = stopped.json as? [String: Any]
+        let codes = (answer?["messages"] as? [[String: Any]])?.compactMap { $0["code"] as? String }
+        #expect(answer?["ok"] as? Bool == false && codes == ["refusal.timedOut"], "\(stopped.standardOutput)")
+    }
+
+    /// `rh run --json` answers a failure with JSON ("a script that asked for JSON gets JSON on stdout for a failure too"), except the failures
+    /// thrown before planning: a path the context refuses (`..` after a link, an empty path, a NUL), an action id that does not parse, an
+    /// option that does not apply. An intent reaches the first: a Saved Folder id that is no longer listed is accepted when it is any existing
+    /// folder, `/tmp/..` among them.
+    @Test func aRunRefusedBeforeItsPlanStillAnswersInJSON() throws {
+        let rh = try RH(config: Self.ghostTerminal + "\n[general]\nterminal = \"ghost\"\n"); defer { rh.cleanUp() }
+        for arguments in [try IntentCommand.openTerminal(folder: "/tmp/..").arguments(), ["run", "open.nowhere", "--json", "--", rh.configDirectory.path]] {
+            let refused = try rh.run(arguments)
+            #expect(refused.status != 0)
+            let answer = refused.json as? [String: Any]
+            #expect(answer?["ok"] as? Bool == false, "\(arguments): standard output \(refused.standardOutput.debugDescription), standard error \(refused.standardError.debugDescription)")
+        }
+    }
+}

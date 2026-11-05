@@ -52,7 +52,26 @@ struct Run: AsyncParsableCommand {
     @Option(name: .customLong("language"), help: "The language a new file's name is made in, most preferred first (repeat the option). Without it the command line uses English and a request from Finder uses the system's languages. Languages the app does not have fall back to English.")
     var languages: [String] = []
 
+    @Option(name: .customLong("time-limit"), help: "Stop a step that runs longer than this many seconds, with what it started, and say so. A Shortcuts action passes the time it waits for an answer. Without it a step takes as long as it takes: a click from Finder may wait for the person to allow an Apple event.")
+    var timeLimit: Int?
+
+    func validate() throws {
+        if let timeLimit, timeLimit < 1 { throw ValidationError("--time-limit takes a number of seconds, 1 or more.") }
+    }
+
     func run() async throws {
+        do {
+            try await runChecked()
+        } catch let error where json && !(error is ExitCode) {
+            // A script that asked for JSON gets JSON for a failure before the plan too (an action id that does not parse, a path the context
+            // refuses, an option that does not apply); `fail` answers the others.
+            let text = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+            try Output.json(RunFailure(ok: false, error: text.withControlCharactersEscaped, messages: (error as? any LocalizedFailure)?.sentences))
+            throw error
+        }
+    }
+
+    private func runChecked() async throws {
         let runtime = Runtime()
         let ref: ActionRef
         do {
@@ -167,7 +186,8 @@ struct Run: AsyncParsableCommand {
             return
         }
         do {
-            let report = try await LiveExecutor().execute(plan)
+            let executor = timeLimit.map { LiveExecutor(runner: TimeLimitedRunner(base: LiveProcessRunner(), limit: .seconds($0))) } ?? LiveExecutor()
+            let report = try await executor.execute(plan)
             RunLog.record(RunLog.Entry(actionID: action, origin: here.origin, itemCount: here.items.count))
             if let dir = here.workingDirectory(facts: runtime.facts) {
                 // A recent folder is not worth a click that waits: when another program holds the state for longer than this, it is not recorded.

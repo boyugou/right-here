@@ -24,23 +24,34 @@ public enum IntentCommand: Sendable, Equatable {
 
     /// The argument vector for `rh`, or an error when an id is not a plain word or a path is not absolute. `languages` are the person's
     /// preferred languages, most preferred first: a new file takes its name in the first one the app has, as a file made from Finder does.
-    public func arguments(languages: [String] = []) throws -> [String] {
+    /// `timeLimit` is how long a step of the run may take: `rh` stops what it started at that limit and says so, which the app's own limit,
+    /// by stopping `rh` alone, cannot (what `rh` started leads a process group of its own and would go on).
+    public func arguments(languages: [String] = [], timeLimit: Duration? = nil) throws -> [String] {
+        let options = languages.flatMap { ["--language", $0] } + (timeLimit.map { ["--time-limit", String(max(1, $0.components.seconds))] } ?? [])
         switch self {
         case .openTerminal(let folder):
-            return try Self.run("open.terminal", path: folder, languages: languages)
+            return try Self.run("open.terminal", path: folder, options: options)
         case .startAgent(let agent, let folder):
-            return try Self.run("agent." + Self.word(agent), path: folder, languages: languages)
+            return try Self.run("agent." + Self.word(agent), path: folder, options: options)
         case .newFile(let template, let folder):
-            return try Self.run("new-file." + Self.word(template), path: folder, languages: languages)
+            return try Self.run("new-file." + Self.word(template), path: folder, options: options)
         case .copyPath(let style, let path):
-            return try Self.run("copy-path." + style.rawValue, path: path, languages: languages)
+            return try Self.run("copy-path." + style.rawValue, path: path, options: options)
         }
     }
 
-    private static func run(_ action: String, path: String, languages: [String]) throws -> [String] {
+    /// The folder an intent acts in, for the three that take one; Copy Path takes a file as well.
+    public var folder: String? {
+        switch self {
+        case .openTerminal(let folder), .startAgent(_, let folder), .newFile(_, let folder): folder
+        case .copyPath: nil
+        }
+    }
+
+    private static func run(_ action: String, path: String, options: [String]) throws -> [String] {
         guard ActionRef(parsing: action) != nil else { throw Invalid.notAnActionID(action) }
         guard path.hasPrefix("/"), !path.contains("\0") else { throw Invalid.notAbsolute(path) }
-        return ["run", action, "--origin", "cli", "--json"] + languages.flatMap { ["--language", $0] } + ["--", path]
+        return ["run", action, "--origin", "cli", "--json"] + options + ["--", path]
     }
 
     /// An id from the config goes into an action id only when `ActionRef` reads it back as one word.
@@ -171,8 +182,25 @@ public struct IntentRunner: Sendable {
 
     /// Runs the command; returns rh's one-line answer (`ok: ...`) or throws `Failure` with rh's own error text.
     public func perform(_ command: IntentCommand) async throws -> String {
-        let result = try await runner.run(ProcessStep(executable: helper, arguments: try command.arguments(languages: languages)), timeout: timeout)
+        // A Saved Folder travels as its path, and a pinned folder may have become a file since: `rh` reads a file as "the folder that holds it",
+        // which would act in the folder around the one the person picked. A path the system will not let us look at is not known to be a file,
+        // and goes on to `rh`, which says why it cannot act there.
+        if let folder = command.folder {
+            var isDirectory: ObjCBool = false
+            if FileManager.default.fileExists(atPath: folder, isDirectory: &isDirectory), !isDirectory.boolValue {
+                let refusal = PlanError.refused(.refusalNotAFolder(folder))
+                throw Failure(text: refusal.localizedDescription, sentences: refusal.sentences)
+            }
+        }
+        // `rh` stops a step at a limit below this one, so that it answers (in the person's language) before it is stopped itself.
+        let stepLimit = timeout - min(.seconds(10), timeout / 2)
+        let result = try await runner.run(ProcessStep(executable: helper, arguments: try command.arguments(languages: languages, timeLimit: stepLimit)), timeout: timeout)
         return try Self.interpret(result)
+    }
+
+    /// The new-file templates, in the person's language, as the Finder menu names them.
+    public func templates() async -> [IntentChoice] {
+        IntentCatalog.templates(fromJSON: await output(["actions", "--json"] + languages.flatMap { ["--language", $0] }))
     }
 
     /// Reads the output of `rh agents --json` or `rh actions --json`.
@@ -186,12 +214,15 @@ public struct IntentRunner: Sendable {
     /// What an intent shows for what `rh run --json` wrote: the plan's summary, or a `Failure`.
     public static func interpret(_ result: ProcessResult) throws -> String {
         if let limit = result.terminatedAfter {
-            throw Failure(text: "rh did not finish within \(limit.components.seconds) seconds and was stopped.")
+            let stopped = ExecutionError.timedOut(step: "rh", seconds: Int(limit.components.seconds))
+            throw Failure(text: stopped.localizedDescription, sentences: stopped.sentences)
         }
         let out = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
         let answer = try? JSONDecoder().decode(Answer.self, from: Data(out.utf8))
         guard result.status == 0 else {
-            throw Failure(text: failureReason(standardError: result.standardError) ?? "rh exited with status \(result.status).", sentences: answer?.messages ?? [])
+            if let reason = failureReason(standardError: result.standardError) { throw Failure(text: reason, sentences: answer?.messages ?? []) }
+            let silent = LocalizedMessage.appCommandStopped(String(result.status))
+            throw Failure(text: Localizer.english.render(silent), sentences: answer?.messages ?? [silent])
         }
         if let summary = answer?.plan?.summary { return summary }
         let line = out.split(separator: "\n").last.map(String.init) ?? ""

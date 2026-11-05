@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- A Shortcuts action stopped at its time limit stops what it started too: Open in Terminal that waits for you to allow Automation no
+  longer opens the terminal after the shortcut has said it was stopped, and it says so in your language. A Saved Folder that has become
+  a file is refused instead of acting in the folder around it. The File Template list of Create New File is in your language. (From an
+  independent review of the Shortcuts path.)
+- `rh run --json` answers in JSON also when it refuses before it plans (an action id it does not know, a path it will not take);
+  `rh run --time-limit` stops a step that runs too long, with what it started; `rh actions --language` writes the titles in a language.
+
 ## 1.2.2 (2026-11-04)
 
 What a copy from the sync folder and an AI assistant can change, after an independent review of each.

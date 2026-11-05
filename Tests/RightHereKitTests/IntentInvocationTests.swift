@@ -59,7 +59,8 @@ struct IntentInvocationTests {
         let answer = try await IntentRunner(helper: "/Applications/Right Here.app/Contents/Helpers/rh", runner: runner, languages: ["de-DE"])
             .perform(.newFile(template: "md", folder: "/Users/me/notes"))
         #expect(answer == "Create unbenannt.md")
-        #expect(runner.recorded.first?.arguments == ["run", "new-file.md", "--origin", "cli", "--json", "--language", "de-DE", "--", "/Users/me/notes"])
+        // And a limit below the app's own (60 seconds), so `rh` stops what it started and says so before it is stopped itself.
+        #expect(runner.recorded.first?.arguments == ["run", "new-file.md", "--origin", "cli", "--json", "--language", "de-DE", "--time-limit", "50", "--", "/Users/me/notes"])
     }
 
     @Test func everyIntentKeyOfTheCompiledCatalogIsSaidByTheApp() throws {
@@ -159,11 +160,46 @@ struct IntentInvocationTests {
     @Test func nothingButConfigProblemsIsNoAnswerAndNoneOfItIsShown() {
         let stderr = "warning: config.toml [general.termnial]: unknown key\nerror: config.toml:2 [agent.mine.command]: the command is empty\n"
         #expect(IntentRunner.failureReason(standardError: stderr) == nil)
-        #expect(throws: IntentRunner.Failure(text: "rh exited with status 1.")) { try IntentRunner.interpret(ProcessResult(status: 1, standardError: stderr)) }
-        #expect(throws: IntentRunner.Failure(text: "rh exited with status 2.")) { try IntentRunner.interpret(ProcessResult(status: 2)) }
+        #expect(throws: IntentRunner.Failure(text: "It did not finish (exit status 1).", sentences: [.appCommandStopped("1")])) { try IntentRunner.interpret(ProcessResult(status: 1, standardError: stderr)) }
+        #expect(throws: IntentRunner.Failure(text: "It did not finish (exit status 2).", sentences: [.appCommandStopped("2")])) { try IntentRunner.interpret(ProcessResult(status: 2)) }
     }
 
     @Test func aReasonThatMerelyNamesATomlFileIsStillTheReason() {
         #expect(IntentRunner.failureReason(standardError: "error: /Users/me/notes.toml is not a folder\n") == "error: /Users/me/notes.toml is not a folder")
+    }
+
+    // MARK: The Shortcuts path (an independent review, 2026-11-04)
+
+    /// When the limit stops `rh`, or `rh` stops without a line that says why, the action said so in English ("rh did not finish within 60
+    /// seconds and was stopped.", "rh exited with status 1.") in every language, though the catalog has both sentences: `refusal.timedOut`,
+    /// which also says that macOS may be waiting for the person to allow an Apple event (the likeliest reason for a run that does not finish),
+    /// and `app.commandStopped`.
+    @Test func aRunThatWasStoppedOrSaidNothingIsToldInThePersonsLanguage() throws {
+        let german = Localizer(languages: ["de"])
+        let slow = try #require(#expect(throws: IntentRunner.Failure.self) { try IntentRunner.interpret(ProcessResult(status: 15, terminatedAfter: .seconds(60))) })
+        #expect(german.describe(slow) != Localizer.english.describe(slow), Comment(rawValue: german.describe(slow)))
+        #expect(Localizer.english.describe(slow).contains("permission prompt"), Comment(rawValue: Localizer.english.describe(slow)))
+        let silent = try #require(#expect(throws: IntentRunner.Failure.self) { try IntentRunner.interpret(ProcessResult(status: 1)) })
+        #expect(german.describe(silent) != Localizer.english.describe(silent), Comment(rawValue: german.describe(silent)))
+    }
+
+    /// A Saved Folder travels as its path, and the entity of a pinned or recent folder is not looked at again when the shortcut runs
+    /// (`SavedFolderQuery.entities(for:)` returns a listed one as it is), so a pinned folder that is now a file reached `rh` as an item, which
+    /// `rh` reads as "the folder that holds it" (DESIGN 9.0): Start AI Agent started the agent in the folder around it. The three intents that
+    /// take a folder must not hand `rh` a file; Copy Path takes either. (A path the system will not let us look at is not "a file".)
+    @Test func anIntentThatTakesAFolderIsNeverHandedAFile() async throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("rh-intent-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let file = folder.appendingPathComponent("proj")
+        try Data().write(to: file)
+        let helper = "/Applications/Right Here.app/Contents/Helpers/rh"
+        for command in [IntentCommand.openTerminal(folder: file.path), .startAgent(agent: "claude", folder: file.path), .newFile(template: "md", folder: file.path)] {
+            let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "ok: started\n")])
+            _ = try? await IntentRunner(helper: helper, runner: runner, languages: []).perform(command)
+            #expect(runner.recorded.isEmpty, "\(command) handed rh a file: \(runner.recorded.map(\.arguments))")
+        }
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "ok: Copy path\n")])
+        #expect(try await IntentRunner(helper: helper, runner: runner, languages: []).perform(.copyPath(style: .absolute, path: file.path)) == "Copy path")
     }
 }
