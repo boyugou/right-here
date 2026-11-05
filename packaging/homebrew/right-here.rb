@@ -4,7 +4,7 @@
 # boyugou/homebrew-tap: script/publish_release.sh fills the version and the DMG's checksum and copies the file there.
 cask "right-here" do
   version "1.2.4"
-  sha256 "6cee6cfe53d19bc8cb0572013e191004f7d9258b9ceeda38fe7502061a1cc44c"
+  sha256 "21ff1d9f0ec69bac58308d7b241de27fa991048462c9c53d7e5f294f9017b494"
 
   url "https://github.com/boyugou/right-here/releases/download/v#{version}/Right-Here-#{version}.dmg"
   name "Right Here"
