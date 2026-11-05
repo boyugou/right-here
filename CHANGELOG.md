@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.2.3 (2026-11-04)
+
+The Shortcuts actions, after an independent review.
+
 - A Shortcuts action stopped at its time limit stops what it started too: Open in Terminal that waits for you to allow Automation no
   longer opens the terminal after the shortcut has said it was stopped, and it says so in your language. A Saved Folder that has become
   a file is refused instead of acting in the folder around it. The File Template list of Create New File is in your language. (From an
