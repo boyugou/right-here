@@ -17,7 +17,11 @@ extension HereContext {
     /// For a background menu Finder still reports a selection: in column view it is the folder
     /// selected in the previous column. The folder that was clicked is `targetedURL`, so the
     /// selection is ignored there.
-    public static func finder(kind: FinderMenuKind, selected: [URL], targeted: URL?) -> HereContext {
+    ///
+    /// Only file URLs are taken: the path of another kind (`smb://server/Users`) reads as a folder of this Mac (`/Users`).
+    public static func finder(kind: FinderMenuKind, selected all: [URL], targeted any: URL?) -> HereContext {
+        let selected = all.filter(\.isFileURL)
+        let targeted = any.flatMap { $0.isFileURL ? $0 : nil }
         switch kind {
         case .items:
             return HereContext(origin: .items, items: selected, container: targeted)

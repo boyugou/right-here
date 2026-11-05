@@ -1,6 +1,7 @@
 import Cocoa
 import FinderSync
 import OSLog
+import Synchronization
 import RightHereCore
 import RightHereKit
 
@@ -19,8 +20,9 @@ final class FinderSyncExtension: FIFinderSync {
     private let showsSeparators = FinderMenuPresentation.showsSeparators()
     private var activityToken: (any NSObjectProtocol)?
     /// Finder receives a copy of each menu, and only the tag survives the trip back to the action method.
-    /// The tags are stable (see `ActionTags`), so a menu built after the one being clicked cannot retarget it.
-    private var tags = ActionTags()
+    /// The tags are stable (see `ActionTags`), so a menu built after the one being clicked cannot retarget it. The table is the process's,
+    /// not an instance's: a tag handed out by the instance that built a menu resolves the same in any other one that receives the click.
+    private static let tags = Mutex(ActionTags())
     private var runningTasks: [ObjectIdentifier: NSUserUnixTask] = [:]
 
     override init() {
@@ -171,7 +173,7 @@ final class FinderSyncExtension: FIFinderSync {
             case .action:
                 let item = NSMenuItem(title: node.title, action: #selector(performAction(_:)), keyEquivalent: "")
                 item.target = self
-                item.tag = tags.tag(for: node.actionID ?? "", kind: kind)
+                item.tag = Self.tags.withLock { $0.tag(for: node.actionID ?? "", kind: kind) }
                 decorate(item, node.icon)
                 menu.addItem(item)
             case .submenu:
@@ -196,7 +198,7 @@ final class FinderSyncExtension: FIFinderSync {
     // MARK: Actions
 
     @objc func performAction(_ sender: AnyObject?) {
-        guard let item = sender as? NSMenuItem, let entry = tags.resolve(item.tag) else {
+        guard let item = sender as? NSMenuItem, let entry = Self.tags.withLock({ $0.resolve(item.tag) }) else {
             log.error("action without a matching menu entry")
             return
         }

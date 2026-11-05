@@ -143,6 +143,18 @@ struct FinderContextTests {
         #expect(context.container == folder)
     }
 
+    /// The path of a URL that is no file URL reads as a folder of this Mac: `smb://server/Users` as `/Users`. Finder reports file URLs; anything
+    /// else is left out, so nothing acts on a local folder that the person never chose.
+    @Test func onlyFileURLsAreTaken() throws {
+        let server = try #require(URL(string: "smb://server/Users"))
+        #expect(server.path == "/Users", "what the path of such a URL reads as")
+        let sidebar = HereContext.finder(kind: .sidebar, selected: [], targeted: server)
+        #expect(sidebar.container == nil && sidebar.items.isEmpty)
+        let items = HereContext.finder(kind: .items, selected: [server, file], targeted: folder)
+        #expect(items.items == [file])
+        #expect(HereContext.finder(kind: .container, selected: [server], targeted: nil).container == nil)
+    }
+
     @Test func aBackgroundMenuFallsBackToTheSelectionWhenNothingIsTargeted() {
         #expect(HereContext.finder(kind: .container, selected: [folder], targeted: nil).container == folder)
     }
