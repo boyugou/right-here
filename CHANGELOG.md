@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The Quick Actions, after an independent review: a Quick Action whose title starts with a combining mark or ends with a joining one is
+  seen again by setup (it was rewritten by every setup and never removed); two titles the disk takes for one name (Cyrillic letters such
+  as `ᲀ` and `в`) no longer overwrite each other; the Checks say the Quick Actions differ when they run an `rh` that is gone or another
+  one, so the window writes them again; the Quick Actions are made from the first 256 entries of `services.items`.
+- Finder menus take file URLs only (a server's address could have read as a folder of this Mac), and the menu's items resolve the same in
+  any instance of the extension.
+
 ## 1.2.4 (2026-11-04)
 
 The Finder click path, after an independent review.

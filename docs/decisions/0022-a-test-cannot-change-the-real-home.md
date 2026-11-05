@@ -19,7 +19,8 @@ makes them unsafe, and the mutation check removes protections on purpose.
 **`rh` refuses to change the real home when a test started it.** A process that carries `RH_NO_UI` (what the command-line harness sets, and no person does) and has no `RH_HOME`
 cannot write the runner script, the command link or the Quick Actions (`Installer`, which asks `RealHomeGuard` first in every function that writes or removes), and cannot register,
 unregister or switch off the Finder extension, or restart it for a launch probe (`FinderExtensionManager`, `ExtensionProbe`), which are changes to the whole Mac. A test that
-means to write has a trial home. The refusal is a sentence that says so.
+means to write has a trial home. The refusal is a sentence that says so. Since 2026-11-05 a trial home does not let a test change the whole Mac either: a trial home is a folder,
+and the extension's registration is not in it (an independent review found that `rh install --finder` with a trial home would have run the real `pluginkit`).
 
 **The mutation check stops at the first mutant that changes the real home.** Before the run and after each mutant it takes the modification times and link targets of the runner
 script, the command link and the Quick Actions of the account (not the extension's registration, which `pluginkit` keeps elsewhere), and stops with the sentence that says how to repair it (`Right Here.app/Contents/Helpers/rh setup`).

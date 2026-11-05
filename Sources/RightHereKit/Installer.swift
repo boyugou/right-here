@@ -295,7 +295,9 @@ public struct Installer: Sendable {
     /// The workflow bundles Right Here has installed.
     public func installedServices() -> [URL] {
         let names = (try? fileManager.contentsOfDirectory(atPath: locations.services.path)) ?? []
-        return names.filter { $0.hasPrefix(ServiceWorkflow.namePrefix) && $0.hasSuffix(".workflow") }
+        // By scalars: a title that starts with a combining mark joins the space of the prefix in one grapheme, and one that ends with a mark that
+        // joins the next character (U+0600) joins the dot, and `hasPrefix`/`hasSuffix` compare graphemes: such a bundle was written and then never seen.
+        return names.filter { $0.unicodeScalars.starts(with: ServiceWorkflow.namePrefix.unicodeScalars) && $0.unicodeScalars.reversed().starts(with: ".workflow".unicodeScalars.reversed()) }
             .sorted().map { locations.services.appendingPathComponent($0) }
     }
 

@@ -397,17 +397,25 @@ public struct Doctor: Sendable {
     /// change of the Quick Actions, which only an Install or Repair carries out.
     public func servicesCheck() -> DoctorCheck {
         let installer = Installer(home: facts.homeDirectory)
-        return Self.servicesCheck(
-            installed: Set(installer.installedServices().map(\.lastPathComponent)),
-            expected: Set(ServiceWorkflow.distinct(ActionRegistry(config: loaded.config, facts: facts, localizer: loaded.config.localizer)
-                .serviceSpecs(rhPath: rhPath ?? "rh")).map(ServiceWorkflow.bundleName(for:))))
+        let registry = ActionRegistry(config: loaded.config, facts: facts, localizer: loaded.config.localizer)
+        let specs = ServiceWorkflow.distinct(registry.serviceSpecs(rhPath: rhPath ?? "rh"))
+        // Bundles of the right names can run an `rh` that is gone (the app was moved): they are current when they run this `rh`, or the `rh` of another
+        // copy of the app that is installed (an older copy that looks does not count the newer one's Quick Actions as wrong, which would have them rewritten).
+        let copies = AppCopies.installed(facts.applicationCopies(bundleID: AppIdentity.hostBundleID), home: facts.homeDirectory.path)
+            .map { URL(fileURLWithPath: $0.path).appendingPathComponent("Contents/Helpers/rh").path }
+        let current = rhPath == nil || ([rhPath].compactMap(\.self) + copies).contains { installer.servicesAreCurrent(ServiceWorkflow.distinct(registry.serviceSpecs(rhPath: $0))) }
+        return Self.servicesCheck(installed: Set(installer.installedServices().map(\.lastPathComponent)), expected: Set(specs.map(ServiceWorkflow.bundleName(for:))),
+                                  current: current)
     }
 
     /// Compares the Services on disk with the ones the config asks for: they are files written by
     /// `rh setup`, so editing the config does not change them by itself.
-    static func servicesCheck(installed: Set<String>, expected: Set<String>) -> DoctorCheck {
+    static func servicesCheck(installed: Set<String>, expected: Set<String>, current: Bool = true) -> DoctorCheck {
         if installed.isEmpty {
             return DoctorCheck(.services, status: .warn, detail: .doctorServicesNone, fix: .doctorFixRunSetup)
+        }
+        if installed == expected, !current {
+            return DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer(String(installed.count), "0", String(installed.count)), fix: .doctorFixRunSetup)
         }
         if installed == expected {
             return DoctorCheck(.services, status: .ok, detail: .doctorServicesOk(String(installed.count)))

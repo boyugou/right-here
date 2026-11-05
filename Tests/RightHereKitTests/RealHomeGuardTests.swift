@@ -11,7 +11,7 @@ struct RealHomeGuardTests {
     @Test func aTestWithoutATrialHomeIsRefusedForTheRealHome() throws {
         let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
         #expect(throws: RealHomeGuard.Refusal()) { try RealHomeGuard.check(home: home, environment: underTest, realHome: home) }
-        #expect(throws: RealHomeGuard.Refusal()) { try RealHomeGuard.checkSystemWide(environment: underTest) }
+        #expect(throws: RealHomeGuard.Refusal(systemWide: true)) { try RealHomeGuard.checkSystemWide(environment: underTest) }
     }
 
     @Test func aTrialHomeAnotherHomeAndAPersonAtTheKeyboardAreNotRefused() throws {
@@ -20,8 +20,9 @@ struct RealHomeGuardTests {
         try RealHomeGuard.check(home: home, environment: underTest.merging(["RH_HOME": trial.path]) { $1 }, realHome: home)
         try RealHomeGuard.check(home: trial, environment: underTest, realHome: home)
         try RealHomeGuard.check(home: home, environment: [:], realHome: home)
-        try RealHomeGuard.checkSystemWide(environment: underTest.merging(["RH_HOME": trial.path]) { $1 })
         try RealHomeGuard.checkSystemWide(environment: [:])
+        // A trial home is a folder; the registration is the Mac's, which a test never changes.
+        #expect(throws: RealHomeGuard.Refusal(systemWide: true)) { try RealHomeGuard.checkSystemWide(environment: underTest.merging(["RH_HOME": trial.path]) { $1 }) }
     }
 
     @Test func aFileUnderTheRealHomeIsNotWrittenByATestWithoutATrialHome() throws {
@@ -82,9 +83,9 @@ struct RealHomeGuardTests {
     @Test func theRegistrationOfTheFinderExtensionIsRefusedBeforePluginkitIsAsked() async {
         let runner = FakeProcessRunner()
         let manager = FinderExtensionManager(runner: runner, environment: underTest)
-        await #expect(throws: RealHomeGuard.Refusal()) { try await manager.register(appexPath: "/x/FinderExtension.appex") }
-        await #expect(throws: RealHomeGuard.Refusal()) { try await manager.unregister(appexPath: "/x/FinderExtension.appex") }
-        await #expect(throws: RealHomeGuard.Refusal()) { try await manager.disable() }
+        await #expect(throws: RealHomeGuard.Refusal(systemWide: true)) { try await manager.register(appexPath: "/x/FinderExtension.appex") }
+        await #expect(throws: RealHomeGuard.Refusal(systemWide: true)) { try await manager.unregister(appexPath: "/x/FinderExtension.appex") }
+        await #expect(throws: RealHomeGuard.Refusal(systemWide: true)) { try await manager.disable() }
         #expect(runner.recorded.isEmpty, "pluginkit was started: \(runner.recorded)")
         _ = await manager.status()
         #expect(runner.recorded.count == 1, "looking at the registration changes nothing and is allowed")

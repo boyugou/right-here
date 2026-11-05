@@ -41,6 +41,10 @@ extension ConfigBuilder {
                 }
                 return true
             }
+            if let kept = config.serviceItems, kept.count > 256 {
+                sink.warning(["services", "items"], "the list has \(kept.count) entries; the Quick Actions are made from the first 256")
+                config.serviceItems = Array(kept.prefix(256))
+            }
         }
     }
 

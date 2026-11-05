@@ -59,7 +59,9 @@ public enum ServiceWorkflow {
 
     /// The name as the volume compares it: a volume of a Mac does not tell apart two names that differ only in case or in the form of an accent.
     public static func fold(_ name: String) -> String {
-        name.decomposedStringWithCanonicalMapping.folding(options: [.caseInsensitive], locale: nil)
+        // Through upper case first: the case-insensitive folding leaves nine Cyrillic letters (U+1C80 to U+1C88, `ᲀ`) apart from the ones the volume
+        // takes them for (`в`), and two such titles were two bundles of one name.
+        name.decomposedStringWithCanonicalMapping.uppercased().lowercased().folding(options: [.caseInsensitive], locale: nil)
     }
 
     /// The specs whose bundles can stand side by side: of two whose names the volume takes for one (`Notes` and `notes`, or two actions with one title), the

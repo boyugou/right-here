@@ -7,8 +7,19 @@ import Foundation
 /// refuses before anything is written. A person who runs `rh` has no `RH_NO_UI`, and a test that means to write has a trial home.
 public enum RealHomeGuard {
     public struct Refusal: Error, LocalizedError, Equatable {
+        /// What would have been changed is the whole Mac's (the Finder extension's registration), which no trial home holds.
+        public var systemWide = false
+
+        public init(systemWide: Bool = false) {
+            self.systemWide = systemWide
+        }
+
         public var errorDescription: String? {
-            "RH_NO_UI is set, which only a test does, and RH_HOME is not: this would change the real home folder (the runner script, the command link, the Quick Actions) "
+            if systemWide {
+                return "RH_NO_UI is set, which only a test does: this would change the Finder extension's registration, which is the whole Mac's and the person's, "
+                    + "and a test never changes it, with a trial home or without. Unset RH_NO_UI (it is for tests)."
+            }
+            return "RH_NO_UI is set, which only a test does, and RH_HOME is not: this would change the real home folder (the runner script, the command link, the Quick Actions) "
                 + "or the Finder extension's registration, which are the person's. Unset RH_NO_UI (it is for tests), or give rh a trial home, `RH_HOME=<an empty folder>`, for what it writes."
         }
     }
@@ -37,9 +48,10 @@ public enum RealHomeGuard {
         throw Refusal()
     }
 
-    /// Throws before the Finder extension's registration, which is for the whole Mac, is changed by a process a test started that has no trial home.
+    /// Throws before the Finder extension's registration, which is for the whole Mac, is changed by a process a test started: a trial home is a folder,
+    /// and the registration is not in it (CLAUDE.md: tests never register anything).
     public static func checkSystemWide(environment: [String: String] = ProcessInfo.processInfo.environment) throws {
-        guard isUnderTestWithoutTrialHome(environment) else { return }
-        throw Refusal()
+        guard environment["RH_NO_UI"] != nil else { return }
+        throw Refusal(systemWide: true)
     }
 }
