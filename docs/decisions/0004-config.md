@@ -59,6 +59,14 @@ Setting Right Here up with only the installed `rh` and its docs showed the sharp
   `--force`, which could not save the old file first). It used to read as a missing file (`No config file ...; defaults
   apply`) everywhere except in `rh init`. The reading is `BoundedRead`, the one reader the sync folder uses too: a file
   past the size limit is not read, and a link is followed.
+- The size limit (1 MiB) did not bound the time a read takes, and the Finder extension reads the config on its main thread when it has
+  changed, and every click's `rh` reads it again. An independent review (2026-11-04) measured texts far under the limit that took seconds
+  to minutes: a long table header (the outline rebuilt every prefix of it), suggestions for a long unknown key or id (an edit distance with
+  every candidate), a long `menu.items` (the menu checked each entry against the ones before it), and thousands of tables (the TOML
+  library compares each new key with every key of its table). Some of these are only warnings, which a sync pull takes. Now the outline
+  stops past the nesting limit, a word longer than 64 characters gets no suggestion, the menu takes the first 256 entries of the list (with a
+  warning), and a text that sets more than 2,048 keys and table headers is refused before it is decoded (real configs set a few hundred;
+  `=` and a `[` that opens a line, outside strings and comments, count). Each of these texts now reads in a fraction of a second.
 - A value of the wrong kind says what it is: `expected a string, found an integer`, `... found text without quotes` (with the
   quoted text as the replacement), `expected an array of strings, found a string` (with the list as the replacement),
   `... found an integer as item 2`. The kind is found by asking the library to read the value as each kind it has; a string in

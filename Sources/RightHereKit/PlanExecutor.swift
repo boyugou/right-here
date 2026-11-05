@@ -29,9 +29,11 @@ public enum ExecutionError: Error, Equatable, Sendable, LocalizedError, Localize
     }
 
     /// What a step says is what a program, a file or git wrote (git's own words name branches and paths), so its line breaks and tabs stay and every
-    /// other control or invisible character is shown as an escape.
+    /// other control or invisible character is shown as an escape. The step's own name is Right Here's, and may hold a path: a line break in a folder's
+    /// name would add a line of its own to the alert, so it is escaped whole.
     public var shownSentences: [LocalizedMessage] {
-        sentences.map { $0.escapingValues(keeping: $0.key == .refusalStepFailed ? ["\n", "\t"] : []) }
+        guard case .stepFailed(let index, let step, let message) = self else { return sentences.map { $0.escapingValues() } }
+        return [.refusalStepFailed(String(index + 1), step.withControlCharactersEscaped, message.escapingControlCharacters(keeping: ["\n", "\t"]))]
     }
 }
 
@@ -149,7 +151,7 @@ public struct LiveExecutor: Sendable {
         let descriptor = Darwin.open(file.path, O_WRONLY | O_CREAT | O_EXCL, 0o644)
         guard descriptor >= 0 else {
             if errno == EEXIST { throw ExecutionError.fileExists(path: file.path) }
-            throw ExecutionError.stepFailed(index: 0, step: "create \(file.path)", message: String(cString: strerror(errno)))
+            throw ExecutionError.stepFailed(index: 0, step: Step.createFile(file).summary, message: String(cString: strerror(errno)))
         }
         defer { Darwin.close(descriptor) }
         let bytes = file.bytes
@@ -161,7 +163,7 @@ public struct LiveExecutor: Sendable {
                 let reason = count < 0 ? String(cString: strerror(errno)) : "nothing more could be written"
                 // A full disk or a quota ends the write part-way: the file is this action's own (O_EXCL made it), and part of a document is no document.
                 Darwin.unlink(file.path)
-                throw ExecutionError.stepFailed(index: 0, step: "create \(file.path)", message: reason)
+                throw ExecutionError.stepFailed(index: 0, step: Step.createFile(file).summary, message: reason)
             }
             written += count
         }

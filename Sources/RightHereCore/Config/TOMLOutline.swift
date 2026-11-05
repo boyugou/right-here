@@ -26,6 +26,9 @@ struct TOMLOutline {
     private let lineStarts: [Int]
     /// How many `[[a.b]]` entries have been seen, by path (segments joined with a character no key holds).
     private var entryCounts: [String: Int] = [:]
+    /// The keys of `entryCounts` under each array of tables, so that a new entry resets only its own (a scan of every key for each header grew with the
+    /// square of the number of tables).
+    private var arraysUnder: [String: Set<String>] = [:]
     private static let separator = "\u{1F}"
 
     init(_ text: String) {
@@ -140,8 +143,9 @@ struct TOMLOutline {
                     next += 1
                     let counted = key.segments.joined(separator: Self.separator)
                     entryCounts[counted, default: 0] += 1
+                    for depth in 1..<key.segments.count { arraysUnder[key.segments[0..<depth].joined(separator: Self.separator), default: []].insert(counted) }
                     // A new entry starts its own arrays of tables afresh.
-                    for known in entryCounts.keys where known.hasPrefix(counted + Self.separator) { entryCounts[known] = nil }
+                    for known in arraysUnder[counted] ?? [] { entryCounts[known] = nil }
                 }
                 table = resolved(key.segments, includingLast: isArray)
                 // A problem with the array as a whole (`[[agent]]` where a table was expected) is at its first entry.
@@ -197,6 +201,8 @@ struct TOMLOutline {
             } else {
                 return nil
             }
+            // The parser refuses more segments than this (`NestingDepth`); following them here cost n² in `resolved`.
+            if segments.count > ConfigParser.maxNesting { return nil }
             let afterKey = index
             index = skipSpaces(index)
             if index < bytes.count, bytes[index] == UInt8(ascii: ".") { index += 1; continue }

@@ -69,4 +69,40 @@ public enum NestingDepth {
         }
         return false
     }
+
+    /// Whether `text` (TOML) sets more than `limit` keys and table headers, counted as the `=` signs and the `[` that open a line outside
+    /// strings and comments. The decoder finds the place of each key by comparing it with every key already in its table, so a text of many
+    /// thousands of keys (a few hundred kilobytes, under the size limit) took seconds to read, on every right-click; real configs set a few hundred.
+    public static func tomlEntriesExceed(_ text: String, limit: Int) -> Bool {
+        let bytes = Array(text.utf8)
+        var entries = 0
+        var index = 0
+        var lineStart = true
+        while index < bytes.count {
+            let byte = bytes[index]
+            switch byte {
+            case UInt8(ascii: "#"):
+                while index < bytes.count && bytes[index] != UInt8(ascii: "\n") { index += 1 }
+                continue
+            case UInt8(ascii: "\""), UInt8(ascii: "'"):
+                index = TOMLScan.skipString(bytes, at: index).end
+                lineStart = false
+                continue
+            case UInt8(ascii: "\n"):
+                lineStart = true
+            case UInt8(ascii: " "), UInt8(ascii: "\t"), UInt8(ascii: "\r"):
+                break
+            case UInt8(ascii: "="), UInt8(ascii: "["):
+                if byte == UInt8(ascii: "=") || lineStart {
+                    entries += 1
+                    if entries > limit { return true }
+                }
+                lineStart = false
+            default:
+                lineStart = false
+            }
+            index += 1
+        }
+        return false
+    }
 }

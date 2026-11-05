@@ -26,8 +26,11 @@ enum Suggestion {
 
     /// The closest candidate within a small edit distance, if any.
     static func closest(to word: String, in candidates: [String]) -> String? {
-        let best = candidates.map { ($0, distance(word, $0)) }.min { $0.1 < $1.1 }
-        guard let (candidate, score) = best, score <= max(2, word.count / 3) else { return nil }
+        let length = word.count
+        guard length <= 64 else { return nil }
+        let limit = max(2, length / 3)
+        let best = candidates.filter { abs($0.count - length) <= limit }.map { ($0, distance(word, $0)) }.min { $0.1 < $1.1 }
+        guard let (candidate, score) = best, score <= limit else { return nil }
         return candidate
     }
 

@@ -6,6 +6,10 @@ extension ConfigBuilder {
         guard let menu = root.subtable("menu") else { return }
         menu.checkKnownKeys()
         config.menuItems = menu.stringArray("items")
+        if let items = config.menuItems, items.count > 256 {
+            sink.warning(["menu", "items"], "the list has \(items.count) entries; the menu takes the first 256")
+            config.menuItems = Array(items.prefix(256))
+        }
         if config.menuItems?.contains(where: { $0 != "-" }) == false {
             sink.warning(["menu", "items"], "the list has no entries, so the Finder menu will be empty; remove the key to use the default menu")
         }

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- A config that would take seconds to read no longer holds up the Finder menu (an independent review of the Finder click path found texts
+  far under the size limit that took seconds to minutes, some of which a sync pull would take): a config sets at most 2,048 keys and
+  tables, the menu takes the first 256 entries of `menu.items`, and long table headers and long unknown names are read quickly.
+- A folder name with a line break cannot add a line of its own to the alert of a New File that failed.
+
 ## 1.2.3 (2026-11-04)
 
 The Shortcuts actions, after an independent review.

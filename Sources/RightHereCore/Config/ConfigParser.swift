@@ -7,6 +7,10 @@ public enum ConfigParser {
     /// The deepest nesting of arrays and inline tables a config may have; real ones nest a few levels.
     static let maxNesting = 64
 
+    /// The most keys and table headers a config may set. Real ones set a few hundred; the decoder's cost grows with the square of the keys of a
+    /// table, and the config is read on every right-click.
+    static let maxEntries = 2048
+
     /// The most a config file may hold. A config is a few kilobytes; the menu is built from it on every right-click, so a
     /// file far past that (a wrong path, a log pasted over it) is refused instead of read: parsing 60 MB took four
     /// seconds. The config store, the overlay and the sync folder's copy all keep to it.
@@ -61,6 +65,10 @@ public enum ConfigParser {
         // The TOML library recurses once per level and a deep enough file overflowed the stack and killed `rh`.
         if NestingDepth.tomlExceeds(text, limit: maxNesting) {
             sink.syntaxError("arrays or tables nested more than \(maxNesting) levels deep. \(consequence)")
+            return nil
+        }
+        if NestingDepth.tomlEntriesExceed(text, limit: maxEntries) {
+            sink.syntaxError("more than \(maxEntries) settings and tables, where a config has a few hundred; reading them all would hold up every right-click. \(consequence)")
             return nil
         }
         do {
