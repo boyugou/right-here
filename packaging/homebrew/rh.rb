@@ -9,7 +9,7 @@ class Rh < Formula
   desc "Send a folder or Finder selection to terminals, editors and AI agents"
   homepage "https://github.com/boyugou/right-here"
   url "https://github.com/boyugou/right-here/archive/refs/tags/v1.2.3.tar.gz"
-  sha256 "8b02c4ec71e8199b35d53f1d72cba3d485d9e174793c30ed835018765738078f"
+  sha256 "06ed60d23dddabba7d88424f1694ff485dd946f6eea1ea2ca51a02bf8bfcac39"
   license "Apache-2.0"
 
   depends_on xcode: ["26.0", :build]
