@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.2.5 (2026-11-05)
+
+The Quick Actions and the installer, after an independent review.
+
 - The Quick Actions, after an independent review: a Quick Action whose title starts with a combining mark or ends with a joining one is
   seen again by setup (it was rewritten by every setup and never removed); two titles the disk takes for one name (Cyrillic letters such
   as `ᲀ` and `в`) no longer overwrite each other; the Checks say the Quick Actions differ when they run an `rh` that is gone or another
