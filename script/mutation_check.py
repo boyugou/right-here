@@ -2151,6 +2151,12 @@ LOAD_SENSITIVE: set[str] = {
     "aChangeThatIsCalledOffWhileItWaitsIsNotSaidToBeBusyAndDoesNotSpinForTheRest",
     # Times a real `rh` against a two-second limit.
     "aShortcutStoppedAtItsLimitLeavesNothingOfItsActionRunning",
+    # Time a read of a config against three seconds; each bound also has a test that does not time anything (`ConfigBoundsTests`).
+    "aLongTableHeaderIsReadInTimeThatGrowsWithTheText",
+    "aLongUnknownKeyIsReadInTimeThatGrowsWithTheText",
+    "aLongIdNextToALongReferenceIsReadInTimeThatGrowsWithTheText",
+    "theMenuForFilesFromALongMenuListIsBuiltQuickly",
+    "theConfigReadThatTheFinderMenuWaitsForStaysFastForALongTableHeader",
 }
 
 
