@@ -725,12 +725,12 @@ struct SetupModelMenuEditingTests {
         #expect(entries(mac) == ["open-editor", "-", "copy-path", "new-file"].filter { $0 != "" } || entries(mac).count == 4, "the move is gone, the removal is not: \(entries(mac))")
         await mac.model.undoEdit()
         #expect(entries(mac).count == 4, "there is no banner any more, so there is nothing for it to take back")
-        // The Config page's list of recent changes takes back the last change whoever made it.
+        // The Config page's list of recent changes takes back the newest change it shows, whoever made it.
+        await mac.model.openConfigPage()
         await mac.model.undoConfigChange()
         #expect(text(mac) == Self.listed && mac.model.notice == nil)
         #expect(entries(mac) == ["open-terminal", "open-editor", "-", "copy-path", "new-file"])
-        await mac.model.undoConfigChange()
-        #expect(mac.model.notice?.isProblem == true, "there is nothing left to take back, and it is said")
+        #expect(mac.model.configPage?.history.isEmpty == true, "there is nothing left to take back, and the page has no Undo")
     }
 
     @Test func aFileChangedByHandIsNotUndoneOverTheChange() async throws {
@@ -839,7 +839,8 @@ struct SetupModelConfigPageTests {
         let before = text(mac)
         await mac.model.approveProposal(proposal.id)
         let held = try #require(mac.model.pendingLoosening)
-        #expect(held.proposal == proposal.id && held.agents.map(\.agent) == ["claude", "codex"] && text(mac) == before, "the alert names each agent and its flag, and nothing was made")
+        guard case .proposal(let id, _) = held.change else { Issue.record("not the proposal: \(held.change)"); return }
+        #expect(id == proposal.id && held.agents.map(\.agent) == ["claude", "codex"] && text(mac) == before, "the alert names each agent and its flag, and nothing was made")
         mac.model.declineLoosening()
         #expect(mac.model.pendingLoosening == nil && text(mac) == before && mac.model.proposalsWaiting == 1, "a no leaves the proposal waiting")
         await mac.model.approveProposal(proposal.id)
@@ -2831,6 +2832,7 @@ struct SetupModelGapTests {
         var stale = try #require(mac.model.snapshot)
         stale.readAt = .now
         try await Task.sleep(for: .milliseconds(5))
+        await mac.model.openConfigPage()
         await mac.model.approveProposal(id)
         #expect(mac.model.proposalsWaiting == 0 && text(mac).contains("--verbose"))
         mac.model.apply(stale)
@@ -2855,7 +2857,7 @@ struct SetupModelGapTests {
         let mac = try await started(Self.sample, local: "[[agent.claude.variant]]\nid = \"a\"\ntitle = \"A\"\narguments = [\"--a\"]\n"); defer { mac.cleanUp() }
         let shared = text(mac)
         #expect(await mac.model.addArgument(.variant(agent: "claude", id: "a"), "--dangerously-skip-permissions") == false)
-        let held = try #require(mac.model.pendingLoosening)
+        guard case .edit(let held) = mac.model.pendingLoosening?.change else { Issue.record("nothing held"); return }
         #expect(held.target == .local && held.tab == .agents)
         await mac.model.confirmLoosening()
         #expect(localText(mac).contains("--dangerously-skip-permissions") && text(mac) == shared, "shared: \(text(mac)) local: \(localText(mac))")
@@ -2868,7 +2870,8 @@ struct SetupModelGapTests {
                                            local: "[general]\nagents = [\"claude\", \"mine\"]\n\n[agent.mine]\nname = \"Mine\"\ncommand = \"mine\"\n"); defer { mac.cleanUp() }
         let shared = text(mac)
         #expect(await mac.model.setAgentBypassArgument("mine", "--yolo") == false)
-        #expect(mac.model.pendingLoosening?.anchor == "agent.mine.command")
+        guard case .edit(let held) = mac.model.pendingLoosening?.change else { Issue.record("nothing held"); return }
+        #expect(held.anchor == "agent.mine.command")
         await mac.model.confirmLoosening()
         #expect(localText(mac).contains("bypass_permission_arg = \"--yolo\"") && text(mac) == shared, "shared: \(text(mac)) local: \(localText(mac))")
     }
@@ -3247,5 +3250,205 @@ struct SetupModelIconWarmingTests {
         #expect(SetupModel.listIcon(.app("com.mitchellh.ghostty")) == .app("com.mitchellh.ghostty"))
         #expect(SetupModel.listIcon(.symbol("terminal")) == .symbol("terminal"))
         #expect(SetupModel.listIcon(nil) == nil)
+    }
+}
+
+/// From an independent review of the window's editing (2026-11-05): what a yes, an Undo, a saved text and Apply make, against files that something else changes meanwhile.
+@Suite("Setup window: a yes, an Undo and Apply make what the person saw")
+@MainActor
+struct EditingFlowTests {
+    private func text(_ mac: Mac, _ file: URL? = nil) -> String {
+        (try? String(contentsOf: file ?? mac.paths.configFile, encoding: .utf8)) ?? ""
+    }
+
+    private func service(_ mac: Mac) -> ConfigService { ConfigService(paths: mac.paths, environment: [:]) }
+
+    /// The Config page's "Recent changes" puts Undo on the row it shows as the newest. The page is read when it is chosen and at a full read, not when an assistant changes the file,
+    /// and the Undo asks the service for "the last edit, whoever made it". The row the person pressed Undo on is not the change that is taken back.
+    @Test func theUndoOfTheNewestRowTakesBackThatRowsChangeAndNotOneThePageDoesNotShow() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\n")
+        await mac.model.refresh()
+        await mac.model.setEditor("vscode")
+        await mac.model.openConfigPage()
+        let row = try #require(mac.model.configPage?.history.first)
+        #expect(row.actor == .window && row.summary.contains("general.editor"), "the page shows the person's change as the newest, with Undo")
+        // An assistant changes a plain setting meanwhile (applied at once, not proposed); nothing reads the page again.
+        guard case .applied = try service(mac).submit([.set("general.terminal_placement", .string("tab"))], actor: .mcp) else { Issue.record("not applied"); return }
+        #expect(mac.model.configPage?.history.first == row, "the page still shows the window's change as the newest")
+        await mac.model.undoConfigChange()
+        #expect(text(mac).contains("terminal_placement = \"tab\""), "Undo on the row of the window's change took back the assistant's change, which the page did not show: \(text(mac))")
+        // And it cannot be had back: an undo writes the text before and removes the entry, so no row of the history holds the assistant's change any more (there is no redo).
+        #expect(service(mac).history().contains { $0.summary.contains("terminal_placement") }, "the assistant's change is gone from the file and from the history: \(service(mac).history().map(\.summary))")
+    }
+
+    private func local(_ mac: Mac, _ text: String) throws {
+        try text.write(to: mac.paths.localConfigFile, atomically: true, encoding: .utf8)
+    }
+
+    /// The alert names the agents that the change would start without asking when it was raised. The yes is then made with `confirmed: true`, which skips the question, against
+    /// the files as they are when the yes comes: an agent that was put in the menu while the alert was up (a plain change while the prompts are on) starts with its flag, unnamed.
+    @Test func aYesMakesOnlyWhatTheAlertNamed() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
+        await mac.model.refresh()
+        await mac.model.setBypassPermissions(true)
+        let held = try #require(mac.model.pendingLoosening)
+        #expect(held.agents.map(\.agent) == ["claude"], "the alert names Claude Code and its flag")
+        // While the alert is up, an assistant puts Codex in the menu. The prompts are still on, so this is made at once.
+        guard case .applied = try service(mac).submit([.insert("codex", into: "general.agents", at: nil)], actor: .mcp) else { Issue.record("not applied"); return }
+        await mac.model.confirmLoosening(held)
+        let config = ConfigStore.load(paths: mac.paths).config
+        let codexWithoutAsking = config.bypassPermissions && config.enabledAgents.contains("codex")
+        #expect(!codexWithoutAsking || mac.model.pendingLoosening?.agents.contains { $0.agent == "codex" } == true,
+                "the yes to \"Claude Code would start with its flag\" made Codex start with --dangerously-bypass-approvals-and-sandbox, which nobody was asked about")
+    }
+
+    /// Undo never asks. When the agents are listed in this Mac's own file and the switch in the shared one, an Undo of the switch (the Config page's, of the shared file) turns the prompts off
+    /// for an agent that was put in the menu while they were on: the alert that every control raises for that (`edit`) is not raised, and the agent was never named.
+    @Test func anUndoThatTurnsThePromptsOffForAnAgentNobodyWasAskedAboutAsksFirst() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\nbypass_permissions = true\n")
+        try local(mac, "[general]\nagents = [\"claude\"]\n")
+        await mac.model.refresh()
+        #expect(mac.model.agentsAreMachineOwn)
+        await mac.model.setBypassPermissions(false)
+        #expect(mac.model.pendingLoosening == nil && text(mac).contains("bypass_permissions = false"))
+        await mac.model.setAgent("codex", enabled: true)
+        #expect(mac.model.pendingLoosening == nil, "the prompts are on: putting Codex in the menu asks nothing, rightly")
+        await mac.model.openConfigPage()
+        #expect(mac.model.configTarget == .shared && mac.model.configPage?.history.first?.summary.contains("bypass_permissions") == true)
+        await mac.model.undoConfigChange()
+        let config = ConfigStore.load(paths: mac.paths).config
+        #expect(mac.model.pendingLoosening != nil || !config.bypassPermissions,
+                "the Undo switched the prompts off for Codex (enabled: \(config.enabledAgents)) with no question naming it")
+    }
+
+    /// The banner's Undo of the switch, after an assistant put Codex in this Mac's list while the prompts were on.
+    @Test func theBannersUndoOfTheSwitchAsksWhenItWouldStartAnAgentNobodyWasAskedAbout() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\nbypass_permissions = true\n")
+        try local(mac, "[general]\nagents = [\"claude\"]\n")
+        await mac.model.refresh()
+        await mac.model.setBypassPermissions(false)
+        #expect(mac.model.configEdit?.key == "general.bypass_permissions")
+        guard case .applied = try service(mac).submit([.insert("codex", into: "general.agents", at: nil)], target: .local, actor: .mcp) else { Issue.record("not applied"); return }
+        await mac.model.undoEdit()
+        let config = ConfigStore.load(paths: mac.paths).config
+        #expect(mac.model.pendingLoosening != nil || !(config.bypassPermissions && config.enabledAgents.contains("codex")),
+                "the banner's Undo switched the prompts off for Codex with no question naming it")
+    }
+
+    /// A save of the Config page's text that switches the prompts off is written at once: it does not go through `edit`, so the alert that names the agents and their flags is not raised.
+    @Test func aSavedTextThatSwitchesThePromptsOffAsksFirst() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        let before = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\", \"codex\"]\n"
+        try mac.writeConfig(before)
+        await mac.model.refresh()
+        await mac.model.openConfigPage()
+        mac.model.draftText = before + "bypass_permissions = true\n"
+        await mac.model.saveConfigText()
+        #expect(mac.model.pendingLoosening != nil || text(mac) == before, "saved with no question naming Claude Code and Codex and their flags")
+    }
+
+    /// A change made in an editor is told to VoiceOver ("Removed Copy Path from the menu"); taking it back with the banner's Undo, the Config page's Undo, or applying an assistant's
+    /// proposal tells it nothing: the button that had the focus goes away and nothing is said. (`lastAnnouncement` is what VoiceOver was last told.)
+    @Test func anUndoAndAnAppliedProposalAreToldToVoiceOver() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig("[menu]\nitems = [\"open-terminal\", \"open-editor\", \"-\", \"copy-path\", \"new-file\"]\n")
+        await mac.model.refresh()
+        await mac.model.removeMenuRow(4)
+        let told = mac.model.lastAnnouncement
+        #expect(told?.contains("Copy Path") == true)
+        await mac.model.undoEdit()
+        #expect(mac.model.configEdit == nil && text(mac).contains("copy-path"), "the change was taken back")
+        #expect(mac.model.lastAnnouncement == "Change undone.", "VoiceOver was told nothing of the banner's Undo; the last thing it heard is \"\(mac.model.lastAnnouncement ?? "")\"")
+        // The Config page's Undo.
+        await mac.model.removeMenuRow(4)
+        #expect(mac.model.lastAnnouncement == told)
+        await mac.model.openConfigPage()
+        await mac.model.undoConfigChange()
+        #expect(text(mac).contains("copy-path"), "the change was taken back")
+        #expect(mac.model.lastAnnouncement == "Change undone.", "VoiceOver was told nothing of the Config page's Undo")
+        // Apply on a proposal card.
+        guard case .proposed(let proposal, _) = try service(mac).submit([.set("agent.claude.args", .strings(["--verbose"]))], actor: .mcp) else { Issue.record("not proposed"); return }
+        await mac.model.openConfigPage()
+        #expect(mac.model.lastAnnouncement == "Change undone.")
+        await mac.model.approveProposal(proposal.id)
+        #expect(text(mac).contains("--verbose"), "the proposal was made")
+        #expect(mac.model.lastAnnouncement == "Saved to your config file", "VoiceOver was told nothing of the proposal that was applied")
+    }
+
+    /// Apply on a proposal card asks the service what the change would start without asking before it marks the window busy (`edit` marks it first). A second click on Apply in that gap
+    /// passes the guard too: both apply the same proposal, and the second says that the change "is no longer waiting", after the first made it.
+    @Test func aDoubleClickOnApplyMakesTheProposalOnceAndSaysNothingWrong() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
+        guard case .proposed(let proposal, _) = try service(mac).submit([.set("agent.claude.args", .strings(["--verbose"]))], actor: .mcp) else { Issue.record("not proposed"); return }
+        await mac.model.refresh()
+        await mac.model.openConfigPage()
+        async let first: Void = mac.model.approveProposal(proposal.id)
+        async let second: Void = mac.model.approveProposal(proposal.id)
+        _ = await (first, second)
+        #expect(text(mac).contains("--verbose") && mac.model.proposalsWaiting == 0)
+        #expect(mac.model.notice == nil, "the second click said: \(mac.model.notice.map { $0.text(in: .english) } ?? "")")
+    }
+
+    /// The question asked again after a yes names every agent, and a yes to it makes the change.
+    @Test func aYesToTheWiderQuestionMakesTheChange() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
+        await mac.model.refresh()
+        await mac.model.setBypassPermissions(true)
+        let first = try #require(mac.model.pendingLoosening)
+        guard case .applied = try service(mac).submit([.insert("codex", into: "general.agents", at: nil)], actor: .mcp) else { Issue.record("not applied"); return }
+        await mac.model.confirmLoosening(first)
+        let again = try #require(mac.model.pendingLoosening, "asked again")
+        #expect(again.agents.map(\.agent) == ["claude", "codex"] && !text(mac).contains("bypass_permissions"))
+        await mac.model.confirmLoosening(again)
+        #expect(mac.model.pendingLoosening == nil && text(mac).contains("bypass_permissions = true"))
+        #expect(mac.model.configEdit?.key == "general.bypass_permissions", "the banner says the change, to take back")
+    }
+
+    /// An Undo held for the yes is made after it, and the banner goes.
+    @Test func anUndoHeldForTheYesIsMadeAfterIt() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\nbypass_permissions = true\nagents = [\"claude\"]\n")
+        await mac.model.refresh()
+        await mac.model.setBypassPermissions(false)
+        await mac.model.undoEdit()
+        let held = try #require(mac.model.pendingLoosening, "turning the switch back on asks, as the switch does")
+        #expect(held.agents.map(\.agent) == ["claude"] && text(mac).contains("bypass_permissions = false") && mac.model.configEdit != nil, "nothing was taken back yet, and the banner stays")
+        await mac.model.confirmLoosening(held)
+        #expect(text(mac).contains("bypass_permissions = true") && mac.model.configEdit == nil && mac.model.lastAnnouncement == "Change undone.")
+    }
+
+    /// A no to a saved text leaves the draft as it was typed, to be changed; a yes saves it.
+    @Test func aNoToASavedTextKeepsTheDraft() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        let before = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n"
+        try mac.writeConfig(before)
+        await mac.model.refresh()
+        await mac.model.openConfigPage()
+        let draft = before + "bypass_permissions = true\n"
+        mac.model.draftText = draft
+        await mac.model.saveConfigText()
+        #expect(mac.model.pendingLoosening?.agents.map(\.agent) == ["claude"])
+        mac.model.declineLoosening()
+        #expect(mac.model.draftText == draft && mac.model.textHasChanges && text(mac) == before)
+        await mac.model.saveConfigText()
+        await mac.model.confirmLoosening()
+        #expect(text(mac) == draft && !mac.model.textHasChanges && mac.model.lastAnnouncement == "Saved your changes.")
+    }
+
+    /// Apply is held to the files its card was drawn for: with no card drawn, nothing is made.
+    @Test func applyWithNoCardDrawnMakesNothing() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n")
+        guard case .proposed(let proposal, _) = try service(mac).submit([.set("agent.claude.args", .strings(["--verbose"]))], actor: .mcp) else { Issue.record("not proposed"); return }
+        await mac.model.refresh()
+        await mac.model.approveProposal(proposal.id)
+        #expect(!text(mac).contains("--verbose") && mac.model.proposalsWaiting == 1 && mac.model.notice == .proposalStale)
+        #expect(mac.model.configPage?.proposals.first?.digest != nil, "the card is drawn now, to be looked at")
     }
 }

@@ -94,36 +94,36 @@ public struct SetupActions: Sendable {
     }
 
 
-    /// What a change of the config made in the window came to: what it did, so that it can be said and taken back, or why it was refused.
+    /// What a change of the config made in the window came to: what it did, so that it can be said and taken back, or why it was refused, or the agents it would make start without
+    /// their permission prompts that the person did not agree to (nothing was written; the window asks).
     public struct ConfigEditResult: Sendable, Equatable {
         public var change: ConfigChange?
         public var notice: SetupNotice?
+        public var held: [PromptEffects.Entry] = []
     }
 
     /// Changes the config as the person asks in the window (`ConfigService`, as `rh config` does): in the file that decides `key` on this Mac, in the smallest way, with the
     /// text before it kept for undo. A change the config would refuse (a text that does not read, a setting it does not have) is said, and the file is left as it was.
     /// - Parameter anchor: What the file that decides `key` is also the one that holds, for a key of a table that another key makes (`ConfigService.owner(of:anchor:)`).
     /// - Parameter target: The file to change, when it is not the one a setting decides: an entry of a list (a preset) is in the file that holds it, and the same place in the other file is another entry.
-    public func editConfig(_ operations: [ConfigOperation], deciding key: String, anchor: String? = nil, target: ConfigTarget? = nil) async -> ConfigEditResult {
+    /// - Parameter agreed: The agents the person agreed would start without their permission prompts: a change that would make others do so is not made, and comes back in `held`
+    ///   (`ConfigService.apply(startingWithoutAsking:)`). Every change of the window passes it, so that the question and the change are made against the same files.
+    public func editConfig(_ operations: [ConfigOperation], deciding key: String, anchor: String? = nil, target: ConfigTarget? = nil,
+                           startingWithoutAsking agreed: [PromptEffects.Entry] = []) async -> ConfigEditResult {
         let service = ConfigService(paths: paths)
         do {
-            return ConfigEditResult(change: try service.apply(operations, target: target ?? service.owner(of: key, anchor: anchor), actor: .window), notice: nil)
+            return ConfigEditResult(change: try service.apply(operations, target: target ?? service.owner(of: key, anchor: anchor), actor: .window, startingWithoutAsking: agreed), notice: nil)
         } catch ConfigDocument.EditError.changedMeanwhile {
             return ConfigEditResult(change: nil, notice: .listChanged)
         } catch {
-            return ConfigEditResult(change: nil, notice: .failure(error))
+            return Self.result(of: error)
         }
     }
 
-    /// The agents that the change would make start without their permission prompts, and did not.
-    public func looseningEffects(of operations: [ConfigOperation], deciding key: String, anchor: String? = nil, target: ConfigTarget? = nil) async -> [PromptEffects.Entry] {
-        let service = ConfigService(paths: paths)
-        return service.looseningEffects(of: operations, target: target ?? service.owner(of: key, anchor: anchor))
-    }
-
-    /// The agents that making a stored proposal would start without their permission prompts, and did not.
-    public func looseningEffects(ofProposal id: String) async -> [PromptEffects.Entry] {
-        ConfigService(paths: paths).looseningEffects(ofProposal: id)
+    /// A refusal as the window takes it: the agents that would start without asking are asked about, anything else is said.
+    static func result(of error: any Error) -> ConfigEditResult {
+        if case ConfigService.Failure.wouldStartWithoutAsking(let agents) = error { return ConfigEditResult(change: nil, notice: nil, held: agents) }
+        return ConfigEditResult(change: nil, notice: .failure(error))
     }
 
     /// The ids that the files have for the entries of a list of tables (`ConfigService.entryIDsInUse`): a new entry takes none of them.

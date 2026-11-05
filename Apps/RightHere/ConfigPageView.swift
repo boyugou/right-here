@@ -84,7 +84,7 @@ struct ConfigPage: View {
         .padding(0.5)
         .background(Color.primary.opacity(0.08), in: Capsule())
         #else
-        Picker("", selection: Binding(get: { model.configTarget }, set: { target in Task { await model.chooseConfigFile(target) } })) {
+        Picker(l10n.string(.appConfigFileLabel), selection: Binding(get: { model.configTarget }, set: { target in Task { await model.chooseConfigFile(target) } })) {
             Text(verbatim: tabTitle(.shared)).tag(ConfigTarget.shared)
             Text(verbatim: tabTitle(.local)).tag(ConfigTarget.local)
         }
@@ -297,12 +297,12 @@ private struct HistoryList: View {
         }
     }
 
-    /// "2 hours ago" in the language of the system; the preview, whose dates are canned, writes the date, so that the picture is the same whenever it is made.
+    /// "2 hours ago" in the language of the window; the preview, whose dates are canned, writes the date, so that the picture is the same whenever it is made.
     private func when(_ date: Date) -> String {
         #if PREVIEW
-        date.formatted(date: .abbreviated, time: .shortened)
+        l10n.dateAndTime(date)
         #else
-        date.formatted(.relative(presentation: .named))
+        l10n.relative(date)
         #endif
     }
 

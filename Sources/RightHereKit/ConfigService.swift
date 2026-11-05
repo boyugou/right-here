@@ -63,6 +63,8 @@ public struct ConfigService: Sendable {
         case readOnly(String)
         /// An assistant asked to take a change back, and what the files would say afterwards decides which program starts or whether an agent asks first: that waits for the person, as the same change would.
         case undoNeedsPerson(ConfigTarget, [String])
+        /// The change would make these agents start without their permission prompts, and the person agreed to fewer (`startingWithoutAsking`): nothing was written, and the window asks again.
+        case wouldStartWithoutAsking([PromptEffects.Entry])
 
         public var errorDescription: String? {
             switch self {
@@ -87,6 +89,8 @@ public struct ConfigService: Sendable {
             case .undoNeedsPerson(let target, let keys):
                 return "Taking back the last edit of \(target == .shared ? "config.toml" : "config.local.toml") would change what decides which program starts or whether an agent asks before it acts (\(keys.joined(separator: ", "))), "
                     + "and that waits for the person, as the same change would. They can take it back in the setup window or with `rh config undo`."
+            case .wouldStartWithoutAsking(let agents):
+                return "The change would make \(agents.map { "\($0.name) (\($0.flag))" }.joined(separator: ", ").withControlCharactersEscaped) start without their permission prompts, which was not agreed to. Nothing was changed."
             }
         }
     }
@@ -99,15 +103,21 @@ public struct ConfigService: Sendable {
         case proposed(ConfigProposal, preview: ConfigChange)
     }
 
-    public struct HistoryItem: Sendable, Equatable, Encodable {
+    public struct HistoryItem: Sendable, Equatable {
         public var time: Date
         public var actor: ConfigActor
         public var summary: String
+        /// The text the edit left and the one it replaced (`ConfigHistory.digest`): an Undo of this row is held to them (`undo(expecting:replacing:)`), so that it takes back this edit and not
+        /// one made after it that the row's page has not shown yet.
+        public var afterDigest: String?
+        public var beforeDigest: String?
 
-        public init(time: Date, actor: ConfigActor, summary: String) {
+        public init(time: Date, actor: ConfigActor, summary: String, afterDigest: String? = nil, beforeDigest: String? = nil) {
             self.time = time
             self.actor = actor
             self.summary = summary
+            self.afterDigest = afterDigest
+            self.beforeDigest = beforeDigest
         }
     }
 
@@ -137,7 +147,7 @@ public struct ConfigService: Sendable {
 
     /// The edits of a file that can still be undone, newest first.
     public func history(of target: ConfigTarget = .shared) -> [HistoryItem] {
-        entries(of: target).map { HistoryItem(time: $0.time, actor: $0.actor, summary: $0.summary) }
+        entries(of: target).map { HistoryItem(time: $0.time, actor: $0.actor, summary: $0.summary, afterDigest: $0.afterDigest, beforeDigest: ConfigHistory.digest($0.before)) }
     }
 
     /// The history of this file of the config, newest first: the folder may hold the history of another (`RH_CONFIG`).
@@ -321,8 +331,12 @@ public struct ConfigService: Sendable {
     ///
     /// With `unchangedSince`, the SHA-256 of the text that was read (`ConfigText.digest`), the change is made only when the file is still that text: whoever edits a text for a
     /// while must not save over a change that was made meanwhile.
-    public func apply(_ operations: [ConfigOperation], target: ConfigTarget = .shared, actor: ConfigActor, dryRun: Bool = false, unchangedSince digest: String? = nil) throws -> ConfigChange {
-        try locked { try applyLocked(operations, target: target, actor: actor, dryRun: dryRun, unchangedSince: digest) }
+    ///
+    /// With `startingWithoutAsking`, the agents the person agreed would start without their permission prompts (none, before they were asked), a change that would make any other agent start
+    /// so, or one of them with another flag, is refused (`Failure.wouldStartWithoutAsking`) under the same lock as the write: the files may have changed while the question was up.
+    public func apply(_ operations: [ConfigOperation], target: ConfigTarget = .shared, actor: ConfigActor, dryRun: Bool = false, unchangedSince digest: String? = nil,
+                      startingWithoutAsking agreed: [PromptEffects.Entry]? = nil) throws -> ConfigChange {
+        try locked { try applyLocked(operations, target: target, actor: actor, dryRun: dryRun, unchangedSince: digest, startingWithoutAsking: agreed) }
     }
 
     /// Takes the lock of the config for `body`. Before the lock file is made, which is a write too, a process a test started is kept from the real home; and there is no
@@ -337,7 +351,8 @@ public struct ConfigService: Sendable {
         return try body()
     }
 
-    private func applyLocked(_ operations: [ConfigOperation], target: ConfigTarget, actor: ConfigActor, dryRun: Bool, unchangedSince digest: String? = nil) throws -> ConfigChange {
+    private func applyLocked(_ operations: [ConfigOperation], target: ConfigTarget, actor: ConfigActor, dryRun: Bool, unchangedSince digest: String? = nil,
+                             startingWithoutAsking agreed: [PromptEffects.Entry]? = nil) throws -> ConfigChange {
         let file = file(of: target)
         let shared = try sharedText()
         let overlay = try localText()
@@ -358,6 +373,10 @@ public struct ConfigService: Sendable {
             }
             let after = target == .shared ? problems(shared: editedText, overlay: overlay) : problems(shared: shared, overlay: editedText)
             if let new = after.subtracting(problems(shared: shared, overlay: overlay)).sorted().first { throw ConfigDocument.EditError.wouldBeInvalid(new) }
+            if let agreed {
+                try Self.hold(to: agreed, from: config(shared: shared, local: overlay),
+                              to: config(shared: target == .shared ? editedText : shared, local: target == .local ? editedText : overlay))
+            }
         }
         let summary = Self.summary(of: operations)
         var change = ConfigChange(target: target, file: file.path, summary: summary, changed: changed, written: false, diff: LineDiff.unified(from: current, to: editedText),
@@ -453,15 +472,17 @@ public struct ConfigService: Sendable {
         return checks
     }
 
+    /// The config that two texts make, laid over each other.
+    private func config(shared: String, local: String?) -> Config {
+        ConfigLayers.load(base: .text(shared), local: local.map(ConfigSource.text) ?? .absent, overlayName: paths.localConfigFile.lastPathComponent).config
+    }
+
     /// What the config says before the edit and after it: the two files laid over each other.
     private func configs(of operations: [ConfigOperation], target: ConfigTarget) throws -> (before: Config, after: Config) {
         let shared = try sharedText()
         let overlay = try localText()
         var edited = ConfigDocument(target == .shared ? shared : (overlay ?? ""), validation: target == .shared ? .standalone : .overlay(over: shared))
         for operation in operations { edited = try operation.apply(to: edited) }
-        func config(shared: String, local: String?) -> Config {
-            ConfigLayers.load(base: .text(shared), local: local.map(ConfigSource.text) ?? .absent, overlayName: paths.localConfigFile.lastPathComponent).config
-        }
         return (config(shared: shared, local: overlay), config(shared: target == .shared ? edited.text : shared, local: target == .local ? edited.text : overlay))
     }
 
@@ -469,10 +490,14 @@ public struct ConfigService: Sendable {
     private func configs(replacing target: ConfigTarget, with text: String?) throws -> (before: Config, after: Config) {
         let shared = try sharedText()
         let overlay = try localText()
-        func config(shared: String, local: String?) -> Config {
-            ConfigLayers.load(base: .text(shared), local: local.map(ConfigSource.text) ?? .absent, overlayName: paths.localConfigFile.lastPathComponent).config
-        }
         return (config(shared: shared, local: overlay), config(shared: target == .shared ? (text ?? shared) : shared, local: target == .local ? text : overlay))
+    }
+
+    /// Refuses a change that would make an agent start without its permission prompts, or with another flag, that is not among those the person agreed to: with all that it would, which the
+    /// person is then asked about.
+    private static func hold(to agreed: [PromptEffects.Entry], from before: Config, to after: Config) throws {
+        let loosened = PromptEffects.newlyWithoutAsking(from: before, to: after)
+        if loosened.contains(where: { entry in !agreed.contains { $0.agent == entry.agent && $0.flag == entry.flag } }) { throw Failure.wouldStartWithoutAsking(loosened) }
     }
 
     /// What the edit would do to the agents once it is made, as `ConfigTrust` reads it (`approvals(changingFrom:to:)`): the two files laid over each other before and after.
@@ -519,12 +544,6 @@ public struct ConfigService: Sendable {
         ConfigHistory.digest(try sharedText() + "\u{0}" + (try localText() ?? "\u{0}"))
     }
 
-    /// The agents that making a stored proposal would start without their permission prompts, as the window asks before it applies one.
-    public func looseningEffects(ofProposal id: String) -> [PromptEffects.Entry] {
-        guard let proposal = proposals.proposal(id, now: now()) else { return [] }
-        return looseningEffects(of: proposal.operations, target: proposal.target)
-    }
-
     /// The changes that wait for the person, newest first.
     public func pending() -> [ConfigProposal] {
         proposals.all(now: now()).map(verified)
@@ -550,7 +569,9 @@ public struct ConfigService: Sendable {
     /// is (it was edited since) is refused and the proposal stays, to be dismissed. With `unchangedSince`, the digest `preview(proposal:)` gave, it is made only when the file is
     /// still the text that was looked at: a change by position would otherwise land on whatever stands there now.
     /// With `afterLooking`, the command line's way: it is made only when `preview(proposal:recordingLook:)` was run for it and the files are still as they were then.
-    public func approve(_ id: String, actor: ConfigActor = .cli, unchangedSince digest: String? = nil, afterLooking: Bool = false) throws -> ConfigChange {
+    /// With `startingWithoutAsking`, the window's way: as for `apply`.
+    public func approve(_ id: String, actor: ConfigActor = .cli, unchangedSince digest: String? = nil, afterLooking: Bool = false,
+                        startingWithoutAsking agreed: [PromptEffects.Entry]? = nil) throws -> ConfigChange {
         try locked {
             guard let proposal = proposals.proposal(id, now: now()) else { throw Failure.noProposal(id) }
             if let digest, try filesDigest() != digest { throw Failure.editedMeanwhile(file: file(of: proposal.target).path) }
@@ -558,7 +579,7 @@ public struct ConfigService: Sendable {
                 guard let shown = proposal.shownDigest else { throw Failure.notLookedAt(id) }
                 guard try filesDigest() == shown else { throw Failure.editedSinceLooked(id) }
             }
-            let change = try applyLocked(proposal.operations, target: proposal.target, actor: actor, dryRun: false)
+            let change = try applyLocked(proposal.operations, target: proposal.target, actor: actor, dryRun: false, startingWithoutAsking: agreed)
             proposals.remove(id)
             return change
         }
@@ -576,8 +597,9 @@ public struct ConfigService: Sendable {
     ///
     /// With `expecting`, the digest a change reported (`ConfigChange.afterDigest`), it takes back that change and nothing else: when the last edit is another one it is refused. A banner that
     /// says "moved X" has to undo the move and not whatever was done last. With `replacing` as well (`ConfigChange.beforeDigest`) the last edit has to have replaced the text that this one did: a
-    /// file that someone else changed and changed back is not the change that was made.
-    public func undo(target: ConfigTarget = .shared, force: Bool = false, dryRun: Bool = false, madeBy actor: ConfigActor? = nil, expecting digest: String? = nil, replacing before: String? = nil) throws -> ConfigChange {
+    /// file that someone else changed and changed back is not the change that was made. With `startingWithoutAsking`, the window's way: as for `apply`, of what the two files would say afterwards.
+    public func undo(target: ConfigTarget = .shared, force: Bool = false, dryRun: Bool = false, madeBy actor: ConfigActor? = nil, expecting digest: String? = nil, replacing before: String? = nil,
+                     startingWithoutAsking agreed: [PromptEffects.Entry]? = nil) throws -> ConfigChange {
         try locked {
             let file = file(of: target)
             guard let entry = entries(of: target).first else { throw Failure.nothingToUndo(target) }
@@ -597,6 +619,10 @@ public struct ConfigService: Sendable {
                 let both = try configs(replacing: target, with: entry.existed ? entry.before : nil)
                 let waits = trustApprovals(changingFrom: both.before, to: both.after)
                 if !waits.isEmpty { throw Failure.undoNeedsPerson(target, waits.map(\.key)) }
+            }
+            if let agreed {
+                let both = try configs(replacing: target, with: entry.existed ? entry.before : nil)
+                try Self.hold(to: agreed, from: both.before, to: both.after)
             }
             var change = ConfigChange(target: target, file: file.path, summary: "undo: " + entry.summary, changed: current != entry.before, written: false,
                                       diff: LineDiff.unified(from: current, to: entry.before), warnings: [])
@@ -738,7 +764,7 @@ extension ConfigService.Failure: LocalizedFailure {
         case .editedMeanwhile(let file): [.configEditedMeanwhile(file)]
         case .lockUnavailable(let file): [.configLockUnavailable(file)]
         case .readOnly(let file): [.configReadOnly(file)]
-        case .nothingToUndo, .changedSince, .notYours, .notTheLast, .noProposal, .notLookedAt, .editedSinceLooked, .tooManyProposals, .undoNeedsPerson:
+        case .nothingToUndo, .changedSince, .notYours, .notTheLast, .noProposal, .notLookedAt, .editedSinceLooked, .tooManyProposals, .undoNeedsPerson, .wouldStartWithoutAsking:
             [.doctorVerbatim(errorDescription ?? "")]
         }
     }

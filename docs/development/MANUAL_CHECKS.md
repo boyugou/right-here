@@ -332,6 +332,10 @@ question.
      - checking an agent into the menu while the switch is on
    - "Cancel" leaves the file as it was. The field shows the text it had before you typed.
    - Click another field, or another page. The alert does not come back.
+   - Turn the switch off, then press Undo in the note. The same alert asks before the switch goes back on.
+   - On the Config page, type `bypass_permissions = true` under `[general]` and press Save. The alert asks. After "Cancel" the text you typed is still there.
+   - With only Claude Code in the menu, turn the switch on and leave the alert up. In Terminal, run `rh config add general.agents codex`, then press "Start Without Asking".
+     A second alert appears, naming both agents. Nothing is written until you say yes to it.
    - "Always ask" asks nothing. Nothing asks while the switch is off.
    - For an agent with no flag (Goose), "Start without asking" is dimmed. The orange line says why.
    - Turn the switch off with one agent set to "Start without asking". The panel lists that agent.

@@ -42,6 +42,28 @@ public struct Localizer: Sendable, Equatable {
         Locale.Language(identifier: resolvedLanguage).characterDirection == .rightToLeft
     }
 
+    /// The locale of that language: dates, lists and numbers are written in it, like the text around them. The system's may be another (the config names a language).
+    public var locale: Locale { Locale(identifier: resolvedLanguage) }
+
+    /// "A, B and C".
+    public func list(_ items: [String]) -> String {
+        items.formatted(.list(type: .and, width: .narrow).locale(locale))
+    }
+
+    /// "2 hours ago".
+    public func relative(_ date: Date) -> String {
+        date.formatted(.relative(presentation: .named).locale(locale))
+    }
+
+    /// "1 Jan 2001, 16:00".
+    public func dateAndTime(_ date: Date) -> String {
+        date.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened).locale(locale))
+    }
+
+    public func number(_ value: Int) -> String {
+        value.formatted(.number.locale(locale))
+    }
+
     /// The message in the best language the catalog has for this localizer, with its values filled in.
     ///
     /// `isolatingValues` is for text shown in a window that quotes things written left to right (a path, a command, a

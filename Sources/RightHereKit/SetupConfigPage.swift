@@ -73,40 +73,43 @@ extension SetupActions {
         return ConfigPageState(target: target, text: text, problem: problem, proposals: previews, history: service.history(of: target), validation: validation)
     }
 
-    /// Saves the text the person edited for the file of `target`, when the file is still what they started from (`digest`); a text that does not read is refused, and said.
-    public func saveConfigText(_ text: String, target: ConfigTarget, unchangedSince digest: String) async -> ConfigEditResult {
+    /// Saves the text the person edited for the file of `target`, when the file is still what they started from (`digest`); a text that does not read is refused, and said. One that would make
+    /// agents start without their permission prompts that the person did not agree to comes back in `held` (`editConfig`).
+    public func saveConfigText(_ text: String, target: ConfigTarget, unchangedSince digest: String, startingWithoutAsking agreed: [PromptEffects.Entry] = []) async -> ConfigEditResult {
         let service = ConfigService(paths: paths)
         do {
-            return ConfigEditResult(change: try service.apply([.replaceText(text)], target: target, actor: .window, unchangedSince: digest), notice: nil)
+            return ConfigEditResult(change: try service.apply([.replaceText(text)], target: target, actor: .window, unchangedSince: digest, startingWithoutAsking: agreed), notice: nil)
         } catch {
-            return ConfigEditResult(change: nil, notice: .failure(error))
+            return Self.result(of: error)
         }
     }
 
     /// Takes back the last change of the file of `target`: the one the window made there (`ConfigChange.target`), not the file that decides a setting now, which an edit that took the setting
     /// out of this Mac's own file has changed. With `expecting`, the digest the change reported, only that change is taken back: when something else changed the file after it, nothing is.
-    public func undoConfigEdit(target: ConfigTarget, expecting digest: String? = nil, replacing before: String? = nil) async -> ConfigEditResult {
+    /// An undo is a change like any other: one that would make agents start without their permission prompts that the person did not agree to comes back in `held` (`editConfig`).
+    public func undoConfigEdit(target: ConfigTarget, expecting digest: String? = nil, replacing before: String? = nil, startingWithoutAsking agreed: [PromptEffects.Entry] = []) async -> ConfigEditResult {
         let service = ConfigService(paths: paths)
         do {
-            return ConfigEditResult(change: try service.undo(target: target, expecting: digest, replacing: before), notice: nil)
+            return ConfigEditResult(change: try service.undo(target: target, expecting: digest, replacing: before, startingWithoutAsking: agreed), notice: nil)
         } catch ConfigService.Failure.notTheLast, ConfigService.Failure.changedSince {
             // Changed by hand after the last edit: taking that edit back would take the hand-made change too.
             return ConfigEditResult(change: nil, notice: .undoRefused)
         } catch {
-            return ConfigEditResult(change: nil, notice: .failure(error))
+            return Self.result(of: error)
         }
     }
 
-    /// Makes a proposal's change, as the person who has looked at it: the card showed it against the file whose digest this is, and a file that is not that any more is not changed.
-    public func approveProposal(_ id: String, unchangedSince digest: String? = nil) async -> ConfigEditResult {
+    /// Makes a proposal's change, as the person who has looked at it: the card showed it against the file whose digest this is, and a file that is not that any more is not changed. One that
+    /// would make agents start without their permission prompts that the person did not agree to comes back in `held` (`editConfig`).
+    public func approveProposal(_ id: String, unchangedSince digest: String? = nil, startingWithoutAsking agreed: [PromptEffects.Entry] = []) async -> ConfigEditResult {
         do {
-            return ConfigEditResult(change: try ConfigService(paths: paths).approve(id, actor: .window, unchangedSince: digest), notice: nil)
+            return ConfigEditResult(change: try ConfigService(paths: paths).approve(id, actor: .window, unchangedSince: digest, startingWithoutAsking: agreed), notice: nil)
         } catch ConfigService.Failure.editedMeanwhile {
             return ConfigEditResult(change: nil, notice: .proposalStale)
         } catch ConfigService.Failure.noProposal {
             return ConfigEditResult(change: nil, notice: .proposalGone)
         } catch {
-            return ConfigEditResult(change: nil, notice: .failure(error))
+            return Self.result(of: error)
         }
     }
 

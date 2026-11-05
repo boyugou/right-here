@@ -408,7 +408,7 @@ struct StatusCard: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else if state == .needsAttention {
-                    Text(model.summary.openTitles(in: l10n).formatted(.list(type: .and, width: .narrow)))
+                    Text(l10n.list(model.summary.openTitles(in: l10n)))
                         .font(.callout)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(l10n.string(.appOpenChecksHint))
@@ -512,7 +512,7 @@ struct FirstRunCard: View {
                         .font(.caption.weight(.bold))
                         .foregroundStyle(.white)
                 } else {
-                    Text(number.formatted())
+                    Text(l10n.number(number))
                         .font(.caption.weight(.bold))
                         .foregroundStyle(.white)
                 }
@@ -532,7 +532,7 @@ struct FirstRunCard: View {
             Spacer(minLength: 0)
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(l10n.render(.appStepLabel(number.formatted(), l10n.string(title))))
+        .accessibilityLabel(l10n.render(.appStepLabel(l10n.number(number), l10n.string(title))))
         .accessibilityValue(done ? l10n.string(.appStatusOK) : "")
     }
 }

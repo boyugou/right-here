@@ -178,6 +178,17 @@ struct LocalizationCatalogTests {
 
 @Suite("Localizer")
 struct LocalizerTests {
+    /// Dates, lists and numbers are written in the language of the text around them, which the config may name: not in the system's (an English Mac here, whatever it is).
+    @Test func datesListsAndNumbersAreWrittenInTheLocalizersLanguage() {
+        let german = Localizer(languages: ["de"])
+        #expect(german.list(["A", "B", "C"]) == "A, B und C")
+        #expect(german.relative(Date.now.addingTimeInterval(-7200)) == "vor 2 Stunden")
+        #expect(german.dateAndTime(Date(timeIntervalSince1970: 15 * 86_400)).contains("Jan."))
+        #expect(Localizer(languages: ["ja"]).list(["A", "B"]) == "A、B")
+        #expect(Localizer(languages: ["fa"]).number(3) == "۳")
+        #expect(Localizer.english.number(1234) == "1,234")
+    }
+
     @Test("language tags resolve to the catalog language", arguments: [
         ("en", "en"), ("en-US", "en"), ("en-GB", "en"), ("de-DE", "de"), ("fr-CA", "fr"), ("es-419", "es"),
         ("zh-Hans-US", "zh-Hans"), ("zh-Hans-CN", "zh-Hans"), ("zh-CN", "zh-Hans"), ("zh-SG", "zh-Hans"),

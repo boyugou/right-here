@@ -103,7 +103,7 @@ struct AgentsPage: View {
                                 .frame(width: 12)
                                 .accessibilityHidden(true)
                             Text(l10n.string(.appAgentNotFound))
-                            Tag(text: missing.count.formatted())
+                            Tag(text: l10n.number(missing.count))
                         }
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -112,7 +112,7 @@ struct AgentsPage: View {
                         .contentShape(Rectangle())
                     }
                     .accessibilityLabel(l10n.string(.appAgentNotFound))
-                    .accessibilityValue(missing.count.formatted())
+                    .accessibilityValue(l10n.number(missing.count))
                     if shown {
                         LinedRows {
                             ForEach(missing) { agent in

@@ -29,19 +29,41 @@ struct ConfigEdit: Equatable, Sendable {
     var warnings: [String] = []
 }
 
-/// A change that would make agents start without their permission prompts, held until the person says yes (`SetupModel.edit`): the window is the person and nothing stops it, but it does
-/// not take the yes for granted, whichever control the change comes from.
+/// A change that would make agents start without their permission prompts, held until the person says yes: the window is the person and nothing stops it, but it does not take the yes for
+/// granted, whichever way the change comes (a control, the Config page's text, Apply on an assistant's proposal, an Undo). The yes makes it for the agents the alert named and no others
+/// (`ConfigService.apply(startingWithoutAsking:)`, under the lock of the write): when the files were changed while the alert was up so that it would start more, it is asked again.
 struct PendingLoosening: Equatable, Sendable {
-    /// The proposal of an assistant whose Apply is held (`operations` are then none); `nil` for a change of the window.
-    var proposal: String? = nil
-    var operations: [ConfigOperation]
-    var key: String
-    var anchor: String?
-    var target: ConfigTarget?
-    var message: LocalizedMessage
-    var tab: SetupTab
+    enum Change: Equatable, Sendable {
+        /// A change of a control (`SetupModel.edit`).
+        case edit(Edit)
+        /// The Config page's text, saved over the text whose digest this is.
+        case text(String, target: ConfigTarget, digest: String)
+        /// An assistant's proposal, made on the files its card was drawn for.
+        case proposal(String, digest: String)
+        case undo(UndoRequest)
+    }
+
+    struct Edit: Equatable, Sendable {
+        var operations: [ConfigOperation]
+        var key: String
+        var anchor: String?
+        var target: ConfigTarget?
+        var message: LocalizedMessage
+        var tab: SetupTab
+    }
+
+    var change: Change
     /// The agents it would start without asking, with the flag each gets.
     var agents: [PromptEffects.Entry]
+}
+
+/// What an Undo takes back: the change the banner says, or the newest of the Config page's recent changes, each held to the text it left and the one it replaced (`ConfigService.undo(expecting:replacing:)`).
+struct UndoRequest: Equatable, Sendable {
+    var target: ConfigTarget
+    var expecting: String?
+    var replacing: String?
+    /// The banner's change, under whose editor a refusal is said; `nil` for the Config page's Undo.
+    var banner: ConfigEdit?
 }
 
 /// The checks of the text in the Config editor, kept for the text they were made for: the page asks for them twice for each keystroke (the problems and the Save button), and
@@ -524,11 +546,22 @@ final class SetupModel {
         await openConfigPage()
     }
 
-    /// Saves the text, when the file is still what it was when the page read it; a text that does not read, or a file that was changed meanwhile, is said and the draft stays.
+    /// Saves the text, when the file is still what it was when the page read it; a text that does not read, or a file that was changed meanwhile, is said and the draft stays. A text that would
+    /// make agents start without their permission prompts waits for the person's yes, as the same change of a control does; after a no the draft stays.
     func saveConfigText() async {
-        guard !isWorking, let text = configPage?.text, textHasChanges else { return }
+        guard let text = configPage?.text, textHasChanges else { return }
+        await save(draftText, target: configTarget, over: text.digest, startingWithoutAsking: [])
+    }
+
+    private func save(_ draft: String, target: ConfigTarget, over digest: String, startingWithoutAsking agreed: [PromptEffects.Entry]) async {
+        guard !isWorking else { return }
         isWorking = true
-        let result = await actions.saveConfigText(draftText, target: configTarget, unchangedSince: text.digest)
+        let result = await actions.saveConfigText(draft, target: target, unchangedSince: digest, startingWithoutAsking: agreed)
+        if !result.held.isEmpty {
+            pendingLoosening = PendingLoosening(change: .text(draft, target: target, digest: digest), agents: result.held)
+            isWorking = false
+            return
+        }
         if let change = result.change {
             configEdit = nil
             say(nil)
@@ -547,33 +580,40 @@ final class SetupModel {
         await openConfigPage()
     }
 
-    /// Takes back the last change of the file the page is on, whoever made it.
+    /// Takes back the newest of the recent changes that the page shows, whoever made it: not a change made after it that the page has not shown yet (that is refused, and the page shows it).
     func undoConfigChange() async {
-        guard !isWorking else { return }
-        isWorking = true
-        let result = await actions.undoConfigEdit(target: configTarget)
-        configEdit = nil
-        say(result.notice)
-        await openConfigPage(keepingDraft: textHasChanges)
-        await refreshEditable()
-        isWorking = false
+        guard let row = configPage?.history.first else { return }
+        await takeBack(UndoRequest(target: configTarget, expecting: row.afterDigest, replacing: row.beforeDigest), startingWithoutAsking: [])
     }
 
-    /// Makes a change an assistant proposed, after the person has looked at it on the page. One that would make agents start without their permission prompts is held for the person's yes in the
-    /// alert that every change of the window raises, naming each agent and its flag: the card said that it switches the prompts off, and what it comes to depends on what the files hold when Apply is pressed.
-    func approveProposal(_ id: String, confirmed: Bool = false) async {
+    /// Makes a change an assistant proposed, after the person has looked at it on the page: on the files its card was drawn for. One that would make agents start without their permission
+    /// prompts is held for the person's yes in the alert that every change of the window raises, naming each agent and its flag: the card said that it switches the prompts off, and what it
+    /// comes to depends on what the files hold when Apply is pressed.
+    func approveProposal(_ id: String) async {
         guard !isWorking else { return }
-        if !confirmed {
-            let agents = await actions.looseningEffects(ofProposal: id)
-            if !agents.isEmpty {
-                pendingLoosening = PendingLoosening(proposal: id, operations: [], key: "", anchor: nil, target: nil, message: .appEditSaved, tab: .config, agents: agents)
-                return
-            }
+        guard let digest = configPage?.proposals.first(where: { $0.id == id })?.digest else {
+            // A card with no change drawn has no Apply: there is nothing the person looked at.
+            say(.proposalStale)
+            await openConfigPage(keepingDraft: textHasChanges)
+            return
         }
+        await approve(id, over: digest, startingWithoutAsking: [])
+    }
+
+    private func approve(_ id: String, over digest: String, startingWithoutAsking agreed: [PromptEffects.Entry]) async {
+        guard !isWorking else { return }
         isWorking = true
-        let digest = configPage?.proposals.first { $0.id == id }?.digest
-        let result = await actions.approveProposal(id, unchangedSince: digest)
-        if result.change != nil { configEdit = nil }
+        let result = await actions.approveProposal(id, unchangedSince: digest, startingWithoutAsking: agreed)
+        if !result.held.isEmpty {
+            pendingLoosening = PendingLoosening(change: .proposal(id, digest: digest), agents: result.held)
+            isWorking = false
+            return
+        }
+        if result.change != nil {
+            configEdit = nil
+            // The card and its Apply go away: VoiceOver is told what came of it.
+            announce(localizer.string(.appEditSaved))
+        }
         say(result.change == nil ? result.notice : nil)
         await openConfigPage(keepingDraft: textHasChanges)
         await refreshEditable()
@@ -755,16 +795,31 @@ final class SetupModel {
         clearRefusal(key: "app")
     }
 
-    /// Takes back the last change of the config, whoever made it last through the window, `rh config` or an assistant's tool, as long as the file is as it left it.
+    /// Takes back the change the banner says, as long as it is the last one of its file and the file is as it left it.
     func undoEdit() async {
-        guard !isWorking, let last = configEdit else { return }
+        guard let last = configEdit else { return }
+        await takeBack(UndoRequest(target: last.target, expecting: last.digest, replacing: last.beforeDigest, banner: last), startingWithoutAsking: [])
+    }
+
+    /// An Undo is a change like any other: one that would make agents start without their permission prompts (the switch that is turned back on, with an agent put in the menu since) waits for
+    /// the person's yes.
+    private func takeBack(_ undo: UndoRequest, startingWithoutAsking agreed: [PromptEffects.Entry]) async {
+        guard !isWorking else { return }
         isWorking = true
         isEditingConfig = true
         defer { isEditingConfig = false }
-        let result = await actions.undoConfigEdit(target: last.target, expecting: last.digest, replacing: last.beforeDigest)
+        let result = await actions.undoConfigEdit(target: undo.target, expecting: undo.expecting, replacing: undo.replacing, startingWithoutAsking: agreed)
+        if !result.held.isEmpty {
+            pendingLoosening = PendingLoosening(change: .undo(undo), agents: result.held)
+            isWorking = false
+            return
+        }
         configEdit = nil
-        editRefusal = result.notice.map { EditRefusal(notice: $0, tab: last.tab, key: last.key) }
+        if let banner = undo.banner { editRefusal = result.notice.map { EditRefusal(notice: $0, tab: banner.tab, key: banner.key) } }
         say(result.notice)
+        // The button that had the focus goes away with the banner or the row: VoiceOver is told what came of it.
+        if result.change != nil { announce(localizer.string(.appChangeUndone)) }
+        if undo.banner == nil { await openConfigPage(keepingDraft: textHasChanges) }
         await refreshEditable()
         isWorking = false
     }
@@ -772,28 +827,25 @@ final class SetupModel {
     /// Writes the changes to the file that decides `key`, says what was done, and reads the editors again from the config, without the doctor.
     /// - Parameters:
     ///   - anchor: A key that the setting's table stands on (`AgentOptions.anchor`): the file that holds it decides when this Mac's own file does not write the setting itself.
-    ///   - confirmed: The person has said yes to what the change does to the agents' permission prompts. Without it, a change that would make an agent start without them is held
-    ///     (`pendingLoosening`) and nothing is written.
+    ///   - agreed: The agents the person said yes to starting without their permission prompts. A change that would make any other start so is held (`pendingLoosening`) and nothing is written.
     ///   - announcing: Whether VoiceOver is told what was changed. A text that is written while it is still being typed is not: the person is not waiting for an answer.
     /// - Returns: Whether the change was made or there was nothing to change (the field that asked can show what the config says); `false` when it was refused, held for the person's yes,
     ///   or dropped because another change is being written.
     @discardableResult
-    func edit(_ operations: [ConfigOperation], deciding key: String, anchor: String? = nil, target: ConfigTarget? = nil, saying message: LocalizedMessage, on tab: SetupTab, confirmed: Bool = false, announcing: Bool = true) async -> Bool {
+    func edit(_ operations: [ConfigOperation], deciding key: String, anchor: String? = nil, target: ConfigTarget? = nil, saying message: LocalizedMessage, on tab: SetupTab,
+              startingWithoutAsking agreed: [PromptEffects.Entry] = [], announcing: Bool = true) async -> Bool {
         guard !operations.isEmpty else { return true }
         guard !isWorking else { return false }
         isWorking = true
         isEditingConfig = true
         defer { isEditingConfig = false }
         drag = nil
-        if !confirmed {
-            let agents = await actions.looseningEffects(of: operations, deciding: key, anchor: anchor, target: target)
-            if !agents.isEmpty {
-                pendingLoosening = PendingLoosening(operations: operations, key: key, anchor: anchor, target: target, message: message, tab: tab, agents: agents)
-                isWorking = false
-                return false
-            }
+        let result = await actions.editConfig(operations, deciding: key, anchor: anchor, target: target, startingWithoutAsking: agreed)
+        if !result.held.isEmpty {
+            pendingLoosening = PendingLoosening(change: .edit(.init(operations: operations, key: key, anchor: anchor, target: target, message: message, tab: tab)), agents: result.held)
+            isWorking = false
+            return false
         }
-        let result = await actions.editConfig(operations, deciding: key, anchor: anchor, target: target)
         var done = true
         if let change = result.change, change.changed {
             configEdit = ConfigEdit(message: message, key: key, tab: tab, digest: change.afterDigest, beforeDigest: change.beforeDigest, target: change.target, warnings: change.warnings)
@@ -810,14 +862,22 @@ final class SetupModel {
         return done
     }
 
-    /// The person said yes to the held change: it is made. The alert hands over the change it showed: the alert's dismissal clears `pendingLoosening` before the task that this starts runs.
+    /// The person said yes to the held change: it is made, for the agents the alert named (a change that would now start more is asked about again). The alert hands over the change it
+    /// showed: the alert's dismissal clears `pendingLoosening` before the task that this starts runs.
     func confirmLoosening(_ held: PendingLoosening) async {
         pendingLoosening = nil
-        if let proposal = held.proposal {
-            await approveProposal(proposal, confirmed: true)
-            return
+        switch held.change {
+        case .edit(let change):
+            if await edit(change.operations, deciding: change.key, anchor: change.anchor, target: change.target, saying: change.message, on: change.tab, startingWithoutAsking: held.agents) {
+                fieldAnswerToken += 1
+            }
+        case .text(let text, let target, let digest):
+            await save(text, target: target, over: digest, startingWithoutAsking: held.agents)
+        case .proposal(let id, let digest):
+            await approve(id, over: digest, startingWithoutAsking: held.agents)
+        case .undo(let undo):
+            await takeBack(undo, startingWithoutAsking: held.agents)
         }
-        if await edit(held.operations, deciding: held.key, anchor: held.anchor, target: held.target, saying: held.message, on: held.tab, confirmed: true) { fieldAnswerToken += 1 }
     }
 
     /// The same for a caller that has only the model.

@@ -125,7 +125,7 @@ struct SetupView: View {
         // The config can name a language other than the system's: the pages are written in it, and laid out in its direction.
         .environment(\.localizer, model.localizer)
         .environment(\.layoutDirection, model.localizer.isRightToLeft ? .rightToLeft : .leftToRight)
-        .environment(\.locale, Locale(identifier: model.localizer.resolvedLanguage))
+        .environment(\.locale, model.localizer.locale)
         .environment(\.fieldAnswerToken, model.fieldAnswerToken)
         .environment(\.changeIsHeld, { [model] in model.pendingLoosening != nil })
     }

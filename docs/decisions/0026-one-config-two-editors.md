@@ -222,7 +222,7 @@ A review of the editing core, the window and trust reproduced these; each has a 
   (`general.agents`, and the agents that a menu or Quick Action item names) that start without their prompts and did not before: an agent put in the menu while "Start agents without asking" is on
   has a flag of its own (Codex's also turns its sandbox off) that the person's yes never named. A copy from the sync folder that empties an agent's `args` is listed too.
 - **The window asks for the same thing.** Every change made in the window goes through `SetupModel.edit`, which asks the service what the change would make start without asking and, when that is
-  something, holds the change (`pendingLoosening`) until the person says yes in one alert that names each agent and its flag. That covers "Same as all agents" while the switch is on, a flag typed for an
+  something, holds the change (`pendingLoosening`) until the person says yes in one alert that names each agent and its flag (the question is now asked by the write itself: see the review of 2026-11-05). That covers "Same as all agents" while the switch is on, a flag typed for an
   agent that had none, an agent checked into the menu, and any control added later; "Start without asking" no longer has a question of its own. The note after the general switch is turned off says
   that an agent whose own setting says "start without asking" still does not ask, and the switch's panel lists those agents.
 - **The two files.** A change to `config.toml` is checked with `config.local.toml` laid over it: it is refused when this Mac's own file would then name what the change took out (a key of an
@@ -391,6 +391,21 @@ The review covered entries, places and the apps; the model and the views; and tr
   started it, with the switch that turns its prompts off.
 - **The worktree tool** runs git with the server's time limit, as the run tool does; **the config tool** fences the summary of a change,
   which quotes what the files hold.
+
+## As built, a review of the window's editing (2026-11-05)
+
+- **The question and the change are one.** The window asked the service what a change would make start without asking, raised the alert, and on the yes made
+  the change with no check at all, against the files as they were then: an agent that an assistant put in the menu while the alert was up (a plain change, the
+  prompts being on) started with its flag, unnamed. Every write of the window now carries the agents the person agreed to (none, before the question), and
+  `ConfigService` refuses, under the lock of the write, a change that would make any other agent, or one of them with another flag, start without asking
+  (`Failure.wouldStartWithoutAsking`); the window asks again, naming them all. This covers the four ways the window writes: a control, the Config page's text
+  (which never asked), Apply on a proposal, and Undo (which never asked: turning the switch back on, with an agent put in the menu since).
+- **Undo on the Config page takes back the row it is on.** It took back "the last edit, whoever made it", and the page is not read again when an assistant
+  changes the file: the change it took back could be one the page did not show, which no row held afterwards. A row carries the texts its edit left and replaced,
+  and its Undo is held to them, as the banner's is.
+- Apply on a card is held to the files its card was drawn for (the digest of the preview); a second click while the first is being made does nothing.
+- What VoiceOver hears: an Undo says "Change undone", an applied proposal what a change of a control says. Dates, lists and numbers are written in the
+  config's language (`Localizer.locale`), not the system's.
 
 ## Consequences
 

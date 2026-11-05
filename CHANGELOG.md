@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+The setup window's editing, after an independent review.
+
+- A yes to "Start agents without asking?" makes the change for the agents the alert named and no others. When the config changed
+  while the alert was up (an assistant put another agent in the menu), the window asks again and names them all. An Undo and a
+  saved text of the Config page now ask the same question; they never did.
+- Undo on the Config page takes back the change of its row, not one made since that the page did not show yet.
+- A double click on Apply makes the proposed change once, without a wrong message after it.
+- VoiceOver hears that an Undo or an applied change was made. Dates, lists and numbers are written in the window's language.
+
 ## 1.2.5 (2026-11-05)
 
 The Quick Actions and the installer, after an independent review.

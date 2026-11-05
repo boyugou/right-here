@@ -177,6 +177,8 @@ extension LocalizedMessage {
     public static var appBypassTitle: LocalizedMessage { LocalizedMessage(.appBypassTitle) }
     /// Cancel
     public static var appCancel: LocalizedMessage { LocalizedMessage(.appCancel) }
+    /// Change undone.
+    public static var appChangeUndone: LocalizedMessage { LocalizedMessage(.appChangeUndone) }
     /// Agents
     public static var appCheckAgents: LocalizedMessage { LocalizedMessage(.appCheckAgents) }
     /// rh on your PATH
@@ -241,6 +243,8 @@ extension LocalizedMessage {
     public static var appConfigDismiss: LocalizedMessage { LocalizedMessage(.appConfigDismiss) }
     /// Text of the config file
     public static var appConfigEditorLabel: LocalizedMessage { LocalizedMessage(.appConfigEditorLabel) }
+    /// Config file
+    public static var appConfigFileLabel: LocalizedMessage { LocalizedMessage(.appConfigFileLabel) }
     /// Recent Changes
     public static var appConfigHistoryHeading: LocalizedMessage { LocalizedMessage(.appConfigHistoryHeading) }
     /// config.local.toml holds this Mac's own settings. Where it sets something, it wins over config.toml here, and it is never synced.
