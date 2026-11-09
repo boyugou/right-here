@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.6 (2026-11-08)
+
 The setup window's editing, after an independent review.
 
 - A yes to "Start agents without asking?" makes the change for the agents the alert named and no others. When the config changed
