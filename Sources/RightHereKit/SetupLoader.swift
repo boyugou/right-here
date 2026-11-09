@@ -57,6 +57,8 @@ public struct SetupSnapshot: Sendable, Equatable {
     public var offer: SetupOffer?
     /// What the config parser says is wrong with the config, errors and warnings, in its own words.
     public var configProblems: [ConfigDiagnostic]
+    /// The value config.toml gives a setting that this Mac's own file sets too, by its key (`MenuSnapshot.underneath`).
+    public var underneath: [String: String]
     /// The program an MCP client starts (`SetupSnippets.mcpCommand`).
     public var mcpCommand: String
     /// The home folder, which paths are written from `~` against.
@@ -68,8 +70,9 @@ public struct SetupSnapshot: Sendable, Equatable {
     public init(checks: [DoctorCheck] = [], menu: [MenuNode] = [], menuEditor: MenuEditorState? = nil, menuTarget: ConfigTarget = .shared, general: GeneralSettingsState? = nil, agentsTarget: ConfigTarget = .shared,
                 agentOptions: [AgentOptionsState] = [], presets: PresetsState? = nil, newFile: NewFileState? = nil, copyPath: CopyPathState? = nil, quickActions: QuickActionsState? = nil, apps: AppsState? = nil, proposals: [ConfigProposal] = [], folders: FolderSnapshot = FolderSnapshot(),
                 configFile: URL, configExists: Bool = true, offer: SetupOffer? = nil, configProblems: [ConfigDiagnostic] = [], mcpCommand: String = AppIdentity.cliName, home: URL, readAt: ContinuousClock.Instant = .now,
-                agentCommands: LoginShellFacts? = nil, language: String? = nil, installedCopies: [AppCopy]? = nil) {
+                agentCommands: LoginShellFacts? = nil, language: String? = nil, installedCopies: [AppCopy]? = nil, underneath: [String: String] = [:]) {
         self.checks = checks
+        self.underneath = underneath
         self.agentCommands = agentCommands
         self.language = language
         self.installedCopies = installedCopies
@@ -115,6 +118,10 @@ public struct MenuSnapshot: Sendable, Equatable {
     public var apps: AppsState?
     public var problems: [ConfigDiagnostic]
     public var language: String?
+    /// The value config.toml gives a setting that this Mac's own file sets too, by its key (`general.terminal`, `agent.claude.bypass_permissions`): what the
+    /// setting's default comes to. Automatic, Same as macOS and Same as all agents take the key out of this Mac's file, and config.toml's value is then the one
+    /// that holds, which the default's row says instead of the built-in default. A choice made on this Mac never writes config.toml, which the other Macs read.
+    public var underneath: [String: String] = [:]
 }
 
 /// Reads the state of the machine for the setup window in one pass: the config once (the doctor and the menu preview are made
@@ -164,7 +171,7 @@ public struct SetupLoader: Sendable {
             configProblems: loaded.result.diagnostics,
             mcpCommand: SetupSnippets.mcpCommand(home: facts.homeDirectory, helperPath: helperPath), home: facts.homeDirectory, readAt: readAt,
             agentCommands: doctor.shell, language: loaded.config.language,
-            installedCopies: AppCopies.installed(facts.applicationCopies(bundleID: AppIdentity.hostBundleID), home: facts.homeDirectory.path))
+            installedCopies: AppCopies.installed(facts.applicationCopies(bundleID: AppIdentity.hostBundleID), home: facts.homeDirectory.path), underneath: shown.underneath)
     }
 
     /// The Quick Actions check as the config says it now, without the rest of the doctor (which starts the login shell).
@@ -200,7 +207,26 @@ public struct SetupLoader: Sendable {
         let apps = editable ? AppOptions.state(config: loaded.config, entries: service.entryLocations(of: "app", in: loaded.result), facts: facts) : nil
         return MenuSnapshot(menu: menu, editor: editor, target: service.owner(of: MenuEditorState.key), general: general,
                             agentsTarget: service.owner(of: GeneralSettingsState.agentsKey), agentOptions: options, presets: presets, newFile: newFile, copyPath: copyPath, quickActions: quickActions, apps: apps, problems: loaded.result.diagnostics,
-                            language: loaded.config.language)
+                            language: loaded.config.language,
+                            underneath: editable ? Self.underneath(service: service, shared: ConfigStore.sharedConfig(paths: paths), agents: options.map(\.id)) : [:])
+    }
+
+    /// `MenuSnapshot.underneath`: for each setting with a default row, config.toml's value (`shared`, read alone: `nil` when it does not set the key) when this Mac's
+    /// own file sets the key too.
+    static func underneath(service: ConfigService, shared: Config, agents: [String]) -> [String: String] {
+        guard let local = try? service.document(of: .local) else { return [:] }
+        var found: [String: String] = [:]
+        func add(_ key: String, _ value: String?) {
+            if let value, local.rawValue(at: key) != nil { found[key] = value }
+        }
+        add("general.terminal", shared.terminal)
+        add("general.editor", shared.editor)
+        add(GeneralSettings.languageKey, shared.language)
+        for id in agents {
+            if case .terminal(let terminal?) = shared.agents[id]?.launcher { add("agent.\(id).terminal", terminal) }
+            add("agent.\(id).bypass_permissions", shared.agents[id]?.bypassPermissions.map { $0 ? "true" : "false" })
+        }
+        return found
     }
 
     /// The folders Right Here remembers, as they are on disk now.

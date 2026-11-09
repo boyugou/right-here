@@ -3339,6 +3339,29 @@ struct EditingFlowTests {
                 "the banner's Undo switched the prompts off for Codex with no question naming it")
     }
 
+    /// A default row says what choosing it comes to. When this Mac's own file and config.toml both set a key, Automatic, Same as macOS and Same as all agents take the
+    /// key out of this Mac's file and config.toml's value holds: the row names that value instead of the built-in default, choosing it gives that value, and
+    /// config.toml, which the other Macs read, is not written. (It said "Automatic (Ghostty)" and gave config.toml's Terminal.)
+    @Test func aDefaultRowSaysWhatChoosingItGivesWhenConfigTomlSetsTheKeyToo() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        let shared = "[general]\nterminal = \"terminal\"\neditor = \"vscode\"\nlanguage = \"de\"\nagents = [\"claude\"]\n\n[agent.claude]\nterminal = \"terminal\"\nbypass_permissions = false\n"
+        try mac.writeConfig(shared)
+        try local(mac, "[general]\nterminal = \"ghostty\"\nlanguage = \"fr\"\n\n[agent.claude]\nterminal = \"ghostty\"\nbypass_permissions = true\n")
+        await mac.model.refresh()
+        #expect(mac.model.snapshot?.underneath == ["general.terminal": "terminal", "general.language": "de", "agent.claude.terminal": "terminal", "agent.claude.bypass_permissions": "false"],
+                "the editor is config.toml's alone: its Automatic takes it out of config.toml, and is automatic")
+        let said = mac.model.defaultChoiceTitle(for: "general.terminal", automatic: "Automatic (Ghostty)") { $0 == "terminal" ? "Terminal" : $0 }
+        #expect(said == mac.model.localizer.render(.appChoiceShared("config.toml", "Terminal")))
+        #expect(mac.model.defaultChoiceTitle(for: "general.editor", automatic: "Automatic (VS Code)") { $0 } == "Automatic (VS Code)")
+        await mac.model.setTerminal(nil)
+        #expect(mac.model.general?.terminal == "terminal", "the row named config.toml's terminal, and that is what was chosen")
+        await mac.model.setLanguage(nil)
+        #expect(mac.model.snapshot?.language == "de")
+        #expect(text(mac) == shared, "config.toml, which the other Macs read, was not written")
+        #expect(mac.model.snapshot?.underneath["general.terminal"] == nil && mac.model.defaultChoiceTitle(for: "general.terminal", automatic: "Automatic (Ghostty)") { $0 } == "Automatic (Ghostty)",
+                "this Mac's file no longer sets the terminal: its default row is Automatic again")
+    }
+
     /// A save of the Config page's text that switches the prompts off is written at once: it does not go through `edit`, so the alert that names the agents and their flags is not raised.
     @Test func aSavedTextThatSwitchesThePromptsOffAsksFirst() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }

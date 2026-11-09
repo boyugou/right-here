@@ -108,7 +108,9 @@ struct AgentOptionsPage: View {
                     OptionRow(label: l10n.string(.appAgentTerminal)) {
                         ChoiceMenu(shown: chosen.map(terminalTitle) ?? automaticTerminal(options), font: .body, accessibilityLabel: l10n.string(.appAgentTerminal)) {
                             Picker(selection: Binding(get: { options.terminal ?? "" }, set: { terminal in Task { await model.setAgentTerminal(id, terminal.isEmpty ? nil : terminal) } })) {
-                                Text(automaticTerminal(options)).tag("")
+                                Text(model.defaultChoiceTitle(for: "agent.\(id).terminal", automatic: automaticTerminal(options)) { terminal in
+                                    options.terminals.first { $0.id == terminal }.map(terminalTitle) ?? terminal
+                                }).tag("")
                                 ForEach(options.terminals) { app in
                                     Text(terminalTitle(app)).tag(app.id)
                                 }
@@ -166,7 +168,7 @@ struct AgentOptionsPage: View {
                 OptionRow(label: l10n.string(.appAgentPrompts)) {
                     ChoiceMenu(shown: promptsTitle(options.bypassOverride), font: .body, accessibilityLabel: l10n.string(.appAgentPrompts)) {
                         Picker(selection: Binding<Bool?>(get: { options.bypassOverride }, set: { override in Task { await model.setAgentBypass(id, override) } })) {
-                            Text(promptsTitle(nil)).tag(Bool?.none)
+                            Text(model.defaultChoiceTitle(for: "agent.\(id).bypass_permissions", automatic: promptsTitle(nil)) { promptsTitle($0 == "true") }).tag(Bool?.none)
                             // Starting without prompts needs a flag that does it.
                             Text(promptsTitle(true)).tag(Bool?.some(true)).disabled(flag == nil)
                             Text(promptsTitle(false)).tag(Bool?.some(false))

@@ -739,6 +739,13 @@ final class SetupModel {
         await edit(GeneralSettings.operations(settingEditor: id), deciding: "general.editor", saying: .appEditSaved, on: .overview)
     }
 
+    /// What a setting's default row says: what choosing it comes to. When this Mac's own file and config.toml both set the key, choosing the default takes the key
+    /// out of this Mac's file and config.toml's value holds, so the row names that value and not the built-in default (`MenuSnapshot.underneath`).
+    func defaultChoiceTitle(for key: String, automatic: String, naming: (String) -> String) -> String {
+        guard let value = snapshot?.underneath[key] else { return automatic }
+        return localizer.render(.appChoiceShared("config.toml", naming(value)))
+    }
+
     /// The language of the window, the Finder menu, the alerts and the names of the Quick Actions; `nil` follows the system.
     func setLanguage(_ code: String?) async {
         guard code.map(Localizer.supportedLanguages.contains) ?? true else { return }
@@ -926,6 +933,7 @@ final class SetupModel {
         current.apps = shown.apps
         current.configProblems = shown.problems
         current.language = shown.language
+        current.underneath = shown.underneath
         snapshot = current
         if let open = templateDetail, !Self.templatePageStays(open, in: shown.newFile) { templateDetail = nil }
         if let open = appDetail, shown.apps?.row(id: open) == nil { appDetail = nil }

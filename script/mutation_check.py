@@ -2188,6 +2188,12 @@ MUTANTS = [
      "items.formatted(.list(type: .and, width: .narrow).locale(locale))", "items.formatted(.list(type: .and, width: .narrow))"),
     ("a date is written in the system's language", "Sources/RightHereCore/Localization/Localizer.swift",
      "date.formatted(.relative(presentation: .named).locale(locale))", "date.formatted(.relative(presentation: .named))"),
+    ("a default row names config.toml's value when this Mac's file does not set the key", "Sources/RightHereKit/SetupLoader.swift",
+     "            if let value, local.rawValue(at: key) != nil { found[key] = value }", "            if let value { found[key] = value }"),
+    ("a default row says the built-in default when config.toml's value is what choosing it gives", "Apps/RightHere/SetupModel.swift",
+     "        guard let value = snapshot?.underneath[key] else { return automatic }", "        guard let value = snapshot?.underneath[key], Bool(\"false\") == true else { return automatic }"),
+    ("what is under the defaults is not read again after a change", "Apps/RightHere/SetupModel.swift",
+     "        current.underneath = shown.underneath\n", ""),
 ]
 
 

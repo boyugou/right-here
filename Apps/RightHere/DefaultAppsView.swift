@@ -63,7 +63,7 @@ struct LanguageRow: View {
         SettingRow(symbol: "globe", tint: .blue, title: l10n.string(.appLanguageTitle)) {
             ChoiceMenu(shown: shown, font: .body, accessibilityLabel: l10n.string(.appLanguageTitle)) {
                 Picker(selection: Binding(get: { model.snapshot?.language ?? "" }, set: { code in Task { await model.setLanguage(code.isEmpty ? nil : code) } })) {
-                    Text(l10n.render(.appLanguageSystem(Self.name(Localizer.system.resolvedLanguage)))).tag("")
+                    Text(model.defaultChoiceTitle(for: GeneralSettings.languageKey, automatic: l10n.render(.appLanguageSystem(Self.name(Localizer.system.resolvedLanguage))), naming: Self.name)).tag("")
                     ForEach(Localizer.supportedLanguages, id: \.self) { code in
                         Text(verbatim: Self.name(code)).tag(code)
                     }
@@ -141,7 +141,9 @@ struct DefaultAppRow: View {
                           accessibilityLabel: l10n.string(title)) {
             // A closure, not `set: choose`: Swift 6.3 (Xcode 26) crashes turning a method into the binding's @isolated(any) setter.
             Picker(selection: Binding(get: { choice(general) }, set: { choose($0) })) {
-                Text(automatic.map { l10n.render(.appTerminalAutomatic($0)) } ?? l10n.string(.appNoneFound)).tag("")
+                Text(model.defaultChoiceTitle(for: role == .terminal ? "general.terminal" : "general.editor", automatic: automatic.map { l10n.render(.appTerminalAutomatic($0)) } ?? l10n.string(.appNoneFound)) { id in
+                    apps(general).first { $0.id == id }?.name ?? id
+                }).tag("")
                 ForEach(apps(general)) { app in
                     Group {
                         if let image = model.image(for: app.icon) {

@@ -223,6 +223,8 @@ extension LocalizedMessage {
     public static var appCheckTerminal: LocalizedMessage { LocalizedMessage(.appCheckTerminal) }
     /// Checking your setup…
     public static var appChecking: LocalizedMessage { LocalizedMessage(.appChecking) }
+    /// As in %1$@ (%2$@)
+    public static func appChoiceShared(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.appChoiceShared, [argument1, argument2]) }
     /// Choose a folder in a git repository to list its worktrees.
     public static var appChooseFolderMessage: LocalizedMessage { LocalizedMessage(.appChooseFolderMessage) }
     /// Choose

@@ -406,6 +406,11 @@ The review covered entries, places and the apps; the model and the views; and tr
 - Apply on a card is held to the files its card was drawn for (the digest of the preview); a second click while the first is being made does nothing.
 - What VoiceOver hears: an Undo says "Change undone", an applied proposal what a change of a control says. Dates, lists and numbers are written in the
   config's language (`Localizer.locale`), not the system's.
+- **A default row says what choosing it gives.** Automatic, Same as macOS and Same as all agents take the key out of the file that decides it. When that is
+  this Mac's own file and config.toml sets the key too, config.toml's value holds afterwards: the row said "Automatic (Ghostty)" and gave config.toml's
+  Terminal. The row now names that value ("As in config.toml (Terminal)", `MenuSnapshot.underneath`). The alternatives were a word in this Mac's file that
+  means "the default" (TOML has no null, and a boolean has no such word), or taking the key out of config.toml as well, which would change the other Macs
+  for a choice made on this one.
 
 ## Consequences
 
