@@ -20653,25 +20653,25 @@
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "كما في %1$@ (%2$@)"
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "%1$@-এর মতো (%2$@)"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Wie in %1$@ (%2$@)"
           }
         },
         "el": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Όπως στο %1$@ (%2$@)"
           }
         },
@@ -20683,151 +20683,151 @@
         },
         "es": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Como en %1$@ (%2$@)"
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "مانند %1$@ (%2$@)"
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Comme dans %1$@ (%2$@)"
           }
         },
         "he": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "כמו ב-%1$@ (%2$@)"
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "%1$@ जैसा (%2$@)"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Seperti di %1$@ (%2$@)"
           }
         },
         "it": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Come in %1$@ (%2$@)"
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "%1$@ と同じ（%2$@）"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "%1$@과(와) 동일(%2$@)"
+            "state": "translated",
+            "value": "%1$@과 동일(%2$@)"
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "%1$@ प्रमाणे (%2$@)"
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Seperti dalam %1$@ (%2$@)"
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Zoals in %1$@ (%2$@)"
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Jak w %1$@ (%2$@)"
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Como em %1$@ (%2$@)"
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Ca în %1$@ (%2$@)"
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Как в %1$@ (%2$@)"
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "%1$@ இல் உள்ளபடி (%2$@)"
           }
         },
         "te": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "%1$@ లో ఉన్నట్లు (%2$@)"
           }
         },
         "th": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "เหมือนกับใน %1$@ (%2$@)"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "%1$@ ile aynı (%2$@)"
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Як у %1$@ (%2$@)"
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "‏%1$@ جیسا (%2$@)"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Như trong %1$@ (%2$@)"
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "与 %1$@ 相同（%2$@）"
           }
         },
         "zh-Hant": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "與 %1$@ 相同（%2$@）"
           }
         }
