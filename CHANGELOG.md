@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.8 (2026-11-08)
+
 - When this Mac's own config file and `config.toml` both set the terminal, the editor, the language or an agent's terminal or permission prompts, the
   first row of that menu now says what choosing it gives ("As in config.toml (Terminal)") instead of "Automatic", which it was not.
 
