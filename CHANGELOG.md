@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.7 (2026-11-08)
+
 The translations, read through again.
 
 - **Every language read through a second time** by AI reviewers, one per language, for the strings added since 1.0.0 (mostly the
