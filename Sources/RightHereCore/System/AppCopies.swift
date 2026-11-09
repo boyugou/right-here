@@ -11,7 +11,7 @@ public struct AppCopy: Sendable, Equatable {
     }
 }
 
-/// The copies of Right Here that are installed. Spotlight and Launchpad open whichever they like, so a person with an old copy left in
+/// The copies of Right Here that are installed. Spotlight opens whichever it likes, so a person with an old copy left in
 /// `~/Applications` opened it and saw none of what the newer one has.
 public enum AppCopies {
     /// The copies in an Applications folder (the Mac's or the person's own), newest first. A mounted disk image, a build folder and a

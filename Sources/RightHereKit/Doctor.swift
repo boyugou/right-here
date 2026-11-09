@@ -77,7 +77,7 @@ public struct Doctor: Sendable {
         return (checks, shell)
     }
 
-    /// More than one copy of the app in the Applications folders: Spotlight and Launchpad open any of them, and an old one has none of what the new one has (a person
+    /// More than one copy of the app in the Applications folders: Spotlight opens any of them, and an old one has none of what the new one has (a person
     /// opened 0.3.2 from `~/Applications` and looked for what 0.3.7 in `/Applications` added). No row with one copy or none.
     func copiesCheck() -> DoctorCheck? {
         let installed = AppCopies.installed(facts.applicationCopies(bundleID: AppIdentity.hostBundleID), home: facts.homeDirectory.path)

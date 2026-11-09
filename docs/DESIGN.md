@@ -410,8 +410,9 @@ product there. The identifiers derive from `AppIdentity` in one place.
 ## 13. Localization
 
 Thirty languages from `Localization/Localizable.xcstrings`, compiled into Swift (see
-[0006](decisions/0006-localization.md)). The initial translations are AI-generated and marked
-`needs_review`; the languages read through since are named in the [changelog](../CHANGELOG.md). The doctor returns a code and values for every sentence it says: the setup window writes them in its
+[0006](decisions/0006-localization.md)). The translations are AI-generated and every language has been read through by a second
+model (named in the [changelog](../CHANGELOG.md)); the catalog marks them reviewed, and a translation added later is `needs_review` until a
+review pass has read it (`script/mark_reviewed.py`). The doctor returns a code and values for every sentence it says: the setup window writes them in its
 language (`general.language`, or the system's), `rh doctor` and the MCP tool print their English, and `rh doctor --json` has both. The probes, the
 parser's and the planner's own sentences (a config error, why an agent cannot start) and text quoted from the config stay
 English in every language.

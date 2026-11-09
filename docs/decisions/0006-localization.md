@@ -108,6 +108,18 @@ Ukrainian and Traditional Chinese for Open With, and several for Show in Finder;
 "route" and "jalur" for a path as Finder does, and Romanian uses the formal register macOS uses. Run it after a
 macOS update. What a native speaker would change is still open.
 
+A second review pass (2026-11-08) read what came after the first: the 110 strings added since 1.0.0 (most of them the refusals, the
+sentences that say why an action did nothing) and the Shortcuts, App Shortcuts and Info.plist strings, 133 in each language. One model
+per language held each string to its English, its comment, the terms of the language's other strings and Apple's own words read from
+this Mac's system files, and changed only what was definitely wrong: 148 corrections in 29 languages, each checked by
+`merge_translations.py`. Among them: a lock that "cannot be downloaded" (Greek) or "fetched" (Korean); "shell" left in English
+(Malay) and "commit" written two ways in one sentence (Hebrew); "an empty file name" for an unused one (Bengali, Hindi); kilobytes
+as Apple writes them (French "ko", Russian and Ukrainian "КБ"); a permission prompt in another register than the rest of the
+language (Hebrew) or without the capital of the polite «Ваш» (Russian); Apple's own name for Command Line Tools where its installer dialog uses one (Simplified Chinese, Polish); and terms that
+differed from the rest of the language. The English lost Launchpad, which macOS 26 replaced with Apps (`doctor.fix.appCopies` now
+names Spotlight alone). Every translation is now marked reviewed (`translated`); `script/mark_reviewed.py` marks a language after a
+pass, and `merge_translations.py` still adds a new translation as `needs_review`. A native speaker's reading is still welcome.
+
 ## Typed messages
 
 A sentence with values in it is a `LocalizedMessage`: a key and the values, not yet written in a language.

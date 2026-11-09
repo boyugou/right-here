@@ -7,7 +7,7 @@
     ./script/merge_translations.py translations.json                       into Localizable.xcstrings
     ./script/merge_translations.py translations.json --catalog InfoPlist.xcstrings      (also AppIntents.xcstrings, AppShortcuts.xcstrings)
     ./script/merge_translations.py translations.json --replace              also overwrite a translation that exists
-    ./script/merge_translations.py translations.json --replace --reviewed   the texts are a native speaker's own: mark them translated, not needs_review
+    ./script/merge_translations.py translations.json --replace --reviewed   the texts come from a review pass: mark them translated, not needs_review
 
 translations.json holds the keys to add or to complete. Every language is named by its code, never by position:
 
@@ -23,7 +23,7 @@ translations.json holds the keys to add or to complete. Every language is named 
 A translation is checked the way verify_localizations.py checks the catalog (placeholders, commands in backticks,
 the script of the language, and in a right-to-left one no literal path or quoted setting, which has to be a value), and a
 right-to-left one that would start with Latin text gets the right-to-left mark.
-New translations are marked needs_review, or translated with --reviewed (a native speaker's correction of their own language).
+New translations are marked needs_review, or translated with --reviewed (a review pass's correction: a native speaker's, or a second model's; see mark_reviewed.py).
 Nothing is written unless every translation passes.
 """
 import argparse
@@ -84,7 +84,7 @@ def main() -> int:
     parser.add_argument("translations", type=Path)
     parser.add_argument("--catalog", default="Localizable.xcstrings", choices=CATALOGS)
     parser.add_argument("--replace", action="store_true")
-    parser.add_argument("--reviewed", action="store_true", help="the texts come from a native speaker: state translated instead of needs_review")
+    parser.add_argument("--reviewed", action="store_true", help="the texts come from a review pass: state translated instead of needs_review")
     arguments = parser.parse_args()
     catalog, problems, added = merge(arguments.catalog, read_json(arguments.translations), arguments.replace, arguments.reviewed)
     if problems:

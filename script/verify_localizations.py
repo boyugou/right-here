@@ -252,7 +252,7 @@ def main() -> int:
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
-    print(f"ok: {len(strings)} strings (and {len(intents['strings'])} of the App Intents) x {len(languages())} languages ({unreviewed} awaiting native-speaker review)")
+    print(f"ok: {len(strings)} strings (and {len(intents['strings'])} of the App Intents) x {len(languages())} languages ({unreviewed} awaiting review)")
     return 0
 
 

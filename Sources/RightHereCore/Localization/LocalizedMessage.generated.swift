@@ -803,7 +803,7 @@ extension LocalizedMessage {
     public static func doctorFixAgentRemove(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixAgentRemove, [argument1]) }
     /// Add agents to general.agents, for example %@.
     public static func doctorFixAgentsAdd(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixAgentsAdd, [argument1]) }
-    /// Keep %1$@ and move the other copies to the Trash. Spotlight and Launchpad can open any of them.
+    /// Keep %1$@ and move the other copies to the Trash. Spotlight can open any of them.
     public static func doctorFixAppCopies(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixAppCopies, [argument1]) }
     /// Start `claude` once and send a prompt; Claude Code registers the handler.
     public static var doctorFixClaudeLink: LocalizedMessage { LocalizedMessage(.doctorFixClaudeLink) }

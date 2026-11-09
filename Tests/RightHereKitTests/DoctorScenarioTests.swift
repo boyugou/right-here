@@ -424,7 +424,7 @@ struct DoctorScenarioTests {
                                                   AppCopy(path: "/Volumes/Right Here/Right Here.app", version: "0.3.6")]
         let check = try #require(doctor(facts).copiesCheck())
         #expect(said(check) == Said(status: .warn, detail: "2 copies are installed: 0.3.7 (/Applications), 0.3.2 (~/Applications)",
-                                    fix: "Keep /Applications/Right Here.app and move the other copies to the Trash. Spotlight and Launchpad can open any of them."))
+                                    fix: "Keep /Applications/Right Here.app and move the other copies to the Trash. Spotlight can open any of them."))
     }
 
     @Test func whatACheckNamesInsideItsSentenceIsInItsLanguage() async throws {

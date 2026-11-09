@@ -7,25 +7,25 @@
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "انسخ مسارا باستخدام ${applicationName}"
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} দিয়ে একটি পাথ কপি করুন"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Einen Pfad mit ${applicationName} kopieren"
           }
         },
         "el": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Αντιγραφή διαδρομής με ${applicationName}"
           }
         },
@@ -37,151 +37,151 @@
         },
         "es": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Copiar una ruta con ${applicationName}"
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "کپی مسیر با ${applicationName}"
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Copier un chemin avec ${applicationName}"
           }
         },
         "he": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "העתקת נתיב עם ${applicationName}"
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} के साथ पाथ कॉपी करें"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Salin jalur dengan ${applicationName}"
           }
         },
         "it": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Copia un percorso con ${applicationName}"
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} でパスをコピー"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} 앱으로 경로 복사"
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} सह पाथ कॉपी करा"
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Salin laluan dengan ${applicationName}"
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Een pad kopiëren met ${applicationName}"
+            "state": "translated",
+            "value": "Kopieer een pad met ${applicationName}"
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Kopiuj ścieżkę za pomocą ${applicationName}"
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Copiar um caminho com ${applicationName}"
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Copiază o cale cu ${applicationName}"
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Скопировать путь с помощью ${applicationName}"
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} மூலம் பாதையை நகலெடு"
           }
         },
         "te": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} తో పాత్ కాపీ చేయండి"
           }
         },
         "th": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "คัดลอกเส้นทางด้วย ${applicationName}"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} ile yol kopyala"
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Копіювати шлях за допомогою ${applicationName}"
+            "state": "translated",
+            "value": "Скопіювати шлях за допомогою ${applicationName}"
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} کے ساتھ پاتھ کاپی کریں"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Sao chép đường dẫn với ${applicationName}"
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "使用 ${applicationName} 拷贝路径"
           }
         },
         "zh-Hant": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "使用 ${applicationName} 拷貝路徑"
           }
         }
@@ -193,25 +193,25 @@
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "أنشئ ملفا جديدا باستخدام ${applicationName}"
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} দিয়ে নতুন ফাইল তৈরি করুন"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Mit ${applicationName} eine neue Datei erstellen"
           }
         },
         "el": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Δημιουργία νέου αρχείου με ${applicationName}"
           }
         },
@@ -223,151 +223,151 @@
         },
         "es": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Crear un archivo nuevo con ${applicationName}"
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "ایجاد فایل جدید با ${applicationName}"
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Créer un nouveau fichier avec ${applicationName}"
           }
         },
         "he": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "יצירת קובץ חדש עם ${applicationName}"
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} के साथ नई फ़ाइल बनाएँ"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Buat file baru dengan ${applicationName}"
           }
         },
         "it": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Crea un nuovo file con ${applicationName}"
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} で新規ファイルを作成"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} 앱으로 새 파일 만들기"
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} सह नवीन फाइल तयार करा"
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Cipta fail baharu dengan ${applicationName}"
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Een nieuw bestand maken met ${applicationName}"
+            "state": "translated",
+            "value": "Maak een nieuw bestand aan met ${applicationName}"
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Utwórz nowy plik za pomocą ${applicationName}"
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Criar um novo arquivo com ${applicationName}"
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Creează un fișier nou cu ${applicationName}"
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Создать новый файл с помощью ${applicationName}"
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} மூலம் புதிய கோப்பை உருவாக்கு"
           }
         },
         "te": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} తో కొత్త ఫైల్ సృష్టించండి"
           }
         },
         "th": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "สร้างไฟล์ใหม่ด้วย ${applicationName}"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} ile yeni dosya oluştur"
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Створити новий файл за допомогою ${applicationName}"
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} کے ساتھ نئی فائل بنائیں"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Tạo tệp mới với ${applicationName}"
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "使用 ${applicationName} 新建文件"
           }
         },
         "zh-Hant": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "使用 ${applicationName} 建立新檔案"
           }
         }
@@ -379,25 +379,25 @@
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "افتح في الطرفية باستخدام ${applicationName}"
+            "state": "translated",
+            "value": "افتح في الوحدة الطرفية باستخدام ${applicationName}"
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} দিয়ে টার্মিনালে খুলুন"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "In Terminal mit ${applicationName} öffnen"
+            "state": "translated",
+            "value": "Im Terminal mit ${applicationName} öffnen"
           }
         },
         "el": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Άνοιγμα στο τερματικό με ${applicationName}"
           }
         },
@@ -409,151 +409,151 @@
         },
         "es": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Abrir en la terminal con ${applicationName}"
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "باز کردن در ترمینال با ${applicationName}"
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Ouvrir dans le terminal avec ${applicationName}"
           }
         },
         "he": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "פתיחה במסוף עם ${applicationName}"
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} के साथ टर्मिनल में खोलें"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Buka di terminal dengan ${applicationName}"
           }
         },
         "it": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Apri nel terminale con ${applicationName}"
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} でターミナルで開く"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} 앱으로 터미널에서 열기"
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} सह टर्मिनलमध्ये उघडा"
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Buka dalam terminal dengan ${applicationName}"
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Openen in terminal met ${applicationName}"
+            "state": "translated",
+            "value": "Open in terminal met ${applicationName}"
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Otwórz w terminalu za pomocą ${applicationName}"
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Abrir no terminal com ${applicationName}"
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Deschide în terminal cu ${applicationName}"
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Открыть в терминале с помощью ${applicationName}"
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} மூலம் டெர்மினலில் திற"
           }
         },
         "te": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} తో టెర్మినల్‌లో తెరవండి"
           }
         },
         "th": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "เปิดในเทอร์มินัลด้วย ${applicationName}"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} ile terminalde aç"
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Відкрити в терміналі за допомогою ${applicationName}"
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} کے ساتھ ٹرمینل میں کھولیں"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Mở trong terminal với ${applicationName}"
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "使用 ${applicationName} 在终端中打开"
           }
         },
         "zh-Hant": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "使用 ${applicationName} 在終端機中打開"
           }
         }
@@ -565,25 +565,25 @@
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "ابدأ وكيلا باستخدام ${applicationName}"
+            "state": "translated",
+            "value": "شغّل وكيلا باستخدام ${applicationName}"
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} দিয়ে একটি এজেন্ট শুরু করুন"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Einen Agenten mit ${applicationName} starten"
           }
         },
         "el": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Εκκίνηση πράκτορα με ${applicationName}"
           }
         },
@@ -595,151 +595,151 @@
         },
         "es": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Iniciar un agente con ${applicationName}"
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "شروع یک عامل با ${applicationName}"
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Démarrer un agent avec ${applicationName}"
           }
         },
         "he": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "הפעלת סוכן עם ${applicationName}"
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} के साथ एजेंट शुरू करें"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Mulai agen dengan ${applicationName}"
           }
         },
         "it": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Avvia un agente con ${applicationName}"
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} でエージェントを起動"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} 앱으로 에이전트 시작"
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} सह एजंट सुरू करा"
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Mulakan ejen dengan ${applicationName}"
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Een agent starten met ${applicationName}"
+            "state": "translated",
+            "value": "Start een agent met ${applicationName}"
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Uruchom agenta za pomocą ${applicationName}"
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Iniciar um agente com ${applicationName}"
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Pornește un agent cu ${applicationName}"
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Запустить агента с помощью ${applicationName}"
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} மூலம் முகவரைத் தொடங்கு"
           }
         },
         "te": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} తో AI ఏజెంట్‌ను ప్రారంభించండి"
           }
         },
         "th": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "เริ่มเอเจนต์ด้วย ${applicationName}"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} ile bir ajan başlat"
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Запустити агента за допомогою ${applicationName}"
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "${applicationName} کے ساتھ ایجنٹ شروع کریں"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Khởi động tác tử với ${applicationName}"
+            "state": "translated",
+            "value": "Khởi chạy tác tử với ${applicationName}"
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "使用 ${applicationName} 启动智能体"
           }
         },
         "zh-Hant": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "使用 ${applicationName} 啟動代理程式"
           }
         }

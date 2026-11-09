@@ -191,7 +191,7 @@ Right Here has been public since 1.0 (2026-10-29). Config keys and the command l
 ## Languages
 
 The app and the Finder menu are in 30 languages, including Arabic, Hebrew, Persian and Urdu. They follow the language of your Mac, or the one
-you choose on the Overview page of the app. The translations are machine-made and wait for review by native speakers. The `rh` command stays in English, for scripts.
+you choose on the Overview page of the app. The translations are machine-made, and a second model has read each language against the English; no native speaker has yet, and corrections are welcome. The `rh` command stays in English, for scripts.
 
 ## License
 

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+The translations, read through again.
+
+- **Every language read through a second time** by AI reviewers, one per language, for the strings added since 1.0.0 (mostly the
+  sentences that say why an action did nothing) and those of Shortcuts and the permission prompt: 148 corrections in 29 languages.
+  Hebrew (11), Malay (12) and Romanian (11) had the most; among them a lock that read "cannot be downloaded" (Greek), "shell" left in
+  English (Malay), kilobytes written as Apple writes them (French, Russian, Ukrainian), and Apple's own name for the Command Line Tools
+  (Simplified Chinese, Polish). Every translation is now marked reviewed.
+- The check for several installed copies no longer names Launchpad, which macOS 26 replaced: Spotlight can open any of them.
+
 ## 1.2.6 (2026-11-08)
 
 The setup window's editing, after an independent review.
