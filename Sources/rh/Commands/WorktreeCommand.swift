@@ -109,8 +109,9 @@ struct WorktreeRemove: AsyncParsableCommand {
         abstract: "Remove a worktree that Right Here created.",
         discussion: """
         Only worktrees under .right-here/worktrees in the repository are removed; the main working copy and worktrees you made \
-        yourself are never touched (use `git worktree remove` for those). A worktree with uncommitted work is kept unless \
-        you pass --force, and a branch is deleted only when it is fully merged.
+        yourself are never touched (use `git worktree remove` for those). A worktree with uncommitted work, or with files that \
+        exist only there (git ignores them: a .env file), is kept unless you pass --force; one that holds another worktree is never \
+        removed. A branch is deleted only when it is fully merged.
         """
     )
 
@@ -123,7 +124,7 @@ struct WorktreeRemove: AsyncParsableCommand {
     @Flag(name: .customLong("delete-branch"), help: "Also delete the branch after removing the worktree (only when it is fully merged).")
     var deleteBranch = false
 
-    @Flag(name: .customLong("force"), help: "Remove the worktree even if it has uncommitted changes, which are lost.")
+    @Flag(name: .customLong("force"), help: "Remove the worktree even if it has uncommitted changes or files that exist only there, which are lost.")
     var force = false
 
     func run() async throws {

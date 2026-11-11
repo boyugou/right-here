@@ -10,8 +10,8 @@ What deletes files, after an independent review.
 - A repository that commits `.right-here` as a symbolic link gets no worktree outside it and cannot make a worktree of yours removable. An empty worktree name
   removes nothing.
 - A `state.toml` that cannot be read (a hand edit with a missing comma) is not written over by the next recent folder, which lost the pinned folders.
-- `rh config init --force` on a config kept as a link keeps the link and saves a real copy of the file; a link that points nowhere is refused, by an edit
-  and a pull too, naming where it points.
+- `rh init --force` on a config kept as a link keeps the link and saves a real copy of the file; an edit and a pull refuse a link that points
+  nowhere, naming where it points (starting over with `--force` replaces it).
 - `rh uninstall` and setup remove only the Quick Actions that Right Here wrote (it keeps a record of them): a copy that Finder's Duplicate made is yours.
 - A worktree is not removed under a run that timed out, and a New File whose last write is refused when the file is closed leaves no part of a document behind.
 

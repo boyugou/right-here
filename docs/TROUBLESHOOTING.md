@@ -166,8 +166,9 @@ rh run agent.claude --worktree --branch experiment-1
 - It adds `.right-here` to `.git/info/exclude`, so `git status` does not show it.
 - `--dry-run` shows the plan and the path of the worktree, and makes nothing.
 - If the run fails and nothing in the worktree changed, Right Here removes it again.
-- `rh worktree list` lists the worktrees. `rh worktree remove` removes one. It refuses work that is not committed, unless you add
-  `--force`. It removes only worktrees that Right Here made.
+- `rh worktree list` lists the worktrees. `rh worktree remove` removes one. It refuses work that is not committed, and files that exist only
+  there (git ignores them: a `.env`, a local database), unless you add `--force`. It never removes a worktree that holds another one, and it
+  removes only worktrees that Right Here made.
 
 A repository can be another person's code. So for these commands, git runs with the repository's own hooks, filters and file-system
 monitor turned off, and fetches nothing. Your own git configuration still applies. Git LFS that you set up for your account
