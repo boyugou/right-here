@@ -959,6 +959,14 @@ struct WorktreesPage: View {
                 Text(l10n.render(.appRemoveWorktreeMessage(PathDisplay.folder(row.entry.path, home: model.homePath)), isolatingValues: true))
             }
         }
+        // Files git ignores would go with the folder: a second question names them, and its yes is held to exactly those.
+        .confirmationDialog(l10n.string(.appRemoveIgnoredTitle), isPresented: Binding(get: { model.pendingIgnoredRemoval != nil }, set: { if !$0 { model.cancelIgnoredRemoval() } }),
+                            titleVisibility: .visible, presenting: model.pendingIgnoredRemoval) { held in
+            Button(l10n.string(.appRemoveIgnoredConfirm), role: .destructive) { Task { await model.confirmIgnoredRemoval(held) } }
+            Button(l10n.string(.appCancel), role: .cancel) { model.cancelIgnoredRemoval() }
+        } message: { held in
+            Text(l10n.render(.appRemoveIgnoredMessage(WorktreeError.shown(held.files)), isolatingValues: true))
+        }
     }
 
     private var repositoryBar: some View {

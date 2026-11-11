@@ -147,13 +147,15 @@ public struct LiveExecutor: Sendable {
     /// Creates the file only if it does not exist, so a name chosen while planning cannot overwrite
     /// a file that appeared in the meantime.
     static func createFile(_ file: CreateFileStep,
-                           write: (Int32, UnsafeRawPointer?, Int) -> Int = { Darwin.write($0, $1, $2) }) throws {
+                           write: (Int32, UnsafeRawPointer?, Int) -> Int = { Darwin.write($0, $1, $2) },
+                           close: (Int32) -> Int32 = { Darwin.close($0) }) throws {
         let descriptor = Darwin.open(file.path, O_WRONLY | O_CREAT | O_EXCL, 0o644)
         guard descriptor >= 0 else {
             if errno == EEXIST { throw ExecutionError.fileExists(path: file.path) }
             throw ExecutionError.stepFailed(index: 0, step: Step.createFile(file).summary, message: String(cString: strerror(errno)))
         }
-        defer { Darwin.close(descriptor) }
+        var closed = false
+        defer { if !closed { _ = close(descriptor) } }
         let bytes = file.bytes
         var written = 0
         while written < bytes.count {
@@ -166,6 +168,13 @@ public struct LiveExecutor: Sendable {
                 throw ExecutionError.stepFailed(index: 0, step: Step.createFile(file).summary, message: reason)
             }
             written += count
+        }
+        // The last of the data may only be refused when the file is closed (a network volume, a quota): a file that was reported as made and holds part of a document is worse than none.
+        closed = true
+        if close(descriptor) != 0 {
+            let reason = String(cString: strerror(errno))
+            Darwin.unlink(file.path)
+            throw ExecutionError.stepFailed(index: 0, step: Step.createFile(file).summary, message: reason)
         }
     }
 }

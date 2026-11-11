@@ -14,9 +14,15 @@ public struct StateStore: Sendable, Equatable, Codable {
     }
 
     public static func parse(_ text: String) -> StateStore {
+        parseStrictly(text) ?? StateStore()
+    }
+
+    /// The state the text holds, or `nil` when it is not TOML that can be read (a hand edit with a missing comma, a sync tool's conflict text): `parse` takes that for an
+    /// empty state, and a write of an empty state over it would lose what the person had pinned.
+    public static func parseStrictly(_ text: String) -> StateStore? {
         guard !NestingDepth.tomlExceeds(text, limit: 8),
               let table = try? TOMLTable(source: text + "\n") else {
-            return StateStore()
+            return nil
         }
         return StateStore(pins: folders(in: table, key: "pins"),
                           recents: Array(folders(in: table, key: "recents").prefix(maxRecents)))

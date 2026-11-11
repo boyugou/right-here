@@ -78,6 +78,21 @@ has no `--recurse-submodules`. `safe.directory=*` in a repository's own configur
 naming its path in the global configuration allowed it), so a repository that somebody else owns is refused by git, not guarded by Right Here. Right Here runs no
 `rev-parse`: `gitRoot` walks the file system.
 
+## After an independent review of the operations that delete files (2026-11-08)
+
+- **A worktree made inside another.** `gitRoot` walks up to the nearest `.git`, which inside a worktree is the worktree's own file, so `rh worktree add`, `rh run --worktree`
+  and the MCP `create` asked from inside one made the new worktree in its folder, where `.right-here` is excluded: the outer worktree's `git status` was clean, and its
+  removal (without `--force`, from the window, the MCP tool or `rh worktree remove`) deleted the inner one's uncommitted work. New worktrees are now made under the main
+  working copy (`GitWorktreeManager.mainWorkingCopy`: the first entry of `git worktree list` when `.git` is a file), and a removal of a worktree that holds others is
+  refused, `--force` included: force is about its own changes.
+- **Files git ignores.** `git worktree remove` checks `git status --porcelain`, which does not list them, and deletes them with the folder (a `.env` that exists only there).
+  A removal without `--force` first reads `git status --porcelain -z --ignored --untracked-files=normal` and refuses when it lists any (`normal`: `node_modules/` is one name).
+  The MCP tool never forces; the command line says what is there and `--force` overrides; the window asks a second time, naming them, and that yes is held to exactly those
+  (`ignoredAgreed`), as the yes to a change that switches the permission prompts off is held to the agents it named. `discardIfUnchanged` counts them as changes.
+- **A committed link.** A repository can commit `.right-here`, `.right-here/worktrees` or a worktree's folder as a symbolic link, and git follows it: the checkout landed where the
+  link points, and a folder there counted as one Right Here made. Both ends refuse a link in any of the three places (`linkInTheWay`).
+- An empty worktree name is no name (as a path it was the current folder), and a run that timed out leaves its worktree: the command may already be in the terminal.
+
 ## Alternatives
 
 - Create the worktree first and remove it when the plan is refused: the repository changes for a request that never runs, and a crash

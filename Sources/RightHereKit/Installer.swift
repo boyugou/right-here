@@ -292,12 +292,26 @@ public struct Installer: Sendable {
 
     // MARK: Services
 
-    /// The workflow bundles Right Here has installed.
+    /// The names of the Quick Actions Right Here wrote, one to a line. Finder's Duplicate copies a bundle with everything in it and names the copy like the original
+    /// ("Right Here - Open in Terminal copy.workflow"), so the name and the contents cannot tell a Service of the person's from ours: only a record of what was written can.
+    var servicesManifest: URL { locations.applicationScripts.appendingPathComponent("installed-services.txt") }
+
+    private func writtenNames() -> [String] {
+        ((try? String(contentsOf: servicesManifest, encoding: .utf8)) ?? "").split(separator: "\n").map(String.init)
+    }
+
+    private func recordWritten(_ names: [String]) throws {
+        try fileManager.createDirectory(at: locations.applicationScripts, withIntermediateDirectories: true)
+        try AtomicFile.write(Data((names.sorted().joined(separator: "\n") + "\n").utf8), to: servicesManifest)
+    }
+
+    /// The workflow bundles Right Here has installed: those of the record of what it wrote (`servicesManifest`). A bundle whose name only starts like one of ours is the person's.
     public func installedServices() -> [URL] {
         let names = (try? fileManager.contentsOfDirectory(atPath: locations.services.path)) ?? []
+        let written = Set(writtenNames().map(ServiceWorkflow.fold))
         // By scalars: a title that starts with a combining mark joins the space of the prefix in one grapheme, and one that ends with a mark that
         // joins the next character (U+0600) joins the dot, and `hasPrefix`/`hasSuffix` compare graphemes: such a bundle was written and then never seen.
-        return names.filter { $0.unicodeScalars.starts(with: ServiceWorkflow.namePrefix.unicodeScalars) && $0.unicodeScalars.reversed().starts(with: ".workflow".unicodeScalars.reversed()) }
+        return names.filter { $0.unicodeScalars.starts(with: ServiceWorkflow.namePrefix.unicodeScalars) && $0.unicodeScalars.reversed().starts(with: ".workflow".unicodeScalars.reversed()) && written.contains(ServiceWorkflow.fold($0)) }
             .sorted().map { locations.services.appendingPathComponent($0) }
     }
 
@@ -334,6 +348,7 @@ public struct Installer: Sendable {
     func installServices(_ specs: [ServiceSpec], write: (ServiceSpec, URL) throws -> Void) throws -> [URL] {
         try refuseUnderTest()
         try fileManager.createDirectory(at: locations.services, withIntermediateDirectories: true)
+        let before = writtenNames()
         // A name that does not start with the prefix, so nothing treats a half-written staging folder as installed.
         let staging = locations.services.appendingPathComponent(".rh-staging-\(UUID().uuidString)")
         try fileManager.createDirectory(at: staging, withIntermediateDirectories: true)
@@ -354,6 +369,8 @@ public struct Installer: Sendable {
                 try removeIfThere(bundle)
             }
         }
+        // The record has the new names before they are on disk: one that is written and not recorded would be nobody's, and neither current nor removed.
+        try recordWritten(before + staged.map(\.name))
         // Each Service takes the place of the one of its name in one step, so a name is never without its bundle, and two installs at once
         // (the setup window and `rh setup` in a terminal) cannot make each other fail: whichever comes second swaps in a bundle that is the
         // same. What the config no longer asks for is removed after the new ones are in.
@@ -365,6 +382,7 @@ public struct Installer: Sendable {
         }
         let kept = Set(staged.map { ServiceWorkflow.fold($0.name) })
         for bundle in installedServices() where !kept.contains(ServiceWorkflow.fold(bundle.lastPathComponent)) { try removeIfThere(bundle) }
+        try recordWritten(written.map(\.lastPathComponent))
         return written
     }
 
@@ -400,6 +418,7 @@ public struct Installer: Sendable {
     public func removeServices() throws {
         try refuseUnderTest()
         for bundle in installedServices() { try removeIfThere(bundle) }
+        try? fileManager.removeItem(at: servicesManifest)
     }
 
     /// Removes a Service; one that is gone already (another install removed it) is as good.

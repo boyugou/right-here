@@ -547,6 +547,12 @@ extension LocalizedMessage {
     public static var appRefresh: LocalizedMessage { LocalizedMessage(.appRefresh) }
     /// Refreshing…
     public static var appRefreshing: LocalizedMessage { LocalizedMessage(.appRefreshing) }
+    /// Remove Anyway
+    public static var appRemoveIgnoredConfirm: LocalizedMessage { LocalizedMessage(.appRemoveIgnoredConfirm) }
+    /// Removing this worktree also deletes these files, which git ignores and which exist only there: %@
+    public static func appRemoveIgnoredMessage(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appRemoveIgnoredMessage, [argument1]) }
+    /// Delete Files That Are in No Commit?
+    public static var appRemoveIgnoredTitle: LocalizedMessage { LocalizedMessage(.appRemoveIgnoredTitle) }
     /// Remove…
     public static var appRemoveWorktree: LocalizedMessage { LocalizedMessage(.appRemoveWorktree) }
     /// Remove Worktree
@@ -1135,6 +1141,12 @@ extension LocalizedMessage {
     public static func refusalUnsafeText(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalUnsafeText, [argument1]) }
     /// The folder %@ cannot be written into a link for Warp.
     public static func refusalWarpLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalWarpLink, [argument1]) }
+    /// %1$@ holds other worktrees (%2$@). Removing it would delete them and their work, so it was not removed. Remove those first.
+    public static func refusalWorktreeHoldsOthers(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalWorktreeHoldsOthers, [argument1, argument2]) }
+    /// %1$@ holds files that git ignores and that exist only there: %2$@. Removing it would delete them, so it was not removed.
+    public static func refusalWorktreeIgnoredFiles(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalWorktreeIgnoredFiles, [argument1, argument2]) }
+    /// %@ is a symbolic link. Right Here keeps its worktrees only in real folders of the repository, so nothing was made or removed.
+    public static func refusalWorktreeLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalWorktreeLink, [argument1]) }
     /// %1$@ cannot be used (%2$@), so setup left it as it is and made nothing from it
     public static func setupConfigUnusable(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.setupConfigUnusable, [argument1, argument2]) }
     /// Setup did not finish.

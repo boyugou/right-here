@@ -85,7 +85,7 @@ struct GitGuardCommandTests {
         #expect(await GitWorktreeManager.discardIfUnchanged(created, gitRoot: root, runner: runner))
         #expect(runner.recorded == [
             listingOfDefinitions(in: worktree),
-            git(["-C", worktree, "status", "--porcelain", "--untracked-files=all"], environment: guardedAgainstEvil),
+            git(["-C", worktree, "status", "--porcelain", "--ignored", "--untracked-files=all"], environment: guardedAgainstEvil),
             git(["-C", "/work/app", "worktree", "list", "--porcelain", "-z"]),
             listingOfDefinitions(in: "/work/app"),
             git(["-C", "/work/app", "worktree", "remove", "--", worktree]),
@@ -142,12 +142,15 @@ struct GitGuardCommandTests {
         let folder = repository.appendingPathComponent(".right-here/worktrees/feature")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let listed = porcelainZ("worktree \(repository.path)\nHEAD aaaa\nbranch refs/heads/main\n\nworktree \(folder.path)\nHEAD bbbb\nbranch refs/heads/feature\n")
-        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: listed), ProcessResult(status: 1), ProcessResult(status: 0, standardOutput: "worktree\0filter.evil.clean\0"), ProcessResult(status: 0)])
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: listed), ProcessResult(status: 1), ProcessResult(status: 0, standardOutput: "worktree\0filter.evil.clean\0"),
+                                                 ProcessResult(status: 0, standardOutput: ""), ProcessResult(status: 0)])
         _ = try await GitWorktreeManager.removeWorktree(worktreePath: "feature", gitRoot: repository, runner: runner)
         // `git worktree remove` runs its status inside the worktree, with that worktree's configuration (its `config.worktree` is not the main folder's).
         #expect(runner.recorded[1] == listingOfDefinitions(in: repository.path))
         #expect(runner.recorded[2] == listingOfDefinitions(in: folder.path))
-        #expect(runner.recorded[3] == git(["-C", repository.path, "worktree", "remove", "--", folder.path], environment: guardedAgainstEvil))
+        // What git ignores there is looked at first, with the same guards: the removal would delete it.
+        #expect(runner.recorded[3] == git(["-C", folder.path, "status", "--porcelain", "-z", "--ignored", "--untracked-files=normal"], environment: guardedAgainstEvil))
+        #expect(runner.recorded[4] == git(["-C", repository.path, "worktree", "remove", "--", folder.path], environment: guardedAgainstEvil))
     }
 
     @Test func aFailingListingOfWhatTheRepositoryDefinesStopsTheCommand() async {

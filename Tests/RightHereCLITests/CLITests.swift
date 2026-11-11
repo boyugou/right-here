@@ -2860,3 +2860,68 @@ extension CLITests {
         }
     }
 }
+
+/// From an independent review of the operations that delete files (2026-11-08): what the real `rh` removes.
+extension CLITests {
+    /// A trial home for the `rh` these tests start (`RH_HOME`): the config stays in the harness's own folder (`RH_CONFIG_DIR`), so the fake terminal is used.
+    private func trialHome(_ rh: RH) throws -> [String: String] {
+        let home = rh.configDirectory.appendingPathComponent("home")
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        return ["RH_HOME": home.path]
+    }
+
+    /// `rh run --worktree` for a folder inside one of Right Here's worktrees made the new worktree inside that worktree's folder (the repository was found by the
+    /// nearest `.git`, the outer worktree's own file), and `rh worktree remove` of the outer one, without --force, deleted the inner one's work. The new worktree is
+    /// made under the main working copy, at the place the folder has in the worktree that holds it, and outlives the outer one.
+    @Test func aWorktreeARunMakesFromInsideAnotherIsMadeBesideItAndOutlivesItsRemoval() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let trial = try trialHome(rh)
+        let outer = try rh.run(["worktree", "add", "outer", "--folder", repo.path], set: trial)
+        #expect(outer.status == 0, Comment(rawValue: outer.standardError))
+        let insideOuter = repo.appendingPathComponent(".right-here/worktrees/outer/sub/deeper")
+        let run = try rh.run(["run", "agent.marker@faketerm", "--worktree", "--branch", "inner", "--container", insideOuter.path], set: trial)
+        #expect(run.status == 0, Comment(rawValue: run.standardError))
+        // The fake terminal leaves a file where the agent started: work that is in no commit.
+        let work = repo.appendingPathComponent(".right-here/worktrees/inner/sub/deeper/ran-marker")
+        #expect(FileManager.default.fileExists(atPath: work.path), "the run's worktree is beside the outer one, in the same folder: \(run.standardError)")
+        let removed = try rh.run(["worktree", "remove", "outer", "--folder", repo.path], set: trial)
+        #expect(removed.status == 0, Comment(rawValue: removed.standardError))
+        #expect(FileManager.default.fileExists(atPath: work.path), "removing the outer worktree took the inner one's work")
+    }
+
+    /// A step that ran past its limit may have handed the command to the terminal before it was stopped, so the worktree this run made is not removed under an agent that
+    /// may be starting in it (it was removed, when `git status` found nothing changed yet).
+    @Test func aWorktreeIsNotRemovedUnderARunThatTimedOut() throws {
+        let rh = try RH(config: worktreeConfig + """
+
+        [[app]]
+        id = "slowterm"
+        name = "Slow"
+        bundle_id = "com.apple.finder"
+        role = "terminal"
+        run_args = ["/bin/sleep", "20"]
+        """); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let trial = try trialHome(rh)
+        let stopped = try rh.run(["run", "agent.marker@slowterm", "--json", "--worktree", "--branch", "slow", "--time-limit", "1", "--container", repo.path], set: trial)
+        let codes = ((stopped.json as? [String: Any])?["messages"] as? [[String: Any]])?.compactMap { $0["code"] as? String }
+        #expect(codes == ["refusal.timedOut"], "\(stopped.standardOutput) \(stopped.standardError)")
+        #expect(FileManager.default.fileExists(atPath: repo.appendingPathComponent(".right-here/worktrees/slow").path), "the worktree was removed under a run that may have started an agent")
+    }
+
+    /// `rh worktree remove "$NAME"` with the variable unset: the empty name is read as a path, `URL(fileURLWithPath: "")` is the current folder, and the
+    /// worktree the shell stands in is removed (sync refuses the same empty `--folder`).
+    @Test func anEmptyNameRemovesNoWorktree() throws {
+        let rh = try RH(config: worktreeConfig); defer { rh.cleanUp() }
+        let repo = try repository(rh)
+        let trial = try trialHome(rh)
+        #expect(try rh.run(["worktree", "add", "scratch", "--folder", repo.path], set: trial).status == 0)
+        let scratch = repo.appendingPathComponent(".right-here/worktrees/scratch")
+
+        let removed = try rh.run(["worktree", "remove", "", "--folder", repo.path], set: trial, inFolder: scratch)
+
+        #expect(removed.status != 0 && FileManager.default.fileExists(atPath: scratch.appendingPathComponent("README.md").path),
+                "an empty name removed the worktree of the current folder: \(removed.standardOutput)")
+    }
+}

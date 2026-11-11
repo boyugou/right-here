@@ -82,11 +82,15 @@ public struct WorktreeBrowser: Sendable {
 
     /// Removes the worktree of `row`, which the person has been asked about. A row the window does not offer to remove is refused
     /// before git is asked. Git's own refusal (uncommitted work) comes back as the notice, in its words.
-    public func remove(_ row: WorktreeRow, in root: URL) async -> SetupNotice {
+    /// - Parameter ignoredAgreed: The files git ignores in it that the person agreed to lose; any others come back as `worktreeHasIgnoredFiles`, and nothing is removed.
+    public func remove(_ row: WorktreeRow, in root: URL, ignoredAgreed: [String] = []) async -> SetupNotice {
         guard row.canBeRemoved else { return .notRemovable }
         do {
-            let removal = try await GitWorktreeManager.removeWorktree(worktreePath: row.entry.path, gitRoot: root, deleteBranch: false, force: false, runner: runner)
+            let removal = try await GitWorktreeManager.removeWorktree(worktreePath: row.entry.path, gitRoot: root, deleteBranch: false, force: false, ignoredAgreed: ignoredAgreed,
+                                                                      runner: runner)
             return .worktreeRemoved(removal.path)
+        } catch WorktreeError.ignoredFiles(let path, let files) {
+            return .worktreeHasIgnoredFiles(path, files)
         } catch {
             return .failure(error)
         }

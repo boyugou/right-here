@@ -3464,6 +3464,49 @@ struct EditingFlowTests {
         #expect(text(mac) == draft && !mac.model.textHasChanges && mac.model.lastAnnouncement == "Saved your changes.")
     }
 
+    /// A temporary git repository with one commit and a `.gitignore` of `patterns`. None of the person's git configuration is read.
+    private func ignoringRepository(_ patterns: [String]) throws -> URL {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("rh-tests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        func git(_ arguments: [String]) throws {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+            process.arguments = ["-C", directory.path, "-c", "commit.gpgsign=false", "-c", "user.name=Test", "-c", "user.email=test"] + arguments
+            process.environment = ["PATH": "/usr/bin:/bin", "HOME": FileManager.default.temporaryDirectory.path, "GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_NOSYSTEM": "1"]
+            try process.run()
+            process.waitUntilExit()
+        }
+        try git(["init", "-q"])
+        try "initial".write(to: directory.appendingPathComponent("README.md"), atomically: true, encoding: .utf8)
+        try (patterns.joined(separator: "\n") + "\n").write(to: directory.appendingPathComponent(".gitignore"), atomically: true, encoding: .utf8)
+        try git(["add", "-A"])
+        try git(["commit", "-q", "-m", "initial"])
+        return directory
+    }
+
+    /// A worktree that holds files git ignores (a `.env`, which exists nowhere else) is not removed by the first yes: the window asks a second time, naming them, and that yes is
+    /// held to exactly those: one that appeared meanwhile asks again. Real git, in a temporary repository.
+    @Test func aWorktreeWithIgnoredFilesIsRemovedOnlyForTheFilesTheSecondYesNamed() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        let repository = try ignoringRepository([".env", ".secret"]); defer { try? FileManager.default.removeItem(at: repository) }
+        let made = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "keys")
+        try "KEY=1\n".write(to: made.worktreeURL.appendingPathComponent(".env"), atomically: true, encoding: .utf8)
+        mac.model.selectRepository(repository)
+        // Choosing the repository starts the listing itself.
+        for _ in 0..<500 { if case .loaded = mac.model.worktrees { break }; try await Task.sleep(for: .milliseconds(10)) }
+        guard case .loaded(let rows) = mac.model.worktrees, let row = rows.first(where: { $0.canBeRemoved }) else { Issue.record("no worktree to remove: \(mac.model.worktrees)"); return }
+        await mac.model.remove(row)
+        let held = try #require(mac.model.pendingIgnoredRemoval, "the first yes does not delete files that exist only there")
+        #expect(held.files == [".env"] && FileManager.default.fileExists(atPath: made.worktreeURL.path))
+        // Another file git ignores appears while the question is up.
+        try "more\n".write(to: made.worktreeURL.appendingPathComponent(".secret"), atomically: true, encoding: .utf8)
+        await mac.model.confirmIgnoredRemoval(held)
+        let again = try #require(mac.model.pendingIgnoredRemoval, "a file that was not named asks again")
+        #expect(Set(again.files) == [".env", ".secret"] && FileManager.default.fileExists(atPath: made.worktreeURL.path))
+        await mac.model.confirmIgnoredRemoval(again)
+        #expect(mac.model.pendingIgnoredRemoval == nil && !FileManager.default.fileExists(atPath: made.worktreeURL.path), "removed, once the person had agreed to lose exactly those")
+    }
+
     /// Apply is held to the files its card was drawn for: with no card drawn, nothing is made.
     @Test func applyWithNoCardDrawnMakesNothing() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }

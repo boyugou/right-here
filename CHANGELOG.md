@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+What deletes files, after an independent review.
+
+- Removing a git worktree no longer deletes files that exist only there: those git ignores (a `.env`, a local database) are named, and the window asks a
+  second time before it deletes exactly those; the MCP tool never does. A worktree that holds another worktree is not removed, and new worktrees are
+  made beside the main working copy and not inside another worktree, whose removal took them along with their work.
+- A repository that commits `.right-here` as a symbolic link gets no worktree outside it and cannot make a worktree of yours removable. An empty worktree name
+  removes nothing.
+- A `state.toml` that cannot be read (a hand edit with a missing comma) is not written over by the next recent folder, which lost the pinned folders.
+- `rh config init --force` on a config kept as a link keeps the link and saves a real copy of the file; a link that points nowhere is refused, by an edit
+  and a pull too, naming where it points.
+- `rh uninstall` and setup remove only the Quick Actions that Right Here wrote (it keeps a record of them): a copy that Finder's Duplicate made is yours.
+- A worktree is not removed under a run that timed out, and a New File whose last write is refused when the file is closed leaves no part of a document behind.
+
 ## 1.2.8 (2026-11-08)
 
 - When this Mac's own config file and `config.toml` both set the terminal, the editor, the language or an agent's terminal or permission prompts, the

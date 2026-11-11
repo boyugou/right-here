@@ -13,6 +13,9 @@ public enum SetupNotice: Sendable, Equatable {
     case notARepository(String)
     /// The window was asked to remove a worktree Right Here did not make: it does not do that, and git is not asked.
     case notRemovable
+    /// The worktree in this folder holds files git ignores that exist only there (`WorktreeError.ignoredFiles`): nothing was removed, and the window asks whether to
+    /// lose exactly these.
+    case worktreeHasIgnoredFiles(String, [String])
     /// A helper or git ended with an error and said why, in its own words (English, or the system's own wording for an error
     /// that never reached it). Shown as it is.
     case failed(String)
@@ -72,6 +75,7 @@ public enum SetupNotice: Sendable, Equatable {
         case .worktreeRemoved(let folder): .appWorktreeRemoved(folder)
         case .notARepository(let folder): .appNotARepository(folder)
         case .notRemovable: .appWorktreeNotRemovable
+        case .worktreeHasIgnoredFiles(let folder, let files): .refusalWorktreeIgnoredFiles(folder, WorktreeError.shown(files))
         case .failed(let text): .doctorVerbatim(text)
         case .explained(let sentences): .doctorVerbatim(Localizer.english.render(sentences: sentences))
         case .stopped(let status): .appCommandStopped(String(status))
@@ -91,7 +95,7 @@ public enum SetupNotice: Sendable, Equatable {
     /// Whether this tells of something that did not work, so that the window shows it as a problem.
     public var isProblem: Bool {
         switch self {
-        case .failed, .explained, .stopped, .notARepository, .notRemovable, .listChanged, .undoRefused, .proposalStale, .proposalGone, .busy, .appNotFound, .appAlreadyAvailable, .appTurnedOff, .repairLeft: true
+        case .failed, .explained, .stopped, .notARepository, .notRemovable, .worktreeHasIgnoredFiles, .listChanged, .undoRefused, .proposalStale, .proposalGone, .busy, .appNotFound, .appAlreadyAvailable, .appTurnedOff, .repairLeft: true
         case .promptCopied, .mcpConfigurationCopied, .pluginCommandsCopied, .worktreeRemoved, .repaired: false
         }
     }

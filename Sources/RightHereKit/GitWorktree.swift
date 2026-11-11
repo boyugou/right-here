@@ -52,6 +52,13 @@ public enum WorktreeError: Error, Equatable, LocalizedError {
     case notCreatedHere(String)
     case ambiguous(String, [String])
     case conditionalInclude(String)
+    /// `.right-here`, its `worktrees` folder or the folder of the worktree is a symbolic link (a repository can commit one): git follows it, so a checkout would land
+    /// wherever it points and a folder there would count as one Right Here made.
+    case linkInTheWay(String)
+    /// The worktree holds others (made inside it): removing its folder would delete them and their work, which its own `git status` does not see.
+    case holdsOtherWorktrees(String, [String])
+    /// Files git ignores that exist only in the worktree (a `.env`, a local database): a removal without `--force` would delete them, so it waits for a yes to exactly these.
+    case ignoredFiles(String, [String])
 
     public var errorDescription: String? {
         switch self {
@@ -64,6 +71,31 @@ public enum WorktreeError: Error, Equatable, LocalizedError {
             return "\(path.withControlCharactersEscaped) is not a worktree Right Here created (those live under .right-here/worktrees), so it is left alone. Use `git worktree remove` for it."
         case .ambiguous(let target, let paths):
             return "\"\(target.withControlCharactersEscaped)\" matches several worktrees: \(paths.map(\.withControlCharactersEscaped).joined(separator: ", ")). Name one by its path."
+        case .linkInTheWay(let path):
+            return "\(path.withControlCharactersEscaped) is a symbolic link. Right Here keeps its worktrees only in real folders of the repository, so nothing was made or removed."
+        case .holdsOtherWorktrees(let path, let inside):
+            return "\(path.withControlCharactersEscaped) holds other worktrees (\(Self.shown(inside))). Removing it would delete them and their work, so it was not removed, even with --force. Remove those first."
+        case .ignoredFiles(let path, let files):
+            return "\(path.withControlCharactersEscaped) holds files that git ignores and that exist only there: \(Self.shown(files)). Removing it would delete them, so it was not removed. "
+                + "Remove it anyway with --force."
+        }
+    }
+
+    /// A few names of a list, their control characters escaped, and an ellipsis for the rest.
+    public static func shown(_ names: [String], limit: Int = 5) -> String {
+        let few = names.prefix(limit).map(\.withControlCharactersEscaped)
+        return (few + (names.count > limit ? ["…"] : [])).joined(separator: ", ")
+    }
+}
+
+/// The window meets these three, and says them in the person's language; the others are what the command line and an AI assistant meet, in English.
+extension WorktreeError: LocalizedFailure {
+    public var sentences: [LocalizedMessage] {
+        switch self {
+        case .linkInTheWay(let path): [.refusalWorktreeLink(path)]
+        case .holdsOtherWorktrees(let path, let inside): [.refusalWorktreeHoldsOthers(path, Self.shown(inside))]
+        case .ignoredFiles(let path, let files): [.refusalWorktreeIgnoredFiles(path, Self.shown(files))]
+        case .invalidBranch, .directoryInTheWay, .notFound, .notCreatedHere, .ambiguous, .conditionalInclude: [.doctorVerbatim(errorDescription ?? "")]
         }
     }
 }
@@ -155,9 +187,31 @@ public enum GitWorktreeManager {
         return entries
     }
 
-    public static func prepareWorktree(gitRoot: URL, branch preferredBranch: String?, runner: any ProcessRunner = LiveProcessRunner(),
+    /// The main working copy of the repository whose working tree `gitRoot` is: `gitRoot` itself when its `.git` is a folder; when it is a file (a worktree, or a
+    /// submodule), the folder `git worktree list` names first. Right Here's worktrees are made and looked for under it, never inside another worktree, whose removal
+    /// would take them along: the outer worktree's own `git status` does not see them, `.right-here` being excluded.
+    public static func mainWorkingCopy(of gitRoot: URL, runner: any ProcessRunner = LiveProcessRunner()) async throws -> URL {
+        var info = stat()
+        guard lstat(gitRoot.appendingPathComponent(".git").path, &info) == 0, info.st_mode & S_IFMT == S_IFREG else { return gitRoot }
+        guard let first = try await listWorktrees(in: gitRoot, runner: runner).first else { return gitRoot }
+        return URL(fileURLWithPath: first.path)
+    }
+
+    /// The first of Right Here's folders in the repository that is a symbolic link: `.right-here`, `.right-here/worktrees`, and `also` (the folder of one worktree).
+    /// A repository can commit any of them as a link, and git follows it: each must be a real folder, or not there yet.
+    static func linkInTheWay(gitRoot: URL, also folder: URL? = nil) -> String? {
+        let folders = [gitRoot.appendingPathComponent(".right-here"), gitRoot.appendingPathComponent(folderName)] + (folder.map { [$0] } ?? [])
+        for url in folders {
+            var info = stat()
+            if lstat(url.path, &info) == 0, info.st_mode & S_IFMT == S_IFLNK { return url.path }
+        }
+        return nil
+    }
+
+    public static func prepareWorktree(gitRoot found: URL, branch preferredBranch: String?, runner: any ProcessRunner = LiveProcessRunner(),
                                        gitInstalled: Bool? = nil) async throws -> WorktreeResult {
         try GitCommand.requireInstalled(gitInstalled ?? GitCommand.gitIsInstalled())
+        let gitRoot = try await mainWorkingCopy(of: found, runner: runner)
         let branchName: String
         if let preferred = preferredBranch?.trimmingCharacters(in: .whitespacesAndNewlines), !preferred.isEmpty {
             if let refusal = branchNameRefusal(preferred) { throw WorktreeError.invalidBranch(refusal) }
@@ -169,6 +223,7 @@ public enum GitWorktreeManager {
         let worktreeDir = worktreeDirectory(gitRoot: gitRoot, branch: branchName)
         // The name has no dot-only part and no slash left, so the folder is directly below the base; check it all the same.
         guard worktreeDir.path.hasPrefix(worktreesBase.path + "/") else { throw WorktreeError.invalidBranch("it names a folder outside \(folderName)") }
+        if let link = linkInTheWay(gitRoot: gitRoot, also: worktreeDir) { throw WorktreeError.linkInTheWay(link) }
 
         // The folder is only reused when git knows it as the worktree of this very branch: a folder that is there for another
         // reason, or the worktree of another branch whose name has the same dashes, is not an isolated copy of what was asked for.
@@ -226,7 +281,8 @@ public enum GitWorktreeManager {
         guard created.wasCreated else { return false }
         // `git status` compares the files with the index, which runs the clean filter of every file whose dates say it may have changed.
         guard let defined = try? await GitCommand.defined(in: created.worktreeURL.path, runner: runner) else { return false }
-        let status = GitCommand.step(["status", "--porcelain", "--untracked-files=all"], in: created.worktreeURL.path, blanking: defined)
+        // Ignored files count: a removal would delete them, and what made them (an agent that started after all) may want them.
+        let status = GitCommand.step(["status", "--porcelain", "--ignored", "--untracked-files=all"], in: created.worktreeURL.path, blanking: defined)
         guard let check = try? await runner.run(status, timeout: GitCommand.reading), check.status == 0, check.standardOutput.isEmpty else { return false }
         do {
             try await removeWorktree(worktreePath: created.worktreeURL.path, gitRoot: gitRoot, deleteBranch: created.branchCreated, force: false, runner: runner)
@@ -239,6 +295,9 @@ public enum GitWorktreeManager {
     /// The worktree `target` names (its path, its branch or the last part of its path), among those Right Here created. Anything
     /// else in the repository, the main working copy and the person's own worktrees included, is never removed by Right Here.
     public static func resolveManaged(_ target: String, in list: [WorktreeEntry], gitRoot: URL) throws -> WorktreeEntry {
+        // An empty name is no name: as a path it would be the current folder (`rh worktree remove "$NAME"` with the variable unset).
+        guard !target.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw WorktreeError.notFound(target) }
+        if let link = linkInTheWay(gitRoot: gitRoot) { throw WorktreeError.linkInTheWay(link) }
         let base = gitRoot.appendingPathComponent(folderName).standardizedFileURL.resolvingSymlinksInPath().path + "/"
         func resolved(_ path: String) -> String { URL(fileURLWithPath: path).resolvingSymlinksInPath().path }
         let wanted = resolved(target)
@@ -255,15 +314,28 @@ public enum GitWorktreeManager {
 
     /// Removes a worktree Right Here created. Without `force` git refuses when the worktree has uncommitted work, and
     /// that refusal is passed on; the branch is deleted only with `git branch -d`, which keeps one that is not merged.
+    /// - Parameters:
+    ///   - force: Removes it whatever its own files are. A worktree that holds other worktrees is never removed: their work is not its own.
+    ///   - ignoredAgreed: The files git ignores in it that the person agreed to lose (`WorktreeError.ignoredFiles`, which a removal without `force` throws for any others).
     @discardableResult
     public static func removeWorktree(
-        worktreePath: String, gitRoot: URL, deleteBranch: Bool = false, force: Bool = false, runner: any ProcessRunner = LiveProcessRunner()
+        worktreePath: String, gitRoot found: URL, deleteBranch: Bool = false, force: Bool = false, ignoredAgreed: [String] = [], runner: any ProcessRunner = LiveProcessRunner()
     ) async throws -> WorktreeRemoval {
-        let entry = try resolveManaged(worktreePath, in: try await listWorktrees(in: gitRoot, runner: runner), gitRoot: gitRoot)
+        let gitRoot = try await mainWorkingCopy(of: found, runner: runner)
+        let list = try await listWorktrees(in: gitRoot, runner: runner)
+        let entry = try resolveManaged(worktreePath, in: list, gitRoot: gitRoot)
+        func resolved(_ path: String) -> String { URL(fileURLWithPath: path).resolvingSymlinksInPath().path }
+        let inside = list.filter { $0.path != entry.path && resolved($0.path).hasPrefix(resolved(entry.path) + "/") }.map(\.path)
+        if !inside.isEmpty { throw WorktreeError.holdsOtherWorktrees(entry.path, inside) }
         // `git worktree remove` runs a `git status` of its own inside the worktree, with that worktree's configuration (its `config.worktree` is not the
         // main folder's), so what the repository defines is looked for in both places.
         var defined = try await GitCommand.defined(in: gitRoot.path, runner: runner)
         if FileManager.default.fileExists(atPath: entry.path) { defined = defined.merging(try await GitCommand.defined(in: entry.path, runner: runner)) }
+        if !force, FileManager.default.fileExists(atPath: entry.path) {
+            // git's own check before a removal does not look at ignored files, and deletes them with the folder.
+            let ignored = try await ignoredFiles(in: entry.path, defined: defined, runner: runner)
+            if ignored.contains(where: { !ignoredAgreed.contains($0) }) { throw WorktreeError.ignoredFiles(entry.path, ignored) }
+        }
         var arguments = ["worktree", "remove"]
         if force { arguments.append("--force") }
         arguments += ["--", entry.path]
@@ -281,6 +353,17 @@ public enum GitWorktreeManager {
         if deleted.status == 0 { return WorktreeRemoval(path: entry.path, branchDeleted: true, branchKept: nil) }
         let why = deleted.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
         return WorktreeRemoval(path: entry.path, branchDeleted: false, branchKept: why.isEmpty ? "git kept the branch" : why)
+    }
+
+    /// The files and folders git ignores in a worktree, as `git status` names them (a folder of ignored files is one name, `node_modules/`).
+    static func ignoredFiles(in worktree: String, defined: GitCommand.Defined, runner: any ProcessRunner) async throws -> [String] {
+        let status = try await runner.run(GitCommand.step(["status", "--porcelain", "-z", "--ignored", "--untracked-files=normal"], in: worktree, blanking: defined),
+                                          timeout: GitCommand.reading)
+        try GitCommand.requireFinished(status, "git status")
+        guard status.status == 0 else {
+            throw ExecutionError.stepFailed(index: 0, step: "git status", message: status.standardError.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        return status.standardOutput.split(separator: "\0").compactMap { field in field.hasPrefix("!! ") ? String(field.dropFirst(3)) : nil }
     }
 
     /// `.right-here` is Right Here's folder inside the repository: its own copy of the person's work must not show up as untracked

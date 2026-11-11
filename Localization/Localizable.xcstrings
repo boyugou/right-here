@@ -50779,6 +50779,564 @@
         }
       }
     },
+    "app.removeIgnoredConfirm": {
+      "comment": "The destructive button of that confirmation (app.removeIgnoredTitle): removes the worktree and the listed files with it. Short, a verb phrase.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "إزالة على أي حال"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "তবুও সরান"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Trotzdem entfernen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Αφαίρεση οπωσδήποτε"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Anyway"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Quitar igualmente"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "در هر صورت حذف شود"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Supprimer quand même"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "להסיר בכל זאת"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फिर भी हटाएँ"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tetap Hapus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Rimuovi comunque"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "それでも削除"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "그래도 제거"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "तरीही काढा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Alih Keluar Juga"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Toch verwijderen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Usuń mimo to"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Remover Mesmo Assim"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Elimină oricum"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Всё равно удалить"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "இருந்தாலும் நீக்கு"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "అయినా తీసివేయండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เอาออกต่อไป"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yine de Kaldır"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Усе одно вилучити"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پھر بھی ہٹائیں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Vẫn xóa"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "仍然移除"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "仍然移除"
+          }
+        }
+      }
+    },
+    "app.removeIgnoredMessage": {
+      "comment": "Message of that confirmation (app.removeIgnoredTitle). %@ is a list of the files and folders, such as .env, node_modules/.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "إزالة شجرة العمل هذه تحذف أيضًا هذه الملفات التي يتجاهلها git ولا توجد إلا فيها: %@"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "এই worktree সরালে এই ফাইলগুলোও মুছে যাবে, যা git উপেক্ষা করে এবং যা কেবল সেখানেই আছে: %@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Beim Entfernen dieses Worktrees werden auch diese Dateien gelöscht, die git ignoriert und die es nur dort gibt: %@"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Η αφαίρεση αυτού του worktree διαγράφει και αυτά τα αρχεία, που τα αγνοεί το git και υπάρχουν μόνο εκεί: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removing this worktree also deletes these files, which git ignores and which exist only there: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Quitar este worktree también borra estos archivos, que git ignora y que solo existen ahí: %@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "حذف این درخت کاری این فایل‌ها را هم پاک می‌کند که git نادیده می‌گیرد و فقط همان‌جا هستند: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Supprimer ce worktree efface aussi ces fichiers, que git ignore et qui n’existent que là : %@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "הסרת עץ העבודה הזה מוחקת גם את הקבצים האלה, ש-git מתעלם מהם ושקיימים רק שם: %@"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "इस worktree को हटाने से ये फ़ाइलें भी मिट जाएँगी, जिन्हें git अनदेखा करता है और जो सिर्फ़ वहीं हैं: %@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menghapus worktree ini juga menghapus file berikut, yang diabaikan git dan hanya ada di sana: %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Rimuovere questo worktree elimina anche questi file, che git ignora e che esistono solo lì: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "このワークツリーを削除すると、git が無視していてそこにしかない次のファイルも削除されます: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "이 워크트리를 제거하면 git이 무시하며 그곳에만 있는 다음 파일도 삭제됩니다: %@"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "हे worktree काढल्यास git दुर्लक्ष करतो अशा आणि फक्त तिथेच असलेल्या या फाइलही हटवल्या जातील: %@"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mengalih keluar worktree ini juga memadamkan fail berikut, yang diabaikan oleh git dan hanya wujud di situ: %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Deze worktree verwijderen wist ook deze bestanden, die git negeert en die alleen daar bestaan: %@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Usunięcie tego drzewa roboczego skasuje też te pliki, które git ignoruje i które istnieją tylko tam: %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Remover esta worktree também apaga estes arquivos, que o git ignora e que só existem ali: %@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Eliminarea acestui worktree șterge și aceste fișiere, pe care git le ignoră și care există doar acolo: %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "При удалении этого рабочего дерева будут удалены и эти файлы, которые git игнорирует и которые есть только там: %@"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "இந்த worktree-ஐ நீக்கினால், git புறக்கணிக்கும், அங்கு மட்டுமே உள்ள இந்தக் கோப்புகளும் அழியும்: %@"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఈ worktree ని తీసివేస్తే, git పట్టించుకోని, అక్కడ మాత్రమే ఉన్న ఈ ఫైల్‌లు కూడా తొలగిపోతాయి: %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "การเอา worktree นี้ออกจะลบไฟล์เหล่านี้ด้วย ซึ่ง git ละเว้นและมีอยู่ที่นั่นเท่านั้น: %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bu çalışma ağacını kaldırmak, git’in yok saydığı ve yalnızca orada bulunan şu dosyaları da siler: %@"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Вилучення цього робочого дерева видалить і ці файли, які git ігнорує і які є лише там: %@"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اس worktree کو ہٹانے سے یہ فائلیں بھی حذف ہو جائیں گی، جنہیں git نظر انداز کرتا ہے اور جو صرف وہیں ہیں: %@"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Xóa worktree này cũng sẽ xóa các tệp sau, mà git bỏ qua và chỉ có ở đó: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "移除此工作树也会删除以下文件，它们被 git 忽略，且只存在于那里：%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "移除此工作樹也會刪除以下檔案，它們被 git 忽略，且只存在於那裡：%@"
+          }
+        }
+      }
+    },
+    "app.removeIgnoredTitle": {
+      "comment": "Title of a confirmation after the person chose to remove a git worktree that holds files git ignores (for example a .env file), which exist nowhere else and which the removal deletes. A question.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "حذف ملفات غير موجودة في أي التزام؟"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "যে ফাইলগুলো কোনো কমিটে নেই সেগুলো মুছবেন?"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dateien löschen, die in keinem Commit sind?"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Διαγραφή αρχείων που δεν είναι σε κανένα commit;"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Files That Are in No Commit?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "¿Borrar archivos que no están en ningún commit?"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فایل‌هایی که در هیچ کامیتی نیستند پاک شوند؟"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Effacer des fichiers qui ne sont dans aucun commit ?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "למחוק קבצים שאינם באף commit?"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "जो फ़ाइलें किसी कमिट में नहीं हैं, उन्हें मिटाएँ?"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Hapus file yang tidak ada di commit mana pun?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Eliminare file che non sono in nessun commit?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "どのコミットにもないファイルを削除しますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "어떤 커밋에도 없는 파일을 삭제하시겠습니까?"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "कोणत्याही कमिटमध्ये नसलेल्या फाइल हटवायच्या?"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Padamkan fail yang tiada dalam mana-mana commit?"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bestanden wissen die in geen enkele commit staan?"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Usunąć pliki, których nie ma w żadnym commicie?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Apagar Arquivos Que Não Estão em Nenhum Commit?"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ștergeți fișiere care nu sunt în niciun commit?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Удалить файлы, которых нет ни в одном коммите?"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "எந்த commit-இலும் இல்லாத கோப்புகளை நீக்கவா?"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఏ కమిట్‌లోనూ లేని ఫైల్‌లను తొలగించాలా?"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ลบไฟล์ที่ไม่อยู่ในคอมมิตใดเลยใช่ไหม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Hiçbir commit’te olmayan dosyalar silinsin mi?"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Видалити файли, яких немає в жодному коміті?"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "وہ فائلیں حذف کریں جو کسی کمٹ میں نہیں؟"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Xóa các tệp không có trong commit nào?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "删除不在任何提交中的文件？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "刪除不在任何提交中的檔案？"
+          }
+        }
+      }
+    },
     "app.removeWorktree": {
       "comment": "Button on a line of the list of worktrees. It asks for confirmation before it removes anything, which is what the dots say.",
       "extractionState": "manual",
@@ -105459,6 +106017,564 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法將檔案夾 %@ 寫入 Warp 的連結中。"
+          }
+        }
+      }
+    },
+    "refusal.worktreeHoldsOthers": {
+      "comment": "Said when the person asks to remove a git worktree (a second working copy of a repository) that has other worktrees inside its folder. %1$@ is the folder of the worktree, %2$@ a list of the folders inside it.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "يحتوي %1$@ على أشجار عمل أخرى (%2$@). إزالته ستحذفها مع عملها، لذلك لم تتم إزالته. أزل تلك أولًا."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@-এর ভেতরে অন্য worktree আছে (%2$@)। এটি সরালে সেগুলো ও তাদের কাজ মুছে যাবে, তাই এটি সরানো হয়নি। আগে সেগুলো সরান।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ enthält andere Worktrees (%2$@). Beim Entfernen würden sie samt ihrer Arbeit gelöscht, deshalb wurde es nicht entfernt. Entferne zuerst diese."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το %1$@ περιέχει άλλα worktree (%2$@). Η αφαίρεσή του θα τα διέγραφε μαζί με την εργασία τους, γι’ αυτό δεν αφαιρέθηκε. Αφαιρέστε πρώτα εκείνα."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ holds other worktrees (%2$@). Removing it would delete them and their work, so it was not removed. Remove those first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ contiene otros worktrees (%2$@). Quitarlo los borraría junto con su trabajo, así que no se ha quitado. Quita primero esos."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ درخت‌های کاری دیگری در خود دارد (%2$@). حذف آن، آن‌ها را همراه با کارشان پاک می‌کند، پس حذف نشد. اول آن‌ها را حذف کنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ contient d’autres worktrees (%2$@). Le supprimer les effacerait avec leur travail : il n’a donc pas été supprimé. Supprimez-les d’abord."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ מכיל עצי עבודה אחרים (%2$@). הסרתו הייתה מוחקת אותם ואת העבודה שבהם, ולכן הוא לא הוסר. יש להסיר אותם קודם."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ में दूसरे worktree हैं (%2$@)। इसे हटाने से वे और उनका काम मिट जाएगा, इसलिए इसे नहीं हटाया गया। पहले उन्हें हटाएँ।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ berisi worktree lain (%2$@). Menghapusnya akan menghapus worktree tersebut beserta pekerjaannya, jadi tidak dihapus. Hapus yang itu terlebih dahulu."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ contiene altri worktree (%2$@). Rimuoverlo li eliminerebbe insieme al loro lavoro, quindi non è stato rimosso. Rimuovi prima quelli."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ の中にはほかのワークツリーがあります（%2$@）。削除するとそれらと中の作業も消えるため、削除しませんでした。先にそれらを削除してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 안에 다른 워크트리가 있습니다(%2$@). 제거하면 그 워크트리와 작업 내용도 삭제되므로 제거하지 않았습니다. 그것들을 먼저 제거하십시오."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ मध्ये इतर worktree आहेत (%2$@). ते काढल्यास ते आणि त्यांचे काम हटवले जाईल, म्हणून ते काढले नाही. आधी ते काढा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ mengandungi worktree lain (%2$@). Mengalih keluarnya akan memadamkan worktree itu bersama kerjanya, jadi ia tidak dialih keluar. Alih keluar yang itu dahulu."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ bevat andere worktrees (%2$@). Verwijderen zou ze met hun werk wissen, dus het is niet verwijderd. Verwijder die eerst."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ zawiera inne drzewa robocze (%2$@). Usunięcie go skasowałoby je razem z ich pracą, więc nie zostało usunięte. Najpierw usuń tamte."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ contém outras worktrees (%2$@). Removê-la apagaria essas worktrees e o trabalho delas, então ela não foi removida. Remova-as primeiro."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ conține alte worktree-uri (%2$@). Eliminarea lui le-ar șterge împreună cu munca din ele, așa că nu a fost eliminat. Eliminați-le mai întâi pe acelea."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "В %1$@ есть другие рабочие деревья (%2$@). Удаление стёрло бы их вместе с их работой, поэтому оно не удалено. Сначала удалите их."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ இல் வேறு worktree-கள் உள்ளன (%2$@). இதை நீக்கினால் அவையும் அவற்றின் வேலையும் அழியும், எனவே இது நீக்கப்படவில்லை. முதலில் அவற்றை நீக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ లో వేరే worktree లు ఉన్నాయి (%2$@). దీన్ని తీసివేస్తే అవి, వాటి పని కూడా తొలగిపోతాయి, అందుకే దీన్ని తీసివేయలేదు. ముందుగా వాటిని తీసివేయండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ มี worktree อื่นอยู่ข้างใน (%2$@) การเอาออกจะลบ worktree เหล่านั้นพร้อมงานในนั้นด้วย จึงไม่ได้เอาออก โปรดเอา worktree เหล่านั้นออกก่อน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ başka çalışma ağaçları içeriyor (%2$@). Kaldırmak onları içlerindeki çalışmayla birlikte silerdi, bu yüzden kaldırılmadı. Önce onları kaldırın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "У %1$@ є інші робочі дерева (%2$@). Вилучення стерло б їх разом із їхньою роботою, тому його не вилучено. Спершу вилучіть їх."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ میں دوسرے worktree موجود ہیں (%2$@)۔ اسے ہٹانے سے وہ اور ان کا کام مٹ جاتا، اس لیے اسے نہیں ہٹایا گیا۔ پہلے انہیں ہٹائیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ chứa các worktree khác (%2$@). Xóa nó sẽ xóa luôn các worktree đó cùng công việc trong đó, nên nó chưa bị xóa. Hãy xóa các worktree đó trước."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 中还有其他工作树（%2$@）。移除它会把这些工作树及其中的工作一起删除，因此没有移除。请先移除它们。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 中還有其他工作樹（%2$@）。移除它會把這些工作樹及其中的工作一起刪除，因此沒有移除。請先移除它們。"
+          }
+        }
+      }
+    },
+    "refusal.worktreeIgnoredFiles": {
+      "comment": "Said when the person asks to remove a git worktree that holds files git ignores (such as a .env file or build output), which a removal would delete. %1$@ is the worktree's folder, %2$@ a list of the files.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "يحتوي %1$@ على ملفات يتجاهلها git ولا توجد إلا فيه: %2$@. إزالته ستحذفها، لذلك لم تتم إزالته."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@-এ এমন ফাইল আছে যা git উপেক্ষা করে এবং যা কেবল সেখানেই আছে: %2$@। এটি সরালে সেগুলো মুছে যাবে, তাই এটি সরানো হয়নি।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ enthält Dateien, die git ignoriert und die es nur dort gibt: %2$@. Beim Entfernen würden sie gelöscht, deshalb wurde es nicht entfernt."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το %1$@ περιέχει αρχεία που αγνοεί το git και υπάρχουν μόνο εκεί: %2$@. Η αφαίρεσή του θα τα διέγραφε, γι’ αυτό δεν αφαιρέθηκε."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ holds files that git ignores and that exist only there: %2$@. Removing it would delete them, so it was not removed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ contiene archivos que git ignora y que solo existen ahí: %2$@. Quitarlo los borraría, así que no se ha quitado."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ فایل‌هایی دارد که git نادیده می‌گیرد و فقط همان‌جا هستند: %2$@. حذف آن، این فایل‌ها را پاک می‌کند، پس حذف نشد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ contient des fichiers que git ignore et qui n’existent que là : %2$@. Le supprimer les effacerait : il n’a donc pas été supprimé."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ מכיל קבצים ש-git מתעלם מהם ושקיימים רק שם: %2$@. הסרתו הייתה מוחקת אותם, ולכן הוא לא הוסר."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ में ऐसी फ़ाइलें हैं जिन्हें git अनदेखा करता है और जो सिर्फ़ वहीं हैं: %2$@। इसे हटाने से वे मिट जाएँगी, इसलिए इसे नहीं हटाया गया।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ berisi file yang diabaikan git dan hanya ada di sana: %2$@. Menghapusnya akan menghapus file tersebut, jadi tidak dihapus."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ contiene file che git ignora e che esistono solo lì: %2$@. Rimuoverlo li eliminerebbe, quindi non è stato rimosso."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ には、git が無視していてそこにしかないファイルがあります: %2$@。削除するとそれらも消えるため、削除しませんでした。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@에는 git이 무시하며 그곳에만 있는 파일이 있습니다: %2$@. 제거하면 이 파일들이 삭제되므로 제거하지 않았습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ मध्ये git दुर्लक्ष करतो अशा आणि फक्त तिथेच असलेल्या फाइल आहेत: %2$@. ते काढल्यास त्या हटवल्या जातील, म्हणून ते काढले नाही."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ mengandungi fail yang diabaikan oleh git dan hanya wujud di situ: %2$@. Mengalih keluarnya akan memadamkan fail itu, jadi ia tidak dialih keluar."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ bevat bestanden die git negeert en die alleen daar bestaan: %2$@. Verwijderen zou ze wissen, dus het is niet verwijderd."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ zawiera pliki, które git ignoruje i które istnieją tylko tam: %2$@. Usunięcie skasowałoby je, więc nie zostało usunięte."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ contém arquivos que o git ignora e que só existem ali: %2$@. Removê-la apagaria esses arquivos, então ela não foi removida."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ conține fișiere pe care git le ignoră și care există doar acolo: %2$@. Eliminarea lui le-ar șterge, așa că nu a fost eliminat."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "В %1$@ есть файлы, которые git игнорирует и которые есть только там: %2$@. Удаление стёрло бы их, поэтому оно не удалено."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ இல் git புறக்கணிக்கும், அங்கு மட்டுமே உள்ள கோப்புகள் உள்ளன: %2$@. இதை நீக்கினால் அவை அழியும், எனவே இது நீக்கப்படவில்லை."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ లో git పట్టించుకోని, అక్కడ మాత్రమే ఉన్న ఫైల్‌లు ఉన్నాయి: %2$@. దీన్ని తీసివేస్తే అవి తొలగిపోతాయి, అందుకే దీన్ని తీసివేయలేదు."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ มีไฟล์ที่ git ละเว้นและมีอยู่ที่นั่นเท่านั้น: %2$@ การเอาออกจะลบไฟล์เหล่านั้น จึงไม่ได้เอาออก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, git’in yok saydığı ve yalnızca orada bulunan dosyalar içeriyor: %2$@. Kaldırmak onları silerdi, bu yüzden kaldırılmadı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "У %1$@ є файли, які git ігнорує і які є лише там: %2$@. Вилучення стерло б їх, тому його не вилучено."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ میں ایسی فائلیں ہیں جنہیں git نظر انداز کرتا ہے اور جو صرف وہیں ہیں: %2$@۔ اسے ہٹانے سے وہ مٹ جاتیں، اس لیے اسے نہیں ہٹایا گیا۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ chứa các tệp mà git bỏ qua và chỉ có ở đó: %2$@. Xóa nó sẽ xóa các tệp này, nên nó chưa bị xóa."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 中有 git 忽略、且只存在于那里的文件：%2$@。移除它会删除这些文件，因此没有移除。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 中有 git 忽略、且只存在於那裡的檔案：%2$@。移除它會刪除這些檔案，因此沒有移除。"
+          }
+        }
+      }
+    },
+    "refusal.worktreeLink": {
+      "comment": "Said when a repository has a symbolic link where Right Here keeps its git worktrees (.right-here or .right-here/worktrees). %@ is that path.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ رابط رمزي. يحفظ Right Here أشجار العمل في مجلدات حقيقية في المستودع فقط، لذلك لم يتم إنشاء أي شيء أو إزالته."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ একটি সিম্বলিক লিংক। Right Here তার worktree কেবল রিপোজিটরির আসল ফোল্ডারে রাখে, তাই কিছু তৈরি বা সরানো হয়নি।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ ist ein symbolischer Link. Right Here legt seine Worktrees nur in echten Ordnern des Repositorys an, daher wurde nichts erstellt oder entfernt."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το %@ είναι συμβολικός σύνδεσμος. Το Right Here κρατά τα worktree του μόνο σε πραγματικούς φακέλους του αποθετηρίου, γι’ αυτό δεν δημιουργήθηκε ούτε αφαιρέθηκε τίποτα."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is a symbolic link. Right Here keeps its worktrees only in real folders of the repository, so nothing was made or removed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ es un enlace simbólico. Right Here solo guarda sus worktrees en carpetas reales del repositorio, así que no se ha creado ni quitado nada."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ یک پیوند نمادین است. Right Here درخت‌های کاری خود را فقط در پوشه‌های واقعی مخزن نگه می‌دارد، پس چیزی ساخته یا حذف نشد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ est un lien symbolique. Right Here ne garde ses worktrees que dans de vrais dossiers du dépôt : rien n’a été créé ni supprimé."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ הוא קישור סמלי. Right Here שומר את עצי העבודה שלו רק בתיקיות אמיתיות של המאגר, ולכן שום דבר לא נוצר ולא הוסר."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ एक सिमलिंक है। Right Here अपने worktree सिर्फ़ रिपॉज़िटरी के असली फ़ोल्डरों में रखता है, इसलिए कुछ भी नहीं बनाया या हटाया गया।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ adalah tautan simbolis. Right Here hanya menyimpan worktree-nya di folder asli repositori, jadi tidak ada yang dibuat atau dihapus."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ è un link simbolico. Right Here tiene i suoi worktree solo in cartelle reali del repository, quindi non è stato creato né rimosso nulla."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ はシンボリックリンクです。Right Here はワークツリーをリポジトリの実際のフォルダにしか置かないため、何も作成・削除しませんでした。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@은(는) 심볼릭 링크입니다. Right Here는 저장소의 실제 폴더에만 워크트리를 두므로 아무것도 만들거나 제거하지 않았습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ हा सिमलिंक आहे. Right Here आपले worktree फक्त रेपॉझिटरीच्या खऱ्या फोल्डरमध्ये ठेवतो, म्हणून काहीही तयार केले किंवा काढले नाही."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ ialah pautan simbolik. Right Here hanya menyimpan worktree dalam folder sebenar repositori, jadi tiada apa-apa dibuat atau dialih keluar."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ is een symbolische link. Right Here bewaart zijn worktrees alleen in echte mappen van de repository, dus er is niets gemaakt of verwijderd."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ to dowiązanie symboliczne. Right Here trzyma swoje drzewa robocze tylko w prawdziwych folderach repozytorium, więc niczego nie utworzono ani nie usunięto."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ é um link simbólico. O Right Here só guarda suas worktrees em pastas reais do repositório, então nada foi criado nem removido."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ este o legătură simbolică. Right Here își păstrează worktree-urile doar în dosare reale ale depozitului, așa că nu s-a creat și nu s-a eliminat nimic."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ — символическая ссылка. Right Here хранит свои рабочие деревья только в настоящих папках репозитория, поэтому ничего не создано и не удалено."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ ஒரு symlink. Right Here தன் worktree-களை repository-யின் உண்மையான கோப்புறைகளில் மட்டுமே வைக்கும், எனவே எதுவும் உருவாக்கப்படவோ நீக்கப்படவோ இல்லை."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ ఒక symlink. Right Here తన worktree లను రిపోజిటరీలోని నిజమైన ఫోల్డర్లలోనే ఉంచుతుంది, అందుకే ఏదీ సృష్టించలేదు, తీసివేయలేదు."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ เป็นลิงก์สัญลักษณ์ Right Here เก็บ worktree ไว้ในโฟลเดอร์จริงของ repository เท่านั้น จึงไม่ได้สร้างหรือเอาสิ่งใดออก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ bir sembolik bağlantı. Right Here çalışma ağaçlarını yalnızca deponun gerçek klasörlerinde tutar, bu yüzden hiçbir şey oluşturulmadı veya kaldırılmadı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ — символічне посилання. Right Here зберігає свої робочі дерева лише в справжніх папках репозиторію, тому нічого не створено й не вилучено."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ ایک سمبولک لنک ہے۔ Right Here اپنے worktree صرف ریپوزٹری کے اصل فولڈروں میں رکھتا ہے، اس لیے نہ کچھ بنایا گیا نہ ہٹایا گیا۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ là một liên kết tượng trưng. Right Here chỉ giữ các worktree trong thư mục thật của kho, nên không có gì được tạo hay xóa."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ 是符号链接。Right Here 只把工作树放在仓库中真实的文件夹里，因此没有创建或移除任何内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ 是符號連結。Right Here 只把工作樹放在儲存庫中真實的檔案夾裡，因此沒有建立或移除任何內容。"
           }
         }
       }

@@ -414,7 +414,7 @@ public struct ConfigSync: Sendable {
         if !current.pendingCommands.isEmpty, !allowCommands { throw ConfigSyncError.commandsNeedApproval(current.pendingCommands) }
 
         // Through a link: a config kept in a dotfiles repository is a symlink, and replacing the link would end that.
-        let destination = paths.configFile.resolvingSymlinksInPath()
+        let destination = try ConfigStore.writeTarget(of: paths.configFile)
         // The lock of the config, which a pull has taken, is in the folder of the record of what was synced, so one question covers that; the file the config is a link to may be elsewhere.
         try checkWriting(destination)
         if inspection.localData != nil, !FileManager.default.isWritableFile(atPath: destination.path) { throw ConfigSyncError.readOnly(file: destination.path) }

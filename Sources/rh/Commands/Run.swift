@@ -141,7 +141,11 @@ struct Run: AsyncParsableCommand {
             // A dry run cannot know the name a real run gives a new branch, so it shows a placeholder where the name goes.
             name = dryRun ? "rh/<auto-branch>" : GitWorktreeManager.freshBranchName()
         }
-        let worktreeURL = GitWorktreeManager.worktreeDirectory(gitRoot: root, branch: name)
+        // The worktree is made under the main working copy, never inside another worktree (`GitWorktreeManager.mainWorkingCopy`), and the folder is found in it at
+        // the place it has in the working tree that holds it.
+        let main: URL
+        do { main = try await GitWorktreeManager.mainWorkingCopy(of: root) } catch { try await fail(error) }
+        let worktreeURL = GitWorktreeManager.worktreeDirectory(gitRoot: main, branch: name)
         let inWorktree = try Self.moved(here, folder: folder, from: root, to: worktreeURL)
 
         let preview: LaunchPlan
@@ -199,7 +203,8 @@ struct Run: AsyncParsableCommand {
                 Output.print("ok: " + plan.summary)
             }
         } catch {
-            if let madeWorktree { await discard(madeWorktree.0, root: madeWorktree.1) }
+            // A step that ran out of time may have handed the command to the terminal before it was stopped: an agent may be starting in the worktree, and it is not removed under it.
+            if case ExecutionError.timedOut = error {} else if let madeWorktree { await discard(madeWorktree.0, root: madeWorktree.1) }
             try await fail(error)
         }
     }

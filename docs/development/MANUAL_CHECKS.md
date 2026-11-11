@@ -164,6 +164,9 @@ they never open one. The preview is the same code as the extension's, not Finder
      to start from.
    - Right Here's worktrees (under `.right-here/worktrees`) have a Remove… button. It asks first and never forces.
    - A worktree with uncommitted work stays, and the window shows what git said.
+   - In a worktree that Right Here made, put a file that git ignores (`echo KEY=1 > .env` in a repository that ignores `.env`). Remove… asks a second time, names
+     the file, and "Remove Anyway" deletes it with the worktree. Add another ignored file while that second question is up: the removal asks again and names both.
+   - A worktree with another worktree inside its folder stays, and the window says so.
    - Remove… keeps the branch.
    - The main working copy and the worktrees that you made by hand have no button.
 9. Open Folders and use Unpin and Clear Recent Folders. They change `state.toml`.

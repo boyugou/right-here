@@ -227,7 +227,7 @@ enum Tools {
                 ]),
                 "path": string("Path to the git repository or folder inside it (default: current directory).", maxLength: maxPathLength),
                 "branch": string("Branch name to create or attach to (for create operation).", maxLength: 200),
-                "worktree_path": string("Worktree to remove (for remove operation): its path, branch or folder name. Only worktrees Right Here created under .right-here/worktrees can be removed, never one with uncommitted work.", maxLength: maxPathLength),
+                "worktree_path": string("Worktree to remove (for remove operation): its path, branch or folder name. Only worktrees Right Here created under .right-here/worktrees can be removed, never one with uncommitted work, with files that exist only there (git ignores them), or with another worktree inside it.", maxLength: maxPathLength),
                 "delete_branch": boolean("Also delete the branch after removing the worktree (default: false); a branch that is not fully merged is kept.")
             ]),
             readOnly: false,

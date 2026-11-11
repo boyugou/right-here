@@ -57,6 +57,12 @@ struct PendingLoosening: Equatable, Sendable {
     var agents: [PromptEffects.Entry]
 }
 
+/// A worktree whose removal would delete files git ignores (a `.env`, a local database), which exist only there: held until the person agrees to lose exactly these.
+struct PendingIgnoredRemoval: Equatable, Sendable {
+    var row: WorktreeRow
+    var files: [String]
+}
+
 /// What an Undo takes back: the change the banner says, or the newest of the Config page's recent changes, each held to the text it left and the one it replaced (`ConfigService.undo(expecting:replacing:)`).
 struct UndoRequest: Equatable, Sendable {
     var target: ConfigTarget
@@ -122,6 +128,8 @@ final class SetupModel {
     private(set) var appDetail: String?
     /// A change waits for the person's yes because it would make agents start without their permission prompts.
     private(set) var pendingLoosening: PendingLoosening?
+    /// A worktree's removal waits for the person's yes to losing the files git ignores in it.
+    private(set) var pendingIgnoredRemoval: PendingIgnoredRemoval?
     /// Counts the answers to a held change: a no, and a yes that was made. The field that raised the question takes its text from the config when this changes (`FieldDraft.answered`): what was
     /// typed is not what the file says after a no, and after a yes it would ask the same question again, or add the same argument a second time, when the field is left or the page is.
     private(set) var fieldAnswerToken = 0
@@ -1040,17 +1048,33 @@ final class SetupModel {
 
     /// Removes a worktree Right Here made, after the person confirmed it. Git decides whether that is safe (uncommitted work is
     /// refused, and its refusal is what the window shows); the branch stays.
-    func remove(_ row: WorktreeRow) async {
+    /// Removes a worktree the person was asked about. One that holds files git ignores, which exist nowhere else, is held for a second yes that names them
+    /// (`pendingIgnoredRemoval`), and that yes removes it only while those are all it holds: one that appeared meanwhile is asked about again.
+    func remove(_ row: WorktreeRow, ignoredAgreed: [String] = []) async {
         guard let repository, !isWorking else { return }
         isWorking = true
-        let result = await browser.remove(row, in: repository)
-        if case .worktreeRemoved(let path) = result {
+        let result = await browser.remove(row, in: repository, ignoredAgreed: ignoredAgreed)
+        switch result {
+        case .worktreeRemoved(let path):
             say(.worktreeRemoved(PathDisplay.abbreviatingHome(path, home: homePath)))
-        } else {
+        case .worktreeHasIgnoredFiles(_, let files):
+            say(nil)
+            pendingIgnoredRemoval = PendingIgnoredRemoval(row: row, files: files)
+        default:
             say(result)
         }
         isWorking = false
         await refreshWorktrees()
+    }
+
+    /// The person agreed to lose the files the second question named: the worktree is removed with them, and with nothing else that git ignores.
+    func confirmIgnoredRemoval(_ held: PendingIgnoredRemoval) async {
+        pendingIgnoredRemoval = nil
+        await remove(held.row, ignoredAgreed: held.files)
+    }
+
+    func cancelIgnoredRemoval() {
+        pendingIgnoredRemoval = nil
     }
 
     private func refreshLoop() -> RefreshLoop<SetupSnapshot> {

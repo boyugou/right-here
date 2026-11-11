@@ -690,7 +690,7 @@ public struct ConfigService: Sendable {
     private func write(_ text: String, to file: URL) throws {
         try RealHomeGuard.checkWriting(file, environment: environment, realHome: realHome)
         try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
-        let target = file.resolvingSymlinksInPath()
+        let target = try ConfigStore.writeTarget(of: file)
         let existing = try? Data(contentsOf: target)
         if existing != nil, !FileManager.default.isWritableFile(atPath: target.path) { throw Failure.readOnly(file.path) }
         var out = text

@@ -228,13 +228,29 @@ public enum ConfigStore {
         guard lock.isHeld else { throw LockUnavailable(file: paths.configLockFile.path) }
         defer { lock.release() }
         var backup: URL?
-        if FileManager.default.fileExists(atPath: paths.configFile.path) {
+        // Through a link, as an edit is: the config of a dotfiles repository stays the link, and the saved copy holds the file's text, not a second link to it. A link that points
+        // nowhere has no text to save: starting over is the person's to ask for here, and replaces it.
+        let target = (try? writeTarget(of: paths.configFile)) ?? paths.configFile
+        if FileManager.default.fileExists(atPath: target.path) {
             let copy = backupURL(for: paths.configFile, now: now)
-            try FileManager.default.copyItem(at: paths.configFile, to: copy)
+            try FileManager.default.copyItem(at: target, to: copy)
             backup = copy
         }
-        try AtomicFile.write(content, to: paths.configFile)
+        try AtomicFile.write(content, to: target)
         return backup.map { .replaced(backup: $0) } ?? .created
+    }
+
+    /// Where a write to a file of the config goes. A link is followed: a config kept in a dotfiles repository is a link, and replacing the link would end that. A link that
+    /// points nowhere (a dotfiles manager makes it before it has cloned the repository) is refused, naming where it points: `resolvingSymlinksInPath` leaves it as it is, and a
+    /// write would then replace the link itself.
+    static func writeTarget(of file: URL) throws -> URL {
+        var info = stat()
+        guard lstat(file.path, &info) == 0, info.st_mode & S_IFMT == S_IFLNK else { return file }
+        guard FileManager.default.fileExists(atPath: file.path) else {
+            let destination = (try? FileManager.default.destinationOfSymbolicLink(atPath: file.path)) ?? "somewhere"
+            throw ConfigService.Failure.unreadable(file: file.path, reason: "it is a link to \(destination.withControlCharactersEscaped), which is not there")
+        }
+        return file.resolvingSymlinksInPath()
     }
 
     /// `config.toml.bak-20261011-215500`, numbered when that name is taken.
