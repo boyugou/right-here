@@ -86,8 +86,10 @@ struct AgentLaunchResolution: Sendable {
         var words = [agent.command]
         // The words of the flag, each quoted when it needs it: the config only lets a flag be words of plain characters, and a flag that came another way is not typed as shell syntax either.
         if let flag = options.bypassFlag {
-            words += flag.split(separator: " ").map { word in
-                String(word).range(of: ConfigSchema.bypassFlagPattern, options: .regularExpression) != nil ? String(word) : ShellQuoting.quoteTyped(String(word))
+            for word in flag.split(separator: " ").map(String.init) {
+                if word.range(of: ConfigSchema.bypassFlagPattern, options: .regularExpression) != nil { words.append(word); continue }
+                guard let quoted = ShellQuoting.quoteTyped(word) else { return .failure(.agentArgument(agent: agent.id, argument: word)) }
+                words.append(quoted)
             }
         }
         switch argumentWords(options.arguments, of: agent) {
@@ -95,8 +97,8 @@ struct AgentLaunchResolution: Sendable {
         case .failure(let why): return .failure(why)
         }
         for argument in variant?.arguments ?? [] {
-            if argument.unicodeScalars.contains("\\") { return .failure(.variantArgument(variant: variant?.id ?? "", argument: argument)) }
-            words.append(ShellQuoting.quoteTyped(argument))
+            guard let quoted = ShellQuoting.quoteTyped(argument) else { return .failure(.variantArgument(variant: variant?.id ?? "", argument: argument)) }
+            words.append(quoted)
         }
         return .success(words.joined(separator: " "))
     }
@@ -105,8 +107,8 @@ struct AgentLaunchResolution: Sendable {
     static func argumentWords(_ arguments: [String], of agent: AgentDescriptor) -> Result<[String], Unavailable> {
         var words: [String] = []
         for argument in arguments {
-            if argument.unicodeScalars.contains("\\") { return .failure(.agentArgument(agent: agent.id, argument: argument)) }
-            words.append(ShellQuoting.quoteTyped(argument))
+            guard let quoted = ShellQuoting.quoteTyped(argument) else { return .failure(.agentArgument(agent: agent.id, argument: argument)) }
+            words.append(quoted)
         }
         return .success(words)
     }

@@ -92,7 +92,7 @@ struct LaunchProbeTests {
         #expect(result.outcome == .ran, "\(result)")
         let call = try #require(terminal.recorded.first)
         let line = try #require(call.arguments.last)
-        #expect(line.hasPrefix("cd '"), "the line was \(line)")
+        #expect(line.hasPrefix("cd "), "the line was \(line)")
         #expect(call.arguments.count == 2, "Terminal.app gets one argument, the whole line")
     }
 

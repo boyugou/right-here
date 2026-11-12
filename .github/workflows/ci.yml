@@ -27,8 +27,8 @@ jobs:
           xcodebuild -version
           swift --version
       - name: Shells for the quoting tests
-        # fish reads quoting differently from sh, bash and zsh; its round trips are skipped where it is missing.
-        run: brew install fish
+        # fish reads quoting differently from sh, bash and zsh, and nushell takes no escape inside single quotes; their tests are skipped where they are missing.
+        run: brew install fish nushell
       - name: Build
         run: swift build
       - name: Test

@@ -124,7 +124,7 @@ public struct PathRenderer: Sendable {
     /// quote of an earlier word and ended the quoting), so a `!` is written `'\!'`, as a typed word is. The form follows
     /// the text and never the person's login shell: this text is pasted somewhere, and not necessarily into that shell.
     static func shellQuotedForAnyShell(_ path: String) -> String {
-        path.unicodeScalars.contains("\\") ? ShellQuoting.backslashEscape(path) : ShellQuoting.quoteTyped(path)
+        path.unicodeScalars.contains("\\") ? ShellQuoting.backslashEscape(path) : ShellQuoting.quotePasted(path)
     }
 
     private func tildePath(_ url: URL, path: String) -> String {

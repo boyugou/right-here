@@ -33,6 +33,7 @@ public struct GhosttyAdapter: TerminalAdapter {
             return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
         }
         if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.refused(blocker) }
+        if let typed { try TerminalSession.requireFitsANewTTY(typed, terminal: "Ghostty") }
         let placement = session.placement.configName
         return [.appleScript(AppleScriptStep(
             source: Self.script,

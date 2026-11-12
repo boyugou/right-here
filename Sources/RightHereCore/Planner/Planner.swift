@@ -334,8 +334,13 @@ public struct Planner: Sendable {
         case .success(let quoted): words += quoted
         case .failure(let why): throw PlanError(why)
         }
-        if case .flag(let flag) = promptArgument { words.append(ShellQuoting.quoteTyped(flag)) }
-        words.append(ShellQuoting.quoteTyped(prompt))
+        // The prompt was refused above when it holds what no shell types the same (a backslash, a control character), and a flag is plain words.
+        if case .flag(let flag) = promptArgument {
+            guard let word = ShellQuoting.quoteTyped(flag) else { throw PlanError(AgentLaunchResolution.Unavailable.agentArgument(agent: agent.id, argument: flag)) }
+            words.append(word)
+        }
+        guard let typedPrompt = ShellQuoting.quoteTyped(prompt) else { throw PlanError.refused(.refusalPromptBackslash) }
+        words.append(typedPrompt)
         let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: true, explicit: terminal.map { .terminal($0) }, config: config, facts: facts)
         guard case .terminal(let app, let bundleID, let adapter) = try route(of: resolution) else { throw PlanError.refused(.refusalPresetTyped) }
         var notices = resolution.launcher == .terminal(nil) ? fallbackNotice(role: .terminal, typing: true, used: app) : []

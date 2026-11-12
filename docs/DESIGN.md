@@ -288,21 +288,28 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    or as AppleScript `on run argv` arguments; the single quoting module works on Unicode scalars (a quote
    followed by a combining mark is still a quote to a shell) and is tested by round-tripping every
    metacharacter with every joining mark, plus a seeded fuzz, through real `sh`, `bash` and `zsh` (and `fish`
-   where it is installed; CI installs it). Terminal.app is the one adapter that types the folder (`cd …`)
-   into a shell the adapter cannot see (the profile's, not necessarily the account's), so it quotes the folder
-   the one way sh, bash, zsh, dash, ksh and fish agree on and refuses a backslash, the character that splits fish
-   from the rest. csh and tcsh also expand `!` inside single quotes, and `!#:1` is the quoted word before it with its
-   quote, so a file name in a preset's prompt could close the quoting and run what follows (an independent review,
-   2026-11-11): every word of a typed line writes `!` outside the quotes, escaped (`ShellQuoting.quoteTyped`), which sh,
-   bash, zsh, dash, ksh, fish and tcsh read as `!`. WezTerm, kitty and Alacritty start the login shell with `-lic`,
-   which csh and tcsh refuse; they get `-ic`.
+   where it is installed; CI installs it). A line typed into a terminal (Terminal's and iTerm's `cd …`, an agent's
+   command, a preset's prompt) is read by a shell the adapter cannot see: Terminal, iTerm and Ghostty run the one their
+   settings name, not necessarily the account's. Every word of it is written by `ShellQuoting.quoteTyped` as quoted runs
+   with nothing between them that sh, bash, zsh, dash, ksh, fish, csh, tcsh, nushell, elvish and PowerShell all read as
+   written: single quotes around what holds no single quote (nushell, elvish and PowerShell take no escape inside them,
+   so POSIX's `'\''` would end their quoting where a name says; PowerShell also takes ‘ ’ ‚ ‛ for a single quote), double
+   quotes around a single quote with nothing those shells read inside double quotes (`"`, “ ” „, `$`, `` ` ``), and `!`,
+   which csh and tcsh expand inside both, outside them as `\!` (an independent review, 2026-11-11; nushell, elvish and
+   PowerShell keep that backslash, which is wrong text and runs nothing). A backslash cannot be written so (fish reads
+   one inside single quotes), and a name with one is refused. The tests read every word back in sh, bash, zsh, dash, ksh,
+   tcsh and fish, model a shell whose quotes take no escape, and run a real nushell where it is installed (CI installs it;
+   a second review, 2026-11-12). Under nushell and elvish, Terminal's and iTerm's `cd … && …` does not parse and runs
+   nothing. WezTerm, kitty and Alacritty start the login shell with `-lic`, which csh and tcsh refuse; they get `-ic`.
+   A typed line is refused over 1023 bytes: a new session's tty keeps 1024 bytes of a line until the shell is ready
+   and drops the rest, Return included (measured).
    Paths are cut at slash scalars, as the kernel cuts them, so a combining mark cannot hide a `..`.
 2. Text typed into a terminal is read as keystrokes, so a command line with a line break or any control character
    is refused for typed launches, and so is a folder whose path has one when the terminal types the folder (`cd …`):
    Terminal, iTerm and a terminal defined in the config, whose template may put `{dir}` into a shell line (an adapter
    that says nothing about it is held to that rule). Ghostty, WezTerm and kitty are handed the folder as an argument
    and type none of it, so they take any folder name. Deep links percent-encode everything but unreserved characters. A preset's
-   prompt (a template plus file names) is typed as one single-quoted word, and the expanded text is refused when it
+   prompt (a template plus file names) is typed as one word (`quoteTyped`), and the expanded text is refused when it
    has a control character, a character that shows nothing or changes how the text reads (a tag character spells ASCII
    that the agent reads and the person does not see; a direction override reorders what the person sees), a backslash
    (fish and the other shells read it differently inside quotes), a leading dash (the agent would read an option) or more

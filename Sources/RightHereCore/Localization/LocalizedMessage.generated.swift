@@ -1139,6 +1139,8 @@ extension LocalizedMessage {
     public static func refusalTerminalTooOld(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.refusalTerminalTooOld, [argument1, argument2, argument3]) }
     /// %1$@ did not finish in time and was stopped (limit: %2$@ s). If macOS is waiting for you to allow Right Here to control an app (a permission prompt), answer it and try again.
     public static func refusalTimedOut(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalTimedOut, [argument1, argument2]) }
+    /// %1$@ types the command into a new shell, which keeps %3$@ bytes of a line until it is ready, and this line is %2$@: the rest, Return included, would be lost. Select fewer files, or use a terminal that is handed the command, such as WezTerm, kitty or Alacritty.
+    public static func refusalTypedLineTooLong(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.refusalTypedLineTooLong, [argument1, argument2, argument3]) }
     /// %1$@ types the folder into a shell, and shells disagree about a backslash in a name, so it will not start a command in %2$@. Rename the folder, or use a terminal that is handed the folder, such as Ghostty.
     public static func refusalTypesFolderBackslash(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalTypesFolderBackslash, [argument1, argument2]) }
     /// Unknown agent "%@".

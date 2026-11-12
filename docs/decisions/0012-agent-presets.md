@@ -56,9 +56,11 @@ parser refuses a template that already breaks the rules) when it:
   ASCII that a language model reads and a person does not see, so a file named with them would carry an instruction to the agent that nobody looked at. The marks a script is written with stay;
 - has a backslash: inside single quotes fish reads a backslash as an escape and sh, bash and zsh do not, and the shell
   a terminal runs is not necessarily the account's login shell (the same reasoning as Terminal.app's folder in
-  section 9). POSIX single quotes without a backslash read the same everywhere, including the `'\''` splice. The
-  cost: a file name with both a space and a quote or backslash cannot be mentioned (`@"…\"…"`), so it is refused
-  rather than guessed at;
+  section 9). POSIX single quotes without a backslash do not read the same everywhere: nushell, elvish and PowerShell take
+  no escape inside them, so the `'\''` splice ends their quoting where a name puts an apostrophe (a second review,
+  2026-11-12). The prompt is typed as runs of single and double quotes that all of them read as written
+  (`ShellQuoting.quoteTyped`, DESIGN 9.1). The cost: a file name with both a space and a quote or backslash cannot be
+  mentioned (`@"…\"…"`), so it is refused rather than guessed at;
 - starts with a dash: the agent would read it as an option (`{name}` of a file called `--version`). `--` is not
   inserted instead, since nothing here can show that every agent honors it without starting a session;
 - is empty or longer than 4000 bytes (UTF-8, what is typed: it was 4000 characters, and one character can be any

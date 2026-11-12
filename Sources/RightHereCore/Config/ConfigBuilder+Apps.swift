@@ -115,13 +115,11 @@ extension ConfigBuilder {
                 if let run, !run.contains(where: { $0.contains("{dir}") }), !(open ?? []).contains(where: { $0.contains("{dir}") }) {
                     sink.warning(reader.path + ["run_args"], "run_args does not use {dir}, so the session will not start in the folder")
                 }
-                // `{dir}` as an argument of its own is safe. Inside a string a shell reads (`sh -c "cd {dir}"`) a folder
-                // called `x'; touch y; '` becomes shell syntax, which only the template's author can prevent.
+                // `{dir}` as an argument of its own is safe. Inside a script (`sh -c "cd {dir}"`, AppleScript's `-e`, an `env -S` line) a folder
+                // called `x'; touch y; '` becomes code, which only the template's author can prevent.
                 for (key, argv) in [("open_args", open), ("run_args", run)] {
-                    guard let argv, Self.shellReadsAString(argv) else { continue }
-                    if argv.contains(where: { $0 != "{dir}" && $0.contains("{dir}") }) {
-                        sink.warning(reader.path + [key], "{dir} sits inside a string a shell will read, so a folder name can become shell syntax; pass {dir} as an argument of its own")
-                    }
+                    guard let argv, Self.folderSitsInAScript(argv) else { continue }
+                    sink.warning(reader.path + [key], "{dir} sits inside a script (a string a shell will read, AppleScript source, an `env -S` line), so a folder name can become code; pass {dir} as an argument of its own")
                 }
                 launch = TerminalLaunch(open: open, run: run)
             }
@@ -134,6 +132,16 @@ extension ConfigBuilder {
             driver: launch.map { .template($0) } ?? replaced?.driver ?? .openFolder,
             defaultRank: replaced?.defaultRank
         )
+    }
+
+    /// `{dir}` stands inside a longer element that something reads as code: a shell reads the template's strings, or the element is more than one
+    /// word or holds a quote or a metacharacter (`cd {dir}`, `do script "cd {dir}"`). `--cwd={dir}` is an argument.
+    private static func folderSitsInAScript(_ argv: [String]) -> Bool {
+        let embedding = argv.filter { $0 != "{dir}" && $0.contains("{dir}") }
+        guard !embedding.isEmpty else { return false }
+        if shellReadsAString(argv) { return true }
+        let scriptScalars = Set("'\"`$;&|()<>".unicodeScalars)
+        return embedding.contains { element in element.unicodeScalars.contains { $0.properties.isWhitespace || scriptScalars.contains($0) } }
     }
 
     /// A shell is given a string to interpret: the program is a shell, or an element is a `-c` style option.

@@ -761,9 +761,9 @@ struct CLITests {
 
         let ok = try rh.run(["run", "preset.review", "--dry-run", plain.path])
         #expect(ok.status == 0, Comment(rawValue: ok.standardError))
-        // The dry run shows the argument as a JSON string, so the quote of `@"it's here.txt"` is `\"` and each backslash is `\\`
-        // (the shell's own `'\''` is therefore `'\\''`).
-        #expect(ok.standardOutput.contains(#"claude 'Review @\"it'\\''s here.txt\" for bugs"#), Comment(rawValue: ok.standardOutput))
+        // The dry run shows the argument as a JSON string, so each `"` is `\"`. The apostrophe is typed in double quotes and the rest in single
+        // quotes, runs that every shell reads as written (POSIX's `'\''` would end nushell's quoting).
+        #expect(ok.standardOutput.contains(#"claude 'Review @\"it'\"'s here.txt\"'\" for bugs"#), Comment(rawValue: ok.standardOutput))
 
         let refused = try rh.run(["run", "preset.review", "--dry-run", hostile.path])
         #expect(refused.status != 0)

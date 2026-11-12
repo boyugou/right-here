@@ -34,7 +34,7 @@ public struct TemplateTerminalAdapter: TerminalAdapter {
         } else if let open = launch.open {
             template = open
         } else {
-            return [.open(OpenStep(bundleID: bundleID, targets: [directory]))]
+            return [.open(OpenStep(bundleID: bundleID, targets: [try session.requireUndocumentedFolder(facts)]))]
         }
         guard let program = template.first, Self.isValidExecutable(program) else {
             throw PlanError.refused(.refusalLaunchFirstArgument(displayName, "{app}/"))

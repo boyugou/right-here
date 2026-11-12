@@ -33,16 +33,18 @@ public struct ITermAdapter: TerminalAdapter {
         if let blocker = commandBlocker(bundleID: bundleID, facts: facts) { throw PlanError.refused(blocker) }
         // The folder is typed after `cd`, so it is held to the same rule as the command.
         do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeFolder(directory) }
-        if directory.unicodeScalars.contains("\\") {
+        // `quoteTyped` refuses only a backslash here: the control characters were refused above.
+        guard let folder = ShellQuoting.quoteTyped(directory) else {
             throw PlanError.refused(.refusalTypesFolderBackslash("iTerm", directory))
         }
-        let quotedDir = "cd " + ShellQuoting.quoteTyped(directory)
+        let quotedDir = "cd " + folder
         let line: String
         if let typed {
             line = quotedDir + " && " + typed
         } else {
             line = quotedDir
         }
+        try TerminalSession.requireFitsANewTTY(line, terminal: "iTerm")
         let placement = session.placement.configName
         return [.appleScript(AppleScriptStep(
             source: Self.script,
@@ -52,7 +54,8 @@ public struct ITermAdapter: TerminalAdapter {
     }
 
     /// Constant source. The whole line to type and the placement arrive only as arguments.
-    /// `write text` types into the user's login shell and sends a newline.
+    /// `write text` types into the user's login shell and sends a newline. Each branch types into the session of what its command returned
+    /// (iTerm2's scripting documentation: `create tab` returns the new tab, which it does not say becomes the current one).
     static let script = """
     on run argv
         set line to item 1 of argv
@@ -70,8 +73,8 @@ public struct ITermAdapter: TerminalAdapter {
                 end tell
             else if placement is "tab" and (count of windows) > 0 then
                 tell current window
-                    create tab with default profile
-                    tell current session
+                    set newTab to (create tab with default profile)
+                    tell current session of newTab
                         write text line
                     end tell
                 end tell

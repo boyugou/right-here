@@ -296,7 +296,8 @@ struct TerminalAdapterTests {
         guard case .appleScript(let step)? = try AppleTerminalAdapter().steps(for: session, bundleID: "x", facts: machine).first else {
             Issue.record("expected AppleScript"); return
         }
-        #expect(step.arguments == [#"cd '/tmp/q'\''; touch x; #' && claude"#])
+        // In double quotes, which every shell reads as written when they hold no `"`, `$`, `` ` ``, `\` or `!`: POSIX's `'\''` would end nushell's quoting.
+        #expect(step.arguments == [#"cd "/tmp/q'; touch x; #" && claude"#])
     }
 
     @Test("a folder with a backslash is refused, because fish and the other shells read it differently",

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Terminal launches, after an independent review.** A name with an apostrophe could end the quoting of a typed line
+  in nushell (and elvish or PowerShell), whose single quotes take no escape, and run what followed: every word Right
+  Here types is now written as quoted runs that all these shells read as written, and "Bob's Project" still works
+  everywhere. A typed line longer than a new shell keeps (1024 bytes) is refused with what to do instead, where it
+  was cut and never ran. iTerm's new tab gets the command, not the tab you were in. The config warns about `{dir}`
+  inside an AppleScript or `env -S` line too, and a terminal that says nothing about what it does with a folder is
+  held to the rule for typed text.
+
 ## 1.2.16 (2026-11-12)
 
 - **The entry points outside the window, after an independent review.** A Quick Action you made is never replaced or removed by

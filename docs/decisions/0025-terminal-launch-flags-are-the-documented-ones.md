@@ -21,8 +21,8 @@ without running any of them, from each terminal's own documentation, its man pag
   with no window by default, so each launch would leave an idle process and a Dock icon behind.
 - **WezTerm is never handed a folder with `open`**: its handler for an opened file types the path into a new shell as a command, so the folder would be run (hard rule 3). Its comment
   said it always opens a window; it opens a tab when the person's config says `prefer_to_spawn_tabs` and a WezTerm is already running.
-- **Not confirmed, so said so:** that the whole chain `open -n -b <id> --args ...` works (each link is documented, no documentation shows the invocation as a whole); iTerm2's tab placement
-  (it assumes a new tab becomes the current one, which the documentation does not say) and its split placement; what `open` does with a folder for iTerm2, Warp and cmux; kitty's
+- **Not confirmed, so said so:** that the whole chain `open -n -b <id> --args ...` works (each link is documented, no documentation shows the invocation as a whole); iTerm2's split placement
+  (its tab placement types into the session of the tab `create tab` returns, which the documentation gives, since 2026-11-12); what `open` does with a folder for iTerm2, Warp and cmux; kitty's
   `macos-launch-services-cmdline` file, which kitty merges into what `open` passes. `rh doctor --probe-launch` is how a person checks a terminal, and MANUAL_CHECKS lists them.
 
 ## Warp and cmux, read again (2026-10-29)

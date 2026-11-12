@@ -107,7 +107,27 @@ public struct OpenFolderTerminalAdapter: TerminalAdapter {
 
     public func steps(for session: TerminalSession, bundleID: String, facts: any SystemFacts) throws -> [Step] {
         if session.typedInput != nil, let refusal = commandRefusal { throw PlanError.refused(refusal) }
-        return [.open(OpenStep(bundleID: bundleID, targets: [try session.requireDirectory(facts)]))]
+        return [.open(OpenStep(bundleID: bundleID, targets: [try session.requireUndocumentedFolder(facts)]))]
+    }
+}
+
+extension TerminalSession {
+    /// The folder for a terminal that is handed it with `open` although nothing documents what it does with it (cmux, an `[[app]]` terminal): it may
+    /// type a `cd`, so it is held to the rule for typed text, as Warp is (ADR 0025).
+    func requireUndocumentedFolder(_ facts: any SystemFacts) throws -> String {
+        let directory = try requireDirectory(facts)
+        do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeFolder(directory) }
+        return directory
+    }
+
+    /// The most a line typed into a new session may hold. The terminal types it while the shell is still starting, so the tty is in canonical mode,
+    /// where macOS keeps 1024 bytes of an unfinished line and drops the rest, Return included (`CanonicalLineLimitTests`). A terminal that is handed
+    /// the command as an argument (WezTerm, kitty, Alacritty, a template) has no such limit.
+    public static let typedLineLimit = 1023
+
+    static func requireFitsANewTTY(_ line: String, terminal: String) throws {
+        guard line.utf8.count > typedLineLimit else { return }
+        throw PlanError.refused(.refusalTypedLineTooLong(terminal, String(line.utf8.count), String(typedLineLimit + 1)))
     }
 }
 

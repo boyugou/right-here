@@ -119,6 +119,40 @@ struct ShellQuotingJoiningMarkTests {
     }
 }
 
+/// What a shell whose quotes take no escape (nushell, elvish, PowerShell) reads outside the quotes of a line, which is what it runs: a quote opens and the
+/// next of the same kind closes, PowerShell's ‘ ’ ‚ ‛ counting as `'` and “ ” „ as `"`, and nothing inside escapes anything.
+func outsideRawQuotes(_ line: String) -> String {
+    let single: Set<Unicode.Scalar> = ["'", "\u{2018}", "\u{2019}", "\u{201A}", "\u{201B}"]
+    let double: Set<Unicode.Scalar> = ["\"", "\u{201C}", "\u{201D}", "\u{201E}"]
+    var outside = String.UnicodeScalarView()
+    var open: Set<Unicode.Scalar>?
+    for scalar in line.unicodeScalars {
+        if let kind = open {
+            if kind.contains(scalar) { open = nil }
+        } else if single.contains(scalar) {
+            open = single
+        } else if double.contains(scalar) {
+            open = double
+        } else {
+            outside.append(scalar)
+        }
+    }
+    return String(outside)
+}
+
+/// Words for a line typed into a terminal: names that end a quote in some shell, PowerShell's curly quotes, history and variables.
+let typedWords: [String] = awkwardWords.filter { ShellQuoting.quoteTyped($0) != nil } + [
+    "x'; touch CANARY #.txt", "it’s here", "“quoted”", "‘single’ and ‚low‛", "a'b\"c$d`e!f", "$'", "!'!\"!", "'; Remove-Item ~ #",
+    "it's $5 and `date`", "!!", "a!", "!a", "'", "\"", "$", "`", "x'\"'\"y"
+]
+
+/// The shells a typed word is read back in here: what the Mac has, and fish where it is installed.
+let typingShells: [String] = ["/bin/sh", "/bin/bash", "/bin/zsh", "/bin/dash", "/bin/ksh", "/bin/tcsh"].filter(FileManager.default.isExecutableFile)
+    + [fishPath].compactMap(\.self)
+
+/// nushell, where it is installed (CI installs it, as it installs fish).
+let nushellPath: String? = ["/opt/homebrew/bin/nu", "/usr/local/bin/nu"].first(where: FileManager.default.isExecutableFile)
+
 func makeScratchDirectory() throws -> URL {
     let url = FileManager.default.temporaryDirectory.appendingPathComponent("rh-quote-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
@@ -165,6 +199,59 @@ struct ShellQuotingTests {
         let fish = try #require(fishPath)
         let command = "printf %s " + ShellQuoting.quote(word, for: .fish)
         #expect(try Shell.run(fish, command) == word)
+    }
+
+    /// nushell, elvish and PowerShell take no escape inside single quotes, so POSIX's `'\''` ends their quoting where a name says, and what follows runs; the
+    /// shell that reads a typed line is whatever the terminal starts, so a typed word is written the way all of them read alike (DESIGN 9.2).
+    @Test("a typed word leaves nothing outside its quotes but an escaped !, by the rules of a shell whose quotes take no escape", arguments: typedWords)
+    func aTypedWordHasNothingOutsideItsQuotes(word: String) throws {
+        let typed = try #require(ShellQuoting.quoteTyped(word))
+        if typed == word { return }
+        let outside = outsideRawQuotes(typed)
+        #expect(outside.replacingOccurrences(of: "\\!", with: "").isEmpty, "\(typed) leaves \(outside) outside its quotes")
+    }
+
+    @Test("a real shell reads a typed word back as it is", arguments: typingShells, typedWords)
+    func aTypedWordReadsBackInEveryShell(shell: String, word: String) throws {
+        let typed = try #require(ShellQuoting.quoteTyped(word))
+        #expect(try Shell.run(shell, "printf %s " + typed) == word, "\(shell) read \(typed)")
+    }
+
+    /// The measurement of what the model above says: in a real nushell no typed word runs anything, and one that is a single run of quotes reads back as it is
+    /// (a `!`, typed `\!`, keeps its backslash there, and runs of both kinds next to each other are not measured as one argument).
+    @Test("a real nushell runs nothing a typed word holds, and reads a single run of quotes back as it is", .enabled(if: nushellPath != nil), arguments: typedWords)
+    func aTypedWordInNushell(word: String) throws {
+        let nu = try #require(nushellPath)
+        let typed = try #require(ShellQuoting.quoteTyped(word))
+        let directory = try makeScratchDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: nu)
+        process.arguments = ["--no-config-file", "-c", "^printf %s " + typed]
+        process.currentDirectoryURL = directory
+        process.environment = emptyHomeEnvironment()
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        try process.run()
+        let output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        process.waitUntilExit()
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).isEmpty, "nushell ran something of \(typed)")
+        let oneRun = typed.first.map { quote in typed.last == quote && (quote == "'" || quote == "\"") && !typed.dropFirst().dropLast().contains(quote) } ?? false
+        if oneRun, !word.contains("!") { #expect(output == word, "nushell read \(typed) as \(output)") }
+    }
+
+    @Test("a backslash or a control character cannot be typed the same in every shell", arguments: ["back\\slash", "a\\", "new\nline", "esc\u{1B}[31m", "nul\u{0}"])
+    func whatNoShellReadsAlikeIsNotTyped(word: String) {
+        #expect(ShellQuoting.quoteTyped(word) == nil)
+    }
+
+    @Test func aWordIsOneRunWhenOneKindOfQuoteHoldsIt() {
+        #expect(ShellQuoting.quoteTyped("Bob's Project") == #""Bob's Project""#)
+        #expect(ShellQuoting.quoteTyped("$5 and `date`") == "'$5 and `date`'")
+        #expect(ShellQuoting.quoteTyped("it's $5") == #""it's "'$5'"#)
+        #expect(ShellQuoting.quoteTyped("bang!") == "'bang'\\!")
+        #expect(ShellQuoting.quoteTyped("/Users/me/code") == "/Users/me/code")
+        #expect(ShellQuoting.quoteTyped("a,b") == "'a,b'", "PowerShell reads a bare comma as an array")
     }
 
     @Test("typing rejects line breaks and control characters",

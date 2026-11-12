@@ -105835,6 +105835,192 @@
         }
       }
     },
+    "refusal.typedLineTooLong": {
+      "comment": "Why an action did nothing, shown in the alert after a click in Finder (and, in English, by the command line). %1$@ is a terminal app (Ghostty, Terminal, iTerm); %2$@ is the length of the line in bytes; %3$@ is how many bytes a new shell keeps of a line (1024). 'Return' is the key. WezTerm, kitty and Alacritty are app names: keep them.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يكتب %1$@ الأمر في برنامج Shell جديد يحتفظ بـ %3$@ بايت فقط من السطر حتى يصبح جاهزًا، وهذا السطر %2$@ بايت: سيضيع الباقي، بما في ذلك Return. حدّد ملفات أقل، أو استخدم وحدة طرفية يُسلَّم إليها الأمر مباشرةً، مثل WezTerm أو kitty أو Alacritty."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ কমান্ডটি একটি নতুন শেলে টাইপ করে, যা প্রস্তুত হওয়ার আগে একটি লাইনের %3$@ বাইট রাখে, আর এই লাইনটি %2$@ বাইট: বাকিটা, Return সহ, হারিয়ে যাবে। কম ফাইল নির্বাচন করুন, অথবা এমন টার্মিনাল ব্যবহার করুন যাকে কমান্ডটি সরাসরি দেওয়া হয়, যেমন WezTerm, kitty বা Alacritty।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ gibt den Befehl in eine neue Shell ein, die von einer Zeile %3$@ Bytes behält, bis sie bereit ist, und diese Zeile hat %2$@: Der Rest ginge verloren, einschließlich Return. Wähle weniger Dateien aus oder nutze ein Terminal, dem der Befehl direkt übergeben wird, etwa WezTerm, kitty oder Alacritty."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το %1$@ πληκτρολογεί την εντολή σε ένα νέο κέλυφος, που κρατά %3$@ byte μιας γραμμής μέχρι να είναι έτοιμο, και αυτή η γραμμή έχει %2$@: τα υπόλοιπα, μαζί με το Return, θα χάνονταν. Επιλέξτε λιγότερα αρχεία ή χρησιμοποιήστε ένα τερματικό που λαμβάνει απευθείας την εντολή, όπως το WezTerm, το kitty ή το Alacritty."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ types the command into a new shell, which keeps %3$@ bytes of a line until it is ready, and this line is %2$@: the rest, Return included, would be lost. Select fewer files, or use a terminal that is handed the command, such as WezTerm, kitty or Alacritty."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ escribe el comando en un shell nuevo, que guarda %3$@ bytes de una línea hasta que está listo, y esta línea tiene %2$@: el resto, Return incluido, se perdería. Selecciona menos archivos o usa una terminal que reciba el comando directamente, como WezTerm, kitty o Alacritty."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "برنامهٔ %1$@ دستور را در یک پوستهٔ تازه تایپ می‌کند که تا آماده شدن فقط %3$@ بایت از یک خط را نگه می‌دارد، و این خط %2$@ بایت است: باقی آن، از جمله Return، از دست می‌رود. فایل‌های کمتری انتخاب کنید، یا از ترمینالی استفاده کنید که دستور مستقیماً به آن داده می‌شود، مانند WezTerm، kitty یا Alacritty."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ saisit la commande dans un nouveau shell, qui garde %3$@ octets d’une ligne jusqu’à ce qu’il soit prêt, et cette ligne en compte %2$@ : le reste, Retour compris, serait perdu. Sélectionnez moins de fichiers ou utilisez un terminal qui reçoit directement la commande, comme WezTerm, kitty ou Alacritty."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "המסוף %1$@ מקליד את הפקודה במעטפת חדשה, ששומרת %3$@ בתים משורה עד שהיא מוכנה, והשורה הזו היא %2$@ בתים: השאר, כולל Return, יאבד. יש לבחור פחות קבצים, או להשתמש במסוף שהפקודה מועברת אליו ישירות, כמו WezTerm,‏ kitty או Alacritty."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ कमांड को एक नए शेल में टाइप करता है, जो तैयार होने तक किसी पंक्ति के %3$@ बाइट ही रखता है, और यह पंक्ति %2$@ बाइट की है: बाकी हिस्सा, Return समेत, खो जाएगा। कम फ़ाइलें चुनें, या ऐसा टर्मिनल इस्तेमाल करें जिसे कमांड सीधे दी जाती है, जैसे WezTerm, kitty या Alacritty।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ mengetik perintah ke shell baru, yang hanya menyimpan %3$@ byte dari satu baris sampai siap, dan baris ini %2$@ byte: sisanya, termasuk Return, akan hilang. Pilih lebih sedikit file, atau gunakan terminal yang langsung menerima perintah, seperti WezTerm, kitty, atau Alacritty."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ digita il comando in una nuova shell, che conserva %3$@ byte di una riga finché non è pronta, e questa riga ne ha %2$@: il resto, Invio compreso, andrebbe perso. Seleziona meno file oppure usa un terminale che riceve direttamente il comando, come WezTerm, kitty o Alacritty."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@はコマンドを新しいシェルに入力しますが、シェルの準備ができるまで1行につき%3$@バイトしか保持されず、この行は%2$@バイトあります。残りはReturnも含めて失われます。選択するファイルを減らすか、WezTerm、kitty、Alacrittyのようにコマンドを直接受け取るターミナルを使用してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 앱은 명령을 새 셸에 입력하는데, 새 셸은 준비될 때까지 한 줄에서 %3$@바이트만 보관하며 이 줄은 %2$@바이트입니다. 나머지는 Return을 포함해 사라집니다. 파일을 더 적게 선택하거나, WezTerm, kitty, Alacritty처럼 명령을 직접 전달받는 터미널을 사용하십시오."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ कमांड नव्या शेलमध्ये टाइप करते, जो तयार होईपर्यंत एका ओळीचे %3$@ बाइटच ठेवतो, आणि ही ओळ %2$@ बाइटची आहे: उरलेला भाग, Return सह, हरवेल. कमी फाइल निवडा, किंवा ज्याला कमांड थेट दिली जाते असे टर्मिनल वापरा, जसे WezTerm, kitty किंवा Alacritty."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ menaip perintah ke dalam cangkerang baharu, yang hanya menyimpan %3$@ bait daripada satu baris sehingga ia sedia, dan baris ini %2$@ bait: bakinya, termasuk Return, akan hilang. Pilih lebih sedikit fail, atau gunakan terminal yang menerima perintah secara terus, seperti WezTerm, kitty atau Alacritty."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ typt het commando in een nieuwe shell, die tot hij klaar is %3$@ bytes van een regel bewaart, en deze regel is %2$@ bytes: de rest, inclusief Return, zou verloren gaan. Selecteer minder bestanden of gebruik een terminal die het commando rechtstreeks krijgt, zoals WezTerm, kitty of Alacritty."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplikacja %1$@ wpisuje polecenie do nowej powłoki, która do czasu gotowości przechowuje z wiersza do %3$@ bajtów, a ten wiersz ma %2$@: reszta, łącznie z Return, przepadłaby. Zaznacz mniej plików albo użyj terminala, któremu polecenie jest przekazywane bezpośrednio, np. WezTerm, kitty lub Alacritty."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O %1$@ digita o comando em um shell novo, que guarda %3$@ bytes de uma linha até estar pronto, e esta linha tem %2$@: o resto, inclusive o Return, se perderia. Selecione menos arquivos ou use um terminal que recebe o comando diretamente, como WezTerm, kitty ou Alacritty."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ tastează comanda într-un shell nou, care păstrează %3$@ de byți dintr-un rând până este gata, iar acest rând are %2$@: restul, inclusiv Return, s-ar pierde. Selectați mai puține fișiere sau folosiți un terminal căruia i se transmite direct comanda, cum ar fi WezTerm, kitty sau Alacritty."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приложение «%1$@» вводит команду в новую оболочку, которая до готовности хранит не более %3$@ байт строки, а в этой строке %2$@: остальное, включая Return, потерялось бы. Выберите меньше файлов или используйте терминал, которому команда передается напрямую, например WezTerm, kitty или Alacritty."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ கட்டளையை ஒரு புதிய shell-இல் தட்டச்சு செய்கிறது; அது தயாராகும் வரை ஒரு வரியின் %3$@ பைட்டுகளை மட்டுமே வைத்திருக்கும், இந்த வரி %2$@ பைட்டுகள்: மீதி, Return உட்பட, இழக்கப்படும். குறைவான கோப்புகளைத் தேர்ந்தெடுக்கவும், அல்லது WezTerm, kitty அல்லது Alacritty போல கட்டளையை நேரடியாகப் பெறும் டெர்மினலைப் பயன்படுத்தவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ఆదేశాన్ని కొత్త shell లో టైప్ చేస్తుంది, అది సిద్ధమయ్యే వరకు ఒక పంక్తిలో %3$@ బైట్లను మాత్రమే ఉంచుతుంది, ఈ పంక్తి %2$@ బైట్లు: మిగిలినది, Return తో సహా, పోతుంది. తక్కువ ఫైళ్లను ఎంచుకోండి, లేదా WezTerm, kitty లేదా Alacritty లాగా ఆదేశాన్ని నేరుగా అందుకునే టెర్మినల్‌ను ఉపయోగించండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ พิมพ์คำสั่งลงในเชลล์ใหม่ ซึ่งเก็บได้เพียง %3$@ ไบต์ของหนึ่งบรรทัดจนกว่าจะพร้อม และบรรทัดนี้ยาว %2$@ ไบต์ ส่วนที่เหลือรวมถึง Return จะหายไป เลือกไฟล์ให้น้อยลง หรือใช้เทอร์มินัลที่รับคำสั่งโดยตรง เช่น WezTerm, kitty หรือ Alacritty"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, komutu yeni bir kabuğa yazar; kabuk hazır olana kadar bir satırın yalnızca %3$@ baytını tutar ve bu satır %2$@ bayttır: geri kalanı, Return da dahil, kaybolur. Daha az dosya seçin ya da komutun doğrudan verildiği bir terminal kullanın; örneğin WezTerm, kitty veya Alacritty."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Термінал %1$@ вводить команду в нову оболонку, яка до готовності зберігає не більше %3$@ байтів рядка, а цей рядок має %2$@: решта, разом із Return, загубилася б. Виберіть менше файлів або скористайтеся терміналом, якому команда передається напряму, наприклад WezTerm, kitty чи Alacritty."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ٹرمینل %1$@ کمانڈ کو ایک نئی شیل میں ٹائپ کرتا ہے، جو تیار ہونے تک ایک لائن کے صرف %3$@ بائٹ رکھتی ہے، اور یہ لائن %2$@ بائٹ کی ہے: باقی حصہ، Return سمیت، ضائع ہو جائے گا۔ کم فائلیں منتخب کریں، یا ایسا ٹرمینل استعمال کریں جسے کمانڈ براہِ راست دی جاتی ہے، جیسے WezTerm، kitty یا Alacritty۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ gõ lệnh vào một shell mới, vốn chỉ giữ %3$@ byte của một dòng cho đến khi sẵn sàng, và dòng này dài %2$@ byte: phần còn lại, kể cả Return, sẽ bị mất. Hãy chọn ít tệp hơn, hoặc dùng một terminal nhận lệnh trực tiếp, như WezTerm, kitty hoặc Alacritty."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 会把命令输入到新的 shell 中，而新 shell 在就绪前只保留一行的 %3$@ 字节，这一行有 %2$@ 字节：其余部分（包括 Return 键）会丢失。请少选一些文件，或使用直接接收命令的终端，例如 WezTerm、kitty 或 Alacritty。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 會把指令輸入到新的 shell 中，而新 shell 在就緒前只保留一行的 %3$@ 位元組，這一行有 %2$@ 位元組：其餘部分（包括 Return 鍵）會遺失。請少選一些檔案，或使用直接接收指令的終端機，例如 WezTerm、kitty 或 Alacritty。"
+          }
+        }
+      }
+    },
     "refusal.typesFolderBackslash": {
       "comment": "Why an action did nothing, shown in the alert after a click in Finder (and, in English, by the command line). %1$@ is a terminal app (Terminal, iTerm), %2$@ a path.",
       "extractionState": "manual",

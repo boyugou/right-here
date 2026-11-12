@@ -15,20 +15,16 @@ public struct AppleTerminalAdapter: TerminalAdapter {
         }
         // The folder is typed after `cd`, so it is held to the same rule as the command.
         do { try ShellQuoting.validateForTyping(directory) } catch { throw PlanError.unsafeFolder(directory) }
-        // The line is read by whichever shell the Terminal profile starts: the account's login shell unless
-        // the profile names a command, and nothing here can tell which. POSIX single quotes are read the same
-        // way by sh, bash, zsh, dash, ksh and fish (the tests run the first five, and fish where installed)
-        // with one exception that matters: fish takes a backslash inside them as an escape, so `\'` ends the
-        // quoting in sh and not in fish. A folder name with a backslash is therefore refused rather than
-        // quoted for a guessed shell, and every other name is quoted the one way those shells agree on.
-        // (csh and tcsh also expand `!` inside single quotes, and `!#:1` is the quoted word before it with its quote: a file name in a
-        // preset's prompt could close the quoting. `quoteTyped` writes `!` outside the quotes, escaped.) Quoting for the login shell,
-        // as this used to, breaks as soon as the profile runs a different one, and AppleScript's
-        // `quoted form of` is not used for the same reason.
-        if directory.unicodeScalars.contains("\\") {
+        // The line is read by whichever shell the Terminal profile starts: the account's login shell unless the profile names a command, and
+        // nothing here can tell which. `quoteTyped` writes a word the way every shell reads the same (POSIX shells, fish, tcsh, nushell, elvish,
+        // PowerShell); a backslash cannot be written so, and a folder name with one is refused rather than quoted for a guessed shell. Quoting
+        // for the login shell, as this used to, breaks as soon as the profile runs a different one, and AppleScript's `quoted form of` is not
+        // used for the same reason.
+        guard let folder = ShellQuoting.quoteTyped(directory) else {
             throw PlanError.refused(.refusalTypesFolderBackslash("Terminal", directory))
         }
-        let line = "cd " + ShellQuoting.quoteTyped(directory) + " && " + typed
+        let line = "cd " + folder + " && " + typed
+        try TerminalSession.requireFitsANewTTY(line, terminal: "Terminal")
         return [.appleScript(AppleScriptStep(source: Self.script, arguments: [line], controls: "Terminal"))]
     }
 
