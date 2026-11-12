@@ -2257,6 +2257,8 @@ MUTANTS = [
      "cshFamily ? \"-ic\" : \"-lic\"", "\"-lic\""),
     ("the terminal link carries a name with hidden text", "Sources/RightHereCore/Planner/Planner.swift",
      "            .filter { !ShellQuoting.containsControlCharacter($0) && !$0.hasMisleadingCharacter() }\n", ""),
+    ("a link carries the letters of other scripts as they are", "Sources/RightHereCore/Planner/Planner.swift",
+     "        text.addingPercentEncoding(withAllowedCharacters: unreserved) ?? \"\"", "        text.addingPercentEncoding(withAllowedCharacters: unreserved.union(.alphanumerics)) ?? \"\""),
 ]
 
 

@@ -363,12 +363,13 @@ public struct Planner: Sendable {
         return url
     }
 
-    /// Everything except RFC 3986 unreserved characters is encoded, so no path can end a query value early.
+    /// Everything except RFC 3986 unreserved characters is encoded, so no path can end a query value early. Unreserved is ASCII: `CharacterSet.alphanumerics`
+    /// is every letter of Unicode, and an `é` or a `你` went into the link as it is, which a URL does not hold.
     static func percentEncode(_ text: String) -> String {
-        var allowed = CharacterSet.alphanumerics
-        allowed.insert(charactersIn: "-._~")
-        return text.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+        text.addingPercentEncoding(withAllowedCharacters: unreserved) ?? ""
     }
+
+    private static let unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
 
     // MARK: New file
 

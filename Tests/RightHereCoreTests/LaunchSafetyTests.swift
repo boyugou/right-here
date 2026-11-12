@@ -109,6 +109,14 @@ struct LaunchSafetyTests {
 
     // MARK: 3. The terminal link's prefill carries what a preset refuses
 
+    /// A link carries only ASCII: the letters of other scripts are percent-encoded as UTF-8 (RFC 3986), and so is everything that could end a value.
+    @Test func aLinkCarriesOnlyASCII() {
+        let encoded = Planner.percentEncode("/Users/tester/Café 文档/a&b=c?d#e")
+        let ascii = encoded.unicodeScalars.allSatisfy { $0.isASCII }
+        #expect(ascii, "\(encoded)")
+        #expect(encoded == "%2FUsers%2Ftester%2FCaf%C3%A9%20%E6%96%87%E6%A1%A3%2Fa%26b%3Dc%3Fd%23e")
+    }
+
     /// A preset refuses a file name with characters that draw nothing (Unicode tag characters spell ASCII a model reads, DESIGN 9.2). The same file
     /// handed to `agent.claude@link` goes into the `q` of `claude-cli://open`, which Claude Code puts in its prompt box: the person sees `@report.txt`.
     @Test func theTerminalLinkPrefillDoesNotCarryInvisibleText() throws {
