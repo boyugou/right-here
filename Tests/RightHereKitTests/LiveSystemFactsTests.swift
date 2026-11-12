@@ -151,3 +151,16 @@ struct LiveSystemFactsShellAppTests {
         #expect(!facts.runsShellScripts(bundleID: "com.example.not-installed-anywhere"))
     }
 }
+
+@Suite("LiveSystemFacts: packages")
+struct LiveSystemFactsPackageTests {
+    /// A folder whose kind macOS shows as one item (an app, an `.rtfd`) is a package; a plain folder is not. New File and the terminals take a selected package for one item.
+    @Test func anAppAndAnRTFDAreOneItemAndAPlainFolderIsNot() throws {
+        let root = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: root) }
+        let app = root.appendingPathComponent("Fake.app"), rtfd = root.appendingPathComponent("Notes.rtfd"), plain = root.appendingPathComponent("plain")
+        for folder in [app.appendingPathComponent("Contents"), rtfd, plain] { try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true) }
+        let facts = LiveSystemFacts()
+        #expect(facts.isPackage(app) && facts.isPackage(rtfd))
+        #expect(!facts.isPackage(plain) && !facts.isPackage(root))
+    }
+}

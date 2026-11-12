@@ -26,6 +26,7 @@ RH = os.environ.get("RH") or str(ROOT / ".build" / "debug" / "rh")
 
 VALID = {
     "empty": "",
+    "a template without an extension (a Dockerfile)": '[[new_file.template]]\nid = "docker"\ntitle = "Dockerfile"\nextension = ""\nbase_name = "Dockerfile"\n',
     "full": """
 version = 1
 [general]
@@ -74,7 +75,6 @@ INVALID = {
     "an agent id that starts with a dash": '[agent."-x"]\nname = "X"\ncommand = "x"\n',
     "a template extension with a slash": '[[new_file.template]]\nid = "x"\ntitle = "X"\nextension = "a/b"\n',
     "a template extension with a dot": '[[new_file.template]]\nid = "x"\ntitle = "X"\nextension = ".md"\n',
-    "an empty template extension": '[[new_file.template]]\nid = "x"\ntitle = "X"\nextension = ""\n',
     "an unknown launcher": '[agent.claude]\nlauncher = "magic"\n',
     "an app id that is a launcher word": '[[app]]\nid = "desktop"\nname = "X"\nbundle_id = "a.b"\n',
     "an app name with an escape character": '[[app]]\nid = "x"\nname = "a\\u001b]0;pwned\\u0007"\nbundle_id = "a.b"\n',

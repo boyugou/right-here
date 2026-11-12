@@ -81,7 +81,7 @@ public enum ConfigSchema {
     static let bypassFlagPattern = "^[A-Za-z0-9._=:/@+,-]+( [A-Za-z0-9._=:/@+,-]+)*$"
 
     /// A file extension: not empty, no dot or slash, and none of what a display name refuses (it becomes part of a file name that Finder shows, so it must not read as something else).
-    static let fileExtensionPattern = "^[^./\\u0000-\\u001f\\u007f-\\u009f\\u00ad\\u034f\\u115f\\u1160\\u17b4\\u17b5\\u200b\\u2028\\u2029\\u202a-\\u202e\\u2060-\\u2064\\u2066-\\u206f\\u3164\\ufeff\\uffa0]+$"
+    static let fileExtensionPattern = "^[^./\\u0000-\\u001f\\u007f-\\u009f\\u00ad\\u034f\\u115f\\u1160\\u17b4\\u17b5\\u200b\\u2028\\u2029\\u202a-\\u202e\\u2060-\\u2064\\u2066-\\u206f\\u3164\\ufeff\\uffa0]*$"
 
     public static var root: [SchemaNode] {
         let terminalIDs = KnownApps.terminals.map(\.id)
@@ -150,7 +150,7 @@ public enum ConfigSchema {
                                "The name of the kind of document, on one line. The menu shows it as it is inside the New File submenu, and as \"New <title>\" when it stands alone.",
                                example: "\"Markdown Document\"", pattern: displayNamePattern),
                     SchemaNode("base_name", .string, "The file name without the extension, on one line. If the name is taken, Right Here adds a number.", default: "\"untitled\"", pattern: displayNamePattern),
-                    SchemaNode("extension", .string, "The file extension, without the dot. It cannot contain a slash.", example: "\"md\"", pattern: fileExtensionPattern),
+                    SchemaNode("extension", .string, "The file extension, without the dot. It cannot contain a slash. Empty for a file without one, named by base_name alone (a Dockerfile).", example: "\"md\"", pattern: fileExtensionPattern),
                     SchemaNode("contents", .string, "The text that the new file starts with.", default: "\"\""),
                     SchemaNode("format", .string,
                                "Makes the file a blank document of this Office format instead of a text: docx (Word), xlsx (Excel) or pptx (PowerPoint). The extension must be the same, and contents must be empty.",

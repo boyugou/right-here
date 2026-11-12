@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **New File, after an independent review.** New File on a selected app, `.rtfd` or other package made the file inside it, which broke
+  an app's signature: a selected package is now one item, as Finder shows it, and the file goes next to it (Open in Terminal and the
+  agents take it the same way). A blank Word, Excel or PowerPoint document opened in the code editor when New File opens what it makes:
+  it opens in the app this Mac uses for that kind of document. When a template's own app cannot open the file, the plan says what opens
+  it instead. A template can have no extension (`extension = ""`), for a `Dockerfile` or a `.gitignore`.
+
 ## 1.2.13 (2026-11-12)
 
 - **Opening items in apps, after an independent review.** A terminal is never handed a file, which it would run, also when it is not

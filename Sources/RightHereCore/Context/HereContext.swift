@@ -36,8 +36,9 @@ public struct HereContext: Sendable, Equatable, Codable {
     /// with a terminal app would run it (a `.command` file, for example).
     ///
     /// A single selected folder is opened itself; any other selection opens the folder holding its
-    /// first item; with no selection the viewed folder (or the command-line working directory) is
-    /// used. A path that is a file yields its folder, and a path that does not exist yields `nil`, so
+    /// first item, and so does a selected package, which Finder shows as one item (a new file made in
+    /// an app would break its signature, one made in an `.rtfd` would be lost in it); with no selection
+    /// the viewed folder (or the command-line working directory) is used, a package one has opened too. A path that is a file yields its folder, and a path that does not exist yields `nil`, so
     /// a mistyped path is not quietly replaced by the folder around it.
     public func workingDirectory(facts: any SystemFacts) -> URL? {
         guard let first = items.first else {
@@ -45,7 +46,7 @@ public struct HereContext: Sendable, Equatable, Codable {
             return Self.directory(from: folder, facts: facts)
         }
         switch facts.isDirectory(first) {
-        case true? where items.count == 1: return first
+        case true? where items.count == 1 && !facts.isPackage(first): return first
         // What it is cannot be told: a path the system will not let us look at, or a link that points nowhere.
         // Neither gives a folder, and the folder around it is not what was asked for.
         case nil: return nil

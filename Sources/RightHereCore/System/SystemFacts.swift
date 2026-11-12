@@ -22,6 +22,8 @@ public protocol SystemFacts: Sendable {
 
     /// `nil` when the item cannot be inspected (for example it no longer exists).
     func isDirectory(_ url: URL) -> Bool?
+    /// Whether the folder is a package, which Finder shows as one item: an app, a bundle, an `.rtfd` or an `.xcodeproj` (`NSWorkspace.isFilePackage`).
+    func isPackage(_ url: URL) -> Bool
     func fileExists(_ url: URL) -> Bool
     /// What is at the path (`lstat`, not `stat`, so a link that points nowhere is `present`).
     func itemState(_ url: URL) -> ItemState
@@ -79,6 +81,8 @@ public struct FakeSystemFacts: SystemFacts {
     public var displayNames: [String: String]
     /// The installed apps that say they run shell scripts, by bundle identifier in lower case.
     public var shellApps: Set<String> = []
+    /// The folders that are packages (key: `URL.path`).
+    public var packages: Set<String> = []
 
     public init(
         homeDirectory: URL = URL(fileURLWithPath: "/Users/tester"),
@@ -122,6 +126,11 @@ public struct FakeSystemFacts: SystemFacts {
     public func fileExists(_ url: URL) -> Bool {
         let path = url.lexicallyNormalized.path
         return directories.contains(path) || files.contains(path)
+    }
+
+    public func isPackage(_ url: URL) -> Bool {
+        let path = url.lexicallyNormalized.path
+        return directories.contains(path) && packages.contains(path)
     }
 
     public func onDiskPath(_ url: URL) -> String {

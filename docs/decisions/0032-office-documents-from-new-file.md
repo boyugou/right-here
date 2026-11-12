@@ -45,3 +45,19 @@ all five are shown at first, and each can be unchecked.
   such an extension are refused.
 - A failed write removes the file it made (the write is exclusive, so the file is the action's own); an interrupted write goes on.
 
+
+## After a second independent review (2026-11-12)
+
+- **What opens a new Office document.** With `new_file.then = "open"` a blank Word, Excel or PowerPoint document went to the default
+  editor, a code editor on most Macs this is for. It now goes to the app this Mac opens that kind of document with (`open` without an app
+  named), unless the template names an app of its own. That is safe only because Right Here chose both the extension and the bytes: a
+  template with a `format` must use the format's own extension and has no contents, so a file of the config's own text is never handed
+  to whatever the system picks.
+- **A template's own app that cannot open the file** (not installed, a terminal, an app that runs shell scripts) is replaced with a
+  notice that says what opens the file instead, and the window no longer offers an app that runs shell scripts under "Opens with".
+- **A selected package is one item.** New File on a selected `Foo.app` or `Notes.rtfd` made the file inside it (inside an app it
+  broke the code signature, measured with `codesign --verify --strict`). A selected package is now taken as Finder shows it, one item,
+  so the file goes next to it; a package one has opened (the folder a window shows) is still where the file goes. Terminals and agents
+  take a selected package the same way (`NSWorkspace.isFilePackage`, a system fact).
+- **A template without an extension** (`extension = ""`) is named by its base name alone, for a `Dockerfile`, a `Makefile` or a
+  `.gitignore`.

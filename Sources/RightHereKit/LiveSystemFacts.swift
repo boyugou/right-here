@@ -53,6 +53,10 @@ public struct LiveSystemFacts: SystemFacts {
         return isDirectory.boolValue
     }
 
+    public func isPackage(_ url: URL) -> Bool {
+        NSWorkspace.shared.isFilePackage(atPath: url.path)
+    }
+
     public func fileExists(_ url: URL) -> Bool {
         FileManager.default.fileExists(atPath: url.path)
     }

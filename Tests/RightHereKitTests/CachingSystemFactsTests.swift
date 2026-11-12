@@ -44,6 +44,7 @@ struct CachingSystemFactsTests {
             func applicationURL(bundleID: String) -> URL? { asked += 1; return base.applicationURL(bundleID: bundleID) }
             func displayName(bundleID: String) -> String? { asked += 1; return base.displayName(bundleID: bundleID) }
             func runsShellScripts(bundleID: String) -> Bool { base.runsShellScripts(bundleID: bundleID) }
+            func isPackage(_ url: URL) -> Bool { base.isPackage(url) }
             func bundleVersion(bundleID: String) -> String? { asked += 1; return base.bundleVersion(bundleID: bundleID) }
             func isRunning(bundleID: String) -> Bool { base.isRunning(bundleID: bundleID) }
             func environment(_ key: String) -> String? { base.environment(key) }

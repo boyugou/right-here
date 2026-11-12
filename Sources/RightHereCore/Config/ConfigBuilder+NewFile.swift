@@ -51,12 +51,13 @@ extension ConfigBuilder {
         }
         guard isValidID(id, at: reader.path + ["id"]) else { return nil }
         guard isPlainName(title, at: reader.path + ["title"], noun: "title") else { return nil }
-        if ext.containsAnyScalar(of: [".", "/", "\0"]) || ext.isEmpty {
-            sink.error(reader.path + ["extension"], "write the extension without a dot or slash, and not empty")
+        if ext.containsAnyScalar(of: [".", "/", "\0"]) {
+            sink.error(reader.path + ["extension"], "write the extension without a dot or slash (empty for a file without one, such as a Dockerfile)")
             return nil
         }
-        // The name and the extension become the name of a file that Finder shows and that an agent may be handed, so they are held to what every other name is.
-        guard isPlainName(ext, at: reader.path + ["extension"], noun: "extension", limit: 240) else { return nil }
+        // The name and the extension become the name of a file that Finder shows and that an agent may be handed, so they are held to what every other name is. An empty
+        // extension is a file named by its base name alone (`Dockerfile`, `.gitignore`).
+        guard ext.isEmpty || isPlainName(ext, at: reader.path + ["extension"], noun: "extension", limit: 240) else { return nil }
         let baseName = reader.string("base_name") ?? "untitled"
         if baseName.isEmpty || baseName == "." || baseName == ".." || baseName.containsAnyScalar(of: ["/", "\0"]) {
             sink.error(reader.path + ["base_name"], "a file name cannot be empty, \".\" or \"..\", or contain a slash")

@@ -393,8 +393,9 @@ public struct Planner: Sendable {
         case .reveal:
             steps.append(.reveal([path]))
         case .open:
-            if let bundleID = newFileApp(for: template) {
-                steps.append(.open(OpenStep(bundleID: bundleID, targets: [path])))
+            if let opener = newFileOpener(for: template) {
+                steps.append(.open(OpenStep(bundleID: opener.bundleID, targets: [path])))
+                notices += opener.notice.map { [$0] } ?? []
             } else {
                 // An open with no app named hands the file to whatever the system opens that kind of file with, and the config
                 // chose the extension and the contents: show the file instead.
@@ -407,15 +408,22 @@ public struct Planner: Sendable {
         return LaunchPlan(action: ref.id, summary: "Create \(name)", steps: steps, notices: notices)
     }
 
-    /// The installed app that opens a new file: the template's own, else the default editor. Never a terminal (handed a
-    /// file, it would run it) and never an app that is not installed, so a file is never opened with no app named.
-    private func newFileApp(for template: NewFileTemplate) -> String? {
+    /// What opens a new file: the template's own app; else, for an Office document, the app the system opens that kind with (`bundleID` nil), since
+    /// Right Here chose both its extension and its bytes (a code editor is no app for a blank Word document); else the default editor. Never a
+    /// terminal or an app that runs shell scripts (handed a file, either runs it), and never an app that is not installed, so a file of the
+    /// config's own is never opened with no app named. When the template names an app that cannot open it, the notice says what does instead.
+    private func newFileOpener(for template: NewFileTemplate) -> (bundleID: String?, notice: String?)? {
         func installedBundleID(_ app: AppDescriptor) -> String? {
             guard app.role != .terminal, let bundleID = app.installedBundleID(facts: facts), !facts.runsShellScripts(bundleID: bundleID) else { return nil }
             return bundleID
         }
-        if let app = template.openWith.flatMap(config.app(id:)), let bundleID = installedBundleID(app) { return bundleID }
-        guard let editor = try? defaults.resolve(role: .editor, configured: config.editor) else { return nil }
-        return installedBundleID(editor)
+        let wanted = template.openWith.flatMap(config.app(id:))
+        if let wanted, let bundleID = installedBundleID(wanted) { return (bundleID, nil) }
+        func instead(_ what: String) -> String? {
+            wanted.map { "\($0.name) cannot open the new file (it is not installed, or it would run it), so \(what) opens it." }
+        }
+        if template.format != nil { return (nil, instead("the app this Mac opens that kind of document with")) }
+        guard let editor = try? defaults.resolve(role: .editor, configured: config.editor), let bundleID = installedBundleID(editor) else { return nil }
+        return (bundleID, instead(editor.name))
     }
 }

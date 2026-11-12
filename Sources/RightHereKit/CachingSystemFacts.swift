@@ -71,6 +71,7 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
     }
 
     public func runsShellScripts(bundleID: String) -> Bool { base.runsShellScripts(bundleID: bundleID) }
+    public func isPackage(_ url: URL) -> Bool { base.isPackage(url) }
 
     public func displayName(bundleID: String) -> String? {
         let now = Date()

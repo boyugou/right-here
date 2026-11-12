@@ -94,7 +94,10 @@ struct NewFileOptionsTests {
         #expect(NewFileOptions.changing(baseName: "untitled", of: py)?.operations.last == .unset("new_file.template.1.base_name"), "the default name is the setting taken out")
         let ext = try #require(NewFileOptions.changing(fileExtension: "pyw", of: py))
         #expect(try apply(ext, to: own).newFile.templates[0].fileExtension == "pyw")
-        #expect(NewFileOptions.changing(fileExtension: "  ", of: py) == nil && NewFileOptions.changing(fileExtension: "py", of: py) == nil, "an extension is never empty")
+        #expect(NewFileOptions.changing(fileExtension: "py", of: py) == nil, "nothing changes")
+        // A field that was emptied is a file without an extension (a Dockerfile), named by its base name alone.
+        let none = try #require(NewFileOptions.changing(fileExtension: "  ", of: py))
+        #expect(try apply(none, to: own).newFile.templates[0].fileExtension == "")
         #expect(NewFileOptions.changing(fileExtension: ".pyw", of: py)?.operations.last == .set("new_file.template.1.extension", .string("pyw")) && NewFileOptions.changing(fileExtension: ".py", of: py) == nil, "the dot of an extension is not part of it, as when a template is made")
         #expect(NewFileOptions.changing(baseName: " ", of: py)?.operations.last == .unset("new_file.template.1.base_name"), "a field that was emptied says the name is the default one")
         #expect(NewFileOptions.changing(baseName: "", of: state().rows[1]) == nil, "and a template that has the default name has nothing to change")
@@ -144,7 +147,7 @@ struct NewFileOptionsTests {
 
     @Test func aTemplateTheConfigWouldRefuseIsRefusedWhereItIsWritten() throws {
         let py = state().rows[0]
-        for bad in ["a.b", "a/b", ""] {
+        for bad in ["a.b", "a/b", "a\u{202E}b"] {
             if let change = NewFileOptions.changing(fileExtension: bad, of: py) {
                 #expect(throws: ConfigDocument.EditError.self, "\(bad.debugDescription)") { try apply(change, to: own) }
             }

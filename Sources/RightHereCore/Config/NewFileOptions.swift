@@ -88,7 +88,10 @@ public enum NewFileOptions {
         }
         let rows = config.newFile.templates.map { row($0, entry: isBuiltIn ? nil : entries[$0.id]) }
         // Every installed app that can open a file, which is what the config accepts for `open_with` (a terminal would run the file): the editors, and the apps of the config's own of any other role.
-        let apps = config.allApps.filter { $0.role != .terminal && $0.installedBundleID(facts: facts) != nil }.map { NewFileState.App(id: $0.id, name: $0.name) }
+        // An app that says it runs shell scripts is one too, which the planner never hands a new file.
+        let apps = config.allApps.filter { app in
+            app.role != .terminal && app.installedBundleID(facts: facts).map { !facts.runsShellScripts(bundleID: $0) } == true
+        }.map { NewFileState.App(id: $0.id, name: $0.name) }
         return NewFileState(rows: rows, isBuiltIn: isBuiltIn, then: config.newFile.then, apps: apps, seed: NewFileTemplate.builtIn.map { row($0, entry: nil) },
                             sharedDefinesTemplates: sharedDefinesTemplates, hidden: config.newFile.hidden, writesHidden: config.newFile.writesHidden)
     }
@@ -147,7 +150,8 @@ public enum NewFileOptions {
 
     public static func changing(fileExtension: String, of row: TemplateRowState) -> FileChange? {
         let text = fileExtension.trimmingCharacters(in: .whitespaces).trimmingCharacters(in: CharacterSet(charactersIn: "."))
-        guard let entry = row.entry, !text.isEmpty, text != row.fileExtension else { return nil }
+        // Empty is a file without one (a `Dockerfile`, a `.gitignore`), named by its base name alone.
+        guard let entry = row.entry, text != row.fileExtension else { return nil }
         return change(row, at: entry, [.set(key(entry.position, "extension"), .string(text))])
     }
 

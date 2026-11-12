@@ -53,6 +53,7 @@ public struct WorktreeFacts: SystemFacts {
     public func applicationURL(bundleID: String) -> URL? { base.applicationURL(bundleID: bundleID) }
     public func displayName(bundleID: String) -> String? { base.displayName(bundleID: bundleID) }
     public func runsShellScripts(bundleID: String) -> Bool { base.runsShellScripts(bundleID: bundleID) }
+    public func isPackage(_ url: URL) -> Bool { base.isPackage(url) }
     public func bundleVersion(bundleID: String) -> String? { base.bundleVersion(bundleID: bundleID) }
     public func applicationCopies(bundleID: String) -> [AppCopy] { base.applicationCopies(bundleID: bundleID) }
     public func isRunning(bundleID: String) -> Bool { base.isRunning(bundleID: bundleID) }
