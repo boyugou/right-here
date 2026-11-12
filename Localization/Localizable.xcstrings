@@ -11911,25 +11911,25 @@
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "يوجد تطبيق آخر باسم %@. امنح هذا التطبيق اسمًا خاصًا به ليميّز القائمة بينهما."
+            "state": "translated",
+            "value": "يوجد تطبيق آخر باسم %@. امنح هذا التطبيق اسمًا خاصًا به لتميّز القائمة بينهما."
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "আরেকটি অ্যাপের নাম আগে থেকেই %@। এটিকে নিজস্ব একটি নাম দিন, যাতে মেনুতে দুটিকে আলাদা করে চেনা যায়।"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Eine andere App heißt bereits %@. Gib dieser einen eigenen Namen, damit das Menü die beiden unterscheiden kann."
           }
         },
         "el": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Μια άλλη εφαρμογή ονομάζεται ήδη %@. Δώστε σε αυτή ένα δικό της όνομα, ώστε το μενού να τις ξεχωρίζει."
           }
         },
@@ -11941,151 +11941,151 @@
         },
         "es": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Otra app ya se llama %@. Dale a esta un nombre propio, para que el menú las distinga."
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "یک برنامهٔ دیگر از قبل %@ نام دارد. به این برنامه نامی جداگانه بدهید تا منو آن‌ها را از هم تشخیص دهد."
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Une autre app s’appelle déjà %@. Donnez à celle-ci un nom à elle, pour que le menu les distingue."
           }
         },
         "he": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "יש כבר יישום אחר בשם %@. יש לתת ליישום הזה שם משלו, כדי שהתפריט יבדיל ביניהם."
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "किसी दूसरी ऐप का नाम पहले से %@ है। इस ऐप को अपना अलग नाम दें, ताकि मेनू में दोनों अलग पहचाने जा सकें।"
+            "state": "translated",
+            "value": "किसी दूसरे ऐप का नाम पहले से %@ है। इस ऐप को अपना अलग नाम दें, ताकि मेन्यू में दोनों अलग पहचाने जा सकें।"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "App lain sudah bernama %@. Beri app ini nama sendiri, agar menu dapat membedakan keduanya."
           }
         },
         "it": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Un’altra app si chiama già %@. Dai a questa un nome suo, così il menu le distingue."
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "別の App がすでに %@ という名前です。メニューで区別できるように、この App には別の名前を付けてください。"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "다른 앱이 이미 %@(이)라는 이름을 사용하고 있습니다. 메뉴에서 구분할 수 있도록 이 앱에 고유한 이름을 지정하십시오."
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "दुसऱ्या ॲपचे नाव आधीच %@ आहे. मेनूमध्ये दोन्ही वेगळे ओळखता यावेत म्हणून या ॲपला स्वतःचे नाव द्या."
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Apl lain sudah bernama %@. Berikan apl ini nama sendiri supaya menu dapat membezakan kedua-duanya."
+            "state": "translated",
+            "value": "Aplikasi lain sudah bernama %@. Berikan aplikasi ini nama sendiri supaya menu dapat membezakan kedua-duanya."
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Een andere app heet al %@. Geef deze een eigen naam, zodat het menu ze uit elkaar houdt."
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Inna aplikacja nazywa się już %@. Nadaj tej własną nazwę, aby menu je rozróżniało."
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Outro app já se chama %@. Dê a este um nome próprio, para que o menu os diferencie."
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "O altă aplicație se numește deja %@. Dați-i acesteia un nume propriu, ca meniul să le poată deosebi."
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Другое приложение уже называется %@. Дайте этому приложению собственное имя, чтобы меню их различало."
+            "state": "translated",
+            "value": "Другое приложение уже называется %@. Дайте этому приложению собственное название, чтобы меню их различало."
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "வேறொரு ஆப்பின் பெயர் ஏற்கெனவே %@. மெனு இரண்டையும் பிரித்தறிய, இந்த ஆப்புக்குத் தனிப் பெயர் கொடுக்கவும்."
+            "state": "translated",
+            "value": "வேறொரு செயலியின் பெயர் ஏற்கெனவே %@. மெனு இரண்டையும் பிரித்தறிய, இந்தச் செயலிக்குத் தனிப் பெயர் கொடுக்கவும்."
           }
         },
         "te": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "మరో యాప్ పేరు ఇప్పటికే %@. మెనూ రెండింటినీ వేరు చేసి చూపేలా, ఈ యాప్‌కు సొంత పేరు ఇవ్వండి."
           }
         },
         "th": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "มีแอปอื่นชื่อ %@ อยู่แล้ว ให้ตั้งชื่อของแอปนี้ให้ต่างออกไป เพื่อให้เมนูแยกแยะทั้งสองได้"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Başka bir uygulamanın adı zaten %@. Menünün ikisini ayırt edebilmesi için bu uygulamaya kendine ait bir ad verin."
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Інша програма вже називається %@. Дайте цій програмі власну назву, щоб меню їх розрізняло."
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "کسی اور ایپ کا نام پہلے سے %@ ہے۔ اس ایپ کو اپنا الگ نام دیں تاکہ مینو دونوں میں فرق کر سکے۔"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Một ứng dụng khác đã có tên %@. Hãy đặt cho ứng dụng này một tên riêng để menu phân biệt được hai ứng dụng."
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "已有另一个 App 名为 %@。请为这个 App 另起一个名称，以便菜单区分它们。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "已有另一個 App 名為 %@。請為這個 App 另取一個名稱，以便選單區分它們。"
           }
         }
