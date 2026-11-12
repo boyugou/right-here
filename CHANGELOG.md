@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.15 (2026-11-12)
+
 - **The MCP tools, after a second independent review.** An assistant can no longer change by itself how an agent starts
   (`launcher`: the link and the desktop app start it without its command and arguments) or what a preset types after the agent's
   command (`prompt`): both are proposed to you, like a command. A template's name counts with its contents (`.zshenv` is a startup file).
