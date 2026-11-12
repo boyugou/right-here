@@ -128,6 +128,8 @@ final class SetupModel {
     private(set) var appDetail: String?
     /// A change waits for the person's yes because it would make agents start without their permission prompts.
     private(set) var pendingLoosening: PendingLoosening?
+    /// The extension's registration was restored once at this launch (`restoreExtensionIfMissing`), or found not missing.
+    private var extensionRestoreTried = false
     /// A worktree's removal waits for the person's yes to losing the files git ignores in it.
     private(set) var pendingIgnoredRemoval: PendingIgnoredRemoval?
     /// Counts the answers to a held change: a no, and a yes that was made. The field that raised the question takes its text from the config when this changes (`FieldDraft.answered`): what was
@@ -411,6 +413,15 @@ final class SetupModel {
             checks = checks.replacing(check)
             if waiting, check.status == .ok { await refresh() }
         }
+    }
+
+    /// After an update that replaced the app, macOS no longer knows the Finder extension and the Finder menu is gone, with nothing to say so
+    /// (`FinderExtensionManager.restore`). A Mac that was set up, seen from the copy that may set it up, gets the registration back at the window's first look, once,
+    /// with the person's own choice to use the extension or not.
+    func restoreExtensionIfMissing() async {
+        guard !extensionRestoreTried, canSetUp, configIsThere, check(.finderExtension)?.detail?.key == .doctorExtensionNotRegistered else { return }
+        extensionRestoreTried = true
+        if let check = await actions.restoreExtensionRegistration() { checks = checks.replacing(check) }
     }
 
     /// Sets Right Here up as `rh setup` does, with what the person chose: the config file (made from the choices, only because there is

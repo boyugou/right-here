@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **An update no longer takes away the Finder menu.** Replacing the app (a Homebrew upgrade, a copy dragged over the old one) made macOS forget the
+  Finder extension, and nothing said so until `rh doctor`. The Homebrew cask registers it again after an upgrade, and the app does at its first look
+  on a Mac that was set up, keeping your choice to use it or not.
+
 ## 1.2.9 (2026-11-11)
 
 What deletes files, after an independent review.

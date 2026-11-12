@@ -115,3 +115,16 @@ A review read setup as a stranger would, and an agent that follows the playbook 
 - The cold-agent evaluation ([`SETUP_EVALUATION.md`](../development/SETUP_EVALUATION.md)) was run again for these changes, with a
   fourth persona whose config does not parse: four of four passed. What it did not try is a config or a file name that reads as an instruction.
 
+
+## After an update (2026-11-11)
+
+Measured on this Mac (macOS 27.2) while updating its 1.2.0 to 1.2.9: replacing the app bundle at the same path, as a Homebrew upgrade and a copy
+dragged over the old one do, removes the Finder extension's registration. `pluginkit -m` listed nothing 5, 30, 60 and 120 seconds after,
+`lsregister -f` on the new app did not bring it back, and `rh doctor` said "not registered": the Finder menu was gone, and nothing told the
+person. `pluginkit -a` on the new copy's extension brought it back with the person's choice to use it (`+`), which pluginkit keeps by the
+extension's identifier. So:
+
+- The cask's `postflight` runs `pluginkit -a` (an upgrade does not open the app).
+- The app's first look registers its own extension again when the extension is not registered, this Mac was set up (there is a config) and this
+  copy is the one that may set it up (`canSetUp`): once per launch, `-a` alone (`FinderExtensionManager.restore`). `register` would add
+  `-e use` and switch on an extension the person had switched off. A first run is left to the person's Set Up.

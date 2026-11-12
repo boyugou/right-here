@@ -110,6 +110,7 @@ struct SetupView: View {
         }
         .task {
             await model.refresh()
+            await model.restoreExtensionIfMissing()
             await model.watchExtension()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in

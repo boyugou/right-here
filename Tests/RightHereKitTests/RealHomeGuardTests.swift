@@ -86,6 +86,7 @@ struct RealHomeGuardTests {
         await #expect(throws: RealHomeGuard.Refusal(systemWide: true)) { try await manager.register(appexPath: "/x/FinderExtension.appex") }
         await #expect(throws: RealHomeGuard.Refusal(systemWide: true)) { try await manager.unregister(appexPath: "/x/FinderExtension.appex") }
         await #expect(throws: RealHomeGuard.Refusal(systemWide: true)) { try await manager.disable() }
+        await #expect(throws: RealHomeGuard.Refusal(systemWide: true)) { try await manager.restore(appexPath: "/x/FinderExtension.appex") }
         #expect(runner.recorded.isEmpty, "pluginkit was started: \(runner.recorded)")
         _ = await manager.status()
         #expect(runner.recorded.count == 1, "looking at the registration changes nothing and is allowed")

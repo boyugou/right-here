@@ -326,3 +326,24 @@ struct InstallerAndNewFileSafetyTests {
         #expect(!FileManager.default.fileExists(atPath: folder.appendingPathComponent("elsewhere/target.txt").path))
     }
 }
+
+/// After the app was replaced (an upgrade), macOS no longer knows the Finder extension. The app registers it again, and only that: the person's own choice to use it or
+/// not is kept by pluginkit, and `-e use` would switch on an extension they had switched off.
+@Suite("The Finder extension after an update")
+struct ExtensionRestoreTests {
+    @Test func theRestoreRegistersTheExtensionAndDoesNotSwitchItOn() async throws {
+        let app = try makeTemporaryDirectory().appendingPathComponent("Right Here.app")
+        defer { try? FileManager.default.removeItem(at: app.deletingLastPathComponent()) }
+        let appex = app.appendingPathComponent("Contents/PlugIns/FinderExtension.appex")
+        try FileManager.default.createDirectory(at: appex, withIntermediateDirectories: true)
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0), ProcessResult(status: 0, standardOutput: "")])
+        let actions = SetupActions(facts: FakeSystemFacts(), paths: RHPaths(environment: [:], home: app.deletingLastPathComponent()), runner: runner, helperPath: "/x/rh",
+                                   app: app, trialHome: nil)
+        _ = await actions.restoreExtensionRegistration()
+        let calls = runner.recorded.filter { $0.executable == "/usr/bin/pluginkit" }.map(\.arguments)
+        #expect(calls.first == ["-a", appex.path], "\(calls)")
+        #expect(!calls.contains { $0.contains("-e") }, "the person's choice was changed: \(calls)")
+        // No app (the command line), nothing to register.
+        #expect(await SetupActions(facts: FakeSystemFacts(), runner: FakeProcessRunner(), helperPath: "/x/rh", app: nil).restoreExtensionRegistration() == nil)
+    }
+}

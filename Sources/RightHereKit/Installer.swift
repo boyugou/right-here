@@ -527,6 +527,13 @@ public struct FinderExtensionManager: Sendable {
         try await run(["-e", "ignore", "-i", AppIdentity.extensionBundleID])
     }
 
+    /// Registers the extension again and nothing more: after the app was replaced (a Homebrew upgrade, a copy dragged over the old one) macOS no longer knows it, and
+    /// the Finder menu is gone (measured on macOS 27.2: `pluginkit -m` listed nothing two minutes after, and Launch Services did not bring it back). `-a` alone brings
+    /// back the person's own choice to use it or not, which pluginkit keeps by the extension's identifier; `register` would switch it on.
+    public func restore(appexPath: String) async throws {
+        try await run(["-a", appexPath])
+    }
+
     public func unregister(appexPath: String) async throws {
         try await run(["-r", appexPath])
     }

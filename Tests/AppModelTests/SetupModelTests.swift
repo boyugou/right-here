@@ -17,6 +17,8 @@ private final class ScriptedMac: ProcessRunner, Sendable {
         var shellOutput = ""
         /// A second copy of the extension that macOS keeps registered, whatever `pluginkit -r` is told.
         var lastingCopy: String?
+        /// The person had switched the extension on before an update made macOS forget it: pluginkit keeps that choice, and `pluginkit -a` alone brings it back.
+        var choseToUse = false
     }
 
     private let state = Mutex(State())
@@ -32,12 +34,15 @@ private final class ScriptedMac: ProcessRunner, Sendable {
     func answerShell(_ output: String) { state.withLock { $0.shellOutput = output } }
     /// Another copy of the extension stays registered: a copy of the app on disk that macOS registers again after each `pluginkit -r`.
     func keepRegistered(_ appex: String) { state.withLock { $0.lastingCopy = appex } }
+    /// The extension was switched on, and an update that replaced the app made macOS forget it.
+    func forgetAfterUpdate() { state.withLock { $0.choseToUse = true; $0.extensionOn = false } }
 
     func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
         let (on, delay, shell, lasting) = state.withLock { state -> (Bool, Duration, String, String?) in
             state.calls.append(step)
             // A setup registers the extension and switches it on (`pluginkit -a`, then `-e use`), as on a real Mac.
             if step.executable == "/usr/bin/pluginkit", step.arguments.starts(with: ["-e", "use"]) { state.extensionOn = true }
+            if step.executable == "/usr/bin/pluginkit", step.arguments.first == "-a", state.choseToUse { state.extensionOn = true }
             return (state.extensionOn, state.delay, state.shellOutput, state.lastingCopy)
         }
         if delay > .zero { try? await Task.sleep(for: delay) }
@@ -75,7 +80,7 @@ private struct Mac {
     /// `patience` is how long a change waits for the one that is being written. Tests wait long by default: on a machine that runs four suites at once a write
     /// of a moment takes seconds, and a change refused for that would be a failure of the machine, not of the code.
     init(helper: String = Mac.inTheApplicationsFolder, visible: Bool = true, pollInterval: Duration = .milliseconds(10), idleInterval: Duration = .milliseconds(10),
-         activationQuietPeriod: Duration = .zero, patience: Duration? = nil, trial: Bool = true, copies: [AppCopy] = []) throws {
+         activationQuietPeriod: Duration = .zero, patience: Duration? = nil, trial: Bool = true, copies: [AppCopy] = [], app: URL? = nil) throws {
         let patience = patience ?? .seconds(30)
         home = try makeTemporaryDirectory()
         paths = RHPaths(environment: [:], home: home)
@@ -90,7 +95,7 @@ private struct Mac {
         self.visible = flag
         let loader = SetupLoader(facts: facts, paths: paths, runner: runner, helperPath: helper, localizer: .english)
         // A trial leaves the registration of the Finder extension alone; without one, there is no app here to register, so that step is skipped all the same.
-        let actions = SetupActions(facts: facts, paths: paths, runner: runner, helperPath: helper, app: nil, trialHome: trial ? home : nil)
+        let actions = SetupActions(facts: facts, paths: paths, runner: runner, helperPath: helper, app: app, trialHome: trial ? home : nil)
         model = SetupModel(loader: loader, actions: actions, facts: facts, helper: helper, pollInterval: pollInterval, idleInterval: idleInterval,
                            activationQuietPeriod: activationQuietPeriod, patience: patience, windowIsVisible: { flag.isOn })
     }
@@ -3505,6 +3510,28 @@ struct EditingFlowTests {
         #expect(Set(again.files) == [".env", ".secret"] && FileManager.default.fileExists(atPath: made.worktreeURL.path))
         await mac.model.confirmIgnoredRemoval(again)
         #expect(mac.model.pendingIgnoredRemoval == nil && !FileManager.default.fileExists(atPath: made.worktreeURL.path), "removed, once the person had agreed to lose exactly those")
+    }
+
+    /// An update that replaced the app made macOS forget the Finder extension, and the Finder menu was gone: the window's first look registers it again, once, on a Mac that
+    /// was set up, and the person's choice to use it comes back with it. A Mac that has no config yet (its first run) is left to its Set Up.
+    @Test func theFinderExtensionAnUpdateUnregisteredIsRegisteredAgainOnceOnAMacThatWasSetUp() async throws {
+        let app = try makeTemporaryDirectory().appendingPathComponent("Right Here.app")
+        defer { try? FileManager.default.removeItem(at: app.deletingLastPathComponent()) }
+        try FileManager.default.createDirectory(at: app.appendingPathComponent("Contents/PlugIns/FinderExtension.appex"), withIntermediateDirectories: true)
+        let firstRun = try Mac(app: app); defer { firstRun.cleanUp() }
+        firstRun.runner.forgetAfterUpdate()
+        await firstRun.model.refresh()
+        await firstRun.model.restoreExtensionIfMissing()
+        #expect(!firstRun.runner.calls.contains { $0.arguments.first == "-a" }, "a first run is the person's Set Up")
+        let mac = try Mac(app: app); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\n")
+        mac.runner.forgetAfterUpdate()
+        await mac.model.refresh()
+        #expect(mac.model.check(.finderExtension)?.status == .fail)
+        await mac.model.restoreExtensionIfMissing()
+        #expect(mac.model.check(.finderExtension)?.status == .ok, "\(String(describing: mac.model.check(.finderExtension)))")
+        await mac.model.restoreExtensionIfMissing()
+        #expect(mac.runner.calls.filter { $0.arguments.first == "-a" }.count == 1 && !mac.runner.calls.contains { $0.arguments.first == "-e" }, "once, and nothing switched on")
     }
 
     /// Apply is held to the files its card was drawn for: with no card drawn, nothing is made.

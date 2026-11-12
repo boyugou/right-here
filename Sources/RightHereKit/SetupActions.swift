@@ -186,6 +186,15 @@ public struct SetupActions: Sendable {
         await Doctor(facts: facts, paths: paths, loaded: ConfigStore.load(paths: paths), runner: runner, rhPath: helperPath).launchCheck()
     }
 
+    /// Registers the running app's Finder extension again (`FinderExtensionManager.restore`) and says what macOS says of it then; `nil` when there is no app to register.
+    public func restoreExtensionRegistration() async -> DoctorCheck? {
+        guard let app else { return nil }
+        let appex = app.appendingPathComponent("Contents/PlugIns/FinderExtension.appex")
+        guard FileManager.default.fileExists(atPath: appex.path) else { return nil }
+        try? await FinderExtensionManager(runner: runner).restore(appexPath: appex.path)
+        return await extensionCheck()
+    }
+
     /// The Finder extension's check alone, one `pluginkit` call: what the window looks at while it waits for the person to switch
     /// the extension on.
     public func extensionCheck() async -> DoctorCheck {

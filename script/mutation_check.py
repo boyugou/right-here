@@ -2239,6 +2239,14 @@ MUTANTS = [
      "        try recordWritten(written.map(\\.lastPathComponent))\n        return written", "        return written"),
     ("a file whose close fails is left behind", "Sources/RightHereKit/PlanExecutor.swift",
      "        if close(descriptor) != 0 {", "        if close(descriptor) != 0 && false {"),
+    # An update that replaced the app (ADR 0018, 2026-11-11).
+    ("the restore after an update switches the extension on", "Sources/RightHereKit/Installer.swift",
+     "    public func restore(appexPath: String) async throws {\n        try await run([\"-a\", appexPath])\n    }",
+     "    public func restore(appexPath: String) async throws {\n        try await register(appexPath: appexPath)\n    }"),
+    ("the window registers the extension on a Mac that was never set up", "Apps/RightHere/SetupModel.swift",
+     "guard !extensionRestoreTried, canSetUp, configIsThere, check(.finderExtension)", "guard !extensionRestoreTried, canSetUp, check(.finderExtension)"),
+    ("the window registers the extension again at every look", "Apps/RightHere/SetupModel.swift",
+     "        extensionRestoreTried = true\n", ""),
 ]
 
 
