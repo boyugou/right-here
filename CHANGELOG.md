@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.9 (2026-11-11)
+
 What deletes files, after an independent review.
 
 - Removing a git worktree no longer deletes files that exist only there: those git ignores (a `.env`, a local database) are named, and the window asks a
