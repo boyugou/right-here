@@ -22,10 +22,12 @@ cask "right-here" do
   app "Right Here.app"
   binary "#{appdir}/Right Here.app/Contents/Helpers/rh"
 
-  # Replacing the app (an upgrade) removes the Finder extension's registration, and the Finder menu is gone until something registers it again (measured on
-  # macOS 27.2). `-a` alone keeps the person's choice to use it or not.
-  postflight do
-    system_command "/usr/bin/pluginkit", args: ["-a", "#{appdir}/Right Here.app/Contents/PlugIns/FinderExtension.appex"]
+  # Replacing the app (an upgrade) unregisters the Finder extension, and the Finder menu is gone until it is
+  # registered again (measured on macOS 27.2). `-a` alone keeps the person's choice to use it or not.
+  postflight_steps do
+    run "/usr/bin/pluginkit",
+        args:         ["-a", "{{appdir}}/Right Here.app/Contents/PlugIns/FinderExtension.appex"],
+        must_succeed: false
   end
 
   zap trash: [
