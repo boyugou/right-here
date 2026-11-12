@@ -36,7 +36,7 @@ public struct ITermAdapter: TerminalAdapter {
         if directory.unicodeScalars.contains("\\") {
             throw PlanError.refused(.refusalTypesFolderBackslash("iTerm", directory))
         }
-        let quotedDir = "cd " + ShellQuoting.quote(directory, for: .posix)
+        let quotedDir = "cd " + ShellQuoting.quoteTyped(directory)
         let line: String
         if let typed {
             line = quotedDir + " && " + typed

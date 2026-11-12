@@ -20,7 +20,7 @@ public struct WezTermAdapter: TerminalAdapter {
         guard facts.applicationURL(bundleID: bundleID) != nil else { throw PlanError.appNotInstalled("WezTerm") }
         var arguments = ["start", "--cwd", directory]
         if let typed {
-            arguments += ["--", facts.loginShell, "-lic", typed + "; exec " + ShellQuoting.quote(facts.loginShell, for: .posix) + " -l"]
+            arguments += ["--"] + ShellQuoting.shellArguments(loginShell: facts.loginShell, typing: typed)
         }
         return [.run(NewInstance.launch(bundleID: bundleID, arguments: arguments))]
     }

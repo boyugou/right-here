@@ -87,7 +87,7 @@ struct AgentLaunchResolution: Sendable {
         // The words of the flag, each quoted when it needs it: the config only lets a flag be words of plain characters, and a flag that came another way is not typed as shell syntax either.
         if let flag = options.bypassFlag {
             words += flag.split(separator: " ").map { word in
-                String(word).range(of: ConfigSchema.bypassFlagPattern, options: .regularExpression) != nil ? String(word) : ShellQuoting.quote(String(word), for: .posix)
+                String(word).range(of: ConfigSchema.bypassFlagPattern, options: .regularExpression) != nil ? String(word) : ShellQuoting.quoteTyped(String(word))
             }
         }
         switch argumentWords(options.arguments, of: agent) {
@@ -96,7 +96,7 @@ struct AgentLaunchResolution: Sendable {
         }
         for argument in variant?.arguments ?? [] {
             if argument.unicodeScalars.contains("\\") { return .failure(.variantArgument(variant: variant?.id ?? "", argument: argument)) }
-            words.append(ShellQuoting.quote(argument, for: .posix))
+            words.append(ShellQuoting.quoteTyped(argument))
         }
         return .success(words.joined(separator: " "))
     }
@@ -106,7 +106,7 @@ struct AgentLaunchResolution: Sendable {
         var words: [String] = []
         for argument in arguments {
             if argument.unicodeScalars.contains("\\") { return .failure(.agentArgument(agent: agent.id, argument: argument)) }
-            words.append(ShellQuoting.quote(argument, for: .posix))
+            words.append(ShellQuoting.quoteTyped(argument))
         }
         return .success(words)
     }

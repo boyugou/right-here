@@ -331,8 +331,8 @@ public struct Planner: Sendable {
         case .success(let quoted): words += quoted
         case .failure(let why): throw PlanError(why)
         }
-        if case .flag(let flag) = promptArgument { words.append(ShellQuoting.quote(flag, for: .posix)) }
-        words.append(ShellQuoting.quote(prompt, for: .posix))
+        if case .flag(let flag) = promptArgument { words.append(ShellQuoting.quoteTyped(flag)) }
+        words.append(ShellQuoting.quoteTyped(prompt))
         let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: true, explicit: terminal.map { .terminal($0) }, config: config, facts: facts)
         guard case .terminal(let app, let bundleID, let adapter) = try route(of: resolution) else { throw PlanError.refused(.refusalPresetTyped) }
         var notices = resolution.launcher == .terminal(nil) ? fallbackNotice(role: .terminal, typing: true, used: app) : []
@@ -345,11 +345,14 @@ public struct Planner: Sendable {
         return try typeCommand(words.joined(separator: " "), summary: "\(agent.command) with preset \(id)", in: app, bundleID: bundleID, adapter: adapter, directory: directory, ref: ref, context: context, notices: notices)
     }
 
-    /// Selected files become `@` mentions in the prompt box; nothing is sent.
+    /// Selected files become `@` mentions in the prompt box; nothing is sent. A name that a preset would refuse for what the person cannot see (a control character,
+    /// a tag character that spells ASCII a model reads, a direction override) is left out: the box would show `@report.txt` and hold more. The person can still name it.
     private func mentionPrefill(context: HereContext, directory: URL) -> String {
-        let files = context.items.filter { facts.isDirectory($0) == false }
-        guard !files.isEmpty else { return "" }
-        return PathRenderer(facts: facts).render(files, style: .aiMention, relativeTo: directory) + " "
+        let renderer = PathRenderer(facts: facts)
+        let mentions = context.items.filter { facts.isDirectory($0) == false }.map { renderer.render($0, style: .aiMention, relativeTo: directory) }
+            .filter { !ShellQuoting.containsControlCharacter($0) && !$0.hasMisleadingCharacter() }
+        guard !mentions.isEmpty else { return "" }
+        return mentions.joined(separator: PathStyle.aiMention.separator) + " "
     }
 
     static func expand(_ link: AgentDescriptor.Link, directory: URL, prompt: String) -> String {

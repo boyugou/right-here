@@ -17,7 +17,7 @@ public struct KittyAdapter: TerminalAdapter {
         // `-n` starts a separate kitty each time, and kitty stays running on macOS with no window left unless this option says it should not.
         var arguments = ["--directory", directory, "-o", "macos_quit_when_last_window_closed=yes"]
         if let typed {
-            arguments += [facts.loginShell, "-lic", typed + "; exec " + ShellQuoting.quote(facts.loginShell, for: .posix) + " -l"]
+            arguments += ShellQuoting.shellArguments(loginShell: facts.loginShell, typing: typed)
         }
         return [.run(NewInstance.launch(bundleID: bundleID, arguments: arguments))]
     }

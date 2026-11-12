@@ -18,7 +18,7 @@ public struct AlacrittyAdapter: TerminalAdapter {
         guard facts.applicationURL(bundleID: bundleID) != nil else { throw PlanError.appNotInstalled("Alacritty") }
         var arguments = ["--working-directory", directory]
         if let typed {
-            arguments += ["-e", facts.loginShell, "-lic", typed + "; exec " + ShellQuoting.quote(facts.loginShell, for: .posix) + " -l"]
+            arguments += ["-e"] + ShellQuoting.shellArguments(loginShell: facts.loginShell, typing: typed)
         }
         return [.run(NewInstance.launch(bundleID: bundleID, arguments: arguments))]
     }

@@ -42,6 +42,23 @@ public enum ShellQuoting {
         }
     }
 
+    /// One word of a line that is typed into a terminal, whose shell may be csh or tcsh (the login shell, or a profile's command): they expand `!` (history) even inside
+    /// single quotes, and `!#:1` is the quoted word before it with its quote, so a file name could close the quoting and run what follows. `!` is written outside the
+    /// quotes, escaped (`'\!'`), which sh, bash, zsh, dash, ksh, fish and tcsh all read as `!` (measured on macOS 27.2).
+    public static func quoteTyped(_ value: String) -> String {
+        let quoted = quote(value, for: .posix)
+        guard value.unicodeScalars.contains("!") else { return quoted }
+        return quoted.scalarReplacing(["!": "'\\!'"])
+    }
+
+    /// What a terminal that starts a program (WezTerm, kitty, Alacritty) is given to type `line` in the login shell and then stay in it. A login, interactive shell
+    /// (`-lic`) reads the person's PATH; csh and tcsh take `-l` only as their one option ("Unknown option: `-lic'", measured), so they get `-ic`, which reads their rc
+    /// file. The shell that stays is a login shell (`-l` alone).
+    public static func shellArguments(loginShell shell: String, typing line: String) -> [String] {
+        let cshFamily = ["csh", "tcsh"].contains(URL(fileURLWithPath: shell).lastPathComponent)
+        return [shell, cshFamily ? "-ic" : "-lic", line + "; exec " + quoteTyped(shell) + " -l"]
+    }
+
     /// Escape with backslashes the way terminals do for a dropped path. Text with control
     /// characters cannot be backslash-escaped, so it falls back to single quotes.
     public static func backslashEscape(_ value: String) -> String {

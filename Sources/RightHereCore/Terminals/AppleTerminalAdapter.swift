@@ -21,14 +21,14 @@ public struct AppleTerminalAdapter: TerminalAdapter {
         // with one exception that matters: fish takes a backslash inside them as an escape, so `\'` ends the
         // quoting in sh and not in fish. A folder name with a backslash is therefore refused rather than
         // quoted for a guessed shell, and every other name is quoted the one way those shells agree on.
-        // (csh and tcsh also expand `!` inside single quotes. In a fresh session that finds no such event,
-        // so `cd` fails and `&&` stops the command: it cannot run anything.) Quoting for the login shell,
+        // (csh and tcsh also expand `!` inside single quotes, and `!#:1` is the quoted word before it with its quote: a file name in a
+        // preset's prompt could close the quoting. `quoteTyped` writes `!` outside the quotes, escaped.) Quoting for the login shell,
         // as this used to, breaks as soon as the profile runs a different one, and AppleScript's
         // `quoted form of` is not used for the same reason.
         if directory.unicodeScalars.contains("\\") {
             throw PlanError.refused(.refusalTypesFolderBackslash("Terminal", directory))
         }
-        let line = "cd " + ShellQuoting.quote(directory, for: .posix) + " && " + typed
+        let line = "cd " + ShellQuoting.quoteTyped(directory) + " && " + typed
         return [.appleScript(AppleScriptStep(source: Self.script, arguments: [line], controls: "Terminal"))]
     }
 

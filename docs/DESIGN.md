@@ -287,8 +287,11 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    where it is installed; CI installs it). Terminal.app is the one adapter that types the folder (`cd …`)
    into a shell the adapter cannot see (the profile's, not necessarily the account's), so it quotes the folder
    the one way sh, bash, zsh, dash, ksh and fish agree on and refuses a backslash, the character that splits fish
-   from the rest (csh and tcsh also expand `!` inside single quotes, which in a new session only makes the `cd`
-   fail, so nothing runs).
+   from the rest. csh and tcsh also expand `!` inside single quotes, and `!#:1` is the quoted word before it with its
+   quote, so a file name in a preset's prompt could close the quoting and run what follows (an independent review,
+   2026-11-11): every word of a typed line writes `!` outside the quotes, escaped (`ShellQuoting.quoteTyped`), which sh,
+   bash, zsh, dash, ksh, fish and tcsh read as `!`. WezTerm, kitty and Alacritty start the login shell with `-lic`,
+   which csh and tcsh refuse; they get `-ic`.
    Paths are cut at slash scalars, as the kernel cuts them, so a combining mark cannot hide a `..`.
 2. Text typed into a terminal is read as keystrokes, so a command line with a line break or any control character
    is refused for typed launches, and so is a folder whose path has one when the terminal types the folder (`cd …`):
