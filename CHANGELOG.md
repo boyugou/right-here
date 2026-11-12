@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.16 (2026-11-12)
+
 - **The entry points outside the window, after an independent review.** A Quick Action you made is never replaced or removed by
   Right Here, even when a config gives one of its own actions the same name (it was swapped out and deleted): the Checks say
   which are left out and why. Shortcuts' Start AI Agent asks before an agent that starts without asking starts in a folder
