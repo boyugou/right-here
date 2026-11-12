@@ -332,7 +332,8 @@ public struct SetupRunner: Sendable {
         }
         let config = loaded.config
         let specs = ActionRegistry(config: config, facts: facts, localizer: localizer ?? config.localizer).serviceSpecs(rhPath: rhPath)
-        let names = ServiceWorkflow.distinct(specs).count
+        // What a Quick Action of the person's holds is not installed, and not counted: the doctor says which are left out, and why.
+        let names = ServiceWorkflow.distinct(specs).count - installer.heldByThePerson(specs).count
         let detail = LocalizedMessage.doctorServicesOk(String(names))
         if installer.servicesAreCurrent(specs) { return SetupStep(.services, .unchanged, detail: detail) }
         let outcome: SetupStep.Outcome = installer.installedServices().isEmpty ? .created : .updated

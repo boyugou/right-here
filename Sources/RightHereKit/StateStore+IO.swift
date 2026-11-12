@@ -27,8 +27,13 @@ extension StateStore {
         guard lstat(paths.stateFile.path, &info) == 0 else {
             return errno == ENOENT ? .absent : .unreadable("it cannot be looked at (\(String(cString: strerror(errno))))")
         }
-        guard let data = try? Data(contentsOf: paths.stateFile) else { return .unreadable("it cannot be read") }
-        guard data.count < 128 * 1024 else { return .unreadable("it is larger than 128 KB") }
+        // Its size is asked before it is read: every `rh run` reads it, and any program of the person's can write it.
+        let data: Data
+        switch BoundedRead.read(paths.stateFile, limit: 128 * 1024 - 1) {
+        case .data(let read): data = read
+        case .tooLarge: return .unreadable("it is larger than 128 KB")
+        case .absent, .unreadable: return .unreadable("it cannot be read")
+        }
         guard let text = String(data: data, encoding: .utf8) else { return .unreadable("it is not UTF-8 text") }
         guard let state = parseStrictly(text) else { return .unreadable("it is not valid TOML") }
         return .read(state)

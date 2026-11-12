@@ -843,6 +843,8 @@ extension LocalizedMessage {
     public static var doctorFixPending: LocalizedMessage { LocalizedMessage(.doctorFixPending) }
     /// Run `rh setup`.
     public static var doctorFixRunSetup: LocalizedMessage { LocalizedMessage(.doctorFixRunSetup) }
+    /// Give your Quick Action in %@ another name, then run `rh setup` again.
+    public static func doctorFixServicesHeld(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixServicesHeld, [argument1]) }
     /// Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy.
     public static var doctorFixSyncCommands: LocalizedMessage { LocalizedMessage(.doctorFixSyncCommands) }
     /// Compare them with `rh config sync status`. Then run `rh config sync pull --force` to take the folder's copy, or `push --force` to keep this one. The replaced file is saved first.
@@ -887,6 +889,8 @@ extension LocalizedMessage {
     public static func doctorRunnerTargetMissing(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorRunnerTargetMissing, [argument1]) }
     /// %1$@ installed, but they differ from the config (%2$@ missing, %3$@ stale)
     public static func doctorServicesDiffer(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorServicesDiffer, [argument1, argument2, argument3]) }
+    /// %1$@ installed; %2$@ left out because a Quick Action of yours in %3$@ has the same name
+    public static func doctorServicesHeld(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorServicesHeld, [argument1, argument2, argument3]) }
     /// none installed; Quick Actions and keyboard shortcuts are not available
     public static var doctorServicesNone: LocalizedMessage { LocalizedMessage(.doctorServicesNone) }
     /// %@ installed
@@ -945,6 +949,8 @@ extension LocalizedMessage {
     public static func installOnAnotherVolume(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.installOnAnotherVolume, [argument1]) }
     /// Right Here is running from the temporary location macOS uses for a downloaded app. Move Right Here.app into your Applications folder, open it from there, and install again.
     public static var installTranslocated: LocalizedMessage { LocalizedMessage(.installTranslocated) }
+    /// %1$@ starts with its permission prompts switched off, so in %2$@ it can run commands and change files without asking you first. Start it there? Folders you pin in Right Here start without this question.
+    public static func intentConfirmWithoutAsking(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.intentConfirmWithoutAsking, [argument1, argument2]) }
     /// Path copied.
     public static var intentCopied: LocalizedMessage { LocalizedMessage(.intentCopied) }
     /// Done: %@

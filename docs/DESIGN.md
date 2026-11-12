@@ -380,6 +380,16 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    path. A user name or password in the remote is dropped; another scheme, a transport prefix or another host is refused. The commit has to
    be on the chosen remote and the item in the commit, so a link never points at a page that is not there. The git commands that read this
    start nothing and run through `GitCommand`; see [0033](decisions/0033-links-to-the-git-host.md).
+11. What is in `~/Library/Services` under a name Right Here would give a Quick Action is replaced only when it is Right Here's: nothing
+   is there, the record of what it wrote (`installed-services.txt`) names it, or its script is exactly the command a Quick Action of
+   Right Here's runs (as every release wrote it). A Quick Action of the person's with that name (Finder's Duplicate of one, changed in
+   Automator, or one made under a name Right Here had stopped using) is left as it is, never recorded, and named by the doctor
+   (`Installer.heldByThePerson`); a pulled config can choose titles, and a swap would delete what had the name.
+12. Files that any program of the person's can write and that Right Here reads on a click are read only once their size is known
+   (`BoundedRead`): the state file each `rh run` reads (and the `rh pins` and `rh recents` that Shortcuts starts), and the probe
+   request the Finder extension reads in its `init`, on the main thread.
+13. Shortcuts runs an app's actions without asking, so Start AI Agent asks before an agent that starts without asking starts in a
+   folder the person did not pin; see [0030](decisions/0030-saved-folders-for-shortcuts.md).
 
 An independent review and a cold-start usability test shaped several of these; see
 [0008](decisions/0008-independent-review.md). The Mac App Store question is in [0007](decisions/0007-app-store-edition.md).

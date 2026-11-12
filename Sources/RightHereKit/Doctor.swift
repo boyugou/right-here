@@ -407,18 +407,27 @@ public struct Doctor: Sendable {
         let copies = AppCopies.installed(facts.applicationCopies(bundleID: AppIdentity.hostBundleID), home: facts.homeDirectory.path)
             .map { URL(fileURLWithPath: $0.path).appendingPathComponent("Contents/Helpers/rh").path }
         let current = rhPath == nil || ([rhPath].compactMap(\.self) + copies).contains { installer.servicesAreCurrent(ServiceWorkflow.distinct(registry.serviceSpecs(rhPath: $0))) }
-        return Self.servicesCheck(installed: Set(installer.installedServices().map(\.lastPathComponent)), expected: Set(specs.map(ServiceWorkflow.bundleName(for:))),
-                                  current: current)
+        // A name that a Quick Action of the person's holds is theirs, and no setup would change it: it is not "missing", and "run rh setup" would not help.
+        let held = installer.heldByThePerson(specs)
+        return Self.servicesCheck(installed: Set(installer.installedServices().map(\.lastPathComponent)),
+                                  expected: Set(specs.map(ServiceWorkflow.bundleName(for:))).subtracting(held), current: current, held: held.count,
+                                  folder: PathDisplay.abbreviatingHome(installer.locations.services.path, home: facts.homeDirectory.path))
     }
 
     /// Compares the Services on disk with the ones the config asks for: they are files written by
     /// `rh setup`, so editing the config does not change them by itself.
-    static func servicesCheck(installed: Set<String>, expected: Set<String>, current: Bool = true) -> DoctorCheck {
-        if installed.isEmpty {
+    /// - Parameters:
+    ///   - held: How many of the config's Quick Actions are not installed because a Quick Action of the person's has the name (`Installer.heldByThePerson`).
+    ///   - folder: Where the Quick Actions are, as the person would type it.
+    static func servicesCheck(installed: Set<String>, expected: Set<String>, current: Bool = true, held: Int = 0, folder: String = "~/Library/Services") -> DoctorCheck {
+        if installed.isEmpty, held == 0 {
             return DoctorCheck(.services, status: .warn, detail: .doctorServicesNone, fix: .doctorFixRunSetup)
         }
         if installed == expected, !current {
             return DoctorCheck(.services, status: .warn, detail: .doctorServicesDiffer(String(installed.count), "0", String(installed.count)), fix: .doctorFixRunSetup)
+        }
+        if installed == expected, held > 0 {
+            return DoctorCheck(.services, status: .warn, detail: .doctorServicesHeld(String(installed.count), String(held), folder), fix: .doctorFixServicesHeld(folder))
         }
         if installed == expected {
             return DoctorCheck(.services, status: .ok, detail: .doctorServicesOk(String(installed.count)))

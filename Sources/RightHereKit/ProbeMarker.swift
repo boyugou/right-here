@@ -23,11 +23,15 @@ public enum ProbeMarker {
         return (try? Data(text.utf8).write(to: url(in: paths))) != nil
     }
 
-    /// The text of the pending request, or `nil` when there is none or it is too old to honour.
+    /// The longest request: `launch:` and the name of a placement, with room to spare.
+    static let maxRequestBytes = 64
+
+    /// The text of the pending request, or `nil` when there is none, it is too old to honour, or it is too long to be one. The Finder extension
+    /// asks this in its `init`, and any program of the person's can leave the file: it is read only as far as a request goes (`BoundedRead`).
     public static func pending(in paths: RHPaths, now: Date = Date()) -> String? {
         let file = url(in: paths)
         guard let modified = modificationDate(of: file.path), isFresh(modified, now: now),
-              let data = FileManager.default.contents(atPath: file.path) else { return nil }
+              case .data(let data) = BoundedRead.read(file, limit: maxRequestBytes) else { return nil }
         return String(decoding: data, as: UTF8.self)
     }
 

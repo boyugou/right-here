@@ -2370,6 +2370,27 @@ MUTANTS = [
      '''let said = (error as? WorktreeError)?.assistantDescription ?? error.localizedDescription''', '''let said = error.localizedDescription'''),
     ("names drawn alike in two scripts are two names", "Sources/RightHereCore/Quoting/ScalarEditing.swift",
      '''.scalarReplacing(Self.drawnAsLatin).folding(''', '''.folding('''),
+    # The entry points outside the window, after an independent review (2026-11-12): Quick Actions of the person's, files read before their size, Shortcuts.
+    ("the installer swaps a new Quick Action over one of the person's", "Sources/RightHereKit/Installer.swift",
+     '''        let placed = staged.filter { !held.contains($0.name) }''', '''        let placed = staged'''),
+    ("a name the person holds counts as missing, so every change rewrites the other Quick Actions", "Sources/RightHereKit/Installer.swift",
+     '''for spec in ServiceWorkflow.distinct(specs) where !held.contains(ServiceWorkflow.bundleName(for: spec)) { expected[''', '''for spec in ServiceWorkflow.distinct(specs) { expected['''),
+    ("a Quick Action an older release wrote is taken for the person's", "Sources/RightHereKit/Installer.swift",
+     '''        return ServiceWorkflow.command(rhPath: unquote(String(script[..<middle.lowerBound])), actionID: actionID) == script''', '''        return false'''),
+    ("a name the record holds is the person's when its script changed", "Sources/RightHereKit/Installer.swift",
+     '''lstat(destination.path, &status) == 0, !written.contains(ServiceWorkflow.fold(name)), !Self.runsRightHere(destination)''', '''lstat(destination.path, &status) == 0, !Self.runsRightHere(destination)'''),
+    ("the doctor says nothing of a name the person holds", "Sources/RightHereKit/Doctor.swift",
+     '''        if installed == expected, held > 0 {''', '''        if false {'''),
+    ("the Finder extension reads the probe request whole", "Sources/RightHereKit/ProbeMarker.swift",
+     '''              case .data(let data) = BoundedRead.read(file, limit: maxRequestBytes) else { return nil }''', '''              let data = FileManager.default.contents(atPath: file.path) else { return nil }'''),
+    ("rh run reads the state file whole before its size", "Sources/RightHereKit/StateStore+IO.swift",
+     '''BoundedRead.read(paths.stateFile, limit: 128 * 1024 - 1)''', '''BoundedRead.read(paths.stateFile, limit: Int.max)'''),
+    ("Start AI Agent takes an answer it cannot read for an agent that asks", "Sources/RightHereKit/IntentInvocation.swift",
+     '''let row = rows.first(where: { $0.id == agent }) else { return true }''', '''let row = rows.first(where: { $0.id == agent }) else { return false }'''),
+    ("Start AI Agent does not count an alias that switches the prompts off", "Sources/RightHereKit/IntentInvocation.swift",
+     '''        return row.bypassPermissions || row.bypassArgumentFromAlias != nil''', '''        return row.bypassPermissions'''),
+    ("a path with .. is taken for the pinned folder", "Sources/RightHereKit/IntentInvocation.swift",
+     '''        guard wanted.hasPrefix("/"), !wanted.split(separator: "/").contains(where: { $0 == "." || $0 == ".." }) else { return false }''', '''        guard wanted.hasPrefix("/") else { return false }'''),
 ]
 
 

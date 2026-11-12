@@ -103,6 +103,27 @@ public enum IntentCatalog {
         return rows.filter { $0.enabled || $0.foundInShell == true }.map { IntentChoice(id: $0.id, name: $0.name) }
     }
 
+    /// Whether `rh agents --json` says the agent starts without asking: the config switches its permission prompts off, or the alias its command is in the login
+    /// shell adds the flag that does. An answer that cannot be read, or that does not list the agent, is taken as yes: the question it leads to costs a click, and
+    /// its absence an agent that does whatever the folder it starts in tells it.
+    public static func startsWithoutAsking(_ agent: String, agentsJSON data: Data) -> Bool {
+        guard let rows = try? JSONDecoder().decode([AgentRow].self, from: data), let row = rows.first(where: { $0.id == agent }) else { return true }
+        return row.bypassPermissions || row.bypassArgumentFromAlias != nil
+    }
+
+    /// Whether `rh pins --json` lists `path`: a folder the person pinned is one they chose to work in. Compared as written but for a slash at the end: a path with
+    /// `.` or `..` in it is not the pinned folder, whatever it reads as (a link before `..` sends it elsewhere).
+    public static func isPinned(_ path: String, pinsJSON data: Data) -> Bool {
+        func trimmed(_ text: String) -> String {
+            var text = text
+            while text.count > 1, text.hasSuffix("/") { text.removeLast() }
+            return text
+        }
+        let wanted = trimmed(path)
+        guard wanted.hasPrefix("/"), !wanted.split(separator: "/").contains(where: { $0 == "." || $0 == ".." }) else { return false }
+        return ((try? JSONDecoder().decode([String].self, from: data)) ?? []).contains { trimmed($0) == wanted }
+    }
+
     /// The templates in `rh actions --json`: ids `new-file.<template>`, titled for the menu ("New Markdown File").
     public static func templates(fromJSON data: Data) -> [IntentChoice] {
         guard let infos = try? JSONDecoder().decode([ActionInfo].self, from: data) else { return [] }

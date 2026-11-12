@@ -78307,6 +78307,192 @@
         }
       }
     },
+    "doctor.fix.servicesHeld": {
+      "comment": "What the doctor says to do when a Quick Action the person made has the name of one of Right Here's (a full sentence). %@ is the folder of the Quick Actions (~/Library/Services). `rh setup` is a command: keep it as it is.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أعطِ إجراءك السريع في %@ اسمًا آخر، ثم شغّل `rh setup` مرة أخرى."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@-এ আপনার Quick Action-টির অন্য নাম দিন, তারপর আবার `rh setup` চালান।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gib deiner Schnellaktion in %@ einen anderen Namen und führe dann `rh setup` erneut aus."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δώστε άλλο όνομα στη γρήγορη ενέργειά σας στο %@ και έπειτα εκτελέστε ξανά `rh setup`."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Give your Quick Action in %@ another name, then run `rh setup` again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dale otro nombre a tu acción rápida en %@ y vuelve a ejecutar `rh setup`."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نام Quick Action خودتان را در %@ تغییر دهید، سپس دوباره `rh setup` را اجرا کنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Donnez un autre nom à votre action rapide dans %@, puis exécutez à nouveau `rh setup`."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "יש לתת שם אחר לפעולה המהירה שלך ב-%@, ואז להריץ שוב את `rh setup`."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ में अपनी त्वरित क्रिया को कोई दूसरा नाम दें, फिर `rh setup` दोबारा चलाएँ।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beri Tindakan Cepat Anda di %@ nama lain, lalu jalankan `rh setup` lagi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dai un altro nome alla tua azione rapida in %@, poi esegui di nuovo `rh setup`."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ にあるご自分のクイックアクションの名前を変えてから、もう一度 `rh setup` を実行してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@에 있는 사용자의 빠른 동작 이름을 바꾼 다음, `rh setup` 명령을 다시 실행하십시오."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ मधील तुमच्या Quick Action ला दुसरे नाव द्या, मग `rh setup` पुन्हा चालवा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beri Tindakan Cepat anda dalam %@ nama lain, kemudian jalankan `rh setup` sekali lagi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geef je snelle taak in %@ een andere naam en voer daarna `rh setup` opnieuw uit."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zmień nazwę swojej szybkiej czynności w %@, a potem uruchom ponownie `rh setup`."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dê outro nome à sua Ação Rápida em %@ e execute `rh setup` de novo."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dați alt nume propriei acțiuni rapide din %@, apoi rulați din nou `rh setup`."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переименуйте своё быстрое действие в %@, затем снова выполните `rh setup`."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@-இல் உள்ள உங்கள் Quick Action-க்கு வேறு பெயர் கொடுத்து, பின்னர் `rh setup` ஐ மீண்டும் இயக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ లోని మీ Quick Action కి మరో పేరు ఇచ్చి, ఆ తర్వాత `rh setup` మళ్లీ రన్ చేయండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปลี่ยนชื่อการทำงานด่วนของคุณใน %@ แล้วเรียกใช้ `rh setup` อีกครั้ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ içindeki Hızlı Eyleminize başka bir ad verin, ardından `rh setup` komutunu yeniden çalıştırın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перейменуйте свою швидку дію в %@, а потім знову виконайте `rh setup`."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اپنے Quick Action کو، جو %@ میں ہے، کوئی اور نام دیں، پھر `rh setup` دوبارہ چلائیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đặt tên khác cho tác vụ nhanh của bạn trong %@, rồi chạy lại `rh setup`."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请为你在 %@ 中的快速操作换个名字，然后再次运行 `rh setup`。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請為你在 %@ 中的快速動作改個名稱，然後再次執行 `rh setup`。"
+          }
+        }
+      }
+    },
     "doctor.fix.syncCommands": {
       "comment": "Fix line under a check in the setup window's Details list: what the person should do. Sentences. About the config sync feature: \"them\" are the launch settings listed above; the folder's copy is the config in the sync folder. Keep the commands in backticks exactly.",
       "extractionState": "manual",
@@ -82395,6 +82581,192 @@
           "stringUnit": {
             "state": "translated",
             "value": "已安裝：%1$@，但與設定不符（缺少 %2$@，過時 %3$@）"
+          }
+        }
+      }
+    },
+    "doctor.services.held": {
+      "comment": "Detail line of the Quick Actions check in the setup window's Details list and of `rh doctor`; it follows the check's title, so it is a fragment with no final period. %1$@ is the number of Right Here's Quick Actions that are installed; %2$@ is the number not installed because the person made a Quick Action with the same name, which Right Here leaves alone; %3$@ is the folder of the Quick Actions (~/Library/Services).",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المثبَّتة: %1$@؛ وتُرك %2$@ لأن إجراءً سريعًا خاصًا بك في %3$@ يحمل الاسم نفسه"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ইনস্টল করা আছে: %1$@; %2$@টি বাদ রাখা হয়েছে, কারণ %3$@-এ আপনার একটি Quick Action-এর একই নাম আছে"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ installiert; %2$@ ausgelassen, weil eine eigene Schnellaktion in %3$@ denselben Namen hat"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "εγκατεστημένες: %1$@· παραλείφθηκαν: %2$@, επειδή μια δική σας γρήγορη ενέργεια στο %3$@ έχει το ίδιο όνομα"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ installed; %2$@ left out because a Quick Action of yours in %3$@ has the same name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "instalados: %1$@; omitidos: %2$@, porque una acción rápida tuya en %3$@ tiene el mismo nombre"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نصب‌شده: %1$@؛ %2$@ کنار گذاشته شد، چون یک Quick Action از خودتان در %3$@ همین نام را دارد"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "services installés : %1$@ ; laissés de côté : %2$@, car l’une de vos actions rapides dans %3$@ porte le même nom"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שירותי Finder מותקנים: %1$@; לא הותקנו: %2$@, כי פעולה מהירה שלך ב-%3$@ נושאת את אותו השם"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इंस्टॉल की गई त्वरित क्रियाएँ: %1$@; छोड़ी गईं: %2$@, क्योंकि %3$@ में आपकी एक त्वरित क्रिया का नाम वही है"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ layanan Finder diinstal; %2$@ dilewati karena Tindakan Cepat milik Anda di %3$@ memiliki nama yang sama"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servizi del Finder installati: %1$@; tralasciati: %2$@, perché una tua azione rapida in %3$@ ha lo stesso nome"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "インストール済みの Finder のサービス %1$@ 件；%3$@ に同じ名前のご自分のクイックアクションがあるため、%2$@ 件はインストールしていません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@개 설치됨; %3$@에 같은 이름의 사용자 빠른 동작이 있어 %2$@개는 제외됨"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इन्स्टॉल: %1$@; %2$@ वगळले, कारण %3$@ मधील तुमच्या एका Quick Action चे नाव तेच आहे"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dipasang: %1$@; %2$@ dilangkau kerana Tindakan Cepat anda dalam %3$@ mempunyai nama yang sama"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "geïnstalleerd: %1$@; %2$@ weggelaten omdat een eigen snelle taak in %3$@ dezelfde naam heeft"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "zainstalowane: %1$@; pominięte: %2$@, bo Twoja szybka czynność w %3$@ ma taką samą nazwę"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "instaladas: %1$@; deixadas de fora: %2$@, porque uma Ação Rápida sua em %3$@ tem o mesmo nome"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "instalate: %1$@; omise: %2$@, pentru că o acțiune rapidă a dvs. din %3$@ are același nume"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "установлено: %1$@; пропущено: %2$@, потому что Ваше быстрое действие в %3$@ называется так же"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "நிறுவப்பட்டவை: %1$@; %3$@-இல் உள்ள உங்கள் Quick Action-க்கும் அதே பெயர் இருப்பதால் %2$@ நிறுவப்படவில்லை"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ఇన్‌స్టాల్ చేయబడినవి: %1$@; %3$@ లో మీ Quick Action కి అదే పేరు ఉన్నందున %2$@ ఇన్‌స్టాల్ చేయబడలేదు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ติดตั้งแล้ว: %1$@ ข้ามไป %2$@ เพราะการทำงานด่วนของคุณใน %3$@ มีชื่อเดียวกัน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yüklü: %1$@; %3$@ içindeki kendi Hızlı Eyleminiz aynı adı taşıdığı için %2$@ atlandı"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "інстальовано: %1$@; пропущено: %2$@, бо ваша швидка дія в %3$@ має таку саму назву"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "انسٹال شدہ: %1$@؛ چھوڑے گئے: %2$@، کیونکہ %3$@ میں آپ کے ایک Quick Action کا بھی یہی نام ہے"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "đã cài đặt: %1$@; đã bỏ qua %2$@ vì một tác vụ nhanh của bạn trong %3$@ có cùng tên"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已安装 %1$@ 个；有 %2$@ 个未安装，因为你在 %3$@ 中的一个快速操作已使用相同的名称"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已安裝：%1$@；有 %2$@ 個未安裝，因為你在 %3$@ 中的一個快速動作已使用相同的名稱"
           }
         }
       }
@@ -87789,6 +88161,192 @@
           "stringUnit": {
             "state": "translated",
             "value": "Right Here 正從 macOS 存放下載的 App 所用的暫時位置執行。請將 Right Here.app 移到「應用程式」檔案夾，從那裡打開它，然後重新安裝。"
+          }
+        }
+      }
+    },
+    "intent.confirmWithoutAsking": {
+      "comment": "Shortcuts asks this before its Start AI Agent action starts an agent whose permission prompts are switched off, in a folder the person has not pinned (a shortcut can come from anyone). %1$@ is the agent's name, %2$@ the folder's path (~ for the home folder). 'Right Here' is the app's name: keep it. The system adds the buttons (Run and Cancel).",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يبدأ %1$@ مع إيقاف طلبات الإذن الخاصة به، لذا يستطيع في %2$@ تنفيذ الأوامر وتغيير الملفات دون أن يسألك أولًا. هل تريد تشغيله هناك؟ في المجلدات التي تثبّتها في Right Here يبدأ دون هذا السؤال."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ অনুমতি চাওয়ার প্রশ্ন বন্ধ রেখে শুরু হয়, তাই %2$@-এ এটি আগে আপনাকে জিজ্ঞাসা না করেই কমান্ড চালাতে ও ফাইল বদলাতে পারে। সেখানে এটি শুরু করবেন? Right Here-এ পিন করা ফোল্ডারে এটি এই প্রশ্ন ছাড়াই শুরু হয়।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ startet mit abgeschalteten Berechtigungsabfragen und kann in %2$@ Befehle ausführen und Dateien ändern, ohne dich vorher zu fragen. Dort starten? In Ordnern, die du in Right Here anpinnst, startet der Agent ohne diese Frage."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ο πράκτορας %1$@ ξεκινά με απενεργοποιημένες τις ερωτήσεις για άδειες, οπότε στο %2$@ μπορεί να εκτελεί εντολές και να αλλάζει αρχεία χωρίς να σας ρωτά πρώτα. Να ξεκινήσει εκεί; Στους φακέλους που καρφιτσώνετε στο Right Here ξεκινά χωρίς αυτή την ερώτηση."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ starts with its permission prompts switched off, so in %2$@ it can run commands and change files without asking you first. Start it there? Folders you pin in Right Here start without this question."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ se inicia con sus solicitudes de permiso desactivadas, así que en %2$@ puede ejecutar comandos y cambiar archivos sin preguntarte antes. ¿Iniciarlo ahí? En las carpetas que fijes en Right Here se inicia sin esta pregunta."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عامل %1$@ در حالی شروع می‌شود که درخواست‌های مجوزش خاموش است، پس در %2$@ می‌تواند بدون پرسیدن از شما دستور اجرا کند و فایل‌ها را تغییر دهد. آنجا شروع شود؟ در پوشه‌هایی که در Right Here سنجاق می‌کنید، بدون این پرسش شروع می‌شود."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ démarre avec ses demandes d’autorisation désactivées : dans %2$@, il peut exécuter des commandes et modifier des fichiers sans rien vous demander au préalable. Le démarrer là ? Dans les dossiers que vous épinglez dans Right Here, il démarre sans cette question."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הסוכן %1$@ מופעל כשבקשות ההרשאה שלו כבויות, כך שב-%2$@ הוא יכול להריץ פקודות ולשנות קבצים בלי לבקש אישור קודם. להפעיל אותו שם? בתיקיות שמוצמדות ב-Right Here הוא מופעל בלי השאלה הזו."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ अपने अनुमति वाले सवाल बंद करके शुरू होता है, इसलिए %2$@ में वह आपसे पूछे बिना कमांड चला सकता है और फ़ाइलें बदल सकता है। क्या उसे वहाँ शुरू करें? Right Here में पिन किए गए फ़ोल्डरों में वह इस सवाल के बिना शुरू होता है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ dimulai dengan permintaan izinnya dimatikan, jadi di %2$@ agen tersebut dapat menjalankan perintah dan mengubah file tanpa bertanya kepada Anda terlebih dahulu. Mulai di sana? Di folder yang Anda sematkan di Right Here, agen dimulai tanpa pertanyaan ini."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ si avvia con le richieste di permesso disattivate, quindi in %2$@ può eseguire comandi e modificare file senza chiederti prima. Vuoi avviarlo lì? Nelle cartelle che fissi in Right Here si avvia senza questa domanda."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@は許可の確認をオフにした状態で起動するため、%2$@ では確認せずにコマンドを実行したりファイルを変更したりできます。そこで起動しますか？Right Here で固定したフォルダでは、この確認なしで起動します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 에이전트는 권한 요청이 꺼진 상태로 시작되므로, %2$@에서 먼저 묻지 않고도 명령을 실행하고 파일을 바꿀 수 있습니다. 그곳에서 시작하겠습니까? Right Here에 고정한 폴더에서는 이 질문 없이 시작됩니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ एजंट त्याची परवानगी विचारणा बंद करून सुरू होतो, त्यामुळे %2$@ मध्ये तो तुम्हाला आधी न विचारता कमांड चालवू शकतो आणि फाइल बदलू शकतो. तिथे सुरू करायचा का? Right Here मध्ये पिन केलेल्या फोल्डरमध्ये तो या प्रश्नाशिवाय सुरू होतो."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ dimulakan dengan gesaan kebenarannya dinyahaktifkan, jadi dalam %2$@ ia boleh menjalankan perintah dan menukar fail tanpa bertanya kepada anda dahulu. Mulakan di sana? Dalam folder yang anda pinkan dalam Right Here, ia bermula tanpa soalan ini."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ start met uitgeschakelde toestemmingsvragen, dus in %2$@ kan de agent zonder eerst te vragen commando’s uitvoeren en bestanden wijzigen. Daar starten? In mappen die je in Right Here vastmaakt, start hij zonder deze vraag."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agent %1$@ uruchamia się z wyłączonymi pytaniami o uprawnienia, więc w %2$@ może uruchamiać polecenia i zmieniać pliki bez wcześniejszego pytania. Uruchomić go tam? W folderach przypiętych w Right Here uruchamia się bez tego pytania."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ inicia com os pedidos de permissão desativados, então em %2$@ ele pode executar comandos e alterar arquivos sem perguntar antes. Iniciar lá? Nas pastas que você fixa no Right Here, ele inicia sem esta pergunta."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ pornește cu solicitările de permisiune dezactivate, deci în %2$@ poate rula comenzi și modifica fișiere fără să vă întrebe mai întâi. Îl porniți acolo? În dosarele fixate în Right Here pornește fără această întrebare."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Агент %1$@ запускается с отключенными запросами разрешений, поэтому в %2$@ он сможет выполнять команды и менять файлы, не спрашивая Вас. Запустить его там? В папках, закрепленных в Right Here, он запускается без этого вопроса."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ அதன் அனுமதிக் கேள்விகள் அணைக்கப்பட்ட நிலையில் தொடங்குகிறது; எனவே %2$@-இல் உங்களிடம் முதலில் கேட்காமல் அது கட்டளைகளை இயக்கவும் கோப்புகளை மாற்றவும் முடியும். அங்கே தொடங்கவா? Right Here-இல் பின் செய்யப்பட்ட கோப்புறைகளில் இந்தக் கேள்வி இல்லாமல் தொடங்கும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ దాని అనుమతి ప్రశ్నలు ఆఫ్ చేయబడిన స్థితిలో ప్రారంభమవుతుంది, కాబట్టి %2$@ లో అది మిమ్మల్ని ముందుగా అడగకుండానే ఆదేశాలను అమలు చేసి ఫైళ్లను మార్చగలదు. అక్కడ ప్రారంభించాలా? Right Here లో పిన్ చేసిన ఫోల్డర్లలో ఈ ప్రశ్న లేకుండానే ప్రారంభమవుతుంది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ จะเริ่มทำงานโดยปิดการถามขออนุญาตของตัวเองไว้ จึงรันคำสั่งและเปลี่ยนแปลงไฟล์ใน %2$@ ได้โดยไม่ต้องถามคุณก่อน เริ่มที่นั่นหรือไม่ ในโฟลเดอร์ที่คุณปักหมุดไว้ใน Right Here จะเริ่มโดยไม่มีคำถามนี้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, izin istemleri kapalı olarak başlar, bu yüzden %2$@ içinde size önce sormadan komut çalıştırabilir ve dosyaları değiştirebilir. Orada başlatılsın mı? Right Here’de sabitlediğiniz klasörlerde bu soru sorulmadan başlar."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Агент %1$@ запускається з вимкненими запитами на дозвіл, тож у %2$@ він зможе виконувати команди та змінювати файли, не питаючи вас. Запустити його там? У папках, закріплених у Right Here, він запускається без цього запитання."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ایجنٹ %1$@ اپنے اجازت کے پرامپٹ بند کر کے شروع ہوتا ہے، اس لیے %2$@ میں وہ آپ سے پہلے پوچھے بغیر کمانڈز چلا سکتا ہے اور فائلیں بدل سکتا ہے۔ کیا اسے وہاں شروع کریں؟ Right Here میں پن کیے ہوئے فولڈرز میں یہ اس سوال کے بغیر شروع ہوتا ہے۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ khởi chạy với lời nhắc xin phép đã được tắt, nên trong %2$@ nó có thể chạy lệnh và thay đổi tệp mà không hỏi bạn trước. Khởi chạy ở đó? Trong các thư mục bạn ghim trong Right Here, nó khởi chạy mà không có câu hỏi này."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 会在关闭权限提示的状态下启动，因此它可以在 %2$@ 中不先询问你就运行命令、更改文件。要在那里启动吗？在 Right Here 中固定的文件夹里启动时，不会询问这个问题。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 會在關閉權限提示的狀態下啟動，因此它可以在 %2$@ 中不先詢問你就執行指令、變更檔案。要在那裡啟動嗎？在 Right Here 中釘選的檔案夾裡啟動時，不會詢問這個問題。"
           }
         }
       }

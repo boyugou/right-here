@@ -41,6 +41,32 @@ struct IntentInvocationTests {
         #expect(IntentCatalog.agents(fromJSON: Data()) == [])
     }
 
+    /// Shortcuts runs a shared shortcut's actions without asking the person, and Start AI Agent asks before an agent that starts without asking starts in a folder
+    /// the person did not pin. `rh agents --json` says so: the switch, or an alias of the login shell that adds the flag; an answer that cannot be read asks.
+    @Test func anAgentStartsWithoutAskingWhenTheSwitchOrAnAliasSaysSoOrWhenNobodyCanTell() throws {
+        let asking = try JSONEncoder().encode(Config(enabledAgents: ["claude"]).agentRows(found: ["claude"]))
+        #expect(!IntentCatalog.startsWithoutAsking("claude", agentsJSON: asking))
+        var switched = Config(enabledAgents: ["claude"])
+        switched.agents["claude"] = .init(bypassPermissions: true)
+        #expect(IntentCatalog.startsWithoutAsking("claude", agentsJSON: try JSONEncoder().encode(switched.agentRows(found: ["claude"]))))
+        let alias = Config(enabledAgents: ["claude"]).agentRows(found: ["claude"], locations: ["claude": "alias claude='claude --dangerously-skip-permissions'"])
+        #expect(IntentCatalog.startsWithoutAsking("claude", agentsJSON: try JSONEncoder().encode(alias)))
+        #expect(IntentCatalog.startsWithoutAsking("claude", agentsJSON: Data()), "an answer that cannot be read asks")
+        #expect(IntentCatalog.startsWithoutAsking("no-such-agent", agentsJSON: asking), "an agent the answer does not list asks")
+    }
+
+    @Test func aPinnedFolderIsOneOfThePinsAsWritten() {
+        let pins = Data(#"["/Users/me/code/app", "relative"]"#.utf8)
+        #expect(IntentCatalog.isPinned("/Users/me/code/app", pinsJSON: pins))
+        #expect(IntentCatalog.isPinned("/Users/me/code/app/", pinsJSON: pins))
+        #expect(!IntentCatalog.isPinned("/Users/me/code/app/link/..", pinsJSON: pins), "a link before .. sends the path elsewhere")
+        #expect(!IntentCatalog.isPinned("/Users/me/code/../code/app", pinsJSON: pins))
+        #expect(!IntentCatalog.isPinned("/Users/me/code", pinsJSON: pins))
+        #expect(!IntentCatalog.isPinned("/Users/me/code/app/sub", pinsJSON: pins))
+        #expect(!IntentCatalog.isPinned("relative", pinsJSON: pins))
+        #expect(!IntentCatalog.isPinned("/Users/me/code/app", pinsJSON: Data()))
+    }
+
     @Test func anAgentThatWasNotLookedUpIsOfferedOnlyWhenEnabled() throws {
         let rows = Config(enabledAgents: ["claude"]).agentRows()
         #expect(IntentCatalog.agents(fromJSON: try JSONEncoder().encode(rows)) == [IntentChoice(id: "claude", name: "Claude Code")])

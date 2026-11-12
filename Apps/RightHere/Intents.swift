@@ -91,6 +91,13 @@ struct StartAgentIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let path = try Bundled.path(folder: folder, saved: savedFolder) else { throw $savedFolder.needsValueError(Bundled.askForFolder) }
+        // A shortcut can come from anyone, and Shortcuts asks nothing before it runs this action, as it does before a script: an agent that starts without asking
+        // does whatever the folder it starts in tells it. Unless the person pinned the folder, they say yes to this start, with the agent and the folder named (ADR 0030).
+        if IntentCatalog.startsWithoutAsking(agent.id, agentsJSON: await Bundled.runner.output(["agents", "--json"])),
+           !IntentCatalog.isPinned(path, pinsJSON: await Bundled.runner.output(["pins", "--json"])) {
+            let question = Bundled.localizer.render(.intentConfirmWithoutAsking(agent.name, PathDisplay.abbreviatingHome(path, home: Bundled.home)), isolatingValues: true)
+            try await requestConfirmation(actionName: .run, dialog: IntentDialog(stringLiteral: question))
+        }
         return try await Bundled.perform(.startAgent(agent: agent.id, folder: path)) { Bundled.localizer.render(.intentDone($0), isolatingValues: true) }
     }
 }

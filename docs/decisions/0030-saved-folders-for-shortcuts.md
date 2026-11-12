@@ -39,7 +39,25 @@ them the same list in Shortcuts.
 - The app's build writes the entity, its query and the new parameter of each intent into
   `Contents/Resources/Metadata.appintents/extract.actionsdata`, and `verify_localizations.py` finds every new key read by the app.
 
+## After an independent review of the entry points (2026-11-12)
+
+A shortcut can come from anyone. A shared one names a Saved Folder by its id, which the query answers for any folder that exists, or
+hands its Folder parameter any folder it holds, and Shortcuts asks nothing before it runs an app's action, as it does before a script
+("Allow Running Scripts"). An agent that starts without asking (the switch of its permission prompts, or an alias of the login shell
+that adds the flag) does whatever the folder it starts in tells it.
+
+- **Start AI Agent asks first** when the agent starts without asking and the folder is not one the person pinned:
+  `requestConfirmation` with the agent and the folder named, and a word that pinned folders start without the question. An
+  answer of `rh agents --json` that cannot be read, or that does not list the agent, asks too (`IntentCatalog.startsWithoutAsking`,
+  `IntentCatalog.isPinned`, which takes a path with `.` or `..` for another folder; both tested). The other actions open a terminal,
+  make a file from one of the person's templates, or copy a path, and ask nothing.
+- **Alternatives.** Never passing the flag from Shortcuts would take from the person's own automations the setting they chose.
+  Answering only for pinned and recent folders would leave the Folder parameter, and would stop the person's own shortcuts when a
+  folder leaves the recent ones. Asking every time would cost every automation of a pinned project a click, and a pinned folder is
+  one the person chose.
+
 ## Not checked
 
 - Picking a saved folder in the Shortcuts app and running the action, and what the action's card looks like with two optional
   parameters: `docs/development/MANUAL_CHECKS.md`, section 5, step 13.
+- The question Start AI Agent asks, as Shortcuts shows it.

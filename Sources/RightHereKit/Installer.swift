@@ -316,10 +316,12 @@ public struct Installer: Sendable {
     }
 
     /// Whether the Services on disk are exactly the ones `installServices(specs)` would write: the same bundles, with the same
-    /// two files in each. A Service that the config no longer asks for, or one whose command points at another `rh`, is not.
+    /// two files in each. A Service that the config no longer asks for, or one whose command points at another `rh`, is not. A name that a Quick Action of the
+    /// person's holds is not asked for: no install would put Right Here's there, and one that counted it would rewrite the others after every change.
     public func servicesAreCurrent(_ specs: [ServiceSpec]) -> Bool {
+        let held = heldByThePerson(specs)
         var expected: [String: ServiceSpec] = [:]
-        for spec in ServiceWorkflow.distinct(specs) { expected[ServiceWorkflow.bundleName(for: spec)] = spec }
+        for spec in ServiceWorkflow.distinct(specs) where !held.contains(ServiceWorkflow.bundleName(for: spec)) { expected[ServiceWorkflow.bundleName(for: spec)] = spec }
         guard Set(installedServices().map(\.lastPathComponent)) == Set(expected.keys) else { return false }
         for (name, spec) in expected {
             let contents = locations.services.appendingPathComponent(name).appendingPathComponent("Contents")
@@ -361,21 +363,24 @@ public struct Installer: Sendable {
             try write(spec, bundle)
             staged.append((name, bundle))
         }
+        // A Quick Action of the person's that has the name of one of these stays where it is, and its name is not recorded as Right Here's.
+        let held = heldByThePerson(specs)
+        let placed = staged.filter { !held.contains($0.name) }
         // A Service whose title changed only in case keeps its old name through a swap, since the volume takes the two names for one: it is removed
         // first, so that the name on disk is the title's.
         let installed = installedServices()
-        for (name, _) in staged {
+        for (name, _) in placed {
             for bundle in installed where bundle.lastPathComponent != name && ServiceWorkflow.fold(bundle.lastPathComponent) == ServiceWorkflow.fold(name) {
                 try removeIfThere(bundle)
             }
         }
         // The record has the new names before they are on disk: one that is written and not recorded would be nobody's, and neither current nor removed.
-        try recordWritten(before + staged.map(\.name))
+        try recordWritten(before + placed.map(\.name))
         // Each Service takes the place of the one of its name in one step, so a name is never without its bundle, and two installs at once
         // (the setup window and `rh setup` in a terminal) cannot make each other fail: whichever comes second swaps in a bundle that is the
         // same. What the config no longer asks for is removed after the new ones are in.
         var written: [URL] = []
-        for (name, bundle) in staged {
+        for (name, bundle) in placed {
             let destination = locations.services.appendingPathComponent(name)
             try Self.replace(destination, with: bundle)
             written.append(destination)
@@ -384,6 +389,36 @@ public struct Installer: Sendable {
         for bundle in installedServices() where !kept.contains(ServiceWorkflow.fold(bundle.lastPathComponent)) { try removeIfThere(bundle) }
         try recordWritten(written.map(\.lastPathComponent))
         return written
+    }
+
+    /// The names `specs` would install whose place a Quick Action of the person's holds: something is there that the record of what Right Here wrote does not name
+    /// (read now: another install records its names before it puts them in place) and whose script is not the one a Quick Action of Right Here's runs, as every
+    /// release wrote it, from before the record was kept too. Finder's Duplicate of one of ours changed in Automator, or one the person made under a name Right Here
+    /// had stopped using, is theirs: a swap would delete it with the staging folder. Such a name is left as it is, and the doctor says so.
+    public func heldByThePerson(_ specs: [ServiceSpec]) -> Set<String> {
+        let written = Set(writtenNames().map(ServiceWorkflow.fold))
+        var held = Set<String>()
+        for spec in ServiceWorkflow.distinct(specs) {
+            let name = ServiceWorkflow.bundleName(for: spec)
+            let destination = locations.services.appendingPathComponent(name)
+            var status = stat()
+            guard lstat(destination.path, &status) == 0, !written.contains(ServiceWorkflow.fold(name)), !Self.runsRightHere(destination) else { continue }
+            held.insert(name)
+        }
+        return held
+    }
+
+    /// Whether the workflow at `bundle` runs one "Run Shell Script" action whose script is `ServiceWorkflow.command` for some `rh` and action id.
+    static func runsRightHere(_ bundle: URL) -> Bool {
+        guard case .data(let data) = BoundedRead.read(bundle.appendingPathComponent("Contents/document.wflow"), limit: 64 * 1024),
+              let document = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+              let actions = document["actions"] as? [[String: Any]], actions.count == 1,
+              let action = actions[0]["action"] as? [String: Any],
+              let script = (action["ActionParameters"] as? [String: Any])?["COMMAND_STRING"] as? String else { return false }
+        let suffix = " --origin services -- \"$@\""
+        guard script.hasSuffix(suffix), let middle = script.range(of: " run --alert ") else { return false }
+        let actionID = unquote(String(script[middle.upperBound...].dropLast(suffix.count)))
+        return ServiceWorkflow.command(rhPath: unquote(String(script[..<middle.lowerBound])), actionID: actionID) == script
     }
 
     /// Puts `bundle` where `destination` is, in one step: `RENAME_EXCL` for a name that is free, `RENAME_SWAP` for one that is taken (the old

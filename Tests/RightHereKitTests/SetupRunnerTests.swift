@@ -567,6 +567,22 @@ struct SetupRunnerTests {
         #expect(real.step(.services)?.detail?.english().hasSuffix(" installed") == true)
     }
 
+    @Test func aQuickActionThePersonHoldsIsNotCountedAndDoesNotMakeEverySetupRewriteTheOthers() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig("[general]\nagents = []\n\n[services]\nitems = [\"copy-path.absolute\", \"copy-path.name\"]\n")
+        let loaded = ConfigStore.load(paths: machine.paths)
+        let specs = ActionRegistry(config: loaded.config, facts: FakeSystemFacts(homeDirectory: machine.home), localizer: loaded.config.localizer).serviceSpecs(rhPath: machine.rh)
+        let installer = Installer(home: machine.home)
+        let own = installer.locations.services.appendingPathComponent(ServiceWorkflow.bundleName(for: try #require(specs.first)))
+        try FileManager.default.createDirectory(at: own.appendingPathComponent("Contents"), withIntermediateDirectories: true)
+        try "mine".write(to: own.appendingPathComponent("Contents/document.wflow"), atomically: true, encoding: .utf8)
+        let first = try await machine.runner().run(SetupRequest(pieces: [.services], strict: true))
+        #expect(first.step(.services)?.detail?.english() == "1 installed", "\(first.steps)")
+        #expect(try String(contentsOf: own.appendingPathComponent("Contents/document.wflow"), encoding: .utf8) == "mine")
+        let again = try await machine.runner().run(SetupRequest(pieces: [.services], strict: true))
+        #expect(outcomes(again)["services"] == .unchanged, "a setup that counted the person's name would rewrite the others every time: \(again.steps)")
+    }
+
     @Test func aDryRunAfterASetupFindsEverythingInPlace() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         let runner = machine.runner(trial: false)
