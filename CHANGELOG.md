@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.12 (2026-11-12)
+
 - **Copy Path, after an independent review.** A file name with a control character (Control-C, Return), copied as Shell-Escaped or
   Shell-Quoted Path, ran a command when pasted into a terminal, in every shell measured and with bracketed paste too: the shell forms
   and the @ mention now refuse such a name and say why. Shell-Quoted Path writes `!` so that csh and tcsh do not expand it. @ Mention
