@@ -3532,6 +3532,13 @@ struct EditingFlowTests {
         #expect(mac.model.check(.finderExtension)?.status == .ok, "\(String(describing: mac.model.check(.finderExtension)))")
         await mac.model.restoreExtensionIfMissing()
         #expect(mac.runner.calls.filter { $0.arguments.first == "-a" }.count == 1 && !mac.runner.calls.contains { $0.arguments.first == "-e" }, "once, and nothing switched on")
+        // A registration that did not take (pluginkit did not keep it) is not asked for again at every look of the same launch.
+        let stubborn = try Mac(app: app); defer { stubborn.cleanUp() }
+        try stubborn.writeConfig("[general]\nterminal = \"ghostty\"\n")
+        await stubborn.model.refresh()
+        await stubborn.model.restoreExtensionIfMissing()
+        await stubborn.model.restoreExtensionIfMissing()
+        #expect(stubborn.runner.calls.filter { $0.arguments.first == "-a" }.count == 1, "asked again at every look")
     }
 
     /// Apply is held to the files its card was drawn for: with no card drawn, nothing is made.
