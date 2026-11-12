@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.10 (2026-11-11)
+
 - **The launch path, after an independent review.** For a person whose terminal runs csh or tcsh, a file name with `!` in it could
   make a preset's typed line run a command (those shells expand `!` even inside single quotes): every typed word now writes it
   escaped. WezTerm, kitty and Alacritty started no agent at all for a csh or tcsh login shell (`-lic` is refused there); they use
