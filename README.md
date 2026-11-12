@@ -51,7 +51,8 @@ From a terminal: `rh config add menu.items repository.copy-link`.
 The same actions also run from:
 
 - the `rh` command;
-- Quick Actions (right-click, then **Quick Actions**);
+- Quick Actions (right-click, then **Quick Actions**). They are also Services, so you can give one a keyboard shortcut for the items
+  selected in Finder: System Settings › Keyboard › Keyboard Shortcuts › Services;
 - the Shortcuts app, Siri and Spotlight, where a shortcut can also pick one of your pinned or recent folders;
 - AI assistants.
 
