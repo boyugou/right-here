@@ -200,6 +200,11 @@ shell startup files, the command link, the runner script, the Services and the F
 The agents that had the person's answers ran 7 to 18 `rh` commands; the ones that failed were the dry run and the validations of persona D's broken file, and
 `rh config validate --strict` on persona E's config, which fails on the warning about the entry that replaces a built-in app.
 
+Run again on 2026-11-12 (1.2.15), after the playbook named an agent's `launcher` and a preset's `prompt` among the settings that need the
+person's yes and the doctor began to name an alias that switches the prompts off: persona A with a Sonnet agent passed the four criteria in
+10 `rh` commands, none failed or refused, and nothing outside the sandbox changed. It asked before any change, previewed the menu (saying
+that Visual Studio Code stands in for Zed, which this Mac does not have), and gave the PATH line and the permission prompt with their clicks.
+
 ### What the runs found, and what changed
 
 1. **A trial reported nothing for the person to do.** The PATH line and the permission prompt were left out because a trial
