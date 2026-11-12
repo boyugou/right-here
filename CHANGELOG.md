@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.14 (2026-11-12)
+
 - **New File, after an independent review.** New File on a selected app, `.rtfd` or other package made the file inside it, which broke
   an app's signature: a selected package is now one item, as Finder shows it, and the file goes next to it (Open in Terminal and the
   agents take it the same way). A blank Word, Excel or PowerPoint document opened in the code editor when New File opens what it makes:
