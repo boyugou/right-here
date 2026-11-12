@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The page of an agent says it too when an alias of its command switches its permission prompts off (1.2.11 said it on the Agents page,
+  in `rh doctor` and in `rh agents`).
+
 ## 1.2.11 (2026-11-12)
 
 - **An alias that switches an agent's permission prompts off is named.** A login-shell alias such as

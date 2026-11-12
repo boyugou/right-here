@@ -185,7 +185,12 @@ struct AgentOptionsPage: View {
                 }
             }
             .panel()
-            if startsWithout, let flag { caption(l10n.render(.appAgentStartsWithoutAsking(flag.keptWhole))) }
+            // An alias of the login shell that adds the flag switches the prompts off whatever this setting says, a preset's start included.
+            if let added = model.snapshot?.promptsOffByAlias[id] {
+                caption(l10n.render(.appBypassByAlias(options.name, added.keptWhole)))
+            } else if startsWithout, let flag {
+                caption(l10n.render(.appAgentStartsWithoutAsking(flag.keptWhole)))
+            }
             if flag == nil, wantsToStartWithout { warning(l10n.render(.appBypassNoFlag(options.name))) }
         }
     }
