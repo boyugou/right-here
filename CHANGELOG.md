@@ -10,8 +10,9 @@
   `-ic`. The terminal link of Claude Code leaves out a file name that holds characters you cannot see, as a preset refuses it.
 
 - **An update no longer takes away the Finder menu.** Replacing the app (a Homebrew upgrade, a copy dragged over the old one) made macOS forget the
-  Finder extension, and nothing said so until `rh doctor`. The Homebrew cask registers it again after an upgrade, and the app does at its first look
-  on a Mac that was set up, keeping your choice to use it or not.
+  Finder extension, and nothing said so until `rh doctor`. The app registers it again at its first look on a Mac that was set up, keeping your
+  choice to use it or not. (This entry first said the Homebrew cask does it too: Homebrew runs a cask's steps in a sandbox where pluginkit cannot
+  reach its daemon, so the cask says to open the app once after an upgrade.)
 
 ## 1.2.9 (2026-11-11)
 

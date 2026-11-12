@@ -124,7 +124,8 @@ dragged over the old one do, removes the Finder extension's registration. `plugi
 person. `pluginkit -a` on the new copy's extension brought it back with the person's choice to use it (`+`), which pluginkit keeps by the
 extension's identifier. So:
 
-- The cask's `postflight` runs `pluginkit -a` (an upgrade does not open the app).
+- Not the cask: Homebrew runs a cask's install steps in a sandbox, where `pluginkit -a` fails with "add: Connection invalid", and run directly
+  on the same runner it registers the extension (the tap's CI, 2026-11-12). The cask's caveats say to open the app once after an upgrade.
 - The app's first look registers its own extension again when the extension is not registered, this Mac was set up (there is a config) and this
   copy is the one that may set it up (`canSetUp`): once per launch, `-a` alone (`FinderExtensionManager.restore`). `register` would add
   `-e use` and switch on an extension the person had switched off. A first run is left to the person's Set Up.

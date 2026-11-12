@@ -22,14 +22,6 @@ cask "right-here" do
   app "Right Here.app"
   binary "#{appdir}/Right Here.app/Contents/Helpers/rh"
 
-  # Replacing the app (an upgrade) unregisters the Finder extension, and the Finder menu is gone until it is
-  # registered again (measured on macOS 27.2). `-a` alone keeps the person's choice to use it or not.
-  postflight_steps do
-    run "/usr/bin/pluginkit",
-        args:         ["-a", "{{appdir}}/Right Here.app/Contents/PlugIns/FinderExtension.appex"],
-        must_succeed: false
-  end
-
   zap trash: [
     "~/.config/right-here",
     "~/.local/bin/rh",
@@ -47,5 +39,8 @@ cask "right-here" do
 
     Then switch on Right Here under System Settings > General > Login Items & Extensions > Finder.
     `rh setup` can be run again at any time, and `rh doctor` checks everything.
+
+    After an upgrade, open Right Here once: replacing the app makes macOS forget the Finder extension,
+    and the app registers it again, with your choice to use it or not.
   EOS
 end
