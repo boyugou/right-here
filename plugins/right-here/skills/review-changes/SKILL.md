@@ -24,8 +24,9 @@ the items in it. So the number of folders, not of files, decides how much of the
 
 - Many files in a few folders: reveal them all in one call (at most 200 paths).
 - Changes in more than about ten folders: reveal the few folders that contain them.
-- Tool calls may open only about two dozen windows or files in a minute. If a call is refused for opening too much, do not try it again and
-  do not split it to get round the limit. Reveal fewer, larger things, or ask the user.
+- Tool calls may open only about two dozen windows or files in a minute, and config changes and worktrees count against the same limit.
+  If a call is refused for opening too much, do not try it again and do not split it to get round the limit. Reveal fewer, larger
+  things, or ask the user.
 
 ## 3. Tell the user
 

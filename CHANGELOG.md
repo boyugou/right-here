@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **The MCP tools, after a second independent review.** An assistant can no longer change by itself how an agent starts
+  (`launcher`: the link and the desktop app start it without its command and arguments) or what a preset types after the agent's
+  command (`prompt`): both are proposed to you, like a command. A template's name counts with its contents (`.zshenv` is a startup file).
+  The guard of a preset knows Claude Code's `--permission-mode bypassPermissions`. Two apps or agents can no longer have names that
+  look the same in different scripts (a Cyrillic `Т` for a Latin `T`). The tools quote what they were given, and what a stored
+  proposal says of itself, as data. The worktree tool no longer passes on the advice to force a removal, the run tool reads a
+  repository under the server's time limit, and a refusal for the per-minute limit says what counts against it.
+
 ## 1.2.14 (2026-11-12)
 
 - **New File, after an independent review.** New File on a selected app, `.rtfd` or other package made the file inside it, which broke

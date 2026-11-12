@@ -220,8 +220,9 @@ public struct Config: Sendable, Equatable {
     /// The flags that count are the agent's own (the built-in one, and the one this config gives it, which can be blanked) and those of the built-in agent whose program the command mentions, whatever
     /// stands in front of it (`FOO=1 claude`, `env claude`, `exec claude`, `Claude`): an agent of one's own that runs `claude --dangerously-skip-permissions` is one that asks nothing, and one that
     /// runs a tool of its own with an `--auto` of its own is not. A flag is its words next to each other and in order, and `--flag=value` and `--flag value` are the same. Another spelling of the same
-    /// switch in a tool that has several (`--permission-mode bypassPermissions`) is not known here: the guard is as good as the list of flags that `rh agents` shows. What a line makes the shell
-    /// compute (`$x`, `$(…)`, `{a,b}`) cannot be read: `commandHidesBypassFlag(of:)` says so, and a preset refuses such an agent.
+    /// switch is known where the tool documents one (`otherBypassSpellings`: Claude Code's `--permission-mode bypassPermissions`); beyond those, the guard is as good as the
+    /// list of flags that `rh agents` shows. What a line makes the shell compute (`$x`, `$(…)`, `{a,b}`) cannot be read: `commandHidesBypassFlag(of:)` says so, and a preset
+    /// refuses such an agent.
     public func bypassFlagTyped(by agent: AgentDescriptor) -> String? {
         var typed = ShellWords.split(agent.command) + (agents[agent.id]?.args ?? [])
         if case .flag(let flag)? = agent.promptArgument { typed.append(flag) }
@@ -265,13 +266,18 @@ public struct Config: Sendable, Equatable {
         ShellWords.hasExpansion(agent.command)
     }
 
+    /// Other spellings of the switch that turns a built-in agent's permission prompts off, by the agent's id, as its own documentation gives them: what the person may have
+    /// written in the agent's arguments, which the guard of a preset has to see as well as the flag Right Here types.
+    static let otherBypassSpellings: [String: [String]] = ["claude": ["--permission-mode bypassPermissions"]]
+
     private func bypassFlags(toLookForIn agent: AgentDescriptor) -> [String] {
         let mentioned = ShellWords.programNames(in: ShellWords.split(agent.command))
-        let ofTheProgram = KnownAgents.all.filter { known in
+        let programs = KnownAgents.all.filter { known in
             ShellWords.split(known.command).first.map { mentioned.contains(($0 as NSString).lastPathComponent.lowercased()) } ?? false
-        }.map(\.bypassPermissionArgument)
+        }
+        let ofTheProgram = programs.map(\.bypassPermissionArgument) + programs.flatMap { Self.otherBypassSpellings[$0.id] ?? [] }
         var flags: [String] = []
-        for flag in [agent.bypassPermissionArgument, KnownAgents.agent(id: agent.id)?.bypassPermissionArgument] + ofTheProgram {
+        for flag in [agent.bypassPermissionArgument, KnownAgents.agent(id: agent.id)?.bypassPermissionArgument] + (Self.otherBypassSpellings[agent.id] ?? []) + ofTheProgram {
             if let flag, !flag.isEmpty, !flags.contains(flag) { flags.append(flag) }
         }
         return flags

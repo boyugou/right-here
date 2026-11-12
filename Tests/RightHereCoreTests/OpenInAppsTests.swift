@@ -94,6 +94,13 @@ struct OpenInAppsTests {
         #expect(builtIn.config.app(id: "notes") == nil && builtIn.diagnostics.contains { $0.message.contains("already called") }, "\(builtIn.diagnostics.map(\.message))")
         let twice = ConfigParser.parse("[[app]]\nid = \"a\"\nname = \"Notes\"\nbundle_id = \"com.example.a\"\n[[app]]\nid = \"b\"\nname = \"notes\"\nbundle_id = \"com.example.b\"\n")
         #expect(twice.config.app(id: "a") != nil && twice.config.app(id: "b") == nil)
+        // A name that is drawn like another one is that name to whoever reads the menu: Cyrillic Т and е, a Greek Τ.
+        for name in ["\u{0422}\u{0435}xtEdit", "\u{03A4}extEdit"] {
+            let alike = ConfigParser.parse("[[app]]\nid = \"notes\"\nname = \"\(name)\"\nbundle_id = \"com.example.notes\"\nrole = \"editor\"\n")
+            #expect(alike.config.app(id: "notes") == nil && alike.diagnostics.contains { $0.message.contains("already called") }, "\(name.debugDescription)")
+        }
+        // The same letters in a name of their own script are another name.
+        #expect(ConfigParser.parse("[[app]]\nid = \"term\"\nname = \"\u{0422}\u{0435}\u{0440}\u{043C}\u{0438}\u{043D}\u{0430}\u{043B}\"\nbundle_id = \"com.example.term\"\nrole = \"editor\"\n").config.app(id: "term") != nil)
         // An entry that replaces a built-in app under its id keeps its name.
         #expect(ConfigParser.parse("[[app]]\nid = \"textedit\"\nname = \"TextEdit\"\nbundle_id = \"com.apple.TextEdit\"\nrole = \"editor\"\n").config.app(id: "textedit") != nil)
     }

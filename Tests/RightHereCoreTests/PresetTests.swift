@@ -262,7 +262,10 @@ struct PresetPlannerTests {
         ("gemini", Config.AgentSettings(args: ["--approval-mode", "yolo"])),
         ("gemini", Config.AgentSettings(command: "gemini --approval-mode yolo")),
         ("gemini", Config.AgentSettings(command: "gemini --approval-mode=yolo")),
-        ("claude", Config.AgentSettings(bypassPermissionArgument: "--permission-mode bypassPermissions", args: ["--permission-mode", "bypassPermissions"]))
+        ("claude", Config.AgentSettings(bypassPermissionArgument: "--permission-mode bypassPermissions", args: ["--permission-mode", "bypassPermissions"])),
+        // Claude Code's other spelling of the switch, whatever its own setting says
+        ("claude", Config.AgentSettings(args: ["--permission-mode", "bypassPermissions"])),
+        ("claude", Config.AgentSettings(command: "claude --permission-mode=bypassPermissions"))
     ])
     func aFlagThatSwitchesThePromptsOffIsRecognisedWhateverTheSpellingOrTheSettings(agent: String, settings: Config.AgentSettings) {
         let config = Config(enabledAgents: [agent], agents: [agent: settings], presets: [AgentPreset(id: "p", title: "P", agent: agent, prompt: "Review {files}")])

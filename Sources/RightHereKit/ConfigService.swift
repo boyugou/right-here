@@ -430,13 +430,14 @@ public struct ConfigService: Sendable {
         let waiting = proposals.all(now: now())
         // The same change proposed again is the proposal that is there.
         let guarded = try identity(of: operations, target: target) + operations
-        if let same = waiting.first(where: { $0.operations == guarded && $0.target == target }) { return .proposed(same, preview: preview) }
+        // What it waits for is worked out again from its operations, as for the window: the stored file's own list is only what the file says.
+        if let same = waiting.first(where: { $0.operations == guarded && $0.target == target }) { return .proposed(verified(same), preview: preview) }
         guard waiting.count < ConfigProposals.keep else { throw Failure.tooManyProposals }
         // What it names by its place it names for good: the person looks at a card, and the entry at that place when they press Apply may be another one.
         let proposal = ConfigProposal(id: String(UUID().uuidString.prefix(8)).lowercased(), time: now(), actor: actor, target: target,
                                       operations: guarded, summary: Self.summary(of: operations), approvals: approvals)
         try proposals.store(proposal)
-        return .proposed(proposal, preview: preview)
+        return .proposed(verified(proposal), preview: preview)
     }
 
     /// The checks that keep a stored change with what it was made for: the list it takes an item out of or moves one in is the list that was there, and an entry it changes by its

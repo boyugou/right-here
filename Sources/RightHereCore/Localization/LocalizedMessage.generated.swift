@@ -1185,6 +1185,8 @@ extension LocalizedMessage {
     public static var templateWord: LocalizedMessage { LocalizedMessage(.templateWord) }
     /// Open here, copy a path, start an agent
     public static var toolbarTooltip: LocalizedMessage { LocalizedMessage(.toolbarTooltip) }
+    /// it decides what starts the agent, and the link and the desktop app leave out its command and arguments
+    public static var trustAgentRoute: LocalizedMessage { LocalizedMessage(.trustAgentRoute) }
     /// it decides which app is opened
     public static var trustAppOpened: LocalizedMessage { LocalizedMessage(.trustAppOpened) }
     /// it decides how an app is started
@@ -1195,6 +1197,8 @@ extension LocalizedMessage {
     public static var trustOpensFolder: LocalizedMessage { LocalizedMessage(.trustOpensFolder) }
     /// it is part of the command that starts the agent
     public static var trustPartOfAgent: LocalizedMessage { LocalizedMessage(.trustPartOfAgent) }
+    /// it is typed after the command that starts the agent, which may start without asking
+    public static var trustPresetPrompt: LocalizedMessage { LocalizedMessage(.trustPresetPrompt) }
     /// it switches the agent's permission prompts off
     public static var trustPromptsOff: LocalizedMessage { LocalizedMessage(.trustPromptsOff) }
     /// it switches the agents' permission prompts off

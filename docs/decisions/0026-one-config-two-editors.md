@@ -56,7 +56,8 @@ The distance was large on both sides: the window edited almost nothing, and an a
   Move up and move down are always offered next to dragging (VoiceOver and keyboards).
 - **D5. An agent changes settings with the same operations.** `rh config get`, `set`, `unset`, `add`, `remove`, `move` (each `--dry-run` and `--json`, each validated), and an MCP tool `right_here_config`
   (get, and set with `dry_run` that returns the diff). The rule of ADR 0013 applies to what is written: a key that decides which program starts, or switches an agent's permission prompts off
-  (`command`, `args`, `open_args`, `run_args`, `bundle_id(s)`, `bypass_permissions`, `bypass_permission_arg`, variant `arguments`, `prompt_arg`, an app's `role`), is *proposed* by an agent, not
+  (`command`, `args`, `open_args`, `run_args`, `bundle_id(s)`, `bypass_permissions`, `bypass_permission_arg`, variant `arguments`, `prompt_arg`, an app's `role`; since 2026-11-12 also an
+  agent's `launcher` and a preset's `prompt`, see the second review of the MCP tools below), is *proposed* by an agent, not
   applied: the change waits as a pending proposal that the window shows as a card (what, where, the diff; Apply or Dismiss) and that `rh config pending apply` applies, after the person has looked.
   Everything else an agent may apply; the window shows what changed and from where.
 - **D6. Changes are recorded and can be undone.** Every write through the core keeps the previous text (the last N states, with who made the change: window, CLI or MCP) so that the window can say
@@ -391,6 +392,36 @@ The review covered entries, places and the apps; the model and the views; and tr
   started it, with the switch that turns its prompts off.
 - **The worktree tool** runs git with the server's time limit, as the run tool does; **the config tool** fences the summary of a change,
   which quotes what the files hold.
+
+## As built, a second review of the MCP tools and the plugin (2026-11-12)
+
+An adversarial review read the tools as an assistant that a file or a page has told what to do. Each finding is fixed with a test that fails against the old
+code, and a mutant of `script/mutation_check.py` for each protection.
+
+- **What starts an agent.** `agent.*.launcher` was a plain key: `launcher = "link"` (or `"desktop"` for Codex) starts the agent through its link or its app,
+  without the command and the arguments the person gave it, which can be what keeps it in plan mode, in a sandbox or in a wrapper (`sandbox-exec`). The way
+  back to the terminal brings back an alias of the login shell that the link did not run. It waits for the person now, in either direction, and so does the
+  same change made through the other file (`ConfigTrust.route`); a synced config that starts an agent another way is listed.
+- **What is typed after the command.** A preset's `prompt` was a plain key, on the reasoning that an agent asks before it acts. An agent may not ask: an
+  alias of the login shell can add the flag that switches its prompts off, and Claude Code has a second spelling of it (`--permission-mode
+  bypassPermissions`) that the guard of a preset did not know. The prompt waits for the person (a preset that is new, or one changed through the other file,
+  as well), a synced config's own prompt is listed, and the guard knows the second spelling (`Config.otherBypassSpellings`).
+- **A template's name.** The trust check compared a template's contents and extension, not its base name; with an empty extension the base name is the
+  whole name of the file, and `.zshenv` is read by every shell that starts. The name is part of what the file is now, in the check and in the list of a pull.
+- **What the answers quote.** A proposal made again was answered with the stored proposal as its file says it (a file anything that runs as the person can
+  write), and its reasons were printed unfenced: it is worked out again from its operations, the config tool says why a setting waits from Right Here's own
+  table (`ConfigTrust.reason(for:)`), and the agents a switch of the prompts would start without asking are fenced. A path with `..` after a link and a word
+  that is not an action id were echoed as they were given; they are fenced. `Fence` also takes out the white brackets of CJK text (〚 〛), which a reader
+  takes for its marks.
+- **Names drawn alike.** Two apps or agents may not have one name, compared without case, width or accents; a Cyrillic or Greek letter drawn as a Latin one
+  passed (`Теrminal` with a Cyrillic Т and е). `comparableName` reads such letters as the Latin ones, and compatibility forms (𝐂ode, ﬁle) as their letters.
+- **The worktree tool** never forces a removal, but its refusal was the command line's sentence, which says to add `--force`: an assistant with a shell
+  would. It says now that the person decides in the setup window, and quotes git's words as data. **The run tool** read a repository with a process runner of
+  its own, outside the server's runner and its time limit; it uses the server's.
+- **One budget.** Windows, files, commands, worktrees and changes of the config are paid from one budget a minute; a change refused after a run of windows
+  said that too many changes had been made. The refusal says what counts.
+- **The plugin's setup skill** told the assistant to make the edits that setup lists; it says now to ask the person first for one that decides which
+  program starts, which `rh config` makes at once from a shell.
 
 ## As built, a review of the window's editing (2026-11-05)
 

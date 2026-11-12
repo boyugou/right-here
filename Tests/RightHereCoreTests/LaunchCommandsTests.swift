@@ -181,6 +181,12 @@ struct LaunchCommandsTests {
         args = ["--add-dir", "../x"]
         prompt_arg = "-i"
         bypass_permission_arg = "--yes"
+        launcher = "link"
+
+        [[preset]]
+        id = "push"
+        title = "Push"
+        prompt = "Push {files}"
 
         [[agent.claude.variant]]
         id = "fast"
@@ -214,10 +220,27 @@ struct LaunchCommandsTests {
             "app.*.bundle_id": "[[app]] mine bundle_ids", "app.*.bundle_ids": "[[app]] mine bundle_ids", "app.*.role": "[[app]] fake role", "app.*.open_args": "[[app]] mine open_args", "app.*.run_args": "[[app]] mine run_args",
             "agent.*.command": "[agent.claude] command", "agent.*.args": "[agent.claude] args", "agent.*.prompt_arg": "[agent.claude] prompt_arg", "agent.*.bypass_permission_arg": "[agent.claude] bypass_permission_arg",
             "agent.*.variant.*.arguments": "[[agent.claude.variant]] fast arguments", "agent.*.bypass_permissions": "[agent.claude] bypass_permissions", "general.bypass_permissions": "[agent.claude] bypass_permissions",
-            "new_file.template.*.contents": "[[new_file.template]] notes contents"
+            "new_file.template.*.contents": "[[new_file.template]] notes contents", "agent.*.launcher": "[agent.claude] launcher", "preset.*.prompt": "[[preset]] push prompt"
         ]
         #expect(Set(place.keys) == Set(ConfigTrust.programKeys.keys), "a setting that waits for the person has to have a place here, or a reason written in this test")
         for (key, fragment) in place { #expect(places.contains { $0.hasPrefix(fragment) }, "\(key) has no place that starts \(fragment): \(places)") }
+    }
+
+    @Test func howAnAgentStartsAndWhatAPresetTypesAfterItsCommandAreListedAndAChangeOfThemIsNew() {
+        // The link starts Claude Code without its command and arguments, and a preset's prompt is typed after the command.
+        #expect(lines("[agent.claude]\nlauncher = \"link\"\n").contains { $0.hasPrefix("[agent.claude] launcher") && $0.contains("\"link\"") })
+        #expect(lines("[agent.claude]\nlauncher = \"terminal\"\n").isEmpty, "the terminal is how an agent starts when nothing says otherwise")
+        let preset = "[[preset]]\nid = \"push\"\ntitle = \"Push\"\nprompt = \"Push {files}\"\n"
+        #expect(lines(preset).contains { $0.hasPrefix("[[preset]] push prompt") && $0.contains("\"Push {files}\"") })
+        #expect(lines(preset.replacingOccurrences(of: "Push {files}", with: "Push {files} to main"), over: preset).count == 1)
+        #expect(lines(preset.replacingOccurrences(of: "title = \"Push\"", with: "title = \"Send\""), over: preset).isEmpty, "a title is what the menu shows")
+        // A built-in preset as Right Here writes it is not one of the config's own.
+        let review = AgentPreset.builtIn[0]
+        #expect(lines("[[preset]]\nid = \"\(review.id)\"\ntitle = \"\(review.title)\"\nprompt = \"\(review.prompt)\"\n").isEmpty)
+        // A template's name: the same text as `.zshenv` is read by every shell that starts.
+        let template = { (name: String) in "[[new_file.template]]\nid = \"make\"\ntitle = \"Make\"\nbase_name = \"\(name)\"\nextension = \"\"\ncontents = \"all:\"\n" }
+        #expect(lines(template(".zshenv"), over: template("Makefile")).count == 1)
+        #expect(lines(template("Makefile"), over: template("Makefile")).isEmpty)
     }
 
     @Test func theFlagTheConfigGivesAnAgentIsListedWhetherOrNotTheSwitchIsOnAndAnyChangeOfItIsNew() {
@@ -253,7 +276,7 @@ struct LaunchCommandsTests {
         let long = "#!/bin/sh\n" + String(repeating: "x", count: 300)
         let config = "[[new_file.template]]\nid = \"notes\"\ntitle = \"Notes\"\nextension = \"sh\"\ncontents = \"\"\"\n\(long)\"\"\"\n"
         let entry = LaunchCommands(configText: config).entries.first { $0.place.hasPrefix("[[new_file.template]] notes contents") }
-        #expect(entry?.identity == "sh\u{0}" + long && entry?.value != long, "\(String(describing: entry))")
+        #expect(entry?.identity == "untitled.sh\u{0}" + long && entry?.value != long, "\(String(describing: entry))")
     }
 }
 

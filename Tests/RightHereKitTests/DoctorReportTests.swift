@@ -187,7 +187,7 @@ struct DoctorReportTests {
     id = "secret-preset"
     title = "SECRET_PRESET_TITLE"
     agent = "secret-agent"
-    prompt = "SECRET_PROMPT {files}"
+    prompt = "SECRET_PROMPT sk-live-0123456789 {files}"
 
     [secret_unknown_table]
     SECRET_UNKNOWN_KEY = "SECRET_UNKNOWN_VALUE"

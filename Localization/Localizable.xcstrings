@@ -110113,6 +110113,192 @@
         }
       }
     },
+    "trust.agentRoute": {
+      "comment": "Same card, same form: how an agent is started (typed into a terminal, through the agent's own link, or through its own desktop app). 'the link' = a URL that opens the agent; 'its command and arguments' = what the config says to type to start the agent.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يحدد ما الذي يشغّل الوكيل، والرابط وتطبيق سطح المكتب يشغّلانه دون أمره ووسيطاته"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "এটি ঠিক করে কী দিয়ে এজেন্ট চালু হবে, আর লিংক ও ডেস্কটপ অ্যাপ এজেন্টের কমান্ড ও আর্গুমেন্ট বাদ দেয়"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "legt fest, was den Agenten startet, und der Link und die Desktop-App lassen seinen Befehl und seine Argumente weg"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "καθορίζει τι ξεκινά τον πράκτορα, και ο σύνδεσμος και η εφαρμογή υπολογιστή παραλείπουν την εντολή και τα ορίσματά του"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "it decides what starts the agent, and the link and the desktop app leave out its command and arguments"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "decide con qué se inicia el agente, y el enlace y la app de escritorio omiten su comando y sus argumentos"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعیین می‌کند چه چیزی عامل را اجرا کند، و پیوند و برنامهٔ دسکتاپ دستور و آرگومان‌هایش را کنار می‌گذارند"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "décide de ce qui lance l’agent, et le lien et l’app de bureau laissent de côté sa commande et ses arguments"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "היא קובעת מה מפעיל את הסוכן, והקישור ויישום שולחן העבודה משמיטים את הפקודה והארגומנטים שלו"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यह तय करती है कि एजेंट किससे शुरू होगा, और लिंक व डेस्कटॉप ऐप उसकी कमांड और आर्ग्युमेंट छोड़ देते हैं"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ini menentukan apa yang menjalankan agen, dan tautan serta app desktop tidak menyertakan perintah dan argumennya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "decide da che cosa viene avviato l’agente, e il link e l’app desktop tralasciano il suo comando e i suoi argomenti"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "エージェントを何で起動するかを決めます。リンクとデスクトップアプリは、そのコマンドと引数を使いません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "에이전트를 무엇으로 시작할지 정하며, 링크와 데스크탑 앱은 에이전트의 명령과 인수를 빼고 시작합니다"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एजंट कशाने सुरू होतो हे ठरवते, आणि लिंक व डेस्कटॉप ॲप त्याची कमांड आणि आर्ग्युमेंट्स वगळतात"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ini menentukan apa yang memulakan ejen, dan pautan serta aplikasi desktop tidak menyertakan perintah dan argumennya"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "bepaalt waarmee de agent wordt gestart, en de link en de bureaubladapp laten zijn commando en argumenten weg"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "decyduje, co uruchamia agenta, a łącze i aplikacja na komputer pomijają jego polecenie i argumenty"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "decide o que inicia o agente, e o link e o app para desktop deixam de fora o comando e os argumentos dele"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "decide cu ce se pornește agentul, iar linkul și aplicația desktop îi omit comanda și argumentele"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "определяет, чем запускается агент, а ссылка и приложение для компьютера запускают агента без его команды и аргументов"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "முகவரை எது தொடங்குகிறது என்பதை இது தீர்மானிக்கிறது; இணைப்பும் டெஸ்க்டாப் செயலியும் அதன் கட்டளையையும் வாதங்களையும் விட்டுவிடுகின்றன"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ఏజెంట్‌ను ఏది ప్రారంభిస్తుందో ఇది నిర్ణయిస్తుంది, లింక్ మరియు డెస్క్‌టాప్ యాప్ దాని ఆదేశాన్ని మరియు ఆర్గ్యుమెంట్‌లను వదిలేస్తాయి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำหนดว่าอะไรจะเริ่มเอเจนต์ และลิงก์กับแอปเดสก์ท็อปจะเริ่มเอเจนต์โดยไม่มีคำสั่งและอาร์กิวเมนต์ของเอเจนต์"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ajanı neyin başlatacağını belirler; bağlantı ve masaüstü uygulaması ajanın komutunu ve argümanlarını dışarıda bırakır"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "визначає, чим запускається агент, а посилання й програма для компʼютера запускають агента без його команди та аргументів"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "یہ طے کرتی ہے کہ ایجنٹ کس چیز سے شروع ہوگا، اور لنک اور ڈیسک ٹاپ ایپ اس کی کمانڈ اور آرگیومنٹس چھوڑ دیتے ہیں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "quyết định thứ gì khởi chạy tác tử, và liên kết cũng như ứng dụng máy tính sẽ bỏ qua lệnh và đối số của nó"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它决定由什么启动智能体，而链接和桌面 App 会略去它的命令和参数"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它決定由什麼啟動代理程式，而連結和桌面 App 會略去它的指令和引數"
+          }
+        }
+      }
+    },
     "trust.appOpened": {
       "comment": "On the card of a config change that an AI assistant proposed: why the person has to approve this setting. Lower-case start: it follows the setting's name and a colon, e.g. 'app.*.bundle_id: it decides which app is opened'.",
       "extractionState": "manual",
@@ -111039,6 +111225,192 @@
           "stringUnit": {
             "state": "translated",
             "value": "它是啟動代理程式的指令的一部分"
+          }
+        }
+      }
+    },
+    "trust.presetPrompt": {
+      "comment": "Same card, same form: the text of a prompt preset, which Right Here types after the agent's command. 'without asking' = with the agent's permission prompts switched off, as in 'Start without asking'.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يُكتب بعد الأمر الذي يشغّل الوكيل، وقد يبدأ الوكيل دون استئذان"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "এটি এজেন্ট চালু করার কমান্ডের পরে টাইপ করা হয়, আর এজেন্ট জিজ্ঞাসা না করেই শুরু হতে পারে"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "wird nach dem Befehl eingegeben, der den Agenten startet, und der Agent kann ohne Nachfrage starten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "πληκτρολογείται μετά την εντολή που ξεκινά τον πράκτορα, ο οποίος μπορεί να ξεκινήσει χωρίς ερωτήσεις"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "it is typed after the command that starts the agent, which may start without asking"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "se escribe después del comando que inicia el agente, que puede iniciarse sin preguntar"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "پس از دستوری که عامل را اجرا می‌کند تایپ می‌شود، و عامل ممکن است بدون پرسیدن شروع شود"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "est saisi après la commande qui lance l’agent, qui peut démarrer sans demander"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "היא מוקלדת אחרי הפקודה שמפעילה את הסוכן, והסוכן עשוי להתחיל בלי לשאול"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यह उस कमांड के बाद टाइप होता है जो एजेंट को शुरू करती है, और एजेंट बिना पूछे शुरू हो सकता है"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ini diketik setelah perintah yang menjalankan agen, dan agen itu mungkin mulai tanpa bertanya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "viene digitato dopo il comando che avvia l’agente, che può partire senza chiedere"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "エージェントを起動するコマンドの後に入力されます。エージェントは確認せずに起動することがあります"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "에이전트를 시작하는 명령 뒤에 입력되며, 에이전트는 묻지 않고 시작될 수 있습니다"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हा एजंट सुरू करणाऱ्या कमांडनंतर टाइप केला जातो, आणि एजंट विचारल्याशिवाय सुरू होऊ शकतो"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ini ditaip selepas perintah yang memulakan ejen, dan ejen itu mungkin bermula tanpa bertanya"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "wordt getypt na het commando dat de agent start, en de agent kan starten zonder te vragen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "jest wpisywany po poleceniu, które uruchamia agenta, a agent może się uruchomić bez pytania"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "é digitado depois do comando que inicia o agente, que pode iniciar sem perguntar"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "este tastat după comanda care pornește agentul, iar agentul poate porni fără întrebări"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "вводится после команды, которая запускает агента, а агент может запуститься без вопросов"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "இது முகவரைத் தொடங்கும் கட்டளைக்குப் பிறகு தட்டச்சு செய்யப்படும், முகவர் கேட்காமல் தொடங்கக்கூடும்"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ఇది ఏజెంట్‌ను ప్రారంభించే ఆదేశం తర్వాత టైప్ చేయబడుతుంది, ఏజెంట్ అడగకుండా ప్రారంభం కావచ్చు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จะถูกพิมพ์ต่อจากคำสั่งที่เริ่มเอเจนต์ และเอเจนต์อาจเริ่มโดยไม่ต้องถาม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ajanı başlatan komuttan sonra yazılır ve ajan sormadan başlayabilir"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "вводиться після команди, яка запускає агента, а агент може запуститися без запитань"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "یہ اس کمانڈ کے بعد ٹائپ ہوتا ہے جو ایجنٹ شروع کرتی ہے، اور ایجنٹ بغیر پوچھے شروع ہو سکتا ہے"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "được gõ sau lệnh khởi chạy tác tử, và tác tử có thể khởi chạy mà không hỏi"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它会在启动智能体的命令之后输入，而智能体可能无需询问即可启动"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它會在啟動代理程式的指令之後輸入，而代理程式可能無需詢問即可啟動"
           }
         }
       }

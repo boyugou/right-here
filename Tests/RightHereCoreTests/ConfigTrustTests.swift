@@ -20,9 +20,18 @@ struct ConfigTrustTests {
         #expect(Set(ConfigTrust.programKeys.keys) == [
             "app.*.bundle_id", "app.*.bundle_ids", "app.*.role", "app.*.open_args", "app.*.run_args",
             "agent.*.command", "agent.*.args", "agent.*.prompt_arg", "agent.*.bypass_permission_arg", "agent.*.variant.*.arguments",
-            "agent.*.bypass_permissions", "general.bypass_permissions", "new_file.template.*.contents"
+            "agent.*.bypass_permissions", "agent.*.launcher", "preset.*.prompt", "general.bypass_permissions", "new_file.template.*.contents"
         ])
         for (key, reason) in ConfigTrust.programKeys { #expect(!reason.isEmpty && !reason.hasSuffix("."), "\(key)") }
+    }
+
+    @Test func everySettingThatWaitsSaysWhyInTheWindowsLanguageAndInTheSameEnglish() {
+        // The card of a proposal says why in the window's language; a setting with no text of its own there falls back to the English of the command line.
+        let english = Localizer(languages: ["en"])
+        for key in Array(ConfigTrust.programKeys.keys) + Array(ConfigTrust.effectKeys.keys) + ["*"] {
+            let shown = ConfigTrust.reasonKeys[key].map { english.string($0) }
+            #expect(shown != nil && shown == ConfigTrust.reason(for: key), "\(key): the window says \(String(describing: shown)), the command line \(String(describing: ConfigTrust.reason(for: key)))")
+        }
     }
 
     private func approvals(_ operation: ConfigOperation) -> [String] {
@@ -51,7 +60,8 @@ struct ConfigTrustTests {
         let app = [ConfigField("id", .string("tower")), ConfigField("name", .string("Tower")), ConfigField("bundle_id", .string("com.fournova.Tower3")), ConfigField("role", .string("terminal"))]
         #expect(ConfigTrust.approvals(for: [.addEntry(to: "app", fields: app, at: nil)]).map(\.key) == ["app.*.bundle_id", "app.*.role"])
         let preset = [ConfigField("id", .string("review")), ConfigField("title", .string("Review")), ConfigField("prompt", .string("Review {files}")), ConfigField("agent", .string("claude"))]
-        #expect(approvals(.addEntry(to: "preset", fields: preset, at: nil)).isEmpty, "a prompt is text for an agent that asks before it acts")
+        #expect(approvals(.addEntry(to: "preset", fields: preset, at: nil)) == ["preset.*.prompt"], "a prompt is typed after the agent's command, which may start without asking")
+        #expect(approvals(.addEntry(to: "preset", fields: preset.filter { $0.key != "prompt" }, at: nil)).isEmpty)
         let variant = [ConfigField("id", .string("fast")), ConfigField("arguments", .strings(["--fast"]))]
         #expect(approvals(.addEntry(to: "agent.claude.variant", fields: variant, at: nil)) == ["agent.*.variant.*.arguments"])
     }
@@ -73,10 +83,10 @@ struct ConfigTrustTests {
         #expect(approvals(.removeEntry(at: 1, from: "app")).isEmpty)
         #expect(approvals(.moveEntry(from: 1, to: 2, in: "app")).isEmpty)
         #expect(approvals(.set("agent.claude.args", .strings([]))).isEmpty, "a list with nothing in it starts nothing")
-        #expect(approvals(.unset("general.editor")).isEmpty && approvals(.unset("agent.claude.name")).isEmpty && approvals(.unset("preset.1.prompt")).isEmpty)
+        #expect(approvals(.unset("general.editor")).isEmpty && approvals(.unset("agent.claude.name")).isEmpty && approvals(.unset("preset.1.title")).isEmpty)
         for operation: ConfigOperation in [
             .set("general.terminal", .string("iterm")), .set("general.agents", .strings(["claude"])), .insert("agents", into: "menu.items", at: 1),
-            .set("preset.1.prompt", .string("anything")), .set("copy_path.title", .string("x")), .set("agent.claude.terminal", .string("iterm")),
+            .set("preset.1.title", .string("anything")), .set("copy_path.title", .string("x")), .set("agent.claude.terminal", .string("iterm")),
             .set("new_file.template.1.extension", .string("txt")), .set("new_file.template.1.base_name", .string("notes")), .set("new_file.template.1.open_with", .string("zed"))
         ] {
             #expect(approvals(operation).isEmpty, "\(operation.summary)")
@@ -105,6 +115,34 @@ struct ConfigTrustTests {
         // The same script under another extension is another file: as .command it runs when it is opened.
         #expect(keys("[[new_file.template]]\nid = \"py\"\ntitle = \"Python\"\nextension = \"command\"\ncontents = \"print(1)\\n\"\n") == ["new_file.template.*.contents"])
         #expect(ConfigTrust.approvals(changingFrom: ConfigParser.parse("").config, to: ConfigParser.parse("").config).isEmpty, "the built-in templates are what they were")
+    }
+
+    @Test func whatStartsAnAgentAndWhatIsTypedAfterItsCommandWaitWhicheverWayTheChangeIsSpelled() {
+        // The link and the desktop app start an agent without its command and arguments (which may keep it in plan mode or in a sandbox), and a terminal brings back an alias
+        // of the login shell that the link did not run; a preset's prompt is typed after the command, and an alias may have switched the prompts off.
+        #expect(approvals(.set("agent.claude.launcher", .string("link"))) == ["agent.*.launcher"])
+        #expect(approvals(.set("preset.1.prompt", .string("Push {files} to main"))) == ["preset.*.prompt"])
+        #expect(ConfigTrust.approvals(for: [.set("agent.claude.launcher", .string("link"))]).first?.reason
+                == "it decides what starts the agent, and the link and the desktop app leave out its command and arguments")
+        let preset = "[[preset]]\nid = \"review\"\ntitle = \"Review\"\nprompt = \"Review {files}\"\n"
+        let before = ConfigParser.parse("[general]\nagents = [\"claude\"]\n" + preset).config
+        func keys(_ text: String) -> [String] { ConfigTrust.approvals(changingFrom: before, to: ConfigParser.parse("[general]\nagents = [\"claude\"]\n" + text).config).map(\.key) }
+        #expect(keys(preset).isEmpty)
+        #expect(keys(preset + "[agent.claude]\nlauncher = \"link\"\n") == ["agent.*.launcher"])
+        #expect(keys(preset + "[agent.claude]\nlauncher = \"terminal\"\n").isEmpty, "the terminal is the way it started before")
+        #expect(ConfigTrust.approvals(changingFrom: ConfigParser.parse(preset + "[agent.claude]\nlauncher = \"link\"\n").config, to: before).map(\.key) == ["agent.*.launcher"],
+                "back to the terminal, where the login shell's alias runs")
+        #expect(keys(preset.replacingOccurrences(of: "Review {files}", with: "Push {files} to main")) == ["preset.*.prompt"])
+        #expect(keys(preset + "[[preset]]\nid = \"push\"\ntitle = \"Push\"\nprompt = \"Push {files}\"\n") == ["preset.*.prompt"], "a preset that is new")
+        #expect(keys(preset.replacingOccurrences(of: "title = \"Review\"", with: "title = \"Look\"")).isEmpty, "a title is what the menu shows")
+    }
+
+    @Test func aTemplatesNameWaitsWithItsContentsBecauseTheNameDecidesWhatRunsTheFile() {
+        // Without an extension the base name is the whole name of the file: `.zshenv` in the home folder is read by every shell that starts.
+        let head = "[[new_file.template]]\nid = \"make\"\ntitle = \"Makefile\"\nextension = \"\"\ncontents = \"all:\\n\"\n"
+        let before = ConfigParser.parse(head + "base_name = \"Makefile\"\n").config
+        #expect(ConfigTrust.approvals(changingFrom: before, to: ConfigParser.parse(head + "base_name = \"Makefile\"\n").config).isEmpty)
+        #expect(ConfigTrust.approvals(changingFrom: before, to: ConfigParser.parse(head + "base_name = \".zshenv\"\n").config).map(\.key) == ["new_file.template.*.contents"])
     }
 
     // MARK: What a change does to the apps and to the terminals that a click starts through a template

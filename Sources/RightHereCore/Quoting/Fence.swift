@@ -3,7 +3,7 @@ import Foundation
 /// Text that came from outside Right Here (a file name, a name or a message in a config, what git printed) is data, never an instruction, and a reader that
 /// is an AI agent has to be able to tell it from the words of the tool it is reading. `wrap` puts it between `⟦user⟧` and `⟦/user⟧`, with its control and
 /// invisible characters shown as escapes (what `rh docs mcp` promises: a name with a line break cannot start a line of its own, and one that draws nothing cannot
-/// say something the person does not see) and the two marks themselves taken out of it, so a name cannot close its own fence.
+/// say something the person does not see) and the two marks themselves taken out of it, and the brackets that look like them, so a name cannot close its own fence.
 ///
 /// The MCP tools mark the names in the text of their results with it, and so do `rh setup` and `rh doctor` where a name the config chose stands in a sentence or
 /// a row that an agent is told to pass on (ADR 0020).
@@ -28,6 +28,7 @@ public enum Fence {
     }
 
     private static func fenced(_ escaped: String) -> String {
-        escaped.isEmpty ? escaped : open + escaped.scalarReplacing(["⟦": "[", "⟧": "]"]) + close
+        // The white brackets of CJK text look the same as the marks to a reader, which is what a fence is for.
+        escaped.isEmpty ? escaped : open + escaped.scalarReplacing(["⟦": "[", "⟧": "]", "〚": "[", "〛": "]"]) + close
     }
 }

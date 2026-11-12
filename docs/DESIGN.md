@@ -348,7 +348,8 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    (`right_here_actions`, `right_here_menu`, `right_here_catalog`) mark them as data in their text, like the doctor does,
    and keep the structured data plain.
 7. A config is more than settings: terminal templates (`open_args`, `run_args`), agent commands, variant arguments,
-   first-prompt flags, an agent's own `args`, its `bypass_permissions` and the flag it types (`bypass_permission_arg`), and the contents of a new-file template (written into a file that is then opened)
+   first-prompt flags, an agent's own `args`, its `bypass_permissions` and the flag it types (`bypass_permission_arg`), the way it starts (`launcher`: the link and the desktop app leave out its command
+   and arguments), the prompt of a preset (typed after the agent's command), and the contents and name of a new-file template (written into a file that is then opened)
    decide which program a click starts, and how, and a terminal listed as another kind of app is handed
    files, which it runs (item 0): the config refuses an `[[app]]` with a built-in terminal's bundle identifier (in any case, as the system finds an app by it whatever the case) and another role, and a pull lists one
    that carries the identifier of a terminal either config defines. What an `[[app]]` points at (its bundle identifiers: an app such as

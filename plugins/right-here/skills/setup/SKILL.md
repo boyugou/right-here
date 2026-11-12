@@ -38,7 +38,9 @@ Leave out a flag that the user did not answer. The dry run changes nothing.
 **If `configEdits` is not empty,** the user already has a config, and setup never rewrites it. Make exactly those edits now:
 
 1. Edit the file that each edit names. Keep every comment and every other line.
-2. `rh config set <key> <value>` changes only that line (give a list as its items). `rh config undo` takes it back.
+2. `rh config set <key> <value>` changes only that line (give a list as its items). `rh config undo` takes it back. From the shell it
+   makes any change at once: before one that decides which program starts (an agent's command, arguments or launcher, a preset's prompt,
+   an app's bundle identifier), tell the user what it does and wait for their yes.
 3. The tool `right_here_config_edit` does the same. A change that decides which program starts is proposed instead: the user applies it on
    the Config page of the app.
 4. Check with `right_here_config_validate`. `clean` must be true.

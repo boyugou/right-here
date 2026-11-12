@@ -144,6 +144,10 @@ struct ConfigParserTests {
         #expect(joined.hasErrors && joined.config.customAgents.map(\.id) == ["a"], "\(joined.diagnostics)")
         #expect(ConfigParser.parse("[agent.work]\nname = \"Cla\u{200D}ude Code\"\ncommand = \"claude\"\n").hasErrors, "next to the built-in Claude Code")
         #expect(ConfigParser.parse("[agent.work]\nname = \"Ｃｌａｕｄｅ Code\"\ncommand = \"claude\"\n").hasErrors, "full-width letters read the same")
+        // Letters of another script that are drawn as Latin ones: a Cyrillic С and о, a Greek Ο, and mathematical bold.
+        for name in ["\u{0421}laude Code", "Claude C\u{043E}de", "Claude C\u{039F}DE", "\u{1D402}laude Code"] {
+            #expect(ConfigParser.parse("[agent.work]\nname = \"\(name)\"\ncommand = \"claude\"\n").hasErrors, "\(name.debugDescription) reads as Claude Code")
+        }
         let german = Localizer(languages: ["de"]).string(.variantContinue)
         let translated = ConfigParser.parse("[[agent.claude.variant]]\nid = \"mine\"\ntitle = \"\(german)\"\narguments = [\"--a\"]\n")
         #expect(translated.hasErrors, "\(german) is what the German menu calls the built-in start option")

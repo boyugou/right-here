@@ -57,8 +57,9 @@ refuses a change that makes the file invalid. `rh config undo` takes the last ch
 - `--local` changes `config.local.toml`, the file of this Mac only.
 - `--dry-run` shows the change and writes nothing.
 
-**A change that decides which program starts needs the person's yes.** These settings decide it: an agent's `command` or `args`, an
-app's bundle identifier or role, a terminal template, and `bypass_permissions`.
+**A change that decides which program starts needs the person's yes.** These settings decide it: an agent's `command`, `args`, start
+options or `launcher`, a preset's `prompt` (it is typed after the agent's command), an app's bundle identifier or role, a terminal
+template, what a new-file template holds, and `bypass_permissions`.
 
 - **From a shell,** `rh config` makes such a change at once. So ask the person before you make it, and tell them what it does.
 - **With the MCP tool** `right_here_config_edit` (`operation` set, `key`, `values`), Right Here does not make such a change. It

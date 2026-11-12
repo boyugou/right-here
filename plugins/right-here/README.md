@@ -50,6 +50,7 @@ The MCP tools:
 `scripts/right-here-mcp --print-path` prints which `rh` it uses.
 
 - **No network.** The plugin and `rh` make no network connections of their own.
-- **A limit on what opens.** The tools open or create about 24 documents, or 8 started commands, in a minute.
+- **A limit on what tool calls do.** In a minute the tools open or create about 24 documents, or start 8 commands. A worktree costs as much as a
+  command and a config change as much as a document, and all of them count against the one limit.
 - **Your approval for what starts.** An AI assistant cannot change by itself which program a click starts, or turn off an agent's
   permission prompts. It proposes the change. You apply it on the **Config** page of the app, or with `rh config pending`.

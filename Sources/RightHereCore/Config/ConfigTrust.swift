@@ -21,10 +21,23 @@ public enum ConfigTrust {
         "agent.*.bypass_permission_arg": "it is part of the command that starts the agent",
         "agent.*.variant.*.arguments": "it is part of the command that starts the agent",
         "agent.*.bypass_permissions": "it switches the agent's permission prompts off",
+        // The link and the desktop app start the agent without its command and arguments, which may be what keeps it in a sandbox or in plan mode.
+        "agent.*.launcher": "it decides what starts the agent, and the link and the desktop app leave out its command and arguments",
+        // A preset's prompt is typed after the agent's command, and an agent may start without asking whatever the settings say (an alias of the login shell, an
+        // argument whose spelling the guard does not know): what it is told then runs as it is.
+        "preset.*.prompt": "it is typed after the command that starts the agent, which may start without asking",
         "general.bypass_permissions": "it switches the agents' permission prompts off",
         // The tool that makes a new file takes the folder from whoever asks, so what a template holds can be put in any folder: a script, or a login item in a folder that starts programs.
         "new_file.template.*.contents": "it becomes a file that something on this Mac may run (a script, a login item)"
     ]
+
+    static let wholeTextReason = "it rewrites the whole file, and a program may be among what it says"
+
+    /// Why a setting waits for the person, in Right Here's own words: the reason a proposal carries can be what its stored file says of itself, and the reason of the prompts' switch names
+    /// agents of the config.
+    public static func reason(for key: String) -> String? {
+        key == "*" ? wholeTextReason : programKeys[key] ?? effectKeys[key]
+    }
 
     /// What a change can do without writing a program key: the effect checks (`approvals(changingFrom:to:)`) name these, and they are not settings of the schema.
     static let effectKeys: [String: String] = [
@@ -41,8 +54,8 @@ public enum ConfigTrust {
         "new_file.then", "new_file.hidden", "new_file.template.*.id", "new_file.template.*.title", "new_file.template.*.base_name", "new_file.template.*.extension",
         "new_file.template.*.open_with", "new_file.template.*.format",
         "app.*.id", "app.*.name",
-        "agent.*.name", "agent.*.launcher", "agent.*.terminal", "agent.*.variant.*.id", "agent.*.variant.*.title",
-        "preset.*.id", "preset.*.title", "preset.*.agent", "preset.*.prompt", "preset.*.max_files"
+        "agent.*.name", "agent.*.terminal", "agent.*.variant.*.id", "agent.*.variant.*.title",
+        "preset.*.id", "preset.*.title", "preset.*.agent", "preset.*.max_files"
     ]
 
     /// One setting an agent may not change on its own.
@@ -71,6 +84,7 @@ public enum ConfigTrust {
         "app.*.open_args": .trustOpensFolder, "app.*.run_args": .trustStartsCommand,
         "agent.*.command": .trustStartsAgent, "agent.*.args": .trustPartOfAgent, "agent.*.prompt_arg": .trustPartOfAgent,
         "agent.*.bypass_permission_arg": .trustPartOfAgent, "agent.*.variant.*.arguments": .trustPartOfAgent,
+        "agent.*.launcher": .trustAgentRoute, "preset.*.prompt": .trustPresetPrompt,
         "agent.*.bypass_permissions": .trustPromptsOff, "general.bypass_permissions": .trustPromptsOffAll,
         "new_file.template.*.contents": .trustFileRuns, "terminal.*.template": .trustTemplate, "*": .trustWholeFile
     ]
@@ -112,7 +126,7 @@ public enum ConfigTrust {
                 for field in fields where !startsNothing(field.value, at: "\(path).\(field.key)") { need("\(path).\(field.key)") }
             case .replaceText:
                 // Anything may be in it, programs included.
-                if !found.contains(where: { $0.key == "*" }) { found.append(Approval(key: "*", reason: "it rewrites the whole file, and a program may be among what it says")) }
+                if !found.contains(where: { $0.key == "*" }) { found.append(Approval(key: "*", reason: wholeTextReason)) }
             case .removeTable(let path):
                 // What is taken out may be the override that keeps a built-in agent asking.
                 need("\(path).command")
@@ -167,6 +181,7 @@ public enum ConfigTrust {
             if agent.command != was.command { need("agent.*.command") }
             if agent.promptArgument?.configValue != was.promptArgument?.configValue { need("agent.*.prompt_arg") }
             if after.launchOptions(for: agent).arguments != before.launchOptions(for: was).arguments { need("agent.*.args") }
+            if Self.route(after.agents[agent.id]?.launcher) != Self.route(before.agents[agent.id]?.launcher) { need("agent.*.launcher") }
             for variant in agent.variants where was.variants.first(where: { $0.id == variant.id })?.arguments != variant.arguments { need("agent.*.variant.*.arguments") }
         }
         for agent in after.allAgents {
@@ -175,12 +190,23 @@ public enum ConfigTrust {
             if let flag, flag != was { need("agent.*.bypass_permissions") }
         }
         if !PromptEffects.newlyWithoutAsking(from: before, to: after).isEmpty { need("agent.*.bypass_permissions") }
+        for preset in after.presets where preset.prompt != before.preset(id: preset.id)?.prompt { need("preset.*.prompt") }
         for template in after.newFile.templates where !template.contents.isEmpty {
             let was = before.newFile.templates.first(where: { $0.id == template.id })
-            // The same text under another extension is another file: a script that was `.txt` opens in an editor, as `.command` it runs.
-            if template.contents != was?.contents || template.fileExtension != was?.fileExtension { need("new_file.template.*.contents") }
+            // The same text under another name is another file: a script that was `.txt` opens in an editor, as `.command` it runs, and a template without an extension
+            // named `.zshenv` is a startup file of the shell.
+            if template.contents != was?.contents || template.fileExtension != was?.fileExtension || template.baseName != was?.baseName { need("new_file.template.*.contents") }
         }
         return found
+    }
+
+    /// How an agent is started, whatever terminal it names: typed into a terminal, through its link, or through its desktop app.
+    static func route(_ launcher: AgentLauncher?) -> String {
+        switch launcher {
+        case .terminalLink?: AgentLauncher.linkWord
+        case .desktop?: AgentLauncher.desktopWord
+        case .terminal?, nil: AgentLauncher.terminalWord
+        }
     }
 
     /// The same on this Mac, with what it has installed. The terminal a click starts when it names none is the configured one when it is

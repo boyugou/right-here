@@ -81,6 +81,21 @@ public enum WorktreeError: Error, Equatable, LocalizedError {
         }
     }
 
+    /// The same for an AI assistant that called the MCP tool, which never forces a removal: without the command line's advice (`--force`, `git worktree remove`), which is
+    /// the person's to take, and which an assistant would follow in a shell, deleting what the refusal kept.
+    public var assistantDescription: String {
+        switch self {
+        case .notCreatedHere(let path):
+            return "\(path.withControlCharactersEscaped) is not a worktree Right Here created (those live under .right-here/worktrees), so it is left alone."
+        case .holdsOtherWorktrees(let path, let inside):
+            return "\(path.withControlCharactersEscaped) holds other worktrees (\(Self.shown(inside))). Removing it would delete them and their work, so it was not removed."
+        case .ignoredFiles(let path, let files):
+            return "\(path.withControlCharactersEscaped) holds files that git ignores and that exist only there: \(Self.shown(files)). Removing it would delete them, so it was not removed."
+        default:
+            return errorDescription ?? ""
+        }
+    }
+
     /// A few names of a list, their control characters escaped, and an ellipsis for the rest.
     public static func shown(_ names: [String], limit: Int = 5) -> String {
         let few = names.prefix(limit).map(\.withControlCharactersEscaped)

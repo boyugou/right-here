@@ -19,7 +19,8 @@ value of the file.
 **One mark, one function.** What comes from outside Right Here (a name or message from the config, a file name, what git printed) is put between
 `⟦user⟧` and `⟦/user⟧` by `Fence.wrap` (RightHereCore), the mark the MCP tools already used. `wrap` also shows control and invisible characters as
 escapes (a name with a line break cannot start a line of its own, one with a terminal escape cannot act, and the Unicode tag characters that spell ASCII
-without drawing anything cannot say what the person does not see) and takes the two marks out of the text, so a name cannot close its own fence.
+without drawing anything cannot say what the person does not see) and takes the two marks out of the text, so a name cannot close its own fence; the white
+brackets of CJK text (〚 〛), which a reader takes for the marks, go as well (2026-11-12).
 
 **Where it is applied.**
 

@@ -251,7 +251,7 @@ enum Tools {
         do {
             return try input.makeContext(hasLinkBeforeDotDot: PathHazard.linkBeforeDotDot)
         } catch ContextInput.Problem.dotDotAfterLink(let path) {
-            throw ToolError("\"\(path)\" has `..` after a symbolic link, which the file system reads differently from the text. Give the folder's real path instead.")
+            throw ToolError(Fence.wrap(path) + " has `..` after a symbolic link, which the file system reads differently from the text. Give the folder's real path instead.")
         } catch ContextInput.Problem.containsNUL {
             throw ToolError("A path cannot contain a NUL character.")
         } catch {
@@ -266,10 +266,10 @@ enum Tools {
         do {
             ref = try ActionRegistry(config: loaded.config, facts: server.facts).resolve(id)
         } catch let unknown as UnknownActionID {
-            throw ToolError(unknown.message(next: "Call right_here_actions to list them."))
+            throw ToolError(unknown.message(next: "Call right_here_actions to list them.", quote: Fence.wrap))
         }
         let here = try context(from: arguments, facts: server.facts)
-        let repositories = try await RepositoryReader.read(for: ref, context: here, facts: server.facts)
+        let repositories = try await RepositoryReader.read(for: ref, context: here, facts: server.facts, runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit))
         let plan = try Planner(config: loaded.config, facts: server.facts, repositories: repositories).plan(ref, context: here)
         let planJSON = try JSONValue(encoding: plan)
         if arguments["dry_run"]?.boolValue == true {
@@ -284,7 +284,7 @@ enum Tools {
             case .tooLarge:
                 throw ToolError("This would open or create more than tool calls may in a minute (\(cost) against \(server.launchLimiter.budgetPerWindow)). Pass fewer paths, or ask the person.")
             case .tooMany:
-                throw ToolError("Too many windows and files were opened by tool calls in the last minute. Ask the person before opening more.")
+                throw overBudget("Ask the person before opening more.")
             }
         }
         try await LiveExecutor(runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), pasteboard: server.pasteboard).execute(plan)
@@ -400,7 +400,7 @@ enum Tools {
             case .allowed:
                 break
             case .tooLarge, .tooMany:
-                throw ToolError("Too many worktrees and windows were created by tool calls in the last minute. Ask the person before making more.")
+                throw overBudget("Ask the person before creating more.")
             }
             let branch = arguments["branch"]?.stringValue
             // git can wait for ever (a filter or a hook of the repository's own that waits for a server): the call has the server's limit, as a run has.
@@ -413,8 +413,17 @@ enum Tools {
             }
             let deleteBranch = arguments["delete_branch"]?.boolValue ?? false
             // Never forced: a worktree with uncommitted work is kept and the refusal is the answer. Only worktrees Right Here created are removable.
-            let removal = try await GitWorktreeManager.removeWorktree(worktreePath: worktreePath, gitRoot: root, deleteBranch: deleteBranch, force: false,
-                                                                    runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit))
+            let removal: WorktreeRemoval
+            do {
+                removal = try await GitWorktreeManager.removeWorktree(worktreePath: worktreePath, gitRoot: root, deleteBranch: deleteBranch, force: false,
+                                                                      runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit))
+            } catch {
+                // The command line's advice (`--force`, `git worktree remove`, git's own "use --force") is not the assistant's to follow in a shell: the person decides, and the
+                // window asks before it deletes what exists only in the worktree. What git or the check said names folders and files: data.
+                let said = (error as? WorktreeError)?.assistantDescription ?? error.localizedDescription
+                throw ToolError("The worktree was not removed, and this tool never forces a removal: the person decides, in Right Here's setup window (Worktrees), which asks "
+                                + "before it deletes files that exist only there. Do not remove it another way. What was said:\n" + Fence.block(said))
+            }
             var text = "Removed worktree at " + Fence.wrap(removal.path)
             if removal.branchDeleted { text += "; its branch was deleted" }
             if let kept = removal.branchKept { text += "; its branch was kept: " + Fence.wrap(kept) }
@@ -476,7 +485,7 @@ enum Tools {
         // Charged before anything is read or written, so that a loop of calls costs the same whatever they say.
         switch await server.launchLimiter.allow(cost: LaunchCost.configEdit) {
         case .allowed: break
-        case .tooLarge, .tooMany: throw ToolError("Too many changes were made by tool calls in the last minute. Ask the person before making more.")
+        case .tooLarge, .tooMany: throw overBudget("Ask the person before changing more.")
         }
         let request: ConfigRequest
         do {
@@ -510,8 +519,18 @@ enum Tools {
         }
     }
 
+    /// Windows, files, commands, worktrees and changes of the config are paid from one budget, and a refusal says so: a change refused after a run of windows would read as a limit of changes.
+    private static func overBudget(_ next: String) -> ToolError {
+        ToolError("Tool calls have done what they may in a minute: windows and files opened, commands started, worktrees created and config changes all count against one limit. " + next)
+    }
+
     private static func waiting(_ approvals: [ConfigTrust.Approval]) -> String {
-        approvals.map { "\($0.key) is not for a tool call to change (\($0.reason))." }.joined(separator: " ")
+        // The reason is said from Right Here's table; the agents a switch of the prompts would start without asking are names of the config, data.
+        approvals.map { approval in
+            let reason = ConfigTrust.reason(for: approval.key).map { "\(approval.key) is not for a tool call to change (\($0))." }
+                ?? Fence.wrap(approval.key) + " is not for a tool call to change."
+            return reason + (approval.effect.map { " The agents that would start without asking, with their flags: " + Fence.wrap($0) + "." } ?? "")
+        }.joined(separator: " ")
     }
 
     private static func configOutput(_ change: ConfigChange, dryRun: Bool) -> ToolOutput {

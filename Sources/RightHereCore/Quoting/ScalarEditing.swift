@@ -130,11 +130,35 @@ extension String {
 
     /// The name as a person tells two names apart, for checking that two are not the same: what Unicode shows as nothing (a joiner, a selector) left out, white space
     /// folded to single spaces and trimmed, case, width and the form of an accent ignored. "Hel\u{200D}per" and "helper" are one name to a reader, so they are one here.
+    /// So are the letters that are drawn alike: a Cyrillic or Greek letter that looks like a Latin one is read as that ("Cоde" with a Cyrillic о is "Code"), and a
+    /// compatibility form as its letter (𝐂ode, ﬁle).
     public var comparableName: String {
         let shown = String(String.UnicodeScalarView(unicodeScalars.filter { !$0.properties.isDefaultIgnorableCodePoint }))
         let words = shown.split(whereSeparator: \.isWhitespace).joined(separator: " ")
-        return words.decomposedStringWithCanonicalMapping.folding(options: [.caseInsensitive, .widthInsensitive], locale: nil)
+        // Before case is folded: a capital and its small letter can look like two different Latin letters (Greek Ν and ν are N and v).
+        return words.decomposedStringWithCompatibilityMapping.scalarReplacing(Self.drawnAsLatin).folding(options: [.caseInsensitive, .widthInsensitive], locale: nil)
     }
+
+    /// Cyrillic and Greek letters by the Latin letter each is drawn as. A small letter whose capital looks Latin and that looks like no Latin letter itself (Cyrillic в) is read as
+    /// the small one of that letter, so that two names that differ only in case stay one name.
+    private static let drawnAsLatin: [Unicode.Scalar: String] = {
+        let pairs: [(String, String)] = [
+            // Cyrillic
+            ("А", "A"), ("а", "a"), ("В", "B"), ("в", "b"), ("Е", "E"), ("е", "e"), ("К", "K"), ("к", "k"), ("М", "M"), ("м", "m"), ("Н", "H"), ("н", "h"),
+            ("О", "O"), ("о", "o"), ("Р", "P"), ("р", "p"), ("С", "C"), ("с", "c"), ("Т", "T"), ("т", "t"), ("У", "Y"), ("у", "y"), ("Х", "X"), ("х", "x"),
+            ("Ѕ", "S"), ("ѕ", "s"), ("І", "I"), ("і", "i"), ("Ј", "J"), ("ј", "j"), ("Ү", "Y"), ("ү", "y"), ("Һ", "H"), ("һ", "h"), ("Ӏ", "I"), ("ӏ", "l"),
+            ("Ԁ", "D"), ("ԁ", "d"), ("Ԛ", "Q"), ("ԛ", "q"), ("Ԝ", "W"), ("ԝ", "w"),
+            // Greek
+            ("Α", "A"), ("α", "a"), ("Β", "B"), ("β", "b"), ("Ε", "E"), ("ε", "e"), ("Ζ", "Z"), ("ζ", "z"), ("Η", "H"), ("η", "n"), ("Ι", "I"), ("ι", "i"),
+            ("Κ", "K"), ("κ", "k"), ("Μ", "M"), ("μ", "u"), ("Ν", "N"), ("ν", "v"), ("Ο", "O"), ("ο", "o"), ("Ρ", "P"), ("ρ", "p"), ("Τ", "T"), ("τ", "t"),
+            ("Υ", "Y"), ("υ", "u"), ("Χ", "X"), ("χ", "x"), ("γ", "y"),
+            // Latin letters drawn as plain ones
+            ("ı", "i"), ("ȷ", "j"), ("ɑ", "a"), ("ɡ", "g"), ("ɩ", "i")
+        ]
+        var table: [Unicode.Scalar: String] = [:]
+        for (letter, latin) in pairs { if let scalar = letter.unicodeScalars.first { table[scalar] = latin } }
+        return table
+    }()
 
     /// Whether a joiner after `previous` has something to join: a non-ASCII letter or mark (Persian, Indic) or an emoji.
     private static func joins(_ previous: Unicode.Scalar?) -> Bool {

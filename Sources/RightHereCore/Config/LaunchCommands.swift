@@ -87,6 +87,13 @@ public struct LaunchCommands: Sendable, Equatable {
                 found.append(Entry(place: "[agent.\(agent.id)] bypass_permission_arg (typed when the permission prompts are switched off)", value: Self.quoted(own)))
             }
             if !options.arguments.isEmpty { found.append(Entry(place: "[agent.\(agent.id)] args", value: Self.list(options.arguments))) }
+            // The link and the desktop app start the agent without its command and arguments.
+            let route = ConfigTrust.route(config.agents[agent.id]?.launcher)
+            if route != AgentLauncher.terminalWord { found.append(Entry(place: "[agent.\(agent.id)] launcher (starts it without its command and arguments)", value: Self.quoted(route))) }
+        }
+        // What a preset tells its agent is typed after the agent's command, and the agent may start without asking whatever the settings say (an alias of the login shell).
+        for preset in config.presets where preset.prompt != AgentPreset.builtIn.first(where: { $0.id == preset.id })?.prompt {
+            found.append(Entry(place: "[[preset]] \(preset.id) prompt (typed after the command that starts the agent)", value: Self.digested(preset.prompt), identity: preset.prompt))
         }
         // An agent that a click can start without its permission prompts, and the flag that does it: a copy that only puts an agent in the menu (or in the Quick Actions) while the switch is on, or
         // that puts one there whose own command types the flag, changes no line above, and is the same change as one an assistant would have to wait for (`PromptEffects`).
@@ -97,8 +104,9 @@ public struct LaunchCommands: Sendable, Equatable {
         // start and a digest, and compared whole.
         // Its extension decides what runs it: a script that was a `.txt` opens in an editor, and as a `.command` it runs.
         for template in config.newFile.templates where !template.contents.isEmpty {
+            let name = template.baseName + (template.fileExtension.isEmpty ? "" : "." + template.fileExtension)
             found.append(Entry(place: "[[new_file.template]] \(template.id) contents (becomes a file that something on this Mac may run)",
-                               value: ".\(template.fileExtension) " + Self.digested(template.contents), identity: template.fileExtension + "\u{0}" + template.contents))
+                               value: Self.quoted(name) + " " + Self.digested(template.contents), identity: name + "\u{0}" + template.contents))
         }
         // The choice alone starts nothing, so a built-in terminal is not listed; one that starts through a template is, whoever makes the choice: the default terminal, an agent's own terminal, an item of
         // the menu or of the Quick Actions that names one.

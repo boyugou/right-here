@@ -205,7 +205,7 @@ struct MCPToolTests {
         let harness = try Harness(); defer { harness.cleanUp() }
         let result = try await harness.call("right_here_run", ["action": .string("copy-path.absolut")])
         #expect(result["isError"]?.boolValue == true)
-        #expect(result["content"]?.arrayValue?.first?["text"]?.stringValue?.contains("Did you mean \"copy-path.absolute\"?") == true)
+        #expect(result["content"]?.arrayValue?.first?["text"]?.stringValue?.contains("Did you mean " + Fence.wrap("copy-path.absolute") + "?") == true)
         #expect(harness.runner.recorded.isEmpty)
     }
 
@@ -666,7 +666,7 @@ struct MCPHardeningTests {
             let result = try await harness.call("right_here_run", ["action": .string("open.terminal"), "container": .string("/Users/tester/code/app")])
             if result["isError"]?.boolValue == true {
                 refused += 1
-                #expect(text(result).contains("Too many windows"))
+                #expect(text(result).hasSuffix("count against one limit. Ask the person before opening more."), "\(text(result))")
             }
         }
         // A plain terminal window is one unit and a minute holds twenty-four.
@@ -694,7 +694,7 @@ struct MCPHardeningTests {
         let harness = try Harness(launchBudget: 2); defer { harness.cleanUp() }
         let refused = try await harness.call("right_here_worktree", ["operation": .string("create"), "path": .string("/Users/tester/code/app"), "branch": .string("agent-1")])
         #expect(refused["isError"]?.boolValue == true)
-        #expect(text(refused).contains("Too many worktrees"))
+        #expect(text(refused).hasSuffix("count against one limit. Ask the person before creating more."), "\(text(refused))")
         #expect(harness.runner.recorded.isEmpty)
         let listed = try await harness.call("right_here_worktree", ["path": .string("/Users/tester/code/app")])
         #expect(listed["isError"]?.boolValue != true)
@@ -1215,12 +1215,15 @@ struct MCPConfigToolTests {
         _ = try await edit(["operation": .string("remove"), "key": .string("menu.items"), "item": .string("-")])
         _ = try await edit(["operation": .string("remove"), "key": .string("menu.items"), "position": .number(3)])
         #expect(file(harness).contains("items = [\"agents\", \"open-terminal\"]"), "\(file(harness))")
-        let added = try await edit(["operation": .string("add"), "key": .string("preset"), "values": .array(["id=review", "title=Review", "prompt=Review {files}", "agent=claude"].map(JSONValue.string))])
+        let added = try await edit(["operation": .string("add"), "key": .string("new_file.template"), "values": .array(["id=notes", "title=Notes", "extension=md"].map(JSONValue.string))])
         #expect(added["isError"]?.boolValue != true, "\(text(added))")
-        #expect(file(harness).hasSuffix("[[preset]]\nid = \"review\"\ntitle = \"Review\"\nprompt = \"Review {files}\"\nagent = \"claude\"\n"))
-        _ = try await edit(["operation": .string("remove"), "key": .string("preset"), "item": .string("review")])
+        #expect(file(harness).contains("[[new_file.template]]\nid = \"notes\"\ntitle = \"Notes\"\nextension = \"md\"\n"), "\(file(harness))")
+        _ = try await edit(["operation": .string("remove"), "key": .string("new_file.template"), "item": .string("notes")])
         _ = try await edit(["operation": .string("unset"), "key": .string("general.terminal")])
-        #expect(!file(harness).contains("[[preset]]") && !file(harness).contains("terminal ="))
+        #expect(!file(harness).contains("id = \"notes\"") && !file(harness).contains("terminal ="))
+        // What a preset tells its agent is typed after the agent's command: an entry with a prompt waits for the person.
+        let preset = try await edit(["operation": .string("add"), "key": .string("preset"), "values": .array(["id=review", "title=Review", "prompt=Review {files}", "agent=claude"].map(JSONValue.string))])
+        #expect(preset["structuredContent"]?["proposed"]?.boolValue == true && !file(harness).contains("[[preset]]"), "\(text(preset))")
     }
 
     @Test func aRefusedChangeIsAnErrorWithTheReasonFencedAndTheFileIsUntouched() async throws {
@@ -1305,7 +1308,8 @@ struct MCPConfigToolTests {
             let result = try await harness.call("right_here_config_edit", ["operation": .string("add"), "key": .string("menu.items"), "values": .array([.string("copy-path")]), "at": .string("\(index + 1)")])
             if result["isError"]?.boolValue == true {
                 refused += 1
-                #expect(text(result) == "Too many changes were made by tool calls in the last minute. Ask the person before making more.")
+                #expect(text(result) == "Tool calls have done what they may in a minute: windows and files opened, commands started, worktrees created and config changes all count against one limit. "
+                        + "Ask the person before changing more.")
             }
         }
         #expect(refused == 3)
