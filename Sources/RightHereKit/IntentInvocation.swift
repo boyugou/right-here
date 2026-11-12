@@ -111,8 +111,8 @@ public enum IntentCatalog {
         return row.bypassPermissions || row.bypassArgumentFromAlias != nil
     }
 
-    /// Whether `rh pins --json` lists `path`: a folder the person pinned is one they chose to work in. Compared as written but for a slash at the end: a path with
-    /// `.` or `..` in it is not the pinned folder, whatever it reads as (a link before `..` sends it elsewhere).
+    /// Whether `rh pins --json` lists `path`: a folder the person pinned is one they chose to work in. Compared as written but for a slash at the end, and never
+    /// resolved: a link before `..` sends a path elsewhere than it reads, so `/pinned/link/..` is not the pinned folder.
     public static func isPinned(_ path: String, pinsJSON data: Data) -> Bool {
         func trimmed(_ text: String) -> String {
             var text = text
@@ -120,8 +120,7 @@ public enum IntentCatalog {
             return text
         }
         let wanted = trimmed(path)
-        guard wanted.hasPrefix("/"), !wanted.split(separator: "/").contains(where: { $0 == "." || $0 == ".." }) else { return false }
-        return ((try? JSONDecoder().decode([String].self, from: data)) ?? []).contains { trimmed($0) == wanted }
+        return wanted.hasPrefix("/") && ((try? JSONDecoder().decode([String].self, from: data)) ?? []).contains { trimmed($0) == wanted }
     }
 
     /// The templates in `rh actions --json`: ids `new-file.<template>`, titled for the menu ("New Markdown File").

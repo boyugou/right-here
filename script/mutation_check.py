@@ -2389,8 +2389,8 @@ MUTANTS = [
      '''let row = rows.first(where: { $0.id == agent }) else { return true }''', '''let row = rows.first(where: { $0.id == agent }) else { return false }'''),
     ("Start AI Agent does not count an alias that switches the prompts off", "Sources/RightHereKit/IntentInvocation.swift",
      '''        return row.bypassPermissions || row.bypassArgumentFromAlias != nil''', '''        return row.bypassPermissions'''),
-    ("a path with .. is taken for the pinned folder", "Sources/RightHereKit/IntentInvocation.swift",
-     '''        guard wanted.hasPrefix("/"), !wanted.split(separator: "/").contains(where: { $0 == "." || $0 == ".." }) else { return false }''', '''        guard wanted.hasPrefix("/") else { return false }'''),
+    ("a path is resolved before it is compared with the pinned folders", "Sources/RightHereKit/IntentInvocation.swift",
+     '''        let wanted = trimmed(path)\n        return wanted.hasPrefix("/")''', '''        let wanted = URL(fileURLWithPath: path).standardizedFileURL.path\n        return wanted.hasPrefix("/")'''),
 ]
 
 
