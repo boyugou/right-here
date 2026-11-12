@@ -27,7 +27,8 @@
 - **Agents in git worktrees**, pinned and recent folders, and agents that start without their permission prompts only when you turn that on.
 - **Config sync** through iCloud Drive or any folder. A pull asks before it takes a program from the folder.
 - **30 languages** for the menu, the window, the alerts and the permission texts. They follow the Mac's language, or the one chosen on the
-  Overview (`general.language`). Machines made the translations, and they wait for review.
+  Overview (`general.language`). Machines made the translations, and a second model has read each language against the English; a
+  native speaker has not yet.
 
 **Terminals**
 
