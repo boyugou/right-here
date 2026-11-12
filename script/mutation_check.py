@@ -880,7 +880,7 @@ MUTANTS = [
      'link.template.replacingOccurrences(of: "{dir}", with: percentEncode(directory.path))', 'link.template.replacingOccurrences(of: "{dir}", with: directory.path)'),
     # 9. deep link: reserved characters the tests never put in a name
     ("a deep link leaves & = # ? and + as they are, so a folder name can end the value and add a parameter", "Sources/RightHereCore/Planner/Planner.swift",
-     '0123456789-._~")', '0123456789-._~&=#?+")'),
+     'allowed.insert(charactersIn: "-._~")', 'allowed.insert(charactersIn: "-._~&=#?+")'),
     # 10. item 1: the quoting module works on scalars, not on Characters
     ("the posix quote looks for a quote by Character, so a quote followed by a combining mark is not escaped", "Sources/RightHereCore/Quoting/ShellQuoting.swift",
      r'''value.scalarReplacing(["'": "'\\''"])''', r'''value.replacingOccurrences(of: "'", with: "'\\''")'''),
@@ -2257,8 +2257,6 @@ MUTANTS = [
      "cshFamily ? \"-ic\" : \"-lic\"", "\"-lic\""),
     ("the terminal link carries a name with hidden text", "Sources/RightHereCore/Planner/Planner.swift",
      "            .filter { !ShellQuoting.containsControlCharacter($0) && !$0.hasMisleadingCharacter() }\n", ""),
-    ("a link carries the letters of other scripts as they are", "Sources/RightHereCore/Planner/Planner.swift",
-     "        text.addingPercentEncoding(withAllowedCharacters: unreserved) ?? \"\"", "        text.addingPercentEncoding(withAllowedCharacters: unreserved.union(.alphanumerics)) ?? \"\""),
 ]
 
 

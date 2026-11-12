@@ -109,7 +109,8 @@ struct LaunchSafetyTests {
 
     // MARK: 3. The terminal link's prefill carries what a preset refuses
 
-    /// A link carries only ASCII: the letters of other scripts are percent-encoded as UTF-8 (RFC 3986), and so is everything that could end a value.
+    /// A link carries only ASCII: the letters of other scripts are percent-encoded as UTF-8 (RFC 3986), and so is everything that could end a value. (A review
+    /// thought `alphanumerics` let them through; `addingPercentEncoding` encodes them whatever the set says, and this holds that.)
     @Test func aLinkCarriesOnlyASCII() {
         let encoded = Planner.percentEncode("/Users/tester/Café 文档/a&b=c?d#e")
         let ascii = encoded.unicodeScalars.allSatisfy { $0.isASCII }
