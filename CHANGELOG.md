@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **An alias that switches an agent's permission prompts off is named.** A login-shell alias such as
+  `alias claude='claude --dangerously-skip-permissions'` applies to every start from Finder, a prompt preset's too (its prompt carries the
+  names of the selected files), whatever the permission switch says. `rh doctor`, `rh agents` and the Agents page now say so, and the
+  troubleshooting guide says how to keep the prompts.
+- A command-line flag in a sentence of the window no longer breaks across two lines.
+- The README says that a Quick Action can take a keyboard shortcut.
+
 ## 1.2.10 (2026-11-11)
 
 - **The launch path, after an independent review.** For a person whose terminal runs csh or tcsh, a file name with `!` in it could

@@ -240,6 +240,15 @@ public struct Config: Sendable, Equatable {
         return bypassFlags(toLookForIn: agent).first { ShellWords.carries(words, flag: $0) }
     }
 
+    /// The flag that the login shell's alias for the agent's program adds: what `command -v` said of the program, which for an alias is the line that defines it
+    /// (`alias claude='claude --dangerously-skip-permissions'`), read as a typed line is. Every start is typed into that shell, a preset's too, so the alias switches the
+    /// prompts off for each of them whatever the settings say, and Right Here cannot take the flag out; it can only say so. `nil` for a path, a function (`command -v`
+    /// gives only its name) or an alias without the flag.
+    public func bypassFlag(addedByAlias location: String?, of agent: AgentDescriptor) -> String? {
+        guard let location, location.hasPrefix("alias ") else { return nil }
+        return bypassFlag(inTypedLine: location, of: agent)
+    }
+
     /// The same, for every start of the agent: the plain one and each of its start options, whose arguments are typed after the command.
     public func bypassFlagTypedAnywhere(by agent: AgentDescriptor) -> String? {
         if let flag = bypassFlagTyped(by: agent) { return flag }

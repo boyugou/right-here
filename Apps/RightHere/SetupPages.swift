@@ -35,6 +35,11 @@ private struct Card: ViewModifier {
     }
 }
 
+extension String {
+    /// A command-line flag as a sentence shows it: a hyphen is a place to break a line, which left `--` at the end of one line and the rest of the flag on the next.
+    var keptWhole: String { replacingOccurrences(of: "-", with: "\u{2011}") }
+}
+
 extension View {
     /// At the trailing edge of the page, as the buttons under a group of macOS 26's settings stand (Add…, New…, Remove…).
     func atTrailingEdge() -> some View {

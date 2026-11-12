@@ -305,8 +305,11 @@ public struct Doctor: Sendable {
                 checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: action.unavailableMessage ?? action.unavailableReason.map(LocalizedMessage.doctorVerbatim),
                                           fix: .doctorFixAgentLauncher(Quoted.linkLauncher, Quoted.desktop)))
             } else {
-                // A choice the person made, so not a warning; but never silent: the row says the agent's own permission prompts are off.
-                if let flag = config.flagThatSkipsPrompts(for: agent) {
+                // A choice the person made, so not a warning; but never silent: the row says the agent's own permission prompts are off. An alias of the login shell that adds the
+                // flag switches them off for a preset too, which the setting never does, so it is what the row says first.
+                if let flag = config.bypassFlag(addedByAlias: shell.locations[command], of: agent) {
+                    checks.append(DoctorCheck(.agent(id), title: agent.name, status: .ok, detail: .doctorAgentAliasBypass(command, action.title, flag)))
+                } else if let flag = config.flagThatSkipsPrompts(for: agent) {
                     checks.append(DoctorCheck(.agent(id), title: agent.name, status: .ok, detail: .doctorAgentBypass(command, action.title, flag)))
                 } else {
                     checks.append(DoctorCheck(.agent(id), title: agent.name, status: .ok, detail: .doctorAgentOk(command, action.title)))

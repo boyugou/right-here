@@ -22,6 +22,9 @@ public struct SetupSnapshot: Sendable, Equatable {
     public var checks: [DoctorCheck]
     /// What the login shell said of the agents' commands when the checks ran; `nil` before a read of them.
     public var agentCommands: LoginShellFacts?
+    /// The flag that the login shell's alias for an agent's command adds, by the agent's id (`Config.bypassFlag(addedByAlias:of:)`): that agent starts without its permission
+    /// prompts whatever the switch says, from a preset too.
+    public var promptsOffByAlias: [String: String]
     /// The language the config names (`general.language`); `nil` follows the system.
     public var language: String?
     /// The copies of the app in the Applications folders, newest first (`AppCopies.installed`); `nil` when they were not looked at.
@@ -70,8 +73,9 @@ public struct SetupSnapshot: Sendable, Equatable {
     public init(checks: [DoctorCheck] = [], menu: [MenuNode] = [], menuEditor: MenuEditorState? = nil, menuTarget: ConfigTarget = .shared, general: GeneralSettingsState? = nil, agentsTarget: ConfigTarget = .shared,
                 agentOptions: [AgentOptionsState] = [], presets: PresetsState? = nil, newFile: NewFileState? = nil, copyPath: CopyPathState? = nil, quickActions: QuickActionsState? = nil, apps: AppsState? = nil, proposals: [ConfigProposal] = [], folders: FolderSnapshot = FolderSnapshot(),
                 configFile: URL, configExists: Bool = true, offer: SetupOffer? = nil, configProblems: [ConfigDiagnostic] = [], mcpCommand: String = AppIdentity.cliName, home: URL, readAt: ContinuousClock.Instant = .now,
-                agentCommands: LoginShellFacts? = nil, language: String? = nil, installedCopies: [AppCopy]? = nil, underneath: [String: String] = [:]) {
+                agentCommands: LoginShellFacts? = nil, promptsOffByAlias: [String: String] = [:], language: String? = nil, installedCopies: [AppCopy]? = nil, underneath: [String: String] = [:]) {
         self.checks = checks
+        self.promptsOffByAlias = promptsOffByAlias
         self.underneath = underneath
         self.agentCommands = agentCommands
         self.language = language
@@ -164,13 +168,17 @@ public struct SetupLoader: Sendable {
             .examine(everyAgent: configExists, language: (localizer ?? loaded.config.localizer).resolvedLanguage) }
         let checks = doctor.checks
         let shown = menuSnapshot(loaded)
+        let config = loaded.config
+        let promptsOffByAlias = Dictionary(config.allAgents.compactMap { agent in
+            config.bypassFlag(addedByAlias: doctor.shell.locations[agent.executable], of: agent).map { (agent.id, $0) }
+        }, uniquingKeysWith: { first, _ in first })
         return SetupSnapshot(
             checks: checks, menu: shown.menu, menuEditor: shown.editor, menuTarget: shown.target, general: shown.general, agentsTarget: shown.agentsTarget, agentOptions: shown.agentOptions, presets: shown.presets, newFile: shown.newFile,
             copyPath: shown.copyPath, quickActions: shown.quickActions, apps: shown.apps, proposals: ConfigService(paths: paths).pending(), folders: await folders(),
             configFile: loaded.file, configExists: configExists, offer: offer,
             configProblems: loaded.result.diagnostics,
             mcpCommand: SetupSnippets.mcpCommand(home: facts.homeDirectory, helperPath: helperPath), home: facts.homeDirectory, readAt: readAt,
-            agentCommands: doctor.shell, language: loaded.config.language,
+            agentCommands: doctor.shell, promptsOffByAlias: promptsOffByAlias, language: loaded.config.language,
             installedCopies: AppCopies.installed(facts.applicationCopies(bundleID: AppIdentity.hostBundleID), home: facts.homeDirectory.path), underneath: shown.underneath)
     }
 

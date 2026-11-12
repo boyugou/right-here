@@ -203,6 +203,16 @@ struct SetupLoaderTests {
         #expect(snapshot.agentCommands?.asked.contains("claude") == true)
     }
 
+    @Test func theSnapshotSaysWhichAgentsAnAliasStartsWithoutTheirPrompts() async throws {
+        // The Agents page says it under the switch: the alias switches them off whatever the switch says, a preset's start too.
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig("[general]\nagents = [\"claude\", \"codex\"]\n")
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "\nclaude\u{01}alias claude='claude --dangerously-skip-permissions'\n\ncodex\u{01}/opt/codex\n\u{01}rh-done\u{01}\n"),
+                                                 ProcessResult(status: 0, standardOutput: pluginkitEnabled)])
+        let snapshot = await machine.loader(runner: runner).load()
+        #expect(snapshot.promptsOffByAlias == ["claude": "--dangerously-skip-permissions"])
+    }
+
     @MainActor
     @Test func itDoesItsWorkOffTheMainThreadEvenWhenTheCallerIsOnIt() async throws {
         // The doctor starts the login shell and the config and the state are read from disk: a window that did that on its

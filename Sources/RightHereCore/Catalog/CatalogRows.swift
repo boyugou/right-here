@@ -30,18 +30,22 @@ public struct AgentRow: Sendable, Equatable, Codable {
     public var bypassPermissionArgument: String?
     /// Whether the agent starts with its own permission prompts switched off on this machine (`general.bypass_permissions` or `[agent.<id>] bypass_permissions`).
     public var bypassPermissions: Bool
+    /// The flag that the login shell's alias for the command adds (`Config.bypassFlag(addedByAlias:of:)`): its prompts are off for every start, a preset's too, whatever
+    /// `bypassPermissions` says. `nil` when the alias adds none, or the shell was not asked.
+    public var bypassArgumentFromAlias: String?
 
     /// How `rh agents` words the row, not part of its JSON: whether the agent is on, and what the login shell found. An agent
     /// that is on but not found still has its entry in the menu, which cannot look (that takes a shell); only this says so.
     public var stateText: String {
         // A path is what a person checks against their PATH; an alias or a function has none to show.
         let at = location.flatMap { $0.hasPrefix("/") ? " at " + $0.withControlCharactersEscaped : nil } ?? ""
+        let alias = bypassArgumentFromAlias.map { "; its alias adds " + $0.withControlCharactersEscaped + ": permission prompts off, prompt presets included" } ?? ""
         if enabled {
             let state = foundInShell == false ? "enabled, not found" : foundInShell == true ? "enabled, found" + at : "enabled"
-            return bypassPermissions ? state + ", permission prompts off" : state
+            return (bypassPermissions && alias.isEmpty ? state + ", permission prompts off" : state) + alias
         }
         switch foundInShell {
-        case true?: return "found" + at + ", not enabled"
+        case true?: return "found" + at + ", not enabled" + alias
         case false?: return installPage.map { "not found; to install it, see " + $0 } ?? "not found"
         // Nobody asked the shell, or it said nothing: neither is "not found".
         case nil: return "not enabled"
@@ -63,16 +67,18 @@ extension Config {
     ///   - locations: What the login shell said of each command it found (`command -v`).
     public func agentRows(found: Set<String>? = nil, shellAnswered: Bool = true, locations: [String: String] = [:]) -> [AgentRow] {
         allAgents.map { agent in
-            AgentRow(
+            let location = found?.contains(agent.executable) == true ? locations[agent.executable] : nil
+            return AgentRow(
                 id: agent.id, name: agent.name, command: agent.command,
                 enabled: enabledAgents.contains(agent.id),
                 foundInShell: found.flatMap { $0.contains(agent.executable) ? true : (shellAnswered ? false : nil) },
-                location: found?.contains(agent.executable) == true ? locations[agent.executable] : nil,
+                location: location,
                 installPage: agent.installPage?.absoluteString,
                 variants: agent.variants.map(\.id), terminalLink: agent.terminalLink != nil, desktopLink: agent.desktopLink != nil,
                 promptArgument: agent.promptArgument?.configValue,
                 bypassPermissionArgument: agent.bypassPermissionArgument,
-                bypassPermissions: flagThatSkipsPrompts(for: agent) != nil
+                bypassPermissions: flagThatSkipsPrompts(for: agent) != nil,
+                bypassArgumentFromAlias: bypassFlag(addedByAlias: location, of: agent)
             )
         }
     }

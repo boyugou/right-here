@@ -2257,6 +2257,15 @@ MUTANTS = [
      "cshFamily ? \"-ic\" : \"-lic\"", "\"-lic\""),
     ("the terminal link carries a name with hidden text", "Sources/RightHereCore/Planner/Planner.swift",
      "            .filter { !ShellQuoting.containsControlCharacter($0) && !$0.hasMisleadingCharacter() }\n", ""),
+    # An alias of the login shell that switches the prompts off, a preset's start included (ADR 0012).
+    ("the doctor's row is silent about an alias that switches the prompts off", "Sources/RightHereKit/Doctor.swift",
+     "if let flag = config.bypassFlag(addedByAlias: shell.locations[command], of: agent) {", "if let flag = nil as String? {"),
+    ("a path is read as a line for the alias's flag", "Sources/RightHereCore/Config/Config.swift",
+     "guard let location, location.hasPrefix(\"alias \") else { return nil }", "guard let location else { return nil }"),
+    ("rh agents is silent about an alias that switches the prompts off", "Sources/RightHereCore/Catalog/CatalogRows.swift",
+     "                bypassArgumentFromAlias: bypassFlag(addedByAlias: location, of: agent)", "                bypassArgumentFromAlias: nil"),
+    ("the window is not told which agents an alias opens up", "Sources/RightHereKit/SetupLoader.swift",
+     "            config.bypassFlag(addedByAlias: doctor.shell.locations[agent.executable], of: agent).map { (agent.id, $0) }", "            nil as (String, String)?"),
 ]
 
 

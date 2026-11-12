@@ -185,7 +185,7 @@ struct AgentOptionsPage: View {
                 }
             }
             .panel()
-            if startsWithout, let flag { caption(l10n.render(.appAgentStartsWithoutAsking(flag))) }
+            if startsWithout, let flag { caption(l10n.render(.appAgentStartsWithoutAsking(flag.keptWhole))) }
             if flag == nil, wantsToStartWithout { warning(l10n.render(.appBypassNoFlag(options.name))) }
         }
     }

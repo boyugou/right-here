@@ -60,6 +60,46 @@ struct CatalogTests {
         #expect(!String(decoding: (try? JSONEncoder().encode(rows.first)) ?? Data(), as: UTF8.self).contains("stateText"))
     }
 
+    @Test func anAliasThatAddsTheFlagIsReadFromWhatCommandVSaid() throws {
+        let config = Config(enabledAgents: ["claude", "codex"])
+        let claude = try #require(config.agent(id: "claude")), codex = try #require(config.agent(id: "codex"))
+        // zsh and bash print an alias as the line that defines it; every start is typed into that shell, a preset's too.
+        #expect(config.bypassFlag(addedByAlias: "alias claude='claude --dangerously-skip-permissions'", of: claude) == "--dangerously-skip-permissions")
+        // As zsh prints an alias with a quote in it (measured with zsh 5.9).
+        #expect(config.bypassFlag(addedByAlias: #"alias claude='claude --dangerously-skip-permissions --append-system-prompt '\''be brief'\'"#, of: claude) == "--dangerously-skip-permissions")
+        // A quote glued to the flag makes one word of them, which is not the flag.
+        #expect(config.bypassFlag(addedByAlias: #"alias claude='claude --dangerously-skip-permissions'\''x'\'"#, of: claude) == nil)
+        #expect(config.bypassFlag(addedByAlias: "alias codex='codex --dangerously-bypass-approvals-and-sandbox'", of: codex) == "--dangerously-bypass-approvals-and-sandbox")
+        // A path, a function (its name is all `command -v` gives), an alias without the flag, another agent's flag: nothing to say.
+        #expect(config.bypassFlag(addedByAlias: "/usr/local/bin/claude", of: claude) == nil)
+        #expect(config.bypassFlag(addedByAlias: "claude", of: claude) == nil)
+        #expect(config.bypassFlag(addedByAlias: "alias claude='claude --model opus'", of: claude) == nil)
+        #expect(config.bypassFlag(addedByAlias: "alias claude='claude --dangerously-skip-permissions-not'", of: claude) == nil, "a word, not a prefix of one")
+        #expect(config.bypassFlag(addedByAlias: "/opt/--dangerously-skip-permissions/claude", of: claude) == nil)
+        #expect(config.bypassFlag(addedByAlias: "/opt/a --dangerously-skip-permissions b/claude", of: claude) == nil, "a path is not read as a line, whatever its folders are called")
+        #expect(config.bypassFlag(addedByAlias: nil, of: claude) == nil)
+    }
+
+    @Test func aRowSaysWhenTheAliasOfItsCommandSwitchesThePromptsOff() {
+        let config = Config(enabledAgents: ["claude", "codex"])
+        let rows = config.agentRows(found: ["claude", "codex", "gemini"], locations: [
+            "claude": "alias claude='claude --dangerously-skip-permissions'", "codex": "/opt/codex", "gemini": "alias gemini='gemini --approval-mode=yolo'"
+        ])
+        func row(_ id: String) -> AgentRow? { rows.first { $0.id == id } }
+        #expect(row("claude")?.bypassArgumentFromAlias == "--dangerously-skip-permissions")
+        #expect(row("claude")?.stateText == "enabled, found; its alias adds --dangerously-skip-permissions: permission prompts off, prompt presets included")
+        #expect(row("codex")?.bypassArgumentFromAlias == nil)
+        #expect(row("codex")?.stateText == "enabled, found at /opt/codex")
+        #expect(row("gemini")?.stateText == "found, not enabled; its alias adds --approval-mode=yolo: permission prompts off, prompt presets included")
+        // With the setting on too, the row says it once.
+        var on = config
+        on.bypassPermissions = true
+        let both = on.agentRows(found: ["claude"], locations: ["claude": "alias claude='claude --dangerously-skip-permissions'"]).first { $0.id == "claude" }
+        #expect(both?.stateText == "enabled, found; its alias adds --dangerously-skip-permissions: permission prompts off, prompt presets included")
+        // A command the shell was not asked about has no alias to read.
+        #expect(config.agentRows().allSatisfy { $0.bypassArgumentFromAlias == nil })
+    }
+
     @Test func aShellThatSaidNothingFindsNothingAndSaysNotThatItIsNotThere() {
         // A command the shell did not name is unknown (nil), not false, when it did not get to the end of its answer; one it did name is found.
         var config = Config(enabledAgents: ["claude", "codex"])

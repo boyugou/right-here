@@ -155,6 +155,8 @@ extension LocalizedMessage {
     public static var appAppsChooseMessage: LocalizedMessage { LocalizedMessage(.appAppsChooseMessage) }
     /// Your Apps
     public static var appAppsHeading: LocalizedMessage { LocalizedMessage(.appAppsHeading) }
+    /// %1$@ starts without asking, prompt presets included: its alias in your login shell adds %2$@.
+    public static func appBypassByAlias(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.appBypassByAlias, [argument1, argument2]) }
     /// Start Without Asking
     public static var appBypassConfirmButton: LocalizedMessage { LocalizedMessage(.appBypassConfirmButton) }
     /// Agents will start with their permission prompts switched off. They can then run commands and change files without asking you first. What each one gets:  %@  You can turn this off again here at any time.
@@ -761,6 +763,8 @@ extension LocalizedMessage {
     public static var doctorActivityNone: LocalizedMessage { LocalizedMessage(.doctorActivityNone) }
     /// %1$@ from the %2$@ menu, %3$@
     public static func doctorActivityRecent(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorActivityRecent, [argument1, argument2, argument3]) }
+    /// `%1$@` found; its alias in your login shell adds `%3$@`, so it starts with %2$@ and its permission prompts switched off, prompt presets included
+    public static func doctorAgentAliasBypass(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentAliasBypass, [argument1, argument2, argument3]) }
     /// `%1$@` found; starts with %2$@ and its permission prompts switched off (`%3$@`)
     public static func doctorAgentBypass(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentBypass, [argument1, argument2, argument3]) }
     /// `%@` is not found in your login shell

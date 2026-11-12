@@ -138,8 +138,8 @@ struct SetupView: View {
 
     /// What each agent would be started with, as the question of the general switch says it.
     private func looseningMessage(_ held: PendingLoosening) -> String {
-        if held.agents.count == 1, let only = held.agents.first { return l10n.render(.appAgentBypassConfirmMessage(only.name, only.flag)) }
-        return l10n.render(.appBypassConfirmMessage(held.agents.map { "\($0.name)  \($0.flag)" }.joined(separator: "\n")))
+        if held.agents.count == 1, let only = held.agents.first { return l10n.render(.appAgentBypassConfirmMessage(only.name, only.flag.keptWhole)) }
+        return l10n.render(.appBypassConfirmMessage(held.agents.map { "\($0.name)  \($0.flag.keptWhole)" }.joined(separator: "\n")))
     }
 
     // MARK: Sidebar

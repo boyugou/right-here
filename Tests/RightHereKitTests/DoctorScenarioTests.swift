@@ -158,6 +158,19 @@ struct DoctorScenarioTests {
         #expect(said(checks, "agent.codex") == Said(status: .ok, detail: "`codex` found; starts with Codex Here", fix: nil))
     }
 
+    @Test func anAgentWhoseAliasAddsTheFlagSaysSoAndThatPresetsGetItToo() async throws {
+        var scene = try Scene(); defer { scene.cleanUp() }
+        scene.applications = ["com.mitchellh.ghostty": ghostty]
+        scene.bundleVersions = ["com.mitchellh.ghostty": "1.3.1"]
+        // What `command -v` prints in zsh for an alias, and for a function (its name only).
+        scene.answers = [ProcessResult(status: 0, standardOutput: "\nclaude\u{01}alias claude='claude --dangerously-skip-permissions'\n\ncodex\u{01}codex\n\u{01}rh-done\u{01}\n"),
+                         ProcessResult(status: 0, standardOutput: pluginkitEnabled)]
+        try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\", \"codex\"]\n")
+        let checks = await scene.run()
+        #expect(said(checks, "agent.claude") == Said(status: .ok, detail: "`claude` found; its alias in your login shell adds `--dangerously-skip-permissions`, so it starts with Claude Code Here and its permission prompts switched off, prompt presets included", fix: nil))
+        #expect(said(checks, "agent.codex") == Said(status: .ok, detail: "`codex` found; starts with Codex Here", fix: nil))
+    }
+
     @Test func anAgentWhoseOwnCommandTypesTheFlagSaysSoInItsRowToo() async throws {
         var scene = try Scene(); defer { scene.cleanUp() }
         scene.applications = ["com.mitchellh.ghostty": ghostty]

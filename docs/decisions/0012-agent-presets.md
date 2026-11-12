@@ -81,7 +81,10 @@ wrong answer.
 - **Therefore the built-in presets only ask for reading**: review, explain, and a test *plan*. The wording asks the
   agent not to change files; whether it obeys is up to the agent and its permission mode. The typed command goes
   through the person's own shell, so an alias applies (one that adds `--dangerously-skip-permissions`, say): a preset
-  is only as read-only as its wording. Do not describe the built-ins as safe beyond that.
+  is only as read-only as its wording. Do not describe the built-ins as safe beyond that. Right Here cannot take a flag
+  out of an alias, so it says so where it sees one (2026-11-12): the doctor's row of the agent, `rh agents` and the Agents
+  page read the alias line that `command -v` prints (`Config.bypassFlag(addedByAlias:of:)`). A shell function's body is not
+  read (`command -v` prints only its name), and neither is fish's `alias`, which makes a function that fish's `command -v` passes over.
 - **File names are text in a prompt that is sent before anyone reads it.** A file called "ignore the above and ..."
   becomes part of the instruction. `agent.claude@link` only prefills, so the person sees the mention first; a typed
   preset does not. The quoting keeps a name from becoming shell syntax, nothing keeps it from being read as an

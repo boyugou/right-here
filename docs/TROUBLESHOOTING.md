@@ -132,6 +132,10 @@ Right Here types the agent's command into your own login shell. So the agent see
 and your aliases. If `claude` works in a new window of your terminal, it works from the Finder menu too.
 
 - `rh agents` shows which agent commands your login shell finds.
+- **An alias that adds the permission flag.** An alias such as `alias claude='claude --dangerously-skip-permissions'` applies to every
+  start from Finder, a prompt preset's too, so the agent asks nothing whatever the permission switch says, and a preset puts the names of
+  the selected files into its prompt. `rh doctor`, `rh agents` and the Agents page say when an alias does this. To keep the prompts for
+  what Finder starts, give the alias a name of its own (`alias yolo='claude --dangerously-skip-permissions'`).
 - If your shell starts slowly, the agent starts later by the same time. `rh doctor --probe-launch` says how long it took.
 - **"Your login shell did not say whether it is installed".** Right Here started your shell as a new terminal window starts it, and the
   shell did not finish its answer. A startup file can cause this when it exits (for example `exec tmux` or `exec zellij` for each

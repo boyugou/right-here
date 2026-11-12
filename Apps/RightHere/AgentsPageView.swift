@@ -463,6 +463,8 @@ private struct BypassPanel: View {
     let general: GeneralSettingsState
     @Environment(\.localizer) private var l10n
 
+    private var byAlias: [String: String] { model.snapshot?.promptsOffByAlias ?? [:] }
+
     private func sentence(_ line: GeneralSettingsState.BypassLine) -> String {
         switch line.outcome {
         case .flag(let flag): "\(line.agent)  \(flag)"
@@ -499,7 +501,7 @@ private struct BypassPanel: View {
                 }
             } else {
                 // The switch is off, and an agent whose own setting says "start without asking" still starts without its prompts.
-                let own = general.enabledAgents.filter { $0.bypassOverride == true && $0.bypassFlag != nil }
+                let own = general.enabledAgents.filter { $0.bypassOverride == true && $0.bypassFlag != nil && byAlias[$0.id] == nil }
                 if !own.isEmpty {
                     VStack(alignment: .leading, spacing: 3) {
                         ForEach(own) { agent in
@@ -508,6 +510,18 @@ private struct BypassPanel: View {
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                    }
+                }
+            }
+            // Whatever the switch says: an alias of the login shell that adds the flag switches the prompts off for every start, a preset's too.
+            let opened = general.agents.filter { ($0.enabled || $0.offered) && byAlias[$0.id] != nil }
+            if !opened.isEmpty {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(opened) { agent in
+                        Text(l10n.render(.appBypassByAlias(agent.name, (byAlias[agent.id] ?? "").keptWhole)))
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
