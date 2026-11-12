@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.11 (2026-11-12)
+
 - **An alias that switches an agent's permission prompts off is named.** A login-shell alias such as
   `alias claude='claude --dangerously-skip-permissions'` applies to every start from Finder, a prompt preset's too (its prompt carries the
   names of the selected files), whatever the permission switch says. `rh doctor`, `rh agents` and the Agents page now say so, and the
