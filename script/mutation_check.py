@@ -2287,6 +2287,8 @@ MUTANTS = [
      "guard let location, location.hasPrefix(\"alias \") else { return nil }", "guard let location else { return nil }"),
     ("rh agents is silent about an alias that switches the prompts off", "Sources/RightHereCore/Catalog/CatalogRows.swift",
      "                bypassArgumentFromAlias: bypassFlag(addedByAlias: location, of: agent)", "                bypassArgumentFromAlias: nil"),
+    ("fish's probe passes over an alias or a function again", "Sources/RightHereKit/Detector.swift",
+     "script = \"for n in $argv; if functions -q -- $n; set -l d", "script = \"for n in $argv; if false; set -l d"),
     ("the window is not told which agents an alias opens up", "Sources/RightHereKit/SetupLoader.swift",
      "            config.bypassFlag(addedByAlias: doctor.shell.locations[agent.executable], of: agent).map { (agent.id, $0) }", "            nil as (String, String)?"),
 ]

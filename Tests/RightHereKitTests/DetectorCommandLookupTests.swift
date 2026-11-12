@@ -164,8 +164,44 @@ struct DetectorCommandLookupTests {
     @Test("fish says where it finds each command as well (skipped where fish is not installed)", .enabled(if: fishForTheProbe != nil))
     func fishSaysWhereItFindsEachCommand() async throws {
         let detector = Detector(facts: FakeSystemFacts(loginShell: try #require(fishForTheProbe)), runner: EmptyHomeRunner())
-        let result = await detector.probe(commands: ["ls", "definitely-not-a-command-xyz"])
-        #expect(result.answered && result.found == ["ls"] && result.locations == ["ls": "/bin/ls"], "\(result)")
+        // `cat`, not `ls`: fish has a function of its own called ls, which it runs before the program.
+        let result = await detector.probe(commands: ["cat", "definitely-not-a-command-xyz"])
+        #expect(result.answered && result.found == ["cat"] && result.locations == ["cat": "/bin/cat"], "\(result)")
+    }
+
+    /// An alias runs in place of the program, with what it adds: each shell says it by its definition, which the flag reader reads (a function by its name).
+    /// fish's `command -v` gave the program's path for an alias, which hid the flag, and found nothing for a function without a program behind it.
+    private func aliasAndFunction(loginShell: String, startupFile: String, alias: String, function: String) async throws -> LoginShellFacts {
+        let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
+        let file = home.appendingPathComponent(startupFile)
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try (alias + "\n" + function + "\n").write(to: file, atomically: true, encoding: .utf8)
+        let detector = Detector(facts: FakeSystemFacts(loginShell: loginShell), runner: StartupWordRunner(home: home))
+        return await detector.probe(commands: ["rh-fake-agent", "rh-fake-function", "cat"])
+    }
+
+    @Test func zshSaysAnAliasByItsDefinitionAndAFunctionByItsName() async throws {
+        let shell = try await aliasAndFunction(loginShell: "/bin/zsh", startupFile: ".zshrc", alias: "alias rh-fake-agent='cat --dangerously-skip-permissions'",
+                                               function: "rh-fake-function() { true; }")
+        #expect(shell.found == ["rh-fake-agent", "rh-fake-function", "cat"], "\(shell)")
+        let location = shell.locations["rh-fake-agent"]
+        #expect(location == "alias rh-fake-agent='cat --dangerously-skip-permissions'")
+        #expect(shell.locations["rh-fake-function"] == "rh-fake-function")
+        let claude = try #require(Config.default.agent(id: "claude"))
+        #expect(Config.default.bypassFlag(addedByAlias: location, of: claude) == "--dangerously-skip-permissions")
+    }
+
+    @Test("fish says an alias by its definition and a function by its name (skipped where fish is not installed)", .enabled(if: fishForTheProbe != nil))
+    func fishSaysAnAliasByItsDefinitionAndAFunctionByItsName() async throws {
+        let shell = try await aliasAndFunction(loginShell: try #require(fishForTheProbe), startupFile: ".config/fish/config.fish",
+                                               alias: "alias rh-fake-agent='cat --dangerously-skip-permissions'", function: "function rh-fake-function; true; end")
+        #expect(shell.found == ["rh-fake-agent", "rh-fake-function", "cat"], "\(shell)")
+        let location = shell.locations["rh-fake-agent"]
+        #expect(location == "alias rh-fake-agent=cat --dangerously-skip-permissions")
+        #expect(shell.locations["rh-fake-function"] == "rh-fake-function")
+        #expect(shell.locations["cat"] == "/bin/cat")
+        let claude = try #require(Config.default.agent(id: "claude"))
+        #expect(Config.default.bypassFlag(addedByAlias: location, of: claude) == "--dangerously-skip-permissions")
     }
 
     @Test func aNameThatStartsWithADashIsNotHandedToTheShell() async {

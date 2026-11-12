@@ -84,7 +84,9 @@ wrong answer.
   is only as read-only as its wording. Do not describe the built-ins as safe beyond that. Right Here cannot take a flag
   out of an alias, so it says so where it sees one (2026-11-12): the doctor's row of the agent, `rh agents` and the Agents
   page read the alias line that `command -v` prints (`Config.bypassFlag(addedByAlias:of:)`). A shell function's body is not
-  read (`command -v` prints only its name), and neither is fish's `alias`, which makes a function that fish's `command -v` passes over.
+  read (`command -v` prints only its name). fish's `alias` makes a function, which fish runs before the program and its `command -v`
+  passes over (it gave the program's path): for fish the probe asks `functions` first and reads an alias's definition from the
+  function's description (`alias claude=claude --flag`), measured with fish 4.9.
 - **File names are text in a prompt that is sent before anyone reads it.** A file called "ignore the above and ..."
   becomes part of the instruction. `agent.claude@link` only prefills, so the person sees the mention first; a typed
   preset does not. The quoting keeps a name from becoming shell syntax, nothing keeps it from being read as an

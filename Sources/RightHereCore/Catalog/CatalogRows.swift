@@ -17,7 +17,8 @@ public struct AgentRow: Sendable, Equatable, Codable {
     public var enabled: Bool
     /// Whether the login shell finds the command; `nil` when nobody asked it, which takes a shell that only `rh agents` starts.
     public var foundInShell: Bool?
-    /// Where the login shell finds the command (what `command -v` says: a path, or the name of an alias or a function); `nil` when it was not found or not asked.
+    /// Where the login shell finds the command (what `command -v` says: a path, an alias's definition or a function's name); `nil` when it was not found or
+    /// not asked.
     public var location: String?
     /// The agent's own page that says how to install it (`AgentDescriptor.installPage`).
     public var installPage: String?

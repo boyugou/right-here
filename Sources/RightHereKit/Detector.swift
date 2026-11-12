@@ -8,7 +8,8 @@ public struct LoginShellFacts: Sendable, Equatable {
     public var asked: Set<String>
     /// The commands it resolved, among those it was asked about.
     public var found: Set<String>
-    /// What `command -v` said of each command it resolved: a path, or the name of an alias or a function.
+    /// What `command -v` said of each command it resolved: a path, the definition of an alias (`alias claude='claude --flag'`; fish's: `alias claude=claude
+    /// --flag`) or the name of a function.
     public var locations: [String: String]
     /// The folders of its `PATH`, in order; `nil` when it was not asked, or did not answer.
     public var path: [String]?
@@ -75,7 +76,12 @@ public struct Detector: Sendable {
             script = "for n in \"$@\"; do p=$(command -v -- \"$n\" 2>/dev/null) && printf '\\n%s\\001%s\\n' \"$n\" \"$p\"; done"
                 + (wantPath ? "; printf '\\n\\001rh-path\\001%s\\n' \"$PATH\"" : "") + "; printf '\\n\\001rh-done\\001\\n'"
         case .fish:
-            script = "for n in $argv; set -l p (command -v -- $n 2>/dev/null); and printf '\\n%s\\001%s\\n' $n \"$p\"; end"
+            // fish's `command -v` passes over a function, which fish runs before the program, and fish's `alias` makes one (measured with fish 4.9: the alias
+            // ran with its flag while `command -v` gave the program's path). A function is found, as zsh's `command -v` finds one, by its name; one that
+            // `alias` made, by its definition, which is its description (`alias claude=claude --flag`), so its flags can be read as an alias line's are.
+            script = "for n in $argv; if functions -q -- $n; set -l d (functions --details --verbose -- $n)[5]; "
+                + "if string match -q -- 'alias *' \"$d\"; printf '\\n%s\\001%s\\n' $n \"$d\"; else; printf '\\n%s\\001%s\\n' $n $n; end; "
+                + "else; set -l p (command -v -- $n 2>/dev/null); and printf '\\n%s\\001%s\\n' $n \"$p\"; end; end"
                 + (wantPath ? "; printf '\\n\\001rh-path\\001%s\\n' (string join : $PATH)" : "") + "; printf '\\n\\001rh-done\\001\\n'"
         }
         // With `-c`, a POSIX shell takes the first operand as `$0`; fish has no such slot.

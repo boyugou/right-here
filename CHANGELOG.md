@@ -6,6 +6,8 @@
   `alias claude='claude --dangerously-skip-permissions'` applies to every start from Finder, a prompt preset's too (its prompt carries the
   names of the selected files), whatever the permission switch says. `rh doctor`, `rh agents` and the Agents page now say so, and the
   troubleshooting guide says how to keep the prompts.
+- With fish as the login shell, an agent that is an alias or a function in fish is found (fish's `command -v` passed over both, and
+  an agent reachable only through one was "not found"), and an alias that adds the permission flag is named as in zsh and bash.
 - **Repository links, after an independent review.** A commit pushed through a `pushurl` or a `pushInsteadOf` rule to another
   repository than the remote fetches from got a link to the fetched repository, which does not have it: the action now says so and how
   to fix it (a remote of its own for the other repository). A wiki clone is refused instead of linked to a page that is not there. A

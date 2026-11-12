@@ -970,8 +970,9 @@ struct RepositoryReaderTests {
     }
 
     /// A name the commit holds decomposed (committed by a git that did not precompose: Linux, an old git, `core.precomposeunicode=false`) is found, and
-    /// the link carries it decomposed, as the host serves it.
-    @Test func aNameTheCommitHoldsDecomposedIsFoundAndLinkedSo() async throws {
+    /// the link carries it decomposed, as the host serves it. Without `core.ignorecase` (a disk that keeps case) only the decomposed look-up finds it.
+    @Test(arguments: [true, false])
+    func aNameTheCommitHoldsDecomposedIsFoundAndLinkedSo(ignoreCase: Bool) async throws {
         let lab = try Lab()
         try lab.makeRepository(attributes: nil)
         try lab.git(["remote", "add", "origin", "https://github.com/owner/repo"])
@@ -981,6 +982,7 @@ struct RepositoryReaderTests {
         try lab.git(["add", "."])
         try lab.git(["commit", "-q", "-m", "nfd"])
         try lab.git(["config", "core.precomposeunicode", "true"])
+        try lab.git(["config", "core.ignorecase", ignoreCase ? "true" : "false"])
         try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
         let names = try lab.git(["ls-tree", "-z", "--name-only", "HEAD"]).split(separator: "\u{0}").map(String.init)
         #expect(names.contains { $0.unicodeScalars.contains("\u{301}") }, "control: the commit holds the decomposed name: \(names.map { Array($0.unicodeScalars) })")
