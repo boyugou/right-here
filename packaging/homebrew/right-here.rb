@@ -3,7 +3,7 @@
 # Homebrew cask for the app (Finder extension, rh inside). The source of Casks/right-here.rb in the tap
 # boyugou/homebrew-tap: script/publish_release.sh fills the version and the DMG's checksum and copies the file there.
 cask "right-here" do
-  version "1.2.12"
+  version "1.2.13"
   sha256 "55cec9b7ef87105ca020cb78982de476cfa0569c0e98bf9e1b22c2f4ee15e422"
 
   url "https://github.com/boyugou/right-here/releases/download/v#{version}/Right-Here-#{version}.dmg"

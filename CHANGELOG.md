@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.13 (2026-11-12)
+
 - **Opening items in apps, after an independent review.** A terminal is never handed a file, which it would run, also when it is not
   one Right Here comes with: the config refuses a second entry that gives the bundle identifier of a terminal it adds another role, an
   app that says it runs shell scripts is handed the folder whatever the config calls it (and never opens a new file), and Open With of
