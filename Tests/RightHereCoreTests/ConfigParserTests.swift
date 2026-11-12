@@ -705,7 +705,7 @@ struct ConfigSchemaDetailTests {
 
     @Test func theDocumentationExplainsGroupsAndWhatHappensAfterANewFile() {
         let text = ConfigSchema.markdown()
-        for fragment in ["open-with (", "agents-more (", "opens it in the default editor", "New <title>"] {
+        for fragment in ["open-with (", "agents-more (", "else in the default editor", "opens in the app this Mac uses for that kind of document", "New <title>"] {
             #expect(text.contains(fragment), "missing: \(fragment)")
         }
     }

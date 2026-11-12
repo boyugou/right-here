@@ -137,7 +137,7 @@ public enum ConfigSchema {
             ]),
             SchemaNode("new_file", .table, "The New File action.", children: [
                 SchemaNode("then", .string,
-                           "What happens after Right Here makes the file. reveal selects it in Finder. open opens it in the default editor (general.editor). nothing does nothing. If no editor is installed, Finder selects the file instead.",
+                           "What happens after Right Here makes the file. reveal selects it in Finder. open opens it in the template's own app (open_with), else in the default editor (general.editor); a blank Word, Excel or PowerPoint document opens in the app this Mac uses for that kind of document. nothing does nothing. If no editor is installed, Finder selects the file instead.",
                            default: "\"reveal\"", allowed: Config.AfterNewFile.allCases.map(\.rawValue)),
                 SchemaNode("hidden", .stringArray,
                            "Templates, by id, that the New File submenu leaves out. Each one is still an action of its own (`rh run new-file.<id>`), and a line of the menu can name it.",
@@ -156,7 +156,7 @@ public enum ConfigSchema {
                                "Makes the file a blank document of this Office format instead of a text: docx (Word), xlsx (Excel) or pptx (PowerPoint). The extension must be the same, and contents must be empty.",
                                allowed: OfficeFormat.allCases.map(\.rawValue)),
                     SchemaNode("open_with", .string,
-                               "The app id (`rh apps` lists them) that opens this kind of file after Right Here makes it, if new_file.then is \"open\". If this app is not installed, the default editor opens the file. If no editor is installed, Finder selects the file instead.",
+                               "The app id (`rh apps` lists them) that opens this kind of file after Right Here makes it, if new_file.then is \"open\". If this app is not installed, or cannot open files (a terminal, or an app that says it runs shell scripts), the default editor opens the file, and the plan says so. If no editor is installed, Finder selects the file instead.",
                                example: "\"typora\"")
                 ])
             ]),
