@@ -130,6 +130,18 @@ struct WorktreeSafetyTests {
         #expect(!FileManager.default.fileExists(atPath: made.worktreeURL.path), "removed once the person agreed to lose exactly those")
     }
 
+    /// `rh worktree remove` run in the folder of another of Right Here's worktrees finds the repository by the nearest `.git`, that worktree's own: the worktree to remove is
+    /// looked for under the main working copy, where Right Here makes them all.
+    @Test func aWorktreeIsRemovedWhenAskedFromInsideAnotherWorktreeOfTheRepository() async throws {
+        let repository = try makeRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        let one = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "one")
+        let two = try await GitWorktreeManager.prepareWorktree(gitRoot: repository, branch: "two")
+        let fromInsideOne = try #require(LiveSystemFacts().gitRoot(containing: one.worktreeURL))
+        _ = try await GitWorktreeManager.removeWorktree(worktreePath: "two", gitRoot: fromInsideOne)
+        #expect(!FileManager.default.fileExists(atPath: two.worktreeURL.path) && FileManager.default.fileExists(atPath: one.worktreeURL.path))
+    }
+
     /// Probe: `.git/info/exclude` is a link (a repository that came as an archive with its `.git`). Writing through it would change another file.
     @Test func theExcludeLineIsNotWrittenThroughALink() async throws {
         let repository = try makeRepository()
@@ -273,6 +285,23 @@ struct InstallerAndNewFileSafetyTests {
             try LiveExecutor.createFile(CreateFileStep(path: path, contents: "text"), close: { descriptor in _ = Darwin.close(descriptor); errno = EDQUOT; return -1 })
         }
         #expect(!FileManager.default.fileExists(atPath: path), "a file the action could not finish was left behind")
+    }
+
+    /// The record holds what is installed now: a name the config no longer asks for leaves it with its bundle, so a Service the person makes under that name later is theirs.
+    @Test func aNameThatIsNoLongerInstalledLeavesTheRecord() throws {
+        let home = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let installer = Installer(home: home)
+        let ghostty = ServiceSpec(title: "Open in Ghostty", actionID: "open.terminal@ghostty", command: "/x/rh run")
+        let copy = ServiceSpec(title: "Copy Path", actionID: "copy-path.absolute", command: "/x/rh run")
+        try installer.installServices([ghostty, copy])
+        try installer.installServices([copy])
+        // The person makes their own Service under the name Right Here no longer uses.
+        let own = installer.locations.services.appendingPathComponent(ServiceWorkflow.bundleName(for: ghostty)).appendingPathComponent("Contents")
+        try FileManager.default.createDirectory(at: own, withIntermediateDirectories: true)
+        try "<plist>mine</plist>".write(to: own.appendingPathComponent("document.wflow"), atomically: true, encoding: .utf8)
+        try installer.removeServices()
+        #expect(FileManager.default.fileExists(atPath: own.path), "rh uninstall removed a Service the person made under a name Right Here had used once")
     }
 
     /// Probe: the names New File may meet in the folder: one in the other Unicode form, one in another case, a link that points nowhere.
