@@ -395,6 +395,22 @@ struct CLITests {
         #expect(steps.first?["text"] as? String == "a file.txt")
     }
 
+    /// A dotfiles repository at the home never claims a path below it, however the home's name is cased in the path: on a disk that ignores case,
+    /// `/users/ann` is the home too (an independent review, 2026-11-12: Path from Git Root copied `notes/a.txt` from the home's repository).
+    @Test func aDotfilesRepositoryAtTheHomeDoesNotClaimAPathTypedInAnotherCase() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        try FileManager.default.createDirectory(at: home.appendingPathComponent(".git"), withIntermediateDirectories: true)
+        let notes = home.appendingPathComponent("notes")
+        try FileManager.default.createDirectory(at: notes, withIntermediateDirectories: true)
+        try "x".write(to: notes.appendingPathComponent("a.txt"), atomically: true, encoding: .utf8)
+        let variant = home.deletingLastPathComponent().appendingPathComponent(home.lastPathComponent.uppercased()).appendingPathComponent("notes/a.txt")
+        #expect(FileManager.default.fileExists(atPath: variant.path), "control: the disk ignores case")
+        let plan = try #require(try rh.run(["run", "copy-path.git-relative", "--dry-run", "--json", "--", variant.path]).json as? [String: Any])
+        let text = try #require((plan["steps"] as? [[String: Any]])?.first?["text"] as? String)
+        #expect(text != "notes/a.txt" && text.hasSuffix("/notes/a.txt"), "\(text)")
+    }
+
     @Test func anUnknownActionIsAUsageErrorWithAHint() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let result = try rh.run(["run", "explode"])

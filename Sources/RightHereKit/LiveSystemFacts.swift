@@ -98,7 +98,10 @@ public struct LiveSystemFacts: SystemFacts {
         if isDirectory(directory) != true { directory.deleteLastPathComponent() }
         while true {
             let marker = directory.appendingPathComponent(".git").path
-            if directory.path != home, FileManager.default.fileExists(atPath: marker) { return directory }
+            // The home folder in another case is the home folder on a disk that ignores case (a path typed as `/users/ann`): its dotfiles repository
+            // must not claim it either.
+            let isHome = directory.path.compare(home, options: .caseInsensitive) == .orderedSame
+            if !isHome, FileManager.default.fileExists(atPath: marker) { return directory }
             let parent = directory.deletingLastPathComponent()
             if parent.path == directory.path { return nil }
             directory = parent

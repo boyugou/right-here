@@ -123,15 +123,17 @@ public struct Planner: Sendable {
     private func copyPath(_ style: PathStyle, ref: ActionRef, context: HereContext) throws -> LaunchPlan {
         let targets = context.pathTargets
         guard !targets.isEmpty else { throw PlanError.noTarget }
-        if let refusal = PathRenderer.shellFormRefusal(for: targets, style: style) { throw PlanError.refused(refusal) }
-        let text = PathRenderer(facts: facts).render(targets, style: style)
+        let renderer = PathRenderer(facts: facts)
+        if let refusal = renderer.refusal(for: targets, style: style) { throw PlanError.refused(refusal) }
+        let text = renderer.render(targets, style: style)
         let noun = targets.count == 1 ? "path" : "\(targets.count) paths"
         var notices: [String] = []
         if (style == .gitRelative || style == .aiMention), targets.contains(where: { facts.gitRoot(containing: $0) == nil }) {
             notices.append("Not inside a git repository, so the absolute path is copied.")
         }
         // Outside the home folder a `~` form is not possible, and the absolute path is what is copied: say so, as `git-relative` does.
-        if style == .tilde, targets.contains(where: { !isInsideHome($0) }) {
+        // Read from what is copied, so the note never says one thing and the text another.
+        if style == .tilde, targets.contains(where: { renderer.render($0, style: .tilde).unicodeScalars.first != "~" }) {
             notices.append("Not inside your home folder, so the absolute path is copied.")
         }
         return LaunchPlan(action: ref.id, summary: "Copy \(noun) (\(style.rawValue))", steps: [.copyToPasteboard(text)], notices: notices)
@@ -166,13 +168,6 @@ public struct Planner: Sendable {
         }
         if facts.isDirectory(first) == false { return ["\(first.lastPathComponent.jsonQuoted) is a file, so its folder is used: \(directory.path.jsonQuoted)."] }
         return []
-    }
-
-    /// Whether a path is the home folder or inside it, as `~` would be written for it.
-    private func isInsideHome(_ url: URL) -> Bool {
-        let home = facts.onDiskPath(facts.homeDirectory)
-        let path = facts.onDiskPath(url)
-        return path == home || path.hasPrefix(home == "/" ? "/" : home + "/")
     }
 
     // MARK: Open with an app

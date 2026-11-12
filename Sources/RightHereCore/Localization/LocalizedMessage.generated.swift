@@ -1007,6 +1007,12 @@ extension LocalizedMessage {
     public static var refusalAutomationDenied: LocalizedMessage { LocalizedMessage(.refusalAutomationDenied) }
     /// %@ cannot run commands yet. Choose another terminal for this agent.
     public static func refusalCannotRunCommandsYet(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalCannotRunCommandsYet, [argument1]) }
+    /// %@ has a line break or another control character, which a terminal or an AI agent reads as a key press when it is pasted, so it is not copied in this form. Copy it in another form, or rename it.
+    public static func refusalCopyPathControlCharacter(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalCopyPathControlCharacter, [argument1]) }
+    /// %@ has a character that shows nothing or changes how it reads (a direction override, a zero-width space, a tag character), and an AI agent would read what you cannot see. Copy it in another form, or rename it.
+    public static func refusalCopyPathHiddenCharacter(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalCopyPathHiddenCharacter, [argument1]) }
+    /// A mention of %@ would need a backslash (its name has one, or a quote with a space or at its start), and AI agents are not known to read one there. Copy it in another form, or rename it.
+    public static func refusalCopyPathMentionEscape(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalCopyPathMentionEscape, [argument1]) }
     /// %@ is a link that points nowhere (or into a place macOS will not let Right Here look at), so there is no folder to open.
     public static func refusalDanglingLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalDanglingLink, [argument1]) }
     /// Did you mean "%@"?
@@ -1115,8 +1121,6 @@ extension LocalizedMessage {
     public static func refusalRepositoryUnreadableRemote(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryUnreadableRemote, [argument1]) }
     /// Remote "%@" is the wiki of a repository: Right Here makes links to the files of a repository, not to the pages of a wiki.
     public static func refusalRepositoryWiki(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryWiki, [argument1]) }
-    /// %@ has a backslash and a control character, and no single quoting of that reads the same in every shell (fish reads a backslash inside quotes differently). Copy it as an absolute path instead.
-    public static func refusalShellForm(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalShellForm, [argument1]) }
     /// Step %1$@ (%2$@) failed: %3$@
     public static func refusalStepFailed(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.refusalStepFailed, [argument1, argument2, argument3]) }
     /// A %@ in the config replaces the built-in ones.

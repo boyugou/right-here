@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Copy Path, after an independent review.** A file name with a control character (Control-C, Return), copied as Shell-Escaped or
+  Shell-Quoted Path, ran a command when pasted into a terminal, in every shell measured and with bracketed paste too: the shell forms
+  and the @ mention now refuse such a name and say why. Shell-Quoted Path writes `!` so that csh and tcsh do not expand it. @ Mention
+  for AI refuses a name with characters you cannot see (tag characters that spell text, a direction override) and one whose mention
+  would need an escape that agents are not known to read, and a name that starts with a quote is no longer mentioned as another name.
+  A Markdown link names a file with `#`, `?` or `%` in it correctly, and Path from Git Root no longer takes a dotfiles repository at the
+  home for the repository of a path typed with the home's name in another case.
 - The page of an agent says it too when an alias of its command switches its permission prompts off (1.2.11 said it on the Agents page,
   in `rh doctor` and in `rh agents`).
 

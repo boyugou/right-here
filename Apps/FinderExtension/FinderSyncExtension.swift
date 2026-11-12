@@ -205,24 +205,26 @@ final class FinderSyncExtension: FIFinderSync {
         let id = entry.actionID
         let context = currentContext(entry.kind)
         log.notice("action \(id, privacy: .public) from \(entry.kind.rawValue, privacy: .public) menu, \(context.items.count, privacy: .public) items")
-        if case .copyPath(let style)? = ActionRef(parsing: id) {
-            copyPath(style, context)
-        } else {
-            runThroughRunner(id, context)
+        // A copy is done here, at once; one that is refused goes to `rh`, whose alert says why in the person's language (the extension can only beep).
+        if case .copyPath(let style)? = ActionRef(parsing: id), copyPath(style, context) {
+            return
         }
+        runThroughRunner(id, context)
     }
 
-    private func copyPath(_ style: PathStyle, _ context: HereContext) {
+    /// Whether the path was copied: `false` when the renderer refuses it, which leaves the pasteboard as it was.
+    private func copyPath(_ style: PathStyle, _ context: HereContext) -> Bool {
         let targets = context.pathTargets
-        guard !targets.isEmpty else { return }
-        if let refusal = PathRenderer.shellFormRefusal(for: targets, style: style) {
+        guard !targets.isEmpty else { return true }
+        let renderer = PathRenderer(facts: facts)
+        if let refusal = renderer.refusal(for: targets, style: style) {
             log.error("copy refused: \(refusal.english(), privacy: .private)")
-            NSSound.beep()
-            return
+            return false
         }
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(PathRenderer(facts: facts).render(targets, style: style), forType: .string)
+        pasteboard.setString(renderer.render(targets, style: style), forType: .string)
+        return true
     }
 
     private func runThroughRunner(_ id: String, _ context: HereContext) {

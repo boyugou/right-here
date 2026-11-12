@@ -14,8 +14,8 @@ public enum PathStyle: String, Sendable, Codable, CaseIterable {
     case parent
     /// Backslash-escaped, ready to paste into a shell: `/Users/me/project/a\ b.txt`
     case shellEscaped = "shell-escaped"
-    /// Single-quoted, `'/Users/me/project/a b.txt'` (backslash-escaped instead when the path has a backslash). It
-    /// reads the same in every shell, whichever one the person uses: they may paste it into an ssh session.
+    /// Single-quoted, `'/Users/me/project/a b.txt'` (backslash-escaped instead when the path has a backslash), with a `!`
+    /// written `'\!'`. It reads the same in every shell, whichever one the person uses: they may paste it into an ssh session.
     case shellQuoted = "shell-quoted"
     /// `file:///Users/me/project/a%20b.txt`
     case fileURL = "file-url"
@@ -98,27 +98,33 @@ public struct PathRenderer: Sendable {
         return stored.suffix(parts.count).joined(separator: "/")
     }
 
-    /// Why these paths cannot be given in a shell form that every shell reads the same way, or `nil`. A name with a
-    /// backslash is escaped with backslashes (fish reads a backslash inside single quotes as an escape, the other
-    /// shells do not), and a name with a control character cannot be backslash-escaped at all, so a name with both has
-    /// no form that is safe to paste into any shell: it is refused, and the person can copy it another way.
-    public static func shellFormRefusal(for urls: [URL], style: PathStyle) -> LocalizedMessage? {
-        guard style == .shellEscaped || style == .shellQuoted else { return nil }
+    /// Why these paths cannot be copied in `style`, or `nil`: the Finder extension, `rh run` and the Shortcuts action ask it before they copy.
+    ///
+    /// A shell form and a mention are pasted where a control character is a key press. A terminal reads Control-C or Return in a paste before the shell does,
+    /// whatever the quoting and with bracketed paste too (measured in eight shells: a name with them ran a command), so a name with one is refused. A mention is
+    /// read by an AI agent: a name with a character the person cannot see would carry text they never read (the prompt prefill and the presets leave such names
+    /// out), and one whose mention needs a backslash (a quote or a backslash in a quoted mention, a backslash in its name) is not known to be read as that name
+    /// (ADR 0012).
+    public func refusal(for urls: [URL], style: PathStyle) -> LocalizedMessage? {
+        guard style == .shellEscaped || style == .shellQuoted || style == .aiMention else { return nil }
         for url in urls {
-            let path = url.lexicallyNormalized.path
-            if path.unicodeScalars.contains("\\") && ShellQuoting.containsControlCharacter(path) {
-                return .refusalShellForm(url.lastPathComponent)
-            }
+            let text = render(url, style: style)
+            let name = url.lastPathComponent.jsonQuoted
+            if ShellQuoting.containsControlCharacter(text) { return .refusalCopyPathControlCharacter(name) }
+            guard style == .aiMention else { continue }
+            if text.hasMisleadingCharacter() { return .refusalCopyPathHiddenCharacter(name) }
+            if text.unicodeScalars.contains("\\") { return .refusalCopyPathMentionEscape(name) }
         }
         return nil
     }
 
     /// POSIX single quotes read identically in sh, bash, zsh and fish unless the text has a backslash (fish takes one
     /// inside single quotes as an escape, so `\'` ends the quoting in the others and not in fish); a backslash-escaped
-    /// word reads identically everywhere. So the form follows the text and never the person's login shell: this
-    /// text is pasted somewhere, and not necessarily into the shell they log in with.
+    /// word reads identically everywhere. csh and tcsh expand `!` even inside single quotes (`!#:1:t` brought back the
+    /// quote of an earlier word and ended the quoting), so a `!` is written `'\!'`, as a typed word is. The form follows
+    /// the text and never the person's login shell: this text is pasted somewhere, and not necessarily into that shell.
     static func shellQuotedForAnyShell(_ path: String) -> String {
-        path.unicodeScalars.contains("\\") ? ShellQuoting.backslashEscape(path) : ShellQuoting.quote(path, for: .posix)
+        path.unicodeScalars.contains("\\") ? ShellQuoting.backslashEscape(path) : ShellQuoting.quoteTyped(path)
     }
 
     private func tildePath(_ url: URL, path: String) -> String {
@@ -137,10 +143,12 @@ public struct PathRenderer: Sendable {
         return Self.onDiskRelative(PathMath.relativePath(from: root, to: url), path: path) ?? path
     }
 
-    /// `@path`, or `@"path"` when it has whitespace; inside the quotes a quote or backslash is escaped, so
-    /// no name can end the mention early and carry on as ordinary prompt text.
+    /// `@path`, or `@"path"` when it has whitespace or starts with a quote (unquoted, `@"draft"` would read as the quoted name `draft`); inside the
+    /// quotes a quote or backslash is escaped, so no name can end the mention early and carry on as ordinary prompt text. Whether an agent reads
+    /// those escapes is not known: Copy Path refuses a mention that needs one (`refusal(for:style:)`), and a preset refuses the backslash in its prompt.
     private func mention(_ path: String) -> String {
-        guard path.unicodeScalars.contains(where: { $0.properties.isWhitespace }) else { return "@" + path }
+        let quoted = path.unicodeScalars.first == "\"" || path.unicodeScalars.contains(where: { $0.properties.isWhitespace })
+        guard quoted else { return "@" + path }
         return "@\"" + path.scalarReplacing(["\\": "\\\\", "\"": "\\\""]) + "\""
     }
 
@@ -152,8 +160,11 @@ public struct PathRenderer: Sendable {
     }
 
     /// A link destination: bare when it has nothing awkward in it, else inside `<…>` with `<`, `>` and
-    /// backslash escaped. A line break cannot appear in a destination at all, so it is percent-encoded.
-    static func markdownDestination(_ path: String) -> String {
+    /// backslash escaped. A line break cannot appear in a destination at all, so it is percent-encoded. A destination is
+    /// a URL reference, in which `#` starts a fragment, `?` a query and `%` an escape: each is percent-encoded, so that
+    /// `C#.md` and `a%20b.md` name those files and not `C` or `a b.md`.
+    static func markdownDestination(_ name: String) -> String {
+        let path = name.scalarReplacing(["%": "%25", "#": "%23", "?": "%3F"])
         let awkward = path.unicodeScalars.contains { "()<>\\".unicodeScalars.contains($0) || $0.properties.isWhitespace || $0.properties.generalCategory == .control }
         guard awkward else { return path }
         let escaped = path.scalarReplacing(["\\": "\\\\", "<": "\\<", ">": "\\>", "\n": "%0A", "\r": "%0D"])

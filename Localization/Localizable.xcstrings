@@ -93559,6 +93559,564 @@
         }
       }
     },
+    "refusal.copyPath.controlCharacter": {
+      "comment": "Why Copy Path copied nothing, shown in the alert after a click in Finder (and, in English, by the command line). %@ is the item's name in quotes. The form is one meant to be pasted into a terminal (a shell-escaped or quoted path) or into an AI agent's prompt (an @ mention): a control character in a paste acts as a key (Return, Control-C), so it could run a command. Use the words of refusal.name.controlCharacter for 'a line break or another control character'.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "يحتوي %@ على فاصل أسطر أو حرف تحكم آخر، تقرؤه الطرفية أو وكيل الذكاء الاصطناعي كضغطة مفتاح عند لصقه، لذا لا يُنسخ بهذا الشكل. انسخه بشكل آخر، أو أعد تسميته."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@-এ একটি লাইন ব্রেক বা অন্য কোনো কন্ট্রোল ক্যারেক্টার আছে, যা পেস্ট করার সময় টার্মিনাল বা AI এজেন্ট কী চাপা হিসেবে পড়ে, তাই এটি এই রূপে কপি করা হয় না। এটি অন্য রূপে কপি করুন, অথবা এর নাম বদলান।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ enthält einen Zeilenumbruch oder ein anderes Steuerzeichen, das ein Terminal oder ein KI-Agent beim Einfügen als Tastendruck liest, daher wird es nicht in dieser Form kopiert. Kopiere es in einer anderen Form oder benenne es um."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το %@ περιέχει αλλαγή γραμμής ή άλλον χαρακτήρα ελέγχου, τον οποίο ένα τερματικό ή ένας πράκτορας AI διαβάζει ως πάτημα πλήκτρου κατά την επικόλληση, γι' αυτό δεν αντιγράφεται σε αυτή τη μορφή. Αντιγράψτε το σε άλλη μορφή ή μετονομάστε το."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ has a line break or another control character, which a terminal or an AI agent reads as a key press when it is pasted, so it is not copied in this form. Copy it in another form, or rename it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ tiene un salto de línea u otro carácter de control, que un terminal o un agente de IA lee como una pulsación de tecla al pegarlo, así que no se copia de esta forma. Cópialo de otra forma o cámbiale el nombre."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ یک شکست خط یا نویسهٔ کنترلی دیگری دارد که ترمینال یا عامل هوش مصنوعی هنگام چسباندن آن را فشردن یک کلید می‌خواند، بنابراین به این شکل کپی نمی‌شود. آن را به شکل دیگری کپی کنید یا نامش را تغییر دهید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ contient un saut de ligne ou un autre caractère de contrôle, qu’un terminal ou un agent d’IA lit comme une touche pressée lorsqu’il est collé ; il n’est donc pas copié sous cette forme. Copiez-le sous une autre forme, ou renommez-le."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ מכיל מעבר שורה או תו בקרה אחר, שמסוף או סוכן AI קורא כהקשה על מקש בעת ההדבקה, ולכן הוא לא מועתק בצורה הזו. יש להעתיק אותו בצורה אחרת או לשנות את שמו."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ में लाइन ब्रेक या कोई दूसरा कंट्रोल कैरेक्टर है, जिसे पेस्ट करते समय टर्मिनल या AI एजेंट की-प्रेस की तरह पढ़ता है, इसलिए इसे इस रूप में कॉपी नहीं किया जाता। इसे किसी दूसरे रूप में कॉपी करें, या इसका नाम बदलें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ berisi jeda baris atau karakter kontrol lain, yang dibaca terminal atau agen AI sebagai tekanan tombol saat ditempel, jadi tidak disalin dalam bentuk ini. Salin dalam bentuk lain, atau ganti namanya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ contiene un a capo o un altro carattere di controllo, che un terminale o un agente IA legge come la pressione di un tasto quando viene incollato, quindi non viene copiato in questa forma. Copialo in un’altra forma o rinominalo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@には改行またはその他の制御文字が含まれており、ペーストするとターミナルやAIエージェントがキー入力として読み取るため、この形式ではコピーされません。別の形式でコピーするか、名前を変更してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ 이름에 줄바꿈 또는 다른 제어 문자가 있어, 붙여 넣을 때 터미널이나 AI 에이전트가 키 입력으로 읽으므로 이 형식으로는 복사하지 않습니다. 다른 형식으로 복사하거나 이름을 바꾸십시오."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ मध्ये लाइन ब्रेक किंवा दुसरे कंट्रोल कॅरेक्टर आहे, जे पेस्ट करताना टर्मिनल किंवा AI एजंट की दाबल्यासारखे वाचतो, त्यामुळे ते या स्वरूपात कॉपी केले जात नाही. ते दुसऱ्या स्वरूपात कॉपी करा, किंवा त्याचे नाव बदला."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ mengandungi pemisah baris atau aksara kawalan lain, yang dibaca oleh terminal atau ejen AI sebagai tekanan kekunci apabila ditampal, jadi ia tidak disalin dalam bentuk ini. Salin dalam bentuk lain, atau namakan semula."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ bevat een regeleinde of een ander stuurteken, dat een terminal of een AI-agent bij het plakken als een toetsaanslag leest, dus het wordt niet in deze vorm gekopieerd. Kopieer het in een andere vorm of geef het een andere naam."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nazwa %@ zawiera znak końca wiersza lub inny znak sterujący, który terminal lub agent AI odczytuje po wklejeniu jako naciśnięcie klawisza, więc nie jest kopiowana w tej postaci. Skopiuj ją w innej postaci lub zmień nazwę."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ tem uma quebra de linha ou outro caractere de controle, que um terminal ou um agente de IA lê como o pressionar de uma tecla ao colar, então não é copiado nesta forma. Copie em outra forma ou renomeie."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ conține un salt de linie sau alt caracter de control, pe care un terminal sau un agent AI îl citește ca apăsare de tastă atunci când este lipit, deci nu este copiat în această formă. Copiați-l în altă formă sau redenumiți-l."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "В имени %@ есть перенос строки или другой управляющий символ, который терминал или ИИ-агент при вставке читает как нажатие клавиши, поэтому в таком виде оно не копируется. Скопируйте его в другом виде или переименуйте."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ இல் வரி முறிவு அல்லது வேறொரு கட்டுப்பாட்டு எழுத்து உள்ளது; ஒட்டும்போது டெர்மினல் அல்லது AI முகவர் அதை விசை அழுத்தமாகப் படிக்கும், எனவே இந்த வடிவில் நகலெடுக்கப்படாது. வேறு வடிவில் நகலெடுக்கவும், அல்லது அதன் பெயரை மாற்றவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ లో లైన్ బ్రేక్ లేదా మరో కంట్రోల్ క్యారెక్టర్ ఉంది; పేస్ట్ చేసినప్పుడు టెర్మినల్ లేదా AI ఏజెంట్ దాన్ని కీ నొక్కినట్లుగా చదువుతుంది, కాబట్టి ఇది ఈ రూపంలో కాపీ చేయబడదు. దాన్ని వేరే రూపంలో కాపీ చేయండి, లేదా దాని పేరు మార్చండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ มีการขึ้นบรรทัดใหม่หรืออักขระควบคุมอื่น ซึ่งเทอร์มินัลหรือเอเจนต์ AI จะอ่านเป็นการกดแป้นเมื่อวาง จึงไม่คัดลอกในรูปแบบนี้ ให้คัดลอกในรูปแบบอื่น หรือเปลี่ยนชื่อ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ adında bir satır sonu veya başka bir denetim karakteri var; terminal ya da yapay zekâ ajanı bunu yapıştırıldığında tuşa basılmış gibi okur, bu yüzden bu biçimde kopyalanmaz. Başka bir biçimde kopyalayın ya da adını değiştirin."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Назва %@ містить розрив рядка або інший керівний символ, який термінал чи ШІ-агент під час вставлення читає як натискання клавіші, тому в такому вигляді вона не копіюється. Скопіюйте її в іншому вигляді або перейменуйте."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ میں لائن بریک یا کوئی اور کنٹرول کیریکٹر ہے، جسے پیسٹ کرتے وقت ٹرمینل یا AI ایجنٹ کلید دبانے کے طور پر پڑھتا ہے، اس لیے اسے اس شکل میں کاپی نہیں کیا جاتا۔ اسے کسی اور شکل میں کاپی کریں، یا اس کا نام بدلیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ có dấu xuống dòng hoặc một ký tự điều khiển khác, mà terminal hoặc tác tử AI đọc như một lần nhấn phím khi được dán, nên nó không được sao chép ở dạng này. Hãy sao chép nó ở dạng khác, hoặc đổi tên nó."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ 中有换行符或其他控制字符，粘贴时终端或 AI 智能体会把它当作按键读取，因此不以这种形式拷贝。请改用其他形式拷贝，或为它重新命名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ 中有換行字元或其他控制字元，貼上時終端機或 AI 代理程式會把它當作按鍵讀取，因此不以這種形式拷貝。請改用其他形式拷貝，或為它重新命名。"
+          }
+        }
+      }
+    },
+    "refusal.copyPath.hiddenCharacter": {
+      "comment": "Why Copy Path copied nothing, shown in the alert after a click in Finder (and, in English, by the command line). %@ is the item's name in quotes. The form is an @ mention for an AI agent's prompt; the name has an invisible or text-direction character, and tag characters can spell an instruction the agent reads. Use the words of refusal.name.misleadingCharacter for the characters.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "يحتوي %@ على حرف لا يُظهر شيئًا أو يغيّر طريقة قراءته (حرف لفرض الاتجاه، أو مسافة بعرض صفري، أو حرف وسم)، وسيقرأ وكيل الذكاء الاصطناعي ما لا تستطيع رؤيته. انسخه بشكل آخر، أو أعد تسميته."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@-এ এমন একটি ক্যারেক্টার আছে যা কিছু দেখায় না বা নামটি কীভাবে পড়া হবে তা বদলে দেয় (দিক বদলানোর ক্যারেক্টার, শূন্য-প্রস্থের স্পেস, ট্যাগ ক্যারেক্টার), আর AI এজেন্ট এমন কিছু পড়বে যা আপনি দেখতে পান না। এটি অন্য রূপে কপি করুন, অথবা এর নাম বদলান।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ enthält ein Zeichen, das nichts anzeigt oder verändert, wie der Name zu lesen ist (eine Überschreibung der Schreibrichtung, ein Leerzeichen ohne Breite, ein Tag-Zeichen), und ein KI-Agent würde lesen, was du nicht sehen kannst. Kopiere es in einer anderen Form oder benenne es um."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το %@ περιέχει χαρακτήρα που δεν εμφανίζει τίποτα ή αλλάζει τον τρόπο που διαβάζεται (παράκαμψη κατεύθυνσης, κενό μηδενικού πλάτους, χαρακτήρα ετικέτας), και ένας πράκτορας AI θα διάβαζε κάτι που δεν μπορείτε να δείτε. Αντιγράψτε το σε άλλη μορφή ή μετονομάστε το."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ has a character that shows nothing or changes how it reads (a direction override, a zero-width space, a tag character), and an AI agent would read what you cannot see. Copy it in another form, or rename it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ tiene un carácter que no muestra nada o que cambia cómo se lee (un cambio forzado de dirección, un espacio de ancho cero, un carácter de etiqueta), y un agente de IA leería lo que tú no puedes ver. Cópialo de otra forma o cámbiale el nombre."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ نویسه‌ای دارد که چیزی نشان نمی‌دهد یا نحوهٔ خوانده شدن نام را تغییر می‌دهد (نویسهٔ تغییر اجباری جهت، فاصلهٔ بدون پهنا، نویسهٔ برچسب)، و عامل هوش مصنوعی چیزی را می‌خواند که شما نمی‌توانید ببینید. آن را به شکل دیگری کپی کنید یا نامش را تغییر دهید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ contient un caractère qui n’affiche rien ou qui change la façon dont il se lit (un forçage de direction, une espace sans chasse, un caractère d’étiquette), et un agent d’IA lirait ce que vous ne pouvez pas voir. Copiez-le sous une autre forme, ou renommez-le."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ מכיל תו שאינו מציג דבר או שמשנה את אופן הקריאה שלו (תו לכפיית כיוון, רווח ברוחב אפס, תו תגית), וסוכן AI יקרא את מה שאי אפשר לראות. יש להעתיק אותו בצורה אחרת או לשנות את שמו."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ में ऐसा कैरेक्टर है जो कुछ नहीं दिखाता या नाम के पढ़े जाने का तरीका बदल देता है (दिशा बदलने वाला कैरेक्टर, शून्य-चौड़ाई वाली स्पेस, टैग कैरेक्टर), और AI एजेंट वह पढ़ेगा जो आप देख नहीं सकते। इसे किसी दूसरे रूप में कॉपी करें, या इसका नाम बदलें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ berisi karakter yang tidak menampilkan apa pun atau mengubah cara nama itu dibaca (penimpaan arah, spasi lebar nol, karakter tag), dan agen AI akan membaca apa yang tidak dapat Anda lihat. Salin dalam bentuk lain, atau ganti namanya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ contiene un carattere che non mostra nulla o che cambia il modo in cui si legge (un override di direzione, uno spazio a larghezza zero, un carattere tag), e un agente IA leggerebbe qualcosa che non puoi vedere. Copialo in un’altra forma o rinominalo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@には、何も表示されない文字や、読まれ方を変える文字（方向オーバーライド、ゼロ幅スペース、タグ文字）が含まれており、あなたには見えない内容をAIエージェントが読み取ってしまいます。別の形式でコピーするか、名前を変更してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ 이름에 아무것도 표시하지 않거나 읽히는 방식을 바꾸는 문자(방향 재정의 문자, 폭 없는 공백, 태그 문자)가 있어, 사용자가 볼 수 없는 내용을 AI 에이전트가 읽게 됩니다. 다른 형식으로 복사하거나 이름을 바꾸십시오."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ मध्ये असे कॅरेक्टर आहे जे काहीही दाखवत नाही किंवा नाव कसे वाचले जाते ते बदलते (दिशा बदलणारे ओव्हरराइड, शून्य रुंदीची स्पेस, टॅग कॅरेक्टर), आणि तुम्हाला जे दिसत नाही ते AI एजंट वाचेल. ते दुसऱ्या स्वरूपात कॉपी करा, किंवा त्याचे नाव बदला."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ mengandungi aksara yang tidak memaparkan apa-apa atau mengubah cara nama itu dibaca (penggantian arah, ruang lebar sifar, aksara tag), dan ejen AI akan membaca apa yang tidak dapat anda lihat. Salin dalam bentuk lain, atau namakan semula."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ bevat een teken dat niets toont of verandert hoe de naam wordt gelezen (een richtingsoverschrijving, een spatie zonder breedte, een tagteken), en een AI-agent zou lezen wat jij niet kunt zien. Kopieer het in een andere vorm of geef het een andere naam."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nazwa %@ zawiera znak, który nic nie wyświetla lub zmienia sposób jej odczytu (wymuszenie kierunku, spację o zerowej szerokości, znak tagu), a agent AI odczytałby to, czego nie widzisz. Skopiuj ją w innej postaci lub zmień nazwę."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ tem um caractere que não mostra nada ou que muda como o nome é lido (uma substituição de direção, um espaço de largura zero, um caractere de tag), e um agente de IA leria o que você não consegue ver. Copie em outra forma ou renomeie."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ conține un caracter care nu afișează nimic sau schimbă modul în care se citește numele (o suprascriere de direcție, un spațiu de lățime zero, un caracter etichetă), iar un agent AI ar citi ceea ce nu puteți vedea. Copiați-l în altă formă sau redenumiți-l."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "В имени %@ есть символ, который ничего не показывает или меняет то, как читается имя (переопределение направления, пробел нулевой ширины, символ тега), и ИИ-агент прочитал бы то, чего вы не видите. Скопируйте его в другом виде или переименуйте."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ இல் எதையும் காட்டாத அல்லது அது படிக்கப்படும் விதத்தை மாற்றும் ஓர் எழுத்து உள்ளது (திசை மேலெழுதல் குறி, பூஜ்ஜிய அகல இடைவெளி, டேக் எழுத்து); நீங்கள் காண முடியாததை AI முகவர் படித்துவிடும். வேறு வடிவில் நகலெடுக்கவும், அல்லது அதன் பெயரை மாற்றவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ లో ఏమీ చూపించని లేదా అది చదివే విధానాన్ని మార్చే అక్షరం ఉంది (దిశ ఓవర్‌రైడ్, సున్నా-వెడల్పు ఖాళీ, ట్యాగ్ అక్షరం), కాబట్టి మీరు చూడలేనిదాన్ని AI ఏజెంట్ చదువుతుంది. దాన్ని వేరే రూపంలో కాపీ చేయండి, లేదా దాని పేరు మార్చండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ มีอักขระที่ไม่แสดงอะไรเลยหรือเปลี่ยนวิธีอ่านชื่อ (เช่น อักขระบังคับทิศทาง ช่องว่างความกว้างศูนย์ หรืออักขระแท็ก) และเอเจนต์ AI จะอ่านสิ่งที่คุณมองไม่เห็น ให้คัดลอกในรูปแบบอื่น หรือเปลี่ยนชื่อ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ adında hiçbir şey göstermeyen ya da adın okunuşunu değiştiren bir karakter var (yön geçersiz kılma karakteri, sıfır genişlikli boşluk, etiket karakteri); yapay zekâ ajanı sizin göremediğiniz şeyi okur. Başka bir biçimde kopyalayın ya da adını değiştirin."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Назва %@ містить символ, який нічого не показує або змінює те, як вона читається (зміна напрямку тексту, пробіл нульової ширини, символ-тег), і ШІ-агент прочитає те, чого ви не бачите. Скопіюйте її в іншому вигляді або перейменуйте."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ میں ایسا کیریکٹر ہے جو کچھ نہیں دکھاتا یا نام کے پڑھے جانے کا انداز بدل دیتا ہے (سمت بدلنے والا نشان، صفر چوڑائی والی جگہ، ٹیگ کیریکٹر)، اور AI ایجنٹ وہ پڑھے گا جو آپ نہیں دیکھ سکتے۔ اسے کسی اور شکل میں کاپی کریں، یا اس کا نام بدلیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ có một ký tự không hiển thị gì hoặc thay đổi cách đọc tên (ký tự ghi đè hướng, khoảng trắng độ rộng bằng không, ký tự thẻ), và tác tử AI sẽ đọc được những gì bạn không nhìn thấy. Hãy sao chép nó ở dạng khác, hoặc đổi tên nó."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ 中有不显示任何内容或会改变其阅读方式的字符（方向覆盖符、零宽空格、标签字符），AI 智能体会读到你看不见的内容。请改用其他形式拷贝，或为它重新命名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ 中有不顯示任何內容或會改變其閱讀方式的字元（方向覆寫字元、零寬空格、標籤字元），AI 代理程式會讀到你看不見的內容。請改用其他形式拷貝，或為它重新命名。"
+          }
+        }
+      }
+    },
+    "refusal.copyPath.mentionEscape": {
+      "comment": "Why Copy Path copied nothing, shown in the alert after a click in Finder (and, in English, by the command line). %@ is the item's name in quotes. An @ mention puts a name with a space in quotes (@\"my file.txt\"); a quote or a backslash inside would have to be escaped with a backslash, and whether AI coding agents read that escape is not known. Use the words of refusal.name.backslash for backslash and quote.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ذكر %@ سيتطلب شرطة مائلة عكسية (لأن الاسم يحتوي على واحدة، أو على علامة اقتباس مع مسافة أو في بدايته)، ولا يُعرف أن وكلاء الذكاء الاصطناعي يقرؤونها هناك. انسخه بشكل آخر، أو أعد تسميته."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ উল্লেখ করতে একটি ব্যাকস্ল্যাশ লাগবে (নামটিতে একটি ব্যাকস্ল্যাশ আছে, অথবা স্পেসের সঙ্গে বা শুরুতে একটি উদ্ধৃতিচিহ্ন আছে), আর AI এজেন্টরা সেখানে ব্যাকস্ল্যাশ পড়ে বলে জানা নেই। এটি অন্য রূপে কপি করুন, অথবা এর নাম বদলান।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Eine Erwähnung von %@ bräuchte einen Backslash (der Name enthält einen oder ein Anführungszeichen mit einem Leerzeichen oder am Anfang), und es ist nicht bekannt, dass KI-Agenten ihn dort lesen. Kopiere es in einer anderen Form oder benenne es um."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Μια αναφορά στο %@ θα χρειαζόταν ανάστροφη κάθετο (το όνομα περιέχει μία, ή ένα εισαγωγικό μαζί με κενό ή στην αρχή του), και δεν είναι γνωστό αν οι πράκτορες AI τη διαβάζουν εκεί. Αντιγράψτε το σε άλλη μορφή ή μετονομάστε το."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A mention of %@ would need a backslash (its name has one, or a quote with a space or at its start), and AI agents are not known to read one there. Copy it in another form, or rename it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Una mención de %@ necesitaría una barra invertida (el nombre tiene una, o una comilla junto a un espacio o al principio), y no se sabe si los agentes de IA la leen ahí. Cópialo de otra forma o cámbiale el nombre."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اشاره به %@ به یک بک‌اسلش نیاز دارد (نام خودش بک‌اسلش دارد، یا یک گیومه همراه با فاصله یا در ابتدای آن)، و معلوم نیست عامل‌های هوش مصنوعی آن را آنجا بخوانند. آن را به شکل دیگری کپی کنید یا نامش را تغییر دهید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Une mention de %@ nécessiterait une barre oblique inverse (le nom en contient une, ou bien un guillemet avec une espace ou à son début), et on ne sait pas si les agents d’IA la lisent à cet endroit. Copiez-le sous une autre forme, ou renommez-le."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "אזכור של %@ ידרוש לוכסן הפוך (יש בשם לוכסן הפוך, או מירכאה עם רווח או בתחילתו), ולא ידוע שסוכני AI קוראים אותו שם. יש להעתיק אותו בצורה אחרת או לשנות את שמו."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ का उल्लेख करने के लिए बैकस्लैश चाहिए होगा (नाम में बैकस्लैश है, या स्पेस के साथ या शुरुआत में उद्धरण चिह्न है), और यह पता नहीं है कि AI एजेंट वहाँ उसे पढ़ते हैं। इसे किसी दूसरे रूप में कॉपी करें, या इसका नाम बदलें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menyebut %@ akan memerlukan garis miring terbalik (nama itu berisi garis miring terbalik, atau tanda kutip bersama spasi atau di awalnya), dan belum diketahui apakah agen AI membacanya di sana. Salin dalam bentuk lain, atau ganti namanya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Una menzione di %@ richiederebbe una barra rovesciata (il nome ne contiene una, oppure una virgoletta accanto a uno spazio o all’inizio), e non si sa se gli agenti IA la leggano lì. Copialo in un’altra forma o rinominalo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@をメンションするにはバックスラッシュが必要になります（名前にバックスラッシュがあるか、空白と一緒に、または先頭に引用符があるためです）。AIエージェントがそこでバックスラッシュを解釈するかはわかっていません。別の形式でコピーするか、名前を変更してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@을(를) 멘션하려면 백슬래시가 필요합니다(이름에 백슬래시가 있거나, 공백과 함께 또는 맨 앞에 따옴표가 있기 때문입니다). AI 에이전트가 그 위치의 백슬래시를 읽는지는 알려져 있지 않습니다. 다른 형식으로 복사하거나 이름을 바꾸십시오."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ चा उल्लेख करण्यासाठी बॅकस्लॅश लागेल (त्याच्या नावात बॅकस्लॅश आहे, किंवा स्पेससोबत किंवा सुरुवातीला अवतरणचिन्ह आहे), आणि AI एजंट तिथे तो वाचतात हे माहीत नाही. ते दुसऱ्या स्वरूपात कॉपी करा, किंवा त्याचे नाव बदला."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Menyebut %@ akan memerlukan garis condong terbalik (namanya mengandunginya, atau mengandungi tanda petikan bersama ruang atau pada permulaannya), dan tidak diketahui sama ada ejen AI membacanya di situ. Salin dalam bentuk lain, atau namakan semula."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Een vermelding van %@ zou een backslash nodig hebben (de naam bevat er een, of een aanhalingsteken naast een spatie of aan het begin), en het is niet bekend of AI-agents die daar lezen. Kopieer het in een andere vorm of geef het een andere naam."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Wzmianka o %@ wymagałaby ukośnika wstecznego (nazwa go zawiera albo zawiera cudzysłów obok spacji lub na początku), a nie wiadomo, czy agenci AI odczytują go w tym miejscu. Skopiuj ją w innej postaci lub zmień nazwę."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Uma menção a %@ precisaria de uma barra invertida (o nome tem uma, ou tem aspas junto de um espaço ou no início), e não se sabe se os agentes de IA a leem ali. Copie em outra forma ou renomeie."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "O mențiune a lui %@ ar avea nevoie de o bară oblică inversă (numele conține una, sau ghilimele lângă un spațiu ori la început), și nu se știe dacă agenții AI o citesc acolo. Copiați-l în altă formă sau redenumiți-l."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Для упоминания %@ понадобилась бы обратная косая черта (она есть в имени или в нем есть кавычка рядом с пробелом или в начале), а неизвестно, читают ли ИИ-агенты ее в этом месте. Скопируйте его в другом виде или переименуйте."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ ஐக் குறிப்பிட பின்சாய்வுக்கோடு தேவைப்படும் (பெயரில் பின்சாய்வுக்கோடு உள்ளது, அல்லது இடைவெளியுடன் அல்லது தொடக்கத்தில் மேற்கோள் குறி உள்ளது); அந்த இடத்தில் அதை AI முகவர்கள் படிக்கும் என்று தெரியவில்லை. வேறு வடிவில் நகலெடுக்கவும், அல்லது அதன் பெயரை மாற்றவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ ను పేర్కొనడానికి బ్యాక్‌స్లాష్ అవసరమవుతుంది (పేరులో బ్యాక్‌స్లాష్ ఉంది, లేదా ఖాళీతో పాటు లేదా మొదట్లో కోట్ ఉంది); అక్కడ AI ఏజెంట్లు దాన్ని చదువుతాయో లేదో తెలియదు. దాన్ని వేరే రూపంలో కాపీ చేయండి, లేదా దాని పేరు మార్చండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "การกล่าวถึง %@ จะต้องใช้แบ็กสแลช (ชื่อมีแบ็กสแลช หรือมีเครื่องหมายคำพูดคู่กับช่องว่างหรืออยู่ที่ต้นชื่อ) และยังไม่ทราบว่าเอเจนต์ AI อ่านแบ็กสแลชตรงนั้นหรือไม่ ให้คัดลอกในรูปแบบอื่น หรือเปลี่ยนชื่อ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%@ öğesini anmak için ters eğik çizgi gerekir (adında ters eğik çizgi ya da boşlukla birlikte veya başında tırnak var); yapay zekâ ajanlarının onu orada okuduğu bilinmiyor. Başka bir biçimde kopyalayın ya da adını değiştirin."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Для згадки %@ знадобилася б зворотна скісна риска (вона є в назві або назва містить лапки поруч із пробілом чи на початку), а невідомо, чи читають її там ШІ-агенти. Скопіюйте її в іншому вигляді або перейменуйте."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%@ کا ذکر کرنے کے لیے بیک سلیش درکار ہوگا (اس کے نام میں بیک سلیش ہے، یا خالی جگہ کے ساتھ یا شروع میں واوین ہے)، اور یہ معلوم نہیں کہ AI ایجنٹ وہاں اسے پڑھتے ہیں۔ اسے کسی اور شکل میں کاپی کریں، یا اس کا نام بدلیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Việc nhắc đến %@ sẽ cần một dấu gạch chéo ngược (tên có dấu gạch chéo ngược, hoặc có dấu nháy đi kèm dấu cách hay ở đầu tên), và chưa rõ các tác tử AI có đọc nó ở đó không. Hãy sao chép nó ở dạng khác, hoặc đổi tên nó."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "提及 %@ 需要用到反斜杠（名称本身含有反斜杠，或含有与空格同时出现或位于开头的引号），而目前不知道 AI 智能体是否会在那里识别反斜杠。请改用其他形式拷贝，或为它重新命名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "提及 %@ 需要用到反斜線（名稱本身含有反斜線，或含有與空格同時出現或位於開頭的引號），而目前不知道 AI 代理程式是否會在那裡辨識反斜線。請改用其他形式拷貝，或為它重新命名。"
+          }
+        }
+      }
+    },
     "refusal.danglingLink": {
       "comment": "Why an action did nothing, shown in the alert after a click in Finder (and, in English, by the command line). %@ is a path; a link is a symbolic link (an alias made by the system).",
       "extractionState": "manual",
@@ -103599,192 +104157,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "遠端儲存庫「%@」是某個儲存庫的 Wiki：Right Here 產生的是儲存庫中檔案的連結，而不是 Wiki 頁面的連結。"
-          }
-        }
-      }
-    },
-    "refusal.shellForm": {
-      "comment": "Why an action did nothing, shown in the alert after a click in Finder (and, in English, by the command line). %@ is a file name. fish is a shell: keep the name.",
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "يحتوي %@ على شرطة مائلة عكسية وحرف تحكم، ولا توجد طريقة لوضعه بين علامات اقتباس تقرؤها كل برامج Shell بالطريقة نفسها (يقرأ fish الشرطة المائلة العكسية داخل علامات الاقتباس بطريقة مختلفة). انسخه كمسار مطلق بدلًا من ذلك."
-          }
-        },
-        "bn": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@-এ একটি ব্যাকস্ল্যাশ ও একটি কন্ট্রোল ক্যারেক্টার আছে, আর এটিকে উদ্ধৃতিচিহ্নে রাখার এমন কোনো উপায় নেই যা প্রতিটি শেলে একইভাবে পড়া হয় (fish উদ্ধৃতিচিহ্নের ভেতরের ব্যাকস্ল্যাশ ভিন্নভাবে পড়ে)। এর বদলে এটি অ্যাবসলিউট পাথ হিসেবে কপি করুন।"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ enthält einen Backslash und ein Steuerzeichen, und es gibt keine Schreibweise in Anführungszeichen, die jede Shell gleich liest (fish liest einen Backslash in Anführungszeichen anders). Kopiere es stattdessen als absoluten Pfad."
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Το %@ περιέχει ανάστροφη κάθετο και χαρακτήρα ελέγχου, και κανένας τρόπος να μπει σε εισαγωγικά δεν διαβάζεται με τον ίδιο τρόπο σε όλα τα κελύφη (το fish διαβάζει διαφορετικά μια ανάστροφη κάθετο μέσα σε εισαγωγικά). Αντιγράψτε το καλύτερα ως απόλυτη διαδρομή."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ has a backslash and a control character, and no single quoting of that reads the same in every shell (fish reads a backslash inside quotes differently). Copy it as an absolute path instead."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ tiene una barra invertida y un carácter de control, y ninguna forma de ponerlo entre comillas se lee igual en todos los shells (fish lee de otra forma una barra invertida dentro de comillas). Cópialo como ruta absoluta."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "‏%@ یک بک‌اسلش و یک نویسهٔ کنترلی دارد، و هیچ روشی برای گذاشتن آن در گیومه نیست که در همهٔ پوسته‌ها یکسان خوانده شود (fish بک‌اسلش داخل گیومه را متفاوت می‌خواند). به جای آن، آن را به‌صورت مسیر مطلق کپی کنید."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ contient une barre oblique inverse et un caractère de contrôle, et aucune façon de le mettre entre guillemets ne se lit de la même manière dans tous les shells (fish lit différemment une barre oblique inverse entre guillemets). Copiez-le plutôt sous forme de chemin absolu."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "‏%@ מכיל לוכסן הפוך ותו בקרה, ואין דרך לשים אותו במירכאות שכל המעטפות יקראו באותו אופן (fish קורא לוכסן הפוך בתוך מירכאות אחרת). במקום זאת, יש להעתיק אותו כנתיב מוחלט."
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ में एक बैकस्लैश और एक कंट्रोल कैरेक्टर है, और इसे उद्धरण चिह्नों में रखने का कोई भी तरीका हर शेल में एक जैसा नहीं पढ़ा जाता (fish उद्धरण चिह्नों के अंदर बैकस्लैश को अलग तरह से पढ़ता है)। इसके बजाय इसे ऐब्सोल्यूट पाथ के रूप में कॉपी करें।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ berisi garis miring terbalik dan karakter kontrol, dan tidak ada satu cara pun memberi tanda kutip yang dibaca sama oleh semua shell (fish membaca garis miring terbalik di dalam tanda kutip secara berbeda). Salin sebagai jalur absolut saja."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ contiene una barra rovesciata e un carattere di controllo, e nessun modo di metterlo tra virgolette viene letto allo stesso modo da ogni shell (fish legge diversamente una barra rovesciata tra virgolette). Copialo invece come percorso assoluto."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@にはバックスラッシュと制御文字が含まれており、どのシェルでも同じように読まれる引用の方法がありません（fishは引用符の中のバックスラッシュを別の方法で解釈します）。代わりに絶対パスとしてコピーしてください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 이름에는 백슬래시와 제어 문자가 있어, 모든 셸에서 똑같이 읽히는 따옴표 처리 방법이 없습니다(fish는 따옴표 안의 백슬래시를 다르게 읽습니다). 대신 절대 경로로 복사하십시오."
-          }
-        },
-        "mr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ मध्ये बॅकस्लॅश आणि कंट्रोल कॅरेक्टर आहे, आणि ते अवतरणचिन्हांत लिहिण्याची अशी एकही पद्धत नाही जी प्रत्येक शेल सारखी वाचते (fish अवतरणचिन्हांच्या आतील बॅकस्लॅश वेगळ्या प्रकारे वाचते). त्याऐवजी ते ॲब्सोल्यूट पाथ म्हणून कॉपी करा."
-          }
-        },
-        "ms": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ mengandungi garis condong terbalik dan aksara kawalan, dan tiada satu cara petikan pun yang dibaca dengan sama dalam setiap cangkerang (fish membaca garis condong terbalik di dalam tanda petikan secara berbeza). Salin sebagai laluan mutlak sebaliknya."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ bevat een backslash en een stuurteken, en geen enkele manier van aanhalen wordt in elke shell hetzelfde gelezen (fish leest een backslash binnen aanhalingstekens anders). Kopieer het in plaats daarvan als absoluut pad."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nazwa %@ zawiera ukośnik wsteczny i znak sterujący, a żaden sposób ujęcia jej w cudzysłów nie jest odczytywany tak samo w każdej powłoce (fish inaczej odczytuje ukośnik wsteczny w cudzysłowie). Zamiast tego skopiuj ścieżkę bezwzględną."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ tem uma barra invertida e um caractere de controle, e nenhuma forma de colocar isso entre aspas é lida da mesma maneira em todos os shells (o fish lê uma barra invertida entre aspas de outro jeito). Em vez disso, copie como caminho absoluto."
-          }
-        },
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ conține o bară oblică inversă și un caracter de control, iar nicio încadrare între ghilimele nu se citește la fel în toate shellurile (fish citește altfel o bară oblică inversă între ghilimele). Copiați-l în schimb ca o cale absolută."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Имя %@ содержит обратную косую черту и управляющий символ, и нет такого способа заключить его в кавычки, который все оболочки читали бы одинаково (fish иначе читает обратную косую черту в кавычках). Вместо этого скопируйте абсолютный путь."
-          }
-        },
-        "ta": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ இல் பின்சாய்வுக்கோடும் கட்டுப்பாட்டு எழுத்தும் உள்ளன; எல்லா shell-களிலும் ஒரே மாதிரி படிக்கப்படும்படி அதை மேற்கோளிட எந்த ஒரு முறையும் இல்லை (மேற்கோள் குறிகளுக்குள் உள்ள பின்சாய்வுக்கோட்டை fish வேறு விதமாகப் படிக்கும்). அதற்குப் பதிலாக அதை முழுமையான பாதையாக நகலெடுக்கவும்."
-          }
-        },
-        "te": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ లో బ్యాక్‌స్లాష్ మరియు కంట్రోల్ క్యారెక్టర్ ఉన్నాయి; ప్రతి shell లో ఒకేలా చదివేలా దాన్ని కోట్ చేసే ఒకే విధానం లేదు (కోట్స్ లోపల ఉన్న బ్యాక్‌స్లాష్‌ను fish వేరే విధంగా చదువుతుంది). బదులుగా దాన్ని సంపూర్ణ పాత్‌గా కాపీ చేయండి."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ มีทั้งแบ็กสแลชและอักขระควบคุม และไม่มีวิธีใส่เครื่องหมายคำพูดแบบใดที่ทุกเชลล์อ่านได้เหมือนกัน (fish อ่านแบ็กสแลชในเครื่องหมายคำพูดต่างออกไป) ให้คัดลอกเป็นเส้นทางแบบเต็มแทน"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ dosya adı hem ters eğik çizgi hem de denetim karakteri içeriyor ve bunu her kabukta aynı okunacak biçimde tırnak içine almanın tek bir yolu yok (fish, tırnak içindeki ters eğik çizgiyi farklı okur). Bunun yerine mutlak yol olarak kopyalayın."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Назва файлу %@ містить зворотну скісну риску й керівний символ, і жоден спосіб узяти її в лапки не читається однаково в усіх оболонках (fish інакше читає зворотну скісну риску в лапках). Скопіюйте натомість абсолютний шлях."
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "‏%@ میں بیک سلیش بھی ہے اور کنٹرول کیریکٹر بھی، اور اسے واوین میں لکھنے کا کوئی ایک طریقہ ایسا نہیں جو ہر شیل میں ایک ہی طرح پڑھا جائے (fish واوین کے اندر بیک سلیش کو مختلف طرح پڑھتا ہے)۔ اس کے بجائے اسے مکمل پاتھ کے طور پر کاپی کریں۔"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ có cả dấu gạch chéo ngược lẫn ký tự điều khiển, và không có cách đặt trong dấu nháy nào được mọi shell đọc giống nhau (fish đọc dấu gạch chéo ngược trong dấu nháy theo cách khác). Hãy sao chép nó dưới dạng đường dẫn tuyệt đối."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 同时含有反斜杠和控制字符，没有任何一种加引号的写法能在所有 shell 中被同样解读（fish 对引号内反斜杠的解读不同）。请改为将其拷贝为绝对路径。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 同時含有反斜線和控制字元，沒有任何一種加引號的寫法能在所有 shell 中被同樣解讀（fish 對引號內反斜線的解讀不同）。請改為將其拷貝為絕對路徑。"
           }
         }
       }
