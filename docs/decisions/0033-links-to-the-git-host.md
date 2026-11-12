@@ -19,18 +19,24 @@ when the item is clicked. For the same reason the titles name the repository, no
 
 ## How the link is made
 
-- **The repository** is the one git finds (`rev-parse --show-toplevel`, run in the item's folder), not the nearest `.git` entry: an empty
-  `.git` folder is no repository to git. The item's path is taken from that top folder, the folders above it with their links followed
+- **The repository** is the one git finds (`rev-parse --show-toplevel`, run in the item's folder, or in the folder around it for a file
+  or a link: a link to a folder outside the repository is a file of this one), not the nearest `.git` entry: an empty `.git` folder is no
+  repository to git. A folder that is an initialized submodule is read as its own repository, so the submodule's folder and the files
+  in it link to the submodule's host; an uninitialized one gets the submodule sentence. The item's path is taken from that top folder, the folders above it with their links followed
   and their names in the disk's case. `rh` may have been started with `GIT_DIR` and its kin (from a hook, by another git command):
   `GitCommand` takes them out of git's environment, so the repository is always the one `-C` names.
 - **The remote**: the first of the branch's upstream (`symbolic-ref`, since `rev-parse --abbrev-ref` says `heads/main` beside a tag
   called main), its push remote (`branch.<b>.pushRemote`, `remote.pushDefault`), `origin` and the only remote that has the commit, else
-  the first of them; a fork that has the commit while the upstream does not is linked. A name with a slash is a remote; one that starts
+  the first of them; a fork that has the commit while the upstream does not is linked. The settings come from one `git config --list -z`,
+  read in Swift: a key with the branch's name in it, given to git as an argument, reaches git decomposed, and git that does not precompose
+  missed the upstream of a branch with an accent (2026-11-12). A name with a slash is a remote; one that starts
   with `-` or holds a glob character is never used. Several remotes and none of these: the action stops and says so. Its URL comes from `git remote get-url <name>`, which applies the person's `url.<base>.insteadOf`
   (measured: `gh:owner/repo` with `insteadOf = gh:` gives `https://github.com/owner/repo`, where `git config --get` gives `gh:owner/repo`,
   which no host has).
 - **The URL is parsed, never passed on.** `https://host/owner/repo(.git)`, `ssh://user@host[:port]/owner/repo.git` and
-  `user@host:owner/repo.git` are understood; a user name or a password in it (`https://user:password@host/owner/repo`) is dropped and never
+  `user@host:owner/repo.git` are understood, and so are the names the hosts give their SSH servers on port 443 (`ssh.github.com`,
+  `altssh.gitlab.com`, `altssh.bitbucket.org`); a wiki (`<repo>.wiki`) is refused with its own sentence, since its pages are not files
+  of a repository and `<repo>.wiki/blob/…` is not found (GitHub answered 404, 2026-11-12); a user name or a password in it (`https://user:password@host/owner/repo`) is dropped and never
   reaches the clipboard, the browser or the log. Every segment of the owner and repository path must be letters, digits, `-`, `_` and
   `.`, and not `.` or `..`. Anything else stops the action.
 - **The hosts**: github.com, gitlab.com, codeberg.org and bitbucket.org, each with its own form. Tried on public repositories on
@@ -53,18 +59,27 @@ when the item is clicked. For the same reason the titles name the repository, no
   - the commit is not on the chosen remote: `git rev-list -n1 HEAD --not --remotes=<remote>` prints it (measured: empty when a branch of
     that remote contains the commit, the commit when only a local branch does; the same under `GIT_NO_LAZY_FETCH=1`). Another remote
     holding it does not count, since the link goes to this one;
+  - the remote pushes to another repository than it fetches from (`remote.<name>.pushurl`, `url.<base>.pushInsteadOf`): a push moves the
+    remote's branches as a fetch does, so they do not tell whether the fetched repository, where the link goes, has the commit (measured
+    2026-11-12: after `git push origin`, only the fork had it). `git remote get-url --push --all` is compared with the fetch URL by host
+    and path, so fetching over https and pushing over ssh to the same repository still links. The sentence says to give the other
+    repository a remote of its own, which the rules above then handle;
   - the item is not in that commit, as a new or untracked file is not: `git cat-file --batch-check=%(objecttype) -Z` gets
     `<commit>:<path>` for every item on its input, NUL-separated, and says blob, tree or commit (a submodule, which has its own sentence:
     its pages are in its own repository). On the input, not as arguments: `Process` hands arguments over decomposed, and git that does not
-    precompose them (`core.precomposeunicode=false`) would look up a name the commit has precomposed (measured). Whether the link is a
+    precompose them (`core.precomposeunicode=false`) would look up a name the commit has precomposed (measured). Each path is asked for
+    precomposed and then decomposed, as a commit made elsewhere can hold a name, and with `core.ignorecase` a path still not found is
+    looked for folder by folder (`git ls-tree -z <tree id>`) with the case ignored, as the disk ignores it: a rename that changed only the
+    case is no change to git, and the commit has the old case. Exactly one name may match at each level. When `cat-file` fails (a git
+    before 2.42 has no `-Z`), git's first line is the sentence, not "not in the commit". Whether the link is a
     file's or a folder's comes from the commit too: a committed link to a folder is a file there. Replace refs are off
     (`GIT_NO_REPLACE_OBJECTS`), so the commit read is the one the host has. A file with uncommitted changes links to its committed
     version; the page shows the commit, and the sentence of the copy says so.
   - git cannot read the repository (a `.git` file naming a folder that is not there, a repository of another owner): its own first line
     is what the person is told.
-- **The path** is the item's path from the git root, in Unicode NFC (Finder can hand over decomposed names; git on macOS stores
-  precomposed ones, `core.precomposeunicode`, and found the decomposed `é.txt` at `HEAD` when measured), each segment percent-encoded.
-  The root itself is the repository's page at that commit.
+- **The path** is the item's path from the git root as the commit holds it (the form and the case found above: Finder can hand over
+  decomposed names, git on macOS commits precomposed ones, and a commit made elsewhere can hold decomposed ones, which the host serves
+  as they are), each segment percent-encoded. The root itself is the repository's page at that commit.
 
 ## What git may start
 
@@ -72,8 +87,9 @@ Measured by hand with Homebrew's git 2.54.0, and by the tests with the git the p
 Xcode 27.1 and 2.50.1 with Xcode 26.6, which CI uses; the tests pass with both), in a repository whose files and configuration name a
 program for every hook (files and `hook.<name>.command`),
 `core.fsmonitor`, a filter driver for every file (`smudge`, `clean`, `process`), `core.pager`, `pager.<command>` and `core.sshCommand`:
-`rev-parse --show-toplevel`, `rev-parse --verify HEAD^{commit}`, `symbolic-ref -q HEAD`, `config --get`, `remote`, `remote get-url`,
-`rev-list -n1 <commit> --not --remotes=<name>` and `cat-file --batch-check -Z` started none of them (the tests run each against such a
+`rev-parse --show-toplevel`, `rev-parse --verify HEAD^{commit}`, `symbolic-ref -q HEAD`, `config --list -z`, `remote`, `remote get-url`
+(also with `--push --all`), `rev-list -n1 <commit> --not --remotes=<name>`, `cat-file --batch-check -Z` and `ls-tree -z <tree id>` started
+none of them (the tests run each against such a
 repository). `ls-files` started the fsmonitor and `commit` the filters,
 so neither is used. The commands still run through `GitCommand`, with its guards and the reading time limit, like the worktree commands
 (ADR 0016).
@@ -105,3 +121,8 @@ so neither is used. The commands still run through `GitCommand`, with its guards
   wrong reason; each is fixed with a test that fails without the fix and a mutation entry.
 - DESIGN section 9 gains the rule that a link is built only from parsed parts, with mutation entries for the scheme, the user name and
   the segment check.
+- A second independent review (2026-11-12) found two links to pages that are not there (a commit pushed through a pushurl or a
+  pushInsteadOf rule to another repository, a wiki clone) and refusals with the wrong reason (a failed `cat-file`, a committed link to a
+  folder outside the repository, a name the commit holds decomposed or in another case, the upstream of a branch with an accent under
+  `core.precomposeunicode=false`), and the SSH servers on port 443 refused as unknown hosts. Nothing of a remote's credentials reached a
+  link, a sentence or the log. Each is fixed with a test that fails without the fix and a mutation entry.

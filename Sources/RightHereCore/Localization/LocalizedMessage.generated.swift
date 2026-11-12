@@ -1101,6 +1101,8 @@ extension LocalizedMessage {
     public static var refusalRepositoryOneItem: LocalizedMessage { LocalizedMessage(.refusalRepositoryOneItem) }
     /// %1$@ is outside the repository git found, %2$@.
     public static func refusalRepositoryOutside(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryOutside, [argument1, argument2]) }
+    /// Remote "%@" pushes to another repository than the one it fetches from, so it is not clear which of the two has the checked-out commit. Give the repository you push to a remote of its own (`git remote add`), then try again.
+    public static func refusalRepositoryPushesElsewhere(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryPushesElsewhere, [argument1]) }
     /// The repository has several remotes (%@), none of them origin or the branch's upstream or push remote, so it is not clear which one to link to.
     public static func refusalRepositorySeveralRemotes(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositorySeveralRemotes, [argument1]) }
     /// %@ is a submodule: its pages are in its own repository. Select an item inside it.
@@ -1111,6 +1113,8 @@ extension LocalizedMessage {
     public static var refusalRepositoryUnreadableCommit: LocalizedMessage { LocalizedMessage(.refusalRepositoryUnreadableCommit) }
     /// The URL of remote "%@" is not one of a repository on a git host.
     public static func refusalRepositoryUnreadableRemote(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryUnreadableRemote, [argument1]) }
+    /// Remote "%@" is the wiki of a repository: Right Here makes links to the files of a repository, not to the pages of a wiki.
+    public static func refusalRepositoryWiki(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalRepositoryWiki, [argument1]) }
     /// %@ has a backslash and a control character, and no single quoting of that reads the same in every shell (fish reads a backslash inside quotes differently). Copy it as an absolute path instead.
     public static func refusalShellForm(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalShellForm, [argument1]) }
     /// Step %1$@ (%2$@) failed: %3$@

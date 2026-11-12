@@ -6,6 +6,13 @@
   `alias claude='claude --dangerously-skip-permissions'` applies to every start from Finder, a prompt preset's too (its prompt carries the
   names of the selected files), whatever the permission switch says. `rh doctor`, `rh agents` and the Agents page now say so, and the
   troubleshooting guide says how to keep the prompts.
+- **Repository links, after an independent review.** A commit pushed through a `pushurl` or a `pushInsteadOf` rule to another
+  repository than the remote fetches from got a link to the fetched repository, which does not have it: the action now says so and how
+  to fix it (a remote of its own for the other repository). A wiki clone is refused instead of linked to a page that is not there. A
+  name the commit holds decomposed, or in another case after a rename that changed only the case, is found and linked as the commit has
+  it; a committed link to a folder outside the repository is linked as the file it is; the upstream of a branch with an accent in its
+  name is found with `core.precomposeunicode=false`; a failing git says its own reason instead of "not in the checked-out commit"; and
+  the hosts' SSH servers on port 443 (`ssh.github.com` and the like) are their hosts.
 - A command-line flag in a sentence of the window no longer breaks across two lines.
 - The README says that a Quick Action can take a keyboard shortcut.
 

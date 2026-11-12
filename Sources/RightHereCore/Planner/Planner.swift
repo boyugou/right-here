@@ -94,10 +94,14 @@ public struct Planner: Sendable {
             parsed = value
         case .failure(.unknownHost(let host))?:
             throw PlanError.refused(.refusalRepositoryUnknownHost(remote, host))
+        case .failure(.wiki)?:
+            throw PlanError.refused(.refusalRepositoryWiki(remote))
         case .failure(.unreadableRemote)?, nil:
             throw PlanError.refused(.refusalRepositoryUnreadableRemote(remote))
         }
         guard let commit = state.commit else { throw PlanError.refused(.refusalRepositoryNoCommit) }
+        // A push to the other repository moves the remote's branches too, and the link would go to a page that is not there.
+        guard !state.pushesElsewhere else { throw PlanError.refused(.refusalRepositoryPushesElsewhere(remote)) }
         guard state.isPushed else { throw PlanError.refused(.refusalRepositoryNotPushed(remote)) }
         let isDirectory: Bool
         switch state.kind {

@@ -88,12 +88,64 @@ struct RepositoryLinkTests {
         }
     }
 
-    @Test func aDecomposedNameIsLinkedAsThePrecomposedOneGitKeeps() throws {
+    /// The reader gives the names as the commit holds them, precomposed or not, and the host serves them so: the link keeps the form it is given.
+    @Test func aNameIsLinkedInTheFormTheCommitHoldsIt() throws {
         let parsed = try #require(remote("https://github.com/o/r"))
         let decomposed = "e\u{301}t\u{E9}.md".decomposedStringWithCanonicalMapping
         #expect(decomposed.unicodeScalars.count == 8)  // e, U+0301, t, e, U+0301, ., m, d
         #expect(RepositoryLink.url(remote: parsed, commit: commit, itemPath: [decomposed], isDirectory: false)
+                == "https://github.com/o/r/blob/\(commit)/e%CC%81te%CC%81.md")
+        #expect(RepositoryLink.url(remote: parsed, commit: commit, itemPath: [decomposed.precomposedStringWithCanonicalMapping], isDirectory: false)
                 == "https://github.com/o/r/blob/\(commit)/%C3%A9t%C3%A9.md")
+    }
+
+    /// The names the hosts give their SSH servers on port 443, for networks that close port 22.
+    @Test func theHostsOwnSSHServersOnPort443AreTheirHosts() {
+        #expect(remote("ssh://git" + Self.at + "ssh.github.com:443/owner/repo.git") == RepositoryRemote(host: .github, path: ["owner", "repo"]))
+        #expect(remote("ssh://git" + Self.at + "altssh.gitlab.com:443/group/sub/repo.git") == RepositoryRemote(host: .gitlab, path: ["group", "sub", "repo"]))
+        #expect(remote("ssh://git" + Self.at + "altssh.bitbucket.org:443/owner/repo.git") == RepositoryRemote(host: .bitbucket, path: ["owner", "repo"]))
+        let parsed = try? #require(remote("ssh://git" + Self.at + "ssh.github.com:443/owner/repo.git"))
+        #expect(parsed.flatMap { RepositoryLink.url(remote: $0, commit: commit, itemPath: [], isDirectory: true) } == "https://github.com/owner/repo/tree/\(commit)")
+    }
+
+    /// The clone of a wiki: its pages are not files of a repository, and `<repo>.wiki/blob/...` is not found (GitHub answered 404, 2026-11-12).
+    @Test(arguments: ["https://github.com/microsoft/vscode.wiki.git", "git@github.com:o/r.wiki.git", "https://gitlab.com/group/project.wiki.git",
+                      "https://codeberg.org/o/r.wiki", "https://github.com/o/r.WIKI.git"])
+    func aWikiIsNotARepositoryToLinkInto(text: String) {
+        #expect(RepositoryLink.parse(remote: text) == .failure(.wiki))
+    }
+
+    /// Credentials, ports, look-alike and encoded hosts, queries and doubled slashes, as an independent review found them handled (2026-11-12).
+    @Test func lookAlikeHostsAndTheRestOfAURLAreReadAsGitReadsThem() {
+        let github = RepositoryRemote(host: .github, path: ["o", "r"])
+        let cases: [(String, Result<RepositoryRemote, RepositoryLinkError>)] = [
+            ("https://user:tok" + Self.at + "github.com:443/o/r.git", .success(github)),
+            ("https://github.com:/o/r", .success(github)),
+            ("https://GITHUB.COM//o//r/", .success(github)),
+            ("https://user" + Self.at + "github.com" + Self.at + "evil.com/o/r", .failure(.unknownHost("evil.com"))),
+            ("https://github.com.evil.example/o/r", .failure(.unknownHost("github.com.evil.example"))),
+            ("https://evilgithub.com/o/r", .failure(.unknownHost("evilgithub.com"))),
+            ("https://%67ithub.com/o/r", .failure(.unreadableRemote)),
+            ("https://g\u{456}thub.com/o/r", .failure(.unreadableRemote)),
+            ("https://[::1]/o/r", .failure(.unreadableRemote)),
+            ("git" + Self.at + "[github.com:22]:o/r.git", .failure(.unreadableRemote)),
+            ("https://github.com/o/r?x=1", .failure(.unreadableRemote)),
+            ("https://github.com/o/r#x", .failure(.unreadableRemote)),
+            ("first.last:ghp_tok" + Self.at + "github.com/o/r", .failure(.unknownHost("first.last"))),
+        ]
+        for (text, expected) in cases {
+            #expect(RepositoryLink.parse(remote: text) == expected, "\(text)")
+        }
+    }
+
+    /// A push URL names the same repository as the fetch URL over any transport; another owner, repository or host is another one.
+    @Test func theSameRepositoryOverAnotherTransportIsTheSame() {
+        #expect(RepositoryLink.sameRepository("https://github.com/Owner/Repo", "git" + Self.at + "github.com:owner/repo.git"))
+        #expect(RepositoryLink.sameRepository("https://github.com/o/r", "ssh://git" + Self.at + "ssh.github.com:443/o/r.git"))
+        #expect(RepositoryLink.sameRepository("/srv/repo.git", "/srv/repo.git"), "the same text is the same remote")
+        #expect(!RepositoryLink.sameRepository("https://github.com/owner/upstream", "git" + Self.at + "github.com:me/upstream.git"))
+        #expect(!RepositoryLink.sameRepository("https://github.com/o/r", "https://gitlab.com/o/r"))
+        #expect(!RepositoryLink.sameRepository("https://github.com/o/r", "/srv/fork.git"))
     }
 
     @Test func charactersThatEndOrSplitAURLAreEncoded() throws {

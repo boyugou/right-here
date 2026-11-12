@@ -24,7 +24,7 @@ public enum PathHazard {
         return false
     }
 
-    private static func isSymbolicLink(_ path: String) -> Bool {
+    static func isSymbolicLink(_ path: String) -> Bool {
         var status = stat()
         return lstat(path, &status) == 0 && (status.st_mode & S_IFMT) == S_IFLNK
     }

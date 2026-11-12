@@ -21,12 +21,16 @@ public enum RepositoryLinkError: Error, Equatable, Sendable {
     case unreadableRemote
     /// A host other than the four; its name, reduced to the characters a host name has.
     case unknownHost(String)
+    /// The wiki of a repository (`<repo>.wiki`), whose pages are not files of a repository at a commit.
+    case wiki
 }
 
 public enum RepositoryLink {
     /// The schemes a host serves a repository over. One string, not a list of quoted words: a test makes sure that only `GitCommand` names
     /// git's program, and it looks for the quoted name.
     private static let remoteSchemes = Set("https http ssh git git+ssh".split(separator: " ").map(String.init))
+    /// The names the hosts give their SSH servers on port 443, for networks that close port 22, as each host's documentation gives them.
+    private static let sshOverHTTPSPort: [String: GitHost] = ["ssh.github.com": .github, "altssh.gitlab.com": .gitlab, "altssh.bitbucket.org": .bitbucket]
 
     /// Reads `https://host/owner/repo(.git)`, `ssh://user@host[:port]/owner/repo.git` and `user@host:owner/repo.git`.
     public static func parse(remote: String) -> Result<RepositoryRemote, RepositoryLinkError> {
@@ -58,7 +62,7 @@ public enum RepositoryLink {
             host = String(host[..<port])
         }
         host = host.lowercased()
-        guard let known = GitHost(rawValue: host) else {
+        guard let known = GitHost(rawValue: host) ?? sshOverHTTPSPort[host] else {
             // Named only when it reads as a host name: what is left of a token that lost its "@" (`ghp_…:x@host`) or a host
             // with a space in it would otherwise be shown, in an alert, the log or an agent's reply.
             let isHostName = host.contains(".") && host.unicodeScalars.allSatisfy { CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789.-").contains($0) }
@@ -67,6 +71,8 @@ public enum RepositoryLink {
         var segments = path.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
         if let last = segments.last, last.lowercased().hasSuffix(".git") { segments[segments.count - 1] = String(last.dropLast(4)) }
         guard segments.allSatisfy(isSafeSegment) else { return .failure(.unreadableRemote) }
+        // The hosts keep `.wiki` for the clone of a repository's wiki: its pages have other addresses, and a link to a file in it is not found.
+        if let last = segments.last, last.lowercased().hasSuffix(".wiki") { return .failure(.wiki) }
         switch known {
         case .gitlab: guard segments.count >= 2 else { return .failure(.unreadableRemote) }
         case .github, .codeberg, .bitbucket: guard segments.count == 2 else { return .failure(.unreadableRemote) }
@@ -93,6 +99,14 @@ public enum RepositoryLink {
         }
     }
 
+    /// Whether two remote URLs name the same repository: the same text, or the same host and path over any transport (`https://github.com/o/r` and
+    /// `git@github.com:o/r.git`). The hosts do not tell the case of an owner or a repository apart.
+    public static func sameRepository(_ first: String, _ second: String) -> Bool {
+        if first == second { return true }
+        guard case .success(let one) = parse(remote: first), case .success(let other) = parse(remote: second) else { return false }
+        return one.host == other.host && one.path.map { $0.lowercased() } == other.path.map { $0.lowercased() }
+    }
+
     /// The item's path from the repository's top folder, by segment: empty for the top folder itself, nil outside it.
     public static func itemPath(of item: URL, inRepository root: URL) -> [String]? {
         let base = root.lexicallyNormalized.pathComponents
@@ -111,9 +125,9 @@ public enum RepositoryLink {
         (commit.count == 40 || commit.count == 64) && commit.unicodeScalars.allSatisfy { CharacterSet(charactersIn: "0123456789abcdef").contains($0) }
     }
 
-    /// Precomposed first: Finder can hand over decomposed names, and git on macOS keeps precomposed ones, which is what the host shows.
+    /// The name as it is given: the reader gives it as the commit holds it (precomposed or not), which is the name the host serves.
     private static func encode(_ segment: String) -> String {
         let unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
-        return segment.precomposedStringWithCanonicalMapping.addingPercentEncoding(withAllowedCharacters: unreserved) ?? ""
+        return segment.addingPercentEncoding(withAllowedCharacters: unreserved) ?? ""
     }
 }

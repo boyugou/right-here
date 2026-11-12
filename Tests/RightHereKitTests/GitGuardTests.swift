@@ -695,10 +695,11 @@ struct RepositoryReaderTests {
             ProcessResult(status: 0, standardOutput: "/work/app\n"),
             ProcessResult(status: 0, standardOutput: commit + "\n"),
             ProcessResult(status: 0, standardOutput: "refs/heads/main\n"),
-            ProcessResult(status: 0, standardOutput: "upstream\n"), ProcessResult(status: 1), ProcessResult(status: 1),
+            ProcessResult(status: 0, standardOutput: "core.ignorecase\ntrue\u{0}branch.main.remote\nupstream\u{0}"),
             ProcessResult(status: 0, standardOutput: "origin\nupstream\n"),
             ProcessResult(status: 0, standardOutput: ""),
             ProcessResult(status: 0, standardOutput: "https://github.com/o/r.git\n"),
+            ProcessResult(status: 0, standardOutput: "git@github.com:o/r.git\n"),
             ProcessResult(status: 0, standardOutput: "blob\u{0}")
         ])
         let item = URL(fileURLWithPath: "/work/app/src/a.swift")
@@ -708,12 +709,11 @@ struct RepositoryReaderTests {
             git(["-C", "/work/app/src", "rev-parse", "--show-toplevel"]),
             git(["-C", "/work/app", "rev-parse", "--verify", "--quiet", "HEAD^{commit}"]),
             git(["-C", "/work/app", "symbolic-ref", "-q", "HEAD"]),
-            git(["-C", "/work/app", "config", "--get", "branch.main.remote"]),
-            git(["-C", "/work/app", "config", "--get", "branch.main.pushRemote"]),
-            git(["-C", "/work/app", "config", "--get", "remote.pushDefault"]),
+            git(["-C", "/work/app", "config", "--list", "-z"]),
             git(["-C", "/work/app", "remote"]),
             git(["-C", "/work/app", "rev-list", "-n1", commit, "--not", "--remotes=upstream"]),
             git(["-C", "/work/app", "remote", "get-url", "upstream"]),
+            git(["-C", "/work/app", "remote", "get-url", "--push", "--all", "upstream"]),
             batchCheck(in: "/work/app", input: "\(commit):src/a.swift\u{0}")
         ])
         #expect(states[item] == RepositoryState(root: URL(fileURLWithPath: "/work/app"), itemPath: ["src", "a.swift"], remoteName: "upstream",
@@ -724,11 +724,10 @@ struct RepositoryReaderTests {
     /// one; a name with a slash is a remote too, and one that starts with "-" or would be a pattern is never used.
     @Test func theFirstRemoteThatHasTheCommitIsChosen() async throws {
         func chosen(upstream: String? = nil, pushRemote: String? = nil, remotes: String, having: Set<String>) async throws -> String? {
+            let settings = (upstream.map { "branch.feature.remote\n\($0)\u{0}" } ?? "") + (pushRemote.map { "branch.feature.pushremote\n\($0)\u{0}" } ?? "")
             var results = [ProcessResult(status: 0, standardOutput: "/work/app\n"), ProcessResult(status: 0, standardOutput: commit + "\n"),
                            ProcessResult(status: 0, standardOutput: "refs/heads/feature\n"),
-                           upstream.map { ProcessResult(status: 0, standardOutput: $0 + "\n") } ?? ProcessResult(status: 1),
-                           pushRemote.map { ProcessResult(status: 0, standardOutput: $0 + "\n") } ?? ProcessResult(status: 1),
-                           ProcessResult(status: 1), ProcessResult(status: 0, standardOutput: remotes)]
+                           ProcessResult(status: 0, standardOutput: settings), ProcessResult(status: 0, standardOutput: remotes)]
             let names = remotes.split(separator: "\n").map(String.init)
             var order: [String] = []
             for name in [upstream, pushRemote, names.contains("origin") ? "origin" : nil, names.count == 1 ? names.first : nil].compactMap({ $0 })
@@ -737,7 +736,7 @@ struct RepositoryReaderTests {
                 results.append(ProcessResult(status: 0, standardOutput: having.contains(name) ? "" : commit + "\n"))
                 if having.contains(name) { break }
             }
-            if !order.isEmpty { results.append(ProcessResult(status: 0, standardOutput: "https://github.com/o/r\n")) }
+            if !order.isEmpty { results += [ProcessResult(status: 0, standardOutput: "https://github.com/o/r\n"), ProcessResult(status: 0, standardOutput: "https://github.com/o/r\n")] }
             results.append(ProcessResult(status: 0, standardOutput: "tree\u{0}"))
             let root = URL(fileURLWithPath: "/work/app")
             let facts = FakeSystemFacts(directories: ["/work/app"], gitRoots: ["/work/app"])
@@ -800,6 +799,7 @@ struct RepositoryReaderTests {
         #expect(readme.commit?.count == 40 && readme.isPushed && readme.kind == .file)
         #expect(states[items[1]]?.kind == .file, "a name that starts with - was read as an option")
         #expect(states[items[2]]?.kind == .file, "the decomposed name of a precomposed file was not found")
+        #expect(states[items[2]]?.itemPath.map { Array($0.unicodeScalars) } == [Array(precomposed.unicodeScalars)], "the link must carry the name the commit has")
         #expect(states[items[3]].map { $0.kind == nil && $0.gitError == nil } == true, "an untracked file was said to be in the commit")
         #expect(states[items[4]]?.kind == .folder && states[items[4]]?.itemPath == [])
         #expect(states[inSub]?.itemPath == ["sub", "x.txt"] && states[inSub]?.kind == .file, "an empty .git folder made sub a repository: \(String(describing: states[inSub]))")
@@ -888,6 +888,239 @@ struct RepositoryReaderTests {
         let item = lab.repository.appendingPathComponent(precomposed.decomposedStringWithCanonicalMapping)
         let states = try await RepositoryReader.read(items: [item], facts: FakeSystemFacts(gitRoots: [lab.repository.path]), runner: lab.runner)
         #expect(states[item]?.kind == .file, "\(String(describing: states[item]))")
+        #expect(states[item]?.itemPath.map { Array($0.unicodeScalars) } == [Array(precomposed.unicodeScalars)], "the link must carry the name the commit has")
+    }
+
+    /// A link to the page of a commit that the remote's fetch URL does not have. `remote.origin.pushurl` (or `pushInsteadOf`) sends a push to another
+    /// repository, and `git push origin` still moves `refs/remotes/origin/*`.
+    @Test(arguments: ["pushurl", "pushInsteadOf"])
+    func aCommitPushedOnlyThroughThePushURLIsNotLinkedOnTheFetchURL(setting: String) async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        let upstream = lab.folder.appendingPathComponent("upstream.git")
+        let fork = lab.folder.appendingPathComponent("fork.git")
+        try lab.git(["init", "-q", "--bare", upstream.path], in: lab.folder)
+        try lab.git(["init", "-q", "--bare", fork.path], in: lab.folder)
+        try lab.git(["remote", "add", "origin", upstream.path])
+        try lab.git(["push", "-q", "-u", "origin", "main"])
+        // From now on: fetch from the project on GitHub, push to a fork.
+        try lab.git(["config", "remote.origin.url", "https://github.com/owner/upstream"])
+        if setting == "pushurl" {
+            try lab.git(["config", "remote.origin.pushurl", fork.path])
+        } else {
+            try lab.git(["config", "url.\(fork.path).pushInsteadOf", "https://github.com/owner/upstream"])
+        }
+        try "two".write(to: lab.repository.appendingPathComponent("b.txt"), atomically: true, encoding: .utf8)
+        try lab.git(["add", "b.txt"])
+        try lab.git(["commit", "-q", "-m", "two"])
+        try lab.git(["push", "-q", "origin", "main"])
+        let head = try lab.git(["rev-parse", "HEAD"]).trimmingCharacters(in: .whitespacesAndNewlines)
+        // Control: only the fork has the commit, and the remote's branch moved with the push.
+        #expect(throws: (any Error).self) { try lab.git(["cat-file", "-e", head], in: upstream) }
+        try lab.git(["cat-file", "-e", head], in: fork)
+        let item = lab.repository.appendingPathComponent("b.txt")
+        let facts = FakeSystemFacts(directories: [lab.repository.path], files: [item.path], gitRoots: [lab.repository.path])
+        let states = try await RepositoryReader.read(items: [item], facts: facts, runner: lab.runner)
+        #expect(states[item]?.isPushed == true, "control: the push moved refs/remotes/origin/main")
+        #expect(states[item]?.pushesElsewhere == true, "\(String(describing: states[item]))")
+        let made = try? Planner(facts: facts, repositories: states).plan(.copyRepositoryLink, context: HereContext(origin: .items, items: [item]))
+        #expect(made == nil, "linked a commit only the push URL has: \(String(describing: made?.steps))")
+    }
+
+    /// Fetching over https and pushing over ssh (`url."git@github.com:".pushInsteadOf`) is one repository: the link is made.
+    @Test func theSameRepositoryOverAnotherTransportIsLinked() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        try lab.git(["remote", "add", "origin", "https://github.com/owner/repo"])
+        try lab.git(["config", "url.git" + "@" + "github.com:.pushInsteadOf", "https://github.com/"])
+        try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
+        #expect(try lab.git(["remote", "get-url", "--push", "origin"]).hasPrefix("git" + "@" + "github.com:"), "control: the push URL is the ssh one")
+        let item = lab.repository.appendingPathComponent("README.md")
+        let facts = FakeSystemFacts(directories: [lab.repository.path], files: [item.path], gitRoots: [lab.repository.path])
+        let states = try await RepositoryReader.read(items: [item], facts: facts, runner: lab.runner)
+        #expect(states[item]?.pushesElsewhere == false, "\(String(describing: states[item]))")
+        let made = try Planner(facts: facts, repositories: states).plan(.copyRepositoryLink, context: HereContext(origin: .items, items: [item]))
+        guard case .copyToPasteboard(let text)? = made.steps.first else { Issue.record("\(made.steps)"); return }
+        #expect(text.hasPrefix("https://github.com/owner/repo/blob/") && text.hasSuffix("/README.md"), "\(text)")
+    }
+
+    /// A `cat-file` that fails (a git before 2.42 has no `-Z`: status 129) is what git said, not "the items are not in the commit".
+    @Test func aFailingLookUpIsSaidInGitsWords() async throws {
+        let commit = "d89f86032883bae7ef136d543343639777e2455a"
+        let runner = FakeProcessRunner(results: [
+            ProcessResult(status: 0, standardOutput: "/work/app\n"),
+            ProcessResult(status: 0, standardOutput: commit + "\n"),
+            ProcessResult(status: 0, standardOutput: "refs/heads/main\n"),
+            ProcessResult(status: 0, standardOutput: ""),
+            ProcessResult(status: 0, standardOutput: "origin\n"),
+            ProcessResult(status: 0, standardOutput: ""),
+            ProcessResult(status: 0, standardOutput: "https://github.com/o/r.git\n"),
+            ProcessResult(status: 0, standardOutput: "https://github.com/o/r.git\n"),
+            ProcessResult(status: 129, standardError: "error: unknown switch `Z'\nusage: git cat-file <type> <object>\n")
+        ])
+        let item = URL(fileURLWithPath: "/work/app/src/a.swift")
+        let facts = FakeSystemFacts(directories: ["/work/app", "/work/app/src"], files: ["/work/app/src/a.swift"], gitRoots: ["/work/app"])
+        let states = try await RepositoryReader.read(items: [item], facts: facts, runner: runner)
+        #expect(states[item]?.gitError == .said("error: unknown switch `Z'"), "\(String(describing: states[item]))")
+        let error = try #require(#expect(throws: PlanError.self) {
+            try Planner(facts: facts, repositories: states).plan(.copyRepositoryLink, context: HereContext(origin: .items, items: [item]))
+        })
+        let text = error.errorDescription ?? ""
+        #expect(text.contains("unknown switch") && !text.contains("not in the checked-out commit"), "\(text)")
+    }
+
+    /// A name the commit holds decomposed (committed by a git that did not precompose: Linux, an old git, `core.precomposeunicode=false`) is found, and
+    /// the link carries it decomposed, as the host serves it.
+    @Test func aNameTheCommitHoldsDecomposedIsFoundAndLinkedSo() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        try lab.git(["remote", "add", "origin", "https://github.com/owner/repo"])
+        let decomposed = "e\u{301}te\u{301}.md"
+        try "x".write(to: lab.repository.appendingPathComponent(decomposed), atomically: true, encoding: .utf8)
+        try lab.git(["config", "core.precomposeunicode", "false"])
+        try lab.git(["add", "."])
+        try lab.git(["commit", "-q", "-m", "nfd"])
+        try lab.git(["config", "core.precomposeunicode", "true"])
+        try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
+        let names = try lab.git(["ls-tree", "-z", "--name-only", "HEAD"]).split(separator: "\u{0}").map(String.init)
+        #expect(names.contains { $0.unicodeScalars.contains("\u{301}") }, "control: the commit holds the decomposed name: \(names.map { Array($0.unicodeScalars) })")
+        let item = lab.repository.appendingPathComponent(decomposed.precomposedStringWithCanonicalMapping)
+        let facts = FakeSystemFacts(directories: [lab.repository.path], files: [item.path], gitRoots: [lab.repository.path])
+        let states = try await RepositoryReader.read(items: [item], facts: facts, runner: lab.runner)
+        #expect(states[item]?.kind == .file, "\(String(describing: states[item]))")
+        let made = try Planner(facts: facts, repositories: states).plan(.copyRepositoryLink, context: HereContext(origin: .items, items: [item]))
+        guard case .copyToPasteboard(let text)? = made.steps.first else { Issue.record("\(made.steps)"); return }
+        #expect(text.hasSuffix("/e%CC%81te%CC%81.md"), "\(text)")
+    }
+
+    /// A rename that changes only the case, on a disk that ignores case: git (`core.ignorecase`) sees no change, and the link names the file as the
+    /// commit has it.
+    @Test func aNameWhoseCaseChangedOnlyOnDiskIsLinkedAsTheCommitHasIt() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        try lab.git(["remote", "add", "origin", "https://github.com/owner/repo"])
+        try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
+        #expect(try lab.git(["config", "--get", "core.ignorecase"]).hasPrefix("true"), "control: git made the repository on a disk that ignores case")
+        #expect(rename(lab.repository.appendingPathComponent("README.md").path, lab.repository.appendingPathComponent("Readme.md").path) == 0)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: lab.repository.path).contains("Readme.md"), "control: the disk has the new case")
+        #expect(try lab.git(["status", "--porcelain"]).isEmpty, "control: git sees no change")
+        let item = lab.repository.appendingPathComponent("Readme.md")
+        let facts = FakeSystemFacts(directories: [lab.repository.path], files: [item.path], gitRoots: [lab.repository.path])
+        let states = try await RepositoryReader.read(items: [item], facts: facts, runner: lab.runner)
+        #expect(states[item]?.kind == .file && states[item]?.itemPath == ["README.md"], "\(String(describing: states[item]))")
+    }
+
+    /// A commit made on a disk that keeps case can hold `README.md` and `readme.md` side by side: a third case on this disk is neither of them for sure.
+    @Test func aNameThatMatchesTwoOfTheCommitInAnotherCaseIsNotGuessed() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        try lab.git(["remote", "add", "origin", "https://github.com/owner/repo"])
+        let blob = try lab.git(["rev-parse", "HEAD:README.md"]).trimmingCharacters(in: .whitespacesAndNewlines)
+        try lab.git(["update-index", "--add", "--cacheinfo", "100644,\(blob),readme.md"])
+        try lab.git(["commit", "-q", "-m", "two cases"])
+        try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
+        #expect(try lab.git(["ls-tree", "--name-only", "HEAD"]).split(separator: "\n").filter { $0.lowercased() == "readme.md" }.count == 2, "control")
+        #expect(rename(lab.repository.appendingPathComponent("README.md").path, lab.repository.appendingPathComponent("ReadMe.md").path) == 0)
+        let item = lab.repository.appendingPathComponent("ReadMe.md")
+        let facts = FakeSystemFacts(directories: [lab.repository.path], files: [item.path], gitRoots: [lab.repository.path])
+        let states = try await RepositoryReader.read(items: [item], facts: facts, runner: lab.runner)
+        #expect(states[item].map { $0.kind == nil && $0.gitError == nil } == true, "\(String(describing: states[item]))")
+    }
+
+    /// Without `core.ignorecase` a name in another case is another file, which the commit does not have.
+    @Test func withoutIgnoreCaseANameInAnotherCaseIsNotTheCommitsFile() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        try lab.git(["remote", "add", "origin", "https://github.com/owner/repo"])
+        try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
+        try lab.git(["config", "core.ignorecase", "false"])
+        #expect(rename(lab.repository.appendingPathComponent("README.md").path, lab.repository.appendingPathComponent("Readme.md").path) == 0)
+        let item = lab.repository.appendingPathComponent("Readme.md")
+        let facts = FakeSystemFacts(directories: [lab.repository.path], files: [item.path], gitRoots: [lab.repository.path])
+        let states = try await RepositoryReader.read(items: [item], facts: facts, runner: lab.runner)
+        #expect(states[item].map { $0.kind == nil && $0.gitError == nil } == true, "\(String(describing: states[item]))")
+    }
+
+    /// A committed link to a folder outside the repository is a file of the repository: git is asked in the folder around it, not in the one it points to.
+    @Test func aCommittedLinkToAFolderOutsideTheRepositoryIsLinkedAsTheFileItIs() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        try lab.git(["remote", "add", "origin", "https://github.com/owner/repo"])
+        try FileManager.default.createSymbolicLink(atPath: lab.repository.appendingPathComponent("data").path, withDestinationPath: lab.outside.path)
+        try lab.git(["add", "data"])
+        try lab.git(["commit", "-q", "-m", "link"])
+        try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
+        let item = lab.repository.appendingPathComponent("data")
+        // As the live facts say: `isDirectory` follows the link.
+        let facts = FakeSystemFacts(directories: [lab.repository.path, item.path], gitRoots: [lab.repository.path])
+        let states = try await RepositoryReader.read(items: [item], facts: facts, runner: lab.runner)
+        #expect(states[item]?.kind == .file && states[item]?.itemPath == ["data"], "\(String(describing: states[item]))")
+    }
+
+    /// With `core.precomposeunicode=false`, a key with the branch's name in it would reach git decomposed: the branch's upstream is still found.
+    @Test func theUpstreamOfABranchWithAnAccentIsFound() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        try lab.git(["remote", "add", "origin", "https://github.com/someone/other"])
+        try lab.git(["remote", "add", "upstream", "https://github.com/owner/repo"])
+        try lab.git(["checkout", "-q", "-b", "f\u{E9}"])
+        let branch = try lab.git(["symbolic-ref", "HEAD"]).trimmingCharacters(in: .whitespacesAndNewlines)
+        try lab.git(["update-ref", "refs/remotes/upstream/x", "HEAD"])
+        try lab.git(["config", "core.precomposeunicode", "false"])
+        let config = lab.repository.appendingPathComponent(".git/config")
+        try (String(contentsOf: config, encoding: .utf8) + "[branch \"\(branch.dropFirst("refs/heads/".count))\"]\n\tremote = upstream\n")
+            .write(to: config, atomically: true, encoding: .utf8)
+        let item = lab.repository
+        let states = try await RepositoryReader.read(items: [item], facts: FakeSystemFacts(directories: [item.path], gitRoots: [item.path]), runner: lab.runner)
+        #expect(states[item]?.remoteName == "upstream", "branch \(Array(branch.unicodeScalars)): \(String(describing: states[item]))")
+    }
+
+    /// A detached linked worktree, an initialized submodule (its folder and a file in it link its own repository), a folder reached through a link from
+    /// outside the repository, and a repository with no commit yet, as an independent review found them handled (2026-11-12).
+    @Test func worktreesSubmodulesLinkedFoldersAndAnUnbornHeadAreRead() async throws {
+        let lab = try Lab()
+        try lab.makeRepository(attributes: nil)
+        try lab.git(["remote", "add", "origin", "https://github.com/owner/repo"])
+        try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
+        let head = try lab.git(["rev-parse", "HEAD"]).trimmingCharacters(in: .whitespacesAndNewlines)
+        let worktree = lab.folder.appendingPathComponent("wt")
+        try lab.git(["worktree", "add", "-q", "--detach", worktree.path])
+        let source = lab.folder.appendingPathComponent("subsource")
+        try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+        try lab.git(["init", "-q"], in: source)
+        try "s".write(to: source.appendingPathComponent("s.txt"), atomically: true, encoding: .utf8)
+        try lab.git(["add", "s.txt"], in: source)
+        try lab.git(["commit", "-q", "-m", "s"], in: source)
+        try lab.git(["-c", "protocol.file.allow=always", "submodule", "add", "-q", source.path, "mod"])
+        try lab.git(["commit", "-q", "-m", "mod"])
+        try lab.git(["update-ref", "refs/remotes/origin/main", "HEAD"])
+        let mod = lab.repository.appendingPathComponent("mod")
+        try lab.git(["config", "remote.origin.url", "https://codeberg.org/someone/sub"], in: mod)
+        let subHead = try lab.git(["rev-parse", "HEAD"], in: mod).trimmingCharacters(in: .whitespacesAndNewlines)
+        let viaLink = lab.folder.appendingPathComponent("shortcut")
+        try FileManager.default.createSymbolicLink(atPath: viaLink.path, withDestinationPath: lab.repository.path)
+        let unborn = lab.folder.appendingPathComponent("unborn")
+        try FileManager.default.createDirectory(at: unborn, withIntermediateDirectories: true)
+        try lab.git(["init", "-q"], in: unborn)
+        try lab.git(["remote", "add", "origin", "https://github.com/owner/new"], in: unborn)
+
+        let items = [worktree.appendingPathComponent("README.md"), mod, mod.appendingPathComponent("s.txt"), viaLink.appendingPathComponent("README.md"), unborn]
+        let facts = FakeSystemFacts(directories: [lab.repository.path, worktree.path, mod.path, viaLink.path, unborn.path],
+                                    files: [items[0].path, items[2].path, items[3].path],
+                                    gitRoots: [lab.repository.path, worktree.path, mod.path, viaLink.path, unborn.path])
+        let states = try await RepositoryReader.read(items: items, facts: facts, runner: lab.runner)
+        func link(_ item: URL) -> String {
+            do {
+                let made = try Planner(facts: facts, repositories: states).plan(.copyRepositoryLink, context: HereContext(origin: .items, items: [item]))
+                guard case .copyToPasteboard(let text)? = made.steps.first else { return "?" }
+                return text
+            } catch { return "refused: \((error as? PlanError)?.errorDescription ?? "\(error)")" }
+        }
+        #expect(link(items[0]) == "https://github.com/owner/repo/blob/\(head)/README.md")
+        #expect(link(items[1]) == "https://codeberg.org/someone/sub/src/commit/\(subHead)")
+        #expect(link(items[2]) == "https://codeberg.org/someone/sub/src/commit/\(subHead)/s.txt")
+        #expect(link(items[3]).hasPrefix("https://github.com/owner/repo/blob/") && link(items[3]).hasSuffix("/README.md"))
+        #expect(link(items[4]).contains("no commit"), "\(link(items[4]))")
     }
 }
 

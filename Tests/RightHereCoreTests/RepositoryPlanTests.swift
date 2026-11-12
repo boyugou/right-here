@@ -84,6 +84,19 @@ struct RepositoryPlanTests {
         #expect(refusal(states: [file: state(kind: .submodule)])?.contains("is a submodule") == true)
         #expect(refusal(states: [file: RepositoryState(root: nil, gitError: .said("fatal: not a git repository: /nonexistent"))])?
                 .contains("fatal: not a git repository") == true, "git's own reason is not what the person is told")
+        #expect(refusal(states: [file: state(url: "https://github.com/owner/app.wiki.git")])?.contains("is the wiki of a repository") == true)
+    }
+
+    /// A remote that pushes to another repository than it fetches from: its branches move with a push too, so they do not tell whether the commit is
+    /// in the repository the link goes to, whether or not the reader found it pushed.
+    @Test func aRemoteThatPushesElsewhereGivesNoLink() {
+        for pushed in [true, false] {
+            var elsewhere = state(pushed: pushed)
+            elsewhere.pushesElsewhere = true
+            let said = refusal(states: [file: elsewhere])
+            #expect(said?.contains("pushes to another repository than the one it fetches from") == true && said?.contains("`git remote add`") == true,
+                    "\(String(describing: said))")
+        }
     }
 
     @Test func onlyTheTwoRepositoryActionsReadTheRepository() {
