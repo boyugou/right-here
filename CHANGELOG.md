@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Opening items in apps, after an independent review.** A terminal is never handed a file, which it would run, also when it is not
+  one Right Here comes with: the config refuses a second entry that gives the bundle identifier of a terminal it adds another role, an
+  app that says it runs shell scripts is handed the folder whatever the config calls it (and never opens a new file), and Open With of
+  a terminal starts it as Open in Terminal does. Two apps can no longer have one name in the menu; the window says when a name is taken.
+
 ## 1.2.12 (2026-11-12)
 
 - **Copy Path, after an independent review.** A file name with a control character (Control-C, Return), copied as Shell-Escaped or

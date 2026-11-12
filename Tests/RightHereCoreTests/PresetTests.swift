@@ -42,6 +42,7 @@ private final class CountingFacts: SystemFacts, @unchecked Sendable {
     func gitRoot(containing url: URL) -> URL? { base.gitRoot(containing: url) }
     func applicationURL(bundleID: String) -> URL? { base.applicationURL(bundleID: bundleID) }
     func displayName(bundleID: String) -> String? { base.displayName(bundleID: bundleID) }
+    func runsShellScripts(bundleID: String) -> Bool { base.runsShellScripts(bundleID: bundleID) }
     func bundleVersion(bundleID: String) -> String? { base.bundleVersion(bundleID: bundleID) }
     func isRunning(bundleID: String) -> Bool { base.isRunning(bundleID: bundleID) }
     func environment(_ key: String) -> String? { base.environment(key) }

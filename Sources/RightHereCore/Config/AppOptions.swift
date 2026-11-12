@@ -18,7 +18,8 @@ public struct AppRowState: Sendable, Equatable, Identifiable {
     public var installed: Bool
     /// The config starts it through templates of its own (`open_args`, `run_args`): only the text of the config changes those, and a role other than a terminal would leave them without a meaning.
     public var usesTemplates: Bool
-    /// It has the bundle identifier of a terminal that comes with Right Here. A terminal is only handed folders, because handed a file it runs it, so its role stays "terminal".
+    /// It has the bundle identifier of a terminal that comes with Right Here, or the installed app says it runs shell scripts. A terminal is only handed folders, because
+    /// handed a file it runs it, so its role stays "terminal".
     public var isKnownTerminal: Bool
     public var origin: Origin
     /// Where the config writes it: the entries of `[[app]]`. `nil` for an entry written in a form with no place to edit it by (an inline array).
@@ -52,12 +53,16 @@ public struct AppsState: Sendable, Equatable {
     /// Ids that a new app must not take: the ones in use (a built-in app's id would replace it), the ones a machine turns off, the words that name a launcher, and those of the agents and of the
     /// new-file templates: `disabled` is one list of ids for the three, so an id of one kind that another kind has would turn both off.
     public var takenIDs: Set<String>
+    /// Names that a new app must not take (`String.comparableName`): the config's apps' and every built-in app's, as the config's builder refuses them, since the menu tells
+    /// apps apart by their names.
+    public var takenNames: Set<String>
 
-    public init(rows: [AppRowState], available: [String: String], turnedOff: [String: String] = [:], takenIDs: Set<String>) {
+    public init(rows: [AppRowState], available: [String: String], turnedOff: [String: String] = [:], takenIDs: Set<String>, takenNames: Set<String> = []) {
         self.rows = rows
         self.available = available
         self.turnedOff = turnedOff
         self.takenIDs = takenIDs
+        self.takenNames = takenNames
     }
 
     public func row(id: String) -> AppRowState? { rows.first { $0.id == id } }
@@ -79,7 +84,8 @@ public enum AppOptions {
             let usesTemplates: Bool
             if case .template = app.driver { usesTemplates = true } else { usesTemplates = false }
             return AppRowState(id: app.id, name: app.name, role: app.role, bundleIDs: app.bundleIDs, icon: (bundleID ?? app.bundleIDs.first).map(Icon.app), installed: bundleID != nil,
-                               usesTemplates: usesTemplates, isKnownTerminal: KnownApps.terminal(bundleIDs: app.bundleIDs) != nil, origin: builtIn.contains(app.id) ? .replacesBuiltIn : .own, entry: entries[app.id])
+                               usesTemplates: usesTemplates,
+                               isKnownTerminal: KnownApps.terminal(bundleIDs: app.bundleIDs) != nil || app.bundleIDs.contains(where: facts.runsShellScripts(bundleID:)), origin: builtIn.contains(app.id) ? .replacesBuiltIn : .own, entry: entries[app.id])
         }
         var available: [String: String] = [:]
         for app in config.allApps {
@@ -91,7 +97,9 @@ public enum AppOptions {
         }
         let taken = Set(config.allApps.map(\.id)).union(KnownApps.all.map(\.id)).union(AgentLauncher.reservedWords)
             .union(config.allAgents.map(\.id)).union(KnownAgents.all.map(\.id)).union(config.newFile.templates.map(\.id)).union(NewFileTemplate.builtIn.map(\.id))
-        return AppsState(rows: rows, available: available, turnedOff: turnedOff, takenIDs: taken)
+        let replaced = Set(config.apps.map(\.id))
+        let names = Set((config.apps + KnownApps.all.filter { !replaced.contains($0.id) }).map(\.name.comparableName))
+        return AppsState(rows: rows, available: available, turnedOff: turnedOff, takenIDs: taken, takenNames: names)
     }
 
     private static func key(_ position: Int, _ field: String) -> String { "app.\(position).\(field)" }
@@ -147,7 +155,7 @@ public enum AppOptions {
     public static func creating(name: String, bundleID: String, role: AppDescriptor.Role, in state: AppsState, alsoTaken: Set<String> = [], alsoAvailable: Set<String> = []) -> (id: String, change: Change)? {
         let title = name.trimmingCharacters(in: .whitespaces), bundle = bundleID.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty, isBundleID(bundle), roles.contains(role), state.available[bundle.lowercased()] == nil, state.turnedOff[bundle.lowercased()] == nil,
-              !alsoAvailable.contains(bundle.lowercased()) else { return nil }
+              !alsoAvailable.contains(bundle.lowercased()), !state.takenNames.contains(title.comparableName) else { return nil }
         let taken = state.takenIDs.union(alsoTaken)
         let id = IDSlug.unique(IDSlug.make(from: title) ?? "app") { taken.contains($0) }
         var fields = [ConfigField("id", .string(id)), ConfigField("name", .string(title)), ConfigField("bundle_id", .string(bundle))]

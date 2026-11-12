@@ -173,11 +173,15 @@ public struct Planner: Sendable {
     // MARK: Open with an app
 
     private func openApp(_ app: AppDescriptor, ref: ActionRef, context: HereContext, notices: [String] = []) throws -> LaunchPlan {
+        // A terminal is opened as one, through its adapter: handed the folder (CLAUDE.md rule 3), and started the way the adapter knows (Warp's link, Alacritty's
+        // working directory, a template's arguments), whichever action names it.
+        if app.role == .terminal { return try openTerminal(app.id, ref: ref, context: context) }
         guard let bundleID = app.installedBundleID(facts: facts) else { throw PlanError.appNotInstalled(app.name) }
         let targets: [URL]
-        if app.role == .terminal {
-            let directory = try workingDirectory(for: context)
-            targets = [directory]
+        // An app that says it runs shell scripts is a terminal whatever the config calls it (one Right Here does not know, added without its role): it is handed
+        // the folder, as a terminal is, since handed a file it would run it.
+        if facts.runsShellScripts(bundleID: bundleID) {
+            targets = [try workingDirectory(for: context)]
         } else {
             targets = context.pathTargets
         }
@@ -407,7 +411,8 @@ public struct Planner: Sendable {
     /// file, it would run it) and never an app that is not installed, so a file is never opened with no app named.
     private func newFileApp(for template: NewFileTemplate) -> String? {
         func installedBundleID(_ app: AppDescriptor) -> String? {
-            app.role == .terminal ? nil : app.installedBundleID(facts: facts)
+            guard app.role != .terminal, let bundleID = app.installedBundleID(facts: facts), !facts.runsShellScripts(bundleID: bundleID) else { return nil }
+            return bundleID
         }
         if let app = template.openWith.flatMap(config.app(id:)), let bundleID = installedBundleID(app) { return bundleID }
         guard let editor = try? defaults.resolve(role: .editor, configured: config.editor) else { return nil }

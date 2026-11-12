@@ -139,3 +139,15 @@ struct LiveOnDiskPathTests {
     }
 }
 
+
+@Suite("LiveSystemFacts: apps that run shell scripts")
+struct LiveSystemFactsShellAppTests {
+    /// What an app says of itself in its `Info.plist` (no code of it runs): Terminal says it runs shell scripts (`CFBundleTypeRole` `Shell`), TextEdit does not, and an app
+    /// that is not installed says nothing. The planner hands an app that says so a folder and never a file (CLAUDE.md rule 3).
+    @Test func terminalSaysItRunsShellScriptsAndTextEditDoesNot() {
+        let facts = LiveSystemFacts()
+        #expect(facts.runsShellScripts(bundleID: "com.apple.Terminal"))
+        #expect(!facts.runsShellScripts(bundleID: "com.apple.TextEdit"))
+        #expect(!facts.runsShellScripts(bundleID: "com.example.not-installed-anywhere"))
+    }
+}

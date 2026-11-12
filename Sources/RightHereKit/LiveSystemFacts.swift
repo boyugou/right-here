@@ -118,6 +118,12 @@ public struct LiveSystemFacts: SystemFacts {
         return name.hasSuffix(".app") ? String(name.dropLast(4)) : name
     }
 
+    /// Read from the app's `Info.plist` and nothing else (no code of the app runs).
+    public func runsShellScripts(bundleID: String) -> Bool {
+        guard let url = applicationURL(bundleID: bundleID) else { return false }
+        return AppBundleInfo.read(at: url)?.runsShellScripts ?? false
+    }
+
     /// Every copy LaunchServices knows, in the Applications folders, in a download, on a mounted disk image or in a build folder.
     public func applicationCopies(bundleID: String) -> [AppCopy] {
         NSWorkspace.shared.urlsForApplications(withBundleIdentifier: bundleID).map { url in

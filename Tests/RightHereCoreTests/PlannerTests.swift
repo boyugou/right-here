@@ -189,9 +189,11 @@ struct PlannerTests {
     @Test("a terminal app named by open.app is handed the folder around a selected file, never the file, which it would run", arguments: ["ghostty", "terminal", "wezterm", "alacritty"])
     func anOpenAppOfATerminalIsHandedAFolder(id: String) throws {
         let installed = KnownApps.terminals.flatMap(\.bundleIDs)
-        let plan = try Planner(facts: machine(installed: installed)).plan(.openApp(id), context: selection("/Users/tester/code/app/a.txt"))
-        guard case .open(let step)? = plan.steps.first else { Issue.record("expected an open step, got \(plan.steps)"); return }
-        #expect(step.targets == ["/Users/tester/code/app"], "\(step.targets)")
+        let planner = Planner(facts: machine(installed: installed))
+        let plan = try planner.plan(.openApp(id), context: selection("/Users/tester/code/app/a.txt"))
+        // Started as Open in Terminal starts it, through its adapter (2026-11-12): the folder, never the file.
+        #expect(plan.steps == (try planner.plan(.openTerminal(id), context: selection("/Users/tester/code/app/a.txt"))).steps)
+        #expect(!"\(plan.steps)".contains("a.txt") && "\(plan.steps)".contains("/Users/tester/code/app"), "\(plan.steps)")
     }
 
     @Test("a folder's name cannot end a deep link's value or add a parameter to it", arguments: [

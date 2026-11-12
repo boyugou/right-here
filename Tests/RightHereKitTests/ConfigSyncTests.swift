@@ -742,12 +742,15 @@ struct ConfigSyncTrustTests {
         #expect(changes.map(\.place) == ["[agent.yolo] offered with its permission prompts switched off (it is in the menu or the Quick Actions)"], "\(changes.map(\.line))")
     }
 
+    /// Read with this Mac's own file laid over, the copy gives the bundle identifier of a terminal that only that file defines another role: the config refuses that entry
+    /// (2026-11-12), so it never hands the terminal a file, and there is nothing in the copy to ask about.
     @Test func aTerminalThatOnlyThisMacsOwnFileDefinesIsKnownWhenACopyGivesAnAppItsIdentifierAnotherRole() throws {
         let terminal = "[[app]]\nid = \"myterm\"\nname = \"MyTerm\"\nbundle_id = \"com.example.myterm\"\nrole = \"terminal\"\n"
         let copy = "[general]\nterminal = \"terminal\"\nagents = [\"claude\"]\n[[app]]\nid = \"myterm-files\"\nname = \"MyTerm Files\"\nbundle_id = \"com.example.myterm\"\nrole = \"editor\"\n"
         let f = try overlaid(terminal, copy: copy); defer { f.cleanUp() }
-        let changes = try #require(refusal { try f.sync.pull() })
-        #expect(changes.map(\.place).contains { $0.hasPrefix("[[app]] myterm-files role") }, "\(changes.map(\.line))")
+        #expect(LaunchCommands.changes(from: nil, to: Data(copy.utf8), overlay: Data(terminal.utf8)).filter { $0.place.contains("myterm-files") }.isEmpty)
+        let merged = ConfigLayers.load(base: .text(copy), local: .text(terminal))
+        #expect(merged.config.app(id: "myterm-files") == nil && merged.diagnostics.contains { $0.message.contains("a terminal this config adds") }, "\(merged.diagnostics.map(\.message))")
     }
 
     @Test func aCopyThatGivesAnAgentATerminalThatStartsThroughATemplateIsListed() throws {
@@ -818,11 +821,11 @@ struct ConfigSyncTrustTests {
         // A terminal that the config defines itself, and an app with its bundle identifier (in another case: the system finds an app by it whatever the case) and another role: the second would be
         // handed files, which a terminal runs. A built-in terminal listed as another kind of app is refused by the config itself (`ConfigParser`), so there is nothing in it to ask about.
         let relabeled = "[[app]]\nid = \"mine\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"terminal\"\n\n[[app]]\nid = \"mine-too\"\nname = \"Mine too\"\nbundle_id = \"Com.Example.TERM\"\nrole = \"general\"\n"
+        // The config refuses the second as it refuses a built-in terminal's (2026-11-12), and a pull takes no config that is not valid: nothing is pulled.
         let f = try machine(folder: relabeled); defer { f.cleanUp() }
-        let changes = try #require(refusal { try f.sync.pull() })
-        #expect(changes.map(\.line).filter { $0.contains(" role ") } == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#])
+        let error = try #require(#expect(throws: (any Error).self) { try f.sync.pull() })
+        #expect("\(error)".contains("a terminal this config adds"), "\(error)")
         #expect(try f.read(f.local) == one)
-        #expect(try f.sync.pull(allowCommands: true) == .pulled(backup: nil))
     }
 
     @Test func aBuiltInTerminalTheFolderConfigListsAsAnEditorIsLeftOutOfTheConfigAndAnAgentItPutsInTheMenuWhileThePromptsAreOffIsAskedAbout() throws {

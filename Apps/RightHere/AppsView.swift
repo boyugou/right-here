@@ -207,6 +207,13 @@ struct NewAppForm: View {
     /// An app that says it is a shell is a terminal, and a terminal handed a file runs it (CLAUDE.md rule 3): it is not offered as anything else.
     private var pinnedToTerminal: Bool { picked?.runsShellScripts == true }
 
+    /// The name typed, when another app has it already.
+    private var takenName: String? {
+        let typed = name.trimmingCharacters(in: .whitespaces)
+        guard !typed.isEmpty, let apps = model.apps, apps.takenNames.contains(typed.comparableName) else { return nil }
+        return typed
+    }
+
     private var canAdd: Bool {
         guard let picked, let apps = model.apps else { return false }
         return AppOptions.creating(name: name, bundleID: picked.bundleID, role: pinnedToTerminal ? .terminal : role, in: apps) != nil
@@ -224,6 +231,15 @@ struct NewAppForm: View {
                 VStack(spacing: 0) {
                     OptionRow(label: l10n.string(.appAgentName)) {
                         DraftField(label: l10n.string(.appAgentName), prompt: l10n.string(.appAgentName), text: $name)
+                    }
+                    // The menu tells apps apart by their names, so a name another app has is not taken (the config refuses it): say so, as the Add button is dimmed.
+                    if let taken = takenName {
+                        Text(l10n.render(.appAppNameTaken(taken)))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, 14)
+                            .padding(.bottom, 8)
                     }
                     RowDivider()
                     OptionRow(label: l10n.string(.appAppUseAs)) {

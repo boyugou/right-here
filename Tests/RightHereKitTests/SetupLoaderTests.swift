@@ -56,6 +56,7 @@ private final class ThreadProbeFacts: SystemFacts, Sendable {
     func gitRoot(containing url: URL) -> URL? { base.gitRoot(containing: url) }
     func applicationURL(bundleID: String) -> URL? { note(); return base.applicationURL(bundleID: bundleID) }
     func displayName(bundleID: String) -> String? { note(); return base.displayName(bundleID: bundleID) }
+    func runsShellScripts(bundleID: String) -> Bool { note(); return base.runsShellScripts(bundleID: bundleID) }
     func bundleVersion(bundleID: String) -> String? { base.bundleVersion(bundleID: bundleID) }
     func isRunning(bundleID: String) -> Bool { base.isRunning(bundleID: bundleID) }
     func environment(_ key: String) -> String? { base.environment(key) }

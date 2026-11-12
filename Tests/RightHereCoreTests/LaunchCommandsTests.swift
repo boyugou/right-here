@@ -109,12 +109,17 @@ struct LaunchCommandsTests {
         // The same with another id and another case for a terminal's bundle identifier (Ghostty's).
         let alias = "[[app]]\nid = \"my-shell\"\nname = \"M\"\nbundle_id = \"COM.mitchellh.Ghostty\"\nrole = \"editor\"\n"
         #expect(ConfigParser.parse(alias).hasErrors && lines(alias).isEmpty)
-        // A terminal that the config defines itself is not known to the config's builder as one, so the guard of a pull lists what carries its bundle identifier with another role, in any case.
-        let own = "[[app]]\nid = \"mine\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"terminal\"\n[[app]]\nid = \"mine-too\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"general\"\n"
+        // A terminal that the config defines itself is a terminal to its builder too (2026-11-12): what carries its bundle identifier with another role is refused the same way, in any case, and so it
+        // is not there to be listed.
+        let own = "[[app]]\nid = \"mine\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"terminal\"\n[[app]]\nid = \"mine-too\"\nname = \"Mine Too\"\nbundle_id = \"Com.Example.TERM\"\nrole = \"general\"\n"
         func roles(_ text: String) -> [String] { lines(text).filter { $0.contains(" role ") } }
-        #expect(roles(own) == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#])
-        #expect(roles(own.replacingOccurrences(of: "bundle_id = \"com.example.term\"\nrole = \"general\"", with: "bundle_id = \"Com.Example.TERM\"\nrole = \"general\"")) == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#],
-                "the system finds an app by its bundle identifier whatever the case")
+        #expect(ConfigParser.parse(own).hasErrors && ConfigParser.parse(own).config.app(id: "mine-too") == nil && roles(own).isEmpty)
+        // The guard alone sees a terminal the config a pull has defines while the copy gives its bundle identifier another role, in any case: it lists that role.
+        let known = "[[app]]\nid = \"mine\"\nname = \"Mine\"\nbundle_id = \"com.example.term\"\nrole = \"terminal\"\n"
+        let copy = "[[app]]\nid = \"mine-too\"\nname = \"Mine Too\"\nbundle_id = \"Com.Example.TERM\"\nrole = \"general\"\n"
+        #expect(!ConfigParser.parse(copy).hasErrors, "control: alone, the copy knows of no terminal with that identifier")
+        let changes = LaunchCommands.changes(from: Data(known.utf8), to: Data(copy.utf8), overlay: nil).map(\.line).filter { $0.contains(" role ") }
+        #expect(changes == [#"[[app]] mine-too role (a terminal handed a file runs it) = "general""#], "\(changes)")
         // A terminal that stays one, an editor with a bundle identifier of its own, and what the other config already has are not listed as a terminal handed files.
         #expect(roles("[[app]]\nid = \"terminal\"\nname = \"Terminal\"\nbundle_id = \"com.apple.Terminal\"\nrole = \"terminal\"\n").isEmpty)
         #expect(roles("[[app]]\nid = \"mine\"\nname = \"M\"\nbundle_id = \"com.example.editor\"\nrole = \"editor\"\n").isEmpty)
@@ -193,7 +198,7 @@ struct LaunchCommandsTests {
         [[app]]
         id = "fake"
         name = "Fake"
-        bundle_id = "com.example.mine"
+        bundle_id = "com.example.elsewhere"
         role = "editor"
 
         [[new_file.template]]
@@ -203,7 +208,8 @@ struct LaunchCommandsTests {
         contents = "<plist/>"
         """
         let config = ConfigParser.parse(text).config
-        let places = LaunchCommands(config).entries.map(\.place)
+        // `fake` has the bundle identifier of a terminal that only the config a pull already has defines (in this one, a second entry for `mine`'s would be refused).
+        let places = LaunchCommands(config, terminals: ["com.example.elsewhere"]).entries.map(\.place)
         let place: [String: String] = [
             "app.*.bundle_id": "[[app]] mine bundle_ids", "app.*.bundle_ids": "[[app]] mine bundle_ids", "app.*.role": "[[app]] fake role", "app.*.open_args": "[[app]] mine open_args", "app.*.run_args": "[[app]] mine run_args",
             "agent.*.command": "[agent.claude] command", "agent.*.args": "[agent.claude] args", "agent.*.prompt_arg": "[agent.claude] prompt_arg", "agent.*.bypass_permission_arg": "[agent.claude] bypass_permission_arg",

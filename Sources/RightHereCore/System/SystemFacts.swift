@@ -31,6 +31,9 @@ public protocol SystemFacts: Sendable {
     func applicationURL(bundleID: String) -> URL?
     /// The name the system shows for an installed app, in the system language.
     func displayName(bundleID: String) -> String?
+    /// Whether the installed app says it runs shell scripts (`CFBundleTypeRole` is `Shell` for a kind of document it opens): what a terminal says of itself, and a
+    /// terminal handed a file runs it (CLAUDE.md rule 3). `false` when no such app is installed.
+    func runsShellScripts(bundleID: String) -> Bool
     /// The marketing version of an installed app (`CFBundleShortVersionString`), such as "1.3.1".
     func bundleVersion(bundleID: String) -> String?
     /// Every copy of the app on disk that the system knows, with its version (`AppCopies`).
@@ -74,6 +77,8 @@ public struct FakeSystemFacts: SystemFacts {
     public var diskPaths: [String: String]
     /// The system's name for an installed app, where it differs from the bundle's own (key: bundle identifier).
     public var displayNames: [String: String]
+    /// The installed apps that say they run shell scripts, by bundle identifier in lower case.
+    public var shellApps: Set<String> = []
 
     public init(
         homeDirectory: URL = URL(fileURLWithPath: "/Users/tester"),
@@ -141,6 +146,7 @@ public struct FakeSystemFacts: SystemFacts {
 
     public func applicationURL(bundleID: String) -> URL? { applications[bundleID] }
     public func displayName(bundleID: String) -> String? { displayNames[bundleID] }
+    public func runsShellScripts(bundleID: String) -> Bool { applications[bundleID] != nil && shellApps.contains(bundleID.lowercased()) }
     public func bundleVersion(bundleID: String) -> String? { bundleVersions[bundleID] }
     public func applicationCopies(bundleID: String) -> [AppCopy] {
         copies[bundleID] ?? applicationURL(bundleID: bundleID).map { [AppCopy(path: $0.path, version: bundleVersion(bundleID: bundleID))] } ?? []

@@ -274,7 +274,11 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
 
 0. A terminal app handed a file runs it (a `.command` script). The working directory is therefore always
    validated to be a folder before any terminal action; a file becomes its folder, in the planner and again
-   in every terminal adapter. Any path an action names that does not exist (a link that points nowhere does)
+   in every terminal adapter. Every action that names a terminal goes through its adapter (Open With of a
+   terminal included). What is a terminal: the built-in ones, an `[[app]]` with `role = "terminal"` (another entry
+   that gives its bundle identifier another role is refused by the config, as one with a built-in terminal's is),
+   and an app whose `Info.plist` says it runs shell scripts (`CFBundleTypeRole` `Shell`), which is handed the folder
+   whatever the config calls it, and never opens a new file. Any path an action names that does not exist (a link that points nowhere does)
    is refused, whichever action it is for, so a typo is reported and never replaced by the folder around it,
    and text that is not a path never reaches the clipboard, a terminal or another agent's prompt box. A path
    the system merely refuses to look at (privacy-protected folders) counts as present. `open` runs in `/`: it takes

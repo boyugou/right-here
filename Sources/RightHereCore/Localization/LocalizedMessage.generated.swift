@@ -129,6 +129,8 @@ extension LocalizedMessage {
     public static var appAppIsTerminal: LocalizedMessage { LocalizedMessage(.appAppIsTerminal) }
     /// Make Default
     public static var appAppMakeDefault: LocalizedMessage { LocalizedMessage(.appAppMakeDefault) }
+    /// Another app is already called %@. Give this one a name of its own, so that the menu tells them apart.
+    public static func appAppNameTaken(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appAppNameTaken, [argument1]) }
     /// “%1$@” is not an app that Right Here can find: it has no usable bundle identifier.
     public static func appAppNotFound(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appAppNotFound, [argument1]) }
     /// Remove App

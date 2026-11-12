@@ -70,6 +70,8 @@ public final class CachingSystemFacts: SystemFacts, Sendable {
         return url
     }
 
+    public func runsShellScripts(bundleID: String) -> Bool { base.runsShellScripts(bundleID: bundleID) }
+
     public func displayName(bundleID: String) -> String? {
         let now = Date()
         if let cached = displayNames.withLock({ $0[bundleID] }), now.timeIntervalSince(cached.stored) < lifetime {

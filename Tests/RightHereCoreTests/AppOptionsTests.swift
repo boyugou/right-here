@@ -96,12 +96,14 @@ struct AppOptionsTests {
         let other = try #require(AppOptions.creating(name: "Other", bundleID: "com.example.Other", role: .general, in: empty))
         #expect(try apply(other.change, to: plain).app(id: "other")?.role == .general)
         #expect(!other.change.operations.contains { if case .addEntry(_, let fields, _) = $0 { fields.contains { $0.key == "role" } } else { false } }, "the default role is not written")
-        let taken = try #require(AppOptions.creating(name: "Zed", bundleID: "dev.zed.Zed-Nightly", role: .editor, in: empty))
+        let taken = try #require(AppOptions.creating(name: "Zed!", bundleID: "dev.zed.Zed-Nightly", role: .editor, in: empty))
         #expect(taken.id == "zed-2", "a built-in app is not replaced by accident")
+        #expect(AppOptions.creating(name: "zed", bundleID: "dev.zed.Zed-Nightly", role: .editor, in: empty) == nil, "and no app takes its name, which the menu tells apps apart by")
         let reserved = try #require(AppOptions.creating(name: "Link", bundleID: "com.example.Link", role: .general, in: empty))
         #expect(reserved.id == "link-2", "a word that names a launcher is not an app's id")
-        let again = try #require(AppOptions.creating(name: "Tower", bundleID: "com.example.Tower", role: .general, in: state()))
+        let again = try #require(AppOptions.creating(name: "Tower!", bundleID: "com.example.Tower", role: .general, in: state()))
         #expect(again.id == "tower-2")
+        #expect(AppOptions.creating(name: "TOWER", bundleID: "com.example.Tower", role: .general, in: state()) == nil, "the config's own app has that name")
         let elsewhere = try #require(AppOptions.creating(name: "Pulsar", bundleID: "dev.pulsar-edit.pulsar", role: .editor, in: empty, alsoTaken: ["pulsar"]))
         #expect(elsewhere.id == "pulsar-2", "an id that a file mentions and the config does not show is in use")
         let nameless = try #require(AppOptions.creating(name: "日本語", bundleID: "com.example.Jp", role: .editor, in: empty))
@@ -165,6 +167,6 @@ struct AppOptionsTests {
         var disabled = local
         disabled.disabledApps = ["iterm"]
         let state = AppOptions.state(config: disabled, entries: [:], facts: facts)
-        #expect(AppOptions.creating(name: "iTerm", bundleID: "com.example.iterm", role: .terminal, in: state)?.id == "iterm-2", "the id that a machine turns off is not given to another app")
+        #expect(AppOptions.creating(name: "iTerm!", bundleID: "com.example.iterm", role: .terminal, in: state)?.id == "iterm-2", "the id that a machine turns off is not given to another app")
     }
 }

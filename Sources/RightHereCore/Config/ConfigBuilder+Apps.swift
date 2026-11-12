@@ -3,10 +3,35 @@ import Foundation
 /// `[[app]]` entries and the default terminal and editor, which are checked against the apps as they will be.
 extension ConfigBuilder {
     func readApps(_ root: ConfigReader, into config: inout Config) {
-        config.apps = readUnique(root.tableArray("app"), kind: "app", id: \.id, read: app) { app, reader in
+        var paths: [String: [String]] = [:]
+        let apps = readUnique(root.tableArray("app"), kind: "app", id: \.id, read: app) { app, reader in
+            paths[app.id] = reader.path
             if KnownApps.app(id: app.id) != nil {
                 sink.warning(reader.path + ["id"], "replaces the built-in app \"\(app.id)\"; use another id to add one beside it")
             }
+        }
+        // A terminal the config adds is a terminal as much as a built-in one: another entry that gives its bundle identifier another role would have files handed
+        // to it, which it runs (CLAUDE.md rule 3), whichever of the two comes first.
+        var terminals: [String: String] = [:]
+        for app in apps where app.role == .terminal {
+            for bundleID in app.bundleIDs where terminals[bundleID.lowercased()] == nil { terminals[bundleID.lowercased()] = app.name }
+        }
+        // The menu tells apps apart by their names ("Open in <name>"): one called like another app, a built-in one included, would be a click that opens the other.
+        let replaced = Set(apps.map(\.id))
+        let builtInNames = Dictionary(KnownApps.all.filter { !replaced.contains($0.id) }.map { ($0.name.comparableName, $0.id) }, uniquingKeysWith: { first, _ in first })
+        var names = Set(builtInNames.keys)
+        config.apps = apps.filter { app in
+            let path = paths[app.id] ?? ["app"]
+            if app.role != .terminal, let terminal = app.bundleIDs.lazy.compactMap({ terminals[$0.lowercased()] }).first {
+                sink.error(path + ["role"], "\"\(app.name)\" has the bundle identifier of \(terminal), a terminal this config adds; a terminal handed a file runs it, so its role has to be \"terminal\"")
+                return false
+            }
+            guard names.insert(app.name.comparableName).inserted else {
+                let replace = builtInNames[app.name.comparableName].map { " (an entry with the id \"\($0)\" replaces the built-in one)" } ?? ""
+                sink.error(path + ["name"], "another app is already called \"\(app.name)\"; the menu tells apps apart by their names, so give each its own\(replace)")
+                return false
+            }
+            return true
         }
     }
 

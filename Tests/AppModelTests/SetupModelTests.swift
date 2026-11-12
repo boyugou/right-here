@@ -2564,7 +2564,9 @@ struct SetupModelAppsTests {
         #expect(await mac.model.createApp(name: "Pulsar", bundleID: "dev.pulsar-edit.pulsar", role: .editor) == "pulsar-2", "the id that this Mac turns off is in use")
         let zed = await mac.model.createApp(name: "Zed Nightly", bundleID: "dev.zed.Zed-Nightly", role: .editor)
         #expect(zed == "zed-nightly" && mac.model.app("zed-nightly") != nil)
-        #expect(await mac.model.createApp(name: "Zed", bundleID: "dev.zed.ZedMine", role: .editor) == "zed-2", "a built-in app is not replaced by accident")
+        #expect(await mac.model.createApp(name: "Zed Mine", bundleID: "dev.zed.ZedMine", role: .editor) == "zed-mine")
+        // A built-in app is not replaced by accident, and no app passes for it in the menu: its name is taken.
+        #expect(await mac.model.createApp(name: "Zed", bundleID: "dev.zed.ZedOther", role: .editor) == nil && mac.model.app("zed-2") == nil)
     }
 
     @Test func theChosenApplicationIsReadAndOneThatIsThereAlreadyOrHasNoIdentifierIsSaid() async throws {
