@@ -150,7 +150,10 @@ public struct MenuBuilder: Sendable {
                     break
                 }
                 let info = registry.info(ref, context: context)
-                if info.available {
+                // A template named by its id follows the New File group's rule, as the comment above says of every named entry: a new file goes next to one item, or into a folder.
+                if case .newFile = ref, context.items.count > 1 {
+                    collector?.leftOut(info.title, "several items are selected; a new file goes next to one item, or into a folder.")
+                } else if info.available {
                     // Only the entry for the plain path carries the group's name, and only while the group is not in the menu as well; the other styles keep their own, so
                     // that `copy_path.title` never gives two listed entries one title.
                     if case .copyPath(.absolute) = ref, !entries.contains("copy-path") {

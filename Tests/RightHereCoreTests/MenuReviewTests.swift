@@ -148,4 +148,17 @@ struct MenuReviewTests {
         #expect(sameTitle.isEmpty, "adding these from the menu editor gives the menu two lines of one title: \(sameTitle)")
         #expect(submenuRepeats.isEmpty, "a submenu repeats what the menu offers on a line of its own: \(submenuRepeats)")
     }
+
+    /// Two files are selected and the menu names a template by its id (`new-file.md`, which the menu editor offers under Add). The New
+    /// File group leaves itself out for several items ("a new file goes next to one item, or into a folder", MenuBuilder.swift:264-266), the
+    /// entry named by id is offered, and its click makes the file next to the first item. The comment over named entries says they follow
+    /// the groups' rules for the selection (MenuBuilder.swift:129-130).
+    @Test func aTemplateNamedByItsIdFollowsTheNewFileRuleForSeveralItems() {
+        let names = ["\(code)/a.swift", "\(code)/b.swift"]
+        let facts = reviewMachine(files: names)
+        let several = HereContext(origin: .items, items: names.map { URL(fileURLWithPath: $0) })
+        let byGroup = everyNode(MenuBuilder(config: Config(menuItems: ["new-file"]), facts: facts).build(for: several)).compactMap(\.actionID)
+        let byID = everyNode(MenuBuilder(config: Config(menuItems: ["new-file.md"]), facts: facts).build(for: several)).compactMap(\.actionID)
+        #expect(byID.contains("new-file.md") == byGroup.contains("new-file.md"), "for two items, the group offers \(byGroup) and the entry named by id \(byID)")
+    }
 }

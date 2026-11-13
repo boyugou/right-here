@@ -2677,6 +2677,8 @@ MUTANTS = [
      'if case .copyPath(.absolute) = ref, !entries.contains("copy-path") {', "if case .copyPath(.absolute) = ref {"),
     ("the menu editor offers again what the menu shows on a line of its own", "Sources/RightHereCore/Menu/MenuEditor.swift",
      " && !shownTitles.contains(info.title) {", " {"),
+    ("a template named by its id is offered for several items", "Sources/RightHereCore/Menu/MenuBuilder.swift",
+     "if case .newFile = ref, context.items.count > 1 {", "if case .newFile = ref, false {"),
 ]
 
 
