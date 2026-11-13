@@ -8,7 +8,9 @@
   run setup; a Quick Action that links to the repository asks for git as the menu's does; the last action is the newest
   after the log rotates; and a config file that does not read leaves out the rows that would be worked out from the
   defaults, which advised adding what the file already says; and an older copy of the app does not call the newer
-  copy's runner script stale and ask for a setup that it refuses.
+  copy's runner script stale and ask for a setup that it refuses. An agent that starts through its link or its desktop
+  app is not told to be taken out for a command it does without, and one whose own terminal or desktop app is missing is
+  not told to change `general.terminal` or to set the launcher it already has.
 - **Conflict copies from Dropbox and Syncthing.** With config sync on, the doctor named iCloud's `config 2.toml` only;
   Dropbox's `config (… conflicted copy …).toml` and Syncthing's `config.sync-conflict-….toml` get the row too. A
   config of this Mac that is too large to read is not called "ahead of the folder" with `push` as the fix, which push refuses.

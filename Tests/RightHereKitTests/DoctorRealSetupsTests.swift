@@ -127,6 +127,71 @@ struct DoctorRealSetupsTests {
         #expect(check?.status == .warn, "doctor: \(realSetupSaid(check))")
     }
 
+    /// `launcher = "desktop"` opens the agent's desktop app through its deep link and types nothing, so the command does not have to be on the PATH. The menu has
+    /// no More Agent Options (whose start options are always typed into a terminal): every Claude entry of the menu and of the Quick Actions opens the app.
+    @Test func anAgentStartedThroughItsDesktopAppDoesNotNeedItsCommand() async throws {
+        let scene = try RealSetupHome(); defer { scene.cleanUp() }
+        try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n\n[agent.claude]\nlauncher = \"desktop\"\n\n[menu]\nitems = [\"open-terminal\", \"agents\", \"copy-path\"]\n")
+        let loaded = ConfigStore.load(paths: scene.paths)
+        let facts = FakeSystemFacts(homeDirectory: scene.home, applications: realSetupGhostty.merging(["com.anthropic.claudefordesktop": URL(fileURLWithPath: "/Applications/Claude.app")]) { $1 },
+                                    bundleVersions: realSetupGhosttyVersion)
+        let agent = try #require(loaded.config.agent(id: "claude"))
+        let menu = MenuBuilder(config: loaded.config, facts: facts).build(for: HereContext(origin: .container, container: scene.home)).flatMap(\.actionIDs)
+        let quickActions = ActionRegistry(config: loaded.config, facts: facts).serviceSpecs(rhPath: "/opt/rh/bin/rh").map(\.actionID)
+        let entries = (menu + quickActions).filter { $0.hasPrefix("agent.claude") || $0.hasPrefix("preset.") }
+        let typed = entries.filter { id in
+            guard case .agent(_, let variant, let launcher)? = ActionRef(parsing: id) else { return true }
+            if case .success(.desktop(_)) = AgentLaunchResolution.resolve(agent: agent, hasVariant: variant != nil, explicit: launcher, config: loaded.config, facts: facts).route { return false }
+            return true
+        }
+        #expect(!entries.isEmpty && typed.isEmpty, "sanity: every Claude entry opens the desktop app: \(entries), typed: \(typed)")
+        // The login shell got to its end and does not know `claude`: no Claude Code command-line tool, only the desktop app.
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "\n\(Detector.doneMarker)\n"), ProcessResult(status: 0, standardOutput: realSetupPluginkitEnabled)])
+        let checks = await Doctor(facts: facts, paths: scene.paths, loaded: loaded, runner: runner, rhPath: "/opt/rh/bin/rh").run()
+        let row = checks.first { $0.id == .agent("claude") }
+        // Not found is true, and said; taking the agent out of general.agents would take out the entry that works.
+        #expect(row?.fix?.key != .doctorFixAgentRemove, "doctor: \(realSetupSaid(row))")
+    }
+
+    /// `[agent.claude] terminal = "iterm"` on a Mac without iTerm: the agent's own terminal decides, and general.terminal does not.
+    @Test func anAgentsOwnTerminalThatIsMissingIsNotFixedThroughGeneralTerminal() async throws {
+        let scene = try RealSetupHome(); defer { scene.cleanUp() }
+        try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n\n[agent.claude]\nterminal = \"iterm\"\n")
+        let loaded = ConfigStore.load(paths: scene.paths)
+        let facts = FakeSystemFacts(homeDirectory: scene.home, applications: realSetupGhostty.merging(["com.apple.Terminal": URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app")]) { $1 },
+                                    bundleVersions: realSetupGhosttyVersion)
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "\nclaude\u{01}/usr/local/bin/claude\n\(Detector.doneMarker)\n"),
+                                                 ProcessResult(status: 0, standardOutput: realSetupPluginkitEnabled)])
+        let checks = await Doctor(facts: facts, paths: scene.paths, loaded: loaded, runner: runner, rhPath: "/opt/rh/bin/rh").run()
+        let row = checks.first { $0.id == .agent("claude") }
+        // Doing what the fix says: another general.terminal, which is installed, leaves the agent as it was.
+        var followed = loaded.config
+        followed.terminal = "terminal"
+        #expect(!ActionRegistry(config: followed, facts: facts).info(.agent(id: "claude", variant: nil, launcher: nil)).available, "sanity: changing general.terminal does not help")
+        #expect(row?.status == .warn && row?.fix?.english().contains("general.terminal") != true, "doctor: \(realSetupSaid(row))")
+    }
+
+    /// Codex with `launcher = "desktop"` and no Codex app: the fix offers another general.terminal (not used), "link" (Codex has none) or "desktop" (what fails now).
+    @Test func anAgentWhoseDesktopAppIsMissingIsNotToldToSetTheLauncherItHas() async throws {
+        let scene = try RealSetupHome(); defer { scene.cleanUp() }
+        try scene.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"codex\"]\n\n[agent.codex]\nlauncher = \"desktop\"\n")
+        let loaded = ConfigStore.load(paths: scene.paths)
+        let facts = FakeSystemFacts(homeDirectory: scene.home, applications: realSetupGhostty.merging(["com.apple.Terminal": URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app")]) { $1 },
+                                    bundleVersions: realSetupGhosttyVersion)
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: "\ncodex\u{01}/usr/local/bin/codex\n\(Detector.doneMarker)\n"),
+                                                 ProcessResult(status: 0, standardOutput: realSetupPluginkitEnabled)])
+        let checks = await Doctor(facts: facts, paths: scene.paths, loaded: loaded, runner: runner, rhPath: "/opt/rh/bin/rh").run()
+        let row = checks.first { $0.id == .agent("codex") }
+        let codex = ActionRef.agent(id: "codex", variant: nil, launcher: nil)
+        var otherTerminal = loaded.config
+        otherTerminal.terminal = "terminal"
+        var link = loaded.config
+        link.agents["codex"]?.launcher = .terminalLink
+        #expect(!ActionRegistry(config: otherTerminal, facts: facts).info(codex).available && !ActionRegistry(config: link, facts: facts).info(codex).available,
+                "sanity: neither another general.terminal nor launcher = \"link\" starts it")
+        #expect(row?.status == .warn && row?.fix?.english().contains("\"desktop\"") != true && row?.fix?.english().contains("general.terminal") != true, "doctor: \(realSetupSaid(row))")
+    }
+
     /// `command = "~/.claude/local/claude"`: the line a click types gets tilde expansion, the lookup of `"$n"` does not. Measured with the real /bin/sh and an empty home.
     @Test func anAgentCommandWithATildeIsFoundTheWayTheTypedLineFindsIt() async throws {
         let scene = try RealSetupHome(); defer { scene.cleanUp() }

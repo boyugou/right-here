@@ -2531,6 +2531,11 @@ MUTANTS = [
      "switch localRead ? report.status : .remoteMissing {", "switch report.status {"),
     ("the older copy calls the runner of the copy to keep stale", "Sources/RightHereKit/Doctor.swift",
      "let stale = rhPath.map { $0 != target && !copies.contains(target) } ?? false", "let stale = rhPath.map { $0 != target } ?? false"),
+    ("an agent started through its desktop app is told to be taken out for a command it does without", "Sources/RightHereKit/Doctor.swift",
+     "fix: Self.typesItsCommand(config.agents[id]?.launcher) ? .doctorFixAgentRemove(id) : nil))", "fix: .doctorFixAgentRemove(id)))"),
+    ("an agent's own terminal or desktop app that fails is fixed through general.terminal", "Sources/RightHereKit/Doctor.swift",
+     "        default:\n            return nil\n        }\n    }\n\n    /// The terminal link is Claude Code's own way in",
+     "        default:\n            return .doctorFixAgentLauncher(Quoted.linkLauncher, Quoted.desktop)\n        }\n    }\n\n    /// The terminal link is Claude Code's own way in"),
 ]
 
 

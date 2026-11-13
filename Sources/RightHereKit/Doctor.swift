@@ -310,10 +310,13 @@ public struct Doctor: Sendable {
                 // The shell was started and did not get to the end (a startup file that exits or waits, an `exec tmux`), so nobody knows.
                 checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: .doctorAgentUnknown(command)))
             } else if !found.contains(command) {
-                checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: .doctorAgentNotFound(command), fix: .doctorFixAgentRemove(id)))
+                // An agent started through its link or its desktop app does without its command; only its start options type it. "Take it out of
+                // general.agents" would take out the entry that works.
+                checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: .doctorAgentNotFound(command),
+                                          fix: Self.typesItsCommand(config.agents[id]?.launcher) ? .doctorFixAgentRemove(id) : nil))
             } else if !action.available {
                 checks.append(DoctorCheck(.agent(id), title: agent.name, status: .warn, detail: action.unavailableMessage ?? action.unavailableReason.map(LocalizedMessage.doctorVerbatim),
-                                          fix: .doctorFixAgentLauncher(Quoted.linkLauncher, Quoted.desktop)))
+                                          fix: Self.fixForAnAgentThatCannotStart(agent, launcher: config.agents[id]?.launcher)))
             } else {
                 // A choice the person made, so not a warning; but never silent: the row says the agent's own permission prompts are off. An alias of the login shell that adds the
                 // flag switches them off for a preset too, which the setting never does, so it is what the row says first.
@@ -327,6 +330,24 @@ public struct Doctor: Sendable {
             }
         }
         return checks
+    }
+
+    /// Whether a plain start of the agent types its command: in a terminal, the default one or its own.
+    static func typesItsCommand(_ launcher: AgentLauncher?) -> Bool {
+        if case .terminal? = launcher { return true }
+        return launcher == nil
+    }
+
+    /// What to do about an agent that cannot start, said only where it helps: another default terminal, or the agent's link or desktop app where it has both, when
+    /// the default terminal is what fails. The agent's own terminal, link or desktop app is named by the detail line, and another `general.terminal` would not
+    /// change it, nor would a launcher the agent does not have.
+    static func fixForAnAgentThatCannotStart(_ agent: AgentDescriptor, launcher: AgentLauncher?) -> LocalizedMessage? {
+        switch launcher {
+        case nil, .terminal(nil)?:
+            return agent.terminalLink != nil && agent.desktopLink != nil ? .doctorFixAgentLauncher(Quoted.linkLauncher, Quoted.desktop) : .doctorFixTerminal
+        default:
+            return nil
+        }
     }
 
     /// The terminal link is Claude Code's own way in, and a handler that is not there matters only where something starts Claude Code
