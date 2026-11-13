@@ -5,6 +5,22 @@ import Testing
 /// The edits keep every byte they were not asked to change: comments, order, layout.
 @Suite("ConfigDocument: edits that leave the rest of the file alone")
 struct ConfigDocumentTests {
+    /// `rh config set` of a list keeps the comments of the items that stay, wherever they go, as the help and the setup guide say (it dropped them all); an item that goes takes its
+    /// comments with it, and a comment of the list itself, after its last item, stays (an independent review of `rh config`, 2026-11-13).
+    @Test func setOfAListKeepsTheCommentsOfTheItemsThatStay() throws {
+        let text = "agents = [\n    # The one I use every day.\n    \"claude\",\n    \"codex\", # for reviews\n    # About gemini.\n    \"gemini\",\n    # End of the list.\n]\n"
+        func set(_ items: [String]) throws -> String { try ConfigDocument("[general]\n" + text).setting("general.agents", to: .strings(items)).text }
+        // Added at the end: every comment stays with its item.
+        #expect(try set(["claude", "codex", "gemini", "copilot"]) == "[general]\nagents = [\n    # The one I use every day.\n    \"claude\",\n    \"codex\", # for reviews\n    # About gemini.\n    \"gemini\",\n    \"copilot\",\n    # End of the list.\n]\n")
+        // Taken out: its comment goes with it.
+        #expect(try set(["claude", "gemini"]) == "[general]\nagents = [\n    # The one I use every day.\n    \"claude\",\n    # About gemini.\n    \"gemini\",\n    # End of the list.\n]\n")
+        // Turned around: each comment travels with its item.
+        #expect(try set(["gemini", "codex", "claude"]) == "[general]\nagents = [\n    # About gemini.\n    \"gemini\",\n    \"codex\", # for reviews\n    # The one I use every day.\n    \"claude\",\n    # End of the list.\n]\n")
+        // A value written twice (a separator) keeps the comment of the first, and the second is a new one.
+        let menu = ConfigDocument("[menu]\nitems = [\n    \"open-terminal\",\n    \"-\", # first break\n    \"copy-path\",\n]\n")
+        #expect(try menu.setting("menu.items", to: .strings(["-", "open-terminal", "-"])).text == "[menu]\nitems = [\n    \"-\", # first break\n    \"open-terminal\",\n    \"-\",\n]\n")
+    }
+
     /// A text of several lines that the person wrote as a multi-line string (a template's script) is written over several lines again when it is changed: it became one line of escapes,
     /// which no one reads (an independent review of the editors, 2026-11-13). Whatever the text holds, what is written reads back as the text.
     @Test("a multi-line text stays multi-line and reads back as the text", arguments: [

@@ -203,8 +203,17 @@ struct TOMLArrayText: Equatable {
         relayout(keepingPositionsOf: places)
     }
 
-    /// The same layout, holding other elements (no comments).
+    /// The same layout, holding other elements. An element that stays keeps its comments, the lines above it and the one at the end of its line, wherever it goes now (the first of the
+    /// same value, for a value that is there more than once, as a separator is): `rh config set` of a list dropped them, and the help and the setup guide say it keeps every comment. The
+    /// comments of an element that goes, go with it.
     func replacingElements(with items: [String]) -> TOMLArrayText {
+        let commented = replacingElements(with: items, keepingComments: true)
+        // A comment at the end of a line that the next element stands on would take that element in: then the elements are laid out without their comments, as they were.
+        if TOMLArrayText(commented.rendered())?.elements.map(\.text) == items { return commented }
+        return replacingElements(with: items, keepingComments: false)
+    }
+
+    private func replacingElements(with items: [String], keepingComments: Bool) -> TOMLArrayText {
         var copy = self
         guard !items.isEmpty else {
             copy.elements = []
@@ -214,8 +223,16 @@ struct TOMLArrayText: Equatable {
         }
         let places = positions
         let isMultiline = rendered().contains("\n")
+        var unused = Array(elements.indices)
+        func value(_ text: String) -> String { ConfigDocument.unquoted(text) ?? text }
         copy.elements = items.enumerated().map { index, item in
-            Element(before: Self.place(at: index, in: places).position, text: item, comment: "")
+            var element = Element(before: Self.place(at: index, in: places).position, text: item, comment: "")
+            if keepingComments, let match = unused.firstIndex(where: { value(elements[$0].text) == value(item) }) {
+                let kept = elements[unused.remove(at: match)]
+                element.before.lines = kept.before.lines
+                element.comment = kept.comment
+            }
+            return element
         }
         if elements.isEmpty {
             // An empty array has no layout of its own: one line, unless it was written across lines.
