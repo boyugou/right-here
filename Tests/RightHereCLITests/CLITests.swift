@@ -2658,7 +2658,7 @@ struct ConfigEditCLITests {
 
     @Test func undoPutsTheFileBackAndHistoryListsTheChanges() throws {
         let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
-        #expect(try rh.run(["config", "history"]).standardOutput == "No change to take back.\n")
+        #expect(try rh.run(["config", "history"]).standardOutput == "No change of config.toml to take back.\n")
         #expect(try rh.run(["config", "set", "general.terminal", "terminal"]).status == 0)
         #expect(try rh.run(["config", "remove", "menu.items", "agents"]).status == 0)
         let history = try rh.run(["config", "history"]).standardOutput.split(separator: "\n").map(String.init)
