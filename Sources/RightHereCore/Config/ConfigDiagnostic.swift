@@ -78,3 +78,38 @@ public struct ConfigLoadResult: Sendable, Equatable {
 
     public var hasErrors: Bool { diagnostics.contains { $0.severity == .error } }
 }
+
+extension ConfigDiagnostic {
+    /// The errors of `after` that `before` does not have, one for one (the same error once more is one more): what a change is refused for, where `before` is what the config
+    /// said before it. `text` gives the text of a file as it was before and after the change (`nil`: the main file, else the overlay's name) for `identity(in:)`.
+    public static func errorsAdded(_ after: [ConfigDiagnostic], text afterText: (String?) -> String, to before: [ConfigDiagnostic], text beforeText: (String?) -> String) -> [ConfigDiagnostic] {
+        func outlines(of problems: [ConfigDiagnostic], _ text: (String?) -> String) -> [String: TOMLOutline] {
+            var found: [String: TOMLOutline] = [:]
+            for file in Set(problems.map { $0.file ?? "" }) { found[file] = TOMLOutline(text(file.isEmpty ? nil : file)) }
+            return found
+        }
+        let errorsBefore = before.filter { $0.severity == .error }, errorsAfter = after.filter { $0.severity == .error }
+        let outlinesBefore = outlines(of: errorsBefore, beforeText), outlinesAfter = outlines(of: errorsAfter, afterText)
+        var count: [String: Int] = [:]
+        for problem in errorsBefore { count[problem.identity(in: outlinesBefore[problem.file ?? ""] ?? TOMLOutline("")), default: 0] += 1 }
+        return errorsAfter.filter { problem in
+            let identity = problem.identity(in: outlinesAfter[problem.file ?? ""] ?? TOMLOutline(""))
+            guard let left = count[identity], left > 0 else { return true }
+            count[identity] = left - 1
+            return false
+        }
+    }
+
+    /// What tells this problem from another across a change of the file it is in, `outline`: its file and setting, with each entry of a list of tables named by its id where it has
+    /// one (an entry added, taken out or moved above another moves that one's position and not its id), and its sentence without the list of what the config knows (`known agents: …`,
+    /// which an agent of one's own lengthens). The line is left out: a change above it moves it.
+    func identity(in outline: TOMLOutline) -> String {
+        let positional = path.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
+        var segments = positional
+        for index in positional.indices.dropFirst() where Int(positional[index]) != nil {
+            if let id = outline.rawValue(of: positional[...index].joined(separator: ".") + ".id").flatMap(ConfigDocument.unquoted) { segments[index] = "id " + id }
+        }
+        let sentence = message.range(of: "; known ").map { String(message[..<$0.lowerBound]) } ?? message
+        return (file ?? "") + "\n" + segments.joined(separator: ".") + "\n" + sentence
+    }
+}

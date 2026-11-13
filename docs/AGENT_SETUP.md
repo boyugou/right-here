@@ -51,7 +51,8 @@ Run `rh setup --dry-run --json` with the flags of step 3. It changes nothing.
 - Then `rh config validate --strict` must say ok. Fix what it says.
 
 **Use `rh config` instead of editing the text.** `rh config set <key> <value>` changes only that line. It keeps every comment. It
-refuses a change that makes the file invalid. `rh config undo` takes the last change back.
+refuses a change that brings an error into the file; an error the file already has does not stop a change elsewhere, and stays for the
+person to fix. `rh config undo` takes the last change back.
 
 - Give a list as its items, in order: `rh config set general.agents claude codex`.
 - `--local` changes `config.local.toml`, the file of this Mac only.

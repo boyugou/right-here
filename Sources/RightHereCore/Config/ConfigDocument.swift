@@ -27,22 +27,9 @@ public struct ConfigDocument: Sendable, Equatable {
         }
 
         /// The errors that `edited` has and `text` does not, as sentences: what an edit is refused for. A name too long in another entry was there before the edit and is
-        /// no reason to refuse it. An error is the one that was there when it says the same of the same setting, on whatever line the edit moved it to.
+        /// no reason to refuse it (`ConfigDiagnostic.errorsAdded`).
         func errors(addedBy edited: String, to text: String) -> [String] {
-            var before: [String: Int] = [:]
-            for problem in problems(text) where problem.severity == .error { before[Self.identity(of: problem), default: 0] += 1 }
-            let added = problems(edited).filter { problem in
-                guard problem.severity == .error else { return false }
-                let identity = Self.identity(of: problem)
-                guard let count = before[identity], count > 0 else { return true }
-                before[identity] = count - 1
-                return false
-            }
-            return ConfigDocument.sentences(added)
-        }
-
-        private static func identity(of problem: ConfigDiagnostic) -> String {
-            problem.path + "\n" + problem.message
+            ConfigDocument.sentences(ConfigDiagnostic.errorsAdded(problems(edited), text: { _ in edited }, to: problems(text), text: { _ in text }))
         }
 
         public static let standalone = Validation { sized($0, ConfigParser.parse($0).diagnostics) }

@@ -156,6 +156,9 @@ public enum ConfigTrust {
         for app in after.allApps {
             guard let was = before.app(id: app.id) else {
                 if case .template = app.driver { need("app.*.run_args") }
+                // An app that was not there is one a click may now hand a folder to: an entry of the config that was refused and is put right, or an id that one takes over, is
+                // chosen as an entry written anew is. A built-in app as it ships, which this Mac's own file turned off, is not.
+                if app != KnownApps.app(id: app.id) { need("app.*.bundle_ids") }
                 continue
             }
             if app.bundleIDs != was.bundleIDs { need("app.*.bundle_ids") }

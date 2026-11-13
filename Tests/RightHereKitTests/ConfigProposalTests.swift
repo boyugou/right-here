@@ -70,6 +70,25 @@ struct ConfigProposalTests {
         #expect(change.written && work.text.contains("agents = [\"claude\", \"codex\"]") && work.text.contains(long))
     }
 
+    @Test func anAssistantThatPutsRightAnAppTheConfigRefusedProposesTheAppItHandsFoldersTo() throws {
+        // The terminal the config names is an entry the config refuses (its name is too long), so a click opens the first installed terminal. The name made shorter makes a click
+        // hand the folder to an app nobody chose in the window: the assistant proposes it, as it would an app written anew.
+        let long = String(repeating: "x", count: 130)
+        let config = "[general]\nterminal = \"term\"\nagents = [\"claude\"]\n\n[[app]]\nid = \"term\"\nname = \"\(long)\"\nbundle_id = \"com.example.other\"\nrole = \"terminal\"\n"
+        let work = try Workspace(config: config); defer { work.clean() }
+        guard case .proposed(let proposal, _) = try work.service.submit([.set("app.1.name", .string("Term"))], actor: .mcp) else { Issue.record("it was not proposed"); return }
+        #expect(proposal.approvals.map(\.key) == ["app.*.bundle_ids"], "\(proposal.approvals)")
+        #expect(work.text == config)
+    }
+
+    @Test func anAssistantThatBringsBackABuiltInAppThisMacTurnedOffChangesNothingThatWaits() throws {
+        // A built-in app as it ships is not one an assistant chooses, whether or not this Mac's own file turned it off.
+        let work = try Workspace(config: "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n"); defer { work.clean() }
+        try "disabled = [\"zed\"]\n".write(to: work.paths.localConfigFile, atomically: true, encoding: .utf8)
+        guard case .applied(let change) = try work.service.submit([.unset("disabled")], target: .local, actor: .mcp) else { Issue.record("it was not made"); return }
+        #expect(change.written)
+    }
+
     @Test func theCardOfAProposalThatSwitchesThePromptsOffNamesEachAgentAndItsFlagAndApplyHoldsTheTwoFiles() throws {
         let work = try Workspace(config: "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n"); defer { work.clean() }
         guard case .proposed(let proposal, _) = try work.service.submit([.set("general.bypass_permissions", .boolean(true))], actor: .mcp) else { Issue.record("it was not proposed"); return }

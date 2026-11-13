@@ -265,6 +265,26 @@ struct ConfigDocumentTests {
         #expect(throws: ConfigDocument.EditError.self) { try ConfigDocument(withAnError).replacingText(otherTerminal) }
     }
 
+    @Test func anEntryAddedTakenOutOrMovedAboveOneWithAnErrorBringsNoError() throws {
+        // The error is said of a position (app.2.name), which an entry above it changes: it is the same entry, by its id.
+        let first = "[[app]]\nid = \"first\"\nname = \"First\"\nbundle_id = \"com.example.first\"\n\n"
+        let text = withAnError.replacingOccurrences(of: "[[app]]\nid = \"team-term\"", with: first + "[[app]]\nid = \"team-term\"")
+        #expect(ConfigDocument.sentences(ConfigParser.parse(text).diagnostics) == ["line 12: [app.2.name] the name is longer than 120 characters"])
+        let removed = try ConfigDocument(text).removingEntry(at: 1, from: "app")
+        #expect(ConfigDocument.sentences(ConfigParser.parse(removed.text).diagnostics) == ["line 7: [app.1.name] the name is longer than 120 characters"])
+        let added = try ConfigDocument(text).addingEntry(to: "app", fields: [("id", .string("new")), ("name", .string("New")), ("bundle_id", .string("com.example.new"))], at: 1)
+        #expect(ConfigParser.parse(added.text).diagnostics.map(\.path) == ["app.3.name"])
+        let moved = try ConfigDocument(text).movingEntry(from: 2, to: 1, in: "app")
+        #expect(ConfigParser.parse(moved.text).diagnostics.map(\.path) == ["app.1.name"])
+    }
+
+    @Test func anErrorThatListsWhatTheConfigKnowsIsTheOneThatWasThereWhenTheListGrows() throws {
+        // "unknown agent "nope"; known agents: …" names the agent of one's own that is added, and is the error it was.
+        let text = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\", \"nope\"]\n"
+        let added = try ConfigDocument(text).addingTable("agent.helper", fields: [("name", .string("Helper")), ("command", .string("helper"))])
+        #expect(ConfigDocument.sentences(ConfigParser.parse(added.text).diagnostics).first?.contains("known agents: helper, claude") == true, "\(ConfigParser.parse(added.text).diagnostics)")
+    }
+
     @Test func aWholeTextThatKeepsAnErrorThatWasThereReplacesTheOldOneButOneThatIsNotTOMLNever() throws {
         let kept = withAnError + "# A comment of mine.\n"
         #expect(try ConfigDocument(withAnError).replacingText(kept).text == kept)

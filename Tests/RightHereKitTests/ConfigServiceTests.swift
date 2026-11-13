@@ -55,7 +55,9 @@ struct ConfigServiceTests {
                                  (.set("app.2.role", .string("terminal")), "the default editor and a template's app is a terminal now"),
                                  (.removeEntry(at: 2, from: "app"), "the default editor is gone")] {
             do { _ = try work.service.apply(operation, target: .local, actor: .cli); Issue.record("expected a refusal: \(why)") } catch let error as ConfigDocument.EditError {
-                guard case .wouldBeInvalid = error else { Issue.record("\(error)"); continue }
+                guard case .wouldBeInvalid(let problem) = error else { Issue.record("\(error)"); continue }
+                // The setting is the shared file's, and the refusal names that file, whichever file was changed.
+                #expect(problem.hasPrefix("config.toml: [general."), "\(why): \(problem)")
             }
             #expect(work.localText == local, "nothing was written: \(why)")
         }
@@ -63,6 +65,15 @@ struct ConfigServiceTests {
         _ = try work.service.apply(.set("app.2.name", .string("Ed 2")), target: .local, actor: .cli)
         #expect(work.localText?.contains("name = \"Ed 2\"") == true)
         #expect(!ConfigStore.load(paths: work.paths).result.hasErrors)
+    }
+
+    @Test func anEntryTakenOutAboveOneWithAnErrorIsMadeThoughTheErrorIsSaidOfAnotherPlace() throws {
+        // The config as a whole says the error of the second entry as app.2.name before and app.1.name after: it is the same entry, and the change brings no error.
+        let long = String(repeating: "x", count: 130)
+        let shared = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n\n[[app]]\nid = \"first\"\nname = \"First\"\nbundle_id = \"com.example.first\"\n\n[[app]]\nid = \"team-term\"\nname = \"\(long)\"\nbundle_id = \"com.example.term\"\n"
+        let work = try Workspace(config: shared); defer { work.clean() }
+        let change = try work.service.apply(.removeEntry(at: 1, from: "app"), target: .shared, actor: .cli)
+        #expect(change.written && !work.text.contains("com.example.first") && work.text.contains(long))
     }
 
     @Test func theFirstChangeOfAListSeedsItWithWhatTheReadersOfTheFileItGoesToGet() throws {

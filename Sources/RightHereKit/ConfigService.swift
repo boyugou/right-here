@@ -367,12 +367,16 @@ public struct ConfigService: Sendable {
         // that is gone), and the config would then have an error that no editor is open to show.
         if changed {
             let name = paths.localConfigFile.lastPathComponent
-            func problems(shared: String, overlay: String?) -> Set<String> {
-                Set(ConfigLayers.load(base: .text(shared), local: overlay.map { .text($0) } ?? .absent, overlayName: name).diagnostics.filter { $0.severity == .error }
-                    .map { "\($0.file ?? file.lastPathComponent): \($0.path.isEmpty ? "" : "[\($0.path)] ")\($0.message)" })
+            func problems(shared: String, overlay: String?) -> [ConfigDiagnostic] {
+                ConfigLayers.load(base: .text(shared), local: overlay.map { .text($0) } ?? .absent, overlayName: name).diagnostics
             }
-            let after = target == .shared ? problems(shared: editedText, overlay: overlay) : problems(shared: shared, overlay: editedText)
-            if let new = after.subtracting(problems(shared: shared, overlay: overlay)).sorted().first { throw ConfigDocument.EditError.wouldBeInvalid(new) }
+            let (afterShared, afterOverlay) = target == .shared ? (editedText, overlay) : (shared, editedText)
+            // An error that was there is not one the change brings, though an entry added above it moved it (`ConfigDiagnostic.errorsAdded`).
+            let added = ConfigDiagnostic.errorsAdded(problems(shared: afterShared, overlay: afterOverlay), text: { $0 == nil ? afterShared : afterOverlay ?? "" },
+                                                     to: problems(shared: shared, overlay: overlay), text: { $0 == nil ? shared : overlay ?? "" })
+            if let new = added.map({ "\($0.file ?? paths.configFile.lastPathComponent): \($0.path.isEmpty ? "" : "[\($0.path)] ")\($0.message)" }).sorted().first {
+                throw ConfigDocument.EditError.wouldBeInvalid(new)
+            }
             if let agreed {
                 try Self.hold(to: agreed, from: config(shared: shared, local: overlay),
                               to: config(shared: target == .shared ? editedText : shared, local: target == .local ? editedText : overlay))

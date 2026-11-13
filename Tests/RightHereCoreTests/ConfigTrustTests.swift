@@ -186,10 +186,14 @@ struct ConfigTrustTests {
         let app = "[[app]]\nid = \"myterm\"\nname = \"MyTerm\"\nbundle_id = \"com.example.myterm\"\nrole = \"terminal\"\nopen_args = [\"/usr/bin/open\", \"-a\", \"MyTerm\", \"{dir}\"]\n"
         let other = app.replacingOccurrences(of: "\"-a\", \"MyTerm\"", with: "\"-b\", \"com.example.other\"")
         #expect(ConfigTrust.approvals(changingFrom: merged(app), to: merged(other)).map(\.key) == ["app.*.open_args"], "only the program that opens a folder changed")
-        // An app that is new through a route that writes no program key (the other file's `disabled` no longer hides it) and starts through a template.
-        #expect(ConfigTrust.approvals(changingFrom: merged(""), to: merged(app)).map(\.key) == ["app.*.run_args"])
+        // An app that is new through a route that writes no program key (the other file's `disabled` no longer hides it, an entry the config refused is put right, an id is
+        // taken over) and starts through a template.
+        #expect(ConfigTrust.approvals(changingFrom: merged(""), to: merged(app)).map(\.key) == ["app.*.run_args", "app.*.bundle_ids"])
+        // One with no template of its own starts nothing of its own, but a click hands it the folder, and which app that is was chosen by nobody in the window.
         let plain = "[[app]]\nid = \"notes\"\nname = \"Notes\"\nbundle_id = \"com.example.notes\"\nrole = \"editor\"\n"
-        #expect(ConfigTrust.approvals(changingFrom: merged(""), to: merged(plain)).isEmpty, "an app with no template of its own starts nothing of its own")
+        #expect(ConfigTrust.approvals(changingFrom: merged(""), to: merged(plain)).map(\.key) == ["app.*.bundle_ids"])
+        // A built-in app as it ships is not one an assistant chooses, whether or not it was turned off.
+        #expect(ConfigTrust.approvals(changingFrom: merged("", "disabled = [\"zed\"]\n"), to: merged("")).isEmpty && !merged("", "disabled = [\"zed\"]\n").allApps.contains { $0.id == "zed" })
     }
 
     @Test func aTerminalThatStartsThroughATemplateAndIsChosenWhereItWasNotWaitsWhoeverMakesTheChoice() {
