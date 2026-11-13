@@ -2470,7 +2470,7 @@ MUTANTS = [
     ("an entry the config refused is edited in the place of the one it uses", "Sources/RightHereKit/ConfigService.swift",
      "let origins = (loaded ?? ConfigStore.load(paths: paths, withOrigins: true).result).usedOrigins(of: table)", "let origins = (loaded ?? ConfigStore.load(paths: paths, withOrigins: true).result).entryOrigins[table] ?? []"),
     ("no preset of the config has a place to be edited at", "Sources/RightHereCore/Config/ConfigBuilder+Presets.swift",
-     "}, accepted: { _, reader in sink.usedEntries.insert(reader.path.joined(separator: \".\")) })", "}, accepted: { _, _ in })"),
+     "            sink.usedEntries.insert(reader.path.joined(separator: \".\"))\n            paths[preset.id] = reader.path\n", "            paths[preset.id] = reader.path\n"),
     ("a start option the agent refused is said to be used", "Sources/RightHereCore/Config/ConfigBuilder+Agents.swift",
      '            settings.variants = variants\n            sink.usedEntries.formUnion(taken.map { $0.path.joined(separator: ".") })\n',
      '            settings.variants = variants\n            sink.usedEntries.formUnion(declaredVariants.map { $0.path.joined(separator: ".") })\n'),
