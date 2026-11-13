@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.2.20 (2026-11-12)
+
+- **An error in the config no longer stops `rh config` from changing something else.** A config copied from a team's
+  repository with one name too long refused every `rh config set`, so an AI agent asked to add Codex edited the file by
+  hand. A change is now refused only for an error it brings: the error that was there stays for you to fix, wherever the
+  change moves it (another line, another position in a list of entries). A file that is not TOML is still not edited.
+  An AI assistant's change that puts right an entry the config refused, so that a click starts its agent or hands a
+  folder to its app, waits for your yes as a new one would.
+
 ## 1.2.19 (2026-11-12)
 
 - **The last action in the Checks says where it was started, in words** ("right-click inside a folder", "a Quick Action") in
