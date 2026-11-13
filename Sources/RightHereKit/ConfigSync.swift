@@ -593,7 +593,13 @@ public struct ConfigSync: Sendable {
             }
         }
         if let row = commandsCheck(report, localData: inspection.localData, overlay: inspection.localOverlayData) { checks.append(row) }
-        switch report.status {
+        // This Mac's config that was not read (too large, unreadable) cannot be compared, and `push` refuses it: the config's own row says what is wrong.
+        let localRead: Bool
+        switch inspection.local {
+        case .tooLarge, .unreadable: localRead = false
+        case .absent, .data: localRead = true
+        }
+        switch localRead ? report.status : .remoteMissing {
         case .inSync:
             checks.append(DoctorCheck(.syncState, status: .ok, detail: .doctorSyncInSync))
         case .localAhead:

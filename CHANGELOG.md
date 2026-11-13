@@ -9,7 +9,8 @@
   after the log rotates; and a config file that does not read leaves out the rows that would be worked out from the
   defaults, which advised adding what the file already says.
 - **Conflict copies from Dropbox and Syncthing.** With config sync on, the doctor named iCloud's `config 2.toml` only;
-  Dropbox's `config (… conflicted copy …).toml` and Syncthing's `config.sync-conflict-….toml` get the row too.
+  Dropbox's `config (… conflicted copy …).toml` and Syncthing's `config.sync-conflict-….toml` get the row too. A
+  config of this Mac that is too large to read is not called "ahead of the folder" with `push` as the fix, which push refuses.
 - **`XDG_CONFIG_HOME` no longer moves the config.** The Finder extension may read only `~/.config/right-here/`, so a
   config that the variable moved was one that `rh` in a terminal read and the menu never did.
 

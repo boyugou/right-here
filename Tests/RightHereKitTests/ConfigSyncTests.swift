@@ -414,6 +414,15 @@ struct ConfigSyncSafetyTests {
         #expect(conflict?.detail?.english().contains("config 2.toml") == true)
     }
 
+    @Test func aConfigOfThisMacThatIsNotReadIsNotCalledAheadWithPushAsTheFix() throws {
+        // A file over the limit is not read, so it cannot be compared, and `push` refuses it: the config's own row of the doctor says what is wrong.
+        let f = try prepared(one); defer { f.cleanUp() }
+        try f.write(one + "# " + String(repeating: "x", count: ConfigParser.maxBytes) + "\n", to: f.local)
+        #expect(throws: (any Error).self) { try f.sync.push() }
+        let state = f.sync.doctorChecks().first { $0.id == .syncState }
+        #expect(state == nil, "\(state?.englishLines() ?? [])")
+    }
+
     @Test func conflictCopiesAreKnownAsEachSyncServiceNamesThem() {
         // iCloud Drive and Finder, Dropbox and Syncthing each name the copy they leave their own way; a copy the person made is theirs.
         for name in ["config 2.toml", "config (Ann's MacBook Air's conflicted copy 2026-11-13).toml", "config.sync-conflict-20261113-101500-ABCDEFG.toml"] {

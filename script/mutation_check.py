@@ -2527,6 +2527,8 @@ MUTANTS = [
      '|| (name.hasPrefix("config (") && name.hasSuffix(").toml") && name.contains("conflicted copy"))', "|| false"),
     ("a Syncthing conflict copy of the synced config is not seen", "Sources/RightHereKit/ConfigSync.swift",
      "|| name.wholeMatch(of: #/config\\.sync-conflict-\\d{8}-\\d{6}-[A-Z0-9]+\\.toml/#) != nil", "|| false"),
+    ("a config of this Mac that is not read is called ahead, with push as the fix", "Sources/RightHereKit/ConfigSync.swift",
+     "switch localRead ? report.status : .remoteMissing {", "switch report.status {"),
 ]
 
 
