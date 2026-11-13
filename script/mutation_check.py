@@ -2523,6 +2523,10 @@ MUTANTS = [
      'let text = [logFile.appendingPathExtension("1"), logFile]', 'let text = [logFile, logFile.appendingPathExtension("1")]'),
     ("a config that does not read is advised on from the defaults", "Sources/RightHereKit/Doctor.swift",
      "let readsTheConfig = !configNotRead", "let readsTheConfig = true"),
+    ("a Dropbox conflict copy of the synced config is not seen", "Sources/RightHereKit/ConfigSync.swift",
+     '|| (name.hasPrefix("config (") && name.hasSuffix(").toml") && name.contains("conflicted copy"))', "|| false"),
+    ("a Syncthing conflict copy of the synced config is not seen", "Sources/RightHereKit/ConfigSync.swift",
+     "|| name.wholeMatch(of: #/config\\.sync-conflict-\\d{8}-\\d{6}-[A-Z0-9]+\\.toml/#) != nil", "|| false"),
 ]
 
 

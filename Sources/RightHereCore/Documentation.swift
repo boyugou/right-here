@@ -244,8 +244,8 @@ public enum Documentation {
       shows as `remote-evicted`, with its size. `push` and `pull` never write over a file that they did not read.
     - Each write is atomic: a temporary file next to the destination, then a rename. Nothing is deleted.
     - While sync is on, `rh doctor` adds checks: the folder can be reached, the copy is downloaded and valid, how the
-      two files compare, and conflict copies such as `config 2.toml`. A sync service leaves such a copy when two
-      Macs write at the same time.
+      two files compare, and conflict copies: `config 2.toml` (iCloud Drive), `config (… conflicted copy …).toml` (Dropbox),
+      `config.sync-conflict-….toml` (Syncthing). A sync service leaves such a copy when two Macs write at the same time.
 
     ## Dotfiles, Dropbox and git
 

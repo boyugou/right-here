@@ -133,7 +133,7 @@ public struct ConfigSync: Sendable {
         public var remoteFile: URL
         public var localFile: URL
         public var folderReachable: Bool
-        /// Finder-style conflict copies next to the remote (`config 2.toml`).
+        /// Conflict copies next to the remote (`isConflictCopy`).
         public var conflictCopies: [String]
         public var localHash: String?
         public var remoteHash: String?
@@ -294,7 +294,7 @@ public struct ConfigSync: Sendable {
             }
         }
         let names = (try? manager.contentsOfDirectory(atPath: folder.path)) ?? []
-        let conflicts = names.filter { $0.wholeMatch(of: #/config \d+\.toml/#) != nil }.sorted()
+        let conflicts = names.filter(Self.isConflictCopy).sorted()
         return Inspection(folder: folder, folderReachable: true, local: local, remoteData: remoteData, remote: remote, conflicts: conflicts, localOverlayData: overlay)
     }
 
@@ -550,6 +550,15 @@ public struct ConfigSync: Sendable {
     }
 
     // MARK: Doctor
+
+    /// A copy that a sync service left when two Macs wrote `config.toml` at once, as each names it: iCloud Drive and Finder `config 2.toml`, Dropbox
+    /// `config (<computer>'s conflicted copy <date>).toml`, Syncthing `config.sync-conflict-<date>-<time>-<device>.toml`. A copy the person made under
+    /// another name is theirs, and not one of these.
+    static func isConflictCopy(_ name: String) -> Bool {
+        name.wholeMatch(of: #/config \d+\.toml/#) != nil
+            || (name.hasPrefix("config (") && name.hasSuffix(").toml") && name.contains("conflicted copy"))
+            || name.wholeMatch(of: #/config\.sync-conflict-\d{8}-\d{6}-[A-Z0-9]+\.toml/#) != nil
+    }
 
     /// Nothing when sync is off. When it is on: the folder, the copy there, whether it is valid, how it compares, and
     /// conflict copies a sync service may have left.

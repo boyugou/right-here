@@ -413,6 +413,16 @@ struct ConfigSyncSafetyTests {
         #expect(conflict?.status == .warn)
         #expect(conflict?.detail?.english().contains("config 2.toml") == true)
     }
+
+    @Test func conflictCopiesAreKnownAsEachSyncServiceNamesThem() {
+        // iCloud Drive and Finder, Dropbox and Syncthing each name the copy they leave their own way; a copy the person made is theirs.
+        for name in ["config 2.toml", "config (Ann's MacBook Air's conflicted copy 2026-11-13).toml", "config.sync-conflict-20261113-101500-ABCDEFG.toml"] {
+            #expect(ConfigSync.isConflictCopy(name), "\(name)")
+        }
+        for name in ["config.toml", "config (old).toml", "config.toml.bak-2026-11-13", "config 2.toml.bak", "my config 2.toml"] {
+            #expect(!ConfigSync.isConflictCopy(name), "\(name)")
+        }
+    }
 }
 
 @Suite("ConfigSync: a link in the sync folder")
