@@ -100,6 +100,8 @@ public struct SetupActions: Sendable {
         public var change: ConfigChange?
         public var notice: SetupNotice?
         public var held: [PromptEffects.Entry] = []
+        /// The change of the other file, for a change of both made as one.
+        public var alongsideChange: ConfigChange?
     }
 
     /// Changes the config as the person asks in the window (`ConfigService`, as `rh config` does): in the file that decides `key` on this Mac, in the smallest way, with the
@@ -113,6 +115,21 @@ public struct SetupActions: Sendable {
         let service = ConfigService(paths: paths)
         do {
             return ConfigEditResult(change: try service.apply(operations, target: target ?? service.owner(of: key, anchor: anchor), actor: .window, startingWithoutAsking: agreed), notice: nil)
+        } catch ConfigDocument.EditError.changedMeanwhile {
+            return ConfigEditResult(change: nil, notice: .listChanged)
+        } catch {
+            return Self.result(of: error)
+        }
+    }
+
+    /// A change of both files made as one (`ConfigService.apply(shared:local:actor:)`): `operations` in the file of `target`, `alongside` in the other. The result's `change` is the change of
+    /// `target`'s file and `alongsideChange` the other's.
+    public func editConfig(_ operations: [ConfigOperation], in target: ConfigTarget, alongside: [ConfigOperation], startingWithoutAsking agreed: [PromptEffects.Entry] = []) async -> ConfigEditResult {
+        let service = ConfigService(paths: paths)
+        do {
+            let both = try service.apply(shared: target == .shared ? operations : alongside, local: target == .local ? operations : alongside, actor: .window, startingWithoutAsking: agreed)
+            let (mine, other) = target == .shared ? (both.shared, both.local) : (both.local, both.shared)
+            return ConfigEditResult(change: mine ?? other, notice: nil, alongsideChange: mine == nil ? nil : other)
         } catch ConfigDocument.EditError.changedMeanwhile {
             return ConfigEditResult(change: nil, notice: .listChanged)
         } catch {

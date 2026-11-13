@@ -369,17 +369,8 @@ public struct ConfigService: Sendable {
         // gone, a preset that uses it), and the shared file may name what a change of this Mac's own file takes out or turns into something else (an app that is a terminal no more, an editor
         // that is gone), and the config would then have an error that no editor is open to show.
         if changed {
-            let name = paths.localConfigFile.lastPathComponent
-            func problems(shared: String, overlay: String?) -> [ConfigDiagnostic] {
-                ConfigLayers.load(base: .text(shared), local: overlay.map { .text($0) } ?? .absent, overlayName: name).diagnostics
-            }
             let (afterShared, afterOverlay) = target == .shared ? (editedText, overlay) : (shared, editedText)
-            // An error that was there is not one the change brings, though an entry added above it moved it (`ConfigDiagnostic.errorsAdded`).
-            let added = ConfigDiagnostic.errorsAdded(problems(shared: afterShared, overlay: afterOverlay), text: { $0 == nil ? afterShared : afterOverlay ?? "" },
-                                                     to: problems(shared: shared, overlay: overlay), text: { $0 == nil ? shared : overlay ?? "" })
-            if let new = added.map({ "\($0.file ?? paths.configFile.lastPathComponent): \($0.path.isEmpty ? "" : "[\($0.path)] ")\($0.message)" }).sorted().first {
-                throw ConfigDocument.EditError.wouldBeInvalid(new)
-            }
+            if let new = errorAdded(before: (shared, overlay), after: (afterShared, afterOverlay)) { throw ConfigDocument.EditError.wouldBeInvalid(new) }
             if let agreed {
                 try Self.hold(to: agreed, from: config(shared: shared, local: overlay),
                               to: config(shared: target == .shared ? editedText : shared, local: target == .local ? editedText : overlay))
@@ -390,7 +381,7 @@ public struct ConfigService: Sendable {
                                   warnings: warnings(for: operations, target: target,
                                                      before: (shared, overlay), after: (target == .shared ? editedText : shared, target == .local ? editedText : overlay)))
         guard changed, !dryRun else { return change }
-        let entry = ConfigHistory.Entry(time: now(), actor: actor, target: target, summary: summary, before: current, afterDigest: ConfigHistory.digest(editedText),
+        let entry = ConfigHistory.Entry(time: now(), actor: actor, target: target, summary: summary, before: current, afterDigest: Self.readDigest(editedText),
                                         file: file.path, existed: target == .shared || overlay != nil)
         // The text before is kept first: an edit that is written without it could not be undone.
         let stored = try history.record(entry)
@@ -402,9 +393,134 @@ public struct ConfigService: Sendable {
         }
         history.prune(of: target, file: file.path)
         change.written = true
-        change.afterDigest = ConfigHistory.digest(editedText)
+        change.afterDigest = Self.readDigest(editedText)
         change.beforeDigest = ConfigHistory.digest(current)
         return change
+    }
+
+    /// The first error that the two files make together after a change and did not make before it, as a line that names its file: what an edit, and an undo, is refused for. This Mac's own
+    /// file may name what a change of the shared file takes out (a key of an agent that is gone, an app it made its editor), and the shared file may name what a change of this Mac's own file
+    /// takes out; an error that was there is not one the change brings, though an entry added above it moved it (`ConfigDiagnostic.errorsAdded`).
+    private func errorAdded(before: (shared: String, local: String?), after: (shared: String, local: String?)) -> String? {
+        let name = paths.localConfigFile.lastPathComponent
+        func problems(_ texts: (shared: String, local: String?)) -> [ConfigDiagnostic] {
+            ConfigLayers.load(base: .text(texts.shared), local: texts.local.map { .text($0) } ?? .absent, overlayName: name).diagnostics
+        }
+        let added = ConfigDiagnostic.errorsAdded(problems(after), text: { $0 == nil ? after.shared : after.local ?? "" },
+                                                 to: problems(before), text: { $0 == nil ? before.shared : before.local ?? "" })
+        return added.map { "\($0.file ?? paths.configFile.lastPathComponent): \($0.path.isEmpty ? "" : "[\($0.path)] ")\($0.message)" }.sorted().first
+    }
+
+    /// The digest of a text that is written, as a read of the file gives it back (`lineFeeds`): a file of mixed line endings that an edit leaves all CRLF is read with line feeds afterwards, and
+    /// the history, an undo held to the change and a save held to the shown text all compare digests of what is read.
+    static func readDigest(_ written: String) -> String {
+        ConfigHistory.digest(lineFeeds(written))
+    }
+
+    /// One file's part of a change of both (`apply(shared:local:actor:)`), and of its undo: the file, and the digests of the texts the change left in it and replaced.
+    public struct UndoPart: Sendable, Equatable {
+        public var target: ConfigTarget
+        public var expecting: String?
+        public var replacing: String?
+
+        public init(target: ConfigTarget, expecting: String?, replacing: String?) {
+            self.target = target
+            self.expecting = expecting
+            self.replacing = replacing
+        }
+    }
+
+    /// A change of both files made as one: the entry of a list in one file and the table it names in the other, taken out together (Remove Agent). Each file's operations are made on that
+    /// file; what the two make together is held to the rules of an edit once, for the end (the list's entry first would be a config that names a table, the table first one that names
+    /// nothing); both are written, each with its record in the history, so that one Undo takes back both (`undo(_:)`). When the second write fails, the first is put back.
+    public func apply(shared sharedOperations: [ConfigOperation], local localOperations: [ConfigOperation], actor: ConfigActor,
+                      startingWithoutAsking agreed: [PromptEffects.Entry]? = nil) throws -> (shared: ConfigChange?, local: ConfigChange?) {
+        try locked {
+            let shared = try sharedText()
+            let overlay = try localText()
+            let sharedResolved = Self.resolvingDefaults(sharedOperations, target: .shared, shared: shared)
+            let localResolved = Self.resolvingDefaults(localOperations, target: .local, shared: shared)
+            var editedShared = ConfigDocument(shared)
+            for operation in sharedResolved { editedShared = try operation.apply(to: editedShared) }
+            var editedLocal = ConfigDocument(overlay ?? "", validation: .overlay(over: shared))
+            for operation in localResolved { editedLocal = try operation.apply(to: editedLocal) }
+            let after = (shared: editedShared.text, local: overlay == nil && editedLocal.text.isEmpty ? nil : editedLocal.text)
+            guard after.shared != shared || after.local != overlay else { return (nil, nil) }
+            if let new = errorAdded(before: (shared, overlay), after: after) { throw ConfigDocument.EditError.wouldBeInvalid(new) }
+            if let agreed { try Self.hold(to: agreed, from: config(shared: shared, local: overlay), to: config(shared: after.shared, local: after.local)) }
+            var written: [(target: ConfigTarget, before: String?, record: String)] = []
+            var changes: (shared: ConfigChange?, local: ConfigChange?) = (nil, nil)
+            do {
+                for (target, before, edited, operations) in [(ConfigTarget.shared, Optional(shared), after.shared, sharedResolved), (.local, overlay, after.local ?? "", localResolved)]
+                where edited != (before ?? "") {
+                    let file = file(of: target)
+                    let summary = Self.summary(of: operations)
+                    let record = try history.record(ConfigHistory.Entry(time: now(), actor: actor, target: target, summary: summary, before: before ?? "",
+                                                                        afterDigest: Self.readDigest(edited), file: file.path, existed: before != nil))
+                    do { try write(edited, to: file) } catch { history.remove(named: record); throw error }
+                    written.append((target, before, record))
+                    history.prune(of: target, file: file.path)
+                    let change = ConfigChange(target: target, file: file.path, summary: summary, changed: true, written: true, diff: LineDiff.unified(from: before ?? "", to: edited),
+                                              warnings: warnings(for: operations, target: target, before: (shared, overlay), after: after),
+                                              afterDigest: Self.readDigest(edited), beforeDigest: ConfigHistory.digest(before ?? ""))
+                    if target == .shared { changes.shared = change } else { changes.local = change }
+                }
+            } catch {
+                for done in written.reversed() {
+                    try? restore(done.before, in: done.target)
+                    history.remove(named: done.record)
+                }
+                throw error
+            }
+            return changes
+        }
+    }
+
+    /// Takes back a change of both files as one (`apply(shared:local:actor:)`): each file is put back as it was, when each is still as the change left it, and what the two make together
+    /// afterwards is held to the rules of an edit once, for the end. One file put back without the other could leave a list that names a table that is not there.
+    public func undo(_ parts: [UndoPart], startingWithoutAsking agreed: [PromptEffects.Entry]? = nil) throws -> [ConfigChange] {
+        try locked {
+            let shared = try sharedText()
+            let overlay = try localText()
+            var after = (shared: shared, local: overlay)
+            var taken: [(part: UndoPart, entry: ConfigHistory.Entry)] = []
+            for part in parts {
+                guard let entry = entries(of: part.target).first else { throw Failure.nothingToUndo(part.target) }
+                if let digest = part.expecting, entry.afterDigest != digest { throw Failure.notTheLast(part.target) }
+                if let before = part.replacing, ConfigHistory.digest(entry.before) != before { throw Failure.notTheLast(part.target) }
+                let current = part.target == .shared ? shared : (overlay ?? "")
+                guard ConfigHistory.digest(current) == entry.afterDigest else { throw Failure.changedSince(file: file(of: part.target).path) }
+                if part.target == .shared { after.shared = entry.before } else { after.local = entry.existed ? entry.before : nil }
+                taken.append((part, entry))
+            }
+            if let new = errorAdded(before: (shared, overlay), after: after) { throw ConfigDocument.EditError.wouldBeInvalid(new) }
+            if let agreed { try Self.hold(to: agreed, from: config(shared: shared, local: overlay), to: config(shared: after.shared, local: after.local)) }
+            var changes: [ConfigChange] = []
+            var restored: [(target: ConfigTarget, text: String?)] = []
+            do {
+                for (part, entry) in taken {
+                    let current = part.target == .shared ? shared : (overlay ?? "")
+                    try restore(entry.existed ? entry.before : nil, in: part.target)
+                    restored.append((part.target, part.target == .shared ? shared : overlay))
+                    changes.append(ConfigChange(target: part.target, file: file(of: part.target).path, summary: "undo: " + entry.summary, changed: current != entry.before, written: true,
+                                                diff: LineDiff.unified(from: current, to: entry.before), warnings: []))
+                }
+            } catch {
+                // A file that was put back and one that could not be: both are left as they were, and the error is said.
+                for done in restored.reversed() { try? restore(done.text, in: done.target) }
+                throw error
+            }
+            for (_, entry) in taken { history.remove(entry) }
+            return changes
+        }
+    }
+
+    /// Writes `text` to the file of `target`, or takes the file away (`nil`: the change made it, and taking it back leaves no file, not an empty one).
+    private func restore(_ text: String?, in target: ConfigTarget) throws {
+        let file = file(of: target)
+        if let text { return try write(text, to: file) }
+        try RealHomeGuard.checkWriting(file, environment: environment, realHome: realHome)
+        try? FileManager.default.removeItem(at: file.resolvingSymlinksInPath())
     }
 
     // MARK: Changes that wait for the person
@@ -642,6 +758,11 @@ public struct ConfigService: Sendable {
                 let both = try configs(replacing: target, with: entry.existed ? entry.before : nil)
                 try Self.hold(to: agreed, from: both.before, to: both.after)
             }
+            // Held to what the two files make together, as an edit is: the other file may name what the change that is taken back made (an app that this Mac's own file made its editor).
+            let shared = try sharedText()
+            let overlay = try localText()
+            let after = target == .shared ? (shared: entry.before, local: overlay) : (shared: shared, local: entry.existed ? entry.before : nil)
+            if let new = errorAdded(before: (shared, overlay), after: after) { throw ConfigDocument.EditError.wouldBeInvalid(new) }
             var change = ConfigChange(target: target, file: file.path, summary: "undo: " + entry.summary, changed: current != entry.before, written: false,
                                       diff: LineDiff.unified(from: current, to: entry.before), warnings: [])
             guard !dryRun else { return change }
@@ -712,8 +833,10 @@ public struct ConfigService: Sendable {
         let existing = try? Data(contentsOf: target)
         if existing != nil, !FileManager.default.isWritableFile(atPath: target.path) { throw Failure.readOnly(file.path) }
         var out = text
-        if let existing, Self.usesCRLF(String(decoding: existing, as: UTF8.self)) {
-            out = out.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\n", with: "\r\n")
+        // A text with a carriage return of its own is a file of mixed line endings, read as it was (`lineFeeds` leaves such a file alone): it is written as it is, which an undo of an edit
+        // that left the file all CRLF needs to give its bytes back.
+        if !text.utf8.contains(0x0D), let existing, Self.usesCRLF(String(decoding: existing, as: UTF8.self)) {
+            out = out.replacingOccurrences(of: "\n", with: "\r\n")
         }
         var data = Data(out.utf8)
         if let existing, existing.starts(with: [0xEF, 0xBB, 0xBF]), !out.hasPrefix("\u{FEFF}") { data = Data([0xEF, 0xBB, 0xBF]) + data }

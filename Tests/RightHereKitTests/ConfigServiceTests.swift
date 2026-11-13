@@ -42,6 +42,57 @@ struct ConfigServiceTests {
         #expect(ConfigStore.load(paths: workspace.paths).config.agents["claude"]?.launcher == .terminal(nil))
     }
 
+    /// A change of both files is made as one and taken back as one (Remove Agent with the list in this Mac's own file and the table in config.toml): two changes were two Undos. What
+    /// the two make is checked once, at the end; a write that fails puts the other file back.
+    @Test func aChangeOfBothFilesIsMadeAndTakenBackAsOne() throws {
+        let shared = "[general]\nterminal = \"ghostty\"\n\n[agent.mine]\nname = \"Mine\"\ncommand = \"mine\"\n"
+        let local = "[general]\nagents = [\"claude\", \"mine\"]\n"
+        let work = try Workspace(config: shared); defer { work.clean() }
+        try local.write(to: work.paths.localConfigFile, atomically: true, encoding: .utf8)
+        func texts() throws -> (String, String) {
+            (try String(contentsOf: work.paths.configFile, encoding: .utf8), try String(contentsOf: work.paths.localConfigFile, encoding: .utf8))
+        }
+        // The table alone first would leave a list that names nothing: refused as an edit of one file, and as a change of both whose other part keeps the list.
+        #expect(throws: ConfigDocument.EditError.self) { try work.service.apply([.removeTable("agent.mine")], target: .shared, actor: .window) }
+        #expect(throws: ConfigDocument.EditError.self) { try work.service.apply(shared: [.removeTable("agent.mine")], local: [], actor: .window) }
+        let both = try work.service.apply(shared: [.removeTable("agent.mine")], local: [.remove(at: 2, from: "general.agents")], actor: .window)
+        #expect(try texts() == ("[general]\nterminal = \"ghostty\"\n", "[general]\nagents = [\"claude\"]\n"))
+        let parts = try [both.shared, both.local].map { change in
+            let change = try #require(change)
+            return ConfigService.UndoPart(target: change.target, expecting: change.afterDigest, replacing: change.beforeDigest)
+        }
+        // Each file put back alone would be refused; both at once are not.
+        #expect(throws: ConfigDocument.EditError.self) { try work.service.undo(target: .local) }
+        _ = try work.service.undo(parts)
+        #expect(try texts() == (shared, local))
+        #expect(work.service.history(of: .shared).isEmpty && work.service.history(of: .local).isEmpty)
+    }
+
+    @Test func aChangeOfBothFilesWhoseSecondWriteFailsLeavesBothAsTheyWere() throws {
+        let shared = "[general]\nterminal = \"ghostty\"\n\n[agent.mine]\nname = \"Mine\"\ncommand = \"mine\"\n"
+        let local = "[general]\nagents = [\"claude\", \"mine\"]\n"
+        let work = try Workspace(config: shared); defer { work.clean() }
+        try local.write(to: work.paths.localConfigFile, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: work.paths.localConfigFile.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: work.paths.localConfigFile.path) }
+        #expect(throws: ConfigService.Failure.self) {
+            try work.service.apply(shared: [.removeTable("agent.mine")], local: [.remove(at: 2, from: "general.agents")], actor: .window)
+        }
+        #expect(try String(contentsOf: work.paths.configFile, encoding: .utf8) == shared)
+        #expect(work.service.history(of: .shared).isEmpty, "the record of a change that was put back is gone")
+    }
+
+    /// An undo of one file is held to what the two files make together, as an edit is: taking back the app that this Mac's own file made its editor left a config with an error.
+    @Test func anUndoThatWouldLeaveTheOtherFileNamingWhatItTookOutIsRefused() throws {
+        let work = try Workspace(config: "[general]\nterminal = \"ghostty\"\n"); defer { work.clean() }
+        let app = ConfigOperation.addEntry(to: "app", fields: [ConfigField("id", .string("probe")), ConfigField("name", .string("Probe")),
+                                                             ConfigField("bundle_id", .string("org.example.probe")), ConfigField("role", .string("editor"))])
+        _ = try work.service.apply([app], target: .shared, actor: .window)
+        _ = try work.service.apply([.set("general.editor", .string("probe"))], target: .local, actor: .window)
+        #expect(throws: ConfigDocument.EditError.self) { try work.service.undo(target: .shared) }
+        #expect(ConfigStore.load(paths: work.paths).result.diagnostics.filter { $0.severity == .error }.isEmpty)
+    }
+
     private struct Workspace {
         let root: URL
         let paths: RHPaths

@@ -472,6 +472,13 @@ code, and a mutant of `script/mutation_check.py` for each protection.
   later version reaches it. An empty Copy Path title is the default one (`title = ""`), which this Mac's file can now write. The way an agent takes a first
   prompt and the flag that switches its prompts off are written out as their built-in values; for an agent with none built in, an emptied field still takes
   the key out, and on this Mac's own file gives config.toml's value, since no word means "none".
+- **An undo is an edit of what the two files make.** It wrote the text before without the check every edit has, so taking back an app that this Mac's own
+  file had made its editor left the config with an error (`rh config undo` too); it is refused now with the sentence an edit gets. A change that needs both
+  files at once (Remove Agent, when the menu's list is in one and the agent's table in the other) is one change (`ConfigService.apply(shared:local:actor:)`):
+  each file's part is made on that file, the two are checked together once, both are written, and a failed second write puts the first back; its Undo
+  takes back both (`undo(_:)`). It was two changes, and the note's Undo took back the second only. The digest that the history and the window keep is the
+  one a read of the written file gives (`readDigest`), and a text with a carriage return of its own (a file of mixed line endings) is written as it is, so
+  an undo of an edit that left such a file all CRLF is made and gives its bytes back.
 
 ## Consequences
 

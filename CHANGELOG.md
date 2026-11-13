@@ -32,6 +32,10 @@
   "Select it in Finder" after a new file and an emptied Copy Path title gave config.toml's value, and the same choice
   made again then changed config.toml for every Mac. An empty Copy Path title is the default one (it was an entry with
   no title). A read of the whole state that began before a change no longer puts back the old "As in config.toml" rows.
+  Undo is held to what both files make together, as an edit is: taking back an app that this Mac's file had made its
+  editor left the config with an error. Remove Agent with the menu's list in one file and the agent in the other is one
+  change with one Undo (the note's Undo gave back only the agent). Undo of an edit that left a file of mixed line endings
+  all CRLF is no longer refused, and gives the file's bytes back.
 
 ## 1.2.25 (2026-11-13)
 

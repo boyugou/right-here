@@ -87,9 +87,15 @@ extension SetupActions {
     /// Takes back the last change of the file of `target`: the one the window made there (`ConfigChange.target`), not the file that decides a setting now, which an edit that took the setting
     /// out of this Mac's own file has changed. With `expecting`, the digest the change reported, only that change is taken back: when something else changed the file after it, nothing is.
     /// An undo is a change like any other: one that would make agents start without their permission prompts that the person did not agree to comes back in `held` (`editConfig`).
-    public func undoConfigEdit(target: ConfigTarget, expecting digest: String? = nil, replacing before: String? = nil, startingWithoutAsking agreed: [PromptEffects.Entry] = []) async -> ConfigEditResult {
+    public func undoConfigEdit(target: ConfigTarget, expecting digest: String? = nil, replacing before: String? = nil, alongside: ConfigService.UndoPart? = nil,
+                               startingWithoutAsking agreed: [PromptEffects.Entry] = []) async -> ConfigEditResult {
         let service = ConfigService(paths: paths)
         do {
+            if let alongside {
+                // A change of both files is taken back as one.
+                let changes = try service.undo([ConfigService.UndoPart(target: target, expecting: digest, replacing: before), alongside], startingWithoutAsking: agreed)
+                return ConfigEditResult(change: changes.first, notice: nil, alongsideChange: changes.dropFirst().first)
+            }
             return ConfigEditResult(change: try service.undo(target: target, expecting: digest, replacing: before, startingWithoutAsking: agreed), notice: nil)
         } catch ConfigService.Failure.notTheLast, ConfigService.Failure.changedSince {
             // Changed by hand after the last edit: taking that edit back would take the hand-made change too.

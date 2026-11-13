@@ -155,18 +155,19 @@ extension SetupModel {
         await changeByPlace(id, deciding: "args") { AgentOptions.operations(movingArguments: source, to: destination, of: $0) }
     }
 
-    /// An agent of one's own taken out of the menu and out of the config; its page closes with it. The menu's entry and the table are usually in one file, and one change takes both
-    /// (one Undo). When they are in two, the entry goes first: a table that nothing lists is a config that reads, and a list that names a table that is gone is not.
+    /// An agent of one's own taken out of the menu and out of the config; its page closes with it. The menu's entry and the table are taken out in one change, with one Undo, whether they are
+    /// in one file or in two (`ConfigService.apply(shared:local:actor:)`): two changes were two Undos, and the note offered only the second.
     func removeAgent(_ id: String) async {
         guard await settled(on: .agents, key: "agent.\(id).command"), let general, let options = agentOptions(id), let removal = AgentOptions.operations(removing: options, in: general) else { return }
         let key = "agent.\(id).command"
         let message = LocalizedMessage.appMenuEditedRemoved(options.name)
+        let tableFile = await actions.owner(of: key)
         if !removal.isListed {
             await edit(removal.table, deciding: key, saying: message, on: .agents)
-        } else if await actions.owner(of: GeneralSettingsState.agentsKey) == actions.owner(of: key) {
+        } else if await actions.owner(of: GeneralSettingsState.agentsKey) == tableFile {
             await edit(removal.all, deciding: key, saying: message, on: .agents)
-        } else if await edit(removal.list, deciding: GeneralSettingsState.agentsKey, saying: message, on: .agents) {
-            await edit(removal.table, deciding: key, saying: message, on: .agents)
+        } else {
+            await edit(removal.table, deciding: key, target: tableFile, alongside: removal.list, saying: message, on: .agents)
         }
     }
 

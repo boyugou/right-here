@@ -125,4 +125,59 @@ struct WindowEditorsReviewTests {
         let row = mac.model.defaultChoiceTitle(for: "general.terminal", automatic: "Automatic (Ghostty)") { $0 }
         #expect(row == "Automatic (Ghostty)", "the default row says \"\(row)\" again after the stale read, though this Mac's file no longer sets the terminal")
     }
+
+    // MARK: One Undo of an agent taken out of two files
+
+    /// The agents are listed in this Mac's own file and the agent of one's own is defined in config.toml. "Remove Agent" makes two changes (the list's entry, then the table), and the note
+    /// "Removed Mine" offers one Undo. It takes back the table only: the agent is defined again but not in the menu, and config.local.toml stays without it. One Undo should give both files back.
+    @Test func undoAfterRemovingAnAgentWhoseListAndTableAreInTwoFilesGivesBothBack() async throws {
+        let shared = "[general]\nterminal = \"ghostty\"\n\n[agent.mine]\nname = \"Mine\"\ncommand = \"mine\"\n"
+        let local = "[general]\nagents = [\"claude\", \"mine\"]\n"
+        let mac = try await EditedMac.started(shared: shared, local: local)
+        defer { mac.cleanUp() }
+        #expect(mac.model.agentOptions("mine") != nil && mac.model.general?.enabledAgents.map(\.id) == ["claude", "mine"])
+        await mac.model.removeAgent("mine")
+        #expect(mac.model.agentOptions("mine") == nil && !mac.shared.contains("agent.mine") && !mac.local.contains("mine"))
+        #expect(mac.model.configEdit != nil, "the note of the removal, with its Undo")
+        await mac.model.undoEdit()
+        #expect(mac.shared == shared && mac.local == local,
+                "one Undo of \"Removed Mine\" should give back both files; config.toml:\n\(mac.shared)\nconfig.local.toml:\n\(mac.local)")
+        #expect(mac.model.general?.enabledAgents.map(\.id) == ["claude", "mine"], "and Mine back in the menu: \(mac.model.general?.enabledAgents.map(\.id) ?? [])")
+    }
+
+    // MARK: An Undo of one file is held to what the other file says
+
+    /// The person adds an app (Tower, an editor: config.toml) and makes it this Mac's editor (config.local.toml, which sets the editor). On the Config page, config.toml's Recent Changes
+    /// offers Undo on "add the app entry". Undo writes config.toml's earlier text without the check every edit has, that the two files together read without an error they did not have:
+    /// config.local.toml's editor now names an app that is not there, and the config has an error the Undo brought. It should be refused, or say what it breaks, as an edit is.
+    @Test func anUndoOfOneFileDoesNotLeaveTheOtherNamingWhatItTookOut() async throws {
+        let mac = try await EditedMac.started(shared: Self.general, local: "[general]\neditor = \"vscode\"\n")
+        defer { mac.cleanUp() }
+        let made = await mac.model.createApp(name: "Probe Editor", bundleID: "org.example.probe-editor", role: .editor)
+        #expect(made == "probe-editor", "\(String(describing: mac.model.notice))\n\(mac.shared)")
+        await mac.model.setEditor("probe-editor")
+        #expect(mac.local.contains("editor = \"probe-editor\""), "\(mac.local)")
+        let errorsBefore = ConfigStore.load(paths: mac.paths).result.diagnostics.filter { $0.severity == .error }
+        #expect(errorsBefore.isEmpty)
+        await mac.model.openConfigPage()
+        #expect(mac.model.configTarget == .shared && mac.model.configPage?.history.first?.summary.contains("app") == true)
+        await mac.model.undoConfigChange()
+        let errorsAfter = ConfigStore.load(paths: mac.paths).result.diagnostics.filter { $0.severity == .error }
+        #expect(errorsAfter.isEmpty, "the Undo left the config with an error: \(errorsAfter.map(\.message)); notice: \(String(describing: mac.model.notice))\nconfig.toml:\n\(mac.shared)\nconfig.local.toml:\n\(mac.local)")
+    }
+
+    // MARK: Undo of a file whose line endings are mixed
+
+    /// A config that came from Windows (CRLF) with a line appended by `echo … >>` (LF). Choosing "Automatic" for the editor takes that line out, and the file is all CRLF afterwards. The
+    /// note's Undo then says the file "was changed after the last edit", which nobody did: the history holds the digest of the text as written, and Undo reads it back with its CRLF made LF.
+    @Test func undoOfAChangeThatLeftAMixedFileAllCRLFIsMade() async throws {
+        let shared = "[general]\r\nterminal = \"ghostty\"\r\nagents = [\"claude\"]\r\neditor = \"vscode\"\n"
+        let mac = try await EditedMac.started(shared: shared)
+        defer { mac.cleanUp() }
+        #expect(mac.model.general?.editor == "vscode")
+        await mac.model.setEditor(nil)
+        #expect(mac.model.general?.editor == nil && mac.model.configEdit != nil, "the change was made: \(String(describing: mac.model.notice))")
+        await mac.model.undoEdit()
+        #expect(mac.sharedBytes == Data(shared.utf8), "Undo was refused: \(String(describing: mac.model.notice)); the file:\n\(mac.shared.debugDescription)")
+    }
 }

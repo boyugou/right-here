@@ -27,6 +27,8 @@ struct ConfigEdit: Equatable, Sendable {
     var target: ConfigTarget = .shared
     /// What the config says is wrong now that was not before the change, in the config's own words (an item of the menu that names an agent that was taken out).
     var warnings: [String] = []
+    /// The other file's part, for a change of both made as one: Undo takes back both.
+    var alongside: ConfigService.UndoPart?
 }
 
 /// A change that would make agents start without their permission prompts, held until the person says yes: the window is the person and nothing stops it, but it does not take the yes for
@@ -50,6 +52,8 @@ struct PendingLoosening: Equatable, Sendable {
         var target: ConfigTarget?
         var message: LocalizedMessage
         var tab: SetupTab
+        /// The changes of the other file, made with these as one.
+        var alongside: [ConfigOperation]?
     }
 
     var change: Change
@@ -70,6 +74,8 @@ struct UndoRequest: Equatable, Sendable {
     var replacing: String?
     /// The banner's change, under whose editor a refusal is said; `nil` for the Config page's Undo.
     var banner: ConfigEdit?
+    /// The other file's part of a change of both, taken back with it.
+    var alongside: ConfigService.UndoPart?
 }
 
 /// The checks of the text in the Config editor, kept for the text they were made for: the page asks for them twice for each keystroke (the problems and the Save button), and
@@ -846,7 +852,7 @@ final class SetupModel {
     /// Takes back the change the banner says, as long as it is the last one of its file and the file is as it left it.
     func undoEdit() async {
         guard let last = configEdit else { return }
-        await takeBack(UndoRequest(target: last.target, expecting: last.digest, replacing: last.beforeDigest, banner: last), startingWithoutAsking: [])
+        await takeBack(UndoRequest(target: last.target, expecting: last.digest, replacing: last.beforeDigest, banner: last, alongside: last.alongside), startingWithoutAsking: [])
     }
 
     /// An Undo is a change like any other: one that would make agents start without their permission prompts (the switch that is turned back on, with an agent put in the menu since) waits for
@@ -856,7 +862,7 @@ final class SetupModel {
         isWorking = true
         isEditingConfig = true
         defer { isEditingConfig = false }
-        let result = await actions.undoConfigEdit(target: undo.target, expecting: undo.expecting, replacing: undo.replacing, startingWithoutAsking: agreed)
+        let result = await actions.undoConfigEdit(target: undo.target, expecting: undo.expecting, replacing: undo.replacing, alongside: undo.alongside, startingWithoutAsking: agreed)
         if !result.held.isEmpty {
             pendingLoosening = PendingLoosening(change: .undo(undo), agents: result.held)
             isWorking = false
@@ -877,26 +883,34 @@ final class SetupModel {
     ///   - anchor: A key that the setting's table stands on (`AgentOptions.anchor`): the file that holds it decides when this Mac's own file does not write the setting itself.
     ///   - agreed: The agents the person said yes to starting without their permission prompts. A change that would make any other start so is held (`pendingLoosening`) and nothing is written.
     ///   - announcing: Whether VoiceOver is told what was changed. A text that is written while it is still being typed is not: the person is not waiting for an answer.
+    ///   - alongside: Changes of the other file than `target`'s, made with these as one change and taken back by one Undo (`ConfigService.apply(shared:local:actor:)`).
     /// - Returns: Whether the change was made or there was nothing to change (the field that asked can show what the config says); `false` when it was refused, held for the person's yes,
     ///   or dropped because another change is being written.
     @discardableResult
-    func edit(_ operations: [ConfigOperation], deciding key: String, anchor: String? = nil, target: ConfigTarget? = nil, saying message: LocalizedMessage, on tab: SetupTab,
-              startingWithoutAsking agreed: [PromptEffects.Entry] = [], announcing: Bool = true) async -> Bool {
+    func edit(_ operations: [ConfigOperation], deciding key: String, anchor: String? = nil, target: ConfigTarget? = nil, alongside: [ConfigOperation]? = nil, saying message: LocalizedMessage,
+              on tab: SetupTab, startingWithoutAsking agreed: [PromptEffects.Entry] = [], announcing: Bool = true) async -> Bool {
         guard !operations.isEmpty else { return true }
         guard !isWorking else { return false }
         isWorking = true
         isEditingConfig = true
         defer { isEditingConfig = false }
         drag = nil
-        let result = await actions.editConfig(operations, deciding: key, anchor: anchor, target: target, startingWithoutAsking: agreed)
+        let result: SetupActions.ConfigEditResult
+        if let alongside, let target {
+            result = await actions.editConfig(operations, in: target, alongside: alongside, startingWithoutAsking: agreed)
+        } else {
+            result = await actions.editConfig(operations, deciding: key, anchor: anchor, target: target, startingWithoutAsking: agreed)
+        }
         if !result.held.isEmpty {
-            pendingLoosening = PendingLoosening(change: .edit(.init(operations: operations, key: key, anchor: anchor, target: target, message: message, tab: tab)), agents: result.held)
+            pendingLoosening = PendingLoosening(change: .edit(.init(operations: operations, key: key, anchor: anchor, target: target, message: message, tab: tab, alongside: alongside)), agents: result.held)
             isWorking = false
             return false
         }
         var done = true
         if let change = result.change, change.changed {
-            configEdit = ConfigEdit(message: message, key: key, tab: tab, digest: change.afterDigest, beforeDigest: change.beforeDigest, target: change.target, warnings: change.warnings)
+            let other = result.alongsideChange.map { ConfigService.UndoPart(target: $0.target, expecting: $0.afterDigest, replacing: $0.beforeDigest) }
+            configEdit = ConfigEdit(message: message, key: key, tab: tab, digest: change.afterDigest, beforeDigest: change.beforeDigest, target: change.target,
+                                    warnings: change.warnings + (result.alongsideChange?.warnings ?? []), alongside: other)
             editRefusal = nil
             say(nil)
             if announcing { announce(localizer.render(message)) }
@@ -916,7 +930,8 @@ final class SetupModel {
         pendingLoosening = nil
         switch held.change {
         case .edit(let change):
-            if await edit(change.operations, deciding: change.key, anchor: change.anchor, target: change.target, saying: change.message, on: change.tab, startingWithoutAsking: held.agents) {
+            if await edit(change.operations, deciding: change.key, anchor: change.anchor, target: change.target, alongside: change.alongside, saying: change.message, on: change.tab,
+                          startingWithoutAsking: held.agents) {
                 fieldAnswerToken += 1
             }
         case .text(let text, let target, let digest):
