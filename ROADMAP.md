@@ -84,5 +84,8 @@ show them, what is left is a terminal placement, and an agent in the folder coul
 - Whether Quick Actions show on the empty part of a Finder window.
 - The menus of the toolbar and the sidebar on a real run.
 - Which process macOS holds responsible when a Quick Action controls a terminal.
+- Agent detection and the doctor's look at the `PATH` when the login shell is nushell, elvish, xonsh or PowerShell: the
+  lookup is written for POSIX shells and fish, so such a shell may answer nothing (the rows then say "unknown", never
+  "missing"). Not tried with a real one yet.
 - Whether `rh`, started through the runner script, can look at items in Desktop, Documents and Downloads. If it cannot, the action stops with
   an error that names the permission. It never opens another folder instead. Only a real click shows which case it is.
