@@ -163,6 +163,17 @@ struct ConfigRequestTests {
         #expect(ConfigParser.parse(edited.text).config.enabledAgents == ["mine"], "\(edited.text)")
     }
 
+    @Test func anAgentThatTheListNamesAlreadyIsDefinedAndNotListedTwice() throws {
+        // A config copied from another Mac, where the agent was defined in that Mac's own file: the list names it, nothing defines it, and defining it here leaves the list as it is.
+        let copied = ConfigDocument("[general]\nterminal = \"ghostty\"\nagents = [\"claude\", \"lazygit\"]\n")
+        let made = try ConfigRequest(.add, "agent.lazygit", values: ["name=lazygit", "command=lazygit"]).operations(in: copied)
+        #expect(!made.contains(.insert("lazygit", into: "general.agents", at: nil)), "\(made)")
+        var edited = copied
+        for operation in made { edited = try operation.apply(to: edited) }
+        let result = ConfigParser.parse(edited.text)
+        #expect(result.config.enabledAgents == ["claude", "lazygit"] && result.diagnostics.isEmpty, "\(edited.text) \(result.diagnostics)")
+    }
+
     @Test func anAgentOfOnesOwnIsTakenOutOfTheMenuFirstAndThenOutOfTheConfig() throws {
         let text = "[general]\nagents = [\"claude\", \"mine\"]\n\n[agent.mine]\nname = \"Mine\"\ncommand = \"mine\"\n"
         let withAgent = ConfigDocument(text)

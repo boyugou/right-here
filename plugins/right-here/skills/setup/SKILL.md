@@ -45,7 +45,8 @@ Leave out a flag that the user did not answer. The dry run changes nothing.
    the Config page of the app.
 4. Check with `right_here_config_validate`. `clean` must be true.
 
-To add an agent to a config that exists, give the whole list of agents.
+To add an agent to a config that exists, add it with `rh config add general.agents <id>` and leave `--agents` out of the setup that follows:
+the list keeps what it has, a name the config does not know included (tell the user about it; take it out only if they say so).
 
 **If the config step says `would-fail` (or `failed`),** the file is there but cannot be used: it does not parse, cannot be read, or is a link
 to nowhere. `configEdits` is empty then, and no Quick Actions are made from it.

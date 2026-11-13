@@ -1416,7 +1416,7 @@ MUTANTS = [
     ("a name that reads as something else than it says is accepted", "Sources/RightHereCore/Config/ConfigBuilder.swift",
      "        if text.hasMisleadingCharacter(ignoringJoiners: true) {", "        if false {"),
     ("a request makes an agent of one's own and does not put it in the menu", "Sources/RightHereCore/Config/ConfigRequest.swift",
-     "            return operations + [.addTable(key, fields: try fields(entry: false)), .insert(id, into: listKey, at: nil)]", "            return operations + [.addTable(key, fields: try fields(entry: false))]"),
+     "let listing: [ConfigOperation] = (listed ?? []).contains(id) ? [] : [.insert(id, into: listKey, at: nil)]", "let listing: [ConfigOperation] = []"),
     ("a request takes an agent of one's own out of the config and leaves it in the menu", "Sources/RightHereCore/Config/ConfigRequest.swift",
      "        if let listed, let place = listed.firstIndex(of: id) { operations += [.expect(listed, in: listKey), .remove(at: place + 1, from: listKey)] }", "        if let listed, let place = listed.firstIndex(of: id) { _ = place }"),
     ("an item written another way loses its comments", "Sources/RightHereCore/Config/ConfigDocument+Array.swift",
@@ -2493,6 +2493,8 @@ MUTANTS = [
      'let sentence = message.replacingOccurrences(of: "; known [a-z]+: [^\\"]*$", with: "", options: .regularExpression)', 'let sentence = message.range(of: "; known ").map { String(message[..<$0.lowerBound]) } ?? message'),
     ("the window takes a built-in preset that stands in for a refused entry for the config's own", "Sources/RightHereKit/SetupLoader.swift",
      'written: Set(loaded.result.usedOrigins(of: "preset").compactMap(\\.id)),', 'written: Set((loaded.result.entryOrigins["preset"] ?? []).compactMap(\\.id)),'),
+    ("an agent the list names already is listed again when it is defined", "Sources/RightHereCore/Config/ConfigRequest.swift",
+     "let listing: [ConfigOperation] = (listed ?? []).contains(id) ? [] : [.insert(id, into: listKey, at: nil)]", "let listing: [ConfigOperation] = [.insert(id, into: listKey, at: nil)]"),
 ]
 
 

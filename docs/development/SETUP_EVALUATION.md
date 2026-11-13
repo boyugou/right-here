@@ -240,6 +240,14 @@ Codex beside Claude Code. It found two things. The planted name was longer than 
 error the persona was not meant to have; the name is shorter now. And because of that error `rh config set` refused to add Codex, and
 the agent edited the file by hand: an edit is now refused only for an error it brings, not for one that was there (ADR 0026).
 
+Persona F, run on 2026-11-12 (1.2.22) with a Sonnet agent, passed the four criteria in 31 `rh` commands, none refused. It asked first,
+added Codex with `rh config add general.agents codex` though the file had an error, told the person that the list names an agent nothing
+on this Mac defines, and took out only lazygit once they said so; it validated, ran setup once, and the doctor had no failure left but the
+PATH. `report` showed the Finder extension's registration changed outside the sandbox: that was 1.2.22 being installed on this Mac during
+the run, which no command of the run touches. It found two things. Its first dry run built `--agents` from `rh agents`, as the playbook
+said, and would have replaced lazygit with Codex without a word; the playbook now says to add an agent with `rh config add general.agents
+<id>`. And `rh config add agent.lazygit …` would have listed lazygit a second time; it gives the agent its table and leaves the list now.
+
 ### What the runs found, and what changed
 
 1. **A trial reported nothing for the person to do.** The PATH line and the permission prompt were left out because a trial

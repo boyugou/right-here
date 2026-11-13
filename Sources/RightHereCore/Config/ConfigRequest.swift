@@ -116,7 +116,9 @@ public struct ConfigRequest: Sendable, Equatable {
             var operations: [ConfigOperation] = []
             if listed == nil, let list = defaultList(listKey) { operations.append(.set(listKey, .strings(list))) }
             else if let listed { operations.append(.expect(listed, in: listKey)) }
-            return operations + [.addTable(key, fields: try fields(entry: false)), .insert(id, into: listKey, at: nil)]
+            // A list that names the agent already (a config from another Mac, which defined it there) keeps the one place it has: a second is ignored, and warned about.
+            let listing: [ConfigOperation] = (listed ?? []).contains(id) ? [] : [.insert(id, into: listKey, at: nil)]
+            return operations + [.addTable(key, fields: try fields(entry: false))] + listing
         }
         guard document.tableIDs(of: "agent").contains(id) else { throw Problem.notFound("There is no agent \"\(id.withControlCharactersEscaped)\" of your own in this file.") }
         var operations: [ConfigOperation] = []

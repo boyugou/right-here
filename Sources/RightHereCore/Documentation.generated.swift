@@ -92,8 +92,10 @@ services: show the list to the person, and run that command only when they say t
 - Through the MCP tool this change is proposed. Then `general.terminal` or `general.editor` can name the app only after the person
   applied the proposal.
 
-**To add an agent to a config that exists,** give the whole list in `--agents`: the agents that are already enabled (`rh agents`)
-and the new one.
+**To add an agent to a config that exists,** add it to the list with `rh config add general.agents <id>`, and leave `--agents` out of
+the setup that follows. The agents the list has stay as they are, one that the config does not know included (a config copied from another
+Mac may name an agent defined only there): tell the person about that one, and take it out only if they say so. `--agents` sets the whole
+list, and `rh agents` does not show a name that is not an agent, so a list built from it drops that name without a word.
 
 **If the config step says `would-fail`** (or `failed` in step 4), the file is there but cannot be used. It is not TOML, it cannot be
 read, or it is a link to a file that is not there.
