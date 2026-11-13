@@ -39,6 +39,20 @@ struct DoctorProbeChecksTests {
         #expect(launch(.denied).fix?.english().contains("Automation") == true)
     }
 
+    @Test func whatTheWindowsTestOfATerminalStartMeetsIsSaidInThePersonsLanguage() {
+        // The setup window runs this probe (Test Terminal Start): a start that ran, the permission prompt and a terminal that cannot run commands are the catalog's.
+        let german = Localizer(languages: ["de"])
+        for outcome in [LaunchProbe.Outcome.ran, .timedOut, .denied, .unsupported] {
+            let check = launch(outcome, detail: "some detail")
+            let said = [check.detail, check.fix].compactMap(\.self).filter { $0.key != .doctorVerbatim }
+            #expect(!said.isEmpty, "\(outcome)")
+            for message in said { #expect(german.render(message) != message.english(), "\(outcome): \(message.english())") }
+        }
+        #expect(german.render(launch(.timedOut).fix!).contains("Ghostty") && german.render(launch(.ran).detail!).contains("1.1"))
+        // What the extension reported of a rarer failure is shown as it is.
+        for outcome in [LaunchProbe.Outcome.noReply, .wrongFolder, .failed] { #expect(launch(outcome, detail: "x").detail?.key == .doctorVerbatim) }
+    }
+
     @Test func noReportMeansTheExtensionNeverAnswered() {
         let check = Doctor.launchCheck(for: nil)
         #expect(check.status == .fail)

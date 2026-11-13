@@ -140,8 +140,9 @@ public struct Doctor: Sendable {
         Self.launchCheck(for: await ExtensionProbe(paths: paths, facts: facts, runner: runner).runLaunch(placement: placement))
     }
 
-    /// What the launch probe reported, as a check. `nil` means the extension never reported back. A probe says what the
-    /// Finder extension and the terminal reported, in English in every language (`doctor.verbatim`).
+    /// What the launch probe reported, as a check. `nil` means the extension never reported back. The setup window runs it (Test Terminal Start), so what a
+    /// person meets there is said in their language: a command that ran, the permission prompt waiting or refused, a terminal that cannot run commands. What
+    /// the extension or the terminal reported of a rarer failure is shown as it is (`doctor.verbatim`), with its advice in English (ADR 0006).
     static func launchCheck(for result: LaunchProbe.Result?) -> DoctorCheck {
         func check(_ status: DoctorCheck.Status, _ detail: String?, fix: String? = nil) -> DoctorCheck {
             DoctorCheck(.finderLaunch, status: status, detail: detail.map(LocalizedMessage.doctorVerbatim), fix: fix.map(LocalizedMessage.doctorVerbatim))
@@ -153,21 +154,22 @@ public struct Doctor: Sendable {
         let name = result.application
         switch result.outcome {
         case .ran:
-            var took = result.seconds.map { String(format: " in %.1f s", $0) } ?? ""
-            if let accepted = result.accepted { took += String(format: " (request accepted after %.1f s)", accepted) }
-            let shell = result.shell.map { "; login shell \($0)" } ?? ""
-            return check(.ok, "\(name) ran a typed command in a new session\(took)\(shell)")
+            guard let seconds = result.seconds, let accepted = result.accepted, let shell = result.shell else {
+                return check(.ok, "\(name) ran a typed command in a new session")
+            }
+            return DoctorCheck(.finderLaunch, status: .ok, detail: .doctorProbeRan(name, String(format: "%.1f", seconds), String(format: "%.1f", accepted), shell))
         case .timedOut:
-            return check(.needsUser, result.detail, fix: "macOS is waiting for you to allow Right Here to control \(name). Click Allow, then run this again.")
+            return DoctorCheck(.finderLaunch, status: .needsUser, detail: .doctorProbeNoAnswer, fix: .doctorFixProbeAllow(name))
         case .denied:
-            return check(.fail, "macOS refused to let Right Here control \(name)", fix: "Allow Right Here in System Settings › Privacy & Security › Automation.")
+            return DoctorCheck(.finderLaunch, status: .fail, detail: .doctorProbeDenied(name), fix: .doctorFixProbeDenied)
         case .noReply:
             return check(.fail, result.detail,
                          fix: "Check that \(name) starts your shell normally (a slow or interactive startup file can stall it), or choose another terminal with general.terminal.")
         case .wrongFolder:
             return check(.fail, result.detail, fix: "Choose another terminal with general.terminal and report this, with the terminal's name and version.")
         case .notInstalled, .unsupported:
-            return check(.warn, result.detail, fix: "Choose a terminal that can run commands with general.terminal (\(KnownApps.commandTerminalPhrase)).")
+            let terminals = KnownApps.terminals.filter { TerminalAdapters.adapter(for: $0).supportsCommands }.map(\.name).joined(separator: ", ")
+            return DoctorCheck(.finderLaunch, status: .warn, detail: result.detail.map(LocalizedMessage.doctorVerbatim), fix: .doctorFixProbeUnsupported(terminals))
         case .failed:
             return check(.fail, result.detail, fix: "Run `rh probe launch` in a terminal for details.")
         }
@@ -191,9 +193,9 @@ public struct Doctor: Sendable {
         case .granted?, .notRunning?:
             return check(.ok, summary)
         case .timedOut?:
-            return check(.needsUser, summary, fix: "macOS is waiting for you to allow Right Here to control the terminal. Click Allow, then run this again.")
+            return DoctorCheck(.finderChain, status: .needsUser, detail: .doctorVerbatim(summary), fix: .doctorFixProbeAllow(worst?.application ?? "the terminal"))
         default:
-            return check(.fail, summary, fix: "Allow Right Here in System Settings › Privacy & Security › Automation.")
+            return DoctorCheck(.finderChain, status: .fail, detail: .doctorVerbatim(summary), fix: .doctorFixProbeDenied)
         }
     }
 

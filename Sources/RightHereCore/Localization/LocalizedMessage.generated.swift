@@ -851,6 +851,12 @@ extension LocalizedMessage {
     public static var doctorFixMenuEmpty: LocalizedMessage { LocalizedMessage(.doctorFixMenuEmpty) }
     /// Look at them on the Config page of the app, or with `rh config pending`. Then apply or dismiss each.
     public static var doctorFixPending: LocalizedMessage { LocalizedMessage(.doctorFixPending) }
+    /// macOS is waiting for you to allow Right Here to control %@. Click Allow, then try again.
+    public static func doctorFixProbeAllow(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixProbeAllow, [argument1]) }
+    /// Allow Right Here in System Settings › Privacy & Security › Automation.
+    public static var doctorFixProbeDenied: LocalizedMessage { LocalizedMessage(.doctorFixProbeDenied) }
+    /// Choose a terminal that can run commands with general.terminal (%@).
+    public static func doctorFixProbeUnsupported(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixProbeUnsupported, [argument1]) }
     /// Run `rh setup`.
     public static var doctorFixRunSetup: LocalizedMessage { LocalizedMessage(.doctorFixRunSetup) }
     /// Give your Quick Action in %@ another name, then run `rh setup` again.
@@ -889,6 +895,12 @@ extension LocalizedMessage {
     public static var doctorMenuEmpty: LocalizedMessage { LocalizedMessage(.doctorMenuEmpty) }
     /// Changes that an AI assistant proposed wait for you: %@
     public static func doctorPendingWaiting(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorPendingWaiting, [argument1]) }
+    /// macOS refused to let Right Here control %@
+    public static func doctorProbeDenied(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorProbeDenied, [argument1]) }
+    /// no answer to macOS's permission prompt in time
+    public static var doctorProbeNoAnswer: LocalizedMessage { LocalizedMessage(.doctorProbeNoAnswer) }
+    /// %1$@ ran a typed command in a new session in %2$@ s (the request was accepted after %3$@ s; login shell %4$@)
+    public static func doctorProbeRan(_ argument1: String, _ argument2: String, _ argument3: String, _ argument4: String) -> LocalizedMessage { LocalizedMessage(.doctorProbeRan, [argument1, argument2, argument3, argument4]) }
     /// not installed; the Finder menu cannot run actions
     public static var doctorRunnerMissing: LocalizedMessage { LocalizedMessage(.doctorRunnerMissing) }
     /// runs %@

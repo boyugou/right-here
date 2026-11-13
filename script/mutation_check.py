@@ -2500,6 +2500,12 @@ MUTANTS = [
      'how = ["Add this line to ~/.zshrc: export PATH=\\"$HOME/.local/bin:$PATH\\"", "Then open a new terminal window."]'),
     ("a POSIX login shell is not told about ~/.profile", "Sources/RightHereKit/SetupAdvice.swift",
      'case "sh", "dash", "ksh", "mksh", "oksh":', 'case "no-such-shell":'),
+    ("Test Terminal Start says in English that macOS waits for Allow", "Sources/RightHereKit/Doctor.swift",
+     "return DoctorCheck(.finderLaunch, status: .needsUser, detail: .doctorProbeNoAnswer, fix: .doctorFixProbeAllow(name))",
+     'return DoctorCheck(.finderLaunch, status: .needsUser, detail: .doctorProbeNoAnswer, fix: .doctorVerbatim("Click Allow, then try again."))'),
+    ("Test Terminal Start says in English that the command ran", "Sources/RightHereKit/Doctor.swift",
+     'detail: .doctorProbeRan(name, String(format: "%.1f", seconds), String(format: "%.1f", accepted), shell))',
+     'detail: .doctorVerbatim("\\(name) ran a typed command in a new session"))'),
 ]
 
 

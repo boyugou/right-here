@@ -157,13 +157,16 @@ Services (missing, stale), the `rh` link, the Finder extension (not registered, 
 last action and every config sync row. The fix line under a config with errors and under an agent that cannot start is
 translated too. Thirty languages each, checked like every other string.
 
-What stays English in every language, on purpose: the two probes, `finder.chain` and `finder.launch`, which say what the
-Finder extension reported and which a person runs from a terminal; and text that comes from outside the catalog and is
-shown as it is through `doctor.verbatim`: the parser's description of the first error of a config (it sits above its translated fix
-line), a bare path, and the config lines the
-launch-settings row quotes. Two small things inside translated sentences are not translated either: the menu a click
-came from in the last-action sentence (`container`, an id of Right Here) and its relative time, which is formatted when the
-doctor runs, in the locale of that process. The parser's sentences are not Right Here's own words, and translating them would need
+What stays English in every language, on purpose: the chain probe (`finder.chain`), which a person runs from a terminal, and
+what the launch probe (`finder.launch`) says of a rarer failure (no reply, the command ran in another folder, a step that
+failed, no report from the extension), which is what the extension or the terminal reported; the reasons under an empty Finder
+menu, which are what `rh menu --explain` prints; and text that comes from outside the catalog and is shown as it is through
+`doctor.verbatim`: the parser's description of the first error of a config (it sits above its translated fix line), a bare path,
+and the config lines the launch-settings row quotes. The launch probe was English as a whole until 2026-11-12: the setup window's
+Test Terminal Start runs it, and a person on a German Mac read "Click Allow, then run this again" in English. A start that ran, the
+permission prompt waiting or refused, and a terminal that cannot run commands are the catalog's now (`doctor.probe.*`,
+`doctor.fix.probe*`). The relative time of the last action is formatted when the doctor runs, in the locale of that process; the
+place a click came from has its own sentence for each place since 1.2.19 (`doctor.activity.*`). The parser's sentences are not Right Here's own words, and translating them would need
 the same split in that layer. The planner's reason an agent cannot start was in this list until 2026-11-03; it is a sentence of the
 catalog now. The two reasons the default terminal or editor row can give
 (nothing of the role is installed, the configured app is not) are the exception: the catalog has them word for word as the

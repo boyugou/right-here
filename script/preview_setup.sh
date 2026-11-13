@@ -618,8 +618,8 @@ func gallery() -> [DoctorCheck] {
         DoctorCheck(.syncCommands, status: .warn, detail: .doctorSyncCommandsPending("5", changes), notes: [.doctorSyncCommandsMore("2")], fix: .doctorFixSyncCommands),
         DoctorCheck(.syncState, status: .warn, detail: .doctorSyncDiverged, fix: .doctorFixSyncCompare),
         DoctorCheck(.syncConflict, status: .warn, detail: .doctorSyncConflict("config 2.toml, config 3.toml", folder), fix: .doctorFixSyncConflict),
-        DoctorCheck(.finderChain, status: .needsUser, detail: .doctorVerbatim("Ghostty: timed out, Terminal: granted"), fix: .doctorVerbatim("macOS is waiting for you to allow Right Here to control the terminal. Click Allow, then run this again.")),
-        DoctorCheck(.finderLaunch, status: .ok, detail: .doctorVerbatim("Ghostty ran a typed command in a new session in 1.1 s (request accepted after 0.3 s); login shell /bin/zsh"))
+        DoctorCheck(.finderChain, status: .needsUser, detail: .doctorVerbatim("Ghostty: timed out, Terminal: granted"), fix: .doctorFixProbeAllow("Ghostty")),
+        DoctorCheck(.finderLaunch, status: .ok, detail: .doctorProbeRan("Ghostty", "1.1", "0.3", "/bin/zsh"))
     ]
     let more: [(DoctorCheck.Status, LocalizedMessage, LocalizedMessage?)] = [
         (.fail, .doctorVerbatim("error: config.toml:1: expected ] to close the table"), .doctorFixConfigErrors),
@@ -630,6 +630,16 @@ func gallery() -> [DoctorCheck] {
         (.warn, .doctorAgentNotFound("claude"), .doctorFixAgentRemove("claude")),
         (.warn, .doctorAgentUnknown("claude"), nil),
         (.warn, .doctorVerbatim("Ghostty cannot run commands yet."), .doctorFixAgentLauncher(#"launcher = "link""#, #""desktop""#)),
+        (.ok, .doctorActivityItems("open.terminal", ago(40)), nil),
+        (.ok, .doctorActivitySidebar("copy-path.absolute", ago(3_600)), nil),
+        (.ok, .doctorActivityToolbar("new-file.md", ago(7_200)), nil),
+        (.ok, .doctorActivityServices("agent.codex", ago(86_400)), nil),
+        (.ok, .doctorActivityCli("preset.review", ago(600)), nil),
+        (.warn, .doctorAgentAliasBypass("claude", "Claude Code", "--dangerously-skip-permissions"), nil),
+        (.warn, .doctorServicesHeld("7", "1", "~/Library/Services"), .doctorFixServicesHeld("~/Library/Services")),
+        (.needsUser, .doctorProbeNoAnswer, .doctorFixProbeAllow("Ghostty")),
+        (.fail, .doctorProbeDenied("Ghostty"), .doctorFixProbeDenied),
+        (.warn, .doctorVerbatim("Warp opens a folder, but cannot run a command in it."), .doctorFixProbeUnsupported("Ghostty, Terminal, iTerm, WezTerm, kitty, Alacritty")),
         (.warn, .doctorAppFallback("iTerm", "Ghostty"), .doctorFixTerminalFallback),
         (.warn, .doctorAppFallback("Zed", "Visual Studio Code"), .doctorFixEditorFallback),
         (.ok, .doctorAgentOk("claude", "Claude Code in Last-Used Terminal"), nil),

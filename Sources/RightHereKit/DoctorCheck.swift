@@ -46,7 +46,9 @@ public struct DoctorCheck: Sendable, Equatable, Encodable, Identifiable {
         .doctorConfigMissing: [0], .doctorConfigOverlay: [0], .doctorConfigSymlink: [0], .doctorSyncStateUnreadable: [0],
         .doctorActivityItems: [1], .doctorActivityContainer: [1], .doctorActivitySidebar: [1], .doctorActivityToolbar: [1], .doctorActivityServices: [1], .doctorActivityCli: [1],
         // Constants of Right Here's own that a fix quotes (`launcher = "link"`, `agents = ["claude"]`).
-        .doctorFixAgentsAdd: [0], .doctorFixAgentLauncher: [0, 1]
+        .doctorFixAgentsAdd: [0], .doctorFixAgentLauncher: [0, 1],
+        // The seconds a launch took, and the terminals Right Here knows to run commands in.
+        .doctorProbeRan: [1, 2], .doctorFixProbeUnsupported: [0]
     ]
 
     /// The check as the command line and the MCP server print it, in English.

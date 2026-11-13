@@ -79051,6 +79051,564 @@
         }
       }
     },
+    "doctor.fix.probeAllow": {
+      "comment": "Fix line under the same check: a sentence. %@ is a terminal app's name. Allow is the button of macOS's permission prompt; where macOS has no word of its own for it in the language, say to allow it in the prompt.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ينتظر macOS أن تسمح لتطبيق Right Here بالتحكم في %@. اسمح بذلك في نافذة الطلب، ثم حاول مرة أخرى."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS অপেক্ষা করছে যে আপনি Right Here-কে %@ নিয়ন্ত্রণ করার অনুমতি দেবেন। দেখানো অনুমতির প্রশ্নে অনুমতি দিন, তারপর আবার চেষ্টা করুন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS wartet darauf, dass du Right Here erlaubst, %@ zu steuern. Klicke auf „Erlauben“ und versuche es dann erneut."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το macOS περιμένει να επιτρέψετε στο Right Here να ελέγχει το %@. Επιτρέψτε το στο παράθυρο ερώτησης και δοκιμάστε ξανά."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS is waiting for you to allow Right Here to control %@. Click Allow, then try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS está esperando a que permitas que Right Here controle %@. Haz clic en «Permitir» y vuelve a intentarlo."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏macOS منتظر است که به Right Here اجازهٔ کنترل %@ را بدهید. در پنجرهٔ درخواست مجوز، اجازه دهید و دوباره تلاش کنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS attend que vous autorisiez Right Here à contrôler %@. Cliquez sur Autoriser, puis réessayez."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏macOS ממתין שתאשרו ל-Right Here לשלוט על %@. יש לאשר זאת בחלון הבקשה ולנסות שוב."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS इंतज़ार कर रहा है कि आप Right Here को %@ नियंत्रित करने की अनुमति दें। “अनुमति दें” बटन दबाएँ, फिर दोबारा कोशिश करें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS menunggu Anda mengizinkan Right Here mengontrol %@. Klik Izinkan, lalu coba lagi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS attende che tu consenta a Right Here di controllare %@. Fai clic su Consenti, poi riprova."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS は、Right Here による %@ の制御についてあなたの許可を待っています。「許可」をクリックしてから、もう一度お試しください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS가 Right Here의 %@ 제어를 허용할지 묻고 있습니다. 허용을 클릭한 다음 다시 시도하십시오."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right Here ला %@ नियंत्रित करण्याची परवानगी तुम्ही द्यावी याची macOS वाट पाहत आहे. दिसणाऱ्या परवानगी विचारणेत परवानगी द्या आणि पुन्हा प्रयत्न करा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS menunggu anda membenarkan Right Here mengawal %@. Klik Benarkan, kemudian cuba lagi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS wacht tot je Right Here toestaat %@ te bedienen. Klik op „Sta toe” en probeer het opnieuw."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS czeka, aż pozwolisz Right Here sterować aplikacją %@. Kliknij Pozwól, a następnie spróbuj ponownie."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O macOS está aguardando que você permita que o Right Here controle %@. Clique em Permitir e tente novamente."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS așteaptă să permiteți ca Right Here să controleze %@. Faceți clic pe Permiteți, apoi încercați din nou."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS ждет, пока Вы разрешите Right Here управлять %@. Нажмите «Разрешить» и повторите попытку."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ஐக் கட்டுப்படுத்த Right Here ஐ நீங்கள் அனுமதிக்க macOS காத்திருக்கிறது. கேட்கும் சாளரத்தில் அனுமதித்து, மீண்டும் முயலவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ను నియంత్రించడానికి Right Here ను మీరు అనుమతించాలని macOS వేచి ఉంది. కనిపించే అనుమతి ప్రశ్నలో అనుమతించి, మళ్లీ ప్రయత్నించండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS กำลังรอให้คุณอนุญาตให้ Right Here ควบคุม %@ กดปุ่ม “อนุญาต” แล้วลองอีกครั้ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS, Right Here’in %@ üzerinde denetim kurmasına izin vermenizi bekliyor. İzin Ver’i tıklayın ve tekrar deneyin."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS чекає, поки ви дозволите Right Here керувати %@. Натисніть «Дозволити» та повторіть спробу."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏macOS انتظار کر رہا ہے کہ آپ Right Here کو %@ کنٹرول کرنے کی اجازت دیں۔ پرامپٹ میں اجازت دیں، پھر دوبارہ کوشش کریں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS đang chờ bạn cho phép Right Here điều khiển %@. Hãy bấm Cho phép, rồi thử lại."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 正在等待你允许 Right Here 控制%@。请点按“允许”，然后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 正在等待你允許 Right Here 控制%@。請按一下「允許」，然後重試。"
+          }
+        }
+      }
+    },
+    "doctor.fix.probeDenied": {
+      "comment": "Fix line under the same check: a sentence. The settings path follows macOS in the language, as in alert.permissionMessage.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اسمح لتطبيق Right Here من إعدادات النظام › الخصوصية والأمن › التحكم التلقائي."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System Settings › Privacy & Security › Automation-এ Right Here-কে অনুমতি দিন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erlaube Right Here unter Systemeinstellungen › Datenschutz & Sicherheit › Automation."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επιτρέψτε το Right Here στις Ρυθμίσεις συστήματος › Απόρρητο και ασφάλεια › Αυτοματοποίηση."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Right Here in System Settings › Privacy & Security › Automation."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permite Right Here en Ajustes del Sistema › Privacidad y seguridad › Automatización."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "در System Settings › Privacy & Security › Automation به Right Here اجازه دهید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autorisez Right Here dans Réglages Système › Confidentialité et sécurité › Automatisation."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "יש לאשר את Right Here בהגדרות המערכת › פרטיות ואבטחה › פעולות אוטומטיות."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सिस्टम सेटिंग › गोपनीयता और सुरक्षा › ऑटोमेशन में Right Here को अनुमति दें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Izinkan Right Here di Pengaturan Sistem › Privasi & Keamanan › Automasi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti Right Here in Impostazioni di Sistema › Privacy e sicurezza › Automazione."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "システム設定 › プライバシーとセキュリティ › オートメーションで Right Here を許可してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시스템 설정 › 개인정보 보호 및 보안 › 자동화에서 Right Here를 허용하십시오."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System Settings › Privacy & Security › Automation मध्ये Right Here ला परवानगी द्या."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Benarkan Right Here dalam Seting Sistem › Privasi & Keselamatan › Automasi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sta Right Here toe in Systeeminstellingen › Privacy en beveiliging › Automatisering."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zezwól na Right Here w Ustawieniach systemowych › Prywatność i ochrona › Automatyzacja."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permita o Right Here em Ajustes do Sistema › Privacidade e Segurança › Automação."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permiteți Right Here în Configurări sistem › Intimitate și securitate › Automatizare."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешите Right Here в Системных настройках › Конфиденциальность и безопасность › Автоматизация."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System Settings › Privacy & Security › Automation இல் Right Here ஐ அனுமதிக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System Settings › Privacy & Security › Automation లో Right Here ను అనుమతించండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อนุญาต Right Here ที่การตั้งค่าระบบ › ความเป็นส่วนตัวและความปลอดภัย › การทำงานอัตโนมัติ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem Ayarları › Gizlilik ve Güvenlik › Otomasyon bölümünden Right Here’e izin verin."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дозвольте Right Here в Системних параметрах › Приватність і безпека › Автоматизація."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏System Settings › Privacy & Security › Automation میں Right Here کو اجازت دیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hãy cho phép Right Here trong Cài đặt hệ thống › Quyền riêng tư & Bảo mật › Tự động hóa."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在“系统设置” › “隐私与安全” › “自动化”中允许 Right Here。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請在「系統設定」›「隱私權與安全性」›「自動化」中允許 Right Here。"
+          }
+        }
+      }
+    },
+    "doctor.fix.probeUnsupported": {
+      "comment": "Fix line under the same check: a sentence. general.terminal is a setting of the config: keep it as it is. %@ is a list of terminal app names, such as Ghostty, Terminal, iTerm.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اضبط general.terminal على وحدة طرفية يمكنها تشغيل الأوامر (%@)."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "general.terminal দিয়ে এমন একটি টার্মিনাল বেছে নিন যা কমান্ড চালাতে পারে (%@)।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle mit general.terminal ein Terminal, das Befehle ausführen kann (%@)."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επιλέξτε με το general.terminal ένα τερματικό που μπορεί να εκτελεί εντολές (%@)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a terminal that can run commands with general.terminal (%@)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige con general.terminal una terminal que pueda ejecutar comandos (%@)."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "با general.terminal ترمینالی را انتخاب کنید که بتواند دستور اجرا کند (%@)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez avec general.terminal un terminal qui peut exécuter des commandes (%@)."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "יש להגדיר את general.terminal כמסוף שיכול להריץ פקודות (%@)."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "general.terminal से ऐसा टर्मिनल चुनें जो कमांड चला सके (%@)।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atur general.terminal ke terminal yang dapat menjalankan perintah (%@)."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli con general.terminal un terminale che possa eseguire comandi (%@)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "general.terminal で、コマンドを実行できるターミナル（%@）を選んでください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "명령을 실행할 수 있는 터미널(%@)을 general.terminal로 선택하십시오."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कमांड चालवू शकणारे टर्मिनल general.terminal ने निवडा (%@)."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tetapkan general.terminal kepada terminal yang boleh menjalankan perintah (%@)."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kies met general.terminal een terminal die commando’s kan uitvoeren (%@)."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wybierz w general.terminal terminal, który potrafi uruchamiać polecenia (%@)."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha com general.terminal um terminal que possa executar comandos (%@)."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alegeți cu general.terminal un terminal care poate rula comenzi (%@)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите в general.terminal терминал, который может выполнять команды (%@)."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "கட்டளைகளை இயக்கக்கூடிய ஒரு டெர்மினலை general.terminal மூலம் தேர்ந்தெடுக்கவும் (%@)."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ఆదేశాలను అమలు చేయగల టెర్మినల్‌ను general.terminal తో ఎంచుకోండి (%@)."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งค่า general.terminal เป็นเทอร์มินัลที่เรียกใช้คำสั่งได้ (%@)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "general.terminal ayarında komut çalıştırabilen bir terminal seçin (%@)."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Виберіть у general.terminal термінал, який може виконувати команди (%@)."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏general.terminal سے ایسا ٹرمینل منتخب کریں جو کمانڈز چلا سکے (%@)۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hãy chọn bằng general.terminal một terminal có thể chạy lệnh (%@)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请用 general.terminal 选择一个能运行命令的终端（%@）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請用 general.terminal 選擇一個能執行指令的終端機（%@）。"
+          }
+        }
+      }
+    },
     "doctor.fix.runSetup": {
       "comment": "What the doctor says when something that `rh setup` makes is missing or out of date: the config file, the runner script, the Quick Actions, the command link.",
       "extractionState": "manual",
@@ -82581,6 +83139,564 @@
           "stringUnit": {
             "state": "translated",
             "value": "AI 助理提出的變更正等你處理：%@"
+          }
+        }
+      }
+    },
+    "doctor.probe.denied": {
+      "comment": "Detail line of the same check, a fragment with no final period. %@ is a terminal app's name.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "رفض macOS السماح لتطبيق Right Here بالتحكم في %@"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS Right Here-কে %@ নিয়ন্ত্রণ করতে দেয়নি"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS hat Right Here nicht erlaubt, %@ zu steuern"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το macOS δεν επέτρεψε στο Right Here να ελέγξει το %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS refused to let Right Here control %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS no permitió que Right Here controlara %@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏macOS به Right Here اجازهٔ کنترل %@ را نداد"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS n’a pas autorisé Right Here à contrôler %@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏macOS לא אישר ל-Right Here לשלוט על %@"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS ने Right Here को %@ नियंत्रित करने नहीं दिया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS menolak mengizinkan Right Here mengontrol %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS non ha consentito a Right Here di controllare %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS は Right Here による %@ の制御を許可しませんでした"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS가 Right Here의 %@ 제어를 거부함"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS ने Right Here ला %@ नियंत्रित करू दिले नाही"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS enggan membenarkan Right Here mengawal %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS heeft Right Here niet toegestaan %@ te bedienen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS nie pozwolił Right Here sterować aplikacją %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O macOS não permitiu que o Right Here controlasse %@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS nu a permis ca Right Here să controleze %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS не позволила Right Here управлять %@"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ஐக் கட்டுப்படுத்த Right Here ஐ macOS அனுமதிக்கவில்லை"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ను నియంత్రించడానికి Right Here ను macOS అనుమతించలేదు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS ไม่อนุญาตให้ Right Here ควบคุม %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS, Right Here’in %@ üzerinde denetim kurmasına izin vermedi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS не дозволила Right Here керувати %@"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏macOS نے Right Here کو %@ کنٹرول کرنے کی اجازت نہیں دی"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS không cho phép Right Here điều khiển %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 不允许 Right Here 控制%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 不允許 Right Here 控制%@"
+          }
+        }
+      }
+    },
+    "doctor.probe.noAnswer": {
+      "comment": "Detail line of the same check, a fragment with no final period: macOS asked whether Right Here may control the terminal, and the prompt was not answered before the test gave up.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم تتم الإجابة عن طلب الإذن من macOS في الوقت المحدد"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS-এর অনুমতির প্রশ্নের কোনো উত্তর সময়মতো আসেনি"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "keine rechtzeitige Antwort auf die Berechtigungsabfrage von macOS"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "καμία έγκαιρη απάντηση στην ερώτηση του macOS για άδεια"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no answer to macOS's permission prompt in time"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no se respondió a tiempo a la solicitud de permiso de macOS"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "به درخواست مجوز macOS به‌موقع پاسخی داده نشد"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pas de réponse à temps à la demande d’autorisation de macOS"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לא התקבלה בזמן תשובה לבקשת ההרשאה של macOS"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS के अनुमति वाले सवाल का समय पर कोई उत्तर नहीं मिला"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tidak ada jawaban tepat waktu untuk permintaan izin macOS"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nessuna risposta in tempo alla richiesta di permesso di macOS"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS の許可の確認に時間内の応答がありませんでした"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS의 권한 요청에 제때 응답하지 않음"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS च्या परवानगी विचारणेला वेळेत उत्तर मिळाले नाही"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tiada jawapan tepat pada masanya kepada gesaan kebenaran macOS"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "geen tijdig antwoord op de toestemmingsvraag van macOS"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "brak odpowiedzi na pytanie macOS o uprawnienia w wyznaczonym czasie"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nenhuma resposta a tempo ao pedido de permissão do macOS"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "niciun răspuns la timp la solicitarea de permisiune a macOS"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "на запрос разрешения macOS не ответили вовремя"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS இன் அனுமதிக் கேள்விக்கு உரிய நேரத்தில் பதில் இல்லை"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS అనుమతి ప్రశ్నకు సమయానికి సమాధానం రాలేదు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่มีการตอบหน้าต่างขออนุญาตของ macOS ทันเวลา"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS izin istemine zamanında yanıt verilmedi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "на запит macOS на дозвіл не відповіли вчасно"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏macOS کے اجازت کے پرامپٹ کا بروقت جواب نہیں ملا"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "không có phản hồi kịp thời cho hộp thoại xin quyền của macOS"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未及时回应 macOS 的权限提示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未及時回應 macOS 的權限提示"
+          }
+        }
+      }
+    },
+    "doctor.probe.ran": {
+      "comment": "Detail line of the check that tests a start from Finder in a terminal (the setup window's Test Terminal Start, and `rh doctor --probe-launch`); it follows the check's title, so it is a fragment with no final period. %1$@ is a terminal app's name; %2$@ and %3$@ are numbers of seconds such as 1.1 (s = seconds); %4$@ is the path of the login shell, such as /bin/zsh, shown as it is.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شغّل %1$@ أمرًا مكتوبًا في جلسة جديدة خلال %2$@ ث (قُبل الطلب بعد %3$@ ث؛ مكوّن Shell الخاص بالدخول: %4$@)"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ একটি নতুন সেশনে একটি টাইপ করা কমান্ড %2$@ সেকেন্ডে চালিয়েছে (অনুরোধটি %3$@ সেকেন্ড পরে গৃহীত হয়েছে; লগইন শেল %4$@)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ hat einen eingegebenen Befehl in einer neuen Sitzung in %2$@ s ausgeführt (die Anfrage wurde nach %3$@ s angenommen; Login-Shell %4$@)"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το %1$@ εκτέλεσε μια πληκτρολογημένη εντολή σε νέα συνεδρία σε %2$@ δευτ. (το αίτημα έγινε δεκτό μετά από %3$@ δευτ.· κέλυφος εισόδου %4$@)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ran a typed command in a new session in %2$@ s (the request was accepted after %3$@ s; login shell %4$@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ejecutó un comando escrito en una sesión nueva en %2$@ s (la solicitud se aceptó tras %3$@ s; shell de inicio de sesión %4$@)"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏%1$@ یک دستور تایپ‌شده را در یک نشست تازه در %2$@ ثانیه اجرا کرد (درخواست پس از %3$@ ثانیه پذیرفته شد؛ پوستهٔ ورود %4$@)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ a exécuté une commande saisie dans une nouvelle session en %2$@ s (la demande a été acceptée après %3$@ s ; shell de connexion %4$@)"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏%1$@ הריץ פקודה מוקלדת בהפעלה חדשה תוך %2$@ שנ׳ (הבקשה התקבלה אחרי %3$@ שנ׳; מעטפת ההתחברות %4$@)"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ने एक नए सत्र में टाइप की गई कमांड %2$@ सेकंड में चलाई (अनुरोध %3$@ सेकंड बाद स्वीकार हुआ; लॉगइन शेल %4$@)"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ menjalankan perintah yang diketik di sesi baru dalam %2$@ dtk (permintaan diterima setelah %3$@ dtk; shell masuk %4$@)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ha eseguito un comando digitato in una nuova sessione in %2$@ s (richiesta accettata dopo %3$@ s; shell di login %4$@)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ が新しいセッションで入力されたコマンドを %2$@ 秒で実行しました（要求は %3$@ 秒後に受け付けられました；ログインシェル：%4$@）"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@에서 새 세션에 입력된 명령이 %2$@초 만에 실행됨(요청은 %3$@초 후 수락됨, 로그인 셸 %4$@)"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ने नवीन सत्रात टाइप केलेली कमांड %2$@ सेकंदांत चालवली (विनंती %3$@ सेकंदांनंतर स्वीकारली गेली; लॉगिन शेल %4$@)"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ menjalankan perintah yang ditaip dalam sesi baharu dalam %2$@ s (permintaan diterima selepas %3$@ s; cangkerang log masuk %4$@)"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ voerde een getypt commando uit in een nieuwe sessie in %2$@ s (het verzoek werd na %3$@ s aangenomen; inlogshell %4$@)"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplikacja %1$@ uruchomiła wpisane polecenie w nowej sesji w ciągu %2$@ s (żądanie przyjęto po %3$@ s; powłoka logowania %4$@)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ executou um comando digitado em uma nova sessão em %2$@ s (a solicitação foi aceita após %3$@ s; shell de login %4$@)"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ a rulat o comandă tastată într-o sesiune nouă în %2$@ s (cererea a fost acceptată după %3$@ s; shellul de login %4$@)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В %1$@ введенная команда выполнена в новом сеансе за %2$@ с (запрос принят через %3$@ с; оболочка входа %4$@)"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ஒரு புதிய அமர்வில் தட்டச்சு செய்யப்பட்ட கட்டளையை %2$@ வினாடிகளில் இயக்கியது (கோரிக்கை %3$@ வினாடிகளுக்குப் பிறகு ஏற்கப்பட்டது; login shell %4$@)"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ కొత్త సెషన్‌లో టైప్ చేసిన ఆదేశాన్ని %2$@ సెకన్లలో అమలు చేసింది (అభ్యర్థన %3$@ సెకన్ల తర్వాత అంగీకరించబడింది; login shell %4$@)"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ เรียกใช้คำสั่งที่พิมพ์ในเซสชันใหม่ภายใน %2$@ วินาที (คำขอได้รับการยอมรับหลัง %3$@ วินาที, เชลล์เข้าสู่ระบบ: %4$@)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, yeni bir oturumda yazılan bir komutu %2$@ sn içinde çalıştırdı (istek %3$@ sn sonra kabul edildi; oturum açma kabuğu %4$@)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "У %1$@ введену команду виконано в новому сеансі за %2$@ с (запит прийнято через %3$@ с; оболонка входу %4$@)"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "‏%1$@ نے ایک نئے سیشن میں ٹائپ کی گئی کمانڈ %2$@ سیکنڈ میں چلائی (درخواست %3$@ سیکنڈ بعد قبول ہوئی؛ لاگ ان شیل %4$@)"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ đã chạy một lệnh được gõ trong phiên mới trong %2$@ giây (yêu cầu được chấp nhận sau %3$@ giây; shell đăng nhập %4$@)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 在新会话中运行了输入的命令，用时 %2$@ 秒（请求在 %3$@ 秒后被接受；登录 shell %4$@）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 在新工作階段中執行了輸入的指令，用時 %2$@ 秒（要求在 %3$@ 秒後被接受；登入 shell %4$@）"
           }
         }
       }
