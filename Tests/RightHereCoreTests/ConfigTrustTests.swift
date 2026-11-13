@@ -137,6 +137,21 @@ struct ConfigTrustTests {
         #expect(keys(preset.replacingOccurrences(of: "title = \"Review\"", with: "title = \"Look\"")).isEmpty, "a title is what the menu shows")
     }
 
+    @Test func anItemThatStartsAnAgentThroughItsLinkOrDesktopAppWaitsAsTheLauncherDoes() {
+        // `agent.codex@desktop` starts Codex without the arguments that keep it in its sandbox, for a click on that item, as `launcher = "desktop"` does for every start.
+        let head = "[general]\nagents = [\"codex\", \"claude\"]\n[agent.codex]\nargs = [\"--sandbox\", \"read-only\"]\n"
+        let before = ConfigParser.parse(head).config
+        func keys(_ table: String, _ items: String) -> [String] {
+            ConfigTrust.approvals(changingFrom: before, to: ConfigParser.parse(head + "[\(table)]\nitems = [\(items)]\n").config).map(\.key)
+        }
+        #expect(keys("menu", "\"agent.codex@desktop\"") == ["agent.*.launcher"])
+        #expect(keys("services", "\"agent.claude@link\"") == ["agent.*.launcher"])
+        #expect(keys("menu", "\"agent.codex\"").isEmpty, "the terminal is how it starts when nothing says otherwise")
+        #expect(keys("menu", "\"agent.codex@terminal\"").isEmpty, "a terminal of its own types the command and its arguments")
+        let had = ConfigParser.parse(head + "[menu]\nitems = [\"agent.codex@desktop\"]\n").config
+        #expect(ConfigTrust.approvals(changingFrom: had, to: had).isEmpty, "an item that was there already")
+    }
+
     @Test func aTemplatesNameWaitsWithItsContentsBecauseTheNameDecidesWhatRunsTheFile() {
         // Without an extension the base name is the whole name of the file: `.zshenv` in the home folder is read by every shell that starts.
         let head = "[[new_file.template]]\nid = \"make\"\ntitle = \"Makefile\"\nextension = \"\"\ncontents = \"all:\\n\"\n"
