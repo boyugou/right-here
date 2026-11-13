@@ -105,6 +105,31 @@ public struct SetupSnapshot: Sendable, Equatable {
     public var configHasErrors: Bool {
         configProblems.contains { $0.severity == .error }
     }
+
+    /// The parts that come from the config alone, as this snapshot has them.
+    public var configPart: MenuSnapshot {
+        MenuSnapshot(menu: menu, editor: menuEditor, target: menuTarget, general: general, agentsTarget: agentsTarget, agentOptions: agentOptions, presets: presets, newFile: newFile,
+                     copyPath: copyPath, quickActions: quickActions, apps: apps, problems: configProblems, language: language, underneath: underneath)
+    }
+
+    /// The parts that come from the config alone, all of them, from `shown`: a read of the config after a change, or what the window showed when a read of the whole state that began before
+    /// the change ends. One list of them, so that no part of an older read is shown beside the newer ones.
+    public mutating func take(_ shown: MenuSnapshot) {
+        menu = shown.menu
+        menuEditor = shown.editor
+        menuTarget = shown.target
+        general = shown.general
+        agentsTarget = shown.agentsTarget
+        agentOptions = shown.agentOptions
+        presets = shown.presets
+        newFile = shown.newFile
+        copyPath = shown.copyPath
+        quickActions = shown.quickActions
+        apps = shown.apps
+        configProblems = shown.problems
+        language = shown.language
+        underneath = shown.underneath
+    }
 }
 
 /// The parts of the state that come from the config alone: what the editors redraw after a change, without asking the doctor (which starts the login shell).

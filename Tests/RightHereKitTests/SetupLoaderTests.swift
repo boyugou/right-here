@@ -104,6 +104,22 @@ struct SetupLoaderTests {
         #expect(await loader.menu().editor?.rows.map(\.entry) == ["copy-path"])
     }
 
+    /// A read of the whole state that began before a change keeps what the change showed of the config, every part of it (`SetupSnapshot.take`): the default rows' "As in
+    /// config.toml (…)" (`underneath`) was left out of the list and came back from the older read (an independent review of the editors, 2026-11-13). Here every part of what the
+    /// config shows is something other than an empty snapshot's, so a part that `take` or `configPart` leaves out is seen.
+    @Test func everyPartOfWhatTheConfigShowsIsTakenAndGivenBack() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig("[general]\nterminal = \"ghostty\"\neditor = \"vscode\"\nlanguage = \"de\"\nmystery = 1\n")
+        try "[general]\nterminal = \"terminal\"\nagents = [\"claude\"]\n\n[menu]\nitems = [\"open-terminal\", \"copy-path\"]\n".write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
+        let shown = await machine.loader(runner: FakeProcessRunner()).menu()
+        #expect(!shown.menu.isEmpty && shown.editor != nil && shown.target == .local && shown.general != nil && shown.agentsTarget == .local && !shown.agentOptions.isEmpty)
+        #expect(shown.presets != nil && shown.newFile != nil && shown.copyPath != nil && shown.quickActions != nil && shown.apps != nil && !shown.problems.isEmpty)
+        #expect(shown.language == "de" && shown.underneath == ["general.terminal": "ghostty"], "\(shown.underneath)")
+        var snapshot = SetupSnapshot(configFile: machine.paths.configFile, home: machine.home)
+        snapshot.take(shown)
+        #expect(snapshot.configPart == shown)
+    }
+
     @Test func theMenuTheWindowShowsHasNoSeparatorsWhereFinderWouldDrawThemAsEmptyRows() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         try machine.writeConfig("[general]\nterminal = \"ghostty\"\nagents = []\n[menu]\nitems = [\"open-terminal\", \"-\", \"open-with\", \"-\", \"copy-path\"]\n")

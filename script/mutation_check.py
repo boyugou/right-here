@@ -1677,8 +1677,8 @@ MUTANTS = [
      "(1...max(count, 1)).contains(position), (1...max(count, 1)).contains(position + offset) else { return false }", "(1...max(count, 1)).contains(position) else { return false }"),
     ("a field of a start option is written over another argument that moved to its place", "Apps/RightHere/SetupModel+Variants.swift",
      "AgentVariants.change($0.arguments.setting(at: position, to: argument, expecting: shown), of: $0, agent: agent)", "AgentVariants.change($0.arguments.setting(at: position, to: argument), of: $0, agent: agent)"),
-    ("a read that began before an edit puts the old start options back", "Apps/RightHere/SetupModel.swift",
-     "            loaded.agentOptions = current.agentOptions\n", ""),
+    ("a read that began before an edit puts the old start options back", "Sources/RightHereKit/SetupLoader.swift",
+     "        agentOptions = shown.agentOptions\n", ""),
     ("a refusal stays when the next change is made", "Apps/RightHere/SetupModel.swift",
      "            editRefusal = nil\n            say(nil)\n            if announcing", "            say(nil)\n            if announcing"),
     ("a change that changed nothing makes a note that undoes somebody else's change", "Apps/RightHere/SetupModel.swift",
@@ -1757,8 +1757,8 @@ MUTANTS = [
      "        if let open = appDetail, shown.apps?.row(id: open) == nil { appDetail = nil }\n", ""),
     ("leaving the section leaves the page of an app open", "Apps/RightHere/SetupModel.swift",
      "            appDetail = nil\n        }\n        selectedTab = tab", "        }\n        selectedTab = tab"),
-    ("a read that began before an edit puts the old apps back", "Apps/RightHere/SetupModel.swift",
-     "            loaded.apps = current.apps\n", ""),
+    ("a read that began before an edit puts the old apps back", "Sources/RightHereKit/SetupLoader.swift",
+     "        apps = shown.apps\n", ""),
     ("an application that is not an app is read", "Sources/RightHereKit/AppBundleInfo.swift",
      "guard url.pathExtension == \"app\", let bundle = Bundle(url: url)", "guard let bundle = Bundle(url: url)"),
     ("an application with an empty identifier is read", "Sources/RightHereKit/AppBundleInfo.swift",
@@ -2185,8 +2185,8 @@ MUTANTS = [
      "            if let value, local.rawValue(at: key) != nil { found[key] = value }", "            if let value { found[key] = value }"),
     ("a default row says the built-in default when config.toml's value is what choosing it gives", "Apps/RightHere/SetupModel.swift",
      "        guard let value = snapshot?.underneath[key] else { return automatic }", "        guard let value = snapshot?.underneath[key], Bool(\"false\") == true else { return automatic }"),
-    ("what is under the defaults is not read again after a change", "Apps/RightHere/SetupModel.swift",
-     "        current.underneath = shown.underneath\n", ""),
+    ("what the config shows is not read again after a change", "Apps/RightHere/SetupModel.swift",
+     "        current.take(shown)\n", ""),
     # What deletes files (ADR 0016, review of 2026-11-08).
     ("a blank worktree name is the current folder", "Sources/RightHereKit/GitWorktree.swift",
      "        guard !target.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw WorktreeError.notFound(target) }\n", ""),
@@ -2590,6 +2590,10 @@ MUTANTS = [
      '[.reset(titleKey, to: .string(""))]', "[.unset(titleKey)]"),
     ("an empty Copy Path title is a title of nothing", "Sources/RightHereCore/Config/ConfigBuilder+Menu.swift",
      '!title.trimmingCharacters(in: .whitespaces).isEmpty, isPlainName', "isPlainName"),
+    ("a read of the whole state that began before a change puts back its default rows", "Sources/RightHereKit/SetupLoader.swift",
+     "        underneath = shown.underneath\n    }\n", "    }\n"),
+    ("a read of the whole state that began before a change shows its own config", "Apps/RightHere/SetupModel.swift",
+     "            loaded.take(current.configPart)\n", ""),
 ]
 
 

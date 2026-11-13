@@ -105,4 +105,24 @@ struct WindowEditorsReviewTests {
         await mac.model.setCopyPathTitle("")
         #expect(mac.model.copyPath?.title == nil && mac.local == "[copy_path]\ntitle = \"\"\n", "config.local.toml: \(mac.local)")
     }
+
+    // MARK: A read that began before a change keeps the default rows the change showed
+
+    /// When this Mac's file and config.toml both set the terminal, its default row says "As in config.toml (Terminal)" (`underneath`). The person chooses it: this Mac's file no longer
+    /// sets the key, and the row is "Automatic (Ghostty)" again. A read of the whole state that began before the change (the doctor takes seconds) then ends: `apply` keeps the editors
+    /// the change showed (menu, general, agents, presets, …) but not `underneath`, so the row says "As in config.toml (Terminal)" again, and choosing it now would take the terminal out of
+    /// config.toml and give Ghostty: the very mismatch the default rows were made to end. `SetupSnapshot.take` now lists every part that comes from the config, once.
+    @Test func aReadThatBeganBeforeAChangeDoesNotPutTheOldDefaultRowsBack() async throws {
+        let mac = try await EditedMac.started(shared: "[general]\nterminal = \"terminal\"\nagents = [\"claude\"]\n", local: "[general]\nterminal = \"ghostty\"\n")
+        defer { mac.cleanUp() }
+        #expect(mac.model.snapshot?.underneath["general.terminal"] == "terminal")
+        var stale = try #require(mac.model.snapshot)
+        stale.readAt = .now
+        try await Task.sleep(for: .milliseconds(5))
+        await mac.model.setTerminal(nil)
+        #expect(mac.model.snapshot?.underneath["general.terminal"] == nil && !mac.local.contains("terminal"))
+        mac.model.apply(stale)
+        let row = mac.model.defaultChoiceTitle(for: "general.terminal", automatic: "Automatic (Ghostty)") { $0 }
+        #expect(row == "Automatic (Ghostty)", "the default row says \"\(row)\" again after the stale read, though this Mac's file no longer sets the terminal")
+    }
 }

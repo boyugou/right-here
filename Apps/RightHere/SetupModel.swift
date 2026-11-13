@@ -961,20 +961,7 @@ final class SetupModel {
         guard var current = snapshot else { return }
         if !checks.isEmpty { checks = checks.replacing(services) }
         editedAt = .now
-        current.menu = shown.menu
-        current.menuEditor = shown.editor
-        current.menuTarget = shown.target
-        current.general = shown.general
-        current.agentsTarget = shown.agentsTarget
-        current.agentOptions = shown.agentOptions
-        current.presets = shown.presets
-        current.newFile = shown.newFile
-        current.copyPath = shown.copyPath
-        current.quickActions = shown.quickActions
-        current.apps = shown.apps
-        current.configProblems = shown.problems
-        current.language = shown.language
-        current.underneath = shown.underneath
+        current.take(shown)
         snapshot = current
         if let open = templateDetail, !Self.templatePageStays(open, in: shown.newFile) { templateDetail = nil }
         if let open = appDetail, shown.apps?.row(id: open) == nil { appDetail = nil }
@@ -1126,19 +1113,7 @@ final class SetupModel {
         var loaded = loaded
         if let editedAt, loaded.readAt < editedAt, let current = snapshot {
             // This read began before the config was last changed through the window, and the doctor made it take seconds: what it says of the config is older than what is shown.
-            loaded.menu = current.menu
-            loaded.menuEditor = current.menuEditor
-            loaded.menuTarget = current.menuTarget
-            loaded.general = current.general
-            loaded.agentsTarget = current.agentsTarget
-            loaded.agentOptions = current.agentOptions
-            loaded.presets = current.presets
-            loaded.newFile = current.newFile
-            loaded.copyPath = current.copyPath
-            loaded.quickActions = current.quickActions
-            loaded.apps = current.apps
-            loaded.configProblems = current.configProblems
-            loaded.language = current.language
+            loaded.take(current.configPart)
             loaded.proposals = current.proposals
             // The check of the Quick Actions that a change of their list made says they differ (`refreshEditable`): an older read does not know of the change, and would say they are as the config asks.
             if let services = checks.first(where: { $0.id == .services }) { loaded.checks = loaded.checks.replacing(services) }

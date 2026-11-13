@@ -31,7 +31,7 @@
   `config.local.toml` and `config.toml` both setting it, "In a terminal" for an agent, its built-in command typed back,
   "Select it in Finder" after a new file and an emptied Copy Path title gave config.toml's value, and the same choice
   made again then changed config.toml for every Mac. An empty Copy Path title is the default one (it was an entry with
-  no title).
+  no title). A read of the whole state that began before a change no longer puts back the old "As in config.toml" rows.
 
 ## 1.2.25 (2026-11-13)
 
