@@ -208,10 +208,12 @@ public struct ConfigService: Sendable {
     /// entry that the file does not write at that place as a table of an array of tables with that id (an inline array, say) cannot be edited by place and has none either.
     /// - Parameter loaded: The config as it was just read; read again when it is not given.
     public func entryLocations(of table: String, in loaded: ConfigLoadResult? = nil) -> [String: EntryLocation] {
-        let origins = (loaded ?? ConfigStore.load(paths: paths, withOrigins: true).result).entryOrigins[table] ?? []
+        let result = loaded ?? ConfigStore.load(paths: paths, withOrigins: true).result
+        let origins = result.entryOrigins[table] ?? []
         var found: [String: EntryLocation] = [:]
         var written: [ConfigTarget: [String?]] = [:]
-        for origin in origins {
+        // An entry the config refused has no place: the row of that id is the built-in preset or start option that stands in for it, and a change of the row is not one of the entry.
+        for (index, origin) in origins.enumerated() where result.usedEntries.contains("\(table).\(index + 1)") {
             guard let id = origin.id, found[id] == nil else { continue }
             if written[origin.target] == nil { written[origin.target] = (try? document(of: origin.target))?.entryIDs(in: table) ?? [] }
             guard let ids = written[origin.target], ids.indices.contains(origin.position - 1), ids[origin.position - 1] == id else { continue }

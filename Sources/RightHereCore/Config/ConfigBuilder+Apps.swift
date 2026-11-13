@@ -31,6 +31,7 @@ extension ConfigBuilder {
                 sink.error(path + ["name"], "another app is already called \"\(app.name)\"; the menu tells apps apart by their names, so give each its own\(replace)")
                 return false
             }
+            sink.usedEntries.insert(path.joined(separator: "."))
             return true
         }
     }

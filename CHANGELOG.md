@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **The window edits a config with an error in a setting too.** The menu's picture, the Edit Menu button and the
+  controls of every page were gone while the config had any error, though Finder still showed the rest of the menu.
+  They stay now, beside the problems; a change is refused only for an error it brings, as with `rh config`, and the
+  Config page saves a text that keeps an error the file already had. A file that is not TOML still shows neither. A list
+  that names something the config leaves out says so, and an entry the config refused is changed as text.
+
 ## 1.2.20 (2026-11-12)
 
 - **An error in the config no longer stops `rh config` from changing something else.** A config copied from a team's

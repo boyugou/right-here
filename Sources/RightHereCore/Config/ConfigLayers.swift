@@ -53,6 +53,9 @@ public enum ConfigLayers {
         guard let localText else {
             let built = baseText.map(ConfigParser.parse)
             var alone = ConfigLoadResult(config: built?.config ?? .default, diagnostics: baseDiagnostics + (built?.diagnostics ?? []) + localDiagnostics)
+            // What was not read: a file that is there and could not be (the only diagnostics so far), or one that is not TOML.
+            alone.fileLeftOut = !baseDiagnostics.isEmpty || !localDiagnostics.isEmpty || built?.fileLeftOut == true
+            alone.usedEntries = built?.usedEntries ?? []
             if withOrigins, let baseText, let tree = ConfigParser.readTree(baseText).tree { alone.entryOrigins = entryOrigins(of: ConfigMerge.merge(base: tree, local: [:])) }
             return alone
         }
@@ -70,8 +73,10 @@ public enum ConfigLayers {
         guard let localTree = localRead.tree else {
             // An overlay that cannot be read is left out; the shared file still applies.
             let built = baseUsable ? baseText.map(ConfigParser.parse) : nil
-            return ConfigLoadResult(config: built?.config ?? .default,
-                                    diagnostics: baseDiagnostics + (built?.diagnostics ?? []) + localDiagnostics)
+            var result = ConfigLoadResult(config: built?.config ?? .default,
+                                          diagnostics: baseDiagnostics + (built?.diagnostics ?? []) + localDiagnostics)
+            result.fileLeftOut = true
+            return result
         }
 
         let merged = ConfigMerge.merge(base: baseTree, local: localTree)
@@ -97,6 +102,8 @@ public enum ConfigLayers {
         result.config.disabledApps = Set(merged.disabled.filter { KnownApps.app(id: $0) != nil })
         result.config.disabledAgents = Set(merged.disabled.filter { KnownAgents.agent(id: $0) != nil })
         result.entryOrigins = entryOrigins(of: merged)
+        if case .unreadable = base { result.fileLeftOut = true }
+        if baseText != nil && !baseUsable { result.fileLeftOut = true }
         // Each problem is put at its line in the file it belongs to, the shared file's first.
         let all = baseDiagnostics + result.diagnostics + localDiagnostics
         result.diagnostics = ConfigParser.locate(all.filter { $0.file == nil }, in: baseText ?? "")

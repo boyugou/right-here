@@ -172,10 +172,15 @@ struct MenuPreviewFolderMenuTests {
         #expect(german.contains { $0.title == "Neue Datei" })
     }
 
-    @Test func aConfigWithAnErrorShowsNothing() {
-        #expect(MenuPreview.folderMenu(loaded(config, diagnostics: [anError]), facts: machine(), folder: home, localizer: .english).isEmpty)
-        // Whatever else is wrong with the file does not matter; one error is enough.
-        #expect(MenuPreview.folderMenu(loaded(config, diagnostics: [aWarning, anError]), facts: machine(), folder: home, localizer: .english).isEmpty)
+    @Test func anErrorInASettingShowsTheRestOfTheMenuAndAFileLeftOutShowsNothing() {
+        // The extension shows what is valid in a config with an error in a setting: that is the menu, and the problems say what is wrong.
+        let anErrorInASetting = ConfigDiagnostic(severity: .error, path: "general.terminal", message: "unknown terminal \"nonsense\"")
+        let menu = MenuPreview.folderMenu(loaded(config), facts: machine(), folder: home, localizer: .english)
+        #expect(!menu.isEmpty && MenuPreview.folderMenu(loaded(config, diagnostics: [aWarning, anErrorInASetting]), facts: machine(), folder: home, localizer: .english) == menu)
+        // A file that is not TOML is left out, and the menu would be the defaults whatever the file says.
+        var leftOut = loaded(config, diagnostics: [anError])
+        leftOut.fileLeftOut = true
+        #expect(MenuPreview.folderMenu(leftOut, facts: machine(), folder: home, localizer: .english).isEmpty)
     }
 
     @Test func aWarningAloneStillShowsTheMenu() {

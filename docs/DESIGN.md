@@ -255,8 +255,9 @@ background (`HereContext.finder`); `MenuPreview.rows` flattens the tree into the
 submenu opening in place. The app carries the extension's glyph catalog (`Apps/FinderExtension/Assets.xcassets`, a
 source of both targets in `project.yml`), so the icons are the menu's own. The section "Finder menu" is open unless a
 check needs attention (the first-run card and the list of checks keep the focus), until the person opens or closes it
-once; it shows nothing when the config has errors (the extension would still offer what is valid in it, but a menu
-drawn from a broken config says something that is not true, and the doctor's config row says what is wrong). It is the
+once. With an error in a setting it shows what the extension offers, which is the rest of the menu, beside the problems; it
+shows nothing when a file of the config was left out (`ConfigLoadResult.fileLeftOut`: it is not TOML or cannot be read), since
+the extension then offers the defaults, or the shared file's menu alone, whatever the file says. It is the
 menu for a folder: the items a selection of files adds (the agent presets) appear in Finder only. It is the same
 code, not a statement about Finder; `docs/development/MANUAL_CHECKS.md` (5) compares the two in a real window.
 

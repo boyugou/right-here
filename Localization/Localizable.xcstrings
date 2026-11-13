@@ -9122,181 +9122,181 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "قائمة الوكلاء في ملف الإعداد لديك لا تطابق الوكلاء المعروضين هنا: يرد أحد الوكلاء مرتين، أو يوقف هذا الـ Mac أحدهم. غيّر القائمة كنصٍّ في صفحة ملف الإعداد."
+            "value": "قائمة الوكلاء في ملف الإعداد لديك لا تطابق الوكلاء المعروضين هنا: يرد أحد الوكلاء مرتين، أو يوقف هذا الـ Mac أحدهم، أو يوجد وكيل لا يتعرّف عليه ملف الإعداد. غيّر القائمة كنصٍّ في صفحة ملف الإعداد."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "translated",
-            "value": "কনফিগারেশন ফাইলের তালিকা এখানে দেখানো এজেন্টগুলোর সঙ্গে মেলে না: একটি এজেন্ট দুবার তালিকাভুক্ত, বা এই Mac একটিকে বন্ধ করে রেখেছে। তালিকাটি কনফিগ পৃষ্ঠায় টেক্সট হিসেবে বদলান।"
+            "value": "কনফিগারেশন ফাইলের তালিকা এখানে দেখানো এজেন্টগুলোর সঙ্গে মেলে না: একটি এজেন্ট দুবার তালিকাভুক্ত, এই Mac একটিকে বন্ধ করে রেখেছে, অথবা কনফিগারেশন একটিকে চেনে না। তালিকাটি কনফিগ পৃষ্ঠায় টেক্সট হিসেবে বদলান।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Die Liste in deiner Konfigurationsdatei stimmt nicht mit den hier gezeigten Agenten überein: Ein Agent ist doppelt aufgeführt, oder dieser Mac schaltet einen aus. Ändere die Liste als Text auf der Seite „Konfiguration“."
+            "value": "Die Liste in deiner Konfigurationsdatei stimmt nicht mit den hier gezeigten Agenten überein: Ein Agent ist doppelt aufgeführt, dieser Mac schaltet einen aus, oder die Konfiguration kennt einen nicht. Ändere die Liste als Text auf der Seite „Konfiguration“."
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Η λίστα στο αρχείο ρυθμίσεων δεν ταιριάζει με τους πράκτορες που εμφανίζονται εδώ: ένας πράκτορας αναφέρεται δύο φορές, ή αυτό το Mac απενεργοποιεί έναν από αυτούς. Αλλάξτε τη λίστα ως κείμενο στη σελίδα «Ρυθμίσεις»."
+            "value": "Η λίστα στο αρχείο ρυθμίσεων δεν ταιριάζει με τους πράκτορες που εμφανίζονται εδώ: ένας πράκτορας αναφέρεται δύο φορές, αυτό το Mac απενεργοποιεί έναν από αυτούς, ή το αρχείο ρυθμίσεων δεν γνωρίζει κάποιον. Αλλάξτε τη λίστα ως κείμενο στη σελίδα «Ρυθμίσεις»."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The list in your config file does not match the agents shown here: an agent is listed twice, or this Mac turns one off. Change the list as text on the Config page."
+            "value": "The list in your config file does not match the agents shown here: an agent is listed twice, this Mac turns one off, or the config does not know one. Change the list as text on the Config page."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "La lista de tu archivo de configuración no coincide con los agentes que se muestran aquí: un agente aparece dos veces, o este Mac desactiva uno. Cambia la lista como texto en la página Configuración."
+            "value": "La lista de tu archivo de configuración no coincide con los agentes que se muestran aquí: un agente aparece dos veces, este Mac desactiva uno, o la configuración no reconoce uno de ellos. Cambia la lista como texto en la página Configuración."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "فهرست موجود در فایل پیکربندی شما با عامل‌هایی که اینجا نشان داده می‌شوند مطابقت ندارد: یک عامل دوبار فهرست شده، یا این مک یکی از آن‌ها را خاموش کرده. فهرست را به‌صورت متن در صفحهٔ پیکربندی تغییر دهید."
+            "value": "فهرست موجود در فایل پیکربندی شما با عامل‌هایی که اینجا نشان داده می‌شوند مطابقت ندارد: یک عامل دوبار فهرست شده، این مک یکی از آن‌ها را خاموش کرده، یا پیکربندی یکی از آن‌ها را نمی‌شناسد. فهرست را به‌صورت متن در صفحهٔ پیکربندی تغییر دهید."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "La liste de votre fichier de configuration ne correspond pas aux agents affichés ici : un agent figure deux fois, ou ce Mac en désactive un. Modifiez la liste sous forme de texte dans la page Configuration."
+            "value": "La liste de votre fichier de configuration ne correspond pas aux agents affichés ici : un agent figure deux fois, ce Mac en désactive un, ou la configuration ne connaît pas l’un d’eux. Modifiez la liste sous forme de texte dans la page Configuration."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "הרשימה בקובץ התצורה אינה תואמת לסוכנים המוצגים כאן: סוכן מופיע פעמיים, או ש-Mac זה מכבה אחד מהם. יש לשנות את הרשימה כטקסט בעמוד ״תצורה״."
+            "value": "הרשימה בקובץ התצורה אינה תואמת לסוכנים המוצגים כאן: סוכן מופיע פעמיים, Mac זה מכבה אחד מהם, או שהתצורה אינה מכירה אחד מהם. יש לשנות את הרשימה כטקסט בעמוד ״תצורה״."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "आपकी कॉन्फ़िगरेशन फ़ाइल की सूची यहाँ दिखाए गए एजेंटों से मेल नहीं खाती: कोई एजेंट दो बार सूचीबद्ध है, या यह Mac उनमें से एक को बंद कर देता है। सूची को कॉन्फ़िग पेज पर टेक्स्ट के रूप में बदलें।"
+            "value": "आपकी कॉन्फ़िगरेशन फ़ाइल की सूची यहाँ दिखाए गए एजेंटों से मेल नहीं खाती: कोई एजेंट दो बार सूचीबद्ध है, यह Mac उनमें से एक को बंद कर देता है, या कॉन्फ़िगरेशन उनमें से एक को नहीं पहचानता। सूची को कॉन्फ़िग पेज पर टेक्स्ट के रूप में बदलें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Daftar di file konfigurasi Anda tidak cocok dengan agen yang ditampilkan di sini: ada agen yang tercantum dua kali, atau Mac ini mematikan salah satunya. Ubah daftar itu sebagai teks di halaman Konfigurasi."
+            "value": "Daftar di file konfigurasi Anda tidak cocok dengan agen yang ditampilkan di sini: ada agen yang tercantum dua kali, Mac ini mematikan salah satunya, atau konfigurasi tidak mengenali salah satunya. Ubah daftar itu sebagai teks di halaman Konfigurasi."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "L’elenco nel tuo file di configurazione non corrisponde agli agenti mostrati qui: un agente è elencato due volte, oppure questo Mac ne disattiva uno. Modifica l’elenco come testo nella pagina Configurazione."
+            "value": "L’elenco nel tuo file di configurazione non corrisponde agli agenti mostrati qui: un agente è elencato due volte, questo Mac ne disattiva uno, oppure la configurazione non riconosce uno di essi. Modifica l’elenco come testo nella pagina Configurazione."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "設定ファイルの一覧が、ここに表示されているエージェントと一致しません。同じエージェントが二つ並んでいるか、この Mac で一つのエージェントが無効になっています。一覧は「設定」ページでテキストとして変更してください。"
+            "value": "設定ファイルの一覧が、ここに表示されているエージェントと一致しません。同じエージェントが二つ並んでいるか、この Mac で一つのエージェントが無効になっているか、設定で認識されないエージェントがあります。一覧は「設定」ページでテキストとして変更してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "설정 파일의 목록이 여기에 표시된 에이전트와 일치하지 않습니다. 같은 에이전트가 두 번 나열되었거나, 이 Mac에서 에이전트 하나를 껐습니다. 목록은 설정 페이지에서 텍스트로 변경하십시오."
+            "value": "설정 파일의 목록이 여기에 표시된 에이전트와 일치하지 않습니다. 같은 에이전트가 두 번 나열되었거나, 이 Mac에서 에이전트 하나를 껐거나, 설정이 알지 못하는 에이전트가 있습니다. 목록은 설정 페이지에서 텍스트로 변경하십시오."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "translated",
-            "value": "तुमच्या कॉन्फिगरेशन फाइलमधील यादी इथे दाखवलेल्या एजंटांशी जुळत नाही: एक एजंट दोनदा यादीत आहे, किंवा या Mac वर एक एजंट बंद केलेला आहे. यादी कॉन्फिग पृष्ठावर मजकूर म्हणून बदला."
+            "value": "तुमच्या कॉन्फिगरेशन फाइलमधील यादी इथे दाखवलेल्या एजंटांशी जुळत नाही: एक एजंट दोनदा यादीत आहे, या Mac वर एक एजंट बंद केलेला आहे, किंवा कॉन्फिगरेशन एखादा एजंट ओळखत नाही. यादी कॉन्फिग पृष्ठावर मजकूर म्हणून बदला."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "translated",
-            "value": "Senarai dalam fail konfigurasi anda tidak sepadan dengan ejen yang dipaparkan di sini: satu ejen tersenarai dua kali, atau Mac ini menyahaktifkan satu ejen. Ubah senarai itu sebagai teks pada halaman Konfigurasi."
+            "value": "Senarai dalam fail konfigurasi anda tidak sepadan dengan ejen yang dipaparkan di sini: satu ejen tersenarai dua kali, Mac ini menyahaktifkan satu ejen, atau konfigurasi tidak mengenali satu ejen. Ubah senarai itu sebagai teks pada halaman Konfigurasi."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "De lijst in het configuratiebestand komt niet overeen met de agenten die hier worden getoond: een agent staat er twee keer in, of op deze Mac is er een uitgeschakeld. Wijzig de lijst als tekst op de pagina Configuratie."
+            "value": "De lijst in het configuratiebestand komt niet overeen met de agenten die hier worden getoond: een agent staat er twee keer in, op deze Mac is er een uitgeschakeld, of de configuratie kent er een niet. Wijzig de lijst als tekst op de pagina Configuratie."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lista w pliku konfiguracji nie zgadza się z agentami pokazanymi tutaj: jeden agent jest na niej wymieniony dwa razy albo ten Mac wyłącza jednego z nich. Zmień listę jako tekst na stronie Konfiguracja."
+            "value": "Lista w pliku konfiguracji nie zgadza się z agentami pokazanymi tutaj: jeden agent jest na niej wymieniony dwa razy, ten Mac wyłącza jednego z nich albo konfiguracja któregoś nie zna. Zmień listę jako tekst na stronie Konfiguracja."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "A lista no arquivo de configuração não corresponde aos agentes mostrados aqui: um agente aparece duas vezes, ou este Mac desativa um deles. Altere a lista como texto na página Configuração."
+            "value": "A lista no arquivo de configuração não corresponde aos agentes mostrados aqui: um agente aparece duas vezes, este Mac desativa um deles, ou a configuração não conhece um deles. Altere a lista como texto na página Configuração."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lista din fișierul de configurare nu corespunde agenților afișați aici: un agent apare de două ori sau acest Mac dezactivează unul dintre ei. Modificați lista ca text, pe pagina Configurație."
+            "value": "Lista din fișierul de configurare nu corespunde agenților afișați aici: un agent apare de două ori, acest Mac dezactivează unul dintre ei sau configurația nu cunoaște unul dintre ei. Modificați lista ca text, pe pagina Configurație."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Список в файле конфигурации не совпадает с агентами, которые показаны здесь: агент указан дважды или на этом Mac один из них отключен. Измените список в виде текста на странице «Конфигурация»."
+            "value": "Список в файле конфигурации не совпадает с агентами, которые показаны здесь: агент указан дважды, на этом Mac один из них отключен или конфигурация не знает одного из них. Измените список в виде текста на странице «Конфигурация»."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "translated",
-            "value": "உங்கள் உள்ளமைவுக் கோப்பிலுள்ள பட்டியல் இங்கே காட்டப்படும் முகவர்களுடன் பொருந்தவில்லை: ஒரு முகவர் இரண்டு முறை பட்டியலிடப்பட்டுள்ளது, அல்லது இந்த Mac அவற்றில் ஒன்றை முடக்கியுள்ளது. பட்டியலை உள்ளமைவுப் பக்கத்தில் உரையாக மாற்றவும்."
+            "value": "உங்கள் உள்ளமைவுக் கோப்பிலுள்ள பட்டியல் இங்கே காட்டப்படும் முகவர்களுடன் பொருந்தவில்லை: ஒரு முகவர் இரண்டு முறை பட்டியலிடப்பட்டுள்ளது, இந்த Mac அவற்றில் ஒன்றை முடக்கியுள்ளது, அல்லது உள்ளமைவுக்கு அவற்றில் ஒன்று தெரியாது. பட்டியலை உள்ளமைவுப் பக்கத்தில் உரையாக மாற்றவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "translated",
-            "value": "మీ కాన్ఫిగరేషన్ ఫైల్‌లోని జాబితా ఇక్కడ చూపిన ఏజెంట్లతో సరిపోలడం లేదు: ఒక ఏజెంట్ రెండుసార్లు జాబితాలో ఉంది, లేదా ఈ Mac ఒకదాన్ని ఆఫ్ చేస్తుంది. జాబితాను కాన్ఫిగరేషన్ పేజీలో టెక్స్ట్‌గా మార్చండి."
+            "value": "మీ కాన్ఫిగరేషన్ ఫైల్‌లోని జాబితా ఇక్కడ చూపిన ఏజెంట్లతో సరిపోలడం లేదు: ఒక ఏజెంట్ రెండుసార్లు జాబితాలో ఉంది, ఈ Mac ఒకదాన్ని ఆఫ్ చేస్తుంది, లేదా కాన్ఫిగరేషన్‌కు ఒకటి తెలియదు. జాబితాను కాన్ఫిగరేషన్ పేజీలో టెక్స్ట్‌గా మార్చండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "รายการในไฟล์การกำหนดค่าของคุณไม่ตรงกับเอเจนต์ที่แสดงอยู่ที่นี่ เพราะมีเอเจนต์ตัวหนึ่งที่ระบุไว้สองครั้ง หรือ Mac เครื่องนี้ปิดใช้งานเอเจนต์หนึ่งตัว ให้แก้ไขรายการเป็นข้อความในหน้าการกำหนดค่า"
+            "value": "รายการในไฟล์การกำหนดค่าของคุณไม่ตรงกับเอเจนต์ที่แสดงอยู่ที่นี่ เพราะมีเอเจนต์ตัวหนึ่งที่ระบุไว้สองครั้ง Mac เครื่องนี้ปิดใช้งานเอเจนต์หนึ่งตัว หรือการกำหนดค่าไม่รู้จักเอเจนต์ตัวหนึ่ง ให้แก้ไขรายการเป็นข้อความในหน้าการกำหนดค่า"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Yapılandırma dosyanızdaki liste, burada gösterilen ajanlarla eşleşmiyor: bir ajan iki kez listeleniyor ya da bu Mac birini kapatıyor. Listeyi Yapılandırma sayfasında metin olarak değiştirin."
+            "value": "Yapılandırma dosyanızdaki liste, burada gösterilen ajanlarla eşleşmiyor: bir ajan iki kez listeleniyor, bu Mac birini kapatıyor ya da yapılandırma birini tanımıyor. Listeyi Yapılandırma sayfasında metin olarak değiştirin."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Список у вашому файлі конфігурації не збігається з агентами, які показано тут: агент є в списку двічі або цей Mac вимикає одного з них. Змініть список як текст на сторінці «Конфігурація»."
+            "value": "Список у вашому файлі конфігурації не збігається з агентами, які показано тут: агент є в списку двічі, цей Mac вимикає одного з них або конфігурація не знає одного з них. Змініть список як текст на сторінці «Конфігурація»."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "آپ کی کنفیگریشن فائل میں موجود فہرست یہاں دکھائے گئے ایجنٹس سے میل نہیں کھاتی: کوئی ایک ایجنٹ دو بار درج ہے، یا یہ Mac ایک ایجنٹ بند رکھتا ہے۔ فہرست کو کنفیگ صفحے پر متن کے طور پر تبدیل کریں۔"
+            "value": "آپ کی کنفیگریشن فائل میں موجود فہرست یہاں دکھائے گئے ایجنٹس سے میل نہیں کھاتی: کوئی ایک ایجنٹ دو بار درج ہے، یہ Mac ایک ایجنٹ بند رکھتا ہے، یا کنفیگریشن ایک ایجنٹ کو نہیں پہچانتی۔ فہرست کو کنفیگ صفحے پر متن کے طور پر تبدیل کریں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Danh sách trong tệp cấu hình của bạn không khớp với các tác tử hiển thị ở đây: một tác tử được liệt kê hai lần, hoặc máy Mac này đang tắt một tác tử. Hãy thay đổi danh sách dưới dạng văn bản trên trang Cấu hình."
+            "value": "Danh sách trong tệp cấu hình của bạn không khớp với các tác tử hiển thị ở đây: một tác tử được liệt kê hai lần, máy Mac này đang tắt một tác tử, hoặc cấu hình không biết một tác tử. Hãy thay đổi danh sách dưới dạng văn bản trên trang Cấu hình."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "配置文件中的列表与此处显示的智能体不一致：某个智能体被列了两次，或这台 Mac 关闭了其中一个。请在“配置”页面以文本形式修改列表。"
+            "value": "配置文件中的列表与此处显示的智能体不一致：某个智能体被列了两次，这台 Mac 关闭了其中一个，或配置不认识其中一个。请在“配置”页面以文本形式修改列表。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "設定檔中的清單與這裡顯示的代理程式不一致：某個代理程式被列出了兩次，或這台 Mac 關閉了其中一個。請在「設定檔」頁面以文字形式修改清單。"
+            "value": "設定檔中的清單與這裡顯示的代理程式不一致：某個代理程式被列出了兩次，這台 Mac 關閉了其中一個，或設定不認得其中一個。請在「設定檔」頁面以文字形式修改清單。"
           }
         }
       }
@@ -34976,181 +34976,181 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "قائمة الأسطر في ملف الإعداد لديك لا تطابق الأسطر المعروضة هنا، لأن هذا الـ Mac يوقف شيئًا. غيّر القائمة كنصٍّ في صفحة ملف الإعداد."
+            "value": "قائمة الأسطر في ملف الإعداد لديك لا تطابق الأسطر المعروضة هنا: يوقف هذا الـ Mac شيئًا، أو يستبعد ملف الإعداد عنصرًا لا يمكنه استخدامه. غيّر القائمة كنصٍّ في صفحة ملف الإعداد."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "translated",
-            "value": "কনফিগারেশন ফাইলের তালিকা এখানে দেখানো লাইনগুলোর সঙ্গে মেলে না, কারণ এই Mac কিছু একটা বন্ধ করে রেখেছে। তালিকাটি কনফিগ পৃষ্ঠায় টেক্সট হিসেবে বদলান।"
+            "value": "কনফিগারেশন ফাইলের তালিকা এখানে দেখানো লাইনগুলোর সঙ্গে মেলে না: এই Mac কিছু একটা বন্ধ করে রেখেছে, অথবা কনফিগারেশন এমন একটি আইটেম বাদ দিয়েছে যা ব্যবহার করা যায় না। তালিকাটি কনফিগ পৃষ্ঠায় টেক্সট হিসেবে বদলান।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Die Liste in deiner Konfigurationsdatei stimmt nicht mit den hier gezeigten Zeilen überein, weil dieser Mac etwas ausschaltet. Ändere die Liste als Text auf der Seite „Konfiguration“."
+            "value": "Die Liste in deiner Konfigurationsdatei stimmt nicht mit den hier gezeigten Zeilen überein: Dieser Mac schaltet etwas aus, oder die Konfiguration lässt einen Eintrag weg, den sie nicht verwenden kann. Ändere die Liste als Text auf der Seite „Konfiguration“."
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Η λίστα στο αρχείο ρυθμίσεων δεν ταιριάζει με τις γραμμές που εμφανίζονται εδώ, επειδή αυτό το Mac απενεργοποιεί κάτι. Αλλάξτε τη λίστα ως κείμενο στη σελίδα «Ρυθμίσεις»."
+            "value": "Η λίστα στο αρχείο ρυθμίσεων δεν ταιριάζει με τις γραμμές που εμφανίζονται εδώ: αυτό το Mac απενεργοποιεί κάτι, ή το αρχείο ρυθμίσεων παραλείπει ένα στοιχείο που δεν μπορεί να χρησιμοποιήσει. Αλλάξτε τη λίστα ως κείμενο στη σελίδα «Ρυθμίσεις»."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The list in your config file does not match the lines shown here, because this Mac turns something off. Change the list as text on the Config page."
+            "value": "The list in your config file does not match the lines shown here: this Mac turns something off, or the config leaves out an item it cannot use. Change the list as text on the Config page."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "La lista de tu archivo de configuración no coincide con las líneas que se muestran aquí, porque este Mac desactiva algo. Cambia la lista como texto en la página Configuración."
+            "value": "La lista de tu archivo de configuración no coincide con las líneas que se muestran aquí: este Mac desactiva algo, o la configuración omite un elemento que no puede usar. Cambia la lista como texto en la página Configuración."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "فهرست موجود در فایل پیکربندی شما با سطرهایی که اینجا نشان داده می‌شوند مطابقت ندارد، چون این مک چیزی را خاموش کرده است. فهرست را به‌صورت متن در صفحهٔ پیکربندی تغییر دهید."
+            "value": "فهرست موجود در فایل پیکربندی شما با سطرهایی که اینجا نشان داده می‌شوند مطابقت ندارد: این مک چیزی را خاموش کرده است، یا پیکربندی موردی را که نمی‌تواند به کار ببرد کنار گذاشته است. فهرست را به‌صورت متن در صفحهٔ پیکربندی تغییر دهید."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "La liste de votre fichier de configuration ne correspond pas aux lignes affichées ici, car ce Mac désactive quelque chose. Modifiez la liste sous forme de texte dans la page Configuration."
+            "value": "La liste de votre fichier de configuration ne correspond pas aux lignes affichées ici : ce Mac désactive quelque chose, ou la configuration écarte un élément qu’elle ne peut pas utiliser. Modifiez la liste sous forme de texte dans la page Configuration."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "הרשימה בקובץ התצורה אינה תואמת לשורות המוצגות כאן, כי Mac זה מכבה משהו. יש לשנות את הרשימה כטקסט בעמוד ״תצורה״."
+            "value": "הרשימה בקובץ התצורה אינה תואמת לשורות המוצגות כאן: Mac זה מכבה משהו, או שהתצורה משמיטה פריט שאין לה אפשרות להשתמש בו. יש לשנות את הרשימה כטקסט בעמוד ״תצורה״."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "आपकी कॉन्फ़िगरेशन फ़ाइल की सूची यहाँ दिखाई गई पंक्तियों से मेल नहीं खाती, क्योंकि यह Mac कुछ बंद कर देता है। सूची को कॉन्फ़िग पेज पर टेक्स्ट के रूप में बदलें।"
+            "value": "आपकी कॉन्फ़िगरेशन फ़ाइल की सूची यहाँ दिखाई गई पंक्तियों से मेल नहीं खाती: यह Mac कुछ बंद कर देता है, या कॉन्फ़िगरेशन कोई ऐसा आइटम छोड़ देता है जिसका वह उपयोग नहीं कर सकता। सूची को कॉन्फ़िग पेज पर टेक्स्ट के रूप में बदलें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Daftar di file konfigurasi Anda tidak cocok dengan baris yang ditampilkan di sini, karena Mac ini mematikan sesuatu. Ubah daftar itu sebagai teks di halaman Konfigurasi."
+            "value": "Daftar di file konfigurasi Anda tidak cocok dengan baris yang ditampilkan di sini: Mac ini mematikan sesuatu, atau konfigurasi melewatkan item yang tidak dapat digunakannya. Ubah daftar itu sebagai teks di halaman Konfigurasi."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "L’elenco nel tuo file di configurazione non corrisponde alle righe mostrate qui, perché questo Mac disattiva qualcosa. Modifica l’elenco come testo nella pagina Configurazione."
+            "value": "L’elenco nel tuo file di configurazione non corrisponde alle righe mostrate qui: questo Mac disattiva qualcosa, oppure la configurazione tralascia una voce che non può usare. Modifica l’elenco come testo nella pagina Configurazione."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "設定ファイルの一覧が、ここに表示されている行と一致しません。この Mac で一部の項目が無効になっているためです。一覧は「設定」ページでテキストとして変更してください。"
+            "value": "設定ファイルの一覧が、ここに表示されている行と一致しません。この Mac で一部の項目が無効になっているか、設定で使えない項目が除外されています。一覧は「設定」ページでテキストとして変更してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "설정 파일의 목록이 여기에 표시된 항목과 일치하지 않습니다. 이 Mac에서 일부 항목을 껐기 때문입니다. 목록은 설정 페이지에서 텍스트로 변경하십시오."
+            "value": "설정 파일의 목록이 여기에 표시된 항목과 일치하지 않습니다. 이 Mac에서 일부 항목을 껐거나, 설정에서 사용할 수 없는 항목이 제외되었습니다. 목록은 설정 페이지에서 텍스트로 변경하십시오."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "translated",
-            "value": "तुमच्या कॉन्फिगरेशन फाइलमधील यादी इथे दाखवलेल्या ओळींशी जुळत नाही, कारण या Mac वर काहीतरी बंद केलेले आहे. यादी कॉन्फिग पृष्ठावर मजकूर म्हणून बदला."
+            "value": "तुमच्या कॉन्फिगरेशन फाइलमधील यादी इथे दाखवलेल्या ओळींशी जुळत नाही: या Mac वर काहीतरी बंद केलेले आहे, किंवा कॉन्फिगरेशनने वापरता न येणारी एखादी नोंद वगळली आहे. यादी कॉन्फिग पृष्ठावर मजकूर म्हणून बदला."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "translated",
-            "value": "Senarai dalam fail konfigurasi anda tidak sepadan dengan baris yang dipaparkan di sini, kerana Mac ini menyahaktifkan sesuatu. Ubah senarai itu sebagai teks pada halaman Konfigurasi."
+            "value": "Senarai dalam fail konfigurasi anda tidak sepadan dengan baris yang dipaparkan di sini: Mac ini menyahaktifkan sesuatu, atau konfigurasi melangkau item yang tidak dapat digunakannya. Ubah senarai itu sebagai teks pada halaman Konfigurasi."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "De lijst in het configuratiebestand komt niet overeen met de regels die hier worden getoond, omdat op deze Mac iets is uitgeschakeld. Wijzig de lijst als tekst op de pagina Configuratie."
+            "value": "De lijst in het configuratiebestand komt niet overeen met de regels die hier worden getoond: op deze Mac is iets uitgeschakeld, of de configuratie laat een onderdeel weg dat ze niet kan gebruiken. Wijzig de lijst als tekst op de pagina Configuratie."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lista w pliku konfiguracji nie zgadza się z wierszami pokazanymi tutaj, ponieważ ten Mac coś wyłącza. Zmień listę jako tekst na stronie Konfiguracja."
+            "value": "Lista w pliku konfiguracji nie zgadza się z wierszami pokazanymi tutaj: ten Mac coś wyłącza albo konfiguracja pomija element, którego nie może użyć. Zmień listę jako tekst na stronie Konfiguracja."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "A lista no arquivo de configuração não corresponde às linhas mostradas aqui, porque este Mac desativa alguma coisa. Altere a lista como texto na página Configuração."
+            "value": "A lista no arquivo de configuração não corresponde às linhas mostradas aqui: este Mac desativa alguma coisa, ou a configuração deixa de fora um item que não pode usar. Altere a lista como texto na página Configuração."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lista din fișierul de configurare nu corespunde liniilor afișate aici, deoarece acest Mac dezactivează ceva. Modificați lista ca text, pe pagina Configurație."
+            "value": "Lista din fișierul de configurare nu corespunde liniilor afișate aici: acest Mac dezactivează ceva sau configurația omite un element pe care nu îl poate folosi. Modificați lista ca text, pe pagina Configurație."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Список в файле конфигурации не совпадает со строками меню, которые показаны здесь, потому что на этом Mac что-то отключено. Измените список в виде текста на странице «Конфигурация»."
+            "value": "Список в файле конфигурации не совпадает со строками меню, которые показаны здесь: на этом Mac что-то отключено или конфигурация пропускает пункт, который не может использовать. Измените список в виде текста на странице «Конфигурация»."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "translated",
-            "value": "உங்கள் உள்ளமைவுக் கோப்பிலுள்ள பட்டியல் இங்கே காட்டப்படும் வரிகளுடன் பொருந்தவில்லை, ஏனெனில் இந்த Mac ஏதோ ஒன்றை முடக்கியுள்ளது. பட்டியலை உள்ளமைவுப் பக்கத்தில் உரையாக மாற்றவும்."
+            "value": "உங்கள் உள்ளமைவுக் கோப்பிலுள்ள பட்டியல் இங்கே காட்டப்படும் வரிகளுடன் பொருந்தவில்லை: இந்த Mac ஏதோ ஒன்றை முடக்கியுள்ளது, அல்லது உள்ளமைவு தன்னால் பயன்படுத்த முடியாத ஓர் உருப்படியை விட்டுவிடுகிறது. பட்டியலை உள்ளமைவுப் பக்கத்தில் உரையாக மாற்றவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "translated",
-            "value": "మీ కాన్ఫిగరేషన్ ఫైల్‌లోని జాబితా ఇక్కడ చూపిన వరుసలతో సరిపోలడం లేదు, ఎందుకంటే ఈ Mac ఏదో ఒకదాన్ని ఆఫ్ చేస్తుంది. జాబితాను కాన్ఫిగరేషన్ పేజీలో టెక్స్ట్‌గా మార్చండి."
+            "value": "మీ కాన్ఫిగరేషన్ ఫైల్‌లోని జాబితా ఇక్కడ చూపిన వరుసలతో సరిపోలడం లేదు: ఈ Mac ఏదో ఒకదాన్ని ఆఫ్ చేస్తుంది, లేదా కాన్ఫిగరేషన్ తాను ఉపయోగించలేని అంశాన్ని వదిలేస్తుంది. జాబితాను కాన్ఫిగరేషన్ పేజీలో టెక్స్ట్‌గా మార్చండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "รายการในไฟล์การกำหนดค่าของคุณไม่ตรงกับบรรทัดที่แสดงอยู่ที่นี่ เพราะ Mac เครื่องนี้ปิดใช้งานบางอย่างไว้ ให้แก้ไขรายการเป็นข้อความในหน้าการกำหนดค่า"
+            "value": "รายการในไฟล์การกำหนดค่าของคุณไม่ตรงกับบรรทัดที่แสดงอยู่ที่นี่ เพราะ Mac เครื่องนี้ปิดใช้งานบางอย่างไว้ หรือการกำหนดค่าข้ามรายการที่ใช้ไม่ได้ ให้แก้ไขรายการเป็นข้อความในหน้าการกำหนดค่า"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Yapılandırma dosyanızdaki liste, burada gösterilen satırlarla eşleşmiyor, çünkü bu Mac bir şeyi kapatıyor. Listeyi Yapılandırma sayfasında metin olarak değiştirin."
+            "value": "Yapılandırma dosyanızdaki liste, burada gösterilen satırlarla eşleşmiyor: bu Mac bir şeyi kapatıyor ya da yapılandırma kullanamadığı bir öğeyi dışarıda bırakıyor. Listeyi Yapılandırma sayfasında metin olarak değiştirin."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Список у вашому файлі конфігурації не збігається з рядками, які показано тут, бо на цьому Mac дещо вимкнено. Змініть список як текст на сторінці «Конфігурація»."
+            "value": "Список у вашому файлі конфігурації не збігається з рядками, які показано тут: на цьому Mac дещо вимкнено або конфігурація пропускає пункт, який не може використати. Змініть список як текст на сторінці «Конфігурація»."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "آپ کی کنفیگریشن فائل میں موجود فہرست یہاں دکھائے گئے آئٹمز سے میل نہیں کھاتی، کیونکہ یہ Mac کوئی چیز بند رکھتا ہے۔ فہرست کو کنفیگ صفحے پر متن کے طور پر تبدیل کریں۔"
+            "value": "آپ کی کنفیگریشن فائل میں موجود فہرست یہاں دکھائے گئے آئٹمز سے میل نہیں کھاتی: یہ Mac کوئی چیز بند رکھتا ہے، یا کنفیگریشن کوئی ایسا آئٹم چھوڑ دیتی ہے جسے وہ استعمال نہیں کر سکتی۔ فہرست کو کنفیگ صفحے پر متن کے طور پر تبدیل کریں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Danh sách trong tệp cấu hình của bạn không khớp với các mục menu hiển thị ở đây, vì máy Mac này đang tắt một thứ gì đó. Hãy thay đổi danh sách dưới dạng văn bản trên trang Cấu hình."
+            "value": "Danh sách trong tệp cấu hình của bạn không khớp với các mục menu hiển thị ở đây: máy Mac này đang tắt một thứ gì đó, hoặc cấu hình bỏ qua một mục mà nó không dùng được. Hãy thay đổi danh sách dưới dạng văn bản trên trang Cấu hình."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "配置文件中的列表与此处显示的菜单项不一致，因为这台 Mac 关闭了某一项。请在“配置”页面以文本形式修改列表。"
+            "value": "配置文件中的列表与此处显示的菜单项不一致：这台 Mac 关闭了某一项，或配置略去了它无法使用的一项。请在“配置”页面以文本形式修改列表。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "設定檔中的清單與這裡顯示的選單項目不一致，因為這台 Mac 關閉了某一項。請在「設定檔」頁面以文字形式修改清單。"
+            "value": "設定檔中的清單與這裡顯示的選單項目不一致：這台 Mac 關閉了某一項，或設定略過了它無法使用的一項。請在「設定檔」頁面以文字形式修改清單。"
           }
         }
       }

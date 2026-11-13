@@ -99,7 +99,7 @@ extension LocalizedMessage {
     public static var appAgentVariantsCaption: LocalizedMessage { LocalizedMessage(.appAgentVariantsCaption) }
     /// The AI coding agents your Finder menu offers, in the order it lists them. Drag one to move it, or uncheck it to take it out of the menu. A change is saved to your config file at once.
     public static var appAgentsCaption: LocalizedMessage { LocalizedMessage(.appAgentsCaption) }
-    /// The list in your config file does not match the agents shown here: an agent is listed twice, or this Mac turns one off. Change the list as text on the Config page.
+    /// The list in your config file does not match the agents shown here: an agent is listed twice, this Mac turns one off, or the config does not know one. Change the list as text on the Config page.
     public static var appAgentsInexactNote: LocalizedMessage { LocalizedMessage(.appAgentsInexactNote) }
     /// This Mac's own config file, config.local.toml, lists the agents, so changes are made there.
     public static var appAgentsMachineNote: LocalizedMessage { LocalizedMessage(.appAgentsMachineNote) }
@@ -377,7 +377,7 @@ extension LocalizedMessage {
     public static var appMenuEmpty: LocalizedMessage { LocalizedMessage(.appMenuEmpty) }
     /// Not in the Menu
     public static var appMenuHiddenHeading: LocalizedMessage { LocalizedMessage(.appMenuHiddenHeading) }
-    /// The list in your config file does not match the lines shown here, because this Mac turns something off. Change the list as text on the Config page.
+    /// The list in your config file does not match the lines shown here: this Mac turns something off, or the config leaves out an item it cannot use. Change the list as text on the Config page.
     public static var appMenuInexactNote: LocalizedMessage { LocalizedMessage(.appMenuInexactNote) }
     /// This Mac's own config file, config.local.toml, lists the menu, so changes are made there.
     public static var appMenuMachineNote: LocalizedMessage { LocalizedMessage(.appMenuMachineNote) }

@@ -195,8 +195,9 @@ public struct SetupLoader: Sendable {
     private func menuSnapshot(_ loaded: LoadedConfig) -> MenuSnapshot {
         let localizer = self.localizer ?? loaded.config.localizer
         let menu = MenuPreview.folderMenu(loaded.result, facts: facts, folder: facts.homeDirectory, localizer: localizer, separators: separators)
-        // A text that does not read cannot be edited, and a config that is not there is made by the setup, not by an edit.
-        let editable = !loaded.result.hasErrors && loaded.fileExists
+        // A file that is not TOML cannot be edited, and a config that is not there is made by the setup, not by an edit. One with an error in a setting can, as with
+        // `rh config`: a change is refused for an error it brings, and a list or an entry that the config left out is not changed by place (`isExact`, `entryLocations`).
+        let editable = !loaded.result.fileLeftOut && loaded.fileExists
         let service = ConfigService(paths: paths)
         let editor = editable ? MenuEditor.state(config: loaded.config, facts: facts, localizer: localizer, folder: facts.homeDirectory, inFile: service.listed(MenuEditorState.key)) : nil
         let general = editable ? GeneralSettings.state(config: loaded.config, facts: facts, listedAgents: service.listed(GeneralSettingsState.agentsKey)) : nil

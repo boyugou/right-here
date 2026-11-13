@@ -87,6 +87,22 @@ final class DraftChecks {
         digest = fileDigest
         return found
     }
+
+    private var broughtFor: (draft: String, digest: String)?
+    private var brought = false
+    private var fileProblems: (digest: String, problems: [ConfigDiagnostic])?
+
+    /// Whether saving the draft over `file` would bring an error into it: a text that is not TOML, or an error the file does not have. One the file has already is the person's to
+    /// put right and no reason to keep them from saving another change, as it is no reason to refuse a change of `rh config` (`ConfigDiagnostic.errorsAdded`).
+    func bringsErrors(_ draft: String, over file: String, digest fileDigest: String, with validation: ConfigDocument.Validation) -> Bool {
+        if let broughtFor, broughtFor.draft == draft, broughtFor.digest == fileDigest { return brought }
+        if fileProblems?.digest != fileDigest { fileProblems = (fileDigest, validation.problems(file)) }
+        let before = fileProblems?.problems ?? []
+        brought = !ConfigParser.canBeRead(draft)
+            || !ConfigDiagnostic.errorsAdded(problems(of: draft, digest: fileDigest, with: validation), text: { _ in draft }, to: before, text: { _ in file }).isEmpty
+        broughtFor = (draft, fileDigest)
+        return brought
+    }
 }
 
 /// What the setup window shows and does. The reads, the actions and the git work are asked of RightHereKit, which runs them off
@@ -533,6 +549,12 @@ final class SetupModel {
     var draftProblems: [ConfigDiagnostic] {
         guard let validation = configPage?.validation else { return [] }
         return draftChecks.problems(of: draftText, digest: configPage?.text?.digest ?? "", with: validation)
+    }
+
+    /// Whether Save would bring an error into the file (`DraftChecks.bringsErrors`): what the button waits for. An error the file has already is listed with the others and does not.
+    var draftBringsErrors: Bool {
+        guard let validation = configPage?.validation, let text = configPage?.text else { return false }
+        return draftChecks.bringsErrors(draftText, over: text.text, digest: text.digest, with: validation)
     }
 
     /// Reads the page: the file's text, the proposals that wait and the changes that can be taken back. A draft the person has typed is kept when `keepingDraft`.

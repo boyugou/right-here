@@ -169,7 +169,7 @@ struct ConfigPage: View {
                 .disabled(!model.textHasChanges || model.isWorking)
             Button(l10n.string(.appConfigSave)) { Task { await model.saveConfigText() } }
                 .keyboardShortcut("s", modifiers: .command)
-                .modifier(DefaultButton(enabled: model.textHasChanges && !model.isWorking && !model.draftProblems.contains { $0.severity == .error }))
+                .modifier(DefaultButton(enabled: model.textHasChanges && !model.isWorking && !model.draftBringsErrors))
         }
     }
 }

@@ -19,13 +19,14 @@ public struct MenuPreviewRow: Sendable, Equatable, Identifiable {
 /// The Finder menu as the setup window previews it, without Finder.
 public enum MenuPreview {
     /// The menu the Finder extension shows on the background of the folder `folder`: the same builder, given the
-    /// context the extension makes for that click. Nothing when the config has errors. The extension would still show
-    /// what is valid in it, but a menu drawn from a broken config tells the person something that is not true, and the
-    /// doctor's config check says what is wrong.
+    /// context the extension makes for that click. With an error in a setting, the rest of the menu as the extension shows
+    /// it. Nothing when a file of the config was left out (`ConfigLoadResult.fileLeftOut`): the extension shows the
+    /// defaults then, or the shared file's menu alone, whatever the file says, and a picture of that tells the person
+    /// something that is not true of their file; the problems say what is wrong.
     ///
     /// - Parameter separators: Whether Finder draws the separators; when it does not (`FinderMenuPresentation`) the preview leaves them out, as Finder does.
     public static func folderMenu(_ config: ConfigLoadResult, facts: any SystemFacts, folder: URL, localizer: Localizer, separators: Bool = true) -> [MenuNode] {
-        guard !config.hasErrors else { return [] }
+        guard !config.fileLeftOut else { return [] }
         let context = HereContext.finder(kind: .container, selected: [], targeted: folder)
         return FinderMenuPresentation.nodes(MenuBuilder(config: config.config, facts: facts, localizer: localizer).build(for: context), separators: separators)
     }

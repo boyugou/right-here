@@ -77,7 +77,8 @@ extension ConfigBuilder {
             command = nil
             sink.rejectedAgents.insert(id)
         }
-        let declaredVariants: [AgentDescriptor.Variant] = reader.tableArray("variant").compactMap { variant in
+        // Each with the place of its entry, which `ConfigLoadResult.usedEntries` names once the agent is taken.
+        let declaredVariants: [(variant: AgentDescriptor.Variant, entry: String)] = reader.tableArray("variant").compactMap { variant in
             variant.checkKnownKeys()
             guard let variantID = variant.string("id"), let title = variant.string("title") else {
                 reportMissing("a variant", needs: ["id", "title"], in: variant)
@@ -90,7 +91,7 @@ extension ConfigBuilder {
                 sink.error(variant.path + ["arguments"], "an argument has a line break or control character, so it cannot be typed into a terminal")
                 return nil
             }
-            return AgentDescriptor.Variant(id: variantID, title: title, arguments: arguments)
+            return (AgentDescriptor.Variant(id: variantID, title: title, arguments: arguments), variant.path.joined(separator: "."))
         }
 
         var takenVariants = Set((KnownAgents.agent(id: id)?.variants ?? []).map(\.id))
@@ -99,7 +100,8 @@ extension ConfigBuilder {
         var takenTitles = Set((KnownAgents.agent(id: id)?.variants ?? []).flatMap { variant in
             [variant.title.comparableName] + (variant.titleKey.map { key in Localizer.supportedLanguages.map { Localizer(languages: [$0]).string(key).comparableName } } ?? [])
         })
-        let variants = declaredVariants.filter { variant in
+        let taken = declaredVariants.filter { declared in
+            let variant = declared.variant
             guard takenVariants.insert(variant.id).inserted else {
                 sink.error(reader.path + ["variant"], "variant id \"\(variant.id)\" is already used by agent \"\(id)\"; the first one is used")
                 return false
@@ -110,6 +112,7 @@ extension ConfigBuilder {
             }
             return true
         }
+        let variants = taken.map(\.variant)
 
         var settings = Config.AgentSettings()
         let launcherName = reader.checkAllowed(reader.string("launcher"), key: "launcher", allowed: AgentLauncher.configNames)
@@ -144,6 +147,7 @@ extension ConfigBuilder {
         if KnownAgents.agent(id: id) != nil {
             settings.command = command
             settings.variants = variants
+            sink.usedEntries.formUnion(taken.map(\.entry))
             if reader.string("name") != nil {
                 sink.warning(reader.path + ["name"], "a built-in agent keeps its name; this one is ignored")
             }
@@ -166,6 +170,7 @@ extension ConfigBuilder {
                 return
             }
             config.customAgents.append(AgentDescriptor(id: id, name: name, command: command, variants: variants))
+            sink.usedEntries.formUnion(taken.map(\.entry))
         }
         config.agents[id] = settings
     }

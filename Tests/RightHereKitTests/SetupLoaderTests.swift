@@ -118,16 +118,23 @@ struct SetupLoaderTests {
         #expect(without.editor?.rows.map(\.entry) == ["open-terminal", "-", "open-with", "-", "copy-path"])
     }
 
-    @Test func aConfigThatCannotBeEditedHasNoEditorAndOneThatIsNotThereHasNone() async throws {
+    @Test func aConfigThatIsNotTOMLHasNoEditorAndOneThatIsNotThereHasNone() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         let loader = machine.loader(runner: FakeProcessRunner())
         #expect(await loader.menu().editor == nil, "a config is made by the setup, not by an edit")
         try machine.writeConfig("[menu\nitems = []\n")
         let broken = await loader.menu()
         #expect(broken.editor == nil && broken.menu.isEmpty && broken.problems.first?.severity == .error)
-        try machine.writeConfig("[general]\nterminal = \"nonsense\"\n")
-        #expect(await loader.menu().editor == nil, "a config with an error in a value as well")
         #expect(await loader.load().menuEditor == nil)
+        // An error in a setting leaves the rest of the file read: the menu is what Finder shows, and it is edited as `rh config` edits it.
+        try machine.writeConfig("[general]\nterminal = \"nonsense\"\n")
+        let withAnError = await loader.menu()
+        #expect(withAnError.editor != nil && !withAnError.menu.isEmpty && withAnError.problems.contains { $0.severity == .error && $0.path == "general.terminal" })
+        #expect(await loader.load().menuEditor != nil)
+        // This Mac's own file that is not TOML is left out, and nothing is edited by place while it is.
+        try "[general\n".write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
+        let overlayLeftOut = await loader.menu()
+        #expect(overlayLeftOut.editor == nil && overlayLeftOut.general == nil && overlayLeftOut.menu.isEmpty)
     }
 
     @Test func everyEditorIsThereForAConfigThatCanBeEditedAndNoneForOneThatCannot() async throws {
@@ -138,9 +145,65 @@ struct SetupLoaderTests {
         #expect(editable.editor != nil && editable.general != nil && editable.presets != nil && editable.newFile != nil && editable.agentOptions.contains { $0.id == "claude" })
         let variants = editable.agentOptions.first { $0.id == "claude" }?.variants
         #expect(variants?.map(\.id) == ["opus"] && variants?.first?.entry == EntryLocation(target: .shared, position: 1) && variants?.first?.arguments.listed == ["--model", "opus"], "the places and the listed arguments of the start options")
-        try machine.writeConfig("[general]\nterminal = \"nonsense\"\n")
+        try machine.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"\n")
         let broken = await loader.menu()
-        #expect(broken.editor == nil && broken.general == nil && broken.presets == nil && broken.newFile == nil && broken.agentOptions.isEmpty)
+        #expect(broken.editor == nil && broken.general == nil && broken.presets == nil && broken.newFile == nil && broken.agentOptions.isEmpty && broken.apps == nil)
+        // An error in a setting is no reason to take the editors away: an entry the config refused is not among them, and a list that names what the config does not know is
+        // not changed by place.
+        let long = String(repeating: "x", count: 130)
+        try machine.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\", \"nope\"]\n\n[[app]]\nid = \"team-term\"\nname = \"\(long)\"\nbundle_id = \"com.example.term\"\n")
+        let withErrors = await loader.menu()
+        #expect(withErrors.editor != nil && withErrors.presets != nil && withErrors.newFile != nil && withErrors.agentOptions.contains { $0.id == "claude" })
+        #expect(withErrors.general?.agentsAreExact == false, "the list names an agent the config does not know")
+        #expect(withErrors.apps != nil && withErrors.apps?.rows.contains { $0.id == "team-term" } == false, "an entry the config refused is not edited by place")
+    }
+
+    @Test func anEntryTheConfigRefusedHasNoPlaceAndTheOneItUsesHasItsOwn() async throws {
+        // A refused entry is still written; the row of its id is the built-in one that stands in for it, or another entry with that id, and a change of the row must not land on it.
+        let machine = try Machine(); defer { machine.cleanUp() }
+        let long = String(repeating: "x", count: 130)
+        try machine.writeConfig("""
+        [general]
+        terminal = "ghostty"
+        agents = ["claude"]
+
+        [[preset]]
+        id = "review"
+        title = "\(long)"
+        prompt = "Look at {files}"
+
+        [[preset]]
+        id = "mine"
+        title = "Mine"
+        prompt = "Mine {files}"
+
+        [[agent.claude.variant]]
+        id = "opus"
+        title = "\(long)"
+        arguments = ["--model", "opus"]
+
+        [[agent.claude.variant]]
+        id = "opus"
+        title = "Use Opus"
+        arguments = ["--model", "opus"]
+
+        [[new_file.template]]
+        id = "notes"
+        title = "\(long)"
+        extension = "md"
+
+        [[new_file.template]]
+        id = "notes"
+        title = "Notes"
+        extension = "md"
+        """ + "\n")
+        let snapshot = await machine.loader(runner: FakeProcessRunner()).menu()
+        let presets = try #require(snapshot.presets?.rows)
+        #expect(presets.first { $0.id == "review" }?.entry == nil, "the built-in Review stands in for the refused entry")
+        #expect(presets.first { $0.id == "mine" }?.entry == EntryLocation(target: .shared, position: 2))
+        let variant = snapshot.agentOptions.first { $0.id == "claude" }?.variants.first { $0.id == "opus" }
+        #expect(variant?.title == "Use Opus" && variant?.entry == EntryLocation(target: .shared, position: 2), "the second entry is the one the config uses")
+        #expect(snapshot.newFile?.rows.first { $0.id == "notes" }?.entry == EntryLocation(target: .shared, position: 2))
     }
 
     @Test func theMachinesOwnFileIsWhereTheMenuIsEditedWhenItListsTheMenu() async throws {

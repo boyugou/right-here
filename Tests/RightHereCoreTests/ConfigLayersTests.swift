@@ -50,6 +50,18 @@ command = "mine"
 
 @Suite("ConfigLayers: merge rules")
 struct ConfigLayersMergeTests {
+    @Test func aFileThatIsThereAndIsNotReadIsSaidToBeLeftOutAndAnErrorInASettingIsNot() {
+        let notTOML = "[general\n"
+        let unreadable = ConfigSource.unreadable(ConfigDiagnostic(severity: .error, path: "", message: "The file is not valid UTF-8."))
+        #expect(!layered(baseConfig, nil).fileLeftOut && !layered(baseConfig, "[general]\nterminal = \"iterm\"\n").fileLeftOut)
+        // An error in a setting leaves the rest of its file in, alone or with the other file.
+        #expect(!layered("[general]\nterminal = \"nonsense\"\n", nil).fileLeftOut && !layered(baseConfig, "[general]\nterminal = \"nonsense\"\n").fileLeftOut)
+        #expect(layered(notTOML, nil).fileLeftOut && layered(notTOML, "[general]\nterminal = \"iterm\"\n").fileLeftOut && layered(baseConfig, notTOML).fileLeftOut)
+        #expect(ConfigLayers.load(base: unreadable, local: .absent).fileLeftOut && ConfigLayers.load(base: unreadable, local: .text("")).fileLeftOut)
+        #expect(ConfigLayers.load(base: .text(baseConfig), local: unreadable).fileLeftOut)
+        #expect(!ConfigLayers.load(base: .absent, local: .absent).fileLeftOut, "a config that is not there leaves nothing out")
+    }
+
     @Test func scalarsInTheOverlayWin() {
         let result = layered(baseConfig, "[general]\nterminal = \"terminal\"\n[new_file]\nthen = \"open\"\n")
         #expect(result.config.terminal == "terminal")

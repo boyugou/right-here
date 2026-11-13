@@ -33,10 +33,14 @@ public enum ConfigParser {
     static func parseUnlocated(_ text: String, consequence: String = defaultsApply) -> ConfigLoadResult {
         let sink = ConfigSink(source: text)
         guard let root = readTable(text, sink: sink, consequence: consequence) else {
-            return ConfigLoadResult(config: .default, diagnostics: sink.items)
+            var result = ConfigLoadResult(config: .default, diagnostics: sink.items)
+            result.fileLeftOut = true
+            return result
         }
         let config = ConfigBuilder(sink: sink).build(ConfigReader(table: root, path: [], schema: ConfigSchema.root, sink: sink))
-        return ConfigLoadResult(config: config, diagnostics: sink.items)
+        var result = ConfigLoadResult(config: config, diagnostics: sink.items)
+        result.usedEntries = sink.usedEntries
+        return result
     }
 
     /// Puts each problem at the line of its key or table in `text`, and the problems in the order of the file: what is

@@ -6,6 +6,8 @@ final class ConfigSink {
     /// The comparable names (`comparableName`) of the agents so far, the built-in ones first: worked out once each, since checking every agent's name
     /// against all the names before it made a config of a few hundred agents take seconds to read.
     lazy var agentNames = Set(KnownAgents.all.map(\.name.comparableName))
+    /// The entries of the lists of tables that the config uses, by their place (`preset.2`, `agent.claude.variant.1`): `ConfigLoadResult.usedEntries`.
+    var usedEntries = Set<String>()
     var items: [ConfigDiagnostic] = []
 
     /// The text being read, which says how a value was written when the TOML library cannot (`rawValue`).

@@ -65,9 +65,15 @@ public struct ConfigLoadResult: Sendable, Equatable {
     /// What the config's own settings did that is no mistake and cannot be silenced (a preset left out because its agent is
     /// disabled on this machine). Kept apart from `diagnostics`, which every consumer counts as problems.
     public var notes: [ConfigDiagnostic]
-    /// The entries of each list of tables that the config shows (`preset`, `new_file.template`, `agent.claude.variant`), in order, with the file and the place each is written at. What the merge
-    /// of the two files leaves out (an entry the other file replaces, one that `disabled` takes away) is not here, so this is the config's own view of where its entries are.
+    /// The entries of each list of tables that the two files make together (`preset`, `new_file.template`, `agent.claude.variant`), in order, with the file and the place each is written at. What the
+    /// merge of the two files leaves out (an entry the other file replaces, one that `disabled` takes away) is not here; an entry the config refused for an error is (`usedEntries`).
     public var entryOrigins: [String: [ConfigEntryOrigin]]
+    /// The entries of those lists that the config uses, by their place among them (`preset.2` is the second of `entryOrigins["preset"]`): not one it refused for an error (a title too long, the
+    /// id of a start option the agent has), which a built-in preset or start option with that id stands in for and which an editor must not take for it.
+    public var usedEntries = Set<String>()
+    /// Whether a file of the config that is there was left out: it cannot be read, or it is not TOML, so the config is the defaults, or the shared file's alone, whatever that
+    /// file says. An error in a setting leaves the rest of its file in.
+    public var fileLeftOut = false
 
     public init(config: Config, diagnostics: [ConfigDiagnostic], notes: [ConfigDiagnostic] = [], entryOrigins: [String: [ConfigEntryOrigin]] = [:]) {
         self.config = config

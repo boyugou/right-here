@@ -623,13 +623,20 @@ struct SetupModelMenuEditingTests {
         #expect(!mac.model.isEditingMenu && mac.model.configEdit == nil)
     }
 
-    @Test func aConfigWithAnErrorCannotBeEdited() async throws {
+    @Test func aConfigThatIsNotTOMLCannotBeEditedAndOneWithAnErrorInASettingCan() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }
-        try mac.writeConfig("[general]\nterminal = \"nonsense\"\n" + Self.listed)
+        try mac.writeConfig("[general\nterminal = \"ghostty\"\n" + Self.listed)
         await mac.model.refresh()
         #expect(mac.model.menuEditor == nil)
         await mac.model.removeMenuRow(1)
         #expect(text(mac).contains("open-terminal") && mac.model.configEdit == nil)
+        // The error stays for the person to fix; the change it does not concern is made.
+        try mac.writeConfig("[general]\nterminal = \"nonsense\"\n" + Self.listed)
+        await mac.model.refresh()
+        #expect(entries(mac) == ["open-terminal", "open-editor", "-", "copy-path", "new-file"])
+        await mac.model.removeMenuRow(1)
+        #expect(text(mac) == "[general]\nterminal = \"nonsense\"\n" + Self.listed.replacingOccurrences(of: "\"open-terminal\", ", with: ""), "\(text(mac))")
+        #expect(entries(mac) == ["open-editor", "-", "copy-path", "new-file"])
     }
 
     @Test func aDragWritesTheListAndTheRowsFollow() async throws {
@@ -890,6 +897,29 @@ struct SetupModelConfigPageTests {
         await mac.model.saveConfigText()
         #expect(text(mac) == Self.sample, "a text that does not read is not written")
         #expect(mac.model.notice?.isProblem == true && mac.model.draftText.contains("nonsense") && mac.model.textHasChanges, "and what was typed is still there")
+    }
+
+    @Test func aDraftThatKeepsAnErrorTheFileHasCanBeSavedAndOneThatBringsOneCannot() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        let withAnError = Self.sample.replacingOccurrences(of: "ghostty", with: "nonsense")
+        try mac.writeConfig(withAnError)
+        await mac.model.refresh()
+        await mac.model.openConfigPage()
+        mac.model.draftText = withAnError + "# A note of mine.\n"
+        #expect(mac.model.draftProblems.contains { $0.severity == .error } && !mac.model.draftBringsErrors, "the error was there before the draft")
+        await mac.model.saveConfigText()
+        #expect(text(mac) == withAnError + "# A note of mine.\n" && !mac.model.textHasChanges)
+        mac.model.draftText = text(mac).replacingOccurrences(of: "[\"claude\"]", with: "[\"claude\", \"nope\"]")
+        #expect(mac.model.draftBringsErrors, "an unknown agent is an error the file does not have")
+        mac.model.draftText = "[general\n"
+        #expect(mac.model.draftBringsErrors, "a text that is not TOML")
+        // A file that is not TOML is put right on this page; the same syntax error once more is still a text nothing reads.
+        try mac.writeConfig("[general\n")
+        await mac.model.openConfigPage()
+        mac.model.draftText = "[general\n# still\n"
+        #expect(mac.model.draftBringsErrors)
+        mac.model.draftText = Self.sample
+        #expect(!mac.model.draftBringsErrors)
     }
 
     @Test func aSavedTextIsTheFilesAndTheMenuFollowsAndTheChangeCanBeTakenBack() async throws {

@@ -4,9 +4,9 @@ import Foundation
 extension ConfigBuilder {
     func readPresets(_ root: ConfigReader, into config: inout Config) {
         let known = config
-        let declared = readUnique(root.tableArray("preset"), kind: "preset", id: \.id) { reader in
+        let declared = readUnique(root.tableArray("preset"), kind: "preset", id: \.id, read: { reader in
             preset(reader, config: known)
-        }
+        }, accepted: { _, reader in sink.usedEntries.insert(reader.path.joined(separator: ".")) })
         var presets = AgentPreset.builtIn
         for preset in declared {
             if let index = presets.firstIndex(where: { $0.id == preset.id }) { presets[index] = preset } else { presets.append(preset) }

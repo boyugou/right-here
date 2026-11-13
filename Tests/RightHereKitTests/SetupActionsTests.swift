@@ -147,8 +147,8 @@ struct SetupActionsConfigEditTests {
         try (entry("b") + entry("c") + "[[preset]]\nid = \"broken\"\ntitle = \"x\"\nprompt = \"-no\"\n").write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
         let service = ConfigService(paths: machine.paths)
         #expect(service.presetEntries() == ["a": PresetRowState.Entry(target: .shared, position: 1), "b": PresetRowState.Entry(target: .local, position: 1),
-                                            "c": PresetRowState.Entry(target: .local, position: 2), "broken": PresetRowState.Entry(target: .local, position: 3)],
-                "the same place of the two files is two presets, and an entry of this Mac's file replaces the shared one of its id")
+                                            "c": PresetRowState.Entry(target: .local, position: 2)],
+                "the same place of the two files is two presets, an entry of this Mac's file replaces the shared one of its id, and one the config refused has no place")
         #expect(service.presetIDsInUse() == ["a", "b", "c", "broken"], "an entry that the config leaves out for an error still has its id")
         #expect(await machine.actions(FakeProcessRunner()).presetIDsInUse() == service.presetIDsInUse())
     }
