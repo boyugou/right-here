@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.18 (2026-11-12)
+
 - **Config sync, after a second independent review.** `--allow-commands` now takes the digest of the copy whose list you read
   (`rh config sync pull --allow-commands <digest>`, printed with the list), so a copy that changes after it was shown is refused with
   its own list. A pull also lists a menu or Quick Actions item that starts an agent through its link or desktop app (which leaves out
