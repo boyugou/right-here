@@ -96913,25 +96913,25 @@
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "لن يقرأ وكيل الذكاء الاصطناعي ذكر %@ على أنه ذلك العنصر: فعند ذكر عنصر يدل الرمز # على بداية أرقام الأسطر، وتُحذف المسافات في أي من الطرفين. انسخه بشكل آخر، أو أعد تسميته."
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI এজেন্ট %@-এর উল্লেখকে ওই আইটেম হিসেবে পড়বে না: উল্লেখে # থেকে লাইন নম্বর শুরু হয়, আর শুরু ও শেষের স্পেস বাদ দেওয়া হয়। এটি অন্য রূপে কপি করুন, অথবা এর নাম বদলান।"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Ein KI-Agent würde eine Erwähnung von %@ nicht als dieses Objekt lesen: In einer Erwähnung leitet ein # Zeilennummern ein, und Leerzeichen am Anfang oder am Ende werden entfernt. Kopiere es in einer anderen Form oder benenne es um."
           }
         },
         "el": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Ένας πράκτορας AI δεν θα διάβαζε μια αναφορά στο %@ ως εκείνο το στοιχείο: σε μια αναφορά, ο χαρακτήρας # εισάγει αριθμούς γραμμών, και τα κενά στην αρχή ή στο τέλος αφαιρούνται. Αντιγράψτε το σε άλλη μορφή ή μετονομάστε το."
           }
         },
@@ -96943,151 +96943,151 @@
         },
         "es": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Un agente de IA no leería una mención de %@ como ese elemento: en una mención, el carácter # introduce los números de línea, y los espacios en blanco al principio o al final se eliminan. Cópialo de otra forma o cámbiale el nombre."
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "عامل هوش مصنوعی اشاره به %@ را به‌عنوان آن مورد نمی‌خواند: در یک اشاره، نویسهٔ # شماره‌های خط را آغاز می‌کند و فاصله‌های دو سر آن حذف می‌شوند. آن را به شکل دیگری کپی کنید یا نامش را تغییر دهید."
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Un agent d’IA ne lirait pas une mention de %@ comme cet élément : dans une mention, le caractère # introduit des numéros de ligne, et les espaces au début ou à la fin sont supprimées. Copiez-le sous une autre forme, ou renommez-le."
           }
         },
         "he": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "סוכן AI לא יקרא אזכור של %@ כאותו פריט: באזכור, התו # מציין תחילת מספרי שורות, ורווחים בשני הקצוות מוסרים. יש להעתיק אותו בצורה אחרת או לשנות את שמו."
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI एजेंट %@ के उल्लेख को उस आइटम के रूप में नहीं पढ़ेगा: उल्लेख में # से लाइन नंबर शुरू होते हैं, और शुरुआत या अंत की स्पेस हटा दी जाती है। इसे किसी दूसरे रूप में कॉपी करें, या इसका नाम बदलें।"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Agen AI tidak akan membaca sebutan %@ sebagai item itu: dalam sebutan, karakter # memulai nomor baris, dan spasi di awal atau akhir dihapus. Salin dalam bentuk lain, atau ganti namanya."
           }
         },
         "it": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Un agente IA non leggerebbe una menzione di %@ come quell’elemento: in una menzione, il carattere # introduce i numeri di riga, e gli spazi bianchi all’inizio o alla fine vengono eliminati. Copialo in un’altra forma o rinominalo."
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AIエージェントは、%@のメンションをその項目として解釈しません。メンションでは、#から行番号が始まり、先頭と末尾の空白は取り除かれます。別の形式でコピーするか、名前を変更してください。"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI 에이전트는 %@에 대한 멘션을 해당 항목으로 읽지 않습니다. 멘션에서는 #부터 줄 번호가 시작되고, 앞뒤 공백은 제거됩니다. 다른 형식으로 복사하거나 이름을 바꾸십시오."
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI एजंट %@ च्या उल्लेखाला तो आयटम समजणार नाही: उल्लेखात # पासून लाइन नंबर सुरू होतात, आणि सुरुवातीची किंवा शेवटची स्पेस काढून टाकली जाते. ते दुसऱ्या स्वरूपात कॉपी करा, किंवा त्याचे नाव बदला."
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Ejen AI tidak akan membaca sebutan %@ sebagai item itu: dalam sebutan, aksara # memulakan nombor baris, dan ruang putih pada awal atau akhir dibuang. Salin dalam bentuk lain, atau namakan semula."
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Een AI-agent zou een vermelding van %@ niet als dat onderdeel lezen: in een vermelding geeft een # het begin van regelnummers aan, en spaties aan het begin of einde worden verwijderd. Kopieer het in een andere vorm of geef het een andere naam."
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Agent AI nie odczytałby wzmianki o %@ jako tego elementu: we wzmiance znak # rozpoczyna numery wierszy, a białe znaki na początku lub na końcu są usuwane. Skopiuj ją w innej postaci lub zmień nazwę."
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Um agente de IA não leria uma menção a %@ como esse item: em uma menção, o caractere # indica o início dos números de linha, e espaços em branco no início ou no fim são removidos. Copie em outra forma ou renomeie."
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Un agent AI nu ar citi o mențiune a lui %@ ca acel articol: într-o mențiune, caracterul # marchează începutul numerelor de linie, iar spațiile albe de la început sau de la sfârșit sunt eliminate. Copiați-l în altă formă sau redenumiți-l."
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "ИИ-агент не прочитал бы упоминание %@ как этот объект: в упоминании символ # означает начало номеров строк, а пробелы в начале или в конце отбрасываются. Скопируйте его в другом виде или переименуйте."
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI முகவர் %@ பற்றிய குறிப்பை அந்த உருப்படியாகப் படிக்காது: குறிப்பில் # குறியிலிருந்து வரி எண்கள் தொடங்கும், தொடக்கத்திலும் முடிவிலும் உள்ள இடைவெளிகள் நீக்கப்படும். வேறு வடிவில் நகலெடுக்கவும், அல்லது அதன் பெயரை மாற்றவும்."
           }
         },
         "te": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI ఏజెంట్ %@ ప్రస్తావనను ఆ అంశంగా చదవదు: ప్రస్తావనలో # నుండి లైన్ నంబర్లు మొదలవుతాయి, మొదట్లో లేదా చివర్లో ఉన్న ఖాళీలు తొలగించబడతాయి. దాన్ని వేరే రూపంలో కాపీ చేయండి, లేదా దాని పేరు మార్చండి."
           }
         },
         "th": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "เอเจนต์ AI จะไม่อ่านการกล่าวถึง %@ ว่าเป็นรายการนั้น เพราะในการกล่าวถึง เครื่องหมาย # ใช้ขึ้นต้นเลขบรรทัด และช่องว่างที่ต้นและท้ายจะถูกตัดออก ให้คัดลอกในรูปแบบอื่น หรือเปลี่ยนชื่อ"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Bir YZ ajanı, %@ öğesinden bahsetmeyi o öğe olarak okumaz: bahsetmede # karakteri satır numaralarını başlatır ve iki uçtaki boşluklar atılır. Başka bir biçimde kopyalayın ya da adını değiştirin."
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "ШІ-агент не прочитав би згадку про %@ як цей елемент: у згадці символ # позначає початок номерів рядків, а пробіли на початку чи в кінці відкидаються. Скопіюйте її в іншому вигляді або перейменуйте."
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "کوئی AI ایجنٹ %@ کے ذکر کو اس آئٹم کے طور پر نہیں پڑھے گا: ذکر میں # سے لائن نمبر شروع ہوتے ہیں، اور دونوں سروں کی خالی جگہیں ہٹا دی جاتی ہیں۔ اسے کسی اور شکل میں کاپی کریں، یا اس کا نام بدلیں۔"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Tác tử AI sẽ không đọc việc nhắc đến %@ là mục đó: khi nhắc đến, dấu # bắt đầu số dòng, và khoảng trắng ở hai đầu bị bỏ đi. Hãy sao chép nó ở dạng khác, hoặc đổi tên nó."
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI 智能体不会把对 %@ 的提及识别为该项目：在 @ 提及中，# 表示行号的开始，首尾的空白字符会被去除。请改用其他形式拷贝，或为它重新命名。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI 代理程式不會把對 %@ 的提及辨識為該項目：在 @ 提及中，# 表示行號的開頭，頭尾的空白字元會被移除。請改用其他形式拷貝，或為它重新命名。"
           }
         }
@@ -98773,25 +98773,25 @@
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "لن يقرأ وكيل الذكاء الاصطناعي ذكره على أنه ذلك الملف: فعند ذكر ملف يدل الرمز # على بداية أرقام الأسطر، وتُحذف المسافات في أي من الطرفين."
+            "state": "translated",
+            "value": "لن يقرأ وكيل الذكاء الاصطناعي ذكر الملف على أنه الملف نفسه: فعند ذكر ملف يدل الرمز # على بداية أرقام الأسطر، وتُحذف المسافات في أي من الطرفين."
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "AI এজেন্ট এই ফাইলের উল্লেখকে ওই ফাইল হিসেবে পড়বে না: উল্লেখে # থেকে লাইন নম্বর শুরু হয়, আর শুরু ও শেষের স্পেস বাদ দেওয়া হয়।"
+            "state": "translated",
+            "value": "AI এজেন্ট এই ফাইলের উল্লেখকে একই ফাইল হিসেবে পড়বে না: উল্লেখে # থেকে লাইন নম্বর শুরু হয়, আর শুরু ও শেষের স্পেস বাদ দেওয়া হয়।"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Ein KI-Agent würde ihre Erwähnung nicht als diese Datei lesen: In einer Erwähnung leitet ein # Zeilennummern ein, und Leerzeichen am Anfang oder am Ende werden entfernt."
           }
         },
         "el": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Ένας πράκτορας AI δεν θα διάβαζε μια αναφορά σε αυτό ως εκείνο το αρχείο: σε μια αναφορά, ο χαρακτήρας # εισάγει αριθμούς γραμμών, και τα κενά στην αρχή ή στο τέλος αφαιρούνται."
           }
         },
@@ -98803,151 +98803,151 @@
         },
         "es": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Un agente de IA no leería su mención como ese archivo: en una mención, el carácter # introduce los números de línea, y los espacios en blanco al principio o al final se eliminan."
+            "state": "translated",
+            "value": "Un agente de IA no leería la mención como ese archivo: en una mención, el carácter # introduce los números de línea, y los espacios en blanco al principio o al final se eliminan."
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "عامل هوش مصنوعی اشارهٔ آن را به‌عنوان همین فایل نمی‌خواند: در یک اشاره، نویسهٔ # شماره‌های خط را آغاز می‌کند و فاصله‌های دو سر آن حذف می‌شوند."
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Un agent d’IA ne lirait pas sa mention comme ce fichier : dans une mention, le caractère # introduit des numéros de ligne, et les espaces au début ou à la fin sont supprimées."
+            "state": "translated",
+            "value": "Un agent d’IA ne lirait pas la mention comme ce fichier : dans une mention, le caractère # introduit des numéros de ligne, et les espaces au début ou à la fin sont supprimées."
           }
         },
         "he": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "סוכן AI לא יקרא את האזכור שלו כאותו קובץ: באזכור, התו # מציין תחילת מספרי שורות, ורווחים בשני הקצוות מוסרים."
+            "state": "translated",
+            "value": "סוכן AI לא יקרא את האזכור כאותו קובץ: באזכור, התו # מציין תחילת מספרי שורות, ורווחים בשני הקצוות מוסרים."
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI एजेंट इस फ़ाइल के उल्लेख को उसी फ़ाइल के रूप में नहीं पढ़ेगा: उल्लेख में # से लाइन नंबर शुरू होते हैं, और शुरुआत या अंत की स्पेस हटा दी जाती है।"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Agen AI tidak akan membaca sebutannya sebagai file itu: dalam sebutan, karakter # memulai nomor baris, dan spasi di awal atau akhir dihapus."
+            "state": "translated",
+            "value": "Agen AI tidak akan membaca sebutan tersebut sebagai file itu: dalam sebutan, karakter # memulai nomor baris, dan spasi di awal atau akhir dihapus."
           }
         },
         "it": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Un agente IA non leggerebbe la sua menzione come quel file: in una menzione, il carattere # introduce i numeri di riga, e gli spazi bianchi all’inizio o alla fine vengono eliminati."
+            "state": "translated",
+            "value": "Un agente IA non leggerebbe la menzione come quel file: in una menzione, il carattere # introduce i numeri di riga, e gli spazi bianchi all’inizio o alla fine vengono eliminati."
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AIエージェントは、そのメンションをこのファイルとして解釈しません。メンションでは、#から行番号が始まり、先頭と末尾の空白は取り除かれます。"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI 에이전트는 그 멘션을 해당 파일로 읽지 않습니다. 멘션에서는 #부터 줄 번호가 시작되고, 앞뒤 공백은 제거됩니다."
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI एजंट या फाइलच्या उल्लेखाला तीच फाइल समजणार नाही: उल्लेखात # पासून लाइन नंबर सुरू होतात, आणि सुरुवातीची किंवा शेवटची स्पेस काढून टाकली जाते."
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Ejen AI tidak akan membaca sebutannya sebagai fail itu: dalam sebutan, aksara # memulakan nombor baris, dan ruang putih pada awal atau akhir dibuang."
+            "state": "translated",
+            "value": "Ejen AI tidak akan membaca sebutan itu sebagai fail itu: dalam sebutan, aksara # memulakan nombor baris, dan ruang putih pada awal atau akhir dibuang."
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Een AI-agent zou de vermelding ervan niet als dat bestand lezen: in een vermelding geeft een # het begin van regelnummers aan, en spaties aan het begin of einde worden verwijderd."
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Agent AI nie odczytałby wzmianki o nim jako tego pliku: we wzmiance znak # rozpoczyna numery wierszy, a białe znaki na początku lub na końcu są usuwane."
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Um agente de IA não leria a menção dele como esse arquivo: em uma menção, o caractere # indica o início dos números de linha, e espaços em branco no início ou no fim são removidos."
+            "state": "translated",
+            "value": "Um agente de IA não leria a menção como esse arquivo: em uma menção, o caractere # indica o início dos números de linha, e espaços em branco no início ou no fim são removidos."
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Un agent AI nu ar citi mențiunea lui ca acest fișier: într-o mențiune, caracterul # marchează începutul numerelor de linie, iar spațiile albe de la început sau de la sfârșit sunt eliminate."
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "ИИ-агент не прочитал бы его упоминание как этот файл: в упоминании символ # означает начало номеров строк, а пробелы в начале или в конце отбрасываются."
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI முகவர் இந்தக் கோப்பின் குறிப்பை அதே கோப்பாகப் படிக்காது: குறிப்பில் # குறியிலிருந்து வரி எண்கள் தொடங்கும், தொடக்கத்திலும் முடிவிலும் உள்ள இடைவெளிகள் நீக்கப்படும்."
           }
         },
         "te": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI ఏజెంట్ ఈ ఫైల్ ప్రస్తావనను అదే ఫైల్ అని చదవదు: ప్రస్తావనలో # నుండి లైన్ నంబర్లు మొదలవుతాయి, మొదట్లో లేదా చివర్లో ఉన్న ఖాళీలు తొలగించబడతాయి."
           }
         },
         "th": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "เอเจนต์ AI จะไม่อ่านการกล่าวถึงไฟล์นี้ว่าเป็นไฟล์เดียวกัน เพราะในการกล่าวถึง เครื่องหมาย # ใช้ขึ้นต้นเลขบรรทัด และช่องว่างที่ต้นและท้ายจะถูกตัดออก"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "needs_review",
-            "value": "Bir YZ ajanı, bu dosyadan bahsetmeyi o dosya olarak okumaz: bahsetmede # karakteri satır numaralarını başlatır ve iki uçtaki boşluklar atılır."
+            "state": "translated",
+            "value": "Bir YZ ajanı, bu dosyadan bahsetmeyi aynı dosya olarak okumaz: bahsetmede # karakteri satır numaralarını başlatır ve iki uçtaki boşluklar atılır."
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "ШІ-агент не прочитав би його згадку як цей файл: у згадці символ # позначає початок номерів рядків, а пробіли на початку чи в кінці відкидаються."
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "کوئی AI ایجنٹ اس کے ذکر کو اسی فائل کے طور پر نہیں پڑھے گا: ذکر میں # سے لائن نمبر شروع ہوتے ہیں، اور دونوں سروں کی خالی جگہیں ہٹا دی جاتی ہیں۔"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "Tác tử AI sẽ không đọc việc nhắc đến nó là chính tệp đó: khi nhắc đến, dấu # bắt đầu số dòng, và khoảng trắng ở hai đầu bị bỏ đi."
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI 智能体不会把对它的提及识别为该文件：在 @ 提及中，# 表示行号的开始，首尾的空白字符会被去除。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
-            "state": "needs_review",
+            "state": "translated",
             "value": "AI 代理程式不會把對它的提及辨識為該檔案：在 @ 提及中，# 表示行號的開頭，頭尾的空白字元會被移除。"
           }
         }
