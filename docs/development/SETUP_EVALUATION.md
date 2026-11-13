@@ -248,6 +248,12 @@ the run, which no command of the run touches. It found two things. Its first dry
 said, and would have replaced lazygit with Codex without a word; the playbook now says to add an agent with `rh config add general.agents
 <id>`. And `rh config add agent.lazygit …` would have listed lazygit a second time; it gives the agent its table and leaves the list now.
 
+Persona C, run again on 2026-11-13 (1.2.25) with a Sonnet agent after the playbook began to say `rh config add general.agents <id>`
+for an agent added to a config that exists: it passed the four criteria in 25 `rh` commands, none failed or refused, and nothing outside
+the sandbox changed. It added Codex with that command, which kept the line's layout and its comment; the diff of the file was that one
+line. It ran setup once, told the person that the comment on the line ("only Claude Code for now") is out of date and left it, as they
+asked, and offered the command that would put the editor in their menu without making it.
+
 ### What the runs found, and what changed
 
 1. **A trial reported nothing for the person to do.** The PATH line and the permission prompt were left out because a trial
