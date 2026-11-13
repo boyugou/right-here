@@ -98,8 +98,9 @@ enum Output {
         Swift.print(safe(forTheReader(text)))
     }
 
+    /// As `print`, for standard error: a refusal can quote what a config says, fenced, and a person at a terminal reads it without the marks.
     static func error(_ text: String) {
-        FileHandle.standardError.write(Data((safe(text) + "\n").utf8))
+        FileHandle.standardError.write(Data((safe(forTheReader(text, isTerminal: isatty(STDERR_FILENO) != 0)) + "\n").utf8))
     }
 
     /// The text padded with spaces to a column `width` characters wide. `String.padding(toLength:)` cuts a longer text off,

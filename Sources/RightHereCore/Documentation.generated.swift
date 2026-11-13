@@ -73,6 +73,10 @@ template, what a new-file template holds, and `bypass_permissions`.
   For example: its arguments emptied, a start option replaced, or an agent put in the menu while "start agents without asking" is on.
   This is also true when the change is in `config.local.toml`.
 
+**Config sync.** `rh config sync pull` refuses a copy from the sync folder that would add or change what a click starts, and lists
+it with the command that takes that copy (`rh config sync pull --allow-commands <digest>`). The folder can be written by other Macs and
+services: show the list to the person, and run that command only when they say the changes are theirs.
+
 **Add a program of the person's own** (lazygit, aider, a script) as an agent:
 `rh config add agent.lazygit name=lazygit command=lazygit`. This makes its table and puts it in `general.agents` in one change.
 `rh config remove agent.lazygit` takes it out again.
@@ -423,11 +427,12 @@ Do not post `rh doctor --json` in a public issue. It has those names, commands a
 
 The message says why. Nothing was changed. The usual reasons:
 
-- **The copy would add or change a program**: a terminal template, an agent command, the flag that skips an agent's permission prompts,
-  an agent that it puts in the menu while the prompts are off, the app an `[[app]]` entry points at (its bundle identifier), or the text
-  or extension of a new-file template. Other Macs and sync services can write the sync folder, so `pull` lists these changes, also the
-  ones this Mac's own `config.local.toml` hides for now. Read the list, then run `rh config sync pull --allow-commands`.
-  `rh config sync status` shows the same list first.
+- **The copy would add or change a program**: a terminal template, an agent's command, arguments or launcher, a preset's prompt, the
+  flag that skips an agent's permission prompts, an agent that it puts in the menu while the prompts are off (or through its link or
+  desktop app), the app an `[[app]]` entry points at (its bundle identifier), or the text or name of a new-file template. Other Macs
+  and sync services can write the sync folder, so `pull` lists these changes, also the ones this Mac's own `config.local.toml` hides
+  for now. Read the list, then run the command it ends with, `rh config sync pull --allow-commands <digest>`: the digest names the copy
+  you read, and a copy that changed since is refused with its own list. `rh config sync status` shows the same list first.
 - **This Mac's config is read-only.** `pull` leaves it alone, as an edit does. Make it writable, then pull again.
 - **This Mac's config changed since the last sync.** Run `rh config sync status`. Then run `rh config sync push` to send it, or
   `rh config sync pull --force` to replace it. Right Here saves the old file first.

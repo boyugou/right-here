@@ -367,9 +367,13 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    `rh config sync pull` compares it with the config it replaces, each read alone and each read with this Mac's `config.local.toml` laid
    over it (what that file pins or disables would otherwise hide a program the copy brings), and refuses, listing what it would add or change (and an agent's
    arguments that it empties: `--sandbox read-only` may be what keeps the agent in its sandbox),
-   unless `--allow-commands` is passed; that flag is separate from `--force`, and a refusal writes nothing. `status`
-   and `enable` show the same list, and every value in it is printed with control characters escaped. Preset prompts
-   are text for an agent, not commands, and stay under item 2. See [0013](decisions/0013-config-sync.md), "Trust".
+   unless `--allow-commands <digest>` names that copy (a digest of it that the refusal and `status` print, so a copy that
+   changes after it was shown is not taken); that flag is separate from `--force`, and a refusal writes nothing. `status`
+   and `enable` show the same list, every value fenced as data (ADR 0020) and printed with control characters escaped. The
+   list has what the assistant's gate (`ConfigTrust`) waits for, an item of the menu or of the Quick Actions that starts an
+   agent through its link or desktop app, and a default terminal taken out while a terminal of the config starts through a
+   template. A copy is also checked as a click on this Mac reads it, with `config.local.toml` laid over it. See
+   [0013](decisions/0013-config-sync.md), "Trust".
 8. A repository is somebody else's code to git: its hooks (files, and commands named in its configuration), `core.fsmonitor`, filter drivers and a
    partial clone's promisor remote all start programs. Right Here starts git in a repository only through one function (`GitCommand`), which
    switches those off for every command it runs (the person's own filters, Git LFS in the global configuration, still apply), keeps the

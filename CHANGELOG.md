@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Config sync, after a second independent review.** `--allow-commands` now takes the digest of the copy whose list you read
+  (`rh config sync pull --allow-commands <digest>`, printed with the list), so a copy that changes after it was shown is refused with
+  its own list. A pull also lists a menu or Quick Actions item that starts an agent through its link or desktop app (which leaves out
+  its command and arguments), and a default terminal taken out when a terminal of the config starts through a template; an AI assistant
+  has to propose such an item too. What the folder's copy says is quoted as data. A copy with many agents no longer makes
+  `rh config sync status` and `rh doctor` take a minute, a copy is checked as this Mac reads it with its own `config.local.toml`, and
+  the doctor names a few conflict copies and counts the rest.
+
 ## 1.2.17 (2026-11-12)
 
 - **Terminal launches, after an independent review.** A name with an apostrophe could end the quoting of a typed line

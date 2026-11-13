@@ -8,8 +8,9 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
     case noLocalConfig(String)
     case refused(SyncRefusal, folder: String)
     case invalid([SyncValidation.Problem], file: String)
-    /// The copy in the folder would add or change something Right Here starts, and the caller did not say it is theirs.
-    case commandsNeedApproval([LaunchCommands.Change])
+    /// The copy in the folder would add or change something Right Here starts, and the caller did not say it is theirs: `digest` names this copy, and `shown` is
+    /// the digest the caller gave, of a copy that the folder no longer holds.
+    case commandsNeedApproval([LaunchCommands.Change], digest: String, shown: String? = nil)
     /// `config.toml` in the folder is a link that `push` will not write through: to a file outside the folder, or to nothing (`target` is `nil`).
     case remoteLink(String, target: String?)
     /// `makeParent` is the folder to create first when the person can (it is under their home folder).
@@ -49,14 +50,18 @@ public enum ConfigSyncError: Error, Equatable, CustomStringConvertible {
         case .refused(.remoteEvicted, let folder):
             "The copy in \(folder) is not on this Mac yet (iCloud keeps it online only, or the file cannot be read). Open the folder in Finder, click the cloud icon beside config.toml, wait for the download, then try again. Nothing was changed."
         case .invalid(let problems, let file):
-            "Refusing \(file): " + problems.map(\.message).joined(separator: "; ") + ". Nothing was changed."
-        case .commandsNeedApproval(let changes):
-            "Not pulling: the copy in the sync folder would add or change what Right Here starts on this Mac, and a folder that other machines or a sync service can write is not trusted with that:\n"
-                + changes.prefix(Self.listedChanges).map { "  " + $0.line }.joined(separator: "\n")
+            // What the parser quotes of the folder's copy is the folder's text: data.
+            "Refusing \(file): " + problems.map(\.fencedMessage).joined(separator: "; ") + ". Nothing was changed."
+        case .commandsNeedApproval(let changes, let digest, let shown):
+            // What the folder's copy says is fenced as data; the command takes this copy and no other, so a copy that changes after it was shown is not taken by it.
+            (shown.map { "Not pulling: the copy in the sync folder changed since the one whose digest is \($0) was shown. What it would add or change now:\n" }
+                ?? "Not pulling: the copy in the sync folder would add or change what Right Here starts on this Mac, and a folder that other machines or a sync service can write is not trusted with that:\n")
+                + changes.prefix(Self.listedChanges).map { "  " + $0.fencedLine }.joined(separator: "\n")
                 + (changes.count > Self.listedChanges ? "\n  and \(changes.count - Self.listedChanges) more" : "")
-                + "\nRead them. If they are yours, run `rh config sync pull --allow-commands` (with --force as well when this Mac's config changed). Nothing was changed."
+                + "\nRead them, or show them to the person whose Mac this is. If they are theirs, `rh config sync pull --allow-commands \(digest)` takes this copy and no other"
+                + " (with --force as well when this Mac's config changed). Nothing was changed."
         case .remoteLink(let file, let target?):
-            "Not pushing: \(file) is a symbolic link to \(target), which is outside the sync folder. A push writes through a link, and a folder that other machines or a sync service can write could point it at any file you can write. Replace the link with a regular file, or point it at a file inside the folder, then push again. Nothing was changed."
+            "Not pushing: \(file) is a symbolic link to \(Fence.wrap(target)), which is outside the sync folder. A push writes through a link, and a folder that other machines or a sync service can write could point it at any file you can write. Replace the link with a regular file, or point it at a file inside the folder, then push again. Nothing was changed."
         case .remoteLink(let file, nil):
             "Not pushing: \(file) is a symbolic link that points nowhere. Remove it, then push again. Nothing was changed."
         case .folderUnreachable(let folder, let makeParent):
@@ -147,6 +152,14 @@ public struct ConfigSync: Sendable {
         /// The folder is not there and neither is its parent, which `push` does not make; `nil` when the folder is there, or
         /// when its parent is.
         public var missingParent: MissingParent?
+
+        /// What `pull --allow-commands` takes to accept this copy of the folder's config and no other.
+        public var remoteDigest: String? { remoteHash.map(ConfigSync.approvalDigest) }
+    }
+
+    /// The part of a copy's SHA-256 that `pull --allow-commands` is given: enough that no other copy has it by chance, short enough to read out.
+    public static func approvalDigest(_ hash: String) -> String {
+        String(hash.prefix(12))
     }
 
     /// The sync folder's parent is missing: `makeParent` is the folder the person can create first (`mkdir -p`), when it is
@@ -306,7 +319,7 @@ public struct ConfigSync: Sendable {
             var seen = Set<String>()
             pending = (LaunchCommands.changes(from: inspection.localData, to: remoteData, overlay: nil)
                 + LaunchCommands.changes(from: inspection.localData, to: remoteData, overlay: overlay)).filter { seen.insert($0.place + "\u{0}" + $0.value).inserted }
-            remoteProblems = SyncValidation.check(remoteData)
+            remoteProblems = SyncValidation.check(remoteData, overlay: overlay)
         } else if case .tooLarge(let bytes) = inspection.remote {
             remoteProblems = [.tooLarge(bytes: bytes)]
         }
@@ -373,7 +386,9 @@ public struct ConfigSync: Sendable {
     }
 
     @discardableResult
-    public func pull(force: Bool = false, allowCommands: Bool = false, now: Date = Date()) throws -> PullOutcome {
+    /// - Parameter allowCommands: The digest of the copy whose list of what it starts was shown (`Report.remoteDigest`): that copy is taken with what it starts,
+    ///   and another one is refused with its own list.
+    public func pull(force: Bool = false, allowCommands: String? = nil, now: Date = Date()) throws -> PullOutcome {
         guard settings() != nil else { throw ConfigSyncError.notEnabled }
         return try underTheLockOfTheConfig { try pullLocked(force: force, allowCommands: allowCommands, now: now) }
     }
@@ -392,7 +407,7 @@ public struct ConfigSync: Sendable {
         return try body()
     }
 
-    private func pullLocked(force: Bool, allowCommands: Bool, now: Date) throws -> PullOutcome {
+    private func pullLocked(force: Bool, allowCommands: String?, now: Date) throws -> PullOutcome {
         guard var settings = settings() else { throw ConfigSyncError.notEnabled }
         let inspection = inspect(folder: URL(fileURLWithPath: settings.folder, isDirectory: true))
         let current = report(inspection, settings: settings)
@@ -411,7 +426,9 @@ public struct ConfigSync: Sendable {
         if !problems.isEmpty { throw ConfigSyncError.invalid(problems, file: current.remoteFile.path) }
         // A config carries commands, and the folder is written by things this Mac does not control: what it would start
         // that this Mac's config does not is never taken without the caller saying so (`force` is about something else).
-        if !current.pendingCommands.isEmpty, !allowCommands { throw ConfigSyncError.commandsNeedApproval(current.pendingCommands) }
+        if !current.pendingCommands.isEmpty, allowCommands != Self.approvalDigest(hash) {
+            throw ConfigSyncError.commandsNeedApproval(current.pendingCommands, digest: Self.approvalDigest(hash), shown: allowCommands)
+        }
 
         // Through a link: a config kept in a dotfiles repository is a symlink, and replacing the link would end that.
         let destination = try ConfigStore.writeTarget(of: paths.configFile)
@@ -580,7 +597,11 @@ public struct ConfigSync: Sendable {
             break
         }
         if !inspection.conflicts.isEmpty {
-            checks.append(DoctorCheck(.syncConflict, status: .warn, detail: .doctorSyncConflict(inspection.conflicts.joined(separator: ", "), settings.folder), fix: .doctorFixSyncConflict))
+            // Whoever writes the folder decides how many such files there are: the row names a few and counts the rest, as the row about the commands does.
+            let named = inspection.conflicts.prefix(Self.listedInRow)
+            let more = inspection.conflicts.count - named.count
+            checks.append(DoctorCheck(.syncConflict, status: .warn, detail: .doctorSyncConflict(named.joined(separator: ", "), settings.folder),
+                                      notes: more > 0 ? [.doctorSyncCommandsMore(String(more))] : [], fix: .doctorFixSyncConflict))
         }
         return checks
     }

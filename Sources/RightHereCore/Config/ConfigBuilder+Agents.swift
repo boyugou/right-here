@@ -160,8 +160,7 @@ extension ConfigBuilder {
             }
             // The name is what the Finder menu and the Quick Actions show for the agent ("<name> Here"): another agent of the same name would be a click that starts one or the other without a sign
             // (two Quick Actions of one name are one Service), so each name is used once, built-in agents' included.
-            let called = name.comparableName
-            if (KnownAgents.all.map(\.name) + config.customAgents.map(\.name)).contains(where: { $0.comparableName == called }) {
+            guard sink.agentNames.insert(name.comparableName).inserted else {
                 sink.error(reader.path + ["name"], "another agent is already called \"\(name)\"; the menu and the Quick Actions tell agents apart by their names, so give each its own")
                 sink.rejectedAgents.insert(id)
                 return

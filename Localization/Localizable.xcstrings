@@ -78494,187 +78494,187 @@
       }
     },
     "doctor.fix.syncCommands": {
-      "comment": "Fix line under a check in the setup window's Details list: what the person should do. Sentences. About the config sync feature: \"them\" are the launch settings listed above; the folder's copy is the config in the sync folder. Keep the commands in backticks exactly.",
+      "comment": "Fix line under a check in the setup window's Details list: what the person should do. Sentences. About the config sync feature: \"them\" are the launch settings listed above; the copy is the config in the sync folder. `rh config sync status` ends with the exact pull command to run (it carries a digest of the copy, so it takes that copy and not one that changed since). Keep the commands in backticks exactly.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "راجعها بالأمر `rh config sync status`. إذا كانت لك، فشغّل `rh config sync pull --allow-commands` لاعتماد نسخة المجلد."
+            "value": "راجعها بالأمر `rh config sync status`. إذا كانت لك، فشغّل أمر `rh config sync pull` الذي يعرضه، فهو يأخذ هذه النسخة ولا يأخذ غيرها."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "translated",
-            "value": "`rh config sync status` দিয়ে এগুলো দেখুন। এগুলো আপনারই হলে ফোল্ডারের কপিটি নিতে `rh config sync pull --allow-commands` চালান।"
+            "value": "`rh config sync status` দিয়ে এগুলো দেখুন। এগুলো আপনারই হলে, এটি যে `rh config sync pull` কমান্ডটি দেখায় সেটি চালান; সেটি এই কপিটিই নেয়, অন্য কোনোটি নয়।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Prüfe sie mit `rh config sync status`. Wenn sie von dir stammen, führe `rh config sync pull --allow-commands` aus, um die Kopie aus dem Ordner zu übernehmen."
+            "value": "Prüfe sie mit `rh config sync status`. Wenn sie von dir stammen, führe den angezeigten Befehl `rh config sync pull` aus; er übernimmt genau diese Kopie und keine andere."
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ελέγξτε τις ρυθμίσεις με το `rh config sync status`. Αν είναι δικές σας, το `rh config sync pull --allow-commands` παίρνει το αντίγραφο από τον φάκελο."
+            "value": "Ελέγξτε τις ρυθμίσεις με το `rh config sync status`. Αν είναι δικές σας, εκτελέστε την εντολή `rh config sync pull` που εμφανίζει, η οποία παίρνει αυτό το αντίγραφο και κανένα άλλο."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy."
+            "value": "Read them with `rh config sync status`. If they are yours, run the `rh config sync pull` command it shows, which takes this copy and no other."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Revísalos con `rh config sync status`. Si son tuyos, ejecuta `rh config sync pull --allow-commands` para quedarte con la copia de la carpeta."
+            "value": "Revísalos con `rh config sync status`. Si son tuyos, ejecuta el comando `rh config sync pull` que muestra. Ese comando toma esta copia y ninguna otra."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "آن‌ها را با `rh config sync status` بررسی کنید. اگر متعلق به شما هستند، برای گرفتن نسخهٔ پوشه `rh config sync pull --allow-commands` را اجرا کنید."
+            "value": "آن‌ها را با `rh config sync status` بررسی کنید. اگر متعلق به شما هستند، دستور `rh config sync pull` را که نشان می‌دهد اجرا کنید؛ این دستور فقط همین نسخه را می‌گیرد."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Consultez-les avec `rh config sync status`. Si ce sont les vôtres, exécutez `rh config sync pull --allow-commands` pour prendre la copie du dossier."
+            "value": "Consultez-les avec `rh config sync status`. Si ce sont les vôtres, exécutez la commande `rh config sync pull` affichée : elle prend cette copie et aucune autre."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "יש לבדוק אותן באמצעות `rh config sync status`. אם הן שלך, יש להריץ את `rh config sync pull --allow-commands` כדי לקחת את העותק שבתיקיה."
+            "value": "יש לבדוק אותן באמצעות `rh config sync status`. אם הן שלך, יש להריץ את הפקודה `rh config sync pull` המוצגת שם, והיא לוקחת את העותק הזה ולא אחר."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "इन्हें `rh config sync status` से जाँचें। अगर ये आपकी हैं, तो फ़ोल्डर वाली कॉन्फ़िग लेने के लिए `rh config sync pull --allow-commands` चलाएँ।"
+            "value": "इन्हें `rh config sync status` से जाँचें। अगर ये आपकी हैं, तो वहाँ दिखाई गई `rh config sync pull` कमांड चलाएँ; वह यही कॉन्फ़िग लेती है, कोई और नहीं।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Periksa pengaturan tersebut dengan `rh config sync status`. Jika memang milik Anda, `rh config sync pull --allow-commands` mengambil salinan dari folder."
+            "value": "Periksa pengaturan tersebut dengan `rh config sync status`. Jika memang milik Anda, jalankan perintah `rh config sync pull` yang ditampilkannya, yang mengambil salinan ini dan bukan yang lain."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Controllale con `rh config sync status`. Se sono tue, esegui `rh config sync pull --allow-commands` per usare la copia della cartella."
+            "value": "Controllale con `rh config sync status`. Se sono tue, esegui il comando `rh config sync pull` che mostra: prende questa copia e nessun’altra."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "これらの起動設定を `rh config sync status` で確認してください。自分で設定したものであれば、`rh config sync pull --allow-commands` を実行してフォルダ内のコピーを採用してください。"
+            "value": "これらの起動設定を `rh config sync status` で確認してください。自分で設定したものであれば、表示される `rh config sync pull` コマンドを実行してください。このコピーだけが採用され、ほかのコピーは採用されません。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위의 실행 설정을 `rh config sync status` 명령으로 확인하십시오. 직접 설정한 것이라면 `rh config sync pull --allow-commands` 명령으로 폴더의 사본을 가져오십시오."
+            "value": "위의 실행 설정을 `rh config sync status` 명령으로 확인하십시오. 직접 설정한 것이라면 표시되는 `rh config sync pull` 명령을 실행하십시오. 이 사본만 가져오며 다른 사본은 가져오지 않습니다."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "translated",
-            "value": "`rh config sync status` वापरून त्या तपासा. त्या तुमच्याच असतील तर फोल्डरमधील प्रत घेण्यासाठी `rh config sync pull --allow-commands` चालवा."
+            "value": "`rh config sync status` वापरून त्या तपासा. त्या तुमच्याच असतील तर ती दाखवत असलेली `rh config sync pull` कमांड चालवा; ती हीच प्रत घेते, दुसरी नाही."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "translated",
-            "value": "Semak seting tersebut dengan `rh config sync status`. Jika itu milik anda, `rh config sync pull --allow-commands` mengambil salinan daripada folder."
+            "value": "Semak seting tersebut dengan `rh config sync status`. Jika itu milik anda, jalankan perintah `rh config sync pull` yang ditunjukkannya, yang mengambil salinan ini dan bukan yang lain."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bekijk ze met `rh config sync status`. Als ze van jou zijn, voer `rh config sync pull --allow-commands` uit om de kopie uit de map te nemen."
+            "value": "Bekijk ze met `rh config sync status`. Als ze van jou zijn, voer het getoonde commando `rh config sync pull` uit; dat neemt deze kopie en geen andere."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sprawdź je poleceniem `rh config sync status`. Jeśli pochodzą od Ciebie, polecenie `rh config sync pull --allow-commands` pobierze kopię z folderu."
+            "value": "Sprawdź je poleceniem `rh config sync status`. Jeśli pochodzą od Ciebie, uruchom pokazane tam polecenie `rh config sync pull`, które pobierze tę kopię i żadną inną."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Veja-os com `rh config sync status`. Se forem seus, `rh config sync pull --allow-commands` usa a configuração da pasta."
+            "value": "Veja-os com `rh config sync status`. Se forem seus, execute o comando `rh config sync pull` que ele mostra. Esse comando usa esta configuração e nenhuma outra."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Verificați-le cu `rh config sync status`. Dacă sunt ale dvs., `rh config sync pull --allow-commands` ia configurația din dosar."
+            "value": "Verificați-le cu `rh config sync status`. Dacă sunt ale dvs., rulați comanda `rh config sync pull` pe care o afișează; ea ia această configurație și nicio alta."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Посмотрите их с помощью `rh config sync status`. Если это Ваши настройки, `rh config sync pull --allow-commands` возьмет конфигурацию из папки."
+            "value": "Посмотрите их с помощью `rh config sync status`. Если это Ваши настройки, выполните показанную там команду `rh config sync pull`: она возьмет эту конфигурацию и никакую другую."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "translated",
-            "value": "`rh config sync status` மூலம் அவற்றைப் பார்க்கவும். அவை உங்களுடையவையாக இருந்தால், கோப்புறையிலுள்ள நகலை எடுக்க `rh config sync pull --allow-commands` ஐ இயக்கவும்."
+            "value": "`rh config sync status` மூலம் அவற்றைப் பார்க்கவும். அவை உங்களுடையவையாக இருந்தால், அது காட்டும் `rh config sync pull` கட்டளையை இயக்கவும்; அது இந்த நகலை மட்டுமே எடுக்கும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "translated",
-            "value": "`rh config sync status` ద్వారా వాటిని చూడండి. అవి మీవే అయితే, ఫోల్డర్‌లో ఉన్న కాపీని తీసుకోవడానికి `rh config sync pull --allow-commands` రన్ చేయండి."
+            "value": "`rh config sync status` ద్వారా వాటిని చూడండి. అవి మీవే అయితే, అది చూపించే `rh config sync pull` ఆదేశాన్ని రన్ చేయండి; అది ఈ కాపీనే తీసుకుంటుంది, మరేదీ కాదు."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ดูการตั้งค่าเหล่านี้ด้วย `rh config sync status` หากเป็นของคุณ ให้เรียกใช้ `rh config sync pull --allow-commands` เพื่อใช้สำเนาในโฟลเดอร์"
+            "value": "ดูการตั้งค่าเหล่านี้ด้วย `rh config sync status` หากเป็นของคุณ ให้เรียกใช้คำสั่ง `rh config sync pull` ที่แสดงไว้ ซึ่งจะใช้สำเนานี้เท่านั้น"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bu ayarları `rh config sync status` ile inceleyin. Bunlar sizinse `rh config sync pull --allow-commands` klasördeki kopyayı alır."
+            "value": "Bu ayarları `rh config sync status` ile inceleyin. Bunlar sizinse gösterdiği `rh config sync pull` komutunu çalıştırın; bu komut yalnızca bu kopyayı alır."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Перегляньте їх за допомогою `rh config sync status`. Якщо вони ваші, `rh config sync pull --allow-commands` візьме конфігурацію з папки."
+            "value": "Перегляньте їх за допомогою `rh config sync status`. Якщо вони ваші, виконайте показану там команду `rh config sync pull`: вона візьме цю конфігурацію і жодну іншу."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "انہیں `rh config sync status` سے دیکھیں۔ اگر یہ آپ کی طرف سے ہیں تو فولڈر کی کنفیگ لینے کے لیے `rh config sync pull --allow-commands` چلائیں۔"
+            "value": "انہیں `rh config sync status` سے دیکھیں۔ اگر یہ آپ کی طرف سے ہیں تو وہاں دکھائی گئی `rh config sync pull` کمانڈ چلائیں؛ وہ یہی کنفیگ لیتی ہے، کوئی اور نہیں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kiểm tra các cài đặt đó bằng `rh config sync status`. Nếu chúng là của bạn, `rh config sync pull --allow-commands` sẽ lấy bản sao từ thư mục."
+            "value": "Kiểm tra các cài đặt đó bằng `rh config sync status`. Nếu chúng là của bạn, hãy chạy lệnh `rh config sync pull` mà nó hiển thị; lệnh này chỉ lấy bản sao này, không lấy bản nào khác."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "用 `rh config sync status` 查看这些启动设置。如果这些是自己设置的，运行 `rh config sync pull --allow-commands` 即可采用文件夹中的副本。"
+            "value": "用 `rh config sync status` 查看这些启动设置。如果这些是自己设置的，运行它显示的 `rh config sync pull` 命令；该命令只采用这份副本，不会采用其他副本。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "用 `rh config sync status` 查看這些啟動設定。如果這些是自己設定的，執行 `rh config sync pull --allow-commands` 即可採用檔案夾中的副本。"
+            "value": "用 `rh config sync status` 查看這些啟動設定。如果這些是自己設定的，執行它顯示的 `rh config sync pull` 指令；該指令只採用這份副本，不會採用其他副本。"
           }
         }
       }

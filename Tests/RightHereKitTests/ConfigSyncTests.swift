@@ -31,6 +31,8 @@ private struct Fixture {
     func write(_ text: String, to file: URL) throws { try text.write(to: file, atomically: true, encoding: .utf8) }
     func read(_ file: URL) throws -> String { try String(contentsOf: file, encoding: .utf8) }
     var sync: ConfigSync { ConfigSync(paths: paths) }
+    /// The digest `pull --allow-commands` takes for the copy in the folder now, as the refusal and `status` print it.
+    var digest: String? { (try? sync.status())?.remoteDigest }
     /// What is in a folder, not counting the lock of the config, which a pull takes and leaves where it is (`FileLock`).
     func names(in folder: URL) -> [String] { ((try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []).filter { $0 != ".config.lock" }.sorted() }
 }
@@ -625,7 +627,7 @@ struct ConfigSyncDoctorTests {
         let changes = try f.sync.status().pendingCommands.map(\.line)
         #expect(changes.count == 4)
         // The first three are listed as the config writes them; how many more there are is a line of its own.
-        #expect(lines([row]) == ["sync.commands: warn | the folder's copy would add or change 4 launch setting(s): \(changes.prefix(3).joined(separator: "; ")) | Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy."])
+        #expect(lines([row]) == ["sync.commands: warn | the folder's copy would add or change 4 launch setting(s): \(changes.prefix(3).joined(separator: "; ")) | Read them with `rh config sync status`. If they are yours, run the `rh config sync pull` command it shows, which takes this copy and no other."])
         #expect(row.notes.map { $0.english() } == ["and 1 more"])
     }
 
@@ -671,7 +673,7 @@ struct ConfigSyncDoctorTests {
         let rows = f.sync.doctorChecks().filter { $0.id == .syncCommands }
         #expect(rows.count == 1)
         #expect(rows.first?.status == .warn)
-        #expect(rows.first?.fix?.english().contains("--allow-commands") == true)
+        #expect(rows.first?.fix?.english().contains("`rh config sync pull` command it shows") == true)
     }
 }
 
@@ -701,7 +703,7 @@ struct ConfigSyncTrustTests {
     }
 
     private func refusal(_ body: () throws -> Void) -> [LaunchCommands.Change]? {
-        do { try body() } catch ConfigSyncError.commandsNeedApproval(let changes) { return changes } catch { Issue.record("a different error: \(error)") }
+        do { try body() } catch ConfigSyncError.commandsNeedApproval(let changes, _, _) { return changes } catch { Issue.record("a different error: \(error)") }
         return nil
     }
 
@@ -781,8 +783,8 @@ struct ConfigSyncTrustTests {
     @Test func theRefusalSaysWhatToDoAndNamesWhatItFound() throws {
         let f = try machine(folder: withCommands); defer { f.cleanUp() }
         let changes = try #require(refusal { try f.sync.pull() })
-        let text = ConfigSyncError.commandsNeedApproval(changes).description
-        #expect(text.contains("--allow-commands") && text.contains("Nothing was changed"))
+        let text = ConfigSyncError.commandsNeedApproval(changes, digest: "0123456789ab").description
+        #expect(text.contains("`rh config sync pull --allow-commands 0123456789ab`") && text.contains("Nothing was changed"))
         #expect(text.contains("/bin/sh") && text.contains("run_args"))
     }
 
@@ -797,7 +799,7 @@ struct ConfigSyncTrustTests {
 
     @Test func allowCommandsTakesTheCopy() throws {
         let f = try machine(folder: withCommands); defer { f.cleanUp() }
-        #expect(try f.sync.pull(allowCommands: true) == .pulled(backup: nil))
+        #expect(try f.sync.pull(allowCommands: f.digest) == .pulled(backup: nil))
         #expect(try f.read(f.local) == withCommands)
         #expect(try f.sync.status().status == .inSync)
     }
@@ -805,9 +807,9 @@ struct ConfigSyncTrustTests {
     @Test func allowingCommandsDoesNotLiftTheOtherRefusals() throws {
         let f = try machine(folder: withCommands); defer { f.cleanUp() }
         try f.write(two, to: f.local)
-        #expect(throws: ConfigSyncError.refused(.localChanged, folder: f.remote.path)) { try f.sync.pull(allowCommands: true) }
+        #expect(throws: ConfigSyncError.refused(.localChanged, folder: f.remote.path)) { try f.sync.pull(allowCommands: f.digest) }
         #expect(try f.read(f.local) == two)
-        let saved = try f.sync.pull(force: true, allowCommands: true)
+        let saved = try f.sync.pull(force: true, allowCommands: f.digest)
         guard case .pulled(let backup?) = saved else { Issue.record("expected the replaced file to be saved"); return }
         #expect(try f.read(backup) == two)
     }
@@ -884,7 +886,7 @@ struct ConfigSyncTrustTests {
 
     @Test func aConfigThatIsNotValidIsRefusedBeforeCommandsAreWeighed() throws {
         let f = try machine(folder: withCommands + "\n[agent.x]\napi_key = \"k\"\n"); defer { f.cleanUp() }
-        #expect(throws: ConfigSyncError.self) { try f.sync.pull(allowCommands: true) }
+        #expect(throws: ConfigSyncError.self) { try f.sync.pull(allowCommands: f.digest) }
         #expect(try f.read(f.local) == one)
     }
 }
@@ -916,7 +918,7 @@ struct ConfigSyncOversizeTests {
         try f.write(oversize, to: f.remoteFile)
         try f.sync.enable(folder: f.remote.path)
         let size = oversize.utf8.count
-        #expect(throws: ConfigSyncError.remoteTooLarge(file: f.remoteFile.path, bytes: size)) { try f.sync.pull(force: true, allowCommands: true) }
+        #expect(throws: ConfigSyncError.remoteTooLarge(file: f.remoteFile.path, bytes: size)) { try f.sync.pull(force: true, allowCommands: f.digest) }
         #expect(throws: ConfigSyncError.remoteTooLarge(file: f.remoteFile.path, bytes: size)) { try f.sync.push(force: true) }
         #expect(try f.read(f.local) == one)
         #expect(try f.read(f.remoteFile) == oversize)
@@ -967,7 +969,7 @@ struct ConfigSyncOversizeTests {
         #expect(report.status != .remoteAhead, "a file that is there reads as one that is not, and a pull writes over it")
         #expect(throws: ConfigSyncError.invalid([.tooLarge(bytes: oversize.utf8.count)], file: f.local.path)) { try f.sync.push(force: true) }
         let why = "is \(oversize.utf8.count / 1024) KB, over the \(ConfigParser.maxBytes / 1024) KB limit for a config"
-        #expect(throws: ConfigSyncError.localNotRead(file: f.local.path, why: why)) { try f.sync.pull(force: true, allowCommands: true) }
+        #expect(throws: ConfigSyncError.localNotRead(file: f.local.path, why: why)) { try f.sync.pull(force: true, allowCommands: f.digest) }
         #expect(try f.read(f.local) == oversize)
         #expect(f.names(in: f.paths.configDirectory) == ["config.toml", "sync.toml"], "a copy of a huge file was made")
         #expect(try f.read(f.remoteFile) == one)

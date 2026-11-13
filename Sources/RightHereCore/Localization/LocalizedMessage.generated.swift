@@ -845,7 +845,7 @@ extension LocalizedMessage {
     public static var doctorFixRunSetup: LocalizedMessage { LocalizedMessage(.doctorFixRunSetup) }
     /// Give your Quick Action in %@ another name, then run `rh setup` again.
     public static func doctorFixServicesHeld(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.doctorFixServicesHeld, [argument1]) }
-    /// Read them with `rh config sync status`. If they are yours, `rh config sync pull --allow-commands` takes the copy.
+    /// Read them with `rh config sync status`. If they are yours, run the `rh config sync pull` command it shows, which takes this copy and no other.
     public static var doctorFixSyncCommands: LocalizedMessage { LocalizedMessage(.doctorFixSyncCommands) }
     /// Compare them with `rh config sync status`. Then run `rh config sync pull --force` to take the folder's copy, or `push --force` to keep this one. The replaced file is saved first.
     public static var doctorFixSyncCompare: LocalizedMessage { LocalizedMessage(.doctorFixSyncCompare) }

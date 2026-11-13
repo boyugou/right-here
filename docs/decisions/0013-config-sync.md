@@ -264,6 +264,30 @@ names only: with such a folder config, `rh config sync pull` exited 0 with "Pull
   replaces it and stops when another Mac changed it; the rename itself remains a moment that a folder other machines write cannot be
   locked through. A pull leaves a read-only `config.toml` alone, as an edit does.
 
+### Revision 2026-11-12: a second independent review
+
+- **A copy with many agents was slow to look at.** Each agent's name was compared with every earlier one's, worked out again each time:
+  a copy of 1,000 agents with accented names (547 KB, under the size limit) made `rh config sync status` and `rh doctor` take 87 and
+  81 seconds, with no pull. The names are kept in a set (`ConfigSink.agentNames`); the same copy takes a second.
+- **An item could start an agent without its command and arguments.** `agent.codex@desktop` or `agent.claude@link` in `menu.items` or
+  `services.items` does for a click on it what `[agent.<id>] launcher` does for every start, and nothing compared them. A pull lists
+  such an item, and the assistant's gate waits for it (`Config.agentItemsWithoutTheirCommand`).
+- **What the folder says was quoted unfenced** next to Right Here's advice, in the refusal, `status`, `enable` and the JSON. Values are
+  fenced (`Change.fencedLine`, `SyncValidation.Problem.fencedMessage`, the link target of a push), `status --json` gives
+  `pendingLaunchCommands` as `{place, value, previous}` with plain values, and `rh` takes the marks off on standard error at a terminal
+  as it does on standard output.
+- **The approval was not tied to what was shown.** The refusal and the pull that takes the copy are two commands, and the folder can
+  change in between (longer when an assistant shows the list to the person and waits). `--allow-commands` now takes the copy's digest
+  (12 hex digits of its SHA-256), which the refusal and `status` print with the command to run; another copy is refused with its own list.
+- **A copy valid alone could break the reading with this Mac's file.** A dotted key is a table and a key once the merge writes it out, so
+  1,100 unknown dotted keys (warnings only) passed and made the merged text exceed the parser's 2048 entries: the whole config, this
+  Mac's own file included, ran as the defaults. A pull also checks the copy with `config.local.toml` laid over it
+  (`SyncValidation.check(_:overlay:)`).
+- **A default terminal taken out** handed every click to a terminal of the config that starts through a template, the first in the order
+  of fallback, and was not listed; it is, when the copy sets no default and the config has such a terminal. (A default that names a
+  terminal this Mac does not have does the same, which only this Mac can tell; the assistant's gate asks its facts.)
+- **The doctor's row about conflict copies** named every one of them; it names three and counts the rest.
+
 ## Verified and not verified
 
 Verified by tests in temporary directories (no real home, no iCloud, no Finder): the merge rules and their

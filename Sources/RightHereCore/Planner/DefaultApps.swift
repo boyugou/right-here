@@ -85,7 +85,11 @@ public struct DefaultApps: Sendable {
 
     /// The apps of a role in the order they are tried: the ranked ones, then the config's own that have no rank.
     private func candidates(for role: AppDescriptor.Role) -> [AppDescriptor] {
-        Self.ranked(config.allApps, role: role) + config.apps.filter { $0.role == role && $0.defaultRank == nil }
+        Self.candidates(in: config, role: role)
+    }
+
+    static func candidates(in config: Config, role: AppDescriptor.Role) -> [AppDescriptor] {
+        ranked(config.allApps, role: role) + config.apps.filter { $0.role == role && $0.defaultRank == nil }
     }
 
     private func isInstalled(_ app: AppDescriptor) -> Bool {

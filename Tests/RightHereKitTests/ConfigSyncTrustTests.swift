@@ -26,6 +26,7 @@ private struct SyncFixture {
     func write(_ text: String, to file: URL) throws { try text.write(to: file, atomically: true, encoding: .utf8) }
     func read(_ file: URL) throws -> String { try String(contentsOf: file, encoding: .utf8) }
     var sync: ConfigSync { ConfigSync(paths: paths) }
+    var digest: String? { (try? sync.status())?.remoteDigest }
 
     /// A Mac that pushed `local`, after which the folder's copy became `folder` (another Mac, or whoever can write the folder).
     static func synced(local: String, folder: String, overlay: String? = nil) throws -> SyncFixture {
@@ -89,7 +90,7 @@ struct SyncOverlayMaskingTests {
         do { try f.sync.pull() } catch ConfigSyncError.commandsNeedApproval { refused = true }
         #expect(refused, "the pull took the hostile agent command without --allow-commands")
         // Taken on purpose, the command is among what the doctor says this Mac's config starts, though this Mac's own file pins another.
-        try f.sync.pull(allowCommands: true)
+        try f.sync.pull(allowCommands: f.digest)
         let row = try #require(f.sync.doctorChecks().first { $0.id == .syncCommands })
         let said = Localizer.english.render(sentences: [row.detail].compactMap(\.self) + row.notes)
         #expect(said.contains("example.invalid"), "the doctor's row does not show the shared command: \(said)")
@@ -104,7 +105,7 @@ struct SyncOverlayMaskingTests {
 @Suite("Config sync: a pull asks about what an assistant would wait for")
 struct SyncTrustParityTests {
     private func refusedChanges(_ f: SyncFixture) -> [LaunchCommands.Change]? {
-        do { try f.sync.pull() } catch ConfigSyncError.commandsNeedApproval(let changes) { return changes } catch { Issue.record("another error: \(error)") }
+        do { try f.sync.pull() } catch ConfigSyncError.commandsNeedApproval(let changes, _, _) { return changes } catch { Issue.record("another error: \(error)") }
         return nil
     }
 

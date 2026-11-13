@@ -191,6 +191,8 @@ public enum ConfigTrust {
         }
         if !PromptEffects.newlyWithoutAsking(from: before, to: after).isEmpty { need("agent.*.bypass_permissions") }
         for preset in after.presets where preset.prompt != before.preset(id: preset.id)?.prompt { need("preset.*.prompt") }
+        // An item of the menu or of the Quick Actions that starts an agent through its link or its desktop app does for a click on it what the launcher does for every start.
+        if !after.agentItemsWithoutTheirCommand.isSubset(of: before.agentItemsWithoutTheirCommand) { need("agent.*.launcher") }
         for template in after.newFile.templates where !template.contents.isEmpty {
             let was = before.newFile.templates.first(where: { $0.id == template.id })
             // The same text under another name is another file: a script that was `.txt` opens in an editor, as `.command` it runs, and a template without an extension

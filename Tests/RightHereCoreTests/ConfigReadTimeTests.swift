@@ -69,6 +69,22 @@ struct ConfigReadTimeTests {
         let elapsed = seconds { menu = MenuBuilder(config: config, facts: facts).build(for: files) }
         #expect(elapsed < 3.0, "building the menu for a selection of files took \(elapsed) s, for \(menu.count) entries")
     }
+
+    /// From a third review of `rh config sync` (2026-11-12). Each agent's name was checked against every agent before it, the comparable form of each
+    /// worked out again every time (`comparableName` in `contains(where:)`): quadratic in the agents, and an agent takes two settings with dotted keys, so
+    /// 1000 of them fit under `maxEntries`. 147 KB took 15 s (with an accent on each letter of the names, 547 KB took 39 s). `rh config sync status`, `pull`
+    /// and the doctor's sync rows read a folder's copy like this three times each, with no pull.
+    @Test func manyAgentsOfTheConfigsOwnAreReadInTimeThatGrowsWithTheText() {
+        var text = "[agent]\n"
+        for index in 0..<1_000 {
+            text += "a\(index).name = \"Agent \(index) \(String(repeating: "e", count: 100))\"\na\(index).command = \"tool\"\n"
+        }
+        #expect(text.utf8.count < ConfigParser.maxBytes / 7)
+        var result: ConfigLoadResult?
+        let elapsed = seconds { result = ConfigParser.parse(text) }
+        #expect(result?.config.customAgents.count == 1_000 && result?.hasErrors == false)
+        #expect(elapsed < 3.0, "parsing \(text.utf8.count) bytes took \(elapsed) s")
+    }
 }
 
 @Suite("What a config may hold, so that reading it stays quick")

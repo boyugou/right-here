@@ -420,6 +420,9 @@ code, and a mutant of `script/mutation_check.py` for each protection.
   its own, outside the server's runner and its time limit; it uses the server's.
 - **One budget.** Windows, files, commands, worktrees and changes of the config are paid from one budget a minute; a change refused after a run of windows
   said that too many changes had been made. The refusal says what counts.
+- **An item of the menu or of the Quick Actions** that starts an agent through its link or desktop app (`agent.codex@desktop`) does for a
+  click on it what the launcher does; an assistant that adds one waits for the person too (found by the second review of config sync,
+  2026-11-12).
 - **The plugin's setup skill** told the assistant to make the edits that setup lists; it says now to ask the person first for one that decides which
   program starts, which `rh config` makes at once from a shell.
 

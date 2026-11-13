@@ -20,6 +20,21 @@ extension Config {
         return [launch.open, launch.run].map { $0.map { "[" + $0.joined(separator: "\u{1F}") + "]" } ?? "-" }.joined(separator: "\u{1E}") + "\u{1D}" + app.bundleIDs.joined(separator: "\u{1F}")
     }
 
+    /// The items of the menu and of the Quick Actions that start an agent through its link or its desktop app (`agent.codex@desktop`, `agent.claude@link`): for a
+    /// click on such an item they do what `[agent.<id>] launcher` does for every start, and leave out the agent's command and arguments.
+    public var agentItemsWithoutTheirCommand: Set<String> {
+        Set(((menuItems ?? []) + (serviceItems ?? [])).filter { item in
+            guard case .agent(_, _, let launcher)? = ActionRef(parsing: item) else { return false }
+            return ConfigTrust.route(launcher) != AgentLauncher.terminalWord
+        })
+    }
+
+    /// The terminals a click falls back to, in the order they are tried, that start through a command template: with no default terminal, or one that is not
+    /// installed, the first installed terminal is used, and that can be one of these although no setting names it.
+    public var templateTerminalsToFallBackTo: [String] {
+        DefaultApps.candidates(in: self, role: .terminal).map(\.id).filter { templateProgram(of: $0) != nil }
+    }
+
     public var templateTerminalUses: [TemplateTerminalUse] {
         func program(of id: String?) -> (id: String, program: String)? {
             guard let id, let program = templateProgram(of: id) else { return nil }

@@ -97,6 +97,7 @@ documents) then ran clean. Run the fuzzer wider after touching the parser. The u
 | `general.terminal` could name an app the config had turned into an editor; an empty agent `command` typed nothing; a style or agent listed twice showed twice | role checks; an empty command is a config error; duplicates warn and are kept once; an empty `menu.items` warns | `ConfigParserTests` |
 | `rh run --json` printed nothing on stdout when the action failed | it prints `{"ok":false,"error":...}` | `CLITests` |
 | `verify_docs.py` could not tell `rh doctr` from `rh doctor`, nor `--dry` from `--dry-run` | subcommands are read from the help and flags matched whole | `script/verify_docs.py` |
+| Config sync: a copy of 1,000 agents made `status` and the doctor take 87 s (each name compared with every earlier one's); `agent.<id>@desktop` and `@link` items were not compared; the folder's text was quoted unfenced; the approval was not tied to the copy shown; a copy valid alone broke the reading with `config.local.toml`; a default terminal taken out handed clicks to a template unlisted; the conflict row was unbounded (2026-11-12) | a set of names; the items listed and gated; fences; `--allow-commands <digest>`; the merged reading checked; the fallback listed; three named | `ConfigSyncThirdReviewTests`, `ConfigReadTimeTests`, `ConfigSyncThirdReviewCLITests` |
 
 ### Tests and scripts
 

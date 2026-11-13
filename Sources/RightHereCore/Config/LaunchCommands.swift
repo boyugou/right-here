@@ -31,7 +31,7 @@ public struct LaunchCommands: Sendable, Equatable {
     }
 
     /// An entry that is new, or that says something other than before.
-    public struct Change: Sendable, Equatable {
+    public struct Change: Sendable, Equatable, Codable {
         public var place: String
         public var value: String
         /// What the same place said before; `nil` when the place is new.
@@ -40,6 +40,12 @@ public struct LaunchCommands: Sendable, Equatable {
         /// One line for a terminal: `[agent.claude] command = "claude --x" (was "claude")`.
         public var line: String {
             "\(place) = \(value)" + (previous.map { " (was \($0))" } ?? "")
+        }
+
+        /// The same with what the config says marked as data (`Fence`), for a refusal or a status that an AI assistant reads: the folder's words are told from
+        /// Right Here's (ADR 0020).
+        public var fencedLine: String {
+            "\(place) = \(Fence.wrap(value))" + (previous.map { " (was \(Fence.wrap($0)))" } ?? "")
         }
     }
 
@@ -112,6 +118,17 @@ public struct LaunchCommands: Sendable, Equatable {
         // the menu or of the Quick Actions that names one.
         for use in config.templateTerminalUses {
             found.append(Entry(place: "\(use.place) (starts through a command template)", value: Self.quoted(use.terminal)))
+        }
+        // With no default terminal a click goes to the first installed terminal, which can be one that starts through a template although no setting names it: a
+        // copy that takes the default out hands every click to it. (One that names a terminal this Mac does not have does the same, which only this Mac can tell:
+        // the assistant's gate, `ConfigTrust.approvals(changingFrom:to:facts:)`, asks its facts.)
+        let fallbacks = config.templateTerminalsToFallBackTo
+        if config.terminal == nil, !fallbacks.isEmpty {
+            found.append(Entry(place: "[general] terminal (not set: a click goes to the first installed terminal)", value: "can be " + fallbacks.map(Self.quoted).joined(separator: ", ")))
+        }
+        // An item that starts an agent through its link or its desktop app leaves out the agent's command and arguments for a click on it, as the launcher does for every start.
+        for item in config.agentItemsWithoutTheirCommand.sorted() {
+            found.append(Entry(place: "an item of the menu or of the Quick Actions: \(item) (starts the agent without its command and arguments)", value: Self.quoted(item)))
         }
         var seen = Set<String>()
         // What runs a program of its own first: a list that shows only its first lines shows those, and the apps a click hands things to after.

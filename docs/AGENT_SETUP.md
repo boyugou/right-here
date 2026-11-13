@@ -68,6 +68,10 @@ template, what a new-file template holds, and `bypass_permissions`.
   For example: its arguments emptied, a start option replaced, or an agent put in the menu while "start agents without asking" is on.
   This is also true when the change is in `config.local.toml`.
 
+**Config sync.** `rh config sync pull` refuses a copy from the sync folder that would add or change what a click starts, and lists
+it with the command that takes that copy (`rh config sync pull --allow-commands <digest>`). The folder can be written by other Macs and
+services: show the list to the person, and run that command only when they say the changes are theirs.
+
 **Add a program of the person's own** (lazygit, aider, a script) as an agent:
 `rh config add agent.lazygit name=lazygit command=lazygit`. This makes its table and puts it in `general.agents` in one change.
 `rh config remove agent.lazygit` takes it out again.

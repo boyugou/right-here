@@ -154,7 +154,8 @@ struct LaunchCommandsTests {
 
     @Test func bytesThatCannotBeReadAsTextCountAsNothingKnown() {
         let known = LaunchCommands(configData: Data([0xff, 0xfe, 0x00]))
-        #expect(LaunchCommands(configText: redefinedTerminal).additions(to: known).count == 3)
+        // The two templates, the bundle identifier, and the default that is not set while a terminal of the config starts through a template.
+        #expect(LaunchCommands(configText: redefinedTerminal).additions(to: known).count == 4)
         // A byte order mark, which the config store drops before parsing, does not hide what follows it.
         #expect(LaunchCommands(configData: Data(("\u{FEFF}" + redefinedTerminal).utf8)) == LaunchCommands(configText: redefinedTerminal))
     }

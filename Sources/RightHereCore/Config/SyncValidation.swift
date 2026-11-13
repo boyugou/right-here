@@ -13,8 +13,21 @@ public enum SyncValidation {
         case notUTF8
         /// The first error the parser reports, as one line.
         case invalid(String)
+        /// Valid alone, and not with this Mac's `config.local.toml` laid over it, as a click reads it: the first error of that reading.
+        case invalidWithThisMacsFile(String)
         /// Dotted paths of the keys.
         case secretKeys([String])
+
+        /// The message with what it quotes of a config (the parser's first error, key names) marked as data (`Fence`): the config can come from a folder that
+        /// other machines write, and the sentence stands next to advice that an AI assistant reads.
+        public var fencedMessage: String {
+            switch self {
+            case .invalid(let reason): Problem.invalid(Fence.wrap(reason)).message
+            case .invalidWithThisMacsFile(let reason): Problem.invalidWithThisMacsFile(Fence.wrap(reason)).message
+            case .secretKeys(let keys): Problem.secretKeys(keys.map(Fence.wrap)).message
+            case .tooLarge, .unreadable, .notUTF8: message
+            }
+        }
 
         /// No final period: a message ends a sentence of its own in the places that join several (`Refusing ...; ... Nothing was changed.`).
         public var message: String {
@@ -23,9 +36,24 @@ public enum SyncValidation {
             case .unreadable(let reason): "the file cannot be read (\(reason))"
             case .notUTF8: "the file is not valid UTF-8"
             case .invalid(let reason): "the config is not valid: \(reason.hasSuffix(".") ? String(reason.dropLast()) : reason). Run `rh config validate`"
+            case .invalidWithThisMacsFile(let reason):
+                "the config is valid alone, and not with this Mac's config.local.toml laid over it, which is how a click reads it: \(reason.hasSuffix(".") ? String(reason.dropLast()) : reason)"
             case .secretKeys(let keys): "the config has key names that suggest a secret (\(keys.joined(separator: ", "))); a synced config must not hold credentials. Keep them in the environment or the keychain"
             }
         }
+    }
+
+    /// The copy read as a click on this Mac would read it, with `overlay` (`config.local.toml`) laid over it: a copy that is valid alone can make the merged text
+    /// break a limit of the parser (a dotted key is a table and a key once it is written out), and the whole config, this Mac's own file included, would then run
+    /// as the defaults.
+    public static func check(_ data: Data, overlay: Data?) -> [Problem] {
+        let alone = check(data)
+        guard alone.isEmpty, let overlay, let text = String(data: data, encoding: .utf8), let local = String(data: overlay, encoding: .utf8) else { return alone }
+        let merged = ConfigLayers.load(base: .text(text), local: .text(local))
+        // An error that this Mac's file has alone is that file's, and the doctor says it already; only what the copy brings to the merge stops a pull.
+        let ownErrors = Set(ConfigLayers.load(base: .absent, local: .text(local)).diagnostics.filter { $0.severity == .error }.map(\.message))
+        guard let first = merged.diagnostics.first(where: { $0.severity == .error && !ownErrors.contains($0.message) }) else { return [] }
+        return [.invalidWithThisMacsFile(first.summary(file: URL(fileURLWithPath: "config.toml")))]
     }
 
     public static func check(_ data: Data) -> [Problem] {

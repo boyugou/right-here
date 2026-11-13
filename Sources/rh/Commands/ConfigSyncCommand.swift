@@ -15,9 +15,10 @@ struct ConfigSyncCommand: ParsableCommand {
         `status` compares them. Nothing is ever \
         deleted, writes are atomic, and a config that does not validate, is over 1 MiB or has key names that \
         look like secrets (token, secret, password, api_key) is refused. The folder is not trusted with programs: \
-        a pull that would add or change a terminal template or an agent command is refused, with the list, unless \
-        you pass --allow-commands. Machine-specific settings belong in config.local.toml, which is never synced; \
-        see `rh docs sync`.
+        a pull that would add or change what a click starts (a terminal template, an agent's command, arguments or \
+        launcher, a preset's prompt, an app's bundle identifier or role, a new-file template, the permission prompts) \
+        is refused, with the list and the copy's digest, unless you pass --allow-commands <digest>. Machine-specific \
+        settings belong in config.local.toml, which is never synced; see `rh docs sync`.
         """,
         subcommands: [Enable.self, Status.self, Pull.self, Push.self, Disable.self]
     )
@@ -66,9 +67,11 @@ struct ConfigSyncCommand: ParsableCommand {
             var remoteSHA256: String?
             var lastSyncedSHA256: String?
             var conflictCopies: [String]
-            /// What the folder's copy would add or change among what this machine starts (one line each).
-            var pendingLaunchCommands: [String]
-            /// What `push` would refuse in this machine's config, and what `pull` would refuse in the folder's copy (a sentence each).
+            /// What the folder's copy would add or change among what this machine starts: where, the value as the copy says it, and what this Mac's said.
+            var pendingLaunchCommands: [LaunchCommands.Change]
+            /// What `pull --allow-commands` takes to accept this copy and no other; `nil` with no copy.
+            var remoteDigest: String?
+            /// What `push` would refuse in this machine's config, and what `pull` would refuse in the folder's copy (a sentence each, what it quotes fenced).
             var localProblems: [String]
             var remoteProblems: [String]
         }
@@ -81,8 +84,8 @@ struct ConfigSyncCommand: ParsableCommand {
                     try Output.json(Report(status: report.status.rawValue, folder: report.folder.path, folderReachable: report.folderReachable,
                                            localFile: report.localFile.path, remoteFile: report.remoteFile.path, localSHA256: report.localHash,
                                            remoteSHA256: report.remoteHash, lastSyncedSHA256: report.lastSynced, conflictCopies: report.conflictCopies,
-                                           pendingLaunchCommands: report.pendingCommands.map(\.line),
-                                           localProblems: report.localProblems.map(\.message), remoteProblems: report.remoteProblems.map(\.message)))
+                                           pendingLaunchCommands: report.pendingCommands, remoteDigest: report.remoteDigest,
+                                           localProblems: report.localProblems.map(\.fencedMessage), remoteProblems: report.remoteProblems.map(\.fencedMessage)))
                     return
                 }
                 Output.print("Sync folder: \(report.folder.path.withControlCharactersEscaped)" + (report.folderReachable ? "" : " (not reachable)"))
@@ -119,10 +122,10 @@ struct ConfigSyncCommand: ParsableCommand {
         static func problems(_ report: ConfigSync.Report) -> [String] {
             var lines: [String] = []
             if !report.localProblems.isEmpty {
-                lines.append("This machine's config would be refused by `push`: " + report.localProblems.map(\.message).joined(separator: "; ") + ".")
+                lines.append("This machine's config would be refused by `push`: " + report.localProblems.map(\.fencedMessage).joined(separator: "; ") + ".")
             }
             if !report.remoteProblems.isEmpty {
-                lines.append("The folder's copy would be refused by `pull`: " + report.remoteProblems.map(\.message).joined(separator: "; ") + ".")
+                lines.append("The folder's copy would be refused by `pull`: " + report.remoteProblems.map(\.fencedMessage).joined(separator: "; ") + ".")
             }
             return lines
         }
@@ -132,11 +135,12 @@ struct ConfigSyncCommand: ParsableCommand {
             guard !report.pendingCommands.isEmpty else { return [] }
             // A config that cannot be read runs as the defaults, and a pull is weighed against that: what the folder's copy has
             // of its own is all new to it, including what this Mac itself pushed before the file was broken.
+            let digest = report.remoteDigest ?? "<digest>"
             let heading = report.localRunsWithDefaults
-                ? "This machine's config cannot be read as it is, so Right Here runs with its defaults, and a pull is weighed against those: everything of its own in the folder's copy counts as new (a pull is refused unless you pass --allow-commands):"
-                : "The folder's copy adds or changes what Right Here starts (a pull is refused unless you pass --allow-commands):"
+                ? "This machine's config cannot be read as it is, so Right Here runs with its defaults, and a pull is weighed against those: everything of its own in the folder's copy counts as new (a pull is refused unless you pass --allow-commands \(digest), which takes this copy and no other):"
+                : "The folder's copy adds or changes what Right Here starts (a pull is refused unless you pass --allow-commands \(digest), which takes this copy and no other):"
             return [heading]
-                + report.pendingCommands.prefix(ConfigSyncError.listedChanges).map { "  " + $0.line }
+                + report.pendingCommands.prefix(ConfigSyncError.listedChanges).map { "  " + $0.fencedLine }
                 + (report.pendingCommands.count > ConfigSyncError.listedChanges ? ["  and \(report.pendingCommands.count - ConfigSyncError.listedChanges) more"] : [])
         }
 
@@ -149,7 +153,7 @@ struct ConfigSyncCommand: ParsableCommand {
         }
 
         static func nextStep(_ report: ConfigSync.Report) -> String {
-            let approval = report.pendingCommands.isEmpty ? "" : " --allow-commands"
+            let approval = report.pendingCommands.isEmpty ? "" : " --allow-commands \(report.remoteDigest ?? "<digest>")"
             // What `push` and `pull` would refuse is not advised: it is said above, and the way out is to fix it first.
             let canPush = report.localProblems.isEmpty, canPull = report.remoteProblems.isEmpty
             // A local config that was not read (too large, no permission) is never written over, `--force` included.
@@ -167,7 +171,7 @@ struct ConfigSyncCommand: ParsableCommand {
                 return "Next: `rh config sync push`."
             case .remoteAhead:
                 guard canPull else { return "Next: fix the folder's copy first, on the Mac that wrote it or by hand; `pull` refuses it." }
-                return report.pendingCommands.isEmpty ? "Next: `rh config sync pull`." : "Next: read what the folder's copy would start, and if it is yours, `rh config sync pull\(approval)`."
+                return report.pendingCommands.isEmpty ? "Next: `rh config sync pull`." : "Next: read what the folder's copy would start (or show it to the person whose Mac this is), and if it is theirs, `rh config sync pull\(approval)`."
             case .diverged:
                 if localNotRead && canPull { return "Next: this machine's config was not read (see above), so it can be neither compared nor replaced: fix its permissions or move it aside, then `rh config sync pull\(approval)`." }
                 switch (canPull, canPush) {
@@ -188,18 +192,19 @@ struct ConfigSyncCommand: ParsableCommand {
             abstract: "Replace this machine's config with the copy in the sync folder.",
             discussion: """
             Refuses when this machine's config changed since the last sync, unless --force; then the old file is saved as \
-            config.toml.bak-<date>. Refuses, listing them, when the copy would add or change a terminal template \
-            (open_args, run_args) or an agent command that this machine's config does not already have, unless \
-            --allow-commands: a synced folder can be written by other machines and services, so what it makes a click \
-            run is yours to read first.
+            config.toml.bak-<date>. Refuses, listing them with the copy's digest, when the copy would add or change what a \
+            click starts that this machine's config does not already have (a terminal template, an agent's command, \
+            arguments or launcher, a preset's prompt, an app's bundle identifier or role, a new-file template, the permission \
+            prompts), unless --allow-commands <digest>: a synced folder can be written by other machines and services, so \
+            what it makes a click run is yours to read first, and the digest makes the approval good for that copy only.
             """
         )
 
         @Flag(help: "Replace a locally changed config (the old one is saved first).")
         var force = false
 
-        @Flag(help: "Accept the terminal templates and agent commands the copy adds or changes (a pull that would is refused, with the list, without this).")
-        var allowCommands = false
+        @Option(name: .customLong("allow-commands"), help: "The digest a refused pull or `rh config sync status` printed: take that copy with what it starts, and no other copy.")
+        var allowCommands: String?
 
         func run() throws {
             let runtime = Runtime()
