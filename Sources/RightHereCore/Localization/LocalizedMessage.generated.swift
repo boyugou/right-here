@@ -761,10 +761,20 @@ extension LocalizedMessage {
     public static var copyPathTilde: LocalizedMessage { LocalizedMessage(.copyPathTilde) }
     /// Copy Path: %@
     public static func copyPathTitleFormat(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.copyPathTitleFormat, [argument1]) }
+    /// %1$@ (the command line), %2$@
+    public static func doctorActivityCli(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorActivityCli, [argument1, argument2]) }
+    /// %1$@ (right-click inside a folder), %2$@
+    public static func doctorActivityContainer(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorActivityContainer, [argument1, argument2]) }
+    /// %1$@ (right-click on selected items), %2$@
+    public static func doctorActivityItems(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorActivityItems, [argument1, argument2]) }
     /// none yet; right-click a folder in Finder and choose an action, then run `rh doctor` again
     public static var doctorActivityNone: LocalizedMessage { LocalizedMessage(.doctorActivityNone) }
-    /// %1$@ from the %2$@ menu, %3$@
-    public static func doctorActivityRecent(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorActivityRecent, [argument1, argument2, argument3]) }
+    /// %1$@ (a Quick Action), %2$@
+    public static func doctorActivityServices(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorActivityServices, [argument1, argument2]) }
+    /// %1$@ (the Finder sidebar), %2$@
+    public static func doctorActivitySidebar(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorActivitySidebar, [argument1, argument2]) }
+    /// %1$@ (the Finder toolbar), %2$@
+    public static func doctorActivityToolbar(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.doctorActivityToolbar, [argument1, argument2]) }
     /// `%1$@` found; its alias in your login shell adds `%3$@`, so it starts with %2$@ and its permission prompts switched off, prompt presets included
     public static func doctorAgentAliasBypass(_ argument1: String, _ argument2: String, _ argument3: String) -> LocalizedMessage { LocalizedMessage(.doctorAgentAliasBypass, [argument1, argument2, argument3]) }
     /// `%1$@` found; starts with %2$@ and its permission prompts switched off (`%3$@`)

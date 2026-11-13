@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import RightHereCore
 @testable import RightHereKit
 
 @Suite("Doctor probe checks")
@@ -110,7 +111,10 @@ struct DoctorActivityCheckTests {
         defer { try? FileManager.default.removeItem(at: directory) }
         let check = Doctor.activityCheck(logFile: file, now: now)
         #expect(check.status == .ok)
-        #expect(check.detail?.english().contains("agent.codex from the container menu") == true)
+        #expect(check.detail?.english().contains("agent.codex (right-click inside a folder)") == true, "\(check.detail?.english() ?? "")")
+        // Where it was started is said in words in every language: `container` is a word of `rh run --origin`, which says nothing to a person.
+        let chinese = Localizer(languages: ["zh-Hans"]).render(try #require(Doctor.activityCheck(logFile: file, now: now, language: "zh-Hans").detail))
+        #expect(chinese.contains("在文件夹内右键点击") && !chinese.contains("container"), "\(chinese)")
         #expect(check.detail?.english().contains("ago") == true, "English on a Mac of any language: the command line's sentences are English")
         let german = Doctor.activityCheck(logFile: file, now: now, language: "de")
         #expect(german.detail?.arguments.last?.hasPrefix("vor") == true, "the window writes the time in its own language: \(german.detail?.arguments ?? [])")
@@ -132,6 +136,6 @@ struct DoctorActivityCheckTests {
         let (directory, file) = try log(["2026-10-12T05:58:00Z ok agent.claude [cli, 0 items]"])
         defer { try? FileManager.default.removeItem(at: directory) }
         try "2026-10-11T12:00:00Z ok new-file.md [toolbar, 0 items]\n".write(to: file.appendingPathExtension("1"), atomically: true, encoding: .utf8)
-        #expect(Doctor.activityCheck(logFile: file, now: now).detail?.english().contains("new-file.md from the toolbar menu") == true)
+        #expect(Doctor.activityCheck(logFile: file, now: now).detail?.english().contains("new-file.md (the Finder toolbar)") == true)
     }
 }

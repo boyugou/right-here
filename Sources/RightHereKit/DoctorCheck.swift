@@ -40,11 +40,11 @@ public struct DoctorCheck: Sendable, Equatable, Encodable, Identifiable {
     }
 
     /// For a row that can quote the config (`CheckID.quotesTheConfig`): which values of which messages are Right Here's own and not the config's text: where it looks for
-    /// the config, the overlay, which of the two files is a link, the sync state's file, the origin and the age of the last action started from Finder (its id is
-    /// the config's), and the constants that a fix quotes. `rh doctor --report` shows these and leaves every other value out; a report an agent reads fences every other value.
+    /// the config, the overlay, which of the two files is a link, the sync state's file, the age of the last action started from Finder (its id is the config's; where it
+    /// was started is the sentence's own words), and the constants that a fix quotes. `rh doctor --report` shows these and leaves every other value out; a report an agent reads fences every other value.
     static let ownValues: [LocalizationKey: Set<Int>] = [
         .doctorConfigMissing: [0], .doctorConfigOverlay: [0], .doctorConfigSymlink: [0], .doctorSyncStateUnreadable: [0],
-        .doctorActivityRecent: [1, 2],
+        .doctorActivityItems: [1], .doctorActivityContainer: [1], .doctorActivitySidebar: [1], .doctorActivityToolbar: [1], .doctorActivityServices: [1], .doctorActivityCli: [1],
         // Constants of Right Here's own that a fix quotes (`launcher = "link"`, `agents = ["claude"]`).
         .doctorFixAgentsAdd: [0], .doctorFixAgentLauncher: [0, 1]
     ]

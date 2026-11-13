@@ -200,14 +200,15 @@ public enum Documentation {
         rh config sync enable --folder ~/Sync/rh  any folder works: Dropbox, a git checkout, a network share
         rh config sync push                       send this Mac's config to the folder (makes its last folder, not its parents)
         rh config sync pull                       take the config from the folder (refused, with a list, if it adds programs)
-        rh config sync pull --allow-commands      take it, although it adds or changes terminal templates or agent commands
+        rh config sync pull --allow-commands <digest>  take the copy whose list you read (the refusal and status print the digest)
         rh config sync status                     in-sync, local-ahead, remote-ahead, diverged, remote-missing or remote-evicted
         rh config sync disable                    forget the folder; both copies stay
 
     The state (the folder, and a hash of what was last synced) is in `sync.toml` next to the config.
 
-    On a second Mac, run `rh config sync enable` and then `rh config sync pull`. Add `--allow-commands` if the config
-    has programs of its own (see the rules below).
+    On a second Mac, run `rh config sync enable` and then `rh config sync pull`. If the config has programs of its own,
+    the pull lists them and ends with the command that takes that copy, `rh config sync pull --allow-commands <digest>`
+    (see the rules below).
 
     ## The rules
 
@@ -224,14 +225,17 @@ public enum Documentation {
         file that it gets)
       - a terminal that starts through a template, chosen as the default terminal, for an agent, or in the Finder
         menu or the Quick Actions
-      - the `command`, `args` or `prompt_arg` of an agent, the `arguments` of a start option,
-        `bypass_permissions` or `bypass_permission_arg`
-      - an agent that the copy puts in the menu or the Quick Actions while it starts without its permission prompts
-      - the contents of a New File template (a file that something on this Mac may run)
+      - the `command`, `args`, `prompt_arg` or `launcher` of an agent, the `arguments` of a start option,
+        `bypass_permissions` or `bypass_permission_arg`, and the `prompt` of a preset (typed after the agent's command)
+      - an agent that the copy puts in the menu or the Quick Actions while it starts without its permission prompts,
+        or through its link or its desktop app (`agent.codex@desktop`, which leaves out its command and arguments)
+      - the default terminal taken out, when a terminal of the config starts through a template and would get the clicks
+      - the contents and the name of a New File template (a file that something on this Mac may run)
 
       Right Here reads the copy with this Mac's own `config.local.toml`, as a click reads it. Read the list. If the
-      changes are yours, run `rh config sync pull --allow-commands`. This flag is separate from `--force`, and you
-      can use both. `status` and `enable` show the same list, and `rh doctor` has a row for it. A first pull on a new
+      changes are yours, run the command it ends with, `rh config sync pull --allow-commands <digest>`: the digest
+      names the copy you read, and a copy that changed since is refused with its own list. This flag is separate from
+      `--force`, and you can use both. `status` and `enable` show the same list, and `rh doctor` has a row for it. A first pull on a new
       Mac asks only about programs of your own, never about the built-in apps and agents.
     - `pull` waits while another change of the config is in progress: in the window, with `rh config`, or through an
       assistant. If it cannot wait longer, it says so.

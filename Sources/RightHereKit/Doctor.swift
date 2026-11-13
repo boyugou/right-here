@@ -391,9 +391,21 @@ public struct Doctor: Sendable {
             relative.locale = Locale(identifier: language)
             relative.unitsStyle = .full
             return DoctorCheck(.finderActivity, status: .ok,
-                               detail: .doctorActivityRecent(entry.actionID, entry.origin.rawValue, relative.localizedString(for: entry.date, relativeTo: now)))
+                               detail: Self.activity(entry.actionID, from: entry.origin, ago: relative.localizedString(for: entry.date, relativeTo: now)))
         }
         return DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityNone)
+    }
+
+    /// The last action and where it was started, in words: the origin's own name (`container`) is a word of `rh run --origin`, which says nothing to a person.
+    static func activity(_ action: String, from origin: HereContext.Origin, ago: String) -> LocalizedMessage {
+        switch origin {
+        case .items: .doctorActivityItems(action, ago)
+        case .container: .doctorActivityContainer(action, ago)
+        case .sidebar: .doctorActivitySidebar(action, ago)
+        case .toolbar: .doctorActivityToolbar(action, ago)
+        case .services: .doctorActivityServices(action, ago)
+        case .cli: .doctorActivityCli(action, ago)
+        }
     }
 
     /// The Quick Actions check alone: the Services on disk against the ones the config asks for. It reads the folder of the Services and starts nothing, so the setup window asks it again after a

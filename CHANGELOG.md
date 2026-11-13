@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **The last action in the Checks says where it was started, in words** ("right-click inside a folder", "a Quick Action") in
+  every language: it showed the command line's word for it ("container"). `rh docs sync` describes `--allow-commands <digest>`
+  and everything a pull asks about.
+
 ## 1.2.18 (2026-11-12)
 
 - **Config sync, after a second independent review.** `--allow-commands` now takes the digest of the copy whose list you read

@@ -74,14 +74,14 @@ struct DoctorReportTests {
             DoctorCheck(.config, status: .warn, detail: .doctorConfigWarnings("3"), fix: .doctorFixConfigWarnings),
             DoctorCheck(.terminalDefault, status: .warn, detail: .doctorAppFallback("Project Bluebird Term", "Terminal"), fix: .doctorFixTerminalFallback),
             DoctorCheck(.agent("acme"), title: "Project Bluebird assistant", status: .warn, detail: .doctorAgentNotFound("ACME_API_KEY=sk-live-1"), fix: .doctorFixAgentRemove("acme")),
-            DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityRecent("agent.bluebird", "items", "3 hours ago"))
+            DoctorCheck(.finderActivity, status: .ok, detail: Doctor.activity("agent.bluebird", from: .items, ago: "3 hours ago"))
         ]
         let text = report(rows)
         #expect(text.contains("[warn] Config file: 3 warning(s); run `rh config validate`"), Comment(rawValue: text))
         #expect(text.contains("[warn] Default terminal: … is not installed; … is used instead."), Comment(rawValue: text))
         #expect(text.contains("[warn] agent.acme: `…` is not found in your login shell"), Comment(rawValue: text))
         #expect(text.contains("fix: Install it, or remove \"…\" from general.agents."))
-        #expect(text.contains("[ok] Last action started from Finder: … from the items menu, 3 hours ago"), "the origin and the age of the last action are shown, its id is not: \(text)")
+        #expect(text.contains("[ok] Last action started from Finder: … (right-click on selected items), 3 hours ago"), "where and when the last action was started are shown, its id is not: \(text)")
         for secret in ["Bluebird", "ACME_API_KEY", "sk-live", "Project"] { #expect(!text.contains(secret), "\(secret) in \(text)") }
     }
 
