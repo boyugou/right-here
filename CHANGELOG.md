@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.19 (2026-11-12)
+
 - **The last action in the Checks says where it was started, in words** ("right-click inside a folder", "a Quick Action") in
   every language: it showed the command line's word for it ("container"). `rh docs sync` describes `--allow-commands <digest>`
   and everything a pull asks about.
