@@ -64,7 +64,7 @@
   (`new-file.md`) is left out for several selected items, as New File is. `rh menu --explain` says why the presets are
   left out when no agent, or not their agent, is in the menu (it said "Nothing is left out" of an empty menu), and
   counts items, not files, when a selection is too large for the menu to look at. With several agents in the menu, the
-  presets say which agent they start ("Claude Code: Review").
+  presets say which agent they start ("Claude Code: Review"), and a preset named with a terminal says which terminal.
 
 ## 1.2.25 (2026-11-13)
 

@@ -160,7 +160,9 @@ public struct ActionRegistry: Sendable {
             return
         }
         guard let agent = config.agent(for: preset) else { return }
-        info.title = localizer.agentVariant(agent.name, presetTitle)
+        // A preset named with a terminal says which, as a start option does: `preset.review` and `preset.review@terminal` were both "Claude Code: Review".
+        let terminalName = terminalID.flatMap { config.terminalApp(id: $0) }.map(name(of:)) ?? terminalID
+        info.title = terminalName.map { localizer.agentVariantIn(agent.name, presetTitle, terminal: $0) } ?? localizer.agentVariant(agent.name, presetTitle)
         info.icon = icon(of: agent)
         let resolution = AgentLaunchResolution.resolve(agent: agent, hasVariant: true, explicit: terminalID.map { .terminal($0) }, config: config, facts: facts)
         if case .failure(let why) = resolution.route { unavailable(&info, reason: why.sentence, message: why.message) }

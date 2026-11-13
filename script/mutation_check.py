@@ -2685,6 +2685,9 @@ MUTANTS = [
      "        } else if preset.needsFiles, context.items.count > preset.maxFiles {", "        } else if false {"),
     ("presets leave their agent out of their titles with several agents in the menu", "Sources/RightHereCore/Menu/MenuBuilder.swift",
      "let oneAgent = Set(infos.map(\\.agent)).count <= 1 && config.enabledAgents.count <= 1", "let oneAgent = Set(infos.map(\\.agent)).count <= 1"),
+    ("a preset named with a terminal does not say which", "Sources/RightHereCore/Actions/ActionRegistry.swift",
+     "info.title = terminalName.map { localizer.agentVariantIn(agent.name, presetTitle, terminal: $0) } ?? localizer.agentVariant(agent.name, presetTitle)",
+     "info.title = localizer.agentVariant(agent.name, presetTitle)"),
 ]
 
 

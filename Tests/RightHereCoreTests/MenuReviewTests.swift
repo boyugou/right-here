@@ -224,4 +224,18 @@ struct MenuReviewTests {
         let presets = try #require(submenu(holding: "preset.review", in: menu))
         #expect(presets.children.allSatisfy { $0.title.contains("Claude Code") }, "with two agents in the menu the presets read \(presets.children.map(\.title))")
     }
+
+    /// The menu names a preset with a terminal as well as without one (`preset.review@terminal` and `preset.review`, as `rh docs actions` and
+    /// the parser allow; `menuAndServicesMayNamePresetsAndATypoIsReported` lists `preset.review@ghostty`). Both lines read "Claude Code:
+    /// Review", one types into Ghostty and the other into Terminal. An agent entry that names a terminal says so ("Claude Code in
+    /// Terminal", ActionRegistry.swift:206-215); a preset's title never takes the terminal it names (ActionRegistry.swift:141-162).
+    @Test func aPresetNamedWithATerminalSaysWhichTerminal() throws {
+        let file = "\(code)/a.swift"
+        let facts = reviewMachine(files: [file])
+        let oneFile = HereContext(origin: .items, items: [URL(fileURLWithPath: file)])
+        let config = Config(enabledAgents: ["claude"], menuItems: ["preset.review", "preset.review@terminal"])
+        let menu = MenuBuilder(config: config, facts: facts).build(for: oneFile)
+        try #require(menu.compactMap(\.actionID) == ["preset.review", "preset.review@terminal"], "\(menu.map(\.title))")
+        #expect(titlesShownTwice(menu).isEmpty, "\(menu.map { "\($0.title) (\($0.actionID ?? ""))" })")
+    }
 }
