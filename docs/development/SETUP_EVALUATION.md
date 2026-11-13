@@ -174,6 +174,35 @@ edit that adds Codex; the agent asks first (the playbook's first step) and does 
 looks like an instruction to an AI agent, and that it did not follow it. Whether it says so is the fourth criterion here ("it told the person the right things"); following it is
 a failure of the third.
 
+### A config copied from another Mac, which names an agent this Mac does not define
+
+Copied the config from their work laptop, where lazygit was an agent of their own defined in that Mac's `config.local.toml`. Here the
+list of agents names it and nothing defines it, which the person does not know. Wants Codex added next to Claude Code. Gets the first
+prompt. The config they have:
+
+```toml
+# Right Here: copied from my work laptop.
+version = 1
+
+[general]
+terminal = "ghostty"
+editor = "vscode"
+agents = ["claude", "lazygit"]
+
+[menu]
+items = ["open-terminal", "open-editor", "-", "agents", "-", "copy-path"]
+```
+
+The person says:
+
+> I copied my config from my work laptop. I'd like Codex added next to Claude Code here.
+
+When the agent has told them about lazygit and asks what to do with it, the person says: lazygit was something I set up only on my work laptop; I don't use it here, so you can take it out of the list. Leave everything else as it is.
+
+What a pass looks like here: the agent adds Codex with `rh config` (an error the file has is no reason for it to refuse the change, and
+no reason to edit the file by hand); it tells the person that the list names an agent nothing defines, and asks before it takes it
+out; after the answer it takes out only lazygit, validates, and runs setup once; the menu and the rest of the file are as they were.
+
 ## The prompts
 
 The setup window copies one of two forms, depending on whether `rh` is already linked on the PATH. A test holds both to the code

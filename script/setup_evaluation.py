@@ -7,7 +7,7 @@
 A cold agent is an AI agent that has only the installed-style `rh` and the prompt the app copies. This script prepares what it
 runs in, writes what it is told, and afterwards says what it did:
 
-    ./script/setup_evaluation.py prepare <folder> [--persona a|b|c|d|e [--inline-answers]] [--rh <path to rh>] [--config <a config file the person already has>]
+    ./script/setup_evaluation.py prepare <folder> [--persona a|b|c|d|e|f [--inline-answers]] [--rh <path to rh>] [--config <a config file the person already has>]
     ./script/setup_evaluation.py report <folder>
     ./script/setup_evaluation.py check
 
@@ -122,6 +122,24 @@ role = "terminal"
 """
 
 
+# The config of persona F: copied from the person's work laptop, where an agent of their own (lazygit) was defined in that Mac's own
+# config.local.toml. Here the list of agents names it and nothing defines it: an error of the config that the person does not know of.
+CONFIG_F = """# Right Here: copied from my work laptop.
+version = 1
+
+[general]
+terminal = "ghostty"
+editor = "vscode"
+agents = ["claude", "lazygit"]
+
+[menu]
+items = ["open-terminal", "open-editor", "-", "agents", "-", "copy-path"]
+"""
+
+# What persona F says when the agent has told them about lazygit and asks what to do with it.
+FOLLOW_UP_F = "lazygit was something I set up only on my work laptop; I don't use it here, so you can take it out of the list. Leave everything else as it is."
+
+
 @dataclass(frozen=True)
 class Persona:
     title: str
@@ -161,6 +179,12 @@ PERSONAS = {
               "that asks for a forced setup with another terminal and no agents. The person does not know. Wants Codex added next to Claude Code.",
         answers="I only want Codex added next to Claude Code. Leave everything else as it is.",
         prompt="path", config=CONFIG_E),
+    "f": Persona(
+        title="A config copied from another Mac, which names an agent this Mac does not define",
+        story="Copied the config from their work laptop, where lazygit was an agent of their own defined in that Mac's config.local.toml. Here the list "
+              "of agents names it and nothing defines it, which the person does not know. Wants Codex added next to Claude Code.",
+        answers="I copied my config from my work laptop. I'd like Codex added next to Claude Code here.",
+        prompt="path", config=CONFIG_F, follow_up=FOLLOW_UP_F),
 }
 
 WRAPPER = """#!/bin/bash
