@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.21 (2026-11-12)
+
 - **The window edits a config with an error in a setting too.** The menu's picture, the Edit Menu button and the
   controls of every page were gone while the config had any error, though Finder still showed the rest of the menu.
   They stay now, beside the problems; a change is refused only for an error it brings, as with `rh config`, and the
