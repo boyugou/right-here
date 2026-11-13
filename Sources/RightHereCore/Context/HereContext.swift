@@ -43,6 +43,9 @@ public struct HereContext: Sendable, Equatable, Codable {
     public func workingDirectory(facts: any SystemFacts) -> URL? {
         guard let first = items.first else {
             guard let folder = container ?? (origin == .cli ? facts.currentDirectory : nil) else { return nil }
+            // A package in the sidebar (an app in the Favorites) is the item that was clicked, which Finder shows as one item, as a selected package is: its folder is the one around
+            // it. A package that was opened (Show Package Contents) is the folder being viewed, and stays one.
+            if origin == .sidebar, facts.isPackage(folder) { return Self.directory(from: folder.deletingLastPathComponent(), facts: facts) }
             return Self.directory(from: folder, facts: facts)
         }
         switch facts.isDirectory(first) {

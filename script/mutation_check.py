@@ -2661,6 +2661,8 @@ MUTANTS = [
     # The Finder menu, after an independent review (2026-11-13).
     ("a menu with nothing to act on offers the whole folder menu", "Sources/RightHereCore/Menu/MenuBuilder.swift",
      "guard !context.items.isEmpty || context.container != nil || context.origin == .cli else {", "guard true else {"),
+    ("a package in the sidebar is a folder to make files in", "Sources/RightHereCore/Context/HereContext.swift",
+     "            if origin == .sidebar, facts.isPackage(folder) { return Self.directory(from: folder.deletingLastPathComponent(), facts: facts) }\n", ""),
 ]
 
 

@@ -66,4 +66,31 @@ struct MenuReviewTests {
             #expect(refused.isEmpty, "\(kind.rawValue) menu with nothing to act on offers \(refused.count) entries that `rh run` refuses with \"There is no folder or selection to act on.\": \(refused)")
         }
     }
+
+
+    /// The person keeps an app (`Foo.app`) or a package document (`Notes.rtfd`) in the Favorites of Finder's sidebar and right-clicks it
+    /// there. Finder names the sidebar item as the menu's target, and `HereContext.finder` makes a sidebar target the container, the
+    /// folder being viewed (FinderContext.swift:30-31); `HereContext.workingDirectory` keeps a container that is a package as the folder on
+    /// purpose, for one the person opened with Show Package Contents (HereContext.swift:41-46). So the menu offers New File, and the click
+    /// makes `untitled.txt` inside the app, which breaks its signature: what ADR 0008 fixed for a selected package
+    /// (`NewFileOpeningTests.aSelectedPackageIsOneItemAndAnOpenedOneIsAFolder`), reached through the sidebar. Open in Terminal and the
+    /// agents start inside the bundle as well. A package the sidebar names is one item, as a selected one is: if New File is offered, the
+    /// file goes next to it.
+    @Test func aPackageInTheSidebarIsOneItemAndGetsNoFileInsideIt() throws {
+        let app = "/Applications/Foo.app"
+        let facts = reviewMachine(directories: ["/Applications", app], packages: [app])
+        var config = Config()
+        config.newFile.then = .nothing
+        let sidebar = HereContext.finder(kind: .sidebar, selected: [], targeted: URL(fileURLWithPath: app))
+        let offered = everyNode(MenuBuilder(config: config, facts: facts).build(for: sidebar)).compactMap(\.actionID)
+        guard offered.contains("new-file.txt") else { return }
+        let plan = try Planner(config: config, facts: facts).plan(.newFile("txt"), context: sidebar)
+        guard case .createFile(let made)? = plan.steps.first else {
+            Issue.record("New File makes no file: \(plan.steps)")
+            return
+        }
+        #expect(!made.path.hasPrefix(app + "/"), "the menu offers New File on a package in the sidebar, and the click makes \(made.path), inside the package")
+        // Every action starts in the folder around it, as for a selected package: a terminal opens /Applications, not the inside of the app.
+        #expect(sidebar.workingDirectory(facts: facts)?.path == "/Applications")
+    }
 }

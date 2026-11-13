@@ -55,7 +55,8 @@
   `undo` with nothing to take back, name the other file's changes (`--local`).
 
 - **The Finder menu, after an independent review.** A right-click that names nothing of this Mac (a server in the
-  sidebar) gets no menu: it got the whole folder menu, and `rh` refused every entry for want of a folder.
+  sidebar) gets no menu: it got the whole folder menu, and `rh` refused every entry for want of a folder. An app or a
+  package document in the sidebar is one item, as a selected one is: New File made its file inside the app.
 
 ## 1.2.25 (2026-11-13)
 

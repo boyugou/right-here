@@ -597,3 +597,14 @@ Tests read real repositories with the real git and check every link form against
    - An alert says the checked-out commit is not on the remote yet and to push it. Nothing is copied.
 6. Right-click a file that is not committed (a new file), and a folder outside any repository.
    - Each gives an alert with its own reason: not in the checked-out commit, not in a git repository.
+
+## 12. The sidebar and servers (an independent review of the menu, 2026-11-13)
+
+Tests build the menu from what the extension is told; whether Finder tells it these things is only seen in Finder.
+
+1. Drag an app (or an `.rtfd` document) into the Favorites of Finder's sidebar, right-click it there, and choose New File.
+   - Whether Finder offers the menu there at all, and names the app as its target, has not been observed. If it does, the new file is
+     made next to the app (in `/Applications`), never inside it, and Open in Terminal opens `/Applications`.
+2. Connect to a server (Go › Connect to Server), right-click it in the sidebar, and right-click the background of a window that shows it.
+   - No Right Here menu is offered: there is nothing of this Mac to act on. (A share mounted under `/Volumes` is a folder of this Mac,
+     and gets the menu.)
