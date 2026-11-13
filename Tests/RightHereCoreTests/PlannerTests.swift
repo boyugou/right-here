@@ -273,6 +273,17 @@ struct PlannerTests {
         #expect(plan.steps == [.openURL("claude-cli://open?cwd=%2FUsers%2Ftester%2Fcode%2Fapp&q=%40a.txt%20%40%22b%20b.md%22%20")])
     }
 
+    /// The prompt box shows what the link carries, but `@C#.md` looks right and attaches `C`, and `@"a \\"b\\".md"` attaches `a \\`: a file whose mention the
+    /// agent would not read as that file is left out of the prefill, as one with hidden text is.
+    @Test func prefillLeavesOutAFileTheAgentWouldReadAsAnother() throws {
+        let facts = machine(files: ["/Users/tester/code/app/C#.md", "/Users/tester/code/app/a \"b\".md", "/Users/tester/code/app/a.txt"])
+        let plan = try Planner(facts: facts).plan(
+            .agent(id: "claude", variant: nil, launcher: .terminalLink),
+            context: selection("/Users/tester/code/app/C#.md", "/Users/tester/code/app/a \"b\".md", "/Users/tester/code/app/a.txt")
+        )
+        #expect(plan.steps == [.openURL("claude-cli://open?cwd=%2FUsers%2Ftester%2Fcode%2Fapp&q=%40a.txt%20")])
+    }
+
     @Test func prefillIgnoresASelectedFolder() throws {
         let plan = try Planner(facts: machine()).plan(
             .agent(id: "claude", variant: nil, launcher: .terminalLink),

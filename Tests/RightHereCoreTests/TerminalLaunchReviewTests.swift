@@ -20,14 +20,16 @@ struct TerminalLaunchReviewTests {
     /// nushell (read from its source at 7bff3d1, not run: it is not installed here) reads `'…'` with no escape at all, takes `\` outside quotes as an
     /// ordinary byte, ends a statement at `;` and starts a comment at `#` after a space (`crates/nu-parser/src/lex.rs`). So POSIX's `'it'\''s'` is, to
     /// nushell, a quoted `it`, a `\`, an empty quoted string, and then everything up to the next `'` is outside the quotes. With this name the typed line
-    /// is `claude 'Review @"a'\''; touch CANARY #.txt" for bugs, …'`: nushell runs `claude`, then `touch CANARY`, and the rest is a comment. elvish and
+    /// was `claude 'Review a'\''; touch CANARY #.txt for bugs.'`: nushell runs `claude`, then `touch CANARY`, and the rest is a comment. elvish and
     /// PowerShell write a quote inside single quotes as `''` and have no backslash escape there either.
     static let nushell = "/opt/homebrew/bin/nu"
     static let apostropheName = "a'; touch CANARY #.txt"
+    /// A preset that types the selected item's plain name: `{files}` refuses a name with a `#`, which an agent reads as line numbers in a mention.
+    static let byName = AgentPreset(id: "review", title: "Review", prompt: "Review {name} for bugs.")
 
     static func presetPlan(terminal: String, loginShell: String, file: String, command: String = "claude") throws -> LaunchPlan {
         let facts = FakeSystemFacts(loginShell: loginShell, directories: [URL(fileURLWithPath: file).deletingLastPathComponent().path], files: [file], applications: installed)
-        let config = Config(terminal: terminal, enabledAgents: ["claude"], agents: ["claude": .init(command: command)])
+        let config = Config(terminal: terminal, enabledAgents: ["claude"], agents: ["claude": .init(command: command)], presets: [byName])
         return try Planner(config: config, facts: facts).plan(.preset(id: "review", terminal: nil), context: HereContext(origin: .items, items: [URL(fileURLWithPath: file)]))
     }
 

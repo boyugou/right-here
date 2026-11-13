@@ -70,6 +70,31 @@ A name that looks like a flag is harmless inside a mention (`@--help`), as the p
 files than `max_files` is refused, never cut short: a prompt that quietly names fewer files than were selected is a
 wrong answer.
 
+## How a mention is written, and when it is refused
+
+`{files}`, Copy Path's AI mention and the prompt prefill of `agent.claude@link` write the same mention
+(`PathRenderer`), and one predicate (`PathRenderer.mentionProblem`) decides for all three when an agent would not read
+it as the item it names: Copy Path refuses such a mention and says why, a preset refuses the file, and the prefill
+leaves it out. How a mention is read was taken from Claude Code 2.1.323 (an independent review read the script bundled
+in its `claude.exe`, 2026-11-13); the tests hold that reading as `ClaudeCodeMentionReader` and check every mention
+against it. Other agents were not checked. Gemini CLI's documentation describes another grammar (a mention runs to
+white space, and a space in it is escaped with a backslash, which a typed prompt cannot carry); how it takes a quoted
+mention is not known. The prompt reaches the model either way, so a mention one agent does not attach is still text
+that names the file.
+
+- An unquoted mention ends at white space and is cut back to its last ASCII letter, digit or underscore (a `\b` that
+  knows only ASCII): `@lib/c++` attached `lib/c`, `@docs/設計` the folder `docs`, and `@資料` nothing. A path that
+  ends in anything else is quoted, `@"lib/c++"`, as is one with white space or a leading quote.
+- A quoted mention runs to the next quote and has no escapes, so a name that needs a backslash in it (a quote, or a
+  backslash of its own) names another item: refused.
+- A `#` starts the lines of a file (`a.md#L3`), quoted or not: `@docs/C#.md` attached `docs/C`, and
+  `@"notes/Meeting #3.md"` attached `notes/Meeting`. A name with a `#` is refused. (Two of them, or one at the start,
+  happen to be read whole; the rule does not count on that.)
+- The path is trimmed of white space before it is looked up, so one that starts or ends with white space is refused. A
+  space at the start of a later name (`docs/ notes.md`) is kept.
+- A quoted name that ends in ` (agent)` names one of Claude Code's agents, not a file. This is not refused: such names
+  are rare, and the sentence would need a value of its own in every language.
+
 ## Alternatives
 
 - **`submit = false`, a prompt left in the box for the person to read and send.** Not achievable through the typing

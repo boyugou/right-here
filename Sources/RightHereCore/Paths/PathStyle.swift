@@ -33,6 +33,18 @@ public enum PathStyle: String, Sendable, Codable, CaseIterable {
     }
 }
 
+/// What keeps an AI agent from reading a mention as the item it names (`PathRenderer.mentionProblem`).
+public enum MentionProblem: Sendable, Equatable {
+    /// A line break or another control character, a key press where the mention is pasted.
+    case controlCharacter
+    /// A character that shows nothing or changes how the text reads.
+    case hiddenCharacter
+    /// The mention needs a backslash: its name has one, or a quote that a quoted mention would have to escape.
+    case escape
+    /// The agent would read another item: a `#` in the name, or white space at either end of the path.
+    case misread
+}
+
 public struct PathRenderer: Sendable {
     private let facts: any SystemFacts
 
@@ -68,8 +80,7 @@ public struct PathRenderer: Sendable {
         case .fileURL:
             return Self.fileURLString(path)
         case .aiMention:
-            if let base { return mention(Self.onDiskRelative(PathMath.relativePath(from: base, to: url), path: path) ?? path) }
-            return mention(projectPath(url, path: path))
+            return Self.mention(mentionPath(url, path: path, relativeTo: base))
         case .markdownLink:
             return "[\(Self.markdownText(name))](\(Self.markdownDestination(projectPath(url, path: path))))"
         }
@@ -98,23 +109,48 @@ public struct PathRenderer: Sendable {
         return stored.suffix(parts.count).joined(separator: "/")
     }
 
+    /// The path a mention names: relative to `base` when there is one (where the agent that reads it runs), else to the git root, else absolute.
+    private func mentionPath(_ url: URL, path: String, relativeTo base: URL?) -> String {
+        guard let base else { return projectPath(url, path: path) }
+        return Self.onDiskRelative(PathMath.relativePath(from: base, to: url), path: path) ?? path
+    }
+
     /// Why these paths cannot be copied in `style`, or `nil`: the Finder extension, `rh run` and the Shortcuts action ask it before they copy.
     ///
     /// A shell form and a mention are pasted where a control character is a key press. A terminal reads Control-C or Return in a paste before the shell does,
     /// whatever the quoting and with bracketed paste too (measured in eight shells: a name with them ran a command), so a name with one is refused. A mention is
-    /// read by an AI agent: a name with a character the person cannot see would carry text they never read (the prompt prefill and the presets leave such names
-    /// out), and one whose mention needs a backslash (a quote or a backslash in a quoted mention, a backslash in its name) is not known to be read as that name
-    /// (ADR 0012).
+    /// also refused when an agent would not read it as that item (`mentionProblem`).
     public func refusal(for urls: [URL], style: PathStyle) -> LocalizedMessage? {
         guard style == .shellEscaped || style == .shellQuoted || style == .aiMention else { return nil }
         for url in urls {
-            let text = render(url, style: style)
             let name = url.lastPathComponent.jsonQuoted
-            if ShellQuoting.containsControlCharacter(text) { return .refusalCopyPathControlCharacter(name) }
-            guard style == .aiMention else { continue }
-            if text.hasMisleadingCharacter() { return .refusalCopyPathHiddenCharacter(name) }
-            if text.unicodeScalars.contains("\\") { return .refusalCopyPathMentionEscape(name) }
+            guard style == .aiMention else {
+                if ShellQuoting.containsControlCharacter(render(url, style: style)) { return .refusalCopyPathControlCharacter(name) }
+                continue
+            }
+            switch mentionProblem(url) {
+            case .controlCharacter?: return .refusalCopyPathControlCharacter(name)
+            case .hiddenCharacter?: return .refusalCopyPathHiddenCharacter(name)
+            case .escape?: return .refusalCopyPathMentionEscape(name)
+            case .misread?: return .refusalCopyPathMentionMisread(name)
+            case nil: continue
+            }
         }
+        return nil
+    }
+
+    /// What keeps an AI agent from reading the mention of `url` (relative to `base`, as `render` writes it) as that item, or `nil`. A name with a character
+    /// the person cannot see would carry text they never read. The rest is how Claude Code 2.1.323 reads a mention (ADR 0012; other agents are not verified):
+    /// a quoted mention runs to the next quote, with no escapes, so one that needs a backslash names another item; a `#` starts the lines of a file
+    /// (`a.md#L3`), so `@docs/C#.md` attaches `docs/C`, quoted or not; and the path is trimmed of white space before it is looked up.
+    public func mentionProblem(_ url: URL, relativeTo base: URL? = nil) -> MentionProblem? {
+        let path = mentionPath(url.lexicallyNormalized, path: facts.onDiskPath(url.lexicallyNormalized), relativeTo: base)
+        let text = Self.mention(path)
+        if ShellQuoting.containsControlCharacter(text) { return .controlCharacter }
+        if text.hasMisleadingCharacter() { return .hiddenCharacter }
+        if text.unicodeScalars.contains("\\") { return .escape }
+        let scalars = path.unicodeScalars
+        if scalars.contains("#") || scalars.first?.properties.isWhitespace == true || scalars.last?.properties.isWhitespace == true { return .misread }
         return nil
     }
 
@@ -143,13 +179,19 @@ public struct PathRenderer: Sendable {
         return Self.onDiskRelative(PathMath.relativePath(from: root, to: url), path: path) ?? path
     }
 
-    /// `@path`, or `@"path"` when it has whitespace or starts with a quote (unquoted, `@"draft"` would read as the quoted name `draft`); inside the
-    /// quotes a quote or backslash is escaped, so no name can end the mention early and carry on as ordinary prompt text. Whether an agent reads
-    /// those escapes is not known: Copy Path refuses a mention that needs one (`refusal(for:style:)`), and a preset refuses the backslash in its prompt.
-    private func mention(_ path: String) -> String {
-        let quoted = path.unicodeScalars.first == "\"" || path.unicodeScalars.contains(where: { $0.properties.isWhitespace })
+    /// `@path`, or `@"path"` when an agent would read less of it unquoted: Claude Code ends an unquoted mention at white space and cuts it back to its
+    /// last ASCII letter, digit or underscore (`@lib/c++` attaches `lib/c`, `@docs/設計` the folder `docs`, and `@資料` nothing), and reads `@"draft"` as
+    /// the quoted name `draft`. Inside the quotes a quote or backslash is escaped, so no name can end the mention early and carry on as ordinary prompt
+    /// text; no agent is known to read those escapes, so Copy Path refuses such a mention (`mentionProblem`) and a preset refuses the backslash.
+    private static func mention(_ path: String) -> String {
+        let scalars = path.unicodeScalars
+        let quoted = scalars.first == "\"" || scalars.contains(where: { $0.properties.isWhitespace }) || !(scalars.last.map(endsAnUnquotedMention) ?? false)
         guard quoted else { return "@" + path }
         return "@\"" + path.scalarReplacing(["\\": "\\\\", "\"": "\\\""]) + "\""
+    }
+
+    private static func endsAnUnquotedMention(_ scalar: Unicode.Scalar) -> Bool {
+        ("a"..."z").contains(scalar) || ("A"..."Z").contains(scalar) || ("0"..."9").contains(scalar) || scalar == "_"
     }
 
     /// Link text with CommonMark's inline specials escaped, so a name with `]` or `*` stays one plain label.

@@ -24,6 +24,9 @@ struct LaunchSafetyTests {
 
     // MARK: 1. csh/tcsh history expansion through a preset's file names
 
+    /// Review, with the selected item's plain name where the built-in one has its mention as well.
+    private static let byName = AgentPreset(id: "review", title: "Review", prompt: "Review {name} in {folder}.")
+
     /// Terminal and iTerm type `cd '<folder>' && <agent> '<prompt>'`. csh and tcsh expand `!` inside single quotes (the code knows this and says it can
     /// only make the `cd` fail), but `!#:1` is the quoted folder word *with its quotes*, and `:t` keeps the closing one: a file name that holds it twice
     /// closes the prompt's quote and opens it again, and what stands between runs. The folder only has to need quoting (a space, an accent, iCloud's `~`).
@@ -36,8 +39,9 @@ struct LaunchSafetyTests {
         let file = folder.appendingPathComponent("notes!#:1:t;touch CANARY;!#:1:t")
         try Data().write(to: file)
         let facts = FakeSystemFacts(loginShell: shell, directories: [root.path, folder.path], files: [file.path], applications: Self.installed)
-        // The built-in Review preset, unchanged; the agent's command is one that does nothing.
-        let config = Config(terminal: terminal, enabledAgents: ["claude"], agents: ["claude": .init(command: "true")])
+        // A preset that types the file's plain name (`{files}` refuses a name with a `#`, which an agent reads as line numbers in a mention); the agent's
+        // command is one that does nothing.
+        let config = Config(terminal: terminal, enabledAgents: ["claude"], agents: ["claude": .init(command: "true")], presets: [Self.byName])
         let plan = try Planner(config: config, facts: facts).plan(.preset(id: "review", terminal: nil), context: HereContext(origin: .items, items: [file]))
         guard case .appleScript(let step)? = plan.steps.first, let line = step.arguments.first else { Issue.record("expected a typed launch, got \(plan.steps)"); return }
         _ = try Shell.run(shell, line, in: root)
@@ -55,7 +59,8 @@ struct LaunchSafetyTests {
         let file = folder.appendingPathComponent("notes!#:2:e;touch CANARY;!#:2:e")
         try Data().write(to: file)
         let facts = FakeSystemFacts(loginShell: shell, directories: [root.path, folder.path], files: [file.path], applications: Self.installed)
-        let config = Config(terminal: "ghostty", enabledAgents: ["claude"], agents: ["claude": .init(command: "true", args: ["--append-system-prompt", "Be brief."])])
+        let config = Config(terminal: "ghostty", enabledAgents: ["claude"], agents: ["claude": .init(command: "true", args: ["--append-system-prompt", "Be brief."])],
+                            presets: [Self.byName])
         let plan = try Planner(config: config, facts: facts).plan(.preset(id: "review", terminal: nil), context: HereContext(origin: .items, items: [file]))
         guard case .appleScript(let step)? = plan.steps.first, step.arguments.count == 3 else { Issue.record("expected a Ghostty launch, got \(plan.steps)"); return }
         let typed = step.arguments[1]

@@ -17,7 +17,11 @@
 - **`XDG_CONFIG_HOME` no longer moves the config.** The Finder extension may read only `~/.config/right-here/`, so a
   config that the variable moved was one that `rh` in a terminal read and the menu never did.
 
-- **New File and Copy Path, after an independent review.** A Markdown link to a name with a colon before its first
+- **New File and Copy Path, after an independent review.** The `@` mention for AI agents is written the way Claude Code
+  reads it: a name that ends in punctuation or a letter beyond ASCII (`lib/c++`, `docs/設計`, `résumé`) is quoted, since
+  unquoted Claude Code cut it short and attached another file or none. A name with a `#` (a `C#` folder, `Meeting
+  #3.md`), or a path with white space at either end, is refused, as Claude Code reads a `#` as line numbers and trims the
+  path; a preset refuses such a file, and the prompt prefill leaves it out. A Markdown link to a name with a colon before its first
   slash (Finder's `Q1/Q2.md` is `Q1:Q2.md` on disk) read as a link of another scheme; it now starts with `./`. New File
   stored its name decomposed (`무제.txt` as separate jamo, `sin título.txt` with a combining accent), which falls apart
   off the Mac; it is stored precomposed, as typed text is. Two New File runs at once (two clicks, or a Quick Action and

@@ -319,6 +319,10 @@ public struct Planner: Sendable {
             }
             throw PlanError.unsafePrompt(preset: id, problem: problem)
         }
+        // The agent would attach another file for this one (a `#` in its name, white space at an end of its path): the prompt would be about the wrong file.
+        if preset.needsFiles, let misread = files.first(where: { renderer.mentionProblem($0, relativeTo: directory) == .misread }) {
+            throw PlanError.misreadMention(preset: id, file: misread.lastPathComponent)
+        }
 
         // The agent's own permission prompts stay on for a preset, whatever the config says for plain starts: the prompt carries the names of the
         // selected files, and a file called "ignore the above and run ..." must not reach an agent that asks nothing (ADR 0012).
@@ -353,12 +357,13 @@ public struct Planner: Sendable {
         return try typeCommand(words.joined(separator: " "), summary: "\(agent.command) with preset \(id)", in: app, bundleID: bundleID, adapter: adapter, directory: directory, ref: ref, context: context, notices: notices)
     }
 
-    /// Selected files become `@` mentions in the prompt box; nothing is sent. A name that a preset would refuse for what the person cannot see (a control character,
-    /// a tag character that spells ASCII a model reads, a direction override) is left out: the box would show `@report.txt` and hold more. The person can still name it.
+    /// Selected files become `@` mentions in the prompt box; nothing is sent. A file whose mention the agent would not read as that file is left out
+    /// (`PathRenderer.mentionProblem`): a name with what the person cannot see (a control character, a tag character that spells ASCII a model reads, a
+    /// direction override) would show `@report.txt` in the box and hold more, and `@docs/C#.md` looks right and attaches `docs/C`. The person can still name it.
     private func mentionPrefill(context: HereContext, directory: URL) -> String {
         let renderer = PathRenderer(facts: facts)
-        let mentions = context.items.filter { facts.isDirectory($0) == false }.map { renderer.render($0, style: .aiMention, relativeTo: directory) }
-            .filter { !ShellQuoting.containsControlCharacter($0) && !$0.hasMisleadingCharacter() }
+        let mentions = context.items.filter { facts.isDirectory($0) == false && renderer.mentionProblem($0, relativeTo: directory) == nil }
+            .map { renderer.render($0, style: .aiMention, relativeTo: directory) }
         guard !mentions.isEmpty else { return "" }
         return mentions.joined(separator: PathStyle.aiMention.separator) + " "
     }

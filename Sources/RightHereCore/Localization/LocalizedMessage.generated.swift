@@ -1043,6 +1043,8 @@ extension LocalizedMessage {
     public static func refusalCopyPathHiddenCharacter(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalCopyPathHiddenCharacter, [argument1]) }
     /// A mention of %@ would need a backslash (its name has one, or a quote with a space or at its start), and AI agents are not known to read one there. Copy it in another form, or rename it.
     public static func refusalCopyPathMentionEscape(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalCopyPathMentionEscape, [argument1]) }
+    /// An AI agent would not read a mention of %@ as that item: in a mention, a # starts line numbers, and white space at either end is dropped. Copy it in another form, or rename it.
+    public static func refusalCopyPathMentionMisread(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalCopyPathMentionMisread, [argument1]) }
     /// %@ is a link that points nowhere (or into a place macOS will not let Right Here look at), so there is no folder to open.
     public static func refusalDanglingLink(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.refusalDanglingLink, [argument1]) }
     /// Did you mean "%@"?
@@ -1061,6 +1063,8 @@ extension LocalizedMessage {
     public static var refusalNameControlCharacter: LocalizedMessage { LocalizedMessage(.refusalNameControlCharacter) }
     /// Its name would start the prompt with a dash, which the agent would read as an option.
     public static var refusalNameLeadingDash: LocalizedMessage { LocalizedMessage(.refusalNameLeadingDash) }
+    /// An AI agent would not read its mention as that file: in a mention, a # starts line numbers, and white space at either end is dropped.
+    public static var refusalNameMentionMisread: LocalizedMessage { LocalizedMessage(.refusalNameMentionMisread) }
     /// Its name has a character that shows nothing or changes how it reads (a direction override, a zero-width space, a tag character), and the agent would read what the person cannot see.
     public static var refusalNameMisleadingCharacter: LocalizedMessage { LocalizedMessage(.refusalNameMisleadingCharacter) }
     /// No free file name was found.

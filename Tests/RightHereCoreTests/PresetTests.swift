@@ -82,7 +82,8 @@ struct PresetPlannerTests {
         let preset = AgentPreset(id: "p", title: "P", prompt: "{files}|{name}|{folder}")
         let config = Config(enabledAgents: ["claude"], presets: [preset])
         let plan = try Planner(config: config, facts: machine(files: ["{folder}.md", "{files}"])).plan(.preset(id: "p", terminal: nil), context: selection(["{folder}.md", "{files}"]))
-        #expect(try typedText(plan) == "claude '@{folder}.md @{files}|{folder}.md|app'")
+        // `{files}` ends in a brace, which an agent cuts off an unquoted mention (`@{files` with no `}`), so that one is quoted.
+        #expect(try typedText(plan) == "claude '@{folder}.md @\"{files}\"|{folder}.md|app'")
     }
 
     @Test func aPresetThatDoesNotNameFilesRunsOnAFolderAndNameIsTheFolder() throws {
@@ -450,6 +451,18 @@ struct PresetPlannerTests {
         } catch { Issue.record("\(error)") }
     }
 
+    /// `{files}` names each file as an @ mention, and in a mention Claude Code takes a `#` for the start of line numbers: `@C#.md` attached `C`, so the
+    /// agent was asked about another file. The file is named; a prompt that names the selection only as `{name}` (plain text) keeps it.
+    @Test func aFileWhoseMentionTheAgentWouldReadAsAnotherIsRefused() throws {
+        let config = Config(enabledAgents: ["claude"], presets: [review])
+        do { _ = try Planner(config: config, facts: machine(files: ["fine.txt", "C#.md"])).plan(.preset(id: "review", terminal: nil), context: selection(["fine.txt", "C#.md"])); Issue.record("expected a refusal") } catch let error as PlanError {
+            #expect(error == .misreadMention(preset: "review", file: "C#.md"))
+            #expect(error.localizedDescription.hasPrefix("The file \"C#.md\" cannot be named in the prompt of preset \"review\". An AI agent would not read its mention as that file"), "\(error.localizedDescription)")
+        } catch { Issue.record("\(error)") }
+        let byName = Config(enabledAgents: ["claude"], presets: [AgentPreset(id: "p", title: "P", prompt: "Explain {name}")])
+        #expect(throws: Never.self) { try Planner(config: byName, facts: machine(files: ["C#.md"])).plan(.preset(id: "p", terminal: nil), context: selection(["C#.md"])) }
+    }
+
     @Test func aNameThePromptDoesNotCarryIsNeverBlamed() throws {
         // `{files}` is not in this prompt, so a file with a line break in its name does not reach the terminal.
         let preset = AgentPreset(id: "p", title: "P", prompt: "Say hello")
@@ -487,7 +500,7 @@ struct PresetPlannerTests {
 
     private static let hostileNames = [
         "plain.txt", "it's.txt", "a'b'c.txt", "$(touch CANARY).txt", "`touch CANARY`.txt", "$HOME and ${PATH}.txt", "semi;colon && pipe | redirect > CANARY.txt",
-        "--help", "-rf", "~tilde", "star*?[glob].txt", "bang!history.txt", "#hash.txt", "{folder}.md", "{files}", "%s%n.txt", "日本語 パス.txt", "emoji 🚀.txt",
+        "--help", "-rf", "~tilde", "star*?[glob].txt", "bang!history.txt", "{folder}.md", "{files}", "%s%n.txt", "日本語 パス.txt", "emoji 🚀.txt",
         "a b.txt", "''", "'; touch CANARY; '"
     ]
 
@@ -496,13 +509,14 @@ struct PresetPlannerTests {
         let directory = try makeScratchDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let names = Self.hostileNames
         for name in names {
-            let preset = AgentPreset(id: "p", title: "P", prompt: "Look at {files} and then at {name} ({folder}) 'quoted' $x `y` !z")
+            // A `#` reaches the shell from the template: in a file's mention an agent reads it as line numbers, so `{files}` refuses such a name.
+            let preset = AgentPreset(id: "p", title: "P", prompt: "Look at {files} and then at {name} ({folder}) 'quoted' $x `y` !z #c")
             let config = printingConfig(presets: [preset])
             let plan = try Planner(config: config, facts: machine(files: [name])).plan(.preset(id: "p", terminal: nil), context: selection([name]))
             let typed = try typedText(plan)
             let words = try Shell.run(shell, typed, in: directory).split(separator: "\0", omittingEmptySubsequences: false).map(String.init)
-            let expectedMention = name.contains(where: \.isWhitespace) ? "@\"\(name)\"" : "@\(name)"
-            #expect(words == ["Look at \(expectedMention) and then at \(name) (app) 'quoted' $x `y` !z", ""], "\(shell) read \(typed.debugDescription) as \(words)")
+            let mention = PathRenderer(facts: machine(files: [name])).render(URL(fileURLWithPath: "\(appFolder)/\(name)"), style: .aiMention, relativeTo: URL(fileURLWithPath: appFolder))
+            #expect(words == ["Look at \(mention) and then at \(name) (app) 'quoted' $x `y` !z #c", ""], "\(shell) read \(typed.debugDescription) as \(words)")
         }
         #expect(!FileManager.default.fileExists(atPath: directory.appendingPathComponent("CANARY").path))
         #expect(!FileManager.default.fileExists(atPath: directory.appendingPathComponent("CANARY.txt").path))

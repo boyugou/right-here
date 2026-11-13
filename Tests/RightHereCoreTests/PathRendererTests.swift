@@ -175,6 +175,37 @@ struct PathRendererTests {
         #expect(try Planner(facts: facts).plan(.copyPath(.absolute), context: HereContext(origin: .items, items: [URL(fileURLWithPath: path)])).steps.count == 1)
     }
 
+    /// What Copy Path's @ mention copies for `relative`, a path below the repository, and why it refuses it.
+    private func copiedMention(_ relative: String) -> (text: String, refusal: LocalizedMessage?) {
+        let root = "/Users/tester/code/app", path = root + "/" + relative
+        let facts = FakeSystemFacts(directories: [root, (path as NSString).deletingLastPathComponent], files: [path], gitRoots: [root])
+        let renderer = PathRenderer(facts: facts)
+        return (renderer.render(URL(fileURLWithPath: path), style: .aiMention), renderer.refusal(for: [URL(fileURLWithPath: path)], style: .aiMention))
+    }
+
+    /// Claude Code reads each of these mentions as the item it names (`ClaudeCodeMentionReader`), and none is refused. It cuts an unquoted mention back to
+    /// its last ASCII letter, digit or underscore: `@lib/c++` attached `lib/c`, `@docs/設計` the folder `docs`, and `@資料` nothing, so such a name is quoted.
+    @Test("a mention is read by Claude Code as the item it names", arguments: [
+        "src/main.swift", "My Notes.md", "lib/c++", "draft(1)", "notes.txt~", "docs/\u{8A2D}\u{8A08}", "\u{8CC7}\u{6599}", "r\u{E9}sum\u{E9}", "docs/ notes.md",
+        "q\"uote.md", "end.", "foo@bar.txt", "x-", "\u{65E5}\u{672C} \u{8A9E}.txt", "a_b", "v2",
+    ])
+    func aMentionIsReadByClaudeCodeAsTheItemItNames(relative: String) {
+        let (text, refusal) = copiedMention(relative)
+        #expect(refusal == nil, "\(relative.debugDescription) was refused: \(String(describing: refusal))")
+        #expect(ClaudeCodeMentionReader.files(in: "Look at " + text + " please") == [relative], "copied \(text.debugDescription)")
+    }
+
+    /// In a mention a `#` starts the lines of a file, quoted or not, and the path is trimmed of white space: Copy Path copied these, and Claude Code attached
+    /// another file (`@docs/C#.md` attached `docs/C`) or none. Each is refused, and the reader shows why.
+    @Test("a mention Claude Code would read as another item is refused", arguments: [
+        "docs/C#.md", "notes/Meeting #3.md", "src/C#/Program.cs", "notes#L12.md", " first.md", "last.md ",
+    ])
+    func aMentionClaudeCodeWouldMisreadIsRefused(relative: String) {
+        let (text, refusal) = copiedMention(relative)
+        #expect(ClaudeCodeMentionReader.files(in: "Look at " + text + " please") != [relative], "the reader takes \(text.debugDescription) for the item, so the refusal is not needed")
+        #expect(refusal == .refusalCopyPathMentionMisread(((relative as NSString).lastPathComponent).jsonQuoted), "\(String(describing: refusal))")
+    }
+
     /// A preset types the same mention: a name that starts with a quote is now quoted, and the backslash that takes is refused there as it is for a quote
     /// beside a space (it typed `@"draft"`, which names `draft`).
     @Test func aPresetDoesNotMentionALeadingQuoteNameAsAnotherFile() throws {

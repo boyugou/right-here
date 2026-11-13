@@ -22,6 +22,8 @@ public enum PlanError: Error, Equatable, Sendable {
     /// A name the prompt of a preset carries from the selection is what makes it impossible to type, so it is named instead of blaming
     /// the prompt.
     case unsafePresetName(preset: String, name: PresetTemplate.Carried, problem: PresetTemplate.TypingProblem)
+    /// A file the prompt of a preset names would be read by the agent as another item (`PathRenderer.mentionProblem`).
+    case misreadMention(preset: String, file: String)
     /// The target exists but cannot do what was asked, for example a terminal that cannot run a command: the sentence says why.
     case refused(LocalizedMessage)
     /// Text that would be typed into a terminal (a command line) contains line breaks or control characters.
@@ -61,6 +63,7 @@ extension PlanError: LocalizedError, LocalizedFailure {
         case .unknownPreset(let id, let choices): [.refusalUnknownPreset(id)] + Self.hint(id, choices) + [.refusalPresetsAdd("`[[preset]]`")]
         case .unsafePrompt(let preset, let problem): [.refusalPresetPrompt(preset), problem.sentence]
         case .unsafePresetName(let preset, let name, let problem): [name.cannotBeNamed(inPreset: preset), problem.aboutAName ?? problem.sentence]
+        case .misreadMention(let preset, let file): [.refusalPresetFileName(file.jsonQuoted, preset), .refusalNameMentionMisread]
         case .refused(let sentence): [sentence]
         case .unsafeText(let text): [.refusalUnsafeText(text.jsonQuoted)]
         case .unsafeFolder(let path): [.refusalUnsafeFolder(path.jsonQuoted)]
