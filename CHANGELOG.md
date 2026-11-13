@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.23 (2026-11-12)
+
 - **An agent that the list names already is defined without being listed twice.** A config copied from another Mac can
   name an agent defined only there; `rh config add agent.<id>` (and the window) now gives it its table and leaves the list
   as it is. The setup guide for AI agents says to add an agent with `rh config add general.agents <id>`: a list built
