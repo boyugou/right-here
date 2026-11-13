@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.22 (2026-11-12)
+
 - **Editing a config with an error, after an independent review.** `rh config remove` or `move` of an id that two entries
   have took the first, which may be the one the config refuses: it is refused now, with the places, and `--position`
   names one. An error found of a template's `open_with`, or of a start option that takes another's id or title, is said of
