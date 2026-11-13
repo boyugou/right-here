@@ -2658,6 +2658,9 @@ MUTANTS = [
      'static let displayNamePattern = "^(?=.*\\\\S)" + optionalDisplayNamePattern.dropFirst()', "static let displayNamePattern = optionalDisplayNamePattern"),
     ("set of a list drops the comments of the items that stay", "Sources/RightHereCore/Config/ConfigDocument+Array.swift",
      "        if TOMLArrayText(commented.rendered())?.elements.map(\\.text) == items { return commented }\n", ""),
+    # The Finder menu, after an independent review (2026-11-13).
+    ("a menu with nothing to act on offers the whole folder menu", "Sources/RightHereCore/Menu/MenuBuilder.swift",
+     "guard !context.items.isEmpty || context.container != nil || context.origin == .cli else {", "guard true else {"),
 ]
 
 

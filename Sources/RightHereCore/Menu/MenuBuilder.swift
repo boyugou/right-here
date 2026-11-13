@@ -100,6 +100,12 @@ public struct MenuBuilder: Sendable {
     }
 
     private func assemble(for context: HereContext, collector: MenuNoteCollector?) -> [MenuNode] {
+        // Finder named nothing of this Mac (a server in the sidebar, `smb://…`, which is left out as it is no file URL): every action would be refused for want of a folder or an
+        // item, and Copy Path would copy nothing. The command line's own folder is the one it runs in.
+        guard !context.items.isEmpty || context.container != nil || context.origin == .cli else {
+            collector?.leftOut("Menu", "Finder named no folder or file of this Mac to act on.")
+            return []
+        }
         let entries = config.menuItems ?? Self.defaultItems
         if entries.isEmpty { collector?.leftOut("Menu", "menu.items lists no entry.") }
         return Self.tidy(assembleEntries(for: context, items: entries, collector: collector).flatMap(\.nodes))

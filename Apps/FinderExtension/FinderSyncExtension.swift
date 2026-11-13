@@ -111,6 +111,9 @@ final class FinderSyncExtension: FIFinderSync {
         let started = ContinuousClock.now
         let kind = Self.kind(menuKind)
         let context = currentContext(kind)
+        // Nothing of this Mac to act on (a server, `smb://…`): no menu, rather than the cached folder menu, whose every entry `rh` would refuse. Before the cache, which counts an empty
+        // selection as a folder.
+        guard !context.items.isEmpty || context.container != nil else { return nil }
         let isSingleFolder = context.items.isEmpty || (context.items.count == 1 && facts.isDirectory(context.items[0]) == true)
         let (config, stamp) = currentConfigWithStamp()
 

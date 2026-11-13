@@ -54,6 +54,9 @@
   a JSON document. A name or a title of only spaces is an error, as an empty command is. An empty `history`, and an
   `undo` with nothing to take back, name the other file's changes (`--local`).
 
+- **The Finder menu, after an independent review.** A right-click that names nothing of this Mac (a server in the
+  sidebar) gets no menu: it got the whole folder menu, and `rh` refused every entry for want of a folder.
+
 ## 1.2.25 (2026-11-13)
 
 - **Test Terminal Start speaks your language.** The setup window's test of a terminal start said in English that the
