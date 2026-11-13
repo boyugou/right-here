@@ -8,7 +8,7 @@
 class Rh < Formula
   desc "Send a folder or Finder selection to terminals, editors and AI agents"
   homepage "https://github.com/boyugou/right-here"
-  url "https://github.com/boyugou/right-here/archive/refs/tags/v1.2.24.tar.gz"
+  url "https://github.com/boyugou/right-here/archive/refs/tags/v1.2.25.tar.gz"
   sha256 "b6ffe56de4b4301708a5e011f4b01f427bb6c5facd55dbe1ddedd123dee9b65d"
   license "Apache-2.0"
 

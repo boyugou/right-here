@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.25 (2026-11-13)
+
 - **Test Terminal Start speaks your language.** The setup window's test of a terminal start said in English that the
   command ran, that macOS waits for you to click Allow, that it refused, or that the terminal cannot run commands. These
   are in all 30 languages now; what the extension reports of a rarer failure is still shown as it is.
