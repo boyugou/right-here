@@ -74,7 +74,7 @@ final class FinderSyncExtension: FIFinderSync {
             }
             icons.prewarm(iconsToWarm)
             let folderContext = HereContext(origin: .container, container: URL(fileURLWithPath: "/tmp"))
-            let nodes = FinderMenuPresentation.nodes(MenuBuilder(config: config, facts: facts, localizer: config.localizer).build(for: folderContext), separators: separators)
+            let nodes = FinderMenuPresentation.nodes(MenuBuilder(config: config, facts: facts, localizer: config.localizer.isolatingNames()).build(for: folderContext), separators: separators)
             DispatchQueue.main.async {
                 guard let self = owner.object else { return }
                 self.isWarmingUp = false
@@ -132,7 +132,7 @@ final class FinderSyncExtension: FIFinderSync {
             }
         }
 
-        let nodes = FinderMenuPresentation.nodes(MenuBuilder(config: config, facts: facts, localizer: config.localizer).build(for: context), separators: showsSeparators)
+        let nodes = FinderMenuPresentation.nodes(MenuBuilder(config: config, facts: facts, localizer: config.localizer.isolatingNames()).build(for: context), separators: showsSeparators)
         guard !nodes.isEmpty else { return nil }
 
         let menu = makeMenu(nodes, kind: kind)

@@ -1,3 +1,5 @@
+import AppKit
+import CoreText
 import Foundation
 import Testing
 @testable import RightHereCore
@@ -34,6 +36,27 @@ private func titlesShownTwice(_ nodes: [MenuNode]) -> [String] {
     let titles = nodes.filter { $0.kind != .separator }.map(\.title)
     return Set(titles.filter { title in titles.filter { $0 == title }.count > 1 }).sorted()
 }
+
+/// Whether CoreText draws `name`, where it stands in `text`, in one piece from left to right (the bidirectional algorithm applied, the
+/// paragraph direction taken from the first strong character, as AppKit draws a menu item's title). Nothing is shown.
+private func drawsInOnePiece(_ name: String, in text: String) -> Bool {
+    let font = CTFontCreateWithName("Helvetica" as CFString, 13, nil)
+    let line = CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: [.font: font, .ligature: 0]))
+    var order: [Int] = []
+    for run in (CTLineGetGlyphRuns(line) as? [CTRun]) ?? [] {
+        var indices = [CFIndex](repeating: 0, count: CTRunGetGlyphCount(run))
+        CTRunGetStringIndices(run, CFRange(location: 0, length: 0), &indices)
+        order += indices
+    }
+    var drawnAt: [Int: Int] = [:]
+    for (drawn, offset) in order.enumerated() { drawnAt[offset] = drawn }
+    let range = (text as NSString).range(of: name)
+    guard range.location != NSNotFound else { return false }
+    let drawn = (range.location..<(range.location + range.length)).compactMap { drawnAt[$0] }
+    return drawn.count == range.length && zip(drawn, drawn.dropFirst()).allSatisfy { $1 == $0 + 1 }
+}
+
+
 
 @Suite("The Finder menu, after an independent review")
 struct MenuReviewTests {
@@ -237,5 +260,27 @@ struct MenuReviewTests {
         let menu = MenuBuilder(config: config, facts: facts).build(for: oneFile)
         try #require(menu.compactMap(\.actionID) == ["preset.review", "preset.review@terminal"], "\(menu.map(\.title))")
         #expect(titlesShownTwice(menu).isEmpty, "\(menu.map { "\($0.title) (\($0.actionID ?? ""))" })")
+    }
+
+    /// On a Mac in Arabic, Persian, Hebrew or Urdu the menu writes a name into a right-to-left sentence as it is, without an isolate
+    /// (Localizer.swift:69-77; ADR 0006 keeps isolates off for the menu, which "must not carry invisible marks", while these very titles start
+    /// with a right-to-left mark of the catalog's own). The bidirectional algorithm then reorders a name that starts with digits, or starts or
+    /// ends with punctuation: the default editor "010 Editor" (SweetScape's hex editor) is drawn "Editor 010" in "Open in 010 Editor", and
+    /// "C#", "Notepad++" and ".NET CLI" are drawn "#C", "++Notepad" and "NET CLI.". Names of letters, spaces, digits at the end and brackets
+    /// ("Claude (work)", "TextMate 2", "Code - OSS") come out right. Measured with CoreText for "Open in %@" and "%@ Here" in all four
+    /// languages: with the value in an isolate (U+2068 … U+2069) each of these names is drawn in one piece.
+    @Test(arguments: ["ar", "fa", "he", "ur"])
+    func aNameInARightToLeftTitleIsDrawnInOnePiece(language: String) throws {
+        let toml = "[general]\neditor = \"hex\"\n[[app]]\nid = \"hex\"\nname = \"010 Editor\"\nbundle_id = \"com.sweetscape.010Editor\"\nrole = \"editor\"\n"
+        let parsed = ConfigParser.parse(toml)
+        try #require(!parsed.hasErrors, "\(parsed.diagnostics.map(\.message))")
+        let facts = reviewMachine(installed: ["com.apple.Terminal", "com.sweetscape.010Editor"])
+        // The Finder menu and the window's picture of it isolate the names they draw (`Localizer.isolatingNames`).
+        let menu = MenuBuilder(config: parsed.config, facts: facts, localizer: Localizer(languages: [language]).isolatingNames()).build(for: folderBackground)
+        let title = try #require(menu.first { $0.actionID == "open.editor" }?.title)
+        #expect(drawsInOnePiece("010 Editor", in: title), "\(language): \(title.debugDescription) draws the name out of order")
+        // A title that becomes the name of a Service or a file carries no invisible mark of this kind (ADR 0006).
+        let plain = try #require(MenuBuilder(config: parsed.config, facts: facts, localizer: Localizer(languages: [language])).build(for: folderBackground).first { $0.actionID == "open.editor" }?.title)
+        #expect(!plain.unicodeScalars.contains { $0 == "\u{2068}" || $0 == "\u{2069}" })
     }
 }

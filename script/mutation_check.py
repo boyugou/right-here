@@ -1233,7 +1233,7 @@ MUTANTS = [
     ("a separator inside a submenu is left in", "Sources/RightHereKit/FinderMenuPresentation.swift",
      "copy.children = Self.nodes(node.children, separators: false)", "copy.children = node.children"),
     ("the window shows separators that Finder does not", "Sources/RightHereKit/SetupLoader.swift",
-     "localizer: localizer, separators: separators)", "localizer: localizer)"),
+     "localizer: localizer.isolatingNames(), separators: separators)", "localizer: localizer.isolatingNames())"),
     # A list is changed by place only when the window showed the list the file has (ADR 0026).
     ("a change by place is made on a list that is not the one that was read", "Sources/RightHereCore/Config/ConfigDocument.swift",
      "        guard try elements(of: path) == items else { throw EditError.changedMeanwhile(path) }\n        return self", "        return self"),
@@ -2688,6 +2688,10 @@ MUTANTS = [
     ("a preset named with a terminal does not say which", "Sources/RightHereCore/Actions/ActionRegistry.swift",
      "info.title = terminalName.map { localizer.agentVariantIn(agent.name, presetTitle, terminal: $0) } ?? localizer.agentVariant(agent.name, presetTitle)",
      "info.title = localizer.agentVariant(agent.name, presetTitle)"),
+    ("the drawn menu does not isolate the names in a right-to-left title", "Sources/RightHereCore/Localization/Localizer.swift",
+     "        copy.isolatesNames = true\n", ""),
+    ("Open in names its app without an isolate in the drawn menu", "Sources/RightHereCore/Localization/Localizer+Titles.swift",
+     "render(.menuOpenIn(appName), isolatingValues: isolatesNames)", "render(.menuOpenIn(appName))"),
 ]
 
 

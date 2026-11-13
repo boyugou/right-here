@@ -20,8 +20,20 @@ public struct Localizer: Sendable, Equatable {
 
     public let languages: [String]
 
+    /// Whether the names in a title are put in an isolate (`render(_:isolatingValues:)`): for a title that is drawn and nothing more, the Finder menu and the window's picture of it.
+    /// A right-to-left title drew a name that starts or ends with digits or punctuation out of order ("010 Editor" as "Editor 010", "C#" as "#C"; measured with CoreText, which
+    /// draws a menu). Never for a title that becomes the name of a Service or a file, which must not carry invisible marks (ADR 0006).
+    public private(set) var isolatesNames = false
+
     public init(languages: [String]) {
         self.languages = languages
+    }
+
+    /// The same localizer, with the names in its titles isolated (`isolatesNames`).
+    public func isolatingNames() -> Localizer {
+        var copy = self
+        copy.isolatesNames = true
+        return copy
     }
 
     /// The language of the catalog that will be used, for example `zh-Hans`.

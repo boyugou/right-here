@@ -65,6 +65,8 @@
   left out when no agent, or not their agent, is in the menu (it said "Nothing is left out" of an empty menu), and
   counts items, not files, when a selection is too large for the menu to look at. With several agents in the menu, the
   presets say which agent they start ("Claude Code: Review"), and a preset named with a terminal says which terminal.
+  In Arabic, Persian, Hebrew and Urdu, a name that starts or ends with digits or punctuation is drawn in one piece in
+  the menu ("Open in 010 Editor" drew "Editor 010").
 
 ## 1.2.25 (2026-11-13)
 

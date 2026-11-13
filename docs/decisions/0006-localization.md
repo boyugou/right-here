@@ -184,6 +184,14 @@ isolated that way; one that ends in a bracket (`rh config sync enable --folder <
 mirrored and on the wrong side, so a right-to-left translation puts a left-to-right mark after it, which
 `merge_translations.py` adds, `verify_localizations.py` demands and a test holds.
 
+The Finder menu was in that list until 2026-11-13, when an independent review of the menu measured its titles with CoreText,
+which draws a menu: in Arabic, Persian, Hebrew and Urdu, "Open in 010 Editor" drew the name "Editor 010", and "C#",
+"Notepad++" and ".NET CLI" came out "#C", "++Notepad" and "NET CLI."; with the name in an isolate each was drawn in one piece.
+What keeps marks out of a title is that a Service or a file is named after it, not that a menu shows it. So the titles that are
+drawn and nothing more, the Finder menu and the window's picture and editor of it, are made with `Localizer.isolatingNames()`,
+which isolates the names in a right-to-left title; Quick Actions, Shortcuts and every title that names a file are made
+without, and a test holds that they carry no isolate.
+
 The same goes for a path, or a quoted, assigned or bracketed word, written in the sentence itself: the fix line of "rh on
 your PATH" had `~/.local/bin` in its text and the window drew it `local/bin./~` in Arabic, Persian, Hebrew and Urdu
 (found by a review), and `launcher = "link"` had its closing quote at the wrong end. These are values of the message
