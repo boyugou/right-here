@@ -21,7 +21,8 @@
   ([ADR 0033](docs/decisions/0033-links-to-the-git-host.md)). Add them with Edit Menu on the Finder Menu page.
 - **Quick Actions**, made from the config. The doctor notices when they differ from it.
 - **Shortcuts and Spotlight.** Four App Intents: Open in Terminal, Start AI Agent, Create New File and Copy Path. Each can take a
-  pinned or recent folder picked from a list (a Saved Folder) instead of a folder given as a file.
+  pinned or recent folder picked from a list (a Saved Folder) instead of a folder given as a file. Start AI Agent asks first when the agent
+  starts without its permission prompts and the folder is not one you pinned, since a shortcut can come from anyone.
 - **AI assistants.** The MCP server (12 tools) and the Claude Code plugin with three skills. An assistant cannot change by itself which program
   a click starts: it proposes the change, and you apply it.
 - **Agents in git worktrees**, pinned and recent folders, and agents that start without their permission prompts only when you turn that on.
