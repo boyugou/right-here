@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.17 (2026-11-12)
+
 - **Terminal launches, after an independent review.** A name with an apostrophe could end the quoting of a typed line
   in nushell (and elvish or PowerShell), whose single quotes take no escape, and run what followed: every word Right
   Here types is now written as quoted runs that all these shells read as written, and "Bob's Project" still works
