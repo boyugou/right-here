@@ -27,6 +27,39 @@ public enum InvocationCheck {
         values: ["--origin", "--container", "--language"]
     )
 
+    /// The options of `rh config set` and `rh config add` that change what is written or where: their values may follow `--`, and one of these there is a value too. A test holds them
+    /// to the commands' `--help`.
+    public static let configValueOptions: [String: Options] = [
+        "set": Options(flags: ["--local", "--dry-run", "--json"], values: []),
+        "add": Options(flags: ["--local", "--dry-run", "--json"], values: ["--at"]),
+    ]
+
+    /// `rh config set <key> -- <values> --dry-run`: the help says to put `--` before a value that starts with a dash, and its usage line puts the options after the values, so an option
+    /// written last was a value, and the dry run wrote the file (`--local` changed config.toml). Such an option is refused, unless it stands before `--` as well (then the one after is meant
+    /// as a value), with the command that gives it before `--`.
+    static func configProblem(_ arguments: [String]) -> String? {
+        guard arguments.count > 2, arguments[0] == "config", let options = configValueOptions[arguments[1]], let terminator = arguments.firstIndex(of: "--") else { return nil }
+        func name(_ word: String) -> String { word.split(separator: "=", maxSplits: 1).first.map(String.init) ?? word }
+        let before = Set(arguments[2..<terminator].map(name))
+        var moved: [String] = []
+        var values: [String] = []
+        var index = terminator + 1
+        var first: String?
+        while index < arguments.count {
+            let word = arguments[index]
+            index += 1
+            let option = name(word)
+            guard options.flags.contains(option) || options.values.contains(option), !before.contains(option) else { values.append(word); continue }
+            first = first ?? word
+            moved.append(word)
+            if options.values.contains(option), !word.contains("="), index < arguments.count { moved.append(arguments[index]); index += 1 }
+        }
+        guard let first else { return nil }
+        let fixed = (["rh"] + arguments[0..<terminator] + moved + ["--"] + values).map { $0.withControlCharactersEscaped }.joined(separator: " ")
+        return "\(first.withControlCharactersEscaped) after -- would be written as a value of the setting, not read as the option: give the options before -- (`\(fixed)`)."
+            + " A value that is one of these options is written in the file itself (`rh config path` names it)."
+    }
+
     /// What to add to "<word> does not exist" for a word that was read as a folder (`rh worktree ad` is `rh worktree list ad`, since `list`
     /// is what `rh worktree` does) when it is close to the name of a subcommand: a folder that is not there and a misspelt `add` look the same.
     public static func subcommandHint(for word: String, of command: String, in subcommands: [String]) -> String? {
@@ -47,6 +80,7 @@ public enum InvocationCheck {
         switch command {
         case "run": options = runOptions
         case "menu": options = menuOptions
+        case "config": return configProblem(arguments)
         default: return nil
         }
         var index = 1

@@ -4,6 +4,18 @@ import Testing
 
 @Suite("Command line check before ArgumentParser reads it")
 struct InvocationCheckTests {
+    /// `rh config set <key> -- <values> --dry-run`, as the usage line puts the options after the values: the dry run was a value, and the file was written (an independent review of
+    /// `rh config`, 2026-11-13). An option of the command after `--` is refused with the command that gives it before, unless it stands before `--` as well.
+    @Test func anOptionOfConfigSetOrAddAfterTheTerminatorIsRefusedWithTheCommandThatGivesItBefore() {
+        let commands = ["config", "run", "menu"]
+        #expect(InvocationCheck.problem(["config", "set", "agent.claude.args", "--", "--model", "opus", "--dry-run"], commands: commands)
+                == "--dry-run after -- would be written as a value of the setting, not read as the option: give the options before -- (`rh config set agent.claude.args --dry-run -- --model opus`). A value that is one of these options is written in the file itself (`rh config path` names it).")
+        #expect(InvocationCheck.problem(["config", "add", "menu.items", "--", "-", "--at", "2", "--local"], commands: commands)?.contains("`rh config add menu.items --at 2 --local -- -`") == true)
+        #expect(InvocationCheck.problem(["config", "set", "--json", "agent.x.args", "--", "--json"], commands: commands) == nil, "given before -- too: the one after is a value")
+        #expect(InvocationCheck.problem(["config", "set", "agent.claude.args", "--", "--model", "opus"], commands: commands) == nil)
+        #expect(InvocationCheck.problem(["config", "remove", "menu.items", "--", "--dry-run"], commands: commands) == nil, "remove takes one item: another word is a usage error")
+    }
+
     private let commands = ["run", "actions", "menu", "docs", "config", "doctor", "install", "mcp"]
 
     @Test("an argument that starts with a dash, and is not an option of the command, is refused", arguments: [
