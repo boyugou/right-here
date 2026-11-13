@@ -1153,7 +1153,7 @@ MUTANTS = [
     ("a drop past the end of the list is taken", "Sources/RightHereCore/Config/ListMoves.swift",
      "destination >= 0, destination <= count else { return [] }", "destination >= 0 else { return [] }"),
     ("an action that cannot run here is offered for the menu", "Sources/RightHereCore/Menu/MenuEditor.swift",
-     "where info.available && !listed.contains(info.id) {", "where !listed.contains(info.id) {"),
+     "where info.available && !listed.contains(info.id) && !shownTitles", "where !listed.contains(info.id) && !shownTitles"),
     ("an item that is in the menu is offered again", "Sources/RightHereCore/Menu/MenuEditor.swift",
      "for group in groupOrder where !listed.contains(group) {", "for group in groupOrder {"),
     ("a config that is not there has a menu to edit", "Sources/RightHereKit/SetupLoader.swift",
@@ -2669,6 +2669,14 @@ MUTANTS = [
      "Set([preset.title.comparableName] + (preset.titleKey.map { key in Self.translations(of: key) } ?? []))", "Set([preset.title.comparableName])"),
     ("two templates may share a title", "Sources/RightHereCore/Config/ConfigBuilder+NewFile.swift",
      "guard titles.insert(read.title.comparableName).inserted else {", "guard true else {"),
+    ("Open With repeats an app the menu offers on a line of its own", "Sources/RightHereCore/Menu/MenuBuilder.swift",
+     "            case .openApp(let id)?: listedAbove.insert(id)\n", ""),
+    ("More Agent Options repeats a start option the menu offers on a line of its own", "Sources/RightHereCore/Menu/MenuBuilder.swift",
+     "let nodes = refs.filter { !ownLines.contains($0.id) }.flatMap { single($0) }", "let nodes = refs.flatMap { single($0) }"),
+    ("the full path on a line of its own takes the Copy Path group's title beside the group", "Sources/RightHereCore/Menu/MenuBuilder.swift",
+     'if case .copyPath(.absolute) = ref, !entries.contains("copy-path") {', "if case .copyPath(.absolute) = ref {"),
+    ("the menu editor offers again what the menu shows on a line of its own", "Sources/RightHereCore/Menu/MenuEditor.swift",
+     " && !shownTitles.contains(info.title) {", " {"),
 ]
 
 

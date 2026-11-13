@@ -78,7 +78,10 @@ public enum MenuEditor {
             let name = shown.isEmpty ? title(of: group, localizer: localizer) : shown.map(\.title).joined(separator: ", ")
             choices.append(MenuEditorChoice(entry: group, section: .group, title: name, icon: shown.first?.icon ?? MenuBuilder.groupIcon(group)))
         }
-        for info in ActionRegistry(config: config, facts: facts, localizer: localizer).catalog() where info.available && !listed.contains(info.id) {
+        // An action the menu already shows on a line of its own, through a group, is not offered again: "Open in Ghostty" added as `open.terminal@ghostty` was a second line of that
+        // title. One that a submenu holds stays, and taking it to a line of its own takes it out of the submenu.
+        let shownTitles = Set(rows.flatMap(\.nodes).filter { $0.kind != .separator }.map(\.title))
+        for info in ActionRegistry(config: config, facts: facts, localizer: localizer).catalog() where info.available && !listed.contains(info.id) && !shownTitles.contains(info.title) {
             choices.append(MenuEditorChoice(entry: info.id, section: section(of: info), title: info.title, icon: info.icon))
         }
         return MenuEditorState(rows: rows, usesDefaults: config.menuItems == nil, choices: choices, listed: inFile)

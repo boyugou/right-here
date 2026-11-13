@@ -113,10 +113,21 @@ public struct MenuBuilder: Sendable {
 
     private func assembleEntries(for context: HereContext, items entries: [String], collector: MenuNoteCollector?) -> [EntryResult] {
         var results: [EntryResult] = []
-        // "Open With" leaves out what the menu already offers on its own line.
+        // "Open With" leaves out what the menu already offers on its own line, through a group or named by its id; so does "More Agent Options" (DESIGN 7: the other ways, never the
+        // same one twice).
         var listedAbove = Set<String>()
-        if entries.contains("open-terminal"), let terminal = try? defaults.resolve(role: .terminal, configured: config.terminal) { listedAbove.insert(terminal.id) }
-        if entries.contains("open-editor"), let editor = try? defaults.resolve(role: .editor, configured: config.editor) { listedAbove.insert(editor.id) }
+        let terminal = try? defaults.resolve(role: .terminal, configured: config.terminal), editor = try? defaults.resolve(role: .editor, configured: config.editor)
+        if entries.contains("open-terminal"), let terminal { listedAbove.insert(terminal.id) }
+        if entries.contains("open-editor"), let editor { listedAbove.insert(editor.id) }
+        for entry in entries {
+            switch ActionRef(parsing: entry) {
+            case .openApp(let id)?: listedAbove.insert(id)
+            case .openTerminal(let id)?: if let id = id ?? terminal?.id { listedAbove.insert(id) }
+            case .openEditor?: if let id = editor?.id { listedAbove.insert(id) }
+            default: break
+            }
+        }
+        let ownLines = Set(entries)
         for entry in entries {
             var nodes: [MenuNode] = []
             switch entry {
@@ -127,7 +138,7 @@ public struct MenuBuilder: Sendable {
             case "agents": nodes += agents(collector)
             case "agents-more":
                 // The plain "<Agent> Here" entry is there when `agents` is in the menu, or the agent is named by its own id.
-                nodes += moreAgents(context, withPresets: !entries.contains("presets"), collector, hasPlainEntry: { entries.contains("agents") || entries.contains("agent.\($0)") })
+                nodes += moreAgents(context, withPresets: !entries.contains("presets"), collector, ownLines: ownLines, hasPlainEntry: { entries.contains("agents") || entries.contains("agent.\($0)") })
             case "presets": nodes += presets(context, collector)
             case "new-file": nodes += newFile(context, collector)
             case "copy-path": nodes += copyPath(collector)
@@ -140,9 +151,9 @@ public struct MenuBuilder: Sendable {
                 }
                 let info = registry.info(ref, context: context)
                 if info.available {
-                    // Only the entry for the plain path carries the group's name; the other styles keep their own, so that
-                    // `copy_path.title` never gives two listed entries one title.
-                    if case .copyPath(.absolute) = ref {
+                    // Only the entry for the plain path carries the group's name, and only while the group is not in the menu as well; the other styles keep their own, so
+                    // that `copy_path.title` never gives two listed entries one title.
+                    if case .copyPath(.absolute) = ref, !entries.contains("copy-path") {
                         nodes.append(.action(info, title: config.copyPathTitle ?? localizer.copyPathGroup))
                     } else {
                         nodes.append(.action(info))
@@ -241,7 +252,7 @@ public struct MenuBuilder: Sendable {
     /// follows the agent's launcher (its desktop app, its terminal link, or a terminal that is the default or the one the
     /// agent names), so that launcher is the one left out here, and the typed launch in the default terminal is offered when
     /// the plain entry is not it.
-    private func moreAgents(_ context: HereContext, withPresets: Bool, _ collector: MenuNoteCollector?, hasPlainEntry: (String) -> Bool) -> [MenuNode] {
+    private func moreAgents(_ context: HereContext, withPresets: Bool, _ collector: MenuNoteCollector?, ownLines: Set<String> = [], hasPlainEntry: (String) -> Bool) -> [MenuNode] {
         var children: [MenuNode] = []
         let defaultTerminal = try? defaults.commandTerminal()
         for id in config.enabledAgents {
@@ -258,7 +269,7 @@ public struct MenuBuilder: Sendable {
             for terminal in config.allApps where terminal.role == .terminal && terminal.id != plainTerminal {
                 refs.append(.agent(id: id, variant: nil, launcher: .terminal(terminal.id)))
             }
-            let nodes = refs.flatMap { single($0) }
+            let nodes = refs.filter { !ownLines.contains($0.id) }.flatMap { single($0) }
             if !nodes.isEmpty { children += nodes + [.separator] }
         }
         if withPresets { children += presets(context, collector) }

@@ -58,7 +58,9 @@
   sidebar) gets no menu: it got the whole folder menu, and `rh` refused every entry for want of a folder. An app or a
   package document in the sidebar is one item, as a selected one is: New File made its file inside the app. Two presets
   (a built-in one's title in any language included) or two templates of one title are an error, as two agents or two
-  start options of one name are: the submenu showed two lines that did different things.
+  start options of one name are: the submenu showed two lines that did different things. The window's Add menu no longer
+  offers what the menu already shows on a line of its own ("Open in Ghostty" twice), and an app or a start option that
+  has a line of its own is no longer repeated in Open With or More Agent Options.
 
 ## 1.2.25 (2026-11-13)
 

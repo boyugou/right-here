@@ -117,4 +117,35 @@ struct MenuReviewTests {
             .filter { $0.actionID?.hasPrefix("new-file.") == true }
         #expect(titlesShownTwice(newFile).isEmpty, "New File shows \(newFile.map { "\($0.title) (\($0.actionID ?? ""))" })")
     }
+
+    /// The setup window's menu editor offers under Add every action that can run and that `menu.items` does not list in those very words
+    /// (MenuEditor.swift:81). Several of them are in the menu already through a group: "Open in Ghostty" (`open.terminal`,
+    /// `open.terminal@ghostty`) through `open-terminal`, "Open in Visual Studio Code" (`open.editor`, `open.app.vscode`) through
+    /// `open-editor`, "Claude Code Here" (`agent.claude`) through `agents`, and "Copy Path: Full Path" (`copy-path.absolute`), which the
+    /// menu then titles "Copy Path" (MenuBuilder.swift:139-140) next to the "Copy Path" submenu. The person who adds one gets two lines
+    /// that read the same; the parser's "listed twice" warning only sees two equal strings (ConfigBuilder+Menu.swift:20-24). An app added
+    /// as a line of its own ("Open in Zed") also stays in Open With, which says it leaves out what the menu offers on a line of its own
+    /// (MenuBuilder.swift:110-113), and a start option added so ("Claude Code: Continue") stays in More Agent Options, which "offers the
+    /// other ways and never the same one twice" (DESIGN.md section 7; MenuBuilder.swift:124 knows only `agents` and `agent.<id>`).
+    @Test func whatTheMenuEditorOffersToAddNeverMakesTwoLinesThatReadTheSame() {
+        let facts = reviewMachine()
+        let config = Config(enabledAgents: ["claude"])
+        let state = MenuEditor.state(config: config, facts: facts, localizer: .english, folder: URL(fileURLWithPath: code), inFile: nil)
+        var sameTitle: [String] = []
+        var submenuRepeats: [String] = []
+        for choice in state.choices where choice.section != .group {
+            var added = config
+            added.menuItems = MenuBuilder.defaultItems + [choice.entry]
+            let menu = MenuBuilder(config: added, facts: facts).build(for: folderBackground)
+            let twice = titlesShownTwice(menu)
+            if !twice.isEmpty { sameTitle.append("Add \"\(choice.title)\" (\(choice.entry)) -> \(twice)") }
+            let ownLines = Set(menu.compactMap(\.actionID))
+            for group in ["Open With", "More Agent Options"] {
+                let inside = menu.first { $0.kind == .submenu && $0.title == group }.map { everyNode($0.children).compactMap(\.actionID) } ?? []
+                if let repeated = inside.first(where: ownLines.contains) { submenuRepeats.append("\(group): \(repeated)") }
+            }
+        }
+        #expect(sameTitle.isEmpty, "adding these from the menu editor gives the menu two lines of one title: \(sameTitle)")
+        #expect(submenuRepeats.isEmpty, "a submenu repeats what the menu offers on a line of its own: \(submenuRepeats)")
+    }
 }
