@@ -117,8 +117,8 @@ rewrites a file the person edits by hand loses their comments and order. This di
   of a list of tables by its id when an entry added, taken out or moved above it changes its position, and without the list of what the config knows (`known agents: …`), which an agent of
   one's own lengthens; the same error once more is one more. A change that puts right an entry the config refused brings in what the entry starts, and `ConfigTrust` asks for the person's
   yes as it does for one written anew: a new agent's command, a new preset's prompt, and an app that a click may now hand a folder to (a built-in app as it ships, turned back on, excepted;
-  until then only an app with a command template of its own waited). The window's editors still wait for a config without errors: they are built from what the config makes of the file,
-  which leaves a refused entry out. The per-machine overlay is edited with the same core, read as laid over the shared file (`ConfigDocument.Validation.overlay`).
+  until then only an app with a command template of its own waited). The window's editors still wait for a config without errors, for now: they are built from what the config makes of
+  the file, and how each of them treats an item or an entry that the config refused has not been gone through. The per-machine overlay is edited with the same core, read as laid over the shared file (`ConfigDocument.Validation.overlay`).
 - **One vocabulary:** a `ConfigRequest` (a verb, a setting, values or an item named by its text or its id) becomes `ConfigOperation`s against the file as it is now; `rh config` and the MCP tool
   both build one, and the window will build `ConfigOperation`s directly, since a drag knows the places.
 - **`ConfigService`** (Kit) applies operations under a lock (`.config.lock`) against the file as it is at that moment, writes atomically through a link when the config is one, and keeps the text
