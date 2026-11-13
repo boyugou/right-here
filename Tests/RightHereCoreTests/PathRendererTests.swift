@@ -187,7 +187,7 @@ struct PathRendererTests {
     /// its last ASCII letter, digit or underscore: `@lib/c++` attached `lib/c`, `@docs/設計` the folder `docs`, and `@資料` nothing, so such a name is quoted.
     @Test("a mention is read by Claude Code as the item it names", arguments: [
         "src/main.swift", "My Notes.md", "lib/c++", "draft(1)", "notes.txt~", "docs/\u{8A2D}\u{8A08}", "\u{8CC7}\u{6599}", "r\u{E9}sum\u{E9}", "docs/ notes.md",
-        "q\"uote.md", "end.", "foo@bar.txt", "x-", "\u{65E5}\u{672C} \u{8A9E}.txt", "a_b", "v2",
+        "q\"uote.md", "end.", "icon@2x.png", "x-", "\u{65E5}\u{672C} \u{8A9E}.txt", "a_b", "v2",
     ])
     func aMentionIsReadByClaudeCodeAsTheItemItNames(relative: String) {
         let (text, refusal) = copiedMention(relative)
