@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.2.24 (2026-11-12)
+
 - **The PATH line setup gives fits more login shells.** ksh and sh get `~/.profile`, tcsh and csh their `set path` line,
   and nushell, elvish, xonsh or PowerShell a sentence instead of a zsh line they would not read.
 - **The README and the website, after a newcomer's read.** Warp and cmux are among the terminals; where `rh` is before
