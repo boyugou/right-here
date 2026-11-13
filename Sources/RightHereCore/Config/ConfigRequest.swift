@@ -73,6 +73,7 @@ public struct ConfigRequest: Sendable, Equatable {
     private func operations(for node: SchemaNode, in document: ConfigDocument) throws -> [ConfigOperation] {
         switch verb {
         case .set:
+            try refuseJoinedItems()
             return [.set(key, try ConfigDocument.value(from: values, at: key))]
         case .unset:
             return [.unset(key)]
@@ -82,6 +83,7 @@ public struct ConfigRequest: Sendable, Equatable {
             switch node.kind {
             case .stringArray:
                 guard !values.isEmpty else { throw Problem.usage("Name the items to add.") }
+                try refuseJoinedItems()
                 return values.enumerated().map { index, item in .insert(item, into: key, at: first.map { $0 + index }) }
             case .tableArray:
                 return [.addEntry(to: key, fields: try fields(entry: true), at: first)]
@@ -121,12 +123,26 @@ public struct ConfigRequest: Sendable, Equatable {
             return operations + [.addTable(key, fields: try fields(entry: false))] + listing
         }
         guard document.tableIDs(of: "agent").contains(id) else { throw Problem.notFound("There is no agent \"\(id.withControlCharactersEscaped)\" of your own in this file.") }
+        // A built-in agent's table holds the person's settings of it (`command = "claude --model opus"`): they go, and the agent stays in the menu with its built-in ones. It is no agent
+        // of one's own, whose table is all there is of it.
+        if KnownAgents.all.contains(where: { $0.id == id }) { return [.removeTable(key)] }
         var operations: [ConfigOperation] = []
         if let listed, let place = listed.firstIndex(of: id) { operations += [.expect(listed, in: listKey), .remove(at: place + 1, from: listKey)] }
         return operations + [.removeTable(key)]
     }
 
     // MARK: Pieces
+
+    /// The lists whose items are ids, which never hold a comma: `rh setup --agents` takes ids joined by commas, and the same text given here was one item that names nothing (a menu of one
+    /// such item is empty).
+    static let idLists: Set<String> = ["general.agents", "menu.items", "services.items", "copy_path.styles", "disabled"]
+
+    private func refuseJoinedItems() throws {
+        guard Self.idLists.contains(key), values.contains(where: { $0.contains(",") }) else { return }
+        let items = values.flatMap { $0.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty } }
+        let verbWord = verb == .add ? "add" : "set"
+        throw Problem.usage("\(key) takes each item on its own, not joined by commas: `rh config \(verbWord) \(key) \(items.map(\.withControlCharactersEscaped).joined(separator: " "))`.")
+    }
 
     private func requireList(_ node: SchemaNode, instead hint: String?) throws {
         guard node.kind == .stringArray || node.kind == .tableArray else {
@@ -154,6 +170,14 @@ public struct ConfigRequest: Sendable, Equatable {
     private func resolve(node: SchemaNode, document: ConfigDocument) throws -> Int {
         if let position {
             guard position >= 1 else { throw Problem.usage("position counts from 1.") }
+            // An item named with its place as well (the refusal for an id that two entries have says to give the place): the place has to hold it, or another item would go. The answer
+            // names entries by their place only, so the wrong one would not even be said.
+            if let item {
+                let there = node.kind == .tableArray ? document.entryID(at: position, in: key) : ((try? document.elements(of: key)) ?? nil).flatMap { $0.indices.contains(position - 1) ? $0[position - 1] : nil }
+                guard there == item else {
+                    throw Problem.notFound("\(key) has " + (there.map { "\"\($0.withControlCharactersEscaped)\"" } ?? "nothing") + " at \(position), not \"\(item.withControlCharactersEscaped)\".")
+                }
+            }
             return position
         }
         guard let item else { throw Problem.usage("Name the item (or give a position).") }

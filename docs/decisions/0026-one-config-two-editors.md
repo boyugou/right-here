@@ -201,7 +201,7 @@ A review of stages 1 and 2 (the editing core and the service, the trust model, t
   back with CRLF (comments travel with their items, no line feed is put among the others, the diff is lines).
 - **Comments and layout.** A line inside a multi-line string that starts with `#` is part of the value (set and add put their line inside the string before); a comment block that stands apart after an entry
   (blank lines around it) neither goes with the entry nor moves with it; the comments of a list that has no item, and the one on the line of its bracket, stay when the list is filled or emptied; a key
-  written in quotes with a dot in it is not the setting it spells; an empty item is refused; the summary of a list is one line. `set` of a list still drops the comments inside it, which its help says.
+  written in quotes with a dot in it is not the setting it spells; an empty item is refused; the summary of a list is one line. `set` of a list dropped the comments inside it; since an independent review of `rh config` (2026-11-13) an item that stays keeps its comments, wherever it goes (`TOMLArrayText.replacingElements`).
 - **The Finder extension's menu cache** is `FinderMenuCache` (tested): the toolbar's menu is built again by a warmup, a warmup that finds no entry leaves none served, and a warmup that began before a
   config change does not put what it read over a newer menu.
 - **Parity registry (D3).** `ConfigParity` says for each setting of the schema which control changes it in the window, or that it is text on the Config page for now; a test fails for a setting that is not

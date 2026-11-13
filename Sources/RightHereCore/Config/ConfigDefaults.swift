@@ -14,9 +14,11 @@ public enum ConfigDefaults {
     }
 
     /// The list `key` is as `config` reads it now: what a file writes for it, or else the default. It is what a change of this Mac's own file starts from when only the shared file writes the list: the
-    /// first change then keeps the list this Mac shows, and does not replace it with the built-in default.
+    /// first change then keeps the list this Mac shows, and does not replace it with the built-in default (or, for the agents, with the one agent that was added: this Mac's list replaces the
+    /// shared one as a whole).
     public static func shown(for key: String, config: Config) -> [String]? {
         switch key {
+        case "general.agents": config.enabledAgents
         case "menu.items": config.menuItems ?? MenuBuilder.defaultItems
         case "copy_path.styles": config.copyPathStyles.map(\.rawValue)
         case "services.items": config.serviceItems ?? ActionRegistry.defaultServiceItems(enabledAgents: config.enabledAgents)

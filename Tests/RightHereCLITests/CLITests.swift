@@ -751,6 +751,13 @@ struct CLITests {
             #expect(checked.isSubset(of: named), "\(command): the checker knows \(checked.subtracting(named)), which the help does not name")
             #expect(named.subtracting(checked).isEmpty, "\(command): the help names \(named.subtracting(checked)), which the checker does not know and would refuse")
         }
+        // `rh config set` and `add`: the options the checker refuses after `--` are options of the command.
+        for (subcommand, known) in InvocationCheck.configValueOptions {
+            let rh = try RH(); defer { rh.cleanUp() }
+            let help = try rh.run(["config", subcommand, "--help"]).standardOutput
+            let named = Set(help.split { !($0.isLetter || $0 == "-") }.map(String.init).filter { $0.hasPrefix("--") })
+            #expect(known.flags.union(known.values).isSubset(of: named), "config \(subcommand): \(known.flags.union(known.values).subtracting(named)) is not an option of its help")
+        }
     }
 
     @Test func aPresetDryRunShowsTheQuotedPromptAndAHostileNameIsRefused() throws {
@@ -3029,5 +3036,237 @@ struct ConfigSyncThirdReviewCLITests {
         _ = try rh.run(arguments)
         let now = try String(contentsOf: config, encoding: .utf8)
         #expect(!now.contains("example.invalid"), "`\(advice)` took a command that the refusal never listed: \(now)")
+    }
+}
+
+/// What an independent review of `rh config` found (2026-11-13), each kept as the test that failed on the code it was found in.
+extension ConfigEditCLITests {
+    private func localText(_ rh: RH) -> String? {
+        try? String(contentsOf: rh.configDirectory.appendingPathComponent("config.local.toml"), encoding: .utf8)
+    }
+
+    /// The Finder menu this Mac shows for a folder, as `rh menu` prints it: one line per entry, each with its action id.
+    private func menu(_ rh: RH) throws -> String {
+        try rh.run(["menu", "--container", rh.configDirectory.path]).standardOutput
+    }
+
+    // MARK: config.local.toml and the agents
+
+    /// A person, or an AI assistant that `docs/AGENT_SETUP.md` tells "`--local` changes `config.local.toml`, the file of this Mac only", adds Copilot to the agents
+    /// of this Mac: `rh config add general.agents copilot --local` (and the same for an agent of their own, `rh config add agent.lazygit … --local`). config.toml
+    /// lists Claude and Codex; config.local.toml has no list. What happens: config.local.toml gets `agents = ["copilot"]` (or `["lazygit"]`), the overlay's list
+    /// replaces the shared one as a whole (`ConfigMerge`), and Claude and Codex are gone from this Mac's Finder menu, while the answer says only "add". What should
+    /// happen: the first change starts from the list this Mac shows, as `rh config add menu.items … --local` does and as `ConfigService.defaultList(for:merged:)`
+    /// promises ("so that the first change adds to the list and does not replace it"). Cause: `ConfigDefaults.shown(for:config:)` has no case for
+    /// `general.agents`, so `defaultList` returns nil for it (ConfigService.swift:313, ConfigDefaults.swift:18).
+    @Test func addingAnAgentToThisMacsOwnFileKeepsTheAgentsThisMacOffers() throws {
+        let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
+        let added = try rh.run(["config", "add", "general.agents", "copilot", "--local"])
+        let shown = try menu(rh)
+        #expect(shown.contains("(agent.claude)") && shown.contains("(agent.codex)"),
+                "`add general.agents copilot --local` took Claude and Codex out of this Mac's menu (status \(added.status)); config.local.toml:\n\(localText(rh) ?? "(none)")\nmenu:\n\(shown)")
+        if added.status == 0 { #expect(shown.contains("(agent.copilot)"), "\(shown)") }
+
+        let own = try RH(config: Self.sample); defer { own.cleanUp() }
+        let made = try own.run(["config", "add", "agent.lazygit", "name=lazygit", "command=lazygit", "--local"])
+        let ownMenu = try menu(own)
+        #expect(ownMenu.contains("(agent.claude)") && ownMenu.contains("(agent.codex)"),
+                "`add agent.lazygit … --local` took Claude and Codex out of this Mac's menu (status \(made.status)); config.local.toml:\n\(localText(own) ?? "(none)")\nmenu:\n\(ownMenu)")
+    }
+
+    /// The same list the other way: `rh config remove general.agents claude --local`, to stop offering Claude on this Mac only. config.toml lists Claude and Codex
+    /// and this Mac's menu shows both. What happens: "general.agents has no item "claude". `rh config get general.agents` shows what it has." with status 1, and the
+    /// command it names prints `["claude", "codex"]`. `rh config remove menu.items agents --local` works in the same situation. What should happen: Claude is taken out
+    /// of the list this Mac shows (written into config.local.toml), Codex stays. Cause: as above, no default list for `general.agents` in this Mac's own file.
+    @Test func removingAnAgentFromThisMacsOwnFileStartsFromTheListThisMacShows() throws {
+        let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
+        let removed = try rh.run(["config", "remove", "general.agents", "claude", "--local"])
+        #expect(removed.status == 0, "\(removed.standardError)")
+        let shown = try menu(rh)
+        #expect(!shown.contains("(agent.claude)") && shown.contains("(agent.codex)"), "menu:\n\(shown)")
+        #expect(text(rh) == Self.sample, "config.toml, which other Macs read, was changed")
+    }
+
+    // MARK: Undo
+
+    /// The person adds an agent of their own to config.toml (`rh config add agent.lazygit name=lazygit command=lazygit`), gives it a terminal on this Mac only
+    /// (`rh config set agent.lazygit.terminal terminal --local`), and then takes the first change back with `rh config undo`. The same change made as an edit,
+    /// `rh config remove agent.lazygit`, is refused ("That change would make the config invalid: config.local.toml: [agent.lazygit] an agent that is not built in needs
+    /// name and command"). What happens: `undo` writes the earlier text of config.toml with no such check, exits 0 and says nothing, and the config no longer reads on
+    /// this Mac: `rh config validate` exits 1 with that very error. What should happen: an undo that brings an error into the two files is refused like the edit
+    /// (or at least says which error it leaves). Cause: `ConfigService.undo` (ConfigService.swift:607-647) has none of the `ConfigDiagnostic.errorsAdded` check
+    /// that `applyLocked` makes (ConfigService.swift:369-380).
+    @Test func undoIsHeldToTheSameCheckOfTheTwoFilesAsAnEdit() throws {
+        let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
+        #expect(try rh.run(["config", "add", "agent.lazygit", "name=lazygit", "command=lazygit"]).status == 0)
+        #expect(try rh.run(["config", "set", "agent.lazygit.terminal", "terminal", "--local"]).status == 0)
+        #expect(try rh.run(["config", "validate"]).status == 0)
+        let asAnEdit = try rh.run(["config", "remove", "agent.lazygit", "--dry-run"])
+        #expect(asAnEdit.status != 0, "the same change as an edit is refused: \(asAnEdit.standardError)")
+        let undone = try rh.run(["config", "undo"])
+        let validate = try rh.run(["config", "validate"])
+        let said = undone.standardOutput + undone.standardError
+        #expect(undone.status != 0 || validate.status == 0 || said.contains("needs name and command"),
+                "undo exited \(undone.status) and said nothing of the error it left; `rh config validate` now: \(validate.standardOutput)\(validate.standardError)")
+    }
+
+    // MARK: Comments
+
+    /// `docs/AGENT_SETUP.md` tells an assistant to make the setup's `configEdits` with `rh config set` ("changes only that line. It keeps every comment") and never
+    /// to delete the person's comments; the help of `rh config set` says "every other character of the file stays as it is, comments included". The person's list
+    /// has a comment above one item and one at the end of another. What happens: `rh config set general.agents claude codex copilot` drops both comments, also of
+    /// the items that stay (ADR 0026, stage 3b, says "`set` of a list still drops the comments inside it, which its help says": the help does not say it). What should
+    /// happen: the comments of the items that stay stay with them (or the help and the guide say they go). Cause: `ConfigDocument.render(_:like:)` lays the new list out
+    /// with `TOMLArrayText.replacingElements(with:)`, which keeps the places and not the comments (ConfigDocument+Array.swift:207-242).
+    @Test func setOfAListKeepsTheCommentsOfTheItemsThatStay() throws {
+        let commented = """
+        [general]
+        terminal = "ghostty"
+        agents = [
+            # The one I use every day.
+            "claude",
+            "codex", # for reviews
+        ]
+        """ + "\n"
+        let rh = try RH(config: commented); defer { rh.cleanUp() }
+        let set = try rh.run(["config", "set", "general.agents", "claude", "codex", "copilot"])
+        #expect(set.status == 0, "\(set.standardError)")
+        #expect(text(rh).contains("# The one I use every day.") && text(rh).contains("# for reviews"), "the person's comments were dropped:\n\(text(rh))")
+    }
+
+    // MARK: Naming an item
+
+    /// The help of `--position` says it names the item "instead of its name (needed when two entries have its id)", and the refusal for an id that two entries have
+    /// says "name the one by its place with --position", so a person or an assistant writes both: `rh config remove preset beta --position 1`. Entry 1 is "alpha". What
+    /// happens: "alpha" is removed and "beta" stays; the answer says only "remove entry 1 of preset", so the wrong entry is not named either. The same with a list of
+    /// text: `rh config remove menu.items agents --position 1` removes "open-terminal". What should happen: an item named together with a place is refused when the
+    /// place does not hold it. Cause: `ConfigRequest.resolve(node:document:)` returns the position as soon as there is one and never looks at `item`
+    /// (ConfigRequest.swift:155-158).
+    @Test func anItemNamedWithAPlaceIsTheItemThatIsTakenOut() throws {
+        let two = Self.sample + "\n[[preset]]\nid = \"beta\"\ntitle = \"Beta\"\nprompt = \"Beta {files}\"\n"
+        let rh = try RH(config: two); defer { rh.cleanUp() }
+        let removed = try rh.run(["config", "remove", "preset", "beta", "--position", "1"])
+        #expect(text(rh).contains("id = \"alpha\""), "\"alpha\" was removed for \"beta\" (status \(removed.status), \(removed.standardOutput)):\n\(text(rh))")
+        let item = try rh.run(["config", "remove", "menu.items", "agents", "--position", "1"])
+        #expect(text(rh).contains("\"open-terminal\""), "\"open-terminal\" was removed for \"agents\" (status \(item.status)):\n\(text(rh))")
+    }
+
+    // MARK: The command line
+
+    /// The help of `rh config set` says "Put -- before one that starts with a dash", and its usage line puts the flags after the values
+    /// (`rh config set <key> [<values> ...] [--local] [--dry-run] [--json]`). An assistant that wants to show the person a change of what starts Claude before making it
+    /// (`docs/AGENT_SETUP.md`: such a change "needs the person's yes") writes `rh config set agent.claude.args -- --model opus --dry-run`. What happens: `--dry-run` is read
+    /// as a third argument and the change is written: config.toml now starts Claude with `--model opus --dry-run`, without the yes and without the dry run. `--local`
+    /// after `--` changes config.toml instead of this Mac's file the same way. What should happen: nothing is written when the words after `--` hold the command's own
+    /// flags (refused with the sentence that says to put them before `--`, as `InvocationCheck` does for `rh run`). Cause: `InvocationCheck.problem` looks only at
+    /// `run` and `menu` (InvocationCheck.swift:47-51), and ArgumentParser takes every word after `--` as a value.
+    @Test func aDryRunWrittenAfterTheValuesWritesNothing() throws {
+        let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
+        let dry = try rh.run(["config", "set", "agent.claude.args", "--", "--model", "opus", "--dry-run"])
+        #expect(text(rh) == Self.sample, "a dry run wrote the file (status \(dry.status)): \(dry.standardOutput)")
+
+        let local = try RH(config: Self.sample); defer { local.cleanUp() }
+        let other = try local.run(["config", "set", "agent.claude.args", "--", "--model", "opus", "--local"])
+        #expect(text(local) == Self.sample, "--local after -- changed config.toml (status \(other.status)): \(other.standardOutput)")
+    }
+
+    /// `rh setup --agents` takes a list joined by commas (`--agents <id,id>` in `docs/AGENT_SETUP.md`); `rh config set` takes the items as separate arguments. An assistant
+    /// that mixes them up writes `rh config set menu.items open-terminal,agents`. What happens: status 0, `items = ["open-terminal,agents"]`, one warning, and the Finder menu
+    /// is empty for every folder (`rh menu` says "(empty: ...)"); `rh config validate --strict` then fails. For `general.agents claude,codex` the change is refused, but
+    /// with "unknown agent "claude,codex"", which does not say how a list is given. What should happen: an item that is several known ids joined by commas is refused with a
+    /// sentence that says to give the items as separate arguments (`rh config set menu.items open-terminal agents`). Cause: `ConfigDocument.value(from:at:)` takes each
+    /// argument as one item (ConfigDocument.swift:346-347), and a warning never stops a change (`ConfigService.applyLocked`).
+    @Test func aListJoinedWithCommasIsRefusedWithHowToGiveTheItems() throws {
+        let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
+        let menuItems = try rh.run(["config", "set", "menu.items", "open-terminal,agents"])
+        #expect(menuItems.status != 0 && text(rh) == Self.sample, "the menu was replaced by one item that is no item (status \(menuItems.status)):\n\(text(rh))")
+        let agents = try rh.run(["config", "set", "general.agents", "claude,codex"])
+        #expect(agents.status != 0)
+        #expect(agents.standardError.contains("separate") || agents.standardError.contains("claude codex"), "the refusal does not say how to give a list: \(agents.standardError)")
+    }
+
+    /// A title or a name is what the Finder menu shows. `rh config set preset.1.title ""` (an unset shell variable, say) and `rh config add agent.mine "name=  "
+    /// command=lazygit` are taken: status 0, `rh config validate --strict` says ok, and the Finder menu has a row with no words (`rh menu` prints "      (preset.alpha)").
+    /// An empty command is refused with a sentence ("the command is empty, so the agent would start nothing"); an empty or blank title or name is not. What should
+    /// happen: refused the same way. Cause: `ConfigBuilder.isPlainName(_:at:noun:limit:)` checks the length, control characters and misleading characters, and
+    /// not that there is something to show (ConfigBuilder.swift:90-104).
+    @Test func anEmptyTitleOrNameIsRefused() throws {
+        let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
+        let title = try rh.run(["config", "set", "preset.1.title", ""])
+        #expect(title.status != 0 && text(rh) == Self.sample, "an empty title was written:\n\(text(rh))")
+        let name = try rh.run(["config", "add", "agent.mine", "name=  ", "command=lazygit"])
+        #expect(name.status != 0, "a blank name was written:\n\(text(rh))")
+    }
+
+    // MARK: Built-in agents
+
+    /// The README's example config overrides Claude's command (`[agent.claude] command = "claude --model opus"`). `rh config unset agent.claude` says to use
+    /// `rh config remove agent.<id>` for "an agent of your own", and the help of `remove` says the same. A person who wants their override gone runs
+    /// `rh config remove agent.claude`. What happens: the override is removed and Claude is taken out of `general.agents` as well, so the Finder menu no longer offers
+    /// Claude Code at all. What should happen: a built-in agent is not "an agent of your own": the command is refused with the two commands that do what was meant
+    /// (`rh config remove general.agents claude`, `rh config unset agent.claude.command`), or it takes only the table and leaves the menu alone. Cause:
+    /// `ConfigRequest.operationsForTable(in:defaultList:)` takes any id that has a table, built in or not (ConfigRequest.swift:123-126).
+    @Test func removingTheTableOfABuiltInAgentDoesNotTakeItOutOfTheMenu() throws {
+        let overridden = """
+        [general]
+        terminal = "ghostty"
+        agents = ["claude", "codex"]
+
+        [agent.claude]
+        command = "claude --model opus"
+        """ + "\n"
+        let rh = try RH(config: overridden); defer { rh.cleanUp() }
+        let removed = try rh.run(["config", "remove", "agent.claude"])
+        #expect(text(rh).contains("agents = [\"claude\", \"codex\"]"), "Claude was taken out of the menu (status \(removed.status)): \(removed.standardOutput)")
+    }
+
+    // MARK: What the command line says
+
+    /// A refusal of `remove` or `move` ends with the command that shows what the list has: "preset has no entry with the id "review". `rh config get preset` shows what
+    /// it has." What happens when that is run: "preset is not set in config.toml" (status 0, `--json` gives `"isSet": false`) although the file has a `[[preset]]` entry;
+    /// `rh config get general` and `rh config get agent.lazygit`, right after `rh config add agent.lazygit …`, say "is not set" too. And for a refusal with `--local` the
+    /// command it names has no `--local`, so it shows the other file's list. What should happen: the command a refusal names shows what the list has, and `get` never
+    /// says that a table the file writes is not set. Cause: `ConfigDocument.rawValue(at:)` reads only `key = value` lines (TOMLOutline.rawValue(of:)), and the refusal
+    /// is written as "`rh config get \(request.key)`" whatever the key and the file (ConfigEditCommands.swift:69).
+    @Test func theCommandARefusalNamesShowsWhatTheListHas() throws {
+        let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
+        let refused = try rh.run(["config", "remove", "preset", "review"])
+        #expect(refused.status != 0)
+        let named = try #require(Self.namedCommand(in: refused.standardError), "\(refused.standardError)")
+        let followed = try rh.run(named)
+        #expect(!followed.standardOutput.contains("is not set"), "`rh \(named.joined(separator: " "))` says: \(followed.standardOutput)")
+        let json = try #require(try rh.run(["config", "get", "preset", "--json"]).json as? [String: Any])
+        #expect(json["isSet"] as? Bool != false, "\(json)")
+        #expect(try rh.run(["config", "add", "agent.lazygit", "name=lazygit", "command=lazygit"]).status == 0)
+        let table = try rh.run(["config", "get", "agent.lazygit"])
+        #expect(!table.standardOutput.contains("is not set"), "\(table.standardOutput)")
+
+        try "[menu]\nitems = [\"open-terminal\"]\n".write(to: rh.configDirectory.appendingPathComponent("config.local.toml"), atomically: true, encoding: .utf8)
+        let local = try rh.run(["config", "remove", "menu.items", "open-editor", "--local"])
+        #expect(local.status != 0)
+        let localNamed = Self.namedCommand(in: local.standardError) ?? []
+        #expect(localNamed.contains("--local"), "the refusal of a change of config.local.toml names `rh \(localNamed.joined(separator: " "))`, which reads config.toml: \(local.standardError)")
+    }
+
+    /// The `rh config …` command between backticks that a sentence names, as arguments of `rh`.
+    private static func namedCommand(in sentence: String) -> [String]? {
+        guard let start = sentence.range(of: "`rh config ") else { return nil }
+        guard let end = sentence[start.upperBound...].firstIndex(of: "`") else { return nil }
+        return ["config"] + sentence[start.upperBound..<end].split(separator: " ").map(String.init)
+    }
+
+    /// The root help says "Everything is also available as JSON (--json) for scripts and agents", and `rh run --json` prints one document with `"ok": false` and the
+    /// error when it refuses. An assistant runs `rh config set general.terminal nonsense --json` (or `rh config undo --json` with nothing to undo) and reads standard
+    /// output as JSON. What happens: standard output is empty, and the refusal is only a sentence on standard error. What should happen: one JSON document on standard
+    /// output on failure too, as `rh run --json` prints. Cause: `ConfigEditSupport.run` and `UndoEdit.run` throw `Output.fail(...)` before `--json` is looked at
+    /// (ConfigEditCommands.swift:34-36, 71-73 and 280-282).
+    @Test func aRefusalWithJSONIsOneJSONDocument() throws {
+        let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
+        let refused = try rh.run(["config", "set", "general.terminal", "nonsense", "--json"])
+        #expect(refused.status != 0)
+        #expect(refused.json != nil, "standard output is not JSON: \(refused.standardOutput.debugDescription); standard error: \(refused.standardError)")
+        let nothing = try rh.run(["config", "undo", "--json"])
+        #expect(nothing.status != 0)
+        #expect(nothing.json != nil, "standard output is not JSON: \(nothing.standardOutput.debugDescription); standard error: \(nothing.standardError)")
     }
 }

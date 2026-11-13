@@ -43,6 +43,16 @@
   preset's or a template's last line goes with it when it is removed or moved, and a new entry is put after it. A
   template's text written over several lines (`"""`) stays over several lines when it is changed in the window.
 
+- **`rh config`, after an independent review.** `--local` changes of the agents start from the list this Mac shows
+  (`add general.agents copilot --local` left only Copilot in the menu, and `remove … --local` found nothing to remove).
+  An item named with `--position` has to be the one at that place (`remove preset beta --position 1` took out `alpha`).
+  `set` of a list keeps the comments of the items that stay. An option written after `--` (`set agent.claude.args --
+  --model opus --dry-run`) is refused with the command that gives it before `--`: it was a value, and the dry run wrote
+  the file. Ids joined by commas are refused with the command that gives each on its own. `remove agent.claude` takes
+  out your settings of a built-in agent and leaves it in the menu. `get` of a table or a list of tables says what it
+  holds (it said "not set"), and a refusal of a `--local` change names `get … --local`. A refusal with `--json` prints
+  a JSON document. A name or a title of only spaces is an error, as an empty command is.
+
 ## 1.2.25 (2026-11-13)
 
 - **Test Terminal Start speaks your language.** The setup window's test of a terminal start said in English that the

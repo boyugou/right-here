@@ -157,6 +157,34 @@ public struct ConfigDocument: Sendable, Equatable {
         return self
     }
 
+    /// What the file writes at `path` when that is not one value: a table (its keys) or a list of tables (the ids of its entries, `nil` for one without). A table or a list written with
+    /// headers, dotted keys or inline is one that the file sets, although `rawValue(at:)` finds no `key = value` line for it.
+    public enum Written: Sendable, Equatable {
+        case table(keys: [String])
+        case entries(ids: [String?])
+    }
+
+    /// See `Written`; `nil` when the file writes nothing at `path`, or one value there.
+    public func written(at path: String) -> Written? {
+        guard let tree = ConfigParser.readTree(text).tree else { return nil }
+        var value: TOMLValue? = .table(tree)
+        for segment in path.split(separator: ".").map(String.init) {
+            if let index = Int(segment), case .array(let items)? = value {
+                value = items.indices.contains(index - 1) ? items[index - 1] : nil
+            } else {
+                value = value?.tableValue?[segment]
+            }
+        }
+        switch value {
+        case .table(let table)?:
+            return .table(keys: table.keys.sorted())
+        case .array(let items)? where !items.isEmpty && items.allSatisfy({ $0.tableValue != nil }):
+            return .entries(ids: items.map { item in if case .string(let id)? = item.tableValue?["id"] { id } else { nil } })
+        default:
+            return nil
+        }
+    }
+
     /// This document, when it defines no entry of `[[table]]`, written as headers or as an inline array; otherwise a refusal.
     public func requiringNoEntries(in table: String) throws -> ConfigDocument {
         guard let tree = ConfigParser.readTree(text).tree else { throw EditError.changedMeanwhile(table) }

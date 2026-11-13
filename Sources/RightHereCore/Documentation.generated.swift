@@ -59,9 +59,12 @@ Run `rh setup --dry-run --json` with the flags of step 3. It changes nothing.
 refuses a change that brings an error into the file; an error the file already has does not stop a change elsewhere, and stays for the
 person to fix. `rh config undo` takes the last change back.
 
-- Give a list as its items, in order: `rh config set general.agents claude codex`.
-- `--local` changes `config.local.toml`, the file of this Mac only.
-- `--dry-run` shows the change and writes nothing.
+- Give a list as its items, in order, each as its own argument: `rh config set general.agents claude codex` (not `claude,codex`). An item
+  that stays in the list keeps its comments.
+- `--local` changes `config.local.toml`, the file of this Mac only. Its list replaces the shared one on this Mac, so the first change of a
+  list there starts from the list this Mac shows.
+- `--dry-run` shows the change and writes nothing. Put the options before `--`: after it, every word is a value.
+- With `--json`, a refusal is one JSON document too: `{"ok": false, "error": ...}`.
 
 **A change that decides which program starts needs the person's yes.** These settings decide it: an agent's `command`, `args`, start
 options or `launcher`, a preset's `prompt` (it is typed after the agent's command), an app's bundle identifier or role, a terminal

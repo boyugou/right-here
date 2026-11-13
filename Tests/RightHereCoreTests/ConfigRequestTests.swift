@@ -37,6 +37,23 @@ struct ConfigRequestTests {
         }
     }
 
+    /// The items of a list of ids never hold a comma, and `rh setup --agents` takes ids joined by commas: the same text given to `set` or `add` was one item that names nothing (a
+    /// menu of it is empty). It is refused with the command that gives each item on its own; a list of anything else (an agent's arguments) takes a comma as it is.
+    @Test func idsJoinedWithCommasAreRefusedWithTheCommandThatGivesEachOnItsOwn() throws {
+        #expect(problem(ConfigRequest(.set, "menu.items", values: ["open-terminal,agents"])) == "menu.items takes each item on its own, not joined by commas: `rh config set menu.items open-terminal agents`.")
+        #expect(problem(ConfigRequest(.add, "general.agents", values: ["copilot, gemini"])) == "general.agents takes each item on its own, not joined by commas: `rh config add general.agents copilot gemini`.")
+        #expect(try operations(ConfigRequest(.set, "agent.claude.args", values: ["--allowedTools=Read,Write"])) == [.set("agent.claude.args", .strings(["--allowedTools=Read,Write"]))])
+    }
+
+    /// A built-in agent's table holds the person's settings of it: `rh config remove agent.claude` took them and Claude Code out of the menu as well, though the help says the command is
+    /// for an agent of one's own. It takes the settings and leaves the menu as it is.
+    @Test func removingABuiltInAgentsTableTakesItsSettingsAndLeavesTheMenu() throws {
+        let overridden = ConfigDocument("[general]\nagents = [\"claude\", \"codex\"]\n\n[agent.claude]\ncommand = \"claude --model opus\"\n")
+        #expect(try ConfigRequest(.remove, "agent.claude").operations(in: overridden) == [.removeTable("agent.claude")])
+        let own = ConfigDocument("[general]\nagents = [\"claude\", \"mine\"]\n\n[agent.mine]\nname = \"Mine\"\ncommand = \"mine\"\n")
+        #expect(try ConfigRequest(.remove, "agent.mine").operations(in: own) == [.expect(["claude", "mine"], in: "general.agents"), .remove(at: 2, from: "general.agents"), .removeTable("agent.mine")])
+    }
+
     @Test func setAndUnsetNameTheSettingAndTakeTheValueAsData() throws {
         #expect(try operations(ConfigRequest(.set, "general.terminal", values: ["ghostty"])) == [.set("general.terminal", .string("ghostty"))])
         #expect(try operations(ConfigRequest(.set, "general.agents", values: ["claude", "codex"])) == [.set("general.agents", .strings(["claude", "codex"]))])
@@ -81,8 +98,11 @@ struct ConfigRequestTests {
         #expect(try operations(ConfigRequest(.remove, "menu.items", position: 4)) == [.remove(at: 4, from: "menu.items")])
         #expect(try operations(ConfigRequest(.remove, "preset", item: "beta")) == [.removeEntry(at: 2, from: "preset")])
         #expect(try operations(ConfigRequest(.remove, "preset", position: 1)) == [.removeEntry(at: 1, from: "preset")])
-        // A place wins over a name: it is what was meant when both are given.
-        #expect(try operations(ConfigRequest(.remove, "menu.items", item: "agents", position: 1)) == [.remove(at: 1, from: "menu.items")])
+        // A name given with a place has to be what stands there: `remove preset beta --position 1` took out "alpha", and the answer named only "entry 1".
+        #expect(try operations(ConfigRequest(.remove, "menu.items", item: "open-terminal", position: 1)) == [.remove(at: 1, from: "menu.items")])
+        #expect(problem(ConfigRequest(.remove, "menu.items", item: "agents", position: 1)) == "menu.items has \"open-terminal\" at 1, not \"agents\".")
+        #expect(problem(ConfigRequest(.remove, "preset", item: "beta", position: 1)) == "preset has \"alpha\" at 1, not \"beta\".")
+        #expect(problem(ConfigRequest(.remove, "preset", item: "beta", position: 9)) == "preset has nothing at 9, not \"beta\".")
         #expect(problem(ConfigRequest(.remove, "menu.items", item: "nope")) == "menu.items has no item \"nope\".")
         #expect(problem(ConfigRequest(.remove, "preset", item: "nope")) == "preset has no entry with the id \"nope\".")
         #expect(problem(ConfigRequest(.remove, "menu.items")) == "Name the item (or give a position).")

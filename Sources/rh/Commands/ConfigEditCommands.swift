@@ -32,9 +32,15 @@ enum ConfigEditSupport {
         do {
             change = try ConfigService(paths: runtime.paths).apply(operations, target: options.target, actor: .cli, dryRun: options.dryRun)
         } catch {
-            throw Output.fail(describe(error))
+            throw try fail(describe(error), error: error, json: options.json)
         }
         try print(change, dryRun: options.dryRun, json: options.json)
+    }
+
+    /// A refusal, said on standard error; with `--json`, also as one document on standard output, as `rh run --json` says a failure, so that a script that reads the answer as JSON gets one.
+    static func fail(_ text: String, error: (any Error)? = nil, json: Bool) throws -> Error {
+        if json { try Output.json(RunFailure(ok: false, error: text, messages: (error as? any LocalizedFailure)?.sentences)) }
+        return Output.fail(text)
     }
 
     static func print(_ change: ConfigChange, dryRun: Bool, json: Bool) throws {
@@ -65,11 +71,15 @@ enum ConfigEditSupport {
             change = try ConfigService(paths: Runtime().paths).apply(request, target: options.target, actor: .cli, dryRun: options.dryRun)
         } catch let problem as ConfigRequest.Problem {
             switch problem {
-            case .usage(let text): throw ValidationError(text)
-            case .notFound(let text): throw Output.fail(text + " `rh config get \(request.key)` shows what it has.")
+            case .usage(let text):
+                if options.json { try Output.json(RunFailure(ok: false, error: text, messages: nil)) }
+                throw ValidationError(text)
+            case .notFound(let text):
+                // The command that shows the list reads the file that the request changes.
+                throw try fail(text + " `rh config get \(request.key)\(options.local ? " --local" : "")` shows what it has.", json: options.json)
             }
         } catch {
-            throw Output.fail(describe(error))
+            throw try fail(describe(error), error: error, json: options.json)
         }
         try print(change, dryRun: options.dryRun, json: options.json)
     }
@@ -80,7 +90,7 @@ extension ConfigCommand {
         static let configuration = CommandConfiguration(
             commandName: "get",
             abstract: "Print a setting as the config file writes it.",
-            discussion: "The value as it is in config.toml (or config.local.toml with --local), as TOML: `\"ghostty\"`, `true`, `[\"claude\", \"codex\"]`. A setting the file does not set is said to be not set; its default is in `rh docs config`."
+            discussion: "The value as it is in config.toml (or config.local.toml with --local), as TOML: `\"ghostty\"`, `true`, `[\"claude\", \"codex\"]`. A table is listed by its settings and a list of tables by the ids of its entries. A setting the file does not set is said to be not set; its default is in `rh docs config`."
         )
 
         @Argument(help: "The setting: general.terminal, menu.items, preset.2.title.")
@@ -97,6 +107,10 @@ extension ConfigCommand {
             var file: String
             var isSet: Bool
             var value: String?
+            /// For a table: its keys.
+            var keys: [String]?
+            /// For a list of tables: the ids of its entries, in order (`null` for one without).
+            var entries: [String?]?
         }
 
         func run() throws {
@@ -107,10 +121,24 @@ extension ConfigCommand {
             do { document = try service.document(of: target) } catch { throw Output.fail(ConfigEditSupport.describe(error)) }
             let file = service.file(of: target)
             let value = document.rawValue(at: key)
+            // A table or a list of tables is set though it is no `key = value` line: it said "not set" of the list that a refusal sends people here to read.
+            let written = value == nil ? document.written(at: key) : nil
+            var keys: [String]?, entries: [String?]?
+            switch written {
+            case .table(let names)?: keys = names
+            case .entries(let ids)?: entries = ids
+            case nil: break
+            }
             if json {
-                try Output.json(Answer(key: key, file: file.path, isSet: value != nil, value: value))
+                try Output.json(Answer(key: key, file: file.path, isSet: value != nil || written != nil, value: value, keys: keys, entries: entries))
             } else if let value {
                 Output.print(value)
+            } else if let entries {
+                Output.print("\(key) has \(entries.count) \(entries.count == 1 ? "entry" : "entries") in \(file.lastPathComponent), by id: "
+                             + entries.enumerated().map { "\($0.offset + 1). " + ($0.element.map { "\"\($0.withControlCharactersEscaped)\"" } ?? "(no id)") }.joined(separator: ", ")
+                             + ". `rh config get \(key).1.id` reads a setting of the first.")
+            } else if let keys {
+                Output.print("\(key) is a table in \(file.lastPathComponent) with " + (keys.isEmpty ? "no settings." : "the settings " + keys.map(\.withControlCharactersEscaped).joined(separator: ", ") + "."))
             } else {
                 Output.print("\(key) is not set in \(file.lastPathComponent)")
             }
@@ -132,7 +160,7 @@ extension ConfigCommand {
         @Argument(help: "The setting: general.terminal, general.agents, copy_path.title.")
         var key: String
 
-        @Argument(help: "The value; for a list, its items. Put -- before one that starts with a dash.")
+        @Argument(help: "The value; for a list, its items. Put -- before one that starts with a dash, and the options before --.")
         var values: [String] = []
 
         @OptionGroup var options: ConfigEditOptions
@@ -178,7 +206,7 @@ extension ConfigCommand {
         @Argument(help: "The list: menu.items, general.agents, preset.")
         var key: String
 
-        @Argument(help: "The items, or the fields name=value. Put -- before one that starts with a dash.")
+        @Argument(help: "The items, or the fields name=value. Put -- before one that starts with a dash, and the options before --.")
         var values: [String] = []
 
         @Option(help: "Where to put it, from 1 (first, last). At the end without it.")
@@ -199,8 +227,9 @@ extension ConfigCommand {
 
 
             The item is named by its text (a list of text) or its id (a list of tables): `rh config remove menu.items open-editor`, `rh config remove preset review`. \
-            `--position` names it by its place instead, which an id that two entries have needs. A comment above an entry goes with it. An agent of your own is removed by its table, `rh config remove agent.lazygit`, which \
-            takes it out of `general.agents` first.
+            `--position` names it by its place instead, which an id that two entries have needs; with a name as well, the place has to hold that item. A comment above an entry, and a \
+            setting commented out after it, go with it. An agent of your own is removed by its table, `rh config remove agent.lazygit`, which takes it out of `general.agents` first. \
+            For a built-in agent, `rh config remove agent.claude` takes out your settings of it and leaves it in the menu; `rh config remove general.agents claude` takes it out of the menu.
             """
         )
 
@@ -280,7 +309,7 @@ extension ConfigCommand {
             do {
                 change = try ConfigService(paths: runtime.paths).undo(target: local ? .local : .shared, force: force, dryRun: dryRun)
             } catch {
-                throw Output.fail(ConfigEditSupport.describe(error))
+                throw try ConfigEditSupport.fail(ConfigEditSupport.describe(error), error: error, json: json)
             }
             try ConfigEditSupport.print(change, dryRun: dryRun, json: json)
         }
