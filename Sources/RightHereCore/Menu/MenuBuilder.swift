@@ -250,8 +250,9 @@ public struct MenuBuilder: Sendable {
             if !info.available, firstRefusal == nil, let reason = info.unavailableReason { firstRefusal = info.shortTitle + ": " + reason }
             return info.available ? (agent.id, info) : nil
         }
-        // With several agents in play the agent's name is part of the title; with one it is just noise.
-        let oneAgent = Set(infos.map(\.agent)).count <= 1
+        // With several agents in play the agent's name is part of the title; with one it is just noise. In play are the agents the menu offers, not only the presets' own: with Claude
+        // Code and Codex in the menu, "Review" did not say that it starts Claude Code.
+        let oneAgent = Set(infos.map(\.agent)).count <= 1 && config.enabledAgents.count <= 1
         let children = infos.map { MenuNode.action($0.info, title: oneAgent ? $0.info.shortTitle : $0.info.title) }
         if children.isEmpty, let firstRefusal {
             collector?.leftOut(localizer.presetsGroup, firstRefusal)

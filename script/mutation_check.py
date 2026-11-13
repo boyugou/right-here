@@ -2683,6 +2683,8 @@ MUTANTS = [
      "        } else if children.isEmpty, !withoutAgent.isEmpty, !(config.enabledAgents.isEmpty && agentsSaid) {", "        } else if false {"),
     ("the menu says too many files of a selection it counted without looking", "Sources/RightHereCore/Actions/ActionRegistry.swift",
      "        } else if preset.needsFiles, context.items.count > preset.maxFiles {", "        } else if false {"),
+    ("presets leave their agent out of their titles with several agents in the menu", "Sources/RightHereCore/Menu/MenuBuilder.swift",
+     "let oneAgent = Set(infos.map(\\.agent)).count <= 1 && config.enabledAgents.count <= 1", "let oneAgent = Set(infos.map(\\.agent)).count <= 1"),
 ]
 
 

@@ -63,7 +63,8 @@
   has a line of its own is no longer repeated in Open With or More Agent Options. A template named on a line of its own
   (`new-file.md`) is left out for several selected items, as New File is. `rh menu --explain` says why the presets are
   left out when no agent, or not their agent, is in the menu (it said "Nothing is left out" of an empty menu), and
-  counts items, not files, when a selection is too large for the menu to look at.
+  counts items, not files, when a selection is too large for the menu to look at. With several agents in the menu, the
+  presets say which agent they start ("Claude Code: Review").
 
 ## 1.2.25 (2026-11-13)
 

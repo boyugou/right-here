@@ -208,4 +208,20 @@ struct MenuReviewTests {
         #expect(offered || !said.contains { $0.contains("Too many files are selected: 21") },
                 "6 files and 15 folders are selected, `rh run preset.review` runs, and the menu says: \(said)")
     }
+
+    /// Claude Code and Codex are both in the menu ("Claude Code Here", "Codex Here"). The Agent Presets submenu inside More Agent Options lists
+    /// "Review", "Explain" and "Write Tests", which start Claude Code because it is first in `general.agents` (Config.swift:291-293); nothing in
+    /// the line says so. The titles leave the agent out whenever the presets that fit all go to one agent (MenuBuilder.swift:227-229), even
+    /// with two agents on offer around them; `rh actions` titles the same action "Claude Code: Review". (A judgment against a commented choice:
+    /// the comment calls the name noise "with one" agent, meaning one among the presets.)
+    @Test func aPresetSaysWhichAgentItStartsWhenSeveralAgentsAreInTheMenu() throws {
+        let file = "\(code)/a.swift"
+        let facts = reviewMachine(files: [file])
+        let oneFile = HereContext(origin: .items, items: [URL(fileURLWithPath: file)])
+        let menu = MenuBuilder(config: Config(enabledAgents: ["claude", "codex"]), facts: facts).build(for: oneFile)
+        let topLevel = menu.map(\.title)
+        try #require(topLevel.contains("Claude Code Here") && topLevel.contains("Codex Here"), "\(topLevel)")
+        let presets = try #require(submenu(holding: "preset.review", in: menu))
+        #expect(presets.children.allSatisfy { $0.title.contains("Claude Code") }, "with two agents in the menu the presets read \(presets.children.map(\.title))")
+    }
 }
