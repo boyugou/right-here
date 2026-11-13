@@ -206,7 +206,7 @@ public struct SetupLoader: Sendable {
             return AgentOptions.state(id: agent.id, config: loaded.config, facts: facts, listedArgs: service.listed(AgentOptions.argumentsKey(of: agent.id)), variantEntries: entries,
                                       listedVariantArguments: service.variantArguments(of: agent.id, entries: entries))
         } ?? []
-        let presets = editable ? PresetOptions.state(config: loaded.config, entries: service.presetEntries(in: loaded.result), written: Set((loaded.result.entryOrigins["preset"] ?? []).compactMap(\.id)),
+        let presets = editable ? PresetOptions.state(config: loaded.config, entries: service.presetEntries(in: loaded.result), written: Set(loaded.result.usedOrigins(of: "preset").compactMap(\.id)),
                                                         hiddenInShared: service.hiddenEntryIDs(of: "preset", in: .shared, loaded: loaded.result), localizer: localizer) : nil
         let newFile = editable ? NewFileOptions.state(config: loaded.config, entries: service.entryLocations(of: "new_file.template", in: loaded.result), facts: facts, localizer: localizer,
                                                                         sharedDefinesTemplates: ConfigStore.sharedConfig(paths: paths).newFile.definesTemplates) : nil

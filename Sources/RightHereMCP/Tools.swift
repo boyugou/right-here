@@ -179,7 +179,7 @@ enum Tools {
                     "description": .string("set: the value (one text, a whole number as text, true or false) or the items of a list. add: the items, or the fields name=value of a new entry or of agent.<id>.")
                 ]),
                 "item": string("remove and move: the item's text (a list of text) or the entry's id (preset, app).", maxLength: 4096),
-                "position": integer("remove and move: the item's place in the list, from 1, instead of its name.", minimum: 1),
+                "position": integer("remove and move: the item's place in the list, from 1, instead of its name (needed when two entries have its id).", minimum: 1),
                 "to": string("move: where to, a place from 1, first or last.", maxLength: 20),
                 "at": string("add: where to put it, a place from 1, first or last. The end without it.", maxLength: 20),
                 "local": boolean("Change config.local.toml, this Mac's own overrides (never synced), instead of config.toml."),

@@ -285,6 +285,31 @@ struct ConfigDocumentTests {
         #expect(ConfigDocument.sentences(ConfigParser.parse(added.text).diagnostics).first?.contains("known agents: helper, claude") == true, "\(ConfigParser.parse(added.text).diagnostics)")
     }
 
+    /// A template the config refuses (its title is too long), and after it one that it uses whose `open_with` names no app.
+    private var refusedTemplateFirst: String {
+        "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n\n[[new_file.template]]\nid = \"notes\"\ntitle = \"\(String(repeating: "x", count: 130))\"\nextension = \"md\"\n\n"
+            + "[[new_file.template]]\nid = \"todo\"\ntitle = \"Todo\"\nextension = \"txt\"\nopen_with = \"ghost\"\n"
+    }
+
+    @Test func anErrorFoundOfAnEntryLaterIsSaidOfThatEntryAndNotOfItsPlaceAmongTheOnesTaken() {
+        // The open_with of the second entry was said of the first, the refused one, so taking the refused entry out or putting it right looked like a new error.
+        let errors = ConfigParser.parse(refusedTemplateFirst).diagnostics.filter { $0.severity == .error }.map(\.path)
+        #expect(errors == ["new_file.template.1.title", "new_file.template.2.open_with"], "\(errors)")
+        #expect(throws: Never.self) { try ConfigDocument(refusedTemplateFirst).removingEntry(at: 1, from: "new_file.template") }
+        #expect(throws: Never.self) { try ConfigDocument(refusedTemplateFirst).setting("new_file.template.1.title", to: .string("Notes")) }
+        // A start option refused for another's id or title is said of its own entry, and so of the file that writes it.
+        let variants = "[[agent.claude.variant]]\nid = \"fast\"\ntitle = \"Same\"\narguments = []\n\n[[agent.claude.variant]]\nid = \"slow\"\ntitle = \"Same\"\narguments = []\n\n"
+            + "[[agent.claude.variant]]\nid = \"fast\"\ntitle = \"Fast again\"\narguments = []\n"
+        #expect(ConfigParser.parse(variants).diagnostics.filter { $0.severity == .error }.map { "\($0.line ?? 0) \($0.path)" } == ["8 agent.claude.variant.2.title", "12 agent.claude.variant.3.id"])
+    }
+
+    @Test func aValueThatHoldsTheWordsOfTheListOfWhatTheConfigKnowsIsStillTold() {
+        // Only the list that closes the sentence is left out of an error's identity: another unknown agent is another error, whatever its name holds.
+        let text = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\", \"x; known a\"]\n"
+        #expect(throws: ConfigDocument.EditError.self) { try ConfigDocument(text).setting("general.agents", to: .strings(["claude", "x; known b"])) }
+        #expect(throws: ConfigDocument.EditError.self) { try ConfigDocument(text).setting("general.agents", to: .strings(["claude", "y"])) }
+    }
+
     @Test func aWholeTextThatKeepsAnErrorThatWasThereReplacesTheOldOneButOneThatIsNotTOMLNever() throws {
         let kept = withAnError + "# A comment of mine.\n"
         #expect(try ConfigDocument(withAnError).replacingText(kept).text == kept)

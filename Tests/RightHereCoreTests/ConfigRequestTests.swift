@@ -90,6 +90,21 @@ struct ConfigRequestTests {
         #expect(problem(ConfigRequest(.remove, "general.terminal", item: "x")) == "\"general.terminal\" is not a list: use `rh config unset` for a setting.")
     }
 
+    @Test func anIDThatTwoEntriesHaveIsNotTakenForEitherOfThem() throws {
+        // The first may be refused for another error and the second the one the config uses: taking out "the first with that id" would take out the wrong one.
+        let long = String(repeating: "x", count: 130)
+        let twice = ConfigDocument("[[preset]]\nid = \"mine\"\ntitle = \"\(long)\"\nprompt = \"Old {files}\"\n\n[[preset]]\nid = \"mine\"\ntitle = \"Mine\"\nprompt = \"Mine {files}\"\n")
+        for request in [ConfigRequest(.remove, "preset", item: "mine"), ConfigRequest(.move, "preset", item: "mine", to: "first")] {
+            do {
+                _ = try request.operations(in: twice)
+                Issue.record("\(request.verb) was made")
+            } catch let problem as ConfigRequest.Problem {
+                #expect(problem.errorDescription == "preset has 2 entries with the id \"mine\" (at 1, 2): name the one by its place with --position.")
+            }
+        }
+        #expect(try ConfigRequest(.remove, "preset", position: 2).operations(in: twice) == [.removeEntry(at: 2, from: "preset")])
+    }
+
     @Test func anItemIsMovedToAPlaceOrToTheEnds() throws {
         #expect(try operations(ConfigRequest(.move, "menu.items", item: "agents", to: "1")) == [.move(from: 4, to: 1, in: "menu.items")])
         #expect(try operations(ConfigRequest(.move, "menu.items", item: "open-terminal", to: "last")) == [.move(from: 1, to: 4, in: "menu.items")])

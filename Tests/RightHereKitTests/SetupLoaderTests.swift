@@ -206,6 +206,14 @@ struct SetupLoaderTests {
         #expect(snapshot.newFile?.rows.first { $0.id == "notes" }?.entry == EntryLocation(target: .shared, position: 2))
     }
 
+    @Test func aBuiltInPresetThatStandsInForARefusedEntryIsShownAsTheBuiltInOne() async throws {
+        // The file's entry says something else; calling the row the config's own wording would show the built-in text as the file's.
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig("[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n\n[[preset]]\nid = \"review\"\ntitle = \"\(String(repeating: "x", count: 130))\"\nprompt = \"My own review of {files}\"\n")
+        let row = try #require(await machine.loader(runner: FakeProcessRunner()).menu().presets?.rows.first { $0.id == "review" })
+        #expect(row.origin == .builtIn && row.entry == nil && row.prompt != "My own review of {files}")
+    }
+
     @Test func theMachinesOwnFileIsWhereTheMenuIsEditedWhenItListsTheMenu() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         try machine.writeConfig("[menu]\nitems = [\"open-terminal\"]\n")

@@ -71,6 +71,11 @@ public struct ConfigLoadResult: Sendable, Equatable {
     /// The entries of those lists that the config uses, by their place among them (`preset.2` is the second of `entryOrigins["preset"]`): not one it refused for an error (a title too long, the
     /// id of a start option the agent has), which a built-in preset or start option with that id stands in for and which an editor must not take for it.
     public var usedEntries = Set<String>()
+
+    /// The entries of `table` that the config uses, with where each is written (`entryOrigins` without the entries it refused).
+    public func usedOrigins(of table: String) -> [ConfigEntryOrigin] {
+        (entryOrigins[table] ?? []).enumerated().filter { usedEntries.contains("\(table).\($0.offset + 1)") }.map(\.element)
+    }
     /// Whether a file of the config that is there was left out: it cannot be read, or it is not TOML, so the config is the defaults, or the shared file's alone, whatever that
     /// file says. An error in a setting leaves the rest of its file in.
     public var fileLeftOut = false
@@ -115,7 +120,8 @@ extension ConfigDiagnostic {
         for index in positional.indices.dropFirst() where Int(positional[index]) != nil {
             if let id = outline.rawValue(of: positional[...index].joined(separator: ".") + ".id").flatMap(ConfigDocument.unquoted) { segments[index] = "id " + id }
         }
-        let sentence = message.range(of: "; known ").map { String(message[..<$0.lowerBound]) } ?? message
+        // The list closes the sentence and quotes nothing; a value the sentence quotes may hold the same words, and stays.
+        let sentence = message.replacingOccurrences(of: "; known [a-z]+: [^\"]*$", with: "", options: .regularExpression)
         return (file ?? "") + "\n" + segments.joined(separator: ".") + "\n" + sentence
     }
 }

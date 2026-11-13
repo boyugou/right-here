@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Editing a config with an error, after an independent review.** `rh config remove` or `move` of an id that two entries
+  have took the first, which may be the one the config refuses: it is refused now, with the places, and `--position`
+  names one. An error found of a template's `open_with`, or of a start option that takes another's id or title, is said of
+  its own entry, so a change of `config.local.toml` that brings one is refused, and taking out a refused template above it
+  is not. A built-in preset that stands in for a refused entry of its id is shown as the built-in one.
+
 ## 1.2.21 (2026-11-12)
 
 - **The window edits a config with an error in a setting too.** The menu's picture, the Edit Menu button and the

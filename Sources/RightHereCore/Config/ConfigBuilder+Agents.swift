@@ -77,8 +77,8 @@ extension ConfigBuilder {
             command = nil
             sink.rejectedAgents.insert(id)
         }
-        // Each with the place of its entry, which `ConfigLoadResult.usedEntries` names once the agent is taken.
-        let declaredVariants: [(variant: AgentDescriptor.Variant, entry: String)] = reader.tableArray("variant").compactMap { variant in
+        // Each with its entry, which what is said of it names (a start option of this Mac's own file is that file's), and which `ConfigLoadResult.usedEntries` names once the agent is taken.
+        let declaredVariants: [(variant: AgentDescriptor.Variant, path: [String])] = reader.tableArray("variant").compactMap { variant in
             variant.checkKnownKeys()
             guard let variantID = variant.string("id"), let title = variant.string("title") else {
                 reportMissing("a variant", needs: ["id", "title"], in: variant)
@@ -91,7 +91,7 @@ extension ConfigBuilder {
                 sink.error(variant.path + ["arguments"], "an argument has a line break or control character, so it cannot be typed into a terminal")
                 return nil
             }
-            return (AgentDescriptor.Variant(id: variantID, title: title, arguments: arguments), variant.path.joined(separator: "."))
+            return (AgentDescriptor.Variant(id: variantID, title: title, arguments: arguments), variant.path)
         }
 
         var takenVariants = Set((KnownAgents.agent(id: id)?.variants ?? []).map(\.id))
@@ -103,11 +103,11 @@ extension ConfigBuilder {
         let taken = declaredVariants.filter { declared in
             let variant = declared.variant
             guard takenVariants.insert(variant.id).inserted else {
-                sink.error(reader.path + ["variant"], "variant id \"\(variant.id)\" is already used by agent \"\(id)\"; the first one is used")
+                sink.error(declared.path + ["id"], "variant id \"\(variant.id)\" is already used by agent \"\(id)\"; the first one is used")
                 return false
             }
             guard takenTitles.insert(variant.title.comparableName).inserted else {
-                sink.error(reader.path + ["variant"], "another start option of agent \"\(id)\" is already called \"\(variant.title)\"; the menu tells them apart by their titles, so give each its own")
+                sink.error(declared.path + ["title"], "another start option of agent \"\(id)\" is already called \"\(variant.title)\"; the menu tells them apart by their titles, so give each its own")
                 return false
             }
             return true
@@ -147,7 +147,7 @@ extension ConfigBuilder {
         if KnownAgents.agent(id: id) != nil {
             settings.command = command
             settings.variants = variants
-            sink.usedEntries.formUnion(taken.map(\.entry))
+            sink.usedEntries.formUnion(taken.map { $0.path.joined(separator: ".") })
             if reader.string("name") != nil {
                 sink.warning(reader.path + ["name"], "a built-in agent keeps its name; this one is ignored")
             }
@@ -170,7 +170,7 @@ extension ConfigBuilder {
                 return
             }
             config.customAgents.append(AgentDescriptor(id: id, name: name, command: command, variants: variants))
-            sink.usedEntries.formUnion(taken.map(\.entry))
+            sink.usedEntries.formUnion(taken.map { $0.path.joined(separator: ".") })
         }
         config.agents[id] = settings
     }

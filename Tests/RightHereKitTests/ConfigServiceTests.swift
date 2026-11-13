@@ -76,6 +76,25 @@ struct ConfigServiceTests {
         #expect(change.written && !work.text.contains("com.example.first") && work.text.contains(long))
     }
 
+    @Test func anErrorThatAChangeOfThisMacsFileBringsIsItsOwnThoughTheSharedFileHasOneOfTheSameWords() throws {
+        // The shared file has a template the config refuses and one whose open_with names no app; this Mac's file gets another such template, and the merged config said its error of
+        // the shared file's entry, the error that was there.
+        let long = String(repeating: "x", count: 130)
+        let templates = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n\n[[new_file.template]]\nid = \"notes\"\ntitle = \"\(long)\"\nextension = \"md\"\n\n"
+            + "[[new_file.template]]\nid = \"todo\"\ntitle = \"Todo\"\nextension = \"txt\"\nopen_with = \"ghost\"\n"
+        let work = try Workspace(config: templates); defer { work.clean() }
+        let template = ConfigRequest(.add, "new_file.template", values: ["id=todo", "title=Todo here", "extension=txt", "open_with=ghost"])
+        #expect(throws: ConfigDocument.EditError.self) { try work.service.apply(template, target: .local, actor: .cli) }
+        #expect(work.localText == nil)
+        // The same through a start option of this Mac's own that takes another's title, beside two of the shared file that have one title.
+        let variants = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n\n[[agent.claude.variant]]\nid = \"fast\"\ntitle = \"Same\"\narguments = [\"--model\", \"haiku\"]\n\n"
+            + "[[agent.claude.variant]]\nid = \"slow\"\ntitle = \"Same\"\narguments = [\"--model\", \"opus\"]\n"
+        let other = try Workspace(config: variants); defer { other.clean() }
+        let variant = ConfigRequest(.add, "agent.claude.variant", values: ["id=slow", "title=Same", "arguments=--model", "arguments=sonnet"])
+        #expect(throws: ConfigDocument.EditError.self) { try other.service.apply(variant, target: .local, actor: .cli) }
+        #expect(other.localText == nil)
+    }
+
     @Test func theFirstChangeOfAListSeedsItWithWhatTheReadersOfTheFileItGoesToGet() throws {
         // The shared file lists two agents and this Mac turns one of them off: the Quick Actions' default list is not the same for this Mac and for the others.
         let shared = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\", \"codex\"]\n"

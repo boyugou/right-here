@@ -8,8 +8,9 @@ extension ConfigBuilder {
         if let then = newFile.checkAllowed(newFile.string("then"), key: "then", allowed: Config.AfterNewFile.allCases.map(\.rawValue)) {
             config.newFile.then = Config.AfterNewFile(rawValue: then) ?? .reveal
         }
-        let templates = readUnique(newFile.tableArray("template"), kind: "template", id: \.id, read: template) { _, reader in
+        let templates = readUnique(newFile.tableArray("template"), kind: "template", id: \.id, read: template) { template, reader in
             sink.usedEntries.insert(reader.path.joined(separator: "."))
+            sink.templatePaths[template.id] = reader.path
         }
         if !templates.isEmpty {
             config.newFile.templates = templates
@@ -28,7 +29,7 @@ extension ConfigBuilder {
     func checkTemplateApps(_ config: inout Config) {
         for (index, template) in config.newFile.templates.enumerated() {
             guard let app = template.openWith else { continue }
-            let path = ["new_file", "template", String(index + 1), "open_with"]
+            let path = (sink.templatePaths[template.id] ?? ["new_file", "template", String(index + 1)]) + ["open_with"]
             guard let found = config.app(id: app) else {
                 sink.error(path, "unknown app \"\(app)\"", suggestion: Suggestion.didYouMean(app, in: config.allApps.filter { $0.role != .terminal }.map { ($0.id, $0.name) }))
                 config.newFile.templates[index].openWith = nil

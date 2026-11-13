@@ -8,6 +8,8 @@ final class ConfigSink {
     lazy var agentNames = Set(KnownAgents.all.map(\.name.comparableName))
     /// The entries of the lists of tables that the config uses, by their place (`preset.2`, `agent.claude.variant.1`): `ConfigLoadResult.usedEntries`.
     var usedEntries = Set<String>()
+    /// Where each template the config takes is written, by its id: what is found out about it later (its `open_with`) is said of that entry, not of its place among the templates taken.
+    var templatePaths: [String: [String]] = [:]
     var items: [ConfigDiagnostic] = []
 
     /// The text being read, which says how a value was written when the TOML library cannot (`rawValue`).

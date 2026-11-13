@@ -122,7 +122,15 @@ rewrites a file the person edits by hand loses their comments and order. This di
   config left out is not the list shown, so it is not changed by place (`isExact`, with a note that says so). An entry the config refused had a place all the same, since the places come from
   the merge of the two files, which keeps it: a preset of a built-in id with a title too long gave the built-in preset's row its place, and a change of the row would have been written into
   the refused entry. The builder now says which entries it uses (`ConfigLoadResult.usedEntries`), and only those have a place (`entryLocations`); the others are changed as text. The Config
-  page's Save waits for an error the draft brings, not for one the file has (`DraftChecks.bringsErrors`), and for a text that is not TOML whatever the file is. The per-machine overlay is edited with the same core, read as laid over the shared file (`ConfigDocument.Validation.overlay`).
+  page's Save waits for an error the draft brings, not for one the file has (`DraftChecks.bringsErrors`), and for a text that is not TOML whatever the file is.
+  An independent review of both releases (each finding reproduced, and kept as a test) found what an error that is no longer a reason to refuse makes reachable: `rh config remove preset
+  mine`, with two entries of that id of which the first was refused, took out the first, which is the one the config did not use (an id that two entries have is now refused, with
+  their places, and `--position` names one); an error found of a template later (`open_with`) was said of its place among the templates taken, and so of a refused entry above it or of
+  the other file, and a start option refused for another's id or title was said of the list as a whole, which the merge put in the shared file whenever both files write that list:
+  both are said of their own entry now, which an edit of this Mac's own file then cannot hide behind an error of the same words in the shared file; the identity left out a list from
+  the first "; known" on, which a quoted value can hold, and now only from the trailing one; and a built-in preset that stood in for a refused entry was shown as the config's own.
+  What stays: an entry without an id is known by its place, so an entry taken out above it makes its error look new, and an error that quotes another entry's name (an app with the
+  bundle identifier of a terminal the config adds) looks new when that name changes. Such a change is refused, as every change of a config with an error was before 1.2.20. The per-machine overlay is edited with the same core, read as laid over the shared file (`ConfigDocument.Validation.overlay`).
 - **One vocabulary:** a `ConfigRequest` (a verb, a setting, values or an item named by its text or its id) becomes `ConfigOperation`s against the file as it is now; `rh config` and the MCP tool
   both build one, and the window will build `ConfigOperation`s directly, since a drag knows the places.
 - **`ConfigService`** (Kit) applies operations under a lock (`.config.lock`) against the file as it is at that moment, writes atomically through a link when the config is one, and keeps the text

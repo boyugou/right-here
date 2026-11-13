@@ -199,7 +199,7 @@ extension ConfigCommand {
 
 
             The item is named by its text (a list of text) or its id (a list of tables): `rh config remove menu.items open-editor`, `rh config remove preset review`. \
-            `--position` names it by its place instead. A comment above an entry goes with it. An agent of your own is removed by its table, `rh config remove agent.lazygit`, which \
+            `--position` names it by its place instead, which an id that two entries have needs. A comment above an entry goes with it. An agent of your own is removed by its table, `rh config remove agent.lazygit`, which \
             takes it out of `general.agents` first.
             """
         )
@@ -210,7 +210,7 @@ extension ConfigCommand {
         @Argument(help: "The item's text, or the entry's id.")
         var item: String?
 
-        @Option(help: "The item's place in the list, from 1, instead of its name.")
+        @Option(help: "The item's place in the list, from 1, instead of its name (needed when two entries have its id).")
         var position: Int?
 
         @OptionGroup var options: ConfigEditOptions
@@ -240,7 +240,7 @@ extension ConfigCommand {
         @Option(help: "The place to move it to, from 1, or first or last.")
         var to: String
 
-        @Option(help: "The item's place in the list, from 1, instead of its name.")
+        @Option(help: "The item's place in the list, from 1, instead of its name (needed when two entries have its id).")
         var position: Int?
 
         @OptionGroup var options: ConfigEditOptions

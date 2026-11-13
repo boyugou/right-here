@@ -155,6 +155,13 @@ public struct ConfigRequest: Sendable, Equatable {
             return position
         }
         guard let item else { throw Problem.usage("Name the item (or give a position).") }
+        // Two entries of one id are an error of the config, and the one it uses may be either (the first may be refused for another error): the person says which.
+        if node.kind == .tableArray {
+            let places = document.entryIDs(in: key).enumerated().filter { $0.element == item }.map { String($0.offset + 1) }
+            guard places.count < 2 else {
+                throw Problem.usage("\(key) has \(places.count) entries with the id \"\(item.withControlCharactersEscaped)\" (at \(places.joined(separator: ", "))): name the one by its place with --position.")
+            }
+        }
         let found = node.kind == .tableArray ? document.position(ofEntryWithID: item, in: key) : try document.position(ofElement: item, in: key)
         guard let found else {
             throw Problem.notFound("\(key) has \(node.kind == .tableArray ? "no entry with the id" : "no item") \"\(item.withControlCharactersEscaped)\".")
