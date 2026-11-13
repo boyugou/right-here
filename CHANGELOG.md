@@ -35,7 +35,8 @@
   Undo is held to what both files make together, as an edit is: taking back an app that this Mac's file had made its
   editor left the config with an error. Remove Agent with the menu's list in one file and the agent in the other is one
   change with one Undo (the note's Undo gave back only the agent). Undo of an edit that left a file of mixed line endings
-  all CRLF is no longer refused, and gives the file's bytes back.
+  all CRLF is no longer refused, and gives the file's bytes back. Customize Templates, or the first New Template, no
+  longer writes the built-in templates beside a template that something else gave the file after the window read it.
 
 ## 1.2.25 (2026-11-13)
 

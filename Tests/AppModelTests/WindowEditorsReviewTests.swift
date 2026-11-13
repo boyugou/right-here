@@ -180,4 +180,30 @@ struct WindowEditorsReviewTests {
         await mac.model.undoEdit()
         #expect(mac.sharedBytes == Data(shared.utf8), "Undo was refused: \(String(describing: mac.model.notice)); the file:\n\(mac.shared.debugDescription)")
     }
+
+    // MARK: The first change of the built-in templates is held to the file that was read
+
+    /// The window read a config that defines no template, so it shows the built-in ones. Something else (an assistant, `rh config`, the person in an editor) then gives the config a template of its
+    /// own, which replaces the built-in ones. Customize Templates writes the five built-in templates next to it without a check: they come back, against the change that was made. Every other first
+    /// change of a list the window shows is held to the file being as it was read (`expect(nil)`) and refused with "something else changed this list".
+    @Test func customizingTheBuiltInTemplatesIsRefusedWhenTheFileDefinesTemplatesNow() async throws {
+        let mac = try await EditedMac.started(shared: Self.general)
+        defer { mac.cleanUp() }
+        #expect(mac.model.newFile?.isBuiltIn == true)
+        let theirs = Self.general + "\n[[new_file.template]]\nid = \"notes\"\ntitle = \"Notes\"\nextension = \"txt\"\n"
+        try mac.writeShared(theirs)
+        await mac.model.customizeTemplates()
+        #expect(mac.shared == theirs, "the built-in templates were written out next to the template the file defines now:\n\(mac.shared)")
+    }
+
+    /// The same for the first New Template… of a window that still shows the built-in templates.
+    @Test func aNewTemplateDoesNotBringTheBuiltInOnesBackWhenTheFileDefinesTemplatesNow() async throws {
+        let mac = try await EditedMac.started(shared: Self.general)
+        defer { mac.cleanUp() }
+        let theirs = Self.general + "\n[[new_file.template]]\nid = \"notes\"\ntitle = \"Notes\"\nextension = \"txt\"\n"
+        try mac.writeShared(theirs)
+        _ = await mac.model.createTemplate(title: "Python Script", fileExtension: "py")
+        let ids = mac.config.newFile.templates.map(\.id)
+        #expect(!ids.contains("md"), "the built-in templates came back with the new one: \(ids)\n\(mac.shared)")
+    }
 }

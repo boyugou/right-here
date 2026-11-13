@@ -5,6 +5,19 @@ import Testing
 /// Entries of an array of tables (`[[preset]]`, `[[app]]`, …) are added, removed and moved as whole blocks; the rest of the file stays where it is.
 @Suite("ConfigDocument: entries")
 struct ConfigDocumentEntriesTests {
+    /// The check a first change of the built-in templates carries: the file defines no template, written in any form.
+    @Test func aFileWithNoEntryOfAListIsToldFromOneWithEntriesInAnyForm() throws {
+        let table = "new_file.template"
+        #expect(throws: Never.self) { try ConfigDocument("[general]\nterminal = \"ghostty\"\n").requiringNoEntries(in: table) }
+        #expect(throws: Never.self) { try ConfigDocument("[new_file]\nthen = \"open\"\n").requiringNoEntries(in: table) }
+        #expect(throws: Never.self) { try ConfigDocument("new_file = { template = [] }\n").requiringNoEntries(in: table) }
+        for text in ["[[new_file.template]]\nid = \"a\"\ntitle = \"A\"\nextension = \"txt\"\n",
+                     "new_file = { template = [{ id = \"a\", title = \"A\", extension = \"txt\" }] }\n",
+                     "[new_file]\ntemplate = [{ title = \"A\", extension = \"txt\" }]\n"] {
+            #expect(throws: ConfigDocument.EditError.changedMeanwhile(table)) { try ConfigDocument(text).requiringNoEntries(in: table) }
+        }
+    }
+
     private let sample = """
     [general]
     agents = ["claude"]

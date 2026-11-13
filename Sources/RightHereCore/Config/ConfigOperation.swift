@@ -30,6 +30,9 @@ public enum ConfigOperation: Sendable, Equatable {
     case expect([String]?, in: String)
     /// Writes nothing: refuses the whole edit unless the entry at this place of `[[table]]` has this `id`. A proposal that names an entry by its place keeps it with it.
     case expectEntry(String, at: Int, in: String)
+    /// Writes nothing: refuses the whole edit unless the file defines no entry of `[[table]]`, written in any form. The window writes the built-in templates out as the config's own on
+    /// a first change, which a template that something else gave the file meanwhile would otherwise get beside it.
+    case expectNoEntries(in: String)
     /// A new entry of `[[preset]]`, `[[app]]` and the like.
     case addEntry(to: String, fields: [ConfigField], at: Int? = nil)
     /// A new table of a table per id (`[agent.lazygit]`) with the fields it needs, made at once.
@@ -64,6 +67,8 @@ public enum ConfigOperation: Sendable, Equatable {
             return try document.requiringElements(items, in: path)
         case .expectEntry(let id, let position, let table):
             return try document.requiringEntry(id, at: position, in: table)
+        case .expectNoEntries(let table):
+            return try document.requiringNoEntries(in: table)
         case .addEntry(let table, let fields, let position):
             return try document.addingEntry(to: table, fields: fields.map { ($0.key, $0.value) }, at: position)
         case .addTable(let path, let fields):
@@ -109,6 +114,8 @@ public enum ConfigOperation: Sendable, Equatable {
             return "check that \(path) is as it was read"
         case .expectEntry(_, let position, let table):
             return "check that entry \(position) of \(table) is the one it was for"
+        case .expectNoEntries(let table):
+            return "check that the file has no entry of \(table)"
         case .addEntry(let table, let fields, let position):
             let name = fields.first { $0.key == "id" }.flatMap { field -> String? in if case .string(let id) = field.value { return id } else { return nil } }
             return shown("add the \(table) entry" + (name.map { " \(ConfigDocument.basicString($0))" } ?? "") + (position.map { " at \($0)" } ?? ""))
@@ -130,7 +137,7 @@ public enum ConfigOperation: Sendable, Equatable {
         switch self {
         case .set(let path, _), .unset(let path), .reset(let path, _), .insert(_, let path, _), .remove(_, let path), .replace(_, let path, _), .move(_, _, let path):
             return [path]
-        case .expect, .expectEntry, .addEntry, .addTable, .removeTable, .removeEntry, .moveEntry, .replaceText:
+        case .expect, .expectEntry, .expectNoEntries, .addEntry, .addTable, .removeTable, .removeEntry, .moveEntry, .replaceText:
             return []
         }
     }
@@ -151,7 +158,7 @@ public enum ConfigOperation: Sendable, Equatable {
             return [generic("\(table).1")]
         case .replaceText:
             return ["*"]
-        case .expect, .expectEntry:
+        case .expect, .expectEntry, .expectNoEntries:
             return []
         }
     }
@@ -159,7 +166,7 @@ public enum ConfigOperation: Sendable, Equatable {
     /// A check and not a change: it says nothing about what was done, so the history and the summaries leave it out.
     public var isCheck: Bool {
         switch self {
-        case .expect, .expectEntry: true
+        case .expect, .expectEntry, .expectNoEntries: true
         default: false
         }
     }

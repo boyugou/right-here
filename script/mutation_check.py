@@ -1353,7 +1353,7 @@ MUTANTS = [
     ("a table written as dotted keys is cut out by lines", "Sources/RightHereCore/Config/ConfigDocument+Entries.swift",
      "if layout.outline.valueRanges[path] != nil || layout.outline.lines.keys.contains(where: { $0.hasPrefix(path + \".\") }) { throw EditError.inlineTable(path) }", ""),
     ("an assistant takes out a whole table without asking", "Sources/RightHereCore/Config/ConfigTrust.swift",
-     "                need(\"\\(path).command\")\n            case .removeEntry, .moveEntry, .expect, .expectEntry:", "                _ = path\n            case .removeEntry, .moveEntry, .expect, .expectEntry:"),
+     "                need(\"\\(path).command\")\n            case .removeEntry, .moveEntry, .expect, .expectEntry, .expectNoEntries:", "                _ = path\n            case .removeEntry, .moveEntry, .expect, .expectEntry, .expectNoEntries:"),
     ("a built-in agent is taken out of the config", "Sources/RightHereCore/Config/AgentOptions.swift",
      "guard !agent.isBuiltIn, general.agentsAreExact, general.agents.contains(where: { $0.id == agent.id }) else { return nil }", "guard general.agentsAreExact, general.agents.contains(where: { $0.id == agent.id }) else { return nil }"),
     ("an agent's table is taken out before its entry in the menu", "Sources/RightHereCore/Config/AgentOptions.swift",
@@ -1464,9 +1464,9 @@ MUTANTS = [
     ("an empty title is written to a template", "Sources/RightHereCore/Config/NewFileOptions.swift",
      "guard let entry = row.entry, !text.isEmpty, text != row.title else { return nil }", "guard let entry = row.entry, text != row.title else { return nil }"),
     ("the built-in templates are not written out by the first template made", "Sources/RightHereCore/Config/NewFileOptions.swift",
-     "let seed = writesBuiltIn ? writtenOut(state.seed) : []", "let seed: [ConfigOperation] = []"),
+     "let seed = writesBuiltIn ? [.expectNoEntries(in: table)] + writtenOut(state.seed) : []", "let seed: [ConfigOperation] = []"),
     ("customizing the built-in templates writes nothing", "Sources/RightHereCore/Config/NewFileOptions.swift",
-     "return FileChange(target: state.sharedDefinesTemplates ? .local : .shared, operations: writtenOut(state.seed))", "return FileChange(target: state.sharedDefinesTemplates ? .local : .shared, operations: [])"),
+     "return FileChange(target: state.sharedDefinesTemplates ? .local : .shared, operations: [.expectNoEntries(in: table)] + writtenOut(state.seed))", "return FileChange(target: state.sharedDefinesTemplates ? .local : .shared, operations: [])"),
     ("a new template is given an id that a template or a file has", "Sources/RightHereCore/Config/NewFileOptions.swift",
      "let taken = Set(state.rows.map(\\.id) + (writesBuiltIn ? state.seed.map(\\.id) : [])).union(alsoTaken)", "let taken = Set<String>()"),
     ("what happens after a file is made, when it is the default, is written as a setting", "Sources/RightHereCore/Config/NewFileOptions.swift",
@@ -2611,6 +2611,12 @@ MUTANTS = [
      "        ConfigHistory.digest(lineFeeds(written))", "        ConfigHistory.digest(written)"),
     ("a file of mixed line endings is written back all CRLF by an undo", "Sources/RightHereKit/ConfigService.swift",
      "if !text.utf8.contains(0x0D), let existing,", "if let existing,"),
+    ("Customize Templates writes the built-in templates beside one that something else gave the file", "Sources/RightHereCore/Config/NewFileOptions.swift",
+     "operations: [.expectNoEntries(in: table)] + writtenOut(state.seed))", "operations: writtenOut(state.seed))"),
+    ("the first New Template brings the built-in templates back beside one that something else gave the file", "Sources/RightHereCore/Config/NewFileOptions.swift",
+     "let seed = writesBuiltIn ? [.expectNoEntries(in: table)] + writtenOut(state.seed) : []", "let seed = writesBuiltIn ? writtenOut(state.seed) : []"),
+    ("a file with entries passes the check that it has none", "Sources/RightHereCore/Config/ConfigDocument.swift",
+     "guard value == nil || value?.arrayValue?.isEmpty == true else { throw EditError.changedMeanwhile(table) }", "guard true else { throw EditError.changedMeanwhile(table) }"),
 ]
 
 

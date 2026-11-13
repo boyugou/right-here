@@ -71,7 +71,8 @@ struct NewFileOptionsTests {
         let plain = "[general]\nterminal = \"ghostty\"\n"
         let builtIn = state(plain, entries: [:])
         let first = try #require(NewFileOptions.creating(title: "Python Script", fileExtension: ".py", in: builtIn))
-        #expect(first.id == "python-script" && first.change.operations.count == 6)
+        // Held to a file that still defines no template, then the five built-in ones and the new one.
+        #expect(first.id == "python-script" && first.change.operations.count == 7 && first.change.operations.first == .expectNoEntries(in: "new_file.template"))
         let made = try apply(first.change, to: plain)
         #expect(made.newFile.templates.map(\.id) == ["txt", "md", "docx", "xlsx", "pptx", "python-script"], "the built-in templates are still there")
         #expect(made.newFile.templates.last?.fileExtension == "py", "the dot of an extension is not part of it")

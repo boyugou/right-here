@@ -122,7 +122,7 @@ public enum NewFileOptions {
     /// turns them all off): written there they would be added to every other Mac, so they go to this Mac's own file.
     public static func customizing(_ state: NewFileState) -> FileChange? {
         guard state.isBuiltIn else { return nil }
-        return FileChange(target: state.sharedDefinesTemplates ? .local : .shared, operations: writtenOut(state.seed))
+        return FileChange(target: state.sharedDefinesTemplates ? .local : .shared, operations: [.expectNoEntries(in: table)] + writtenOut(state.seed))
     }
 
     private static func change(_ row: TemplateRowState, at entry: EntryLocation, _ operations: [ConfigOperation]) -> FileChange {
@@ -206,7 +206,7 @@ public enum NewFileOptions {
         let intoLocal = writesBuiltIn ? state.sharedDefinesTemplates : !state.sharedDefinesTemplates
         let taken = Set(state.rows.map(\.id) + (writesBuiltIn ? state.seed.map(\.id) : [])).union(alsoTaken)
         let id = IDSlug.unique(IDSlug.make(from: name) ?? "template") { taken.contains($0) }
-        let seed = writesBuiltIn ? writtenOut(state.seed) : []
+        let seed = writesBuiltIn ? [.expectNoEntries(in: table)] + writtenOut(state.seed) : []
         let new = ConfigOperation.addEntry(to: table, fields: [ConfigField("id", .string(id)), ConfigField("title", .string(name)), ConfigField("extension", .string(ext))], at: nil)
         return (id, FileChange(target: intoLocal ? .local : .shared, operations: seed + [new]))
     }

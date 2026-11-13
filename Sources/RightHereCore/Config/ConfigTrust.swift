@@ -131,7 +131,7 @@ public enum ConfigTrust {
             case .removeTable(let path):
                 // What is taken out may be the override that keeps a built-in agent asking.
                 need("\(path).command")
-            case .removeEntry, .moveEntry, .expect, .expectEntry:
+            case .removeEntry, .moveEntry, .expect, .expectEntry, .expectNoEntries:
                 continue
             }
         }

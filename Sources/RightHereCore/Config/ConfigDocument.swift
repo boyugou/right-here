@@ -157,6 +157,15 @@ public struct ConfigDocument: Sendable, Equatable {
         return self
     }
 
+    /// This document, when it defines no entry of `[[table]]`, written as headers or as an inline array; otherwise a refusal.
+    public func requiringNoEntries(in table: String) throws -> ConfigDocument {
+        guard let tree = ConfigParser.readTree(text).tree else { throw EditError.changedMeanwhile(table) }
+        var value: TOMLValue? = .table(tree)
+        for segment in table.split(separator: ".") { value = value?.tableValue?[String(segment)] }
+        guard value == nil || value?.arrayValue?.isEmpty == true else { throw EditError.changedMeanwhile(table) }
+        return self
+    }
+
     /// The position (from 1) of the entry of `[[table]]` whose `id` is this one.
     public func position(ofEntryWithID id: String, in table: String) -> Int? {
         let outline = TOMLOutline(text)

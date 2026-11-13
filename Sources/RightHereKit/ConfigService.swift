@@ -589,7 +589,7 @@ public struct ConfigService: Sendable {
                 if let id = document.entryID(at: position, in: table) { add(.expectEntry(id, at: position, in: table)) }
             case .moveEntry(let from, _, let table):
                 if let id = document.entryID(at: from, in: table) { add(.expectEntry(id, at: from, in: table)) }
-            case .addEntry, .addTable, .removeTable, .replaceText, .expect, .expectEntry:
+            case .addEntry, .addTable, .removeTable, .replaceText, .expect, .expectEntry, .expectNoEntries:
                 break
             }
         }
