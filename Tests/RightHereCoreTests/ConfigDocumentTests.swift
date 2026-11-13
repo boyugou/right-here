@@ -5,6 +5,23 @@ import Testing
 /// The edits keep every byte they were not asked to change: comments, order, layout.
 @Suite("ConfigDocument: edits that leave the rest of the file alone")
 struct ConfigDocumentTests {
+    /// A text of several lines that the person wrote as a multi-line string (a template's script) is written over several lines again when it is changed: it became one line of escapes,
+    /// which no one reads (an independent review of the editors, 2026-11-13). Whatever the text holds, what is written reads back as the text.
+    @Test("a multi-line text stays multi-line and reads back as the text", arguments: [
+        "#!/bin/sh\necho goodbye\n", "a\nb", "\"\"\"\n", "x\"\"\n", "\"\n\"", "a\\b\nc", "tab\there\n", "cr\r\nlf\n", "\n\nlead", "end\n\"",
+        "\"\"\"\"\"\n", "nul\u{0}\n", "\u{65E5}\u{672C}\n\u{8A9E}", "two \"\" in\na row", "back\\\nslash",
+    ])
+    func aMultiLineTextStaysMultiLine(text: String) throws {
+        let before = "[[new_file.template]]\nid = \"sh\"\ntitle = \"Shell\"\nextension = \"sh\"\ncontents = \"\"\"\n#!/bin/sh\necho hello\n\"\"\"\n"
+        let edited = try ConfigDocument(before).setting("new_file.template.1.contents", to: .string(text))
+        #expect(edited.text.contains("contents = \"\"\"\n"), "\(edited.text)")
+        #expect(ConfigParser.parse(edited.text).config.newFile.templates.first?.contents == text, "\(edited.text.debugDescription)")
+        // A text of one line is one line, and a text that was one line stays one line.
+        #expect(try ConfigDocument(before).setting("new_file.template.1.contents", to: .string("one")).text.contains("contents = \"one\"\n"))
+        let oneLine = "[[new_file.template]]\nid = \"sh\"\ntitle = \"Shell\"\nextension = \"sh\"\ncontents = \"a\"\n"
+        #expect(try ConfigDocument(oneLine).setting("new_file.template.1.contents", to: .string("a\nb")).text.contains("contents = \"a\\nb\"\n"))
+    }
+
     /// A table that dotted keys define under a header (`claude.command` under `[agent]`) takes a new key as one more dotted key there: a `[agent.claude]` header below defined the
     /// table twice, which the parser refused, and the window blamed the person's file. A list of entries below such a table is a sub-table, which TOML allows (checked with Python's
     /// `tomllib`, as the texts here).

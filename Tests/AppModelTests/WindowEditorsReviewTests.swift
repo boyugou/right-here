@@ -280,4 +280,18 @@ struct WindowEditorsReviewTests {
         let second = try #require(text.range(of: "id = \"second\""))
         #expect(comment.lowerBound < second.lowerBound, "the commented-out setting of \"mine\" now stands under the new preset:\n\(text)")
     }
+
+    // MARK: A multi-line text the person wrote stays multi-line
+
+    /// A template whose contents the person wrote as a multi-line string (`"""`), as one writes a script. They change one word on the template's page: the whole value is written back as
+    /// one basic string with `\n` escapes (`ConfigDocument.render` makes every text a basic string), so the script is no longer readable in the file. A list keeps the layout it was written
+    /// in (one line, or one item to a line); a text does not.
+    @Test func aMultiLineTextStaysMultiLineWhenItIsChanged() async throws {
+        let shared = Self.general + "\n[[new_file.template]]\nid = \"sh\"\ntitle = \"Shell Script\"\nextension = \"sh\"\ncontents = \"\"\"\n#!/bin/sh\necho hello\n\"\"\"\n"
+        let mac = try await EditedMac.started(shared: shared)
+        defer { mac.cleanUp() }
+        #expect(mac.model.template("sh")?.contents == "#!/bin/sh\necho hello\n")
+        #expect(await mac.model.setTemplateContents("sh", "#!/bin/sh\necho goodbye\n"))
+        #expect(mac.shared.contains("contents = \"\"\"\n#!/bin/sh\necho goodbye\n\"\"\""), "the script is now one line of escapes:\n\(mac.shared)")
+    }
 }

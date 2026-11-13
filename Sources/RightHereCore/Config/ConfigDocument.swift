@@ -473,10 +473,38 @@ public struct ConfigDocument: Sendable, Equatable {
         return out + "\""
     }
 
-    /// The text of a value; an array is laid out the way the value it replaces was (one line, or one element to a line).
+    /// A text of several lines as a multi-line basic string, `\"\"\"` on a line of its own and then the lines as they are (the line break after the opening quotes is not part of the
+    /// text). A backslash is escaped, as are a third quote in a row (three would close the string), a quote that ends the text (it would run into the closing quotes), a carriage
+    /// return and every other control character but the tab.
+    static func multiLineString(_ text: String) -> String {
+        var out = "\"\"\"\n"
+        var quotes = 0
+        let scalars = Array(text.unicodeScalars)
+        for (index, scalar) in scalars.enumerated() {
+            switch scalar {
+            case "\"" where quotes == 2 || index == scalars.count - 1:
+                out += "\\\""
+                quotes = 0
+                continue
+            case "\"": out += "\""; quotes += 1; continue
+            case "\\": out += "\\\\"
+            case "\n", "\t": out.unicodeScalars.append(scalar)
+            case "\r": out += "\\r"
+            default:
+                if scalar.value < 0x20 || scalar.value == 0x7F { out += "\\u" + String(format: "%04X", scalar.value) } else { out.unicodeScalars.append(scalar) }
+            }
+            quotes = 0
+        }
+        return out + "\"\"\""
+    }
+
+    /// The text of a value; an array is laid out the way the value it replaces was (one line, or one element to a line), and a text of several lines that replaces one written over
+    /// several lines (a script in a template's `contents`) is written over several lines again.
     static func render(_ value: Value, like old: String?) -> String {
         switch value {
-        case .string(let text): return basicString(text)
+        case .string(let text):
+            let multiLine = old.map { $0.hasPrefix("\"\"\"") || $0.hasPrefix("'''") } ?? false
+            return multiLine && text.unicodeScalars.contains("\n") ? multiLineString(text) : basicString(text)
         case .integer(let number): return String(number)
         case .boolean(let flag): return flag ? "true" : "false"
         case .strings(let list):

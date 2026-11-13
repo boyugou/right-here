@@ -2626,6 +2626,12 @@ MUTANTS = [
      'let under = headerLines.last { $0 < last }.flatMap(tablePath(ofHeader:)) ?? ""', 'let under = ""'),
     ("an entry ends at its last key and leaves the setting commented out after it", "Sources/RightHereCore/Config/ConfigDocument+Entries.swift",
      "            while last + 1 < next, !isBlank(last + 1), isBlankOrComment(last + 1) { last += 1 }\n            var end = last\n", "            var end = last\n"),
+    ("a multi-line text that is changed becomes one line of escapes", "Sources/RightHereCore/Config/ConfigDocument.swift",
+     'return multiLine && text.unicodeScalars.contains("\\n") ? multiLineString(text) : basicString(text)', "return basicString(text)"),
+    ("a third quote in a row closes a multi-line string", "Sources/RightHereCore/Config/ConfigDocument.swift",
+     'case "\\"" where quotes == 2 || index == scalars.count - 1:', 'case "\\"" where index == scalars.count - 1:'),
+    ("a backslash in a multi-line string is not escaped", "Sources/RightHereCore/Config/ConfigDocument.swift",
+     'case "\\\\": out += "\\\\\\\\"\n            case "\\n", "\\t":', 'case "\\\\": out += "\\\\"\n            case "\\n", "\\t":'),
 ]
 
 
