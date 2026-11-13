@@ -83,6 +83,11 @@ extension ConfigDocument {
             return text(ofLine: line).trimmingCharacters(in: .whitespaces).isEmpty
         }
 
+        /// The path of the table whose header is on this line: the longest that the outline places there (a header names its own table, and may make the tables above it).
+        func tablePath(ofHeader line: Int) -> String? {
+            outline.lines.filter { $0.value == line }.map(\.key).max { $0.count < $1.count }
+        }
+
         /// The line of the `[table]` or `[[entry]]` header at this path, when there is one.
         func headerLine(of path: String) -> Int? {
             guard let line = outline.lines[path], headerLines.contains(line) else { return nil }
@@ -92,6 +97,12 @@ extension ConfigDocument {
         /// The first line after a header that is a header too, or the line after the last.
         func endOfTable(startingAt header: Int) -> Int {
             headerLines.first { $0 > header } ?? lineCount + 1
+        }
+
+        /// The part of this path that is the value of a key, when there is one: everything below it is written inside that inline table.
+        func inlineTable(containing segments: [String]) -> String? {
+            guard segments.count > 1 else { return nil }
+            return (1..<segments.count).lazy.map { segments[0..<$0].joined(separator: ".") }.first { outline.valueRanges[$0] != nil }
         }
 
         /// Whether some part of this path is the value of a key: the key is written inside an inline table.
@@ -148,11 +159,16 @@ extension ConfigDocument {
             }
             // An entry (`preset.2`) is not made by writing a key into it.
             if segments.dropLast().contains(where: { Int($0) != nil }) { throw EditError.notFound(tablePath) }
-            // A table that dotted keys define at the top (`copy_path.title = "x"`) cannot have a header as well: the new key is one more dotted key, after the last of them.
+            // A table that dotted keys define (`copy_path.title = "x"` at the top, `claude.command = "…"` under `[agent]`) cannot have a header as well: the new key is one more dotted key,
+            // after the last of them, written from the table that it stands under.
             let prefix = tablePath + "."
-            let firstHeader = headerLines.first ?? lineCount + 1
-            let dotted = outline.valueRanges.filter { $0.key.hasPrefix(prefix) && !$0.value.isEmpty }.map { self.line(atOffset: $0.value.upperBound - 1) }.filter { $0 < firstHeader }
-            if let last = dotted.max() { return inserting("\(segments.joined(separator: ".")) = \(rendered)\n", afterLine: last) }
+            let dotted = outline.valueRanges.filter { $0.key.hasPrefix(prefix) && !$0.value.isEmpty }.map { self.line(atOffset: $0.value.upperBound - 1) }
+            if let last = dotted.max() {
+                let under = headerLines.last { $0 < last }.flatMap(tablePath(ofHeader:)) ?? ""
+                let depth = under.isEmpty ? 0 : under.split(separator: ".").count
+                guard segments.count > depth, segments.prefix(depth).joined(separator: ".") == under else { throw EditError.inlineTable(tablePath) }
+                return inserting("\(segments.dropFirst(depth).joined(separator: ".")) = \(rendered)\n", afterLine: last)
+            }
             return appending(table: tablePath, line: line)
         }
 

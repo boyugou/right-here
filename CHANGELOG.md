@@ -37,6 +37,9 @@
   change with one Undo (the note's Undo gave back only the agent). Undo of an edit that left a file of mixed line endings
   all CRLF is no longer refused, and gives the file's bytes back. Customize Templates, or the first New Template, no
   longer writes the built-in templates beside a template that something else gave the file after the window read it.
+  A start option or a template is no longer added below an agent or a `new_file` written as an inline table, which made
+  a file that other TOML tools refuse; and an agent written with dotted keys under `[agent]` takes a new setting as one
+  more dotted key (it was refused with a sentence that blamed the person's file).
 
 ## 1.2.25 (2026-11-13)
 

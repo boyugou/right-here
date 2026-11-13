@@ -24,8 +24,10 @@ extension ConfigDocument {
             try Self.require(child, accepts: field.value, path: path)
         }
         let layout = try makeLayout()
-        // A list written as a value (`preset = [{ ... }]`) is not extended by a `[[preset]]` below it: the TOML spec forbids it, and a parser that follows it refuses the file.
+        // A list written as a value (`preset = [{ ... }]`) is not extended by a `[[preset]]` below it, nor is a table written inline (`claude = { ... }` under `[agent]`, which a
+        // `[[agent.claude.variant]]` would extend): the TOML spec closes both, and a parser that follows it refuses the file. Right Here's own parser reads it, so nothing else would stop it.
         if layout.outline.valueRanges[table] != nil { throw EditError.inlineTable(table) }
+        if let inline = layout.inlineTable(containing: segments) { throw EditError.inlineTable(inline) }
         let slots = layout.slots(of: table)
         let at = position ?? slots.count + 1
         guard (1...slots.count + 1).contains(at) else { throw EditError.outOfRange(path: table, position: at, count: slots.count) }

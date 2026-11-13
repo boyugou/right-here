@@ -2617,6 +2617,13 @@ MUTANTS = [
      "let seed = writesBuiltIn ? [.expectNoEntries(in: table)] + writtenOut(state.seed) : []", "let seed = writesBuiltIn ? writtenOut(state.seed) : []"),
     ("a file with entries passes the check that it has none", "Sources/RightHereCore/Config/ConfigDocument.swift",
      "guard value == nil || value?.arrayValue?.isEmpty == true else { throw EditError.changedMeanwhile(table) }", "guard true else { throw EditError.changedMeanwhile(table) }"),
+    ("an entry of a list is appended below a table written inline", "Sources/RightHereCore/Config/ConfigDocument+Entries.swift",
+     "        if let inline = layout.inlineTable(containing: segments) { throw EditError.inlineTable(inline) }\n", ""),
+    ("a key of a table that dotted keys define under a header gets a header of its own", "Sources/RightHereCore/Config/ConfigDocument+Layout.swift",
+     "let dotted = outline.valueRanges.filter { $0.key.hasPrefix(prefix) && !$0.value.isEmpty }.map { self.line(atOffset: $0.value.upperBound - 1) }\n",
+     "let dotted = outline.valueRanges.filter { $0.key.hasPrefix(prefix) && !$0.value.isEmpty }.map { self.line(atOffset: $0.value.upperBound - 1) }.filter { $0 < (headerLines.first ?? lineCount + 1) }\n"),
+    ("a dotted key under a header is written with the header's path again", "Sources/RightHereCore/Config/ConfigDocument+Layout.swift",
+     'let under = headerLines.last { $0 < last }.flatMap(tablePath(ofHeader:)) ?? ""', 'let under = ""'),
 ]
 
 

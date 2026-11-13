@@ -479,6 +479,12 @@ code, and a mutant of `script/mutation_check.py` for each protection.
   takes back both (`undo(_:)`). It was two changes, and the note's Undo took back the second only. The digest that the history and the window keep is the
   one a read of the written file gives (`readDigest`), and a text with a carriage return of its own (a file of mixed line endings) is written as it is, so
   an undo of an edit that left such a file all CRLF is made and gives its bytes back.
+- **What TOML closes stays closed.** An entry of a list below a table written inline (`[[agent.claude.variant]]` under `claude = { ... }`,
+  `[[new_file.template]]` under `new_file = { ... }`) made a file that Right Here's parser reads and Python's `tomllib` refuses ("Cannot mutate
+  immutable namespace"); it is refused like a key of such a table. A table that dotted keys define under a header (`claude.command` under `[agent]`)
+  takes a new key as one more dotted key there; a `[agent.claude]` header defined the table twice. A list of entries below such a table is a sub-table,
+  which TOML allows, and is still written as headers. The first change of the built-in templates is held to a file that defines none
+  (`ConfigOperation.expectNoEntries`), as the first change of every other list is held to the list the window showed.
 
 ## Consequences
 

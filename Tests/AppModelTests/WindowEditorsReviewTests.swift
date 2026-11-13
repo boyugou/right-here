@@ -206,4 +206,49 @@ struct WindowEditorsReviewTests {
         let ids = mac.config.newFile.templates.map(\.id)
         #expect(!ids.contains("md"), "the built-in templates came back with the new one: \(ids)\n\(mac.shared)")
     }
+
+    // MARK: A table written inline is not extended with a header
+
+    /// `[agent]` with `claude = { command = "…" }` writes Claude Code's table inline, and TOML closes an inline table: nothing may be added to it below, a `[[agent.claude.variant]]` included
+    /// (Python's `tomllib`: "Cannot mutate immutable namespace ('agent', 'claude', 'variant')"). New Start Option… appends one all the same, and Right Here's own parser reads the
+    /// result, so nothing stops it: the file is no longer TOML for an editor's TOML support or any other tool. The window should refuse it with the sentence that sends the person to
+    /// the text (`EditError.inlineTable`), as it does for a key of that table and for an inline array of entries (ADR 0026, review of stages 5 to 8).
+    @Test func aStartOptionOfAnAgentWrittenInlineIsNotAppendedAsAHeader() async throws {
+        let shared = Self.general + "\n[agent]\nclaude = { command = \"claude --model opus\" }\n"
+        let mac = try await EditedMac.started(shared: shared)
+        defer { mac.cleanUp() }
+        #expect(mac.model.agentOptions("claude")?.command == "claude --model opus", "the config reads")
+        _ = await mac.model.createVariant(agent: "claude", title: "Fast")
+        let written = mac.shared
+        #expect(written == shared, "the file now extends an inline table with a header (Right Here reads it: \(ConfigParser.canBeRead(written))):\n\(written)")
+    }
+
+    /// The same root cause for New Template… below `new_file = { then = "open" }`: the built-in templates and the new one are appended as `[[new_file.template]]` headers.
+    @Test func aTemplateIsNotAppendedBelowAnInlineNewFileTable() async throws {
+        let shared = "new_file = { then = \"open\" }\n\n" + Self.general
+        let mac = try await EditedMac.started(shared: shared)
+        defer { mac.cleanUp() }
+        #expect(mac.model.newFile?.then == .open, "the config reads")
+        _ = await mac.model.createTemplate(title: "Python Script", fileExtension: "py")
+        let written = mac.shared
+        #expect(written == shared, "the file now extends an inline table with headers (Right Here reads it: \(ConfigParser.canBeRead(written))):\n\(written)")
+    }
+
+    // MARK: A table that dotted keys define inside another table gets no header of its own
+
+    /// `[agent]` with `claude.command = "…"` defines `agent.claude` with dotted keys. Choosing a terminal for Claude Code appends a `[agent.claude]` header, which defines that table a
+    /// second time; the parser refuses that text, and the window says "TOML syntax error: this key or table is defined twice; each can be written once, so merge the two. Defaults apply
+    /// until it is fixed": a sentence about the person's file, which is fine, of a line it does not have. The key should be written as `claude.terminal` under `[agent]` (what the
+    /// document already does for dotted keys at the top of the file), or the change refused with the sentence that sends the person to the text. Every first setting of such an agent
+    /// (terminal, how it starts, arguments, its prompts) meets this.
+    @Test func aKeyOfATableThatDottedKeysDefineInsideATableIsWrittenAsADottedKey() async throws {
+        let shared = Self.general + "\n[agent]\nclaude.command = \"claude --model opus\"\n"
+        let mac = try await EditedMac.started(shared: shared)
+        defer { mac.cleanUp() }
+        #expect(mac.model.agentOptions("claude")?.command == "claude --model opus", "the config reads")
+        await mac.model.setAgentTerminal("claude", "terminal")
+        let said = mac.model.notice?.text(in: .english, isolatingValues: false) ?? ""
+        let written = mac.config.agents["claude"]?.launcher == .terminal("terminal") && mac.shared.contains("claude.terminal = \"terminal\"")
+        #expect(written || said.contains("dotted keys"), "neither written as a dotted key nor refused for what it is; the window said: \(said)\n\(mac.shared)")
+    }
 }

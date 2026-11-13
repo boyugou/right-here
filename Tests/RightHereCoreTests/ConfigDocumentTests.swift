@@ -5,6 +5,31 @@ import Testing
 /// The edits keep every byte they were not asked to change: comments, order, layout.
 @Suite("ConfigDocument: edits that leave the rest of the file alone")
 struct ConfigDocumentTests {
+    /// A table that dotted keys define under a header (`claude.command` under `[agent]`) takes a new key as one more dotted key there: a `[agent.claude]` header below defined the
+    /// table twice, which the parser refused, and the window blamed the person's file. A list of entries below such a table is a sub-table, which TOML allows (checked with Python's
+    /// `tomllib`, as the texts here).
+    @Test func aKeyOfATableThatDottedKeysDefineUnderAHeaderIsOneMoreDottedKeyThere() throws {
+        let text = "[general]\nterminal = \"ghostty\"\n\n[agent]\nclaude.command = \"claude --model opus\"\n"
+        let set = try ConfigDocument(text).setting("agent.claude.terminal", to: .string("terminal"))
+        #expect(set.text == "[general]\nterminal = \"ghostty\"\n\n[agent]\nclaude.command = \"claude --model opus\"\nclaude.terminal = \"terminal\"\n")
+        #expect(ConfigParser.parse(set.text).config.agents["claude"]?.launcher == .terminal("terminal"))
+        let top = try ConfigDocument("copy_path.title = \"x\"\n\n[general]\nterminal = \"ghostty\"\n").setting("copy_path.styles", to: .strings(["absolute"]))
+        #expect(top.text == "copy_path.title = \"x\"\ncopy_path.styles = [\"absolute\"]\n\n[general]\nterminal = \"ghostty\"\n")
+        let variant = try ConfigDocument(text).addingEntry(to: "agent.claude.variant", fields: [("id", .string("fast")), ("title", .string("Fast"))])
+        #expect(variant.text.hasSuffix("claude.command = \"claude --model opus\"\n\n[[agent.claude.variant]]\nid = \"fast\"\ntitle = \"Fast\"\n"), "\(variant.text)")
+    }
+
+    /// TOML closes an inline table: an entry of a list below it (`[[agent.claude.variant]]` under `claude = { ... }`, `[[new_file.template]]` under `new_file = { ... }`) made a file
+    /// that Right Here's parser reads and a parser that follows the spec refuses ("Cannot mutate immutable namespace"). It is refused, as a key of such a table is.
+    @Test func anEntryOfAListUnderATableWrittenInlineIsRefused() {
+        #expect(throws: ConfigDocument.EditError.inlineTable("agent.claude")) {
+            try ConfigDocument("[agent]\nclaude = { command = \"c\" }\n").addingEntry(to: "agent.claude.variant", fields: [("id", .string("fast")), ("title", .string("Fast"))])
+        }
+        #expect(throws: ConfigDocument.EditError.inlineTable("new_file")) {
+            try ConfigDocument("new_file = { then = \"open\" }\n").addingEntry(to: "new_file.template", fields: [("id", .string("py")), ("title", .string("Py")), ("extension", .string("py"))])
+        }
+    }
+
     private let sample = """
     # My Right Here config.
     version = 1
