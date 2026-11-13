@@ -201,17 +201,28 @@ struct PathRendererTests {
         }
     }
 
-    /// A Markdown destination is a URL reference: `#`, `?` and `%` are percent-encoded so that it resolves to the file it names.
-    @Test("a markdown link's destination resolves to the file it names", arguments: ["C#.md", "what?.md", "a%20b.md", "plain.md", "a b#c.md"])
+    /// A Markdown destination is a URL reference: `#`, `?` and `%` are percent-encoded so that it resolves to the file it names. A colon in its first
+    /// segment made it a URL of another scheme: Finder shows `Q1:Q2.md` as "Q1/Q2.md", and `[…](Q1:Q2.md)` was a link of the scheme `q1`.
+    @Test("a markdown link's destination resolves to the file it names", arguments: [
+        "C#.md", "what?.md", "a%20b.md", "plain.md", "a b#c.md", "Q1:Q2.md", "v1.2:v1.3.md", "Q1:Q2/notes.md", "a b:c.md", "src/x:y.md",
+    ])
     func aMarkdownDestinationResolvesToTheFile(name: String) {
         let path = "/Users/tester/code/app/" + name
-        let facts = FakeSystemFacts(directories: ["/Users/tester/code/app"], files: [path], gitRoots: ["/Users/tester/code/app"])
+        let facts = FakeSystemFacts(directories: ["/Users/tester/code/app", (path as NSString).deletingLastPathComponent], files: [path], gitRoots: ["/Users/tester/code/app"])
         let link = PathRenderer(facts: facts).render(URL(fileURLWithPath: path), style: .markdownLink)
         guard let open = link.range(of: "](") else { Issue.record("not a link: \(link)"); return }
         var destination = String(link[open.upperBound..<link.index(before: link.endIndex)])
         if destination.hasPrefix("<") { destination = String(destination.dropFirst().dropLast()).replacingOccurrences(of: " ", with: "%20") }
-        let resolved = URL(string: destination, relativeTo: URL(fileURLWithPath: "/Users/tester/code/app/"))?.path
-        #expect(resolved == path, "\(link) resolves to \(resolved.debugDescription)")
+        let resolved = URL(string: destination, relativeTo: URL(fileURLWithPath: "/Users/tester/code/app/"))?.absoluteURL
+        #expect(resolved?.isFileURL == true && resolved?.path == path, "\(link) resolves to \(resolved?.absoluteString ?? "nothing")")
+    }
+
+    /// Only a colon before the first slash needs the `./`: a link to a file in a folder, or one outside the repository (an absolute path), stays as it was.
+    @Test func onlyAColonInTheFirstSegmentTakesADotSlash() {
+        #expect(PathRenderer.markdownDestination("src/x:y.md") == "src/x:y.md")
+        #expect(PathRenderer.markdownDestination("/Volumes/Q1:Q2/a.md") == "/Volumes/Q1:Q2/a.md")
+        #expect(PathRenderer.markdownDestination("Q1:Q2.md") == "./Q1:Q2.md")
+        #expect(PathRenderer.markdownDestination("a b:c.md") == "<./a b:c.md>")
     }
 
     /// The tilde note is read from the copied text: a combining mark right after the home's slash made the note say "not inside your home folder" beside `~/…`.

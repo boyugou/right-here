@@ -2285,7 +2285,7 @@ MUTANTS = [
     ('the shell-quoted form leaves ! for csh and tcsh to expand', 'Sources/RightHereCore/Paths/PathStyle.swift',
      ': ShellQuoting.quotePasted(path)', ': ShellQuoting.quote(path, for: .posix)'),
     ("a Markdown destination leaves #, ? and % bare", "Sources/RightHereCore/Paths/PathStyle.swift",
-     "let path = name.scalarReplacing([\"%\": \"%25\", \"#\": \"%23\", \"?\": \"%3F\"])", "let path = name"),
+     "var path = name.scalarReplacing([\"%\": \"%25\", \"#\": \"%23\", \"?\": \"%3F\"])", "var path = name"),
     ("a dotfiles repository at the home claims a path typed in another case", "Sources/RightHereKit/LiveSystemFacts.swift",
      "let isHome = directory.path.compare(home, options: .caseInsensitive) == .orderedSame", "let isHome = directory.path == home"),
     # New File, after an independent review (2026-11-12).
@@ -2536,6 +2536,9 @@ MUTANTS = [
     ("an agent's own terminal or desktop app that fails is fixed through general.terminal", "Sources/RightHereKit/Doctor.swift",
      "        default:\n            return nil\n        }\n    }\n\n    /// The terminal link is Claude Code's own way in",
      "        default:\n            return .doctorFixAgentLauncher(Quoted.linkLauncher, Quoted.desktop)\n        }\n    }\n\n    /// The terminal link is Claude Code's own way in"),
+    # New File and Copy Path, after an independent review (2026-11-13).
+    ("a Markdown link to a name with a colon before its first slash reads as a URL of another scheme", "Sources/RightHereCore/Paths/PathStyle.swift",
+     'if path.unicodeScalars.prefix(while: { $0 != "/" }).contains(":") { path = "./" + path }', ""),
 ]
 
 

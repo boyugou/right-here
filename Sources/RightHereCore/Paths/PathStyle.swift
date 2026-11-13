@@ -162,9 +162,11 @@ public struct PathRenderer: Sendable {
     /// A link destination: bare when it has nothing awkward in it, else inside `<…>` with `<`, `>` and
     /// backslash escaped. A line break cannot appear in a destination at all, so it is percent-encoded. A destination is
     /// a URL reference, in which `#` starts a fragment, `?` a query and `%` an escape: each is percent-encoded, so that
-    /// `C#.md` and `a%20b.md` name those files and not `C` or `a b.md`.
+    /// `C#.md` and `a%20b.md` name those files and not `C` or `a b.md`. A colon in the first segment would read as the end of a scheme
+    /// (Finder's `Q1/Q2.md` is `Q1:Q2.md` on disk, a URL of the scheme `q1`), so `./` goes before it, as RFC 3986 (4.2) says.
     static func markdownDestination(_ name: String) -> String {
-        let path = name.scalarReplacing(["%": "%25", "#": "%23", "?": "%3F"])
+        var path = name.scalarReplacing(["%": "%25", "#": "%23", "?": "%3F"])
+        if path.unicodeScalars.prefix(while: { $0 != "/" }).contains(":") { path = "./" + path }
         let awkward = path.unicodeScalars.contains { "()<>\\".unicodeScalars.contains($0) || $0.properties.isWhitespace || $0.properties.generalCategory == .control }
         guard awkward else { return path }
         let escaped = path.scalarReplacing(["\\": "\\\\", "<": "\\<", ">": "\\>", "\n": "%0A", "\r": "%0D"])

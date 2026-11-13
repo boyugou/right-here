@@ -17,6 +17,9 @@
 - **`XDG_CONFIG_HOME` no longer moves the config.** The Finder extension may read only `~/.config/right-here/`, so a
   config that the variable moved was one that `rh` in a terminal read and the menu never did.
 
+- **New File and Copy Path, after an independent review.** A Markdown link to a name with a colon before its first
+  slash (Finder's `Q1/Q2.md` is `Q1:Q2.md` on disk) read as a link of another scheme; it now starts with `./`.
+
 ## 1.2.25 (2026-11-13)
 
 - **Test Terminal Start speaks your language.** The setup window's test of a terminal start said in English that the
