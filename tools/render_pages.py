@@ -638,7 +638,7 @@ SYNC_USE = """rh config sync enable                     # choose the folder (def
 rh config sync enable --folder ~/Sync/rh  # any folder works: Dropbox, a git checkout, a network share
 rh config sync push                       # send this Mac's config to the folder
 rh config sync pull                       # take the folder's config (refused, with a list, if it adds programs)
-rh config sync pull --allow-commands      # take it although it adds or changes terminal templates or agent commands
+rh config sync pull --allow-commands &lt;digest&gt;  # take it although it adds or changes what starts (the list ends with this command)
 rh config sync status                     # in-sync, local-ahead, remote-ahead, diverged, remote-missing or remote-evicted
 rh config sync disable                    # forget the folder; both copies stay"""
 

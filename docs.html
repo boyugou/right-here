@@ -350,7 +350,7 @@ terminal = "terminal"</code></pre>
 rh config sync enable --folder ~/Sync/rh  # any folder works: Dropbox, a git checkout, a network share
 rh config sync push                       # send this Mac's config to the folder
 rh config sync pull                       # take the folder's config (refused, with a list, if it adds programs)
-rh config sync pull --allow-commands      # take it although it adds or changes terminal templates or agent commands
+rh config sync pull --allow-commands &lt;digest&gt;  # take it although it adds or changes what starts (the list ends with this command)
 rh config sync status                     # in-sync, local-ahead, remote-ahead, diverged, remote-missing or remote-evicted
 rh config sync disable                    # forget the folder; both copies stay</code></pre>
 <p data-i18n="doc.sync.p4">On a second Mac, run <code>rh config sync enable</code> and then <code>rh config sync pull</code>.</p>
@@ -371,7 +371,7 @@ rh config sync disable                    # forget the folder; both copies stay<
 <li data-i18n="doc.sync.c6">the app that an <code>[[app]]</code> entry opens (its bundle identifier)</li>
 </ul>
 <p data-i18n="doc.sync.p10"><code>pull</code> compares the copy twice: as it is, and with this Mac's <code>config.local.toml</code> over it. A setting of that file cannot hide a program that the copy brings.</p>
-<p data-i18n="doc.sync.p9">Read the list. If the changes are yours, run <code>rh config sync pull --allow-commands</code>. <code>rh config sync status</code> shows the same list before you pull. A first pull on a new Mac asks only about programs of your own, not about the built-in apps and agents.</p>
+<p data-i18n="doc.sync.p9">Read the list. If the changes are yours, run <code>rh config sync pull --allow-commands &lt;digest&gt;</code>. <code>rh config sync status</code> shows the same list before you pull. A first pull on a new Mac asks only about programs of your own, not about the built-in apps and agents.</p>
 <p data-i18n="doc.sync.p6">A dotfiles manager can keep <code>config.toml</code> as a link. <code>rh</code> follows the link, but the Finder extension may not, so copy the file instead. A git repository can be the sync folder: commit there.</p>
 <p class="beta" data-i18n="doc.sync.tried">Tests use temporary folders and fake file systems. Not tried on a real Mac yet: real iCloud Drive.</p>
 </section>
@@ -389,7 +389,7 @@ rh config sync disable                    # forget the folder; both copies stay<
 <tr><td>WezTerm</td><td data-i18n="doc.terminals.wezterm">A new window. Not tried yet.</td></tr>
 <tr><td>kitty</td><td data-i18n="doc.terminals.kitty">A new window. kitty quits with its last window. Not tried yet.</td></tr>
 <tr><td>Alacritty</td><td data-i18n="doc.terminals.alacritty">A new window. Not tried yet.</td></tr>
-<tr><td>Warp</td><td data-i18n="doc.terminals.warp">A new window. With <code>terminal_placement = "tab"</code>, a new tab. Not tried yet. To start agents in it, add it to the config as below.</td></tr>
+<tr><td>Warp</td><td data-i18n="doc.terminals.warp">A new window. With <code>terminal_placement = "tab"</code>, a new tab. Not tried yet. It cannot start agents.</td></tr>
 <tr><td>cmux</td><td data-i18n="doc.terminals.folderonly">It opens the folder. To start agents in it, add it to the config as below.</td></tr>
 </tbody>
 </table>
@@ -468,7 +468,7 @@ run_args = ["/usr/bin/open", "-n", "-b", "org.alacritty", "--args", "--working-d
 <h3 data-i18n="doc.t10.title"><code>rh config sync pull</code> does not take the copy</h3>
 <p data-i18n="doc.t10.body">The message says why, and nothing changed. The usual reasons:</p>
 <ul>
-<li data-i18n="doc.t10.a">The copy adds or changes a program. Read the list. Then run <code>rh config sync pull --allow-commands</code>.</li>
+<li data-i18n="doc.t10.a">The copy adds or changes a program. Read the list. Then run <code>rh config sync pull --allow-commands &lt;digest&gt;</code>.</li>
 <li data-i18n="doc.t10.b">This Mac's config changed since the last sync. Run <code>rh config sync status</code>. Then <code>rh config sync push</code> sends your file, or <code>rh config sync pull --force</code> replaces it. The old file is saved first.</li>
 <li data-i18n="doc.t10.c">iCloud keeps the copy online only. Open the folder in Finder and let the file download.</li>
 <li data-i18n="doc.t10.d">Another change of the config is in progress. Wait for it, and run <code>pull</code> again.</li>
