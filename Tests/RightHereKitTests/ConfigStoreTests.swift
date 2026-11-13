@@ -12,9 +12,10 @@ struct RHPathsTests {
         #expect(paths.configFile.path == "/Users/tester/.config/right-here/config.toml")
     }
 
-    @Test func xdgConfigHome() {
+    @Test func xdgConfigHomeDoesNotMoveIt() {
+        // The Finder extension may read only ~/.config/right-here (RHEnvironmentTests).
         let paths = RHPaths(environment: ["XDG_CONFIG_HOME": "/tmp/xdg"], home: home)
-        #expect(paths.configFile.path == "/tmp/xdg/right-here/config.toml")
+        #expect(paths.configFile.path == "/Users/tester/.config/right-here/config.toml")
     }
 
     @Test func configDirOverridesXdg() {

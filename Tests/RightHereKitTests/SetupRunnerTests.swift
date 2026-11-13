@@ -30,6 +30,10 @@ private final class Machine: Sendable {
         self.shellOutput = shellOutput
         self.shellAnswers = shellAnswers
         rh = home.appendingPathComponent("tools/rh").path
+        // The program the command link leads to is there, as it is after a real setup.
+        try FileManager.default.createDirectory(at: home.appendingPathComponent("tools"), withIntermediateDirectories: true)
+        try "#!/bin/sh\n".write(toFile: rh, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: rh)
         app = home.appendingPathComponent("Applications/Right Here.app")
         try FileManager.default.createDirectory(at: HostApp.extensionURL(in: app), withIntermediateDirectories: true)
         state.withLock { $0.registered = registered; $0.enabled = enabled }

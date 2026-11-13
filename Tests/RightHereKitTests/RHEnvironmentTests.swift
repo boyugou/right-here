@@ -44,9 +44,12 @@ struct RHEnvironmentTests {
         #expect(try FileManager.default.contentsOfDirectory(atPath: home.path).isEmpty, "something was written in the home")
     }
 
-    @Test func anEmptyXDGVariableIsNotSetAsTheSpecificationSays() throws {
+    @Test func xdgConfigHomeDoesNotMoveTheConfigThatTheFinderMenuReads() throws {
+        // The Finder extension may read only ~/.config/right-here, and Finder starts it without the shell's variables: a config that XDG_CONFIG_HOME moved
+        // would be one that `rh` in a terminal reads and the menu never does.
         let home = URL(fileURLWithPath: "/Users/tester")
-        let paths = RHPaths(environment: ["XDG_CONFIG_HOME": ""], home: home)
-        #expect(paths.configFile.path == "/Users/tester/.config/right-here/config.toml")
+        for value in ["", "/Users/tester/dotfiles/config", "~/dotfiles/config"] {
+            #expect(RHPaths(environment: ["XDG_CONFIG_HOME": value], home: home).configFile.path == "/Users/tester/.config/right-here/config.toml", "\(value)")
+        }
     }
 }

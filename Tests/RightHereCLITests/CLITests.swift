@@ -320,10 +320,12 @@ struct CLITests {
     @Test func aVariableThatIsNotSetIsNoProblemAndAnEmptyXDGOneIsNotSet() throws {
         let rh = try RH(trialHome: true); defer { rh.cleanUp() }
         let home = try #require(rh.home)
-        // The XDG variable is not Right Here's, and the XDG specification reads an empty one as not set.
-        let xdg = try rh.run(["config", "path"], set: ["XDG_CONFIG_HOME": ""])
-        #expect(xdg.status == 0, "\(xdg.standardError)")
-        #expect(xdg.standardOutput.hasPrefix(home.path + "/.config/right-here/"), "\(xdg.standardOutput)")
+        // The XDG variable is not Right Here's, set or empty: the Finder menu reads ~/.config/right-here whatever it says.
+        for value in ["", home.appendingPathComponent("dotfiles/config").path] {
+            let xdg = try rh.run(["config", "path"], set: ["XDG_CONFIG_HOME": value])
+            #expect(xdg.status == 0, "\(xdg.standardError)")
+            #expect(xdg.standardOutput.hasPrefix(home.path + "/.config/right-here/"), "\(xdg.standardOutput)")
+        }
         #expect(try rh.run(["config", "path"], unset: ["RH_CONFIG", "RH_LOG_DIR"]).status == 0)
     }
 

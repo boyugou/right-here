@@ -66,6 +66,15 @@ public struct Detector: Sendable {
         // code). No program is called that, so such a name is not asked about, in either shell.
         let commands = asked.filter { !$0.hasPrefix("-") }
         guard !commands.isEmpty || wantPath else { return LoginShellFacts() }
+        // A command written as `~/…` is typed as it is, and the shell expands the tilde of an unquoted word; the name travels quoted (`"$n"`), which would
+        // not, so it is asked about as the typed line finds it, and answered under the name the config gives.
+        var written: [String: String] = [:]
+        let sent = commands.map { name -> String in
+            guard name == "~" || name.hasPrefix("~/") else { return name }
+            let expanded = facts.homeDirectory.path + name.dropFirst()
+            written[expanded] = name
+            return expanded
+        }
         // The line that carries the PATH starts with two control characters that no command name and no startup message has, so
         // nothing a command is called can pass for it. The names never become part of the script.
         let script: String
@@ -85,10 +94,12 @@ public struct Detector: Sendable {
                 + (wantPath ? "; printf '\\n\\001rh-path\\001%s\\n' (string join : $PATH)" : "") + "; printf '\\n\\001rh-done\\001\\n'"
         }
         // With `-c`, a POSIX shell takes the first operand as `$0`; fish has no such slot.
-        let operands = facts.shellFlavor == .posix ? ["rh-detect"] + commands : commands
+        let operands = facts.shellFlavor == .posix ? ["rh-detect"] + sent : sent
         let result = try? await runner.run(ProcessStep(executable: facts.loginShell, arguments: ["-lic", script] + operands), timeout: .seconds(10))
         guard let output = result?.standardOutput else { return LoginShellFacts() }
         var shell = Self.parse(output)
+        shell.found = Set(shell.found.map { written[$0] ?? $0 })
+        shell.locations = Dictionary(shell.locations.map { (written[$0.key] ?? $0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         // What the startup files printed is in the output too: only a name that was asked about can be an answer.
         shell.found.formIntersection(commands)
         shell.locations = shell.locations.filter { commands.contains($0.key) }

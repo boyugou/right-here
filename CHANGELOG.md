@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **`rh doctor`, after an independent review of its checks.** `rh` that Homebrew put on the PATH is not called
+  unreachable any more; a `~/.local/bin/rh` that leads nowhere (the app was moved) is no longer ok; an agent command
+  written as `~/…` is found, as the line a click types finds it; a config that asks for no Quick Actions is not told to
+  run setup; a Quick Action that links to the repository asks for git as the menu's does; the last action is the newest
+  after the log rotates; and a config file that does not read leaves out the rows that would be worked out from the
+  defaults, which advised adding what the file already says.
+- **`XDG_CONFIG_HOME` no longer moves the config.** The Finder extension may read only `~/.config/right-here/`, so a
+  config that the variable moved was one that `rh` in a terminal read and the menu never did.
+
 ## 1.2.25 (2026-11-13)
 
 - **Test Terminal Start speaks your language.** The setup window's test of a terminal start said in English that the

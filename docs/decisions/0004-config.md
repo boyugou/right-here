@@ -37,7 +37,10 @@ Setting Right Here up with only the installed `rh` and its docs showed the sharp
   editor underlines a typo while `rh` keeps working. It also carries `required`, id patterns and the allowed
   values, so the two describe the same file.
 - `rh init --force` saves the old file as `config.toml.bak-<date>` before replacing it.
-- `rh docs config` names every way the file is located (`RH_CONFIG`, `RH_CONFIG_DIR`, `XDG_CONFIG_HOME`).
+- `rh docs config` names every way the file is located (`RH_CONFIG`, `RH_CONFIG_DIR`), and says that `XDG_CONFIG_HOME` does not move it.
+  It did until 2026-11-13: an independent review of the doctor found that a person who exports it has `rh` in a terminal read
+  `$XDG_CONFIG_HOME/right-here` while the Finder extension, whose sandbox may read only `~/.config/right-here/` and which Finder starts
+  without the shell's variables, reads the other file, and the doctor called the config fine.
 
 ## Where a problem is, and what a syntax error says
 

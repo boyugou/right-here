@@ -58,14 +58,20 @@ public struct Doctor: Sendable {
         let shell = await loginShellFacts(everyAgent: everyAgent)
         checks.append(configCheck())
         if let pending = pendingCheck() { checks.append(pending) }
-        if let git = gitCheck() { checks.append(git) }
+        // A config file that is there and was not read leaves the defaults, which say nothing true of the person's file: the rows that would be worked out
+        // from them (the apps, the agents, the Quick Actions, git for the menu's links) would advise adding what the file already says, or a setup that skips
+        // the Quick Actions while the file cannot be used. The config row says what is wrong, and the rest waits for the file.
+        let readsTheConfig = !configNotRead
+        if readsTheConfig, let git = gitCheck() { checks.append(git) }
         checks += ConfigSync(paths: paths).doctorChecks()
         let names = Localizer(languages: [language])
-        checks += menuChecks(names)
-        checks += agentChecks(shell, names)
-        checks += menuEmptyCheck()
-        if claudeLinkIsOffered() { checks.append(claudeLinkCheck()) }
-        checks += integrationChecks(shell)
+        if readsTheConfig {
+            checks += menuChecks(names)
+            checks += agentChecks(shell, names)
+            checks += menuEmptyCheck()
+            if claudeLinkIsOffered() { checks.append(claudeLinkCheck()) }
+        }
+        checks += integrationChecks(shell, services: readsTheConfig)
         checks.append(await Self.extensionCheck(runner: runner, crashReports: ExtensionCrashes.reportsFolder(home: facts.homeDirectory)))
         if let copies = copiesCheck() { checks.append(copies) }
         checks.append(Self.activityCheck(logFile: paths.logFile, language: language))
@@ -112,7 +118,9 @@ public struct Doctor: Sendable {
     /// git, only when the menu has an item that needs it (a repository link): a Mac without Xcode or the Command Line Tools has none, and
     /// each click on such an item would fail. Without such an item nothing needs git, and a missing one is no problem to report.
     func gitCheck() -> DoctorCheck? {
-        let items = loaded.config.menuItems ?? MenuBuilder.defaultItems
+        // The menu's items, and the Quick Actions', which run the same actions.
+        let items = (loaded.config.menuItems ?? MenuBuilder.defaultItems)
+            + (loaded.config.serviceItems ?? ActionRegistry.defaultServiceItems(enabledAgents: loaded.config.enabledAgents))
         guard items.contains(where: { ActionRef(parsing: $0)?.readsRepository == true }) else { return nil }
         if gitInstalled ?? GitCommand.gitIsInstalled() { return DoctorCheck(.git, status: .ok, detail: .doctorGitOk) }
         return DoctorCheck(.git, status: .warn, detail: .doctorGitMissing, fix: .doctorFixGitInstall)
@@ -345,7 +353,23 @@ public struct Doctor: Sendable {
 
     // MARK: Finder integration
 
-    private func integrationChecks(_ shell: LoginShellFacts) -> [DoctorCheck] {
+    /// Whether the config file is there and was not read: it is not TOML, too large or unreadable, so the config is the defaults.
+    private var configNotRead: Bool {
+        guard loaded.fileExists else { return false }
+        if loaded.fileProblem != nil { return true }
+        guard case .text(let text) = ConfigStore.text(of: loaded.file) else { return true }
+        return !ConfigParser.canBeRead(text)
+    }
+
+    /// An `rh` on a folder of `path` other than `skipping`: the one Homebrew links (the cask's and the formula's), which a default `PATH` of macOS has and
+    /// `~/.local/bin` is not.
+    static func rhOnPath(_ path: [String], skipping folder: URL) -> String? {
+        path.lazy.filter { $0.hasPrefix("/") && !pathListsFolder([$0], folder) }
+            .map { URL(fileURLWithPath: $0).appendingPathComponent(AppIdentity.cliName).path }
+            .first { FileManager.default.isExecutableFile(atPath: $0) }
+    }
+
+    private func integrationChecks(_ shell: LoginShellFacts, services: Bool = true) -> [DoctorCheck] {
         let installer = Installer(home: facts.homeDirectory)
         var checks: [DoctorCheck] = []
 
@@ -363,14 +387,22 @@ public struct Doctor: Sendable {
             checks.append(DoctorCheck(.finderRunner, status: .fail, detail: .doctorRunnerMissing, fix: .doctorFixRunSetup))
         }
 
-        checks.append(servicesCheck())
+        if services { checks.append(servicesCheck()) }
 
-        let linked = (try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path)) != nil
+        let target = try? FileManager.default.destinationOfSymbolicLink(atPath: installer.cliLink.path)
         let onPath = processPath(contains: installer.locations.localBin) || Self.pathListsFolder(shell.path ?? [], installer.locations.localBin)
-        if !linked {
+        let elsewhere = Self.rhOnPath((facts.environment("PATH") ?? "").split(separator: ":").map(String.init) + (shell.path ?? []), skipping: installer.locations.localBin)
+        if let target, !FileManager.default.isExecutableFile(atPath: installer.cliLink.path) {
+            // A link that leads nowhere (the app was moved after `rh setup` linked it): typing `rh` starts nothing, as the runner row of the same run says.
+            let shown = URL(fileURLWithPath: target, relativeTo: installer.cliLink.deletingLastPathComponent()).path
+            checks.append(DoctorCheck(.cliLink, status: .fail, detail: .doctorRunnerTargetMissing(shown), fix: .doctorFixRunSetup))
+        } else if target == nil {
             checks.append(DoctorCheck(.cliLink, status: .warn, detail: .doctorCliMissing(installer.cliLink.path), fix: .doctorFixRunSetup))
         } else if onPath {
             checks.append(DoctorCheck(.cliLink, status: .ok, detail: .doctorVerbatim(installer.cliLink.path)))
+        } else if let elsewhere {
+            // Typing `rh` finds this one, which Homebrew put on the PATH: nothing is missing.
+            checks.append(DoctorCheck(.cliLink, status: .ok, detail: .doctorVerbatim(elsewhere)))
         } else if shell.path == nil {
             // The shell was asked (the link exists and this process's PATH lacks the folder) and said nothing: a startup file that exits, or
             // takes longer than the probe waits. Nothing is known, so nothing is claimed and the person is not told to edit a profile.
@@ -384,7 +416,8 @@ public struct Doctor: Sendable {
     /// Evidence that a click in Finder has reached `rh`: the newest successful action in the run log that
     /// did not come from the command line. Informational; nothing here is wrong when there is none yet.
     static func activityCheck(logFile: URL, now: Date = Date(), language: String = "en") -> DoctorCheck {
-        let text = [logFile, logFile.appendingPathExtension("1")]
+        // The rotated log first: its lines are older than every line of the current one, which the search from the end reaches first.
+        let text = [logFile.appendingPathExtension("1"), logFile]
             .compactMap { try? String(contentsOf: $0, encoding: .utf8) }
             .joined(separator: "\n")
         for line in text.split(separator: "\n").reversed() {
@@ -435,6 +468,8 @@ public struct Doctor: Sendable {
     ///   - folder: Where the Quick Actions are, as the person would type it.
     static func servicesCheck(installed: Set<String>, expected: Set<String>, current: Bool = true, held: Int = 0, folder: String = "~/Library/Services") -> DoctorCheck {
         if installed.isEmpty, held == 0 {
+            // A config that asks for none (the window's Quick Actions page can take the last one out) has all it asked for.
+            if expected.isEmpty { return DoctorCheck(.services, status: .ok, detail: .doctorServicesOk("0")) }
             return DoctorCheck(.services, status: .warn, detail: .doctorServicesNone, fix: .doctorFixRunSetup)
         }
         if installed == expected, !current {

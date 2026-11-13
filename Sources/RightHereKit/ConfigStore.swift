@@ -31,9 +31,10 @@ public struct RHPaths: Sendable, Equatable {
 
     public var logFile: URL { logDirectory.appendingPathComponent("rh.log") }
 
-    /// `RH_CONFIG` names the file itself; `RH_CONFIG_DIR` or `XDG_CONFIG_HOME` name its folder;
-    /// otherwise it is `~/.config/right-here/config.toml`. A variable of Right Here's that is set to nothing is not "not set"
-    /// (`RHEnvironment`); `XDG_CONFIG_HOME` is not Right Here's, and the XDG specification reads an empty one as not set.
+    /// `RH_CONFIG` names the file itself, `RH_CONFIG_DIR` its folder; otherwise it is `~/.config/right-here/config.toml`, whatever `XDG_CONFIG_HOME`
+    /// says: the Finder extension may read that folder only (its sandbox), and Finder starts it without the person's shell, so a config that the shell's
+    /// variable moved elsewhere would be one that `rh` in a terminal reads and the menu never does. A variable of Right Here's that is set to nothing is
+    /// not "not set" (`RHEnvironment`).
     public init(environment: [String: String], home: URL) {
         self.home = home
         if let logs = RHEnvironment.path("RH_LOG_DIR", in: environment) {
@@ -48,8 +49,6 @@ public struct RHPaths: Sendable, Equatable {
         }
         if let directory = RHEnvironment.path("RH_CONFIG_DIR", in: environment) {
             configDirectory = directory
-        } else if let base = environment["XDG_CONFIG_HOME"], !base.isEmpty {
-            configDirectory = URL(fileURLWithPath: (base as NSString).expandingTildeInPath).appendingPathComponent(AppIdentity.configDirectoryName)
         } else {
             configDirectory = home.appendingPathComponent(".config/" + AppIdentity.configDirectoryName)
         }

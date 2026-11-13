@@ -43,10 +43,16 @@ private struct Scene {
         }
     }
 
+    /// Links `rh` to a program at `target` under this home (`/opt/rh/bin/rh` is `<home>/opt/rh/bin/rh`), which is made: a link that leads nowhere is a
+    /// failure of its own (`aCommandLinkToNothingIsNotOk`).
     func linkCLI(to target: String) throws {
         let installer = Installer(home: home)
+        let program = home.appendingPathComponent(target)
+        try FileManager.default.createDirectory(at: program.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "#!/bin/sh\n".write(to: program, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: program.path)
         try FileManager.default.createDirectory(at: installer.locations.localBin, withIntermediateDirectories: true)
-        try FileManager.default.createSymbolicLink(atPath: installer.cliLink.path, withDestinationPath: target)
+        try FileManager.default.createSymbolicLink(atPath: installer.cliLink.path, withDestinationPath: program.path)
     }
 
     func run(with runner: FakeProcessRunner? = nil) async -> [DoctorCheck] {

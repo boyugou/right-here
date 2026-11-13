@@ -2506,6 +2506,23 @@ MUTANTS = [
     ("Test Terminal Start says in English that the command ran", "Sources/RightHereKit/Doctor.swift",
      'detail: .doctorProbeRan(name, String(format: "%.1f", seconds), String(format: "%.1f", accepted), shell))',
      'detail: .doctorVerbatim("\\(name) ran a typed command in a new session"))'),
+    ("XDG_CONFIG_HOME moves the config the Finder menu never reads", "Sources/RightHereKit/ConfigStore.swift",
+     "            configDirectory = directory\n        } else {\n",
+     "            configDirectory = directory\n        } else if let base = environment[\"XDG_CONFIG_HOME\"], !base.isEmpty {\n            configDirectory = URL(fileURLWithPath: base).appendingPathComponent(AppIdentity.configDirectoryName)\n        } else {\n"),
+    ("an agent command written as ~/ is looked up with its tilde", "Sources/RightHereKit/Detector.swift",
+     "let expanded = facts.homeDirectory.path + name.dropFirst()", "let expanded = name"),
+    ("a command link that leads nowhere is ok", "Sources/RightHereKit/Doctor.swift",
+     "if let target, !FileManager.default.isExecutableFile(atPath: installer.cliLink.path) {", "if let target, target.isEmpty {"),
+    ("rh that Homebrew put on the PATH is called unreachable", "Sources/RightHereKit/Doctor.swift",
+     "        } else if let elsewhere {", "        } else if let elsewhere, elsewhere.isEmpty {"),
+    ("a config that asks for no Quick Actions is told to run setup", "Sources/RightHereKit/Doctor.swift",
+     '            if expected.isEmpty { return DoctorCheck(.services, status: .ok, detail: .doctorServicesOk("0")) }\n', ""),
+    ("a Quick Action that reads the repository does not ask for git", "Sources/RightHereKit/Doctor.swift",
+     "            + (loaded.config.serviceItems ?? ActionRegistry.defaultServiceItems(enabledAgents: loaded.config.enabledAgents))\n", ""),
+    ("the last action is taken from the rotated log first", "Sources/RightHereKit/Doctor.swift",
+     'let text = [logFile.appendingPathExtension("1"), logFile]', 'let text = [logFile, logFile.appendingPathExtension("1")]'),
+    ("a config that does not read is advised on from the defaults", "Sources/RightHereKit/Doctor.swift",
+     "let readsTheConfig = !configNotRead", "let readsTheConfig = true"),
 ]
 
 
