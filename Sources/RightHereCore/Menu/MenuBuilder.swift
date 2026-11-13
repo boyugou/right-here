@@ -138,8 +138,9 @@ public struct MenuBuilder: Sendable {
             case "agents": nodes += agents(collector)
             case "agents-more":
                 // The plain "<Agent> Here" entry is there when `agents` is in the menu, or the agent is named by its own id.
-                nodes += moreAgents(context, withPresets: !entries.contains("presets"), collector, ownLines: ownLines, hasPlainEntry: { entries.contains("agents") || entries.contains("agent.\($0)") })
-            case "presets": nodes += presets(context, collector)
+                nodes += moreAgents(context, withPresets: !entries.contains("presets"), collector, ownLines: ownLines, agentsSaid: entries.contains("agents"),
+                                    hasPlainEntry: { entries.contains("agents") || entries.contains("agent.\($0)") })
+            case "presets": nodes += presets(context, collector, agentsSaid: entries.contains("agents"))
             case "new-file": nodes += newFile(context, collector)
             case "copy-path": nodes += copyPath(collector)
             default:
@@ -235,10 +236,15 @@ public struct MenuBuilder: Sendable {
 
     /// The "Agent Presets" submenu: the presets whose agent is enabled and that fit this selection. A preset that
     /// needs files is left out of a folder's menu, and the whole submenu when nothing is left.
-    private func presets(_ context: HereContext, _ collector: MenuNoteCollector?) -> [MenuNode] {
+    /// - Parameter agentsSaid: Whether the Agents group is in the menu, which says itself that no agent is enabled.
+    private func presets(_ context: HereContext, _ collector: MenuNoteCollector?, agentsSaid: Bool = false) -> [MenuNode] {
         var firstRefusal: String?
+        var withoutAgent: [String] = []
         let infos = config.presets.compactMap { preset -> (agent: String, info: ActionInfo)? in
-            guard let agent = config.agent(for: preset), config.enabledAgents.contains(agent.id) else { return nil }
+            guard let agent = config.agent(for: preset), config.enabledAgents.contains(agent.id) else {
+                withoutAgent.append(preset.localizedTitle(localizer) + (preset.agent.map { " (\($0))" } ?? ""))
+                return nil
+            }
             let info = registry.info(.preset(id: preset.id, terminal: nil), context: context)
             // The note is the whole submenu's, so it says which preset it is about.
             if !info.available, firstRefusal == nil, let reason = info.unavailableReason { firstRefusal = info.shortTitle + ": " + reason }
@@ -247,7 +253,13 @@ public struct MenuBuilder: Sendable {
         // With several agents in play the agent's name is part of the title; with one it is just noise.
         let oneAgent = Set(infos.map(\.agent)).count <= 1
         let children = infos.map { MenuNode.action($0.info, title: oneAgent ? $0.info.shortTitle : $0.info.title) }
-        if children.isEmpty, let firstRefusal { collector?.leftOut(localizer.presetsGroup, firstRefusal) }
+        if children.isEmpty, let firstRefusal {
+            collector?.leftOut(localizer.presetsGroup, firstRefusal)
+        } else if children.isEmpty, !withoutAgent.isEmpty, !(config.enabledAgents.isEmpty && agentsSaid) {
+            // Left out before anything else was asked: an empty menu of presets said nothing of why.
+            collector?.leftOut(localizer.presetsGroup, config.enabledAgents.isEmpty ? "no agent is enabled (general.agents lists none), and a preset starts one."
+                               : "the agent of each preset is not in general.agents: " + withoutAgent.joined(separator: ", ") + ".")
+        }
         return children.isEmpty ? [] : [.submenu(localizer.presetsGroup, icon: Self.groupIcon("presets"), children)]
     }
 
@@ -255,7 +267,8 @@ public struct MenuBuilder: Sendable {
     /// follows the agent's launcher (its desktop app, its terminal link, or a terminal that is the default or the one the
     /// agent names), so that launcher is the one left out here, and the typed launch in the default terminal is offered when
     /// the plain entry is not it.
-    private func moreAgents(_ context: HereContext, withPresets: Bool, _ collector: MenuNoteCollector?, ownLines: Set<String> = [], hasPlainEntry: (String) -> Bool) -> [MenuNode] {
+    private func moreAgents(_ context: HereContext, withPresets: Bool, _ collector: MenuNoteCollector?, ownLines: Set<String> = [], agentsSaid: Bool = false,
+                            hasPlainEntry: (String) -> Bool) -> [MenuNode] {
         var children: [MenuNode] = []
         let defaultTerminal = try? defaults.commandTerminal()
         for id in config.enabledAgents {
@@ -275,7 +288,7 @@ public struct MenuBuilder: Sendable {
             let nodes = refs.filter { !ownLines.contains($0.id) }.flatMap { single($0) }
             if !nodes.isEmpty { children += nodes + [.separator] }
         }
-        if withPresets { children += presets(context, collector) }
+        if withPresets { children += presets(context, collector, agentsSaid: agentsSaid) }
         let tidy = Self.tidy(children)
         return tidy.isEmpty ? [] : [.submenu(localizer.moreAgentsGroup, icon: Self.groupIcon("agents-more"), tidy)]
     }

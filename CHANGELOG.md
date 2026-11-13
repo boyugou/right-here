@@ -61,7 +61,8 @@
   start options of one name are: the submenu showed two lines that did different things. The window's Add menu no longer
   offers what the menu already shows on a line of its own ("Open in Ghostty" twice), and an app or a start option that
   has a line of its own is no longer repeated in Open With or More Agent Options. A template named on a line of its own
-  (`new-file.md`) is left out for several selected items, as New File is.
+  (`new-file.md`) is left out for several selected items, as New File is. `rh menu --explain` says why the presets are
+  left out when no agent, or not their agent, is in the menu (it said "Nothing is left out" of an empty menu).
 
 ## 1.2.25 (2026-11-13)
 

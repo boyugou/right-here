@@ -2679,6 +2679,8 @@ MUTANTS = [
      " && !shownTitles.contains(info.title) {", " {"),
     ("a template named by its id is offered for several items", "Sources/RightHereCore/Menu/MenuBuilder.swift",
      "if case .newFile = ref, context.items.count > 1 {", "if case .newFile = ref, false {"),
+    ("an empty menu of presets that no agent can start says nothing of why", "Sources/RightHereCore/Menu/MenuBuilder.swift",
+     "        } else if children.isEmpty, !withoutAgent.isEmpty, !(config.enabledAgents.isEmpty && agentsSaid) {", "        } else if false {"),
 ]
 
 

@@ -161,4 +161,31 @@ struct MenuReviewTests {
         let byID = everyNode(MenuBuilder(config: Config(menuItems: ["new-file.md"]), facts: facts).build(for: several)).compactMap(\.actionID)
         #expect(byID.contains("new-file.md") == byGroup.contains("new-file.md"), "for two items, the group offers \(byGroup) and the entry named by id \(byID)")
     }
+
+    /// `menu.items` lists the presets (`["presets"]`, or `["agents-more"]`, which holds them) and the menu is empty, with a file selected or
+    /// for a folder alike, and `explain` has no note at all: a preset without an enabled agent is dropped before anything is said
+    /// (MenuBuilder.swift:221). `explain` promises to say what the menu leaves out of the presets (MenuBuilder.swift:64-66).
+    /// - No agent is enabled. No config warning says so; `rh config validate` warns "the Finder menu would be empty for a folder (`rh menu
+    ///   --explain` lists each entry)" (ConfigStore.swift:100-104), `rh menu --explain` then prints the empty menu and "Nothing is left out of
+    ///   this menu." (Actions.swift:107), and the doctor's row "empty for a folder: no entry is left with this config" has no reason under it
+    ///   (Doctor.swift:270-273). `rh run preset.review` would say "No agent is enabled; list one in general.agents, or name an agent in the preset."
+    /// - The one preset names an agent that is not enabled. The parser warns about that (ConfigBuilder+Presets.swift:50-52) and `rh run` would
+    ///   run the preset; `rh menu --explain` still says "Nothing is left out of this menu." of an empty menu.
+    @Test func anEmptyMenuOfPresetsSaysWhy() {
+        let file = "\(code)/a.swift"
+        let facts = reviewMachine(files: [file])
+        let oneFile = HereContext(origin: .items, items: [URL(fileURLWithPath: file)])
+        var agentNotEnabled = Config(enabledAgents: ["claude"], menuItems: ["presets"])
+        agentNotEnabled.presets = [AgentPreset(id: "look", title: "Look", agent: "codex", prompt: "Look at {files}.")]
+        let cases: [(String, Config)] = [
+            ("presets, no agent enabled", Config(menuItems: ["presets"])),
+            ("agents-more, no agent enabled", Config(menuItems: ["agents-more"])),
+            ("presets, the preset's agent is not enabled", agentNotEnabled)
+        ]
+        for (label, config) in cases {
+            let explained = MenuBuilder(config: config, facts: facts).explain(for: oneFile)
+            #expect(!explained.menu.isEmpty || !explained.leftOut.isEmpty,
+                    "\(label): the menu is empty and nothing says why: \"\(explained.emptyMenuSummary ?? "")\"")
+        }
+    }
 }
