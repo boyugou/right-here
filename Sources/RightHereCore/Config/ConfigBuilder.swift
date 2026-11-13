@@ -88,6 +88,11 @@ struct ConfigBuilder {
     /// always was: the config can arrive from the sync folder, and what it names things must not act on a terminal.
     /// - Parameter limit: The most characters. A file name of a template has its own limit, in bytes, checked where it is read.
     func isPlainName(_ text: String, at path: [String], noun: String, limit: Int = ConfigBuilder.longestName) -> Bool {
+        // A menu draws a row of nothing for it, and a new file named after it is `.txt`, which Finder hides.
+        if text.trimmingCharacters(in: .whitespaces).isEmpty {
+            sink.error(path, "the \(noun) is empty")
+            return false
+        }
         // A name is part of the name of a file as well (a Quick Action is a bundle called after its title, and a file system takes a name only so long): a long one fails far from where it was typed.
         if text.count > limit {
             sink.error(path, "the \(noun) is longer than \(limit) characters")

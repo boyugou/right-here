@@ -73,8 +73,10 @@ public enum ConfigSchema {
     /// A name or title shown to people: no line break or other control character (`ShellQuoting.containsControlCharacter`), and none of the characters that make it read as something else than it
     /// says (`ConfigBuilder.changesHowTextReads`: a direction override, embedding or isolate, a zero-width space, a word joiner, a byte order mark, a soft hyphen), nor the invisible operators, the
     /// deprecated format characters and the marks and letters that Unicode shows as nothing (U+034F, U+17B4, U+3164...), which `hasMisleadingCharacter` refuses. The Unicode tag characters,
-    /// which are past the plane that a pattern of every consumer of a JSON schema can name, are refused by the parser alone.
-    static let displayNamePattern = "^[^\\u0000-\\u001f\\u007f-\\u009f\\u00ad\\u034f\\u115f\\u1160\\u17b4\\u17b5\\u200b\\u2028\\u2029\\u202a-\\u202e\\u2060-\\u2064\\u2066-\\u206f\\u3164\\ufeff\\uffa0]*$"
+    /// which are past the plane that a pattern of every consumer of a JSON schema can name, are refused by the parser alone. And something to see: a name of only spaces is a row of nothing.
+    static let displayNamePattern = "^(?=.*\\S)" + optionalDisplayNamePattern.dropFirst()
+    /// The same, which may also be empty: an empty Copy Path title is the default one.
+    static let optionalDisplayNamePattern = "^[^\\u0000-\\u001f\\u007f-\\u009f\\u00ad\\u034f\\u115f\\u1160\\u17b4\\u17b5\\u200b\\u2028\\u2029\\u202a-\\u202e\\u2060-\\u2064\\u2066-\\u206f\\u3164\\ufeff\\uffa0]*$"
 
     /// The flag that switches an agent's permission prompts off, as a config gives it: words of letters, digits and `- _ = . : / @ + ,` separated by spaces. It is typed into the shell, so what a shell
     /// reads as more (`;`, `|`, `&`, `$`, quotes, brackets, a backtick) is not allowed in it.
@@ -130,7 +132,7 @@ public enum ConfigSchema {
             ]),
             SchemaNode("copy_path", .table, "The \"Copy Path\" submenu.", children: [
                 SchemaNode("title", .string, "Your own title for the Copy Path entry or submenu, on one line. If the menu lists the full path on its own, the title is on that entry. The default is \"Copy Path\" in the language of the menu (general.language, or the Mac's), which an empty title also gives.",
-                           example: "\"Copy Path\"", pattern: displayNamePattern),
+                           example: "\"Copy Path\"", pattern: optionalDisplayNamePattern),
                 SchemaNode("styles", .stringArray, "The forms that the menu offers, in order.",
                            default: "[\"absolute\", \"tilde\", \"git-relative\", \"name\", \"shell-escaped\", \"ai-mention\"]",
                            allowed: PathStyle.allCases.map(\.rawValue))

@@ -1014,15 +1014,24 @@ struct DisplayNameTests {
         #expect(result.config.preset(id: "evil") == nil)
     }
 
+    /// A name or a title of nothing, or of only spaces, is a row of nothing in the menu (and a new file named `.txt`, which Finder hides): an error, as an empty command is. Copy Path's
+    /// empty title is the default one and stays allowed.
+    @Test func anEmptyOrBlankNameIsAnError() {
+        for name in ["", "   ", "\u{3000}"] {
+            #expect(errors(ConfigParser.parse("[[app]]\nid = \"fine\"\nname = \"\(name)\"\nbundle_id = \"a.b\"\n")).map(\.path) == ["app.1.name"], "\(name.debugDescription)")
+            #expect(errors(ConfigParser.parse("[[preset]]\nid = \"p\"\ntitle = \"\(name)\"\nprompt = \"Look at {files}\"\n")).map(\.path) == ["preset.1.title"], "\(name.debugDescription)")
+        }
+    }
+
     @Test func ordinaryNamesInAnyScriptAreAccepted() {
         // Right-to-left marks are part of names in Arabic and Hebrew; they are not what this refuses.
-        for name in ["Tower", "Éditeur de texte", "日本語のエディタ", "محرر\u{200F} النصوص", "Name with  two spaces", "", "می\u{200C}خواهم", "👨\u{200D}👩\u{200D}👧", "Tower\u{200E}"] {
+        for name in ["Tower", "Éditeur de texte", "日本語のエディタ", "محرر\u{200F} النصوص", "Name with  two spaces", "می\u{200C}خواهم", "👨\u{200D}👩\u{200D}👧", "Tower\u{200E}"] {
             let result = ConfigParser.parse("[[app]]\nid = \"fine\"\nname = \"\(name)\"\nbundle_id = \"a.b\"\n")
             #expect(!result.hasErrors && result.config.apps.map(\.name) == [name], "\(name.debugDescription): \(result.diagnostics)")
         }
     }
 
-    @Test("the schema's pattern for a name and the parser's rule agree", arguments: ["Tower", "", "é", "a\n", "a\u{1b}", "a\u{85}", "a\u{9b}", "a\u{2028}", "a\u{2029}", "a\u{7f}", "a\u{200F}b", "a\tb", "a\u{202E}b", "a\u{2066}b", "a\u{200B}b", "a\u{2060}", "a\u{FEFF}", "a\u{AD}b", "a\u{200D}b", "a\u{200E}b", "a\u{2062}b", "a\u{206B}b", "a\u{34F}b", "R\u{17B4}eview", "\u{3164}", "a\u{FFA0}"])
+    @Test("the schema's pattern for a name and the parser's rule agree", arguments: ["Tower", "", "   ", "\u{3000}", " a ", "é", "a\n", "a\u{1b}", "a\u{85}", "a\u{9b}", "a\u{2028}", "a\u{2029}", "a\u{7f}", "a\u{200F}b", "a\tb", "a\u{202E}b", "a\u{2066}b", "a\u{200B}b", "a\u{2060}", "a\u{FEFF}", "a\u{AD}b", "a\u{200D}b", "a\u{200E}b", "a\u{2062}b", "a\u{206B}b", "a\u{34F}b", "R\u{17B4}eview", "\u{3164}", "a\u{FFA0}"])
     func theNamePatternMatchesTheParser(name: String) throws {
         let node = try #require(ConfigSchema.root.first { $0.key == "app" }?.child("name"))
         let regex = try NSRegularExpression(pattern: try #require(node.pattern))
