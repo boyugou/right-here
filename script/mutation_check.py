@@ -2624,6 +2624,8 @@ MUTANTS = [
      "let dotted = outline.valueRanges.filter { $0.key.hasPrefix(prefix) && !$0.value.isEmpty }.map { self.line(atOffset: $0.value.upperBound - 1) }.filter { $0 < (headerLines.first ?? lineCount + 1) }\n"),
     ("a dotted key under a header is written with the header's path again", "Sources/RightHereCore/Config/ConfigDocument+Layout.swift",
      'let under = headerLines.last { $0 < last }.flatMap(tablePath(ofHeader:)) ?? ""', 'let under = ""'),
+    ("an entry ends at its last key and leaves the setting commented out after it", "Sources/RightHereCore/Config/ConfigDocument+Entries.swift",
+     "            while last + 1 < next, !isBlank(last + 1), isBlankOrComment(last + 1) { last += 1 }\n            var end = last\n", "            var end = last\n"),
 ]
 
 

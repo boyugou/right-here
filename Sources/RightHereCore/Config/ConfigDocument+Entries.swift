@@ -192,6 +192,9 @@ extension ConfigDocument.Layout {
                 last = max(last, line)
                 if let range = outline.valueRanges[path], !range.isEmpty { last = max(last, self.line(atOffset: range.upperBound - 1)) }
             }
+            // And the comment lines right after its last key (a setting that is commented out, `# max_files = 3`), as a table that is taken out takes them (`removingTable`): left behind,
+            // such a line read as a setting of the entry above it, or of a new one put after it.
+            while last + 1 < next, !isBlank(last + 1), isBlankOrComment(last + 1) { last += 1 }
             var end = last
             while end + 1 < next, isBlank(end + 1) { end += 1 }
             slots.append(ConfigDocument.EntrySlot(first: attachedStart(of: header), last: last, end: end))

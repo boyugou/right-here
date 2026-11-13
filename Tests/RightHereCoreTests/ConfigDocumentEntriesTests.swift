@@ -5,6 +5,35 @@ import Testing
 /// Entries of an array of tables (`[[preset]]`, `[[app]]`, …) are added, removed and moved as whole blocks; the rest of the file stays where it is.
 @Suite("ConfigDocument: entries")
 struct ConfigDocumentEntriesTests {
+    /// `rh config move preset b --to first` (and the MCP tool's move) on presets where the first one ends with a setting the person commented out. The entries change places and "what stands
+    /// between them stays" (`movingEntry`), and an entry ends at its last key (`slots(of:)`), so `# max_files = 3`, which was `a`'s, now stands under `b`. A table taken out takes such a
+    /// line with it (`removingTable`); an entry neither takes it when it goes nor carries it when it moves.
+    @Test func movingAPresetKeepsEachEntrysCommentedOutSettingWithIt() throws {
+        let text = "[[preset]]\nid = \"a\"\ntitle = \"A\"\nprompt = \"Do {files}.\"\n# max_files = 3\n\n[[preset]]\nid = \"b\"\ntitle = \"B\"\nprompt = \"Read {files}.\"\n"
+        let document = ConfigDocument(text)
+        let operations = try ConfigRequest(.move, "preset", item: "b", to: "first").operations(in: document)
+        var edited = document
+        for operation in operations { edited = try operation.apply(to: edited) }
+        let moved = edited.text
+        let a = try #require(moved.range(of: "id = \"a\""))
+        let b = try #require(moved.range(of: "id = \"b\""))
+        let comment = try #require(moved.range(of: "# max_files = 3"))
+        #expect(b.lowerBound < a.lowerBound, "b is first: \(moved)")
+        #expect(comment.lowerBound > a.lowerBound, "a's commented-out setting now stands under b:\n\(moved)")
+    }
+
+    /// An entry ends with the comment lines right after its last key (a setting that is commented out), as a table does: taken out, it takes them; a new entry goes after them. A
+    /// comment that stands right above the next header is that entry's, and one after a blank line is nobody's (an independent review of the editors, 2026-11-13).
+    @Test func anEntrysCommentedOutSettingGoesWithItAndTheCommentAboveTheNextHeaderStaysWithThatOne() throws {
+        let a = "[[preset]]\nid = \"a\"\ntitle = \"A\"\nprompt = \"Do {files}.\"\n"
+        let b = "[[preset]]\nid = \"b\"\ntitle = \"B\"\nprompt = \"Read {files}.\"\n"
+        #expect(try ConfigDocument(a + "# max_files = 3\n\n" + b).removingEntry(at: 1, from: "preset").text == b)
+        #expect(try ConfigDocument(a + "# about b\n" + b).removingEntry(at: 1, from: "preset").text == "# about b\n" + b)
+        #expect(try ConfigDocument(a + "\n# a note\n\n" + b).removingEntry(at: 1, from: "preset").text == "# a note\n\n" + b)
+        let added = try ConfigDocument(a + "# max_files = 3\n").addingEntry(to: "preset", fields: [("id", .string("c")), ("title", .string("C")), ("prompt", .string("C {files}."))])
+        #expect(added.text == a + "# max_files = 3\n\n[[preset]]\nid = \"c\"\ntitle = \"C\"\nprompt = \"C {files}.\"\n")
+    }
+
     /// The check a first change of the built-in templates carries: the file defines no template, written in any form.
     @Test func aFileWithNoEntryOfAListIsToldFromOneWithEntriesInAnyForm() throws {
         let table = "new_file.template"

@@ -251,4 +251,33 @@ struct WindowEditorsReviewTests {
         let written = mac.config.agents["claude"]?.launcher == .terminal("terminal") && mac.shared.contains("claude.terminal = \"terminal\"")
         #expect(written || said.contains("dotted keys"), "neither written as a dotted key nor refused for what it is; the window said: \(said)\n\(mac.shared)")
     }
+
+    // MARK: An entry's commented-out setting goes with it
+
+    /// A preset of one's own whose last line is a setting the person commented out (`# max_files = 3`). Remove Preset takes the entry and leaves that line in the file, where it now reads
+    /// as a note of whatever is above it. Taking out an agent's table takes such a line with it (`removingTable`: "the comment lines right after that (a setting that is commented
+    /// out, `# args = ["--fast"]`)"); an entry of a list of tables does not (`slots(of:)` ends at the last key).
+    @Test func removingAPresetTakesItsCommentedOutSettingWithIt() async throws {
+        let before = Self.general + "\n[menu]\nitems = [\"open-terminal\", \"agents-more\"]\n"
+        let shared = before + "\n[[preset]]\nid = \"mine\"\ntitle = \"Mine\"\nprompt = \"Look at {files}.\"\n# max_files = 3\n"
+        let mac = try await EditedMac.started(shared: shared)
+        defer { mac.cleanUp() }
+        #expect(mac.model.preset("mine")?.origin == .own)
+        await mac.model.removePreset("mine")
+        #expect(mac.model.preset("mine") == nil)
+        #expect(!mac.shared.contains("max_files"), "the preset is gone and its commented-out setting is left behind:\n\(mac.shared)")
+    }
+
+    /// The same cause seen from New Preset…: the new entry goes right after the last key of the last preset, above that preset's `# max_files = 3`, which then reads as the new
+    /// preset's setting.
+    @Test func aNewPresetDoesNotTakeTheCommentedOutSettingOfThePresetAboveIt() async throws {
+        let shared = Self.general + "\n[[preset]]\nid = \"mine\"\ntitle = \"Mine\"\nprompt = \"Look at {files}.\"\n# max_files = 3\n\n[menu]\nitems = [\"open-terminal\", \"agents-more\"]\n"
+        let mac = try await EditedMac.started(shared: shared)
+        defer { mac.cleanUp() }
+        #expect(await mac.model.createPreset(title: "Second", prompt: "Read {files}."))
+        let text = mac.shared
+        let comment = try #require(text.range(of: "# max_files = 3"))
+        let second = try #require(text.range(of: "id = \"second\""))
+        #expect(comment.lowerBound < second.lowerBound, "the commented-out setting of \"mine\" now stands under the new preset:\n\(text)")
+    }
 }

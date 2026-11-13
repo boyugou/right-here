@@ -39,7 +39,8 @@
   longer writes the built-in templates beside a template that something else gave the file after the window read it.
   A start option or a template is no longer added below an agent or a `new_file` written as an inline table, which made
   a file that other TOML tools refuse; and an agent written with dotted keys under `[agent]` takes a new setting as one
-  more dotted key (it was refused with a sentence that blamed the person's file).
+  more dotted key (it was refused with a sentence that blamed the person's file). A setting commented out right after a
+  preset's or a template's last line goes with it when it is removed or moved, and a new entry is put after it.
 
 ## 1.2.25 (2026-11-13)
 
