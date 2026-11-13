@@ -2495,6 +2495,11 @@ MUTANTS = [
      'written: Set(loaded.result.usedOrigins(of: "preset").compactMap(\\.id)),', 'written: Set((loaded.result.entryOrigins["preset"] ?? []).compactMap(\\.id)),'),
     ("an agent the list names already is listed again when it is defined", "Sources/RightHereCore/Config/ConfigRequest.swift",
      "let listing: [ConfigOperation] = (listed ?? []).contains(id) ? [] : [.insert(id, into: listKey, at: nil)]", "let listing: [ConfigOperation] = [.insert(id, into: listKey, at: nil)]"),
+    ("a login shell of its own language is told to edit ~/.zshrc", "Sources/RightHereKit/SetupAdvice.swift",
+     'how = ["Add $HOME/.local/bin to the PATH in the startup file of \\(shell.withControlCharactersEscaped), your login shell.", "Then open a new terminal window."]',
+     'how = ["Add this line to ~/.zshrc: export PATH=\\"$HOME/.local/bin:$PATH\\"", "Then open a new terminal window."]'),
+    ("a POSIX login shell is not told about ~/.profile", "Sources/RightHereKit/SetupAdvice.swift",
+     'case "sh", "dash", "ksh", "mksh", "oksh":', 'case "no-such-shell":'),
 ]
 
 

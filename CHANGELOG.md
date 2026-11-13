@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **The PATH line setup gives fits more login shells.** ksh and sh get `~/.profile`, tcsh and csh their `set path` line,
+  and nushell, elvish, xonsh or PowerShell a sentence instead of a zsh line they would not read.
+- **The README and the website, after a newcomer's read.** Warp and cmux are among the terminals; where `rh` is before
+  setup; what to do when the menu is missing; how to uninstall; `--allow-commands` takes the digest; Warp cannot start
+  agents; the setup window has a button for the extension's page.
+
 ## 1.2.23 (2026-11-12)
 
 - **An agent that the list names already is defined without being listed twice.** A config copied from another Mac can

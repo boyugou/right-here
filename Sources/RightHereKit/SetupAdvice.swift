@@ -65,8 +65,15 @@ enum SetupAdvice {
             how = ["Run this once in a fish prompt: fish_add_path $HOME/.local/bin", "Then open a new terminal window."]
         case "bash":
             how = ["Add this line to ~/.bash_profile: export PATH=\"$HOME/.local/bin:$PATH\"", "Then open a new terminal window."]
-        default:
+        case "zsh":
             how = ["Add this line to ~/.zshrc: export PATH=\"$HOME/.local/bin:$PATH\"", "Then open a new terminal window."]
+        case "sh", "dash", "ksh", "mksh", "oksh":
+            how = ["Add this line to ~/.profile: export PATH=\"$HOME/.local/bin:$PATH\"", "Then open a new terminal window."]
+        case "tcsh", "csh":
+            how = ["Add this line to ~/.\(shell)rc: set path = ($HOME/.local/bin $path)", "Then open a new terminal window."]
+        default:
+            // Each of the other shells (nushell, elvish, xonsh, PowerShell) sets its PATH in a language of its own: a zsh line would be wrong there, and is not given.
+            how = ["Add $HOME/.local/bin to the PATH in the startup file of \(shell.withControlCharactersEscaped), your login shell.", "Then open a new terminal window."]
         }
         return SetupNeed(.path, text: "`rh` is linked in ~/.local/bin, which is not on the PATH of a new terminal window, so typing `rh` there finds nothing.",
                          how: how + ["Right Here does not edit your shell's startup files."])

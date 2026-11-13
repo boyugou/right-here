@@ -947,5 +947,11 @@ struct SetupRunnerTests {
         #expect(SetupAdvice.pathNeed(localBin: home, loginShell: "/bin/zsh").how.first?.hasPrefix("Add this line to ~/.zshrc:") == true)
         #expect(SetupAdvice.pathNeed(localBin: home, loginShell: "/bin/bash").how.first?.hasPrefix("Add this line to ~/.bash_profile:") == true)
         #expect(SetupAdvice.pathNeed(localBin: home, loginShell: "/opt/homebrew/bin/fish").how.first == "Run this once in a fish prompt: fish_add_path $HOME/.local/bin")
+        #expect(SetupAdvice.pathNeed(localBin: home, loginShell: "/bin/ksh").how.first == "Add this line to ~/.profile: export PATH=\"$HOME/.local/bin:$PATH\"")
+        #expect(SetupAdvice.pathNeed(localBin: home, loginShell: "/bin/tcsh").how.first == "Add this line to ~/.tcshrc: set path = ($HOME/.local/bin $path)")
+        #expect(SetupAdvice.pathNeed(localBin: home, loginShell: "/bin/csh").how.first == "Add this line to ~/.cshrc: set path = ($HOME/.local/bin $path)")
+        // A shell that sets its PATH in a language of its own is not told to edit ~/.zshrc.
+        let nushell = SetupAdvice.pathNeed(localBin: home, loginShell: "/opt/homebrew/bin/nu").how
+        #expect(nushell.first == "Add $HOME/.local/bin to the PATH in the startup file of nu, your login shell." && !nushell.joined().contains("zshrc"), "\(nushell)")
     }
 }
