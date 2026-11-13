@@ -20,7 +20,8 @@
 - **New File and Copy Path, after an independent review.** A Markdown link to a name with a colon before its first
   slash (Finder's `Q1/Q2.md` is `Q1:Q2.md` on disk) read as a link of another scheme; it now starts with `./`. New File
   stored its name decomposed (`무제.txt` as separate jamo, `sin título.txt` with a combining accent), which falls apart
-  off the Mac; it is stored precomposed, as typed text is.
+  off the Mac; it is stored precomposed, as typed text is. Two New File runs at once (two clicks, or a Quick Action and
+  a Shortcut) chose the same name and the second failed with "already exists"; it takes the next name now.
 
 ## 1.2.25 (2026-11-13)
 

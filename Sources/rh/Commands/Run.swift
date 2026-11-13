@@ -108,14 +108,16 @@ struct Run: AsyncParsableCommand {
             try await runInWorktree(ref, config: config, here: here, localizer: localizer, runtime: runtime)
             return
         }
+        let planner: Planner
         let plan: LaunchPlan
         do {
             let repositories = try await RepositoryReader.read(for: ref, context: here, facts: runtime.facts)
-            plan = try Planner(config: config, facts: runtime.facts, localizer: localizer, repositories: repositories).plan(ref, context: here)
+            planner = Planner(config: config, facts: runtime.facts, localizer: localizer, repositories: repositories)
+            plan = try planner.plan(ref, context: here)
         } catch {
             try await fail(error)
         }
-        try await present(plan, ref: ref, config: config, here: here, runtime: runtime)
+        try await present(plan, replanning: { try planner.plan(ref, context: here) }, ref: ref, config: config, here: here, runtime: runtime)
     }
 
     /// `--worktree`: the action runs in a git worktree of the repository, on a new branch (or the one `--branch` names), in the same
@@ -159,7 +161,7 @@ struct Run: AsyncParsableCommand {
             // Notes go to standard error so that `--json` stays one document on standard output.
             let branchWord = branch == nil ? "a new branch (--branch names one)" : "branch '\(name.withControlCharactersEscaped)'"
             Output.error("note: --worktree would create the worktree at \(worktreeURL.path.withControlCharactersEscaped) on \(branchWord)")
-            try await present(preview, ref: ref, config: config, here: here, runtime: runtime)
+            try await present(preview, replanning: { preview }, ref: ref, config: config, here: here, runtime: runtime)
             return
         }
 
@@ -170,19 +172,21 @@ struct Run: AsyncParsableCommand {
             try await fail(error)
         }
         Output.error("note: isolated worktree ready on branch '\(made.branch.withControlCharactersEscaped)' at \(made.worktreeURL.path.withControlCharactersEscaped)")
+        let planner = Planner(config: config, facts: runtime.facts, localizer: localizer)
         let plan: LaunchPlan
         do {
-            plan = try Planner(config: config, facts: runtime.facts, localizer: localizer).plan(ref, context: inWorktree)
+            plan = try planner.plan(ref, context: inWorktree)
         } catch {
             await discard(made, root: root)
             try await fail(error)
         }
-        try await present(plan, ref: ref, config: config, here: here, runtime: runtime, madeWorktree: (made, root))
+        try await present(plan, replanning: { try planner.plan(ref, context: inWorktree) }, ref: ref, config: config, here: here, runtime: runtime, madeWorktree: (made, root))
     }
 
-    /// A dry run prints the plan, and a real run executes it. A failure is logged, and a worktree this run made for it is removed again when
-    /// nothing in it changed.
-    private func present(_ plan: LaunchPlan, ref: ActionRef, config: Config, here: HereContext, runtime: Runtime, madeWorktree: (WorktreeResult, URL)? = nil) async throws {
+    /// A dry run prints the plan, and a real run executes it (New File plans it again when another run took its name meanwhile). A failure is
+    /// logged, and a worktree this run made for it is removed again when nothing in it changed.
+    private func present(_ plan: LaunchPlan, replanning replan: () throws -> LaunchPlan, ref: ActionRef, config: Config, here: HereContext, runtime: Runtime,
+                         madeWorktree: (WorktreeResult, URL)? = nil) async throws {
         if dryRun {
             var shown = plan
             if let note = await commandNote(for: ref, config: config, facts: runtime.facts) { shown.notices.append(note) }
@@ -191,16 +195,16 @@ struct Run: AsyncParsableCommand {
         }
         do {
             let executor = timeLimit.map { LiveExecutor(runner: TimeLimitedRunner(base: LiveProcessRunner(), limit: .seconds($0))) } ?? LiveExecutor()
-            let report = try await executor.execute(plan)
+            let (ran, report) = try await executor.execute(plan, replanning: replan)
             RunLog.record(RunLog.Entry(actionID: action, origin: here.origin, itemCount: here.items.count))
             if let dir = here.workingDirectory(facts: runtime.facts) {
                 // A recent folder is not worth a click that waits: when another program holds the state for longer than this, it is not recorded.
                 try? StateStore.update(paths: runtime.paths, timeout: .milliseconds(500)) { $0.recordRecent(dir.path) }
             }
             if json {
-                try Output.json(RunResult(ok: true, plan: plan, report: report))
+                try Output.json(RunResult(ok: true, plan: ran, report: report))
             } else {
-                Output.print("ok: " + plan.summary)
+                Output.print("ok: " + ran.summary)
             }
         } catch {
             // A step that ran out of time may have handed the command to the terminal before it was stopped: an agent may be starting in the worktree, and it is not removed under it.

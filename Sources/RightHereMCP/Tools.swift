@@ -270,7 +270,8 @@ enum Tools {
         }
         let here = try context(from: arguments, facts: server.facts)
         let repositories = try await RepositoryReader.read(for: ref, context: here, facts: server.facts, runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit))
-        let plan = try Planner(config: loaded.config, facts: server.facts, repositories: repositories).plan(ref, context: here)
+        let planner = Planner(config: loaded.config, facts: server.facts, repositories: repositories)
+        let plan = try planner.plan(ref, context: here)
         let planJSON = try JSONValue(encoding: plan)
         if arguments["dry_run"]?.boolValue == true {
             // The plan names the files and folders of the request and the apps of the config: data, in the text; the structured plan holds them as they are.
@@ -287,8 +288,10 @@ enum Tools {
                 throw overBudget("Ask the person before opening more.")
             }
         }
-        try await LiveExecutor(runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), pasteboard: server.pasteboard).execute(plan)
-        return ToolOutput(text: "Done: " + Fence.wrap(plan.summary), structured: .object(["ran": .bool(true), "plan": planJSON]))
+        // A New File plan made again (another run took its name meanwhile) costs what it did: the same steps, under another name.
+        let (ran, _) = try await LiveExecutor(runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), pasteboard: server.pasteboard)
+            .execute(plan, replanning: { try planner.plan(ref, context: here) })
+        return ToolOutput(text: "Done: " + Fence.wrap(ran.summary), structured: .object(["ran": .bool(true), "plan": try JSONValue(encoding: ran)]))
     }
 
     private static func actions(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {

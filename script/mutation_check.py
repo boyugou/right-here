@@ -2545,6 +2545,15 @@ MUTANTS = [
      'let path = (directory.path.hasSuffix("/") ? directory.path : directory.path + "/") + name', 'let path = directory.path + "/" + name'),
     ("a config's decomposed base_name gives a decomposed file name", "Sources/RightHereCore/NewFile/NewFile.swift",
      "let name = (stem + suffix).precomposedStringWithCanonicalMapping", "let name = stem + suffix"),
+    ("a New File run through MCP whose name another run took meanwhile fails instead of taking the next", "Sources/RightHereMCP/Tools.swift",
+     ".execute(plan, replanning: { try planner.plan(ref, context: here) })", ".execute(plan, replanning: { plan })"),
+    ("a New File plan is made again for ever while other runs keep taking its names", "Sources/RightHereKit/PlanExecutor.swift",
+     "guard attempts < Self.newFileAttempts, case .createFile", "guard case .createFile"),
+    ("a New File plan made again for the same file is tried again", "Sources/RightHereKit/PlanExecutor.swift",
+     "guard case .createFile(let nextFile)? = next.steps.first, nextFile.path != path else", "guard case .createFile(let nextFile)? = next.steps.first else"),
+    ("a file in the way of a later step makes the plan run again after earlier steps ran", "Sources/RightHereKit/PlanExecutor.swift",
+     "case .createFile(let file)? = plan.steps.first, file.path == path else { throw ExecutionError.fileExists(path: path) }",
+     "true else { throw ExecutionError.fileExists(path: path) }"),
 ]
 
 

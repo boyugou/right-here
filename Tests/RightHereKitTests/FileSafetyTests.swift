@@ -376,3 +376,69 @@ struct ExtensionRestoreTests {
         #expect(await SetupActions(facts: FakeSystemFacts(), runner: FakeProcessRunner(), helperPath: "/x/rh", app: nil).restoreExtensionRegistration() == nil)
     }
 }
+
+/// Two New File runs that plan at the same moment (two clicks, a Quick Action and a Shortcut) both chose `untitled.md`. The exclusive create kept the first file
+/// safe, but the second run failed with "untitled.md already exists." (an independent review, 2026-11-13). It plans again and takes the next name.
+@Suite("New File when another run takes its name")
+struct NewFileReplanTests {
+    private let executor = LiveExecutor(runner: FakeProcessRunner(), pasteboard: RecordingPasteboard())
+
+    private static func createFile(_ path: String) -> LaunchPlan {
+        LaunchPlan(action: "new-file.txt", summary: "Create " + (path as NSString).lastPathComponent, steps: [.createFile(CreateFileStep(path: path, contents: "new"))])
+    }
+
+    @Test func aSecondNewFilePlannedAtTheSameTimeTakesTheNextName() async throws {
+        let folder = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let planner = Planner(facts: LiveSystemFacts())
+        let context = HereContext(origin: .container, container: folder)
+        let first = try planner.plan(.newFile("md"), context: context)
+        let second = try planner.plan(.newFile("md"), context: context)
+        try await executor.execute(first)
+        let (ran, _) = try await executor.execute(second, replanning: { try planner.plan(.newFile("md"), context: context) })
+        #expect(Set(try FileManager.default.contentsOfDirectory(atPath: folder.path)) == ["untitled.md", "untitled 2.md"])
+        // What the run reports, and the Finder window it opens, are of the file it made.
+        #expect(ran.summary == "Create untitled 2.md")
+        #expect(ran.steps.last == .reveal([folder.path + "/untitled 2.md"]))
+    }
+
+    /// A plan made again that names the same file (the folder does not show the file that is in the way) fails at once, as it did, and is not tried again.
+    @Test func aPlanMadeAgainForTheSameFileFailsAsItDid() async throws {
+        let folder = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let taken = folder.path + "/untitled.txt"
+        try "theirs".write(toFile: taken, atomically: false, encoding: .utf8)
+        var plans = 0
+        await #expect(throws: ExecutionError.fileExists(path: taken)) {
+            try await executor.execute(Self.createFile(taken), replanning: { plans += 1; return Self.createFile(taken) })
+        }
+        #expect(plans == 1)
+        #expect(try String(contentsOfFile: taken, encoding: .utf8) == "theirs")
+    }
+
+    /// Runs that keep taking each next name are not followed for ever.
+    @Test func aNameThatIsTakenEveryTimeStopsAfterAFewPlans() async throws {
+        let folder = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        for number in 1...10 { try "theirs".write(toFile: folder.path + "/n\(number).txt", atomically: false, encoding: .utf8) }
+        var plans = 1
+        await #expect(throws: ExecutionError.self) {
+            try await executor.execute(Self.createFile(folder.path + "/n1.txt"), replanning: { plans += 1; return Self.createFile(folder.path + "/n\(plans).txt") })
+        }
+        #expect(plans == LiveExecutor.newFileAttempts)
+    }
+
+    /// Only a file that is the plan's first step is planned again: then nothing has run. A file met by a later step fails the run as it did.
+    @Test func aFileInTheWayOfALaterStepIsNotPlannedAgain() async throws {
+        let folder = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let taken = folder.path + "/untitled.txt"
+        try "theirs".write(toFile: taken, atomically: false, encoding: .utf8)
+        let plan = LaunchPlan(action: "x", summary: "x", steps: [.pause(milliseconds: 0), .createFile(CreateFileStep(path: taken))])
+        var plans = 0
+        await #expect(throws: ExecutionError.fileExists(path: taken)) {
+            try await executor.execute(plan, replanning: { plans += 1; return Self.createFile(folder.path + "/other.txt") })
+        }
+        #expect(plans == 0)
+    }
+}

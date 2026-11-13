@@ -89,6 +89,29 @@ public struct LiveExecutor: Sendable {
         return ExecutionReport(steps: reports)
     }
 
+    /// How many plans New File makes in all when another run keeps taking the name it chose.
+    static let newFileAttempts = 5
+
+    /// Runs `plan`, and plans it again when another run took the name of the file it makes after it was planned (two clicks of New File, or a
+    /// Quick Action and a Shortcut, at once): the new plan takes the next free name. Nothing has run then, since that file is the plan's first
+    /// step; any other step that meets a file in its way fails as it did. A plan made again that names the same file fails too, rather than
+    /// trying it once more. Returns the plan that ran, whose file is the one that was made.
+    public func execute(_ plan: LaunchPlan, replanning replan: () throws -> LaunchPlan) async throws -> (plan: LaunchPlan, report: ExecutionReport) {
+        var plan = plan
+        var attempts = 1
+        while true {
+            do {
+                return (plan, try await execute(plan))
+            } catch ExecutionError.fileExists(let path) {
+                guard attempts < Self.newFileAttempts, case .createFile(let file)? = plan.steps.first, file.path == path else { throw ExecutionError.fileExists(path: path) }
+                let next = try replan()
+                guard case .createFile(let nextFile)? = next.steps.first, nextFile.path != path else { throw ExecutionError.fileExists(path: path) }
+                plan = next
+                attempts += 1
+            }
+        }
+    }
+
     /// Where `open` runs. Its man page says it takes a URL that also matches a file path for that file (`-u` says otherwise), and
     /// `warp://action/…` read as a path is `warp:/action/…` under the working directory, which a cloned repository can hold: `rh` run in
     /// it would hand the terminal that file. In `/` no such folder can be made without an administrator.
