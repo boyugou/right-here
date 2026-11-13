@@ -2663,6 +2663,12 @@ MUTANTS = [
      "guard !context.items.isEmpty || context.container != nil || context.origin == .cli else {", "guard true else {"),
     ("a package in the sidebar is a folder to make files in", "Sources/RightHereCore/Context/HereContext.swift",
      "            if origin == .sidebar, facts.isPackage(folder) { return Self.directory(from: folder.deletingLastPathComponent(), facts: facts) }\n", ""),
+    ("two presets may share a title", "Sources/RightHereCore/Config/ConfigBuilder+Presets.swift",
+     "if titles(of: preset).contains(where: { (taken[$0] ?? 0) > 0 }) {", "if false {"),
+    ("a preset may take a built-in preset's title in another language", "Sources/RightHereCore/Config/ConfigBuilder+Presets.swift",
+     "Set([preset.title.comparableName] + (preset.titleKey.map { key in Self.translations(of: key) } ?? []))", "Set([preset.title.comparableName])"),
+    ("two templates may share a title", "Sources/RightHereCore/Config/ConfigBuilder+NewFile.swift",
+     "guard titles.insert(read.title.comparableName).inserted else {", "guard true else {"),
 ]
 
 

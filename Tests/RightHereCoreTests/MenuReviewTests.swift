@@ -93,4 +93,28 @@ struct MenuReviewTests {
         // Every action starts in the folder around it, as for a selected package: a terminal opens /Applications, not the inside of the app.
         #expect(sidebar.workingDirectory(facts: facts)?.path == "/Applications")
     }
+
+    /// A config adds a preset of its own, under another id, with the title of a built-in one: "Review", or on a German Mac "Überprüfen",
+    /// which is what the built-in Review is called there. The parser accepts it (ConfigBuilder+Presets.swift:26-75 holds the id to be
+    /// unique, not the title), and the Agent Presets submenu has two lines "Review" that type two different prompts into the agent, with
+    /// nothing to tell them apart. Two templates of one title do the same in New File. Apps, agents and an agent's start options are each
+    /// held to a title of their own ("the menu tells them apart by their titles"), a start option even against every translation of a
+    /// built-in title (ConfigBuilder+Agents.swift:98-112, 165-171); presets and templates are not.
+    @Test func twoPresetsOrTwoTemplatesNeverShareATitleInOneSubmenu() throws {
+        let file = "\(code)/a.swift"
+        let facts = reviewMachine(files: [file])
+        let oneFile = HereContext(origin: .items, items: [URL(fileURLWithPath: file)])
+        for (language, title) in [("en", "Review"), ("de", "Überprüfen")] {
+            let toml = "[general]\nagents = [\"claude\"]\n[[preset]]\nid = \"fix\"\ntitle = \"\(title)\"\nprompt = \"Fix the bugs in {files}.\"\n"
+            let config = ConfigParser.parse(toml).config
+            let menu = MenuBuilder(config: config, facts: facts, localizer: Localizer(languages: [language])).build(for: oneFile)
+            let presets = try #require(submenu(holding: "preset.review", in: menu))
+            #expect(titlesShownTwice(presets.children).isEmpty,
+                    "\(language): the presets submenu shows \(presets.children.map { "\($0.title) (\($0.actionID ?? ""))" })")
+        }
+        let templates = "[[new_file.template]]\nid = \"note\"\ntitle = \"Note\"\nextension = \"md\"\n[[new_file.template]]\nid = \"plain\"\ntitle = \"Note\"\nextension = \"txt\"\n"
+        let newFile = everyNode(MenuBuilder(config: ConfigParser.parse(templates).config, facts: facts).build(for: folderBackground))
+            .filter { $0.actionID?.hasPrefix("new-file.") == true }
+        #expect(titlesShownTwice(newFile).isEmpty, "New File shows \(newFile.map { "\($0.title) (\($0.actionID ?? ""))" })")
+    }
 }

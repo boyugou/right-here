@@ -4,14 +4,41 @@ import Foundation
 extension ConfigBuilder {
     func readPresets(_ root: ConfigReader, into config: inout Config) {
         let known = config
+        var paths: [String: [String]] = [:]
         let declared = readUnique(root.tableArray("preset"), kind: "preset", id: \.id, read: { reader in
             preset(reader, config: known)
-        }, accepted: { _, reader in sink.usedEntries.insert(reader.path.joined(separator: ".")) })
+        }, accepted: { preset, reader in
+            sink.usedEntries.insert(reader.path.joined(separator: "."))
+            paths[preset.id] = reader.path
+        })
+        // The title is what the Agent Presets submenu shows, and what a person tells presets apart by: two of one title would type one prompt or the other without a sign. A built-in
+        // preset is shown in the menu's language, so a title of one's own is compared with all of its translations; one that is taken is an error, and the preset it would replace stays.
         var presets = AgentPreset.builtIn
+        var taken: [String: Int] = [:]
+        func titles(of preset: AgentPreset) -> Set<String> {
+            Set([preset.title.comparableName] + (preset.titleKey.map { key in Self.translations(of: key) } ?? []))
+        }
+        func count(_ preset: AgentPreset, _ step: Int) { for title in titles(of: preset) { taken[title, default: 0] += step } }
+        presets.forEach { count($0, 1) }
         for preset in declared {
-            if let index = presets.firstIndex(where: { $0.id == preset.id }) { presets[index] = preset } else { presets.append(preset) }
+            let replaced = presets.firstIndex(where: { $0.id == preset.id })
+            if let replaced { count(presets[replaced], -1) }
+            if titles(of: preset).contains(where: { (taken[$0] ?? 0) > 0 }) {
+                if let replaced { count(presets[replaced], 1) }
+                let path = paths[preset.id] ?? ["preset"]
+                sink.error(path + ["title"], "another preset is already called \"\(preset.title)\"; the menu tells presets apart by their titles, so give each its own")
+                sink.usedEntries.remove(path.joined(separator: "."))
+                continue
+            }
+            count(preset, 1)
+            if let replaced { presets[replaced] = preset } else { presets.append(preset) }
         }
         config.presets = presets
+    }
+
+    /// A built-in title in every language the menu may be shown in, as names are compared.
+    static func translations(of key: LocalizationKey) -> [String] {
+        Localizer.supportedLanguages.map { Localizer(languages: [$0]).string(key).comparableName }
     }
 
     /// Whether `menu.items` lists this preset by its id (`preset.<id>`, or with a terminal): the menu then offers it whether or

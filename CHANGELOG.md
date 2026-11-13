@@ -56,7 +56,9 @@
 
 - **The Finder menu, after an independent review.** A right-click that names nothing of this Mac (a server in the
   sidebar) gets no menu: it got the whole folder menu, and `rh` refused every entry for want of a folder. An app or a
-  package document in the sidebar is one item, as a selected one is: New File made its file inside the app.
+  package document in the sidebar is one item, as a selected one is: New File made its file inside the app. Two presets
+  (a built-in one's title in any language included) or two templates of one title are an error, as two agents or two
+  start options of one name are: the submenu showed two lines that did different things.
 
 ## 1.2.25 (2026-11-13)
 

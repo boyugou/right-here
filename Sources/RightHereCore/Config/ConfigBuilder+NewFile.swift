@@ -8,7 +8,17 @@ extension ConfigBuilder {
         if let then = newFile.checkAllowed(newFile.string("then"), key: "then", allowed: Config.AfterNewFile.allCases.map(\.rawValue)) {
             config.newFile.then = Config.AfterNewFile(rawValue: then) ?? .reveal
         }
-        let templates = readUnique(newFile.tableArray("template"), kind: "template", id: \.id, read: template) { template, reader in
+        // The title is what New File shows: two templates of one title would make one kind of file or the other without a sign. The config's templates replace the built-in ones, so
+        // they are only compared with each other.
+        var titles = Set<String>()
+        let templates = readUnique(newFile.tableArray("template"), kind: "template", id: \.id, read: { (reader: ConfigReader) -> NewFileTemplate? in
+            guard let read = template(reader) else { return nil }
+            guard titles.insert(read.title.comparableName).inserted else {
+                sink.error(reader.path + ["title"], "another template is already called \"\(read.title)\"; New File tells templates apart by their titles, so give each its own")
+                return nil
+            }
+            return read
+        }) { template, reader in
             sink.usedEntries.insert(reader.path.joined(separator: "."))
             sink.templatePaths[template.id] = reader.path
         }

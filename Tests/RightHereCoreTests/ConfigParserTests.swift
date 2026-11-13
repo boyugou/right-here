@@ -1023,6 +1023,21 @@ struct DisplayNameTests {
         }
     }
 
+    /// A preset's title is what the submenu tells presets apart by: one of a built-in preset's titles in any language, or another preset's, is an error, and the preset is left out.
+    /// One that would replace a built-in preset leaves the built-in one there. Two templates of one title the same (an independent review of the menu, 2026-11-13).
+    @Test func aPresetOrATemplateWhoseTitleIsTakenIsAnError() {
+        let german = ConfigParser.parse("[[preset]]\nid = \"fix\"\ntitle = \"\u{00DC}berpr\u{00FC}fen\"\nprompt = \"Fix {files}.\"\n")
+        #expect(errors(german).map(\.path) == ["preset.1.title"] && german.config.preset(id: "fix") == nil, "\(german.diagnostics)")
+        let replacing = ConfigParser.parse("[[preset]]\nid = \"explain\"\ntitle = \"Review\"\nprompt = \"Explain {files}.\"\n")
+        #expect(errors(replacing).map(\.path) == ["preset.1.title"])
+        #expect(replacing.config.preset(id: "explain")?.titleKey == .presetExplain, "the built-in Explain stays")
+        let own = ConfigParser.parse("[[preset]]\nid = \"a\"\ntitle = \"Mine\"\nprompt = \"A {files}.\"\n[[preset]]\nid = \"b\"\ntitle = \"mine\"\nprompt = \"B {files}.\"\n")
+        #expect(errors(own).map(\.path) == ["preset.2.title"] && own.config.preset(id: "a") != nil && own.config.preset(id: "b") == nil)
+        #expect(errors(ConfigParser.parse("[[preset]]\nid = \"review\"\ntitle = \"Review\"\nprompt = \"Mine {files}.\"\n")).isEmpty, "a preset that replaces Review may keep its title")
+        let templates = ConfigParser.parse("[[new_file.template]]\nid = \"a\"\ntitle = \"Note\"\nextension = \"md\"\n[[new_file.template]]\nid = \"b\"\ntitle = \"Note\"\nextension = \"txt\"\n")
+        #expect(errors(templates).map(\.path) == ["new_file.template.2.title"] && templates.config.newFile.templates.map(\.id) == ["a"])
+    }
+
     @Test func ordinaryNamesInAnyScriptAreAccepted() {
         // Right-to-left marks are part of names in Arabic and Hebrew; they are not what this refuses.
         for name in ["Tower", "Éditeur de texte", "日本語のエディタ", "محرر\u{200F} النصوص", "Name with  two spaces", "می\u{200C}خواهم", "👨\u{200D}👩\u{200D}👧", "Tower\u{200E}"] {
