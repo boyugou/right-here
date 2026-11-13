@@ -20,6 +20,12 @@ if command -v xcodegen >/dev/null && [[ "$have_xcode" == 1 ]]; then
     ./script/build_app.sh >/dev/null
     # CI builds with the oldest supported Xcode; build with it here too when it is installed.
     ./script/build_floor.sh
+    # The pictures of a release (README, website) are rendered by this harness, which links the window's views and the catalog's
+    # sentences: a sentence taken out of the catalog broke it after the gate had passed. One page, rendered off screen.
+    picture="$(mktemp -d)/check.png"
+    ./script/preview_setup.sh "$picture" en --demo >/dev/null
+    rm -rf "$(dirname "$picture")"
+    echo "ok: the harness that renders the release pictures builds and renders"
 else
     echo "note: xcodegen or a full Xcode (not only the Command Line Tools) is missing, so the app and extension were not built" >&2
 fi

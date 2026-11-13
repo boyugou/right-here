@@ -457,7 +457,7 @@ func demoChecks() -> [DoctorCheck] {
         DoctorCheck(.services, status: .ok, detail: .doctorServicesOk("7")),
         DoctorCheck(.cliLink, status: .ok, detail: .doctorVerbatim("~/.local/bin/rh")),
         DoctorCheck(.finderExtension, status: .ok, detail: .doctorExtensionEnabled("\(appContents)/PlugIns/FinderExtension.appex")),
-        DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityRecent("agent.claude", "container", ago(300)))
+        DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityContainer("agent.claude", ago(300)))
     ]
     requireNothingOfThisMac(checks.flatMap { $0.englishLines() })
     return checks
@@ -612,7 +612,7 @@ func gallery() -> [DoctorCheck] {
         // Ok, so that the window shows the list of checks and not the first-run card (a row that is not ok would show the card).
         DoctorCheck(.finderExtension, status: .ok, detail: .doctorExtensionEnabled("\(appContents)/PlugIns/FinderExtension.appex")),
         DoctorCheck(.appCopies, status: .warn, detail: .doctorAppCopies("2", "0.3.7 (/Applications), 0.3.2 (~/Applications)"), fix: .doctorFixAppCopies("/Applications/Right Here.app")),
-        DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityRecent("agent.claude", "container", ago(300))),
+        DoctorCheck(.finderActivity, status: .ok, detail: .doctorActivityContainer("agent.claude", ago(300))),
         DoctorCheck(.syncFolder, status: .warn, detail: .doctorSyncFolderUnreachable(folder), fix: .doctorFixSyncFolder),
         DoctorCheck(.syncRemote, status: .warn, detail: .doctorSyncRemoteEvicted, fix: .doctorFixSyncDownload),
         DoctorCheck(.syncCommands, status: .warn, detail: .doctorSyncCommandsPending("5", changes), notes: [.doctorSyncCommandsMore("2")], fix: .doctorFixSyncCommands),

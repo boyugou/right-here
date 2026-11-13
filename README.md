@@ -178,9 +178,11 @@ To let an assistant set Right Here up, give it [`docs/AGENT_SETUP.md`](docs/AGEN
 
 ## Safety
 
-- **File names are data.** Right Here passes paths to apps as arguments, never as shell text. Where a folder must be typed into a shell, one tested function quotes it.
+- **File names are data.** Right Here passes paths to apps as arguments, never as shell text. Where a name must be typed into a shell, one tested function writes it so that zsh, bash, fish, tcsh, nushell and PowerShell all read it as it is.
 - **A terminal only gets folders.** A terminal runs a file that it gets, so Right Here never gives it one.
 - **Agents keep their permission prompts** unless you switch them off. A preset always keeps them.
+- **You approve what starts.** An AI assistant proposes a change of what a click starts; it does not make it. A config from a sync folder that would start something new is pulled only with your yes to the list it shows.
+- **Your own Quick Actions stay yours.** Right Here never replaces or removes a Quick Action it did not write.
 - **No telemetry.** Right Here makes no network connections of its own.
 
 [`docs/DESIGN.md`](docs/DESIGN.md) (section 9) has the full list. [`SECURITY.md`](SECURITY.md) says how to report a problem.
