@@ -109,9 +109,12 @@ rewrites a file the person edits by hand loses their comments and order. This di
 ## As built, stage 1 (2026-10-16)
 
 - **The editing core** is `ConfigDocument` (pure): set, unset, insert, remove and move an element of a list, add, remove and move an entry of a list of tables. It edits the bytes it was asked to
-  and no others (a comment above an element or an entry travels with it), refuses a text that already has an error, an unknown key, a value of the wrong kind and any change after which the
-  config has an error, and is held to that by a seeded random-edit test that checks the file against a model after each of 80 edits (the layout too: a list written on one line stays on
-  one line). The per-machine overlay is edited with the same core, read as laid over the shared file (`ConfigDocument.Validation.overlay`).
+  and no others (a comment above an element or an entry travels with it), refuses a text that is not TOML, an unknown key, a value of the wrong kind and any change after which the
+  config has an error it did not have, and is held to that by a seeded random-edit test that checks the file against a model after each of 80 edits (the layout too: a list written on one line stays on
+  one line). Until 2026-11-12 it refused any text with an error; then an AI agent setting up a config copied from a team's repository, which had a name too long in one entry, could not add
+  Codex with `rh config set` and edited the file by hand. An error that was there is the person's to fix and no reason to refuse a change elsewhere; it is the same error when it says the
+  same of the same setting, on whatever line the change moves it to. A change that puts right an entry the config refused is a new agent, app or preset to `ConfigTrust`, and waits for the
+  person as one would. The window's editors still wait for a config without errors: they are built from what the config makes of the file, which leaves a refused entry out. The per-machine overlay is edited with the same core, read as laid over the shared file (`ConfigDocument.Validation.overlay`).
 - **One vocabulary:** a `ConfigRequest` (a verb, a setting, values or an item named by its text or its id) becomes `ConfigOperation`s against the file as it is now; `rh config` and the MCP tool
   both build one, and the window will build `ConfigOperation`s directly, since a drag knows the places.
 - **`ConfigService`** (Kit) applies operations under a lock (`.config.lock`) against the file as it is at that moment, writes atomically through a link when the config is one, and keeps the text

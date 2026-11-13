@@ -2541,6 +2541,22 @@ struct ConfigEditCLITests {
         }
     }
 
+    @Test func anErrorElsewhereInTheFileDoesNotStopAChangeAndAChangeThatBringsOneIsRefused() throws {
+        // A config copied from a team's repository with a name too long in one entry: an AI agent asked to add Codex had to edit the file by hand.
+        let long = String(repeating: "x", count: 130)
+        let copied = Self.sample + "\n[[app]]\nid = \"team-term\"\nname = \"\(long)\"\nbundle_id = \"com.example.term\"\n"
+        let rh = try RH(config: copied); defer { rh.cleanUp() }
+        let added = try rh.run(["config", "set", "general.agents", "claude", "codex", "copilot"])
+        #expect(added.status == 0, "\(added.standardError)")
+        #expect(text(rh) == copied.replacingOccurrences(of: "agents = [\"claude\", \"codex\"]", with: "agents = [\"claude\", \"codex\", \"copilot\"]"), "\(text(rh))")
+        let validate = try rh.run(["config", "validate"])
+        #expect(validate.status != 0 && (validate.standardOutput + validate.standardError).contains("[app.1.name]: the name is longer than 120 characters"), "\(validate.standardOutput)")
+        let brought = try rh.run(["config", "set", "general.terminal", "nonsense"])
+        #expect(brought.status != 0 && brought.standardError.hasPrefix("That change would make the config invalid: line 3: [general.terminal] unknown terminal \"nonsense\""), "\(brought.standardError)")
+        #expect(try rh.run(["config", "set", "app.1.name", "Team Terminal"]).status == 0)
+        #expect(try rh.run(["config", "validate"]).status == 0)
+    }
+
     @Test func itemsAreAddedWhereSaidAndASeparatorIsAnItemToo() throws {
         let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
         #expect(try rh.run(["config", "add", "menu.items", "open-with", "copy-path", "--at", "2"]).status == 0)

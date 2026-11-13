@@ -225,11 +225,51 @@ struct ConfigDocumentTests {
         #expect(throws: ConfigDocument.EditError.wrongKind(path: "general.terminal", expected: "text")) { try ConfigDocument(sample).insertingElement("x", into: "general.terminal") }
     }
 
-    @Test func aConfigThatAlreadyHasAnErrorIsNotEdited() {
+    @Test func aConfigThatIsNotTOMLIsNotEdited() {
         let broken = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"\n"
-        #expect(throws: (any Error).self) { try ConfigDocument(broken).setting("general.editor", to: .string("zed")) }
-        let semantic = "[general]\nterminal_placement = \"floating\"\n"
-        #expect(throws: (any Error).self) { try ConfigDocument(semantic).setting("general.editor", to: .string("zed")) }
+        #expect(throws: ConfigDocument.EditError.self) { try ConfigDocument(broken).setting("general.editor", to: .string("zed")) }
+        do {
+            _ = try ConfigDocument(broken).setting("general.editor", to: .string("zed"))
+        } catch ConfigDocument.EditError.unreadable(let why) {
+            #expect(why.contains("TOML syntax error"), "\(why)")
+        } catch {
+            Issue.record("\(error)")
+        }
+    }
+
+    /// A config copied from somewhere with a name too long in one entry: adding an agent is no edit of that entry, and the error stays the person's to fix.
+    private var withAnError: String {
+        "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n\n[[app]]\nid = \"team-term\"\nname = \"\(String(repeating: "x", count: 130))\"\nbundle_id = \"com.example.term\"\n"
+    }
+
+    @Test func anErrorThatWasThereIsNoReasonToRefuseAnEditAndStaysWhereverItsLineMoves() throws {
+        #expect(ConfigDocument.sentences(ConfigParser.parse(withAnError).diagnostics) == ["line 7: [app.1.name] the name is longer than 120 characters"])
+        let added = try ConfigDocument(withAnError).setting("general.agents", to: .strings(["claude", "codex"]))
+        #expect(added.text.contains("agents = [\"claude\", \"codex\"]\n") && config(added.text).enabledAgents == ["claude", "codex"])
+        // A key added to [general] moves the entry, and its error, a line down: it is the error that was there.
+        let moved = try added.setting("general.editor", to: .string("vscode"))
+        #expect(ConfigDocument.sentences(ConfigParser.parse(moved.text).diagnostics) == ["line 8: [app.1.name] the name is longer than 120 characters"])
+        // The entry itself can be put right by an edit as well.
+        let fixed = try moved.setting("app.1.name", to: .string("Team Terminal"))
+        #expect(ConfigParser.parse(fixed.text).diagnostics.isEmpty)
+    }
+
+    @Test func anEditOfAConfigWithAnErrorIsStillRefusedForAnErrorItBrings() {
+        #expect(throws: ConfigDocument.EditError.wouldBeInvalid("line 3: [general.agents] unknown agent \"nope\"; known agents: " + KnownAgents.all.map(\.id).joined(separator: ", "))) {
+            try ConfigDocument(withAnError).setting("general.agents", to: .strings(["claude", "nope"]))
+        }
+        // The same error once more is one more error: an unknown agent that was listed, listed again.
+        let listed = withAnError.replacingOccurrences(of: "agents = [\"claude\"]", with: "agents = [\"claude\", \"nope\"]")
+        #expect(throws: ConfigDocument.EditError.self) { try ConfigDocument(listed).insertingElement("nope", into: "general.agents") }
+        let otherTerminal = withAnError.replacingOccurrences(of: "terminal = \"ghostty\"", with: "terminal = \"nonsense\"")
+        #expect(throws: ConfigDocument.EditError.self) { try ConfigDocument(withAnError).replacingText(otherTerminal) }
+    }
+
+    @Test func aWholeTextThatKeepsAnErrorThatWasThereReplacesTheOldOneButOneThatIsNotTOMLNever() throws {
+        let kept = withAnError + "# A comment of mine.\n"
+        #expect(try ConfigDocument(withAnError).replacingText(kept).text == kept)
+        // A text that is not TOML is the same error before and after, and still refused: none of it would be read.
+        #expect(throws: ConfigDocument.EditError.self) { try ConfigDocument("[general\n").replacingText("[general\n# still\n") }
     }
 
     @Test func aKeyInsideAnInlineTableIsChangedWhereItIsWrittenButNeverAddedTo() throws {

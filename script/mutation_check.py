@@ -1176,7 +1176,7 @@ MUTANTS = [
      "        let shown = await loader.menu()\n", "        let shown = await loader.menu()\n        await refresh()\n"),
     # The Config page (ADR 0026).
     ("a whole text that does not read is saved", "Sources/RightHereCore/Config/ConfigDocument.swift",
-     "    public func replacingText(_ text: String) throws -> ConfigDocument {\n        if text.utf8.count > ConfigParser.maxBytes { throw EditError.tooLarge(bytes: text.utf8.count) }\n        if let error = validation.errors(text).first { throw EditError.wouldBeInvalid(error) }", "    public func replacingText(_ text: String) throws -> ConfigDocument {\n        if text.utf8.count > ConfigParser.maxBytes { throw EditError.tooLarge(bytes: text.utf8.count) }"),
+     "    public func replacingText(_ text: String) throws -> ConfigDocument {\n        try checked(text)", "    public func replacingText(_ text: String) throws -> ConfigDocument {\n        ConfigDocument(text, validation: validation)"),
     ("a text is saved over a change made while it was edited", "Sources/RightHereKit/ConfigService.swift",
      "if let digest, ConfigHistory.digest(current) != digest { throw Failure.editedMeanwhile(file: file.path) }", "_ = digest"),
     ("a rewrite of the whole file is an assistant's to make", "Sources/RightHereCore/Config/ConfigTrust.swift",
@@ -2428,6 +2428,16 @@ MUTANTS = [
      'problems.map(\\.fencedMessage).joined(separator: "; ") + ". Nothing was changed."', 'problems.map(\\.message).joined(separator: "; ") + ". Nothing was changed."'),
     ("the doctor's row names every conflict copy", 'Sources/RightHereKit/ConfigSync.swift',
      '            let named = inspection.conflicts.prefix(Self.listedInRow)', '            let named = inspection.conflicts.prefix(Int.max)'),
+    ("an error that was there before an edit refuses it", "Sources/RightHereCore/Config/ConfigDocument.swift",
+     "if let error = validation.errors(addedBy: new, to: text).first { throw EditError.wouldBeInvalid(error) }", "if let error = validation.errors(new).first { throw EditError.wouldBeInvalid(error) }"),
+    ("an error an edit moved to another line is taken for a new one", "Sources/RightHereCore/Config/ConfigDocument.swift",
+     '            problem.path + "\\n" + problem.message', '            "\\(problem.line ?? 0) " + problem.path + "\\n" + problem.message'),
+    ("the same error once more is taken for the one that was there", "Sources/RightHereCore/Config/ConfigDocument.swift",
+     "                before[identity] = count - 1", "                before[identity] = count"),
+    ("a text that is not TOML is edited", "Sources/RightHereCore/Config/ConfigDocument+Layout.swift",
+     "if text.utf8.count > ConfigParser.maxBytes || !ConfigParser.canBeRead(text) {", "if text.utf8.count > ConfigParser.maxBytes {"),
+    ("a text that is not TOML replaces one with the same syntax error", "Sources/RightHereCore/Config/ConfigDocument.swift",
+     '        if !ConfigParser.canBeRead(new) { throw EditError.wouldBeInvalid(validation.errors(new).first ?? "TOML syntax error") }\n', ""),
 ]
 
 

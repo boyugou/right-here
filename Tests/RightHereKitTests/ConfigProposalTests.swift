@@ -56,6 +56,20 @@ struct ConfigProposalTests {
         #expect(work.service.history().isEmpty)
     }
 
+    @Test func anAssistantThatPutsRightAnAgentTheConfigRefusedProposesTheProgramItBringsIn() throws {
+        // An agent of one's own with a name too long is refused, and nothing starts it. An edit of a config with that error is made now, and the name made shorter brings in a program
+        // that no click has started: the assistant proposes it, as it would a new agent.
+        let long = String(repeating: "x", count: 130)
+        let config = "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n\n[agent.helper]\nname = \"\(long)\"\ncommand = \"helper --yes\"\n"
+        let work = try Workspace(config: config); defer { work.clean() }
+        guard case .proposed(let proposal, _) = try work.service.submit([.set("agent.helper.name", .string("Helper"))], actor: .mcp) else { Issue.record("it was not proposed"); return }
+        #expect(proposal.approvals.map(\.key) == ["agent.*.command"], "\(proposal.approvals)")
+        #expect(work.text == config)
+        // What brings in nothing is made: the other agents.
+        guard case .applied(let change) = try work.service.submit([.insert("codex", into: "general.agents", at: nil)], actor: .mcp) else { Issue.record("it was not made"); return }
+        #expect(change.written && work.text.contains("agents = [\"claude\", \"codex\"]") && work.text.contains(long))
+    }
+
     @Test func theCardOfAProposalThatSwitchesThePromptsOffNamesEachAgentAndItsFlagAndApplyHoldsTheTwoFiles() throws {
         let work = try Workspace(config: "[general]\nterminal = \"ghostty\"\nagents = [\"claude\"]\n"); defer { work.clean() }
         guard case .proposed(let proposal, _) = try work.service.submit([.set("general.bypass_permissions", .boolean(true))], actor: .mcp) else { Issue.record("it was not proposed"); return }

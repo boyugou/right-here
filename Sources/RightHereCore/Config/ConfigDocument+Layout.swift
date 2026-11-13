@@ -12,9 +12,10 @@ extension ConfigDocument {
         /// The lines that are the inside of a value written across lines (a `\"\"\"` string, a list): a line there is part of the value, whatever it starts with, and is never a comment or a blank line.
         let insideValue: Set<Int>
 
-        /// A text that already has an error is not edited: the edit would be made on something that cannot be read.
+        /// A text that is not TOML is not edited: where its tables and keys are is not known, and the edit would be made blind. One that reads with an error is (an edit is
+        /// refused for an error it brings: `checked`).
         init(_ text: String, validation: Validation) throws {
-            if let error = validation.errors(text).first { throw EditError.unreadable(error) }
+            if text.utf8.count > ConfigParser.maxBytes || !ConfigParser.canBeRead(text) { throw EditError.unreadable(validation.errors(text).first ?? "TOML syntax error") }
             bytes = Array(text.utf8)
             outline = TOMLOutline(text)
             var found = [0]

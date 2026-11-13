@@ -3,8 +3,9 @@ import Foundation
 /// A config file's text, and the small edits that can be made to it without touching the rest of it (ADR 0026).
 ///
 /// Every edit is the smallest change that does what was asked: the bytes outside the edited value, key or entry are the ones that were there, so a person's
-/// comments, order and layout stay theirs. An edit refuses a text that already has errors (it would be editing something it cannot read), a key that is not in the
-/// schema, a value of the wrong kind, and any change after which the config has an error it did not have. Nothing here reads or writes a file.
+/// comments, order and layout stay theirs. An edit refuses a text that is not TOML (it would be editing something it cannot read), a key that is not in the
+/// schema, a value of the wrong kind, and any change after which the config has an error it did not have; an error that was there before is the person's to fix,
+/// and no reason to refuse a change elsewhere. Nothing here reads or writes a file.
 ///
 /// Paths are spelled as `ConfigDiagnostic` spells them: `general.terminal`, `menu.items`, `agent.claude.args`, and the position of an entry of `[[a]]`, counted
 /// from 1, as a segment of its own: `preset.2.title`. A position in an array of strings, or of entries, is counted from 1 too.
@@ -19,10 +20,29 @@ public struct ConfigDocument: Sendable, Equatable {
             self.problems = problems
         }
 
-        /// The errors as sentences: what an edit is refused for.
+        /// The errors as sentences.
         var errors: @Sendable (String) -> [String] {
             let problems = problems
             return { ConfigDocument.sentences(problems($0)) }
+        }
+
+        /// The errors that `edited` has and `text` does not, as sentences: what an edit is refused for. A name too long in another entry was there before the edit and is
+        /// no reason to refuse it. An error is the one that was there when it says the same of the same setting, on whatever line the edit moved it to.
+        func errors(addedBy edited: String, to text: String) -> [String] {
+            var before: [String: Int] = [:]
+            for problem in problems(text) where problem.severity == .error { before[Self.identity(of: problem), default: 0] += 1 }
+            let added = problems(edited).filter { problem in
+                guard problem.severity == .error else { return false }
+                let identity = Self.identity(of: problem)
+                guard let count = before[identity], count > 0 else { return true }
+                before[identity] = count - 1
+                return false
+            }
+            return ConfigDocument.sentences(added)
+        }
+
+        private static func identity(of problem: ConfigDiagnostic) -> String {
+            problem.path + "\n" + problem.message
         }
 
         public static let standalone = Validation { sized($0, ConfigParser.parse($0).diagnostics) }
@@ -50,7 +70,7 @@ public struct ConfigDocument: Sendable, Equatable {
     }
 
     public enum EditError: Error, Equatable, LocalizedError {
-        /// The text has an error already, so an edit would be made blind.
+        /// The text is not TOML, so an edit would be made blind.
         case unreadable(String)
         case invalidPath(String)
         case unknownKey(String)
@@ -239,11 +259,9 @@ public struct ConfigDocument: Sendable, Equatable {
     }
 
     /// The whole text replaced by `text`, as somebody who edits the file as text writes it. It has to read (the Finder menu and every command depend on it), so a text with an
-    /// error is refused with the first one; the text this document holds may have errors, which is how the file that does not read is put right.
+    /// error that this one does not have is refused with the first one; the text this document holds may not read at all, which is how the file that does not read is put right.
     public func replacingText(_ text: String) throws -> ConfigDocument {
-        if text.utf8.count > ConfigParser.maxBytes { throw EditError.tooLarge(bytes: text.utf8.count) }
-        if let error = validation.errors(text).first { throw EditError.wouldBeInvalid(error) }
-        return ConfigDocument(text, validation: validation)
+        try checked(text)
     }
 
     // MARK: Arrays of strings
@@ -354,10 +372,12 @@ public struct ConfigDocument: Sendable, Equatable {
         }
     }
 
-    /// The edited text, after a check that it is a config that reads: no error, where there was none before.
+    /// The edited text, after a check that it is a config that reads and has no error that the text before it did not have.
     func checked(_ new: String) throws -> ConfigDocument {
         if new.utf8.count > ConfigParser.maxBytes { throw EditError.tooLarge(bytes: new.utf8.count) }
-        if let error = validation.errors(new).first { throw EditError.wouldBeInvalid(error) }
+        // A text that is not TOML is refused whatever the text before it was: none of it would be read, and the same syntax error again is no better for having been there.
+        if !ConfigParser.canBeRead(new) { throw EditError.wouldBeInvalid(validation.errors(new).first ?? "TOML syntax error") }
+        if let error = validation.errors(addedBy: new, to: text).first { throw EditError.wouldBeInvalid(error) }
         return ConfigDocument(new, validation: validation)
     }
 
