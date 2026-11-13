@@ -256,7 +256,9 @@ extension ConfigCommand {
             abstract: "Put the config back as it was before the last change made with `rh config`, in the window or by an agent.",
             discussion: """
             Each change keeps the text before it (`rh config history` lists them, newest first); this puts the newest back and forgets it. It refuses when the file \
-            was changed after that change (by hand, or by something else), since that change would be undone with it: --force undoes anyway.
+            was changed after that change (by hand, or by something else), since that change would be undone with it: --force undoes anyway. Like an edit, it also \
+            refuses when the two files would then make an error they do not make now (the other file may name what the change made), --force or not. A change of \
+            both files that the window made at once (Remove Agent) is undone one file at a time here: the one whose undo leaves no error first.
             """
         )
 
