@@ -523,6 +523,16 @@ struct PlannerTests {
         #expect(plan.steps.first == .createFile(CreateFileStep(path: "/Users/tester/code/app/untitled.md")))
     }
 
+    /// The plan names the file precomposed, as the catalog and typed text spell it: `URL.appendingPathComponent` decomposed the name, and APFS stores the
+    /// form it is given. Compared by scalar, since Swift's `==` takes either form for the other.
+    @Test func newFileIsNamedPrecomposedAndAtTheRootWithOneSlash() throws {
+        let korean = try Planner(facts: machine(), localizer: Localizer(languages: ["ko"])).plan(.newFile("txt"), context: folder("/Users/tester/code/app"))
+        guard case .createFile(let file)? = korean.steps.first else { Issue.record("no file in \(korean.steps)"); return }
+        #expect(Array(file.path.unicodeScalars) == Array("/Users/tester/code/app/\u{BB34}\u{C81C}.txt".unicodeScalars), "\(file.path.unicodeScalars.map(\.value))")
+        let root = try Planner(facts: FakeSystemFacts(directories: ["/"])).plan(.newFile("txt"), context: HereContext(origin: .container, container: URL(fileURLWithPath: "/")))
+        #expect(root.steps.first == .createFile(CreateFileStep(path: "/untitled.txt")))
+    }
+
     @Test func newFileCanOpenInTheEditorInstead() throws {
         let planner = Planner(config: Config(newFile: .init(then: .open)), facts: machine())
         let plan = try planner.plan(.newFile("md"), context: folder("/Users/tester/code/app"))

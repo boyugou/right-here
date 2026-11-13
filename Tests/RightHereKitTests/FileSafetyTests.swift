@@ -325,6 +325,35 @@ struct InstallerAndNewFileSafetyTests {
         #expect(try String(contentsOf: folder.appendingPathComponent("CAF\u{C9} 2.txt"), encoding: .utf8) == "mine 2")
         #expect(!FileManager.default.fileExists(atPath: folder.appendingPathComponent("elsewhere/target.txt").path))
     }
+
+    /// The names in a folder as the file system stores them (`readdir`), by scalar: Swift's `==` takes a name and its decomposed form for one.
+    private static func storedNames(in folder: URL) -> [[UInt32]] {
+        guard let directory = opendir(folder.path) else { return [] }
+        defer { closedir(directory) }
+        var names: [[UInt32]] = []
+        while let entry = readdir(directory) {
+            let name = withUnsafeBytes(of: entry.pointee.d_name) { String(decoding: $0.prefix(Int(entry.pointee.d_namlen)), as: UTF8.self) }
+            if name != "." && name != ".." { names.append(name.unicodeScalars.map(\.value)) }
+        }
+        return names
+    }
+
+    /// New File built its path with `URL.appendingPathComponent(name).path`, which decomposes the name, and APFS keeps the form it is given: the Korean
+    /// "무제.txt" was stored as conjoining jamo, the Spanish "sin título.txt" with an `i` and a combining accent, and a config's `base_name` the same.
+    /// Finder shows them alike, but copied off the Mac (Windows, a web upload) the Korean name falls apart into letters. Text typed on a Mac is precomposed.
+    @Test("a new file is stored under the precomposed name", arguments: [
+        ("ko", nil, "\u{BB34}\u{C81C}.txt"), ("es", nil, "sin t\u{ED}tulo.txt"), ("en", "Cafe\u{301}", "Caf\u{E9}.txt"),
+    ] as [(String, String?, String)])
+    func aNewFileIsStoredUnderThePrecomposedName(language: String, baseName: String?, expected: String) throws {
+        let folder = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        var config = Config()
+        if let baseName { config.newFile.templates = [NewFileTemplate(id: "txt", title: "Text", baseName: baseName, fileExtension: "txt")] }
+        let plan = try Planner(config: config, facts: LiveSystemFacts(), localizer: Localizer(languages: [language])).plan(.newFile("txt"), context: HereContext(origin: .container, container: folder))
+        let step = try #require(plan.steps.compactMap { step -> CreateFileStep? in if case .createFile(let file) = step { return file }; return nil }.first)
+        try LiveExecutor.createFile(step)
+        #expect(Self.storedNames(in: folder) == [expected.unicodeScalars.map(\.value)], "the template says \(expected.debugDescription)")
+    }
 }
 
 /// After the app was replaced (an upgrade), macOS no longer knows the Finder extension. The app registers it again, and only that: the person's own choice to use it or

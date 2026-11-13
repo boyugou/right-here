@@ -390,7 +390,8 @@ public struct Planner: Sendable {
         case .unreadable: throw PlanError.unreadable(directory.path)
         case .exhausted: throw PlanError.nameExhausted
         }
-        let path = directory.appendingPathComponent(name).path
+        // Joined as text: `appendingPathComponent(name).path` decomposes the name, and the file would be stored decomposed.
+        let path = (directory.path.hasSuffix("/") ? directory.path : directory.path + "/") + name
 
         var steps: [Step] = [.createFile(CreateFileStep(path: path, contents: template.contents, format: template.format))]
         var notices: [String] = []

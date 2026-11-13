@@ -79,13 +79,16 @@ public enum NewFileNamer {
         case exhausted
     }
 
-    /// The first free name in `directory`: `untitled.txt`, then `untitled 2.txt`, `untitled 3.txt`, and so on.
+    /// The first free name in `directory`: `untitled.txt`, then `untitled 2.txt`, `untitled 3.txt`, and so on. The name is precomposed (NFC), as
+    /// text typed on a Mac, Windows and the web are: APFS keeps the form a name is created in, and a decomposed one falls apart into letters and
+    /// marks off the Mac. Lookups find a name in either form (measured on APFS, case-sensitive APFS, HFS+, exFAT and FAT32), so asking about the
+    /// URL here, which decomposes, finds the file made under this name.
     public static func firstFreeName(for template: NewFileTemplate, in directory: URL, facts: any SystemFacts, localizer: Localizer = .english) -> Name {
         let suffix = template.fileExtension.isEmpty ? "" : "." + template.fileExtension
         let baseName = template.localizedBaseName(localizer)
         for number in 1...attemptLimit {
             let stem = number == 1 ? baseName : "\(baseName) \(number)"
-            let name = stem + suffix
+            let name = (stem + suffix).precomposedStringWithCanonicalMapping
             switch facts.itemState(directory.appendingPathComponent(name)) {
             case .missing: return .free(name)
             case .present: continue

@@ -2539,6 +2539,12 @@ MUTANTS = [
     # New File and Copy Path, after an independent review (2026-11-13).
     ("a Markdown link to a name with a colon before its first slash reads as a URL of another scheme", "Sources/RightHereCore/Paths/PathStyle.swift",
      'if path.unicodeScalars.prefix(while: { $0 != "/" }).contains(":") { path = "./" + path }', ""),
+    ("New File names its file through URL, which decomposes the name, and APFS stores it so", "Sources/RightHereCore/Planner/Planner.swift",
+     'let path = (directory.path.hasSuffix("/") ? directory.path : directory.path + "/") + name', "let path = directory.appendingPathComponent(name).path"),
+    ("a new file in the root folder is named with two slashes", "Sources/RightHereCore/Planner/Planner.swift",
+     'let path = (directory.path.hasSuffix("/") ? directory.path : directory.path + "/") + name', 'let path = directory.path + "/" + name'),
+    ("a config's decomposed base_name gives a decomposed file name", "Sources/RightHereCore/NewFile/NewFile.swift",
+     "let name = (stem + suffix).precomposedStringWithCanonicalMapping", "let name = stem + suffix"),
 ]
 
 
