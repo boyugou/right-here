@@ -62,6 +62,71 @@ struct ConfigLayersMergeTests {
         #expect(!ConfigLayers.load(base: .absent, local: .absent).fileLeftOut, "a config that is not there leaves nothing out")
     }
 
+    @Test func theEntriesTheConfigUsesAreTheOnesItTookAndNotTheOnesItRefused() {
+        let long = String(repeating: "x", count: 130)
+        let text = """
+        [general]
+        agents = ["claude"]
+
+        [[preset]]
+        id = "mine"
+        title = "Mine"
+        prompt = "Mine {files}"
+
+        [[preset]]
+        id = "Bad Id"
+        title = "Bad"
+        prompt = "Bad {files}"
+
+        [[agent.claude.variant]]
+        id = "a"
+        title = "Same"
+        arguments = []
+
+        [[agent.claude.variant]]
+        id = "b"
+        title = "Same"
+        arguments = []
+
+        [[agent.claude.variant]]
+        id = "continue"
+        title = "Again"
+        arguments = []
+
+        [agent.helper]
+        name = "\(long)"
+        command = "helper"
+
+        [[agent.helper.variant]]
+        id = "fast"
+        title = "Fast"
+        arguments = []
+
+        [[app]]
+        id = "one"
+        name = "One"
+        bundle_id = "com.example.one"
+
+        [[app]]
+        id = "two"
+        name = "One"
+        bundle_id = "com.example.two"
+
+        [[new_file.template]]
+        id = "notes"
+        title = "Notes"
+        extension = "md"
+
+        [[new_file.template]]
+        id = "notes"
+        title = "Notes again"
+        extension = "md"
+        """ + "\n"
+        // A start option with another's title or a built-in one's id, one of an agent the config refused, an app called like another, and an id used twice are written, and not used.
+        #expect(ConfigParser.parse(text).usedEntries == ["preset.1", "agent.claude.variant.1", "app.1", "new_file.template.1"])
+        #expect(layered(text, "").usedEntries == ConfigParser.parse(text).usedEntries, "the same with an overlay that adds nothing")
+    }
+
     @Test func scalarsInTheOverlayWin() {
         let result = layered(baseConfig, "[general]\nterminal = \"terminal\"\n[new_file]\nthen = \"open\"\n")
         #expect(result.config.terminal == "terminal")
