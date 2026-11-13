@@ -2529,6 +2529,8 @@ MUTANTS = [
      "|| name.wholeMatch(of: #/config\\.sync-conflict-\\d{8}-\\d{6}-[A-Z0-9]+\\.toml/#) != nil", "|| false"),
     ("a config of this Mac that is not read is called ahead, with push as the fix", "Sources/RightHereKit/ConfigSync.swift",
      "switch localRead ? report.status : .remoteMissing {", "switch report.status {"),
+    ("the older copy calls the runner of the copy to keep stale", "Sources/RightHereKit/Doctor.swift",
+     "let stale = rhPath.map { $0 != target && !copies.contains(target) } ?? false", "let stale = rhPath.map { $0 != target } ?? false"),
 ]
 
 

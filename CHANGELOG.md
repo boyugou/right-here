@@ -7,7 +7,8 @@
   written as `~/…` is found, as the line a click types finds it; a config that asks for no Quick Actions is not told to
   run setup; a Quick Action that links to the repository asks for git as the menu's does; the last action is the newest
   after the log rotates; and a config file that does not read leaves out the rows that would be worked out from the
-  defaults, which advised adding what the file already says.
+  defaults, which advised adding what the file already says; and an older copy of the app does not call the newer
+  copy's runner script stale and ask for a setup that it refuses.
 - **Conflict copies from Dropbox and Syncthing.** With config sync on, the doctor named iCloud's `config 2.toml` only;
   Dropbox's `config (… conflicted copy …).toml` and Syncthing's `config.sync-conflict-….toml` get the row too. A
   config of this Mac that is too large to read is not called "ahead of the folder" with `push` as the fix, which push refuses.

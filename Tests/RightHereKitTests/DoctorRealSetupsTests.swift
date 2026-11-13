@@ -164,6 +164,28 @@ struct DoctorRealSetupsTests {
         #expect(services?.fix != .doctorFixRunSetup, "doctor: \(realSetupSaid(services)); rh setup skips the Quick Actions while the file cannot be used")
     }
 
+    /// The older copy, opened by Spotlight from another Applications folder: its doctor calls the runner script, which runs the copy to keep, stale, and says
+    /// to run `rh setup`, which this copy refuses to do. The Quick Actions row of the same run counts the other copy's `rh` as current.
+    @Test func theOlderCopysDoctorDoesNotAskForASetupThatItRefuses() async throws {
+        let scene = try RealSetupHome(); defer { scene.cleanUp() }
+        let newer = scene.home.appendingPathComponent("Applications/Right Here.app")
+        let older = scene.home.appendingPathComponent("Applications/Old/Right Here.app")
+        let newerRH = newer.appendingPathComponent("Contents/Helpers/rh").path
+        let olderRH = older.appendingPathComponent("Contents/Helpers/rh").path
+        try scene.write("#!/bin/sh\n", to: URL(fileURLWithPath: newerRH), executable: true)
+        try scene.write("#!/bin/sh\n", to: URL(fileURLWithPath: olderRH), executable: true)
+        try scene.installRunner(pointingAt: newerRH)
+        let copies = [AppCopy(path: newer.path, version: "1.2.25"), AppCopy(path: older.path, version: "1.2.0")]
+        var facts = FakeSystemFacts(homeDirectory: scene.home)
+        facts.copies[AppIdentity.hostBundleID] = copies
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 0, standardOutput: realSetupPluginkitEnabled)])
+        let checks = await Doctor(facts: facts, paths: scene.paths, loaded: ConfigStore.load(paths: scene.paths), runner: runner, rhPath: olderRH).run()
+        let row = checks.first { $0.id == .finderRunner }
+        let refused = InstallError.problem(helper: olderRH, version: "1.2.0", copies: copies, home: scene.home.path)
+        #expect(refused != nil, "sanity: rh setup from this copy stops")
+        #expect(!(row?.fix == .doctorFixRunSetup && refused != nil), "doctor: \(realSetupSaid(row)); rh setup from this copy: \(refused?.errorDescription ?? "-")")
+    }
+
     // MARK: Last action
 
     /// After the log passed 1 MB it was moved to rh.log.1; the newest action is the newest line of rh.log.

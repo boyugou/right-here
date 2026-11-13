@@ -375,7 +375,11 @@ public struct Doctor: Sendable {
 
         if let target = installer.installedRunnerTarget() {
             let exists = FileManager.default.isExecutableFile(atPath: target)
-            let stale = rhPath.map { $0 != target } ?? false
+            // The `rh` of another installed copy of the app is not stale: an older copy that looks does not call the newer one's script wrong and ask for a setup that
+            // it refuses (`InstallError.notTheCopyToKeep`); the copies row says which copy to keep. The Quick Actions row counts it the same way.
+            let copies = AppCopies.installed(facts.applicationCopies(bundleID: AppIdentity.hostBundleID), home: facts.homeDirectory.path)
+                .map { URL(fileURLWithPath: $0.path).appendingPathComponent("Contents/Helpers/rh").path }
+            let stale = rhPath.map { $0 != target && !copies.contains(target) } ?? false
             if !exists {
                 checks.append(DoctorCheck(.finderRunner, status: .fail, detail: .doctorRunnerTargetMissing(target), fix: .doctorFixRunSetup))
             } else if stale {
