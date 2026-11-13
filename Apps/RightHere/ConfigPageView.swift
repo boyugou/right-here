@@ -121,7 +121,7 @@ struct ConfigPage: View {
             .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(Color.primary.opacity(0.18), lineWidth: 1))
     }
 
-    /// What the config says about the text as it is, a line each; warnings are the person's to read and do not stop a save, errors do.
+    /// What the config says about the text as it is, a line each; warnings are the person's to read and do not stop a save, and an error stops it when the draft brings it (`draftBringsErrors`).
     @ViewBuilder private var problems: some View {
         let found = model.draftProblems
         VStack(alignment: .leading, spacing: 4) {
