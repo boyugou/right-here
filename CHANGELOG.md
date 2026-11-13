@@ -62,7 +62,8 @@
   offers what the menu already shows on a line of its own ("Open in Ghostty" twice), and an app or a start option that
   has a line of its own is no longer repeated in Open With or More Agent Options. A template named on a line of its own
   (`new-file.md`) is left out for several selected items, as New File is. `rh menu --explain` says why the presets are
-  left out when no agent, or not their agent, is in the menu (it said "Nothing is left out" of an empty menu).
+  left out when no agent, or not their agent, is in the menu (it said "Nothing is left out" of an empty menu), and
+  counts items, not files, when a selection is too large for the menu to look at.
 
 ## 1.2.25 (2026-11-13)
 

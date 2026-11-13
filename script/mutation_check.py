@@ -2681,6 +2681,8 @@ MUTANTS = [
      "if case .newFile = ref, context.items.count > 1 {", "if case .newFile = ref, false {"),
     ("an empty menu of presets that no agent can start says nothing of why", "Sources/RightHereCore/Menu/MenuBuilder.swift",
      "        } else if children.isEmpty, !withoutAgent.isEmpty, !(config.enabledAgents.isEmpty && agentsSaid) {", "        } else if false {"),
+    ("the menu says too many files of a selection it counted without looking", "Sources/RightHereCore/Actions/ActionRegistry.swift",
+     "        } else if preset.needsFiles, context.items.count > preset.maxFiles {", "        } else if false {"),
 ]
 
 

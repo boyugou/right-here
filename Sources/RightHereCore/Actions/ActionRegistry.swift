@@ -127,6 +127,11 @@ public struct ActionRegistry: Sendable {
         guard info.available, case .preset(let id, _) = ref, let preset = config.preset(id: id) else { return info }
         if context.items.isEmpty, context.container == nil, context.origin != .cli {
             unavailable(&info, reason: .refusalNoTarget)
+        } else if preset.needsFiles, context.items.count > preset.maxFiles {
+            // Counted, not looked at, so the count is of items: "too many files" was false of 6 files and 15 folders, which `rh run` takes (it counts the files). English, as the
+            // surfaces that show why an entry is left out are (`rh menu --explain`, `rh actions`).
+            unavailable(&info, reason: .doctorVerbatim("Too many items are selected: \(context.items.count). This preset takes at most \(preset.maxFiles) files (max_files), and the menu"
+                                                        + " does not look at so many items to tell files from folders; `rh run` counts the files."))
         } else if let refusal = preset.refusal(forFileCount: context.items.count) {
             unavailable(&info, reason: refusal)
         } else if !context.items.isEmpty, let refusal = preset.refusal(forFileCount: 0), context.items.allSatisfy({ facts.isDirectory($0) == true }) {

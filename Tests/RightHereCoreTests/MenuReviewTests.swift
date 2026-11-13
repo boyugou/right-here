@@ -188,4 +188,24 @@ struct MenuReviewTests {
                     "\(label): the menu is empty and nothing says why: \"\(explained.emptyMenuSummary ?? "")\"")
         }
     }
+
+    /// Six files and fifteen folders are selected. Before it looks at any item the menu counts them all, folders included, against the
+    /// preset's `max_files` (ActionRegistry.swift:130; counting without looking is pinned by
+    /// `PresetMenuTests.aMenuLooksAtNoItemWhenThereAreMoreItemsThanMaxFiles`), so it leaves the presets out, and the reason `rh menu
+    /// --explain` gives is "Too many files are selected: 21. This preset takes at most 20 (max_files)." Six files are selected, and
+    /// `rh run preset.review` on the same selection runs, on those six. The menu may keep its bound; what it says has to be true.
+    @Test func whyAPresetIsLeftOutSaysHowManyFilesAreSelected() throws {
+        let files = (1...6).map { "\(code)/f\($0).swift" }
+        let folders = (1...15).map { "\(code)/d\($0)" }
+        let facts = reviewMachine(directories: folders, files: files)
+        let config = Config(enabledAgents: ["claude"])
+        let selection = HereContext(origin: .items, items: (folders + files).map { URL(fileURLWithPath: $0) })
+        let runs = (try? Planner(config: config, facts: facts).plan(.preset(id: "review", terminal: nil), context: selection)) != nil
+        try #require(runs, "rh run preset.review runs on this selection")
+        let explained = MenuBuilder(config: config, facts: facts).explain(for: selection)
+        let offered = everyNode(explained.menu).compactMap(\.actionID).contains("preset.review")
+        let said = explained.leftOut.map(\.line).filter { $0.contains("Review") }
+        #expect(offered || !said.contains { $0.contains("Too many files are selected: 21") },
+                "6 files and 15 folders are selected, `rh run preset.review` runs, and the menu says: \(said)")
+    }
 }
