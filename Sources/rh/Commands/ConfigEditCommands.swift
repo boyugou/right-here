@@ -306,10 +306,13 @@ extension ConfigCommand {
         func run() throws {
             let runtime = Runtime()
             let change: ConfigChange
+            let service = ConfigService(paths: runtime.paths)
             do {
-                change = try ConfigService(paths: runtime.paths).undo(target: local ? .local : .shared, force: force, dryRun: dryRun)
+                change = try service.undo(target: local ? .local : .shared, force: force, dryRun: dryRun)
             } catch {
-                throw try ConfigEditSupport.fail(ConfigEditSupport.describe(error), error: error, json: json)
+                var text = ConfigEditSupport.describe(error)
+                if case ConfigService.Failure.nothingToUndo = error { text += EditHistory.otherFile(local: !local, service: service, command: "undo") }
+                throw try ConfigEditSupport.fail(text, error: error, json: json)
             }
             try ConfigEditSupport.print(change, dryRun: dryRun, json: json)
         }
@@ -334,16 +337,25 @@ extension ConfigCommand {
             var change: String
         }
 
+        /// What the other file's history holds, when it holds something: " config.local.toml has 2: `rh config history --local`."
+        static func otherFile(local: Bool, service: ConfigService, command: String) -> String {
+            let count = service.history(of: local ? .local : .shared).count
+            guard count > 0 else { return "" }
+            return " \(local ? "config.local.toml" : "config.toml") has \(count): `rh config \(command)\(local ? " --local" : "")`."
+        }
+
         func run() throws {
             let runtime = Runtime()
             let formatter = ISO8601DateFormatter()
-            let items = ConfigService(paths: runtime.paths).history(of: local ? .local : .shared).map {
+            let service = ConfigService(paths: runtime.paths)
+            let items = service.history(of: local ? .local : .shared).map {
                 Item(time: formatter.string(from: $0.time), by: $0.actor.rawValue, change: $0.summary)
             }
             if json {
                 try Output.json(items)
             } else if items.isEmpty {
-                Output.print("No change to take back.")
+                // Each file has its own history: after a change with --local, this said only "No change to take back", and an assistant took it for none at all.
+                Output.print("No change of \(local ? "config.local.toml" : "config.toml") to take back." + Self.otherFile(local: !local, service: service, command: "history"))
             } else {
                 for item in items { Output.print("\(item.time)  \(Output.column(item.by, 6))\(item.change)") }
             }

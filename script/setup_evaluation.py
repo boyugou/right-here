@@ -140,6 +140,17 @@ items = ["open-terminal", "open-editor", "-", "agents", "-", "copy-path"]
 FOLLOW_UP_F = "lazygit was something I set up only on my work laptop; I don't use it here, so you can take it out of the list. Leave everything else as it is."
 
 
+# The config of persona G: config.toml, which the person's other Mac writes too (config sync). This Mac should differ, and the other Mac not change.
+CONFIG_G = """# Right Here: shared with my other Mac.
+version = 1
+
+[general]
+terminal = "ghostty"
+editor = "zed"
+agents = ["claude", "codex"]
+"""
+
+
 @dataclass(frozen=True)
 class Persona:
     title: str
@@ -185,6 +196,13 @@ PERSONAS = {
               "of agents names it and nothing defines it, which the person does not know. Wants Codex added next to Claude Code.",
         answers="I copied my config from my work laptop. I'd like Codex added next to Claude Code here.",
         prompt="path", config=CONFIG_F, follow_up=FOLLOW_UP_F),
+    "g": Persona(
+        title="Two Macs that share config.toml, and this one should differ",
+        story="Uses Right Here on two Macs, and config.toml is shared with the other one. On this Mac they want Terminal instead of Ghostty and Gemini CLI "
+              "next to their agents, and the other Mac's setup not to change.",
+        answers="My config is shared with my other Mac, and that one should stay as it is. On this Mac only, please use Terminal instead of Ghostty, "
+                "and add Gemini CLI next to Claude Code and Codex.",
+        prompt="path", config=CONFIG_G),
 }
 
 WRAPPER = """#!/bin/bash

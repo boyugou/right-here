@@ -51,7 +51,8 @@
   the file. Ids joined by commas are refused with the command that gives each on its own. `remove agent.claude` takes
   out your settings of a built-in agent and leaves it in the menu. `get` of a table or a list of tables says what it
   holds (it said "not set"), and a refusal of a `--local` change names `get … --local`. A refusal with `--json` prints
-  a JSON document. A name or a title of only spaces is an error, as an empty command is.
+  a JSON document. A name or a title of only spaces is an error, as an empty command is. An empty `history`, and an
+  `undo` with nothing to take back, name the other file's changes (`--local`).
 
 ## 1.2.25 (2026-11-13)
 

@@ -3269,4 +3269,16 @@ extension ConfigEditCLITests {
         #expect(nothing.status != 0)
         #expect(nothing.json != nil, "standard output is not JSON: \(nothing.standardOutput.debugDescription); standard error: \(nothing.standardError)")
     }
+
+    /// Each file has its own history. In an evaluation (persona G, 2026-11-13) an assistant made its changes with `--local`, ran `rh config history`, read "No change to take back",
+    /// and took it for none at all. The empty one names the other file's when it has changes, and so does an undo with nothing to take back.
+    @Test func anEmptyHistoryNamesTheOtherFilesChanges() throws {
+        let rh = try RH(config: Self.sample); defer { rh.cleanUp() }
+        #expect(try rh.run(["config", "set", "general.terminal", "terminal", "--local"]).status == 0)
+        #expect(try rh.run(["config", "history"]).standardOutput == "No change of config.toml to take back. config.local.toml has 1: `rh config history --local`.\n")
+        let undo = try rh.run(["config", "undo"])
+        #expect(undo.status == 1 && undo.standardError.contains("config.local.toml has 1: `rh config undo --local`."), "\(undo.standardError)")
+        let fresh = try RH(config: Self.sample); defer { fresh.cleanUp() }
+        #expect(try fresh.run(["config", "history"]).standardOutput == "No change of config.toml to take back.\n")
+    }
 }
