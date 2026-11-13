@@ -109,7 +109,8 @@ public enum ConfigTrust {
         }
         for operation in operations {
             switch operation {
-            case .set(let path, let value):
+            case .set(let path, let value), .reset(let path, to: let value):
+                // A default is written out or taken out, as the files decide: either may start something, so it waits like a value that is put.
                 if startsNothing(value, at: path) { continue }
                 need(path)
             case .insert(_, let path, _), .remove(_, let path), .replace(_, let path, _), .move(_, _, let path):

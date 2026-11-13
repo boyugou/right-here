@@ -252,6 +252,7 @@ struct ConfigTrustTests {
         switch operation {
         case .set: "set"
         case .unset: "unset"
+        case .reset: "reset"
         case .insert: "insert"
         case .remove: "remove"
         case .replace: "replace"
@@ -271,14 +272,14 @@ struct ConfigTrustTests {
         // A proposal is stored as JSON in a folder that anything that runs as the person can write to, and read back to be shown and applied.
         let operations: [ConfigOperation] = [
             .set("general.terminal", .string("iterm")), .set("general.bypass_permissions", .boolean(true)), .set("preset.1.max_files", .integer(3)),
-            .set("general.agents", .strings(["claude", "codex"])), .unset("general.editor"), .insert("open-with", into: "menu.items", at: 2),
+            .set("general.agents", .strings(["claude", "codex"])), .unset("general.editor"), .reset("new_file.then", to: .string("reveal")), .insert("open-with", into: "menu.items", at: 2),
             .insert("open-with", into: "menu.items", at: nil), .remove(at: 1, from: "menu.items"), .move(from: 3, to: 1, in: "menu.items"),
             .replace(at: 2, in: "agent.claude.args", with: "--verbose"), .expect(["a", "b"], in: "menu.items"), .expect(nil, in: "services.items"), .expectEntry("review", at: 1, in: "preset"),
             .addEntry(to: "preset", fields: [ConfigField("id", .string("a")), ConfigField("max_files", .integer(2))], at: 2), .removeEntry(at: 1, from: "preset"),
             .addTable("agent.lazygit", fields: [ConfigField("name", .string("lazygit")), ConfigField("command", .string("lazygit")), ConfigField("args", .strings(["-p"]))]),
             .removeTable("agent.lazygit"), .moveEntry(from: 2, to: 1, in: "preset"), .replaceText("[general]\n")
         ]
-        #expect(Set(operations.map(kind)).count == 14, "one example of each kind: \(Set(operations.map(kind)).sorted())")
+        #expect(Set(operations.map(kind)).count == 15, "one example of each kind: \(Set(operations.map(kind)).sorted())")
         let data = try JSONEncoder().encode(operations)
         #expect(try JSONDecoder().decode([ConfigOperation].self, from: data) == operations)
     }

@@ -549,6 +549,16 @@ struct ConfigStrictnessTests {
         #expect(parse("[copy_path]\ntitle = \"Copy it\"\n").config.copyPathTitle == "Copy it")
     }
 
+    /// An empty title is the default one: what this Mac's own file writes to give the default where config.toml names another title. It made an entry with no title before.
+    @Test func anEmptyCopyPathTitleIsTheDefaultOneAndNoError() {
+        for text in ["[copy_path]\ntitle = \"\"\n", "[copy_path]\ntitle = \"   \"\n"] {
+            let result = parse(text)
+            #expect(result.config.copyPathTitle == nil && result.diagnostics.isEmpty, "\(text): \(result.diagnostics.map(\.message))")
+        }
+        let layered = ConfigLayers.load(base: .text("[copy_path]\ntitle = \"Path\"\n"), local: .text("[copy_path]\ntitle = \"\"\n"))
+        #expect(layered.config.copyPathTitle == nil && layered.diagnostics.isEmpty)
+    }
+
     @Test("terminal_placement accepts valid placement names and defaults to a window", arguments: [
         ("window", TerminalPlacement.newWindow),
         ("tab", .newTab),

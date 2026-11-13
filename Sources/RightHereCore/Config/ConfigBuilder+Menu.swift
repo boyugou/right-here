@@ -51,7 +51,10 @@ extension ConfigBuilder {
     func readCopyPath(_ root: ConfigReader, into config: inout Config) {
         guard let copyPath = root.subtable("copy_path") else { return }
         copyPath.checkKnownKeys()
-        if let title = copyPath.string("title"), isPlainName(title, at: ["copy_path", "title"], noun: "title") { config.copyPathTitle = title }
+        // An empty title is the default one: this Mac's own file can then give the default where config.toml names another title (and no entry has a title of nothing).
+        if let title = copyPath.string("title"), !title.trimmingCharacters(in: .whitespaces).isEmpty, isPlainName(title, at: ["copy_path", "title"], noun: "title") {
+            config.copyPathTitle = title
+        }
         if let names = copyPath.stringArray("styles") {
             var seen = Set<String>()
             config.copyPathStyles = names.compactMap { name in

@@ -132,7 +132,7 @@ struct NewFileOptionsTests {
     @Test func whatHappensAfterAFileIsMadeAndTakingATemplateOut() throws {
         let current = state()
         let reveal = NewFileOptions.operations(settingThen: .reveal, in: current)
-        #expect(reveal == [.unset("new_file.then")])
+        #expect(reveal == [.reset("new_file.then", to: .string("reveal"))])
         #expect(try apply(FileChange(target: .shared, operations: reveal), to: own).newFile.then == .reveal)
         let nothing = NewFileOptions.operations(settingThen: .nothing, in: current)
         #expect(try apply(FileChange(target: .shared, operations: nothing), to: own).newFile.then == .nothing)

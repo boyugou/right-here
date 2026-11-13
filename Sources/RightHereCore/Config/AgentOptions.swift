@@ -101,18 +101,18 @@ public enum AgentOptions {
         return [.set(key(agent.id, "name"), .string(text))]
     }
 
-    /// What is typed to start it. A built-in agent's own command is the setting taken out, so that a better one in a later version reaches it.
+    /// What is typed to start it. A built-in agent's own command is its default (`ConfigOperation.reset`): taken out, so that a better one in a later version reaches it.
     public static func operations(settingCommand command: String, of agent: AgentOptionsState) -> [ConfigOperation] {
         let text = command.trimmingCharacters(in: .whitespaces)
         guard !text.isEmpty, text != agent.command else { return [] }
-        if text == agent.builtInCommand { return [.unset(key(agent.id, "command"))] }
+        if text == agent.builtInCommand { return [.reset(key(agent.id, "command"), to: .string(text))] }
         return [.set(key(agent.id, "command"), .string(text))]
     }
 
-    /// How it starts. In a terminal is what an agent does when nothing is said, so that is the setting taken out.
+    /// How it starts. In a terminal is what an agent does when nothing is said, so that is its default.
     public static func operations(settingLauncher launcher: AgentOptionsState.Launcher, of agent: AgentOptionsState) -> [ConfigOperation] {
         guard launcher != agent.launcher, agent.launchers.contains(launcher) else { return [] }
-        return launcher == .terminal ? [.unset(key(agent.id, "launcher"))] : [.set(key(agent.id, "launcher"), .string(launcher.rawValue))]
+        return launcher == .terminal ? [.reset(key(agent.id, "launcher"), to: .string(AgentLauncher.terminalWord))] : [.set(key(agent.id, "launcher"), .string(launcher.rawValue))]
     }
 
     /// The terminal it is typed into; `nil` is the default terminal.
@@ -131,7 +131,7 @@ public enum AgentOptions {
     /// agent then follows a better flag of a later version.
     public static func operations(settingBypassArgument argument: String, of agent: AgentOptionsState) -> [ConfigOperation] {
         let text = argument.trimmingCharacters(in: .whitespaces)
-        if text.isEmpty || text == agent.builtInBypassArgument { return agent.bypassArgument == nil ? [] : [.unset(key(agent.id, "bypass_permission_arg"))] }
+        if text.isEmpty || text == agent.builtInBypassArgument { return agent.bypassArgument == nil ? [] : [defaultSetting(key(agent.id, "bypass_permission_arg"), agent.builtInBypassArgument)] }
         guard text != agent.bypassArgument else { return [] }
         return [.set(key(agent.id, "bypass_permission_arg"), .string(text))]
     }
@@ -160,9 +160,15 @@ public enum AgentOptions {
     /// later version reaches the agent; the config refuses a word that is neither `positional` nor a flag.
     public static func operations(settingPromptArgument word: String, of agent: AgentOptionsState) -> [ConfigOperation] {
         let text = word.trimmingCharacters(in: .whitespaces)
-        if text.isEmpty || text == agent.builtInPromptArgument { return agent.promptArgument == nil ? [] : [.unset(key(agent.id, "prompt_arg"))] }
+        if text.isEmpty || text == agent.builtInPromptArgument { return agent.promptArgument == nil ? [] : [defaultSetting(key(agent.id, "prompt_arg"), agent.builtInPromptArgument)] }
         guard text != agent.promptArgument else { return [] }
         return [.set(key(agent.id, "prompt_arg"), .string(text))]
+    }
+
+    /// A setting's default: the built-in value when the agent has one, which a file can write; none can say "none", so without one the setting is only taken out, and in this Mac's own
+    /// file that gives what config.toml says (ADR 0026).
+    private static func defaultSetting(_ path: String, _ builtIn: String?) -> ConfigOperation {
+        builtIn.map { .reset(path, to: .string($0)) } ?? .unset(path)
     }
 
     // MARK: An agent of one's own

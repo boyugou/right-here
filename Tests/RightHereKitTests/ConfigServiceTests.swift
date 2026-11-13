@@ -23,6 +23,25 @@ struct ConfigServiceTests {
     prompt = "Alpha {files}"
     """ + "\n"
 
+    /// A default chosen in the window (`ConfigOperation.reset`) is the setting taken out, unless that would make this Mac's own file give config.toml's value of it: then the default is
+    /// written in this Mac's file, and config.toml, which the other Macs read, is not touched.
+    @Test func aDefaultIsTakenOutUnlessThisMacsFileWouldThenGiveConfigTomlsValue() throws {
+        let launcher = ConfigOperation.reset("agent.claude.launcher", to: .string("terminal"))
+        let setsIt = "[agent.claude]\nlauncher = \"link\"\n"
+        #expect(ConfigService.resolvingDefaults([launcher], target: .local, shared: setsIt) == [.set("agent.claude.launcher", .string("terminal"))])
+        #expect(ConfigService.resolvingDefaults([launcher], target: .local, shared: "[general]\n") == [.unset("agent.claude.launcher")])
+        #expect(ConfigService.resolvingDefaults([launcher], target: .shared, shared: setsIt) == [.unset("agent.claude.launcher")])
+        #expect(ConfigService.resolvingDefaults([.unset("general.editor")], target: .local, shared: "[general]\neditor = \"zed\"\n") == [.unset("general.editor")])
+
+        let workspace = try Workspace(config: "[general]\nagents = [\"claude\"]\n\n" + setsIt)
+        defer { workspace.clean() }
+        try "[agent.claude]\nlauncher = \"desktop\"\n".write(to: workspace.paths.localConfigFile, atomically: true, encoding: .utf8)
+        let change = try workspace.service.apply([launcher], target: .local, actor: .window)
+        #expect(change.summary == "set agent.claude.launcher = \"terminal\"")
+        #expect(try String(contentsOf: workspace.paths.localConfigFile, encoding: .utf8) == "[agent.claude]\nlauncher = \"terminal\"\n")
+        #expect(ConfigStore.load(paths: workspace.paths).config.agents["claude"]?.launcher == .terminal(nil))
+    }
+
     private struct Workspace {
         let root: URL
         let paths: RHPaths

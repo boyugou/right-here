@@ -464,6 +464,14 @@ code, and a mutant of `script/mutation_check.py` for each protection.
   Terminal. The row now names that value ("As in config.toml (Terminal)", `MenuSnapshot.underneath`). The alternatives were a word in this Mac's file that
   means "the default" (TOML has no null, and a boolean has no such word), or taking the key out of config.toml as well, which would change the other Macs
   for a choice made on this one.
+- **A choice that names its value gives that value** (an independent review of the editors, 2026-11-13). "In a terminal", an agent's built-in command typed
+  back, "Select it in Finder" after a new file and an empty Copy Path title are each a setting's default, and took the key out of the file that decided it:
+  on this Mac's own file over a config.toml that set the key too, they gave config.toml's value, and the same choice made again then took the key out of
+  config.toml, for every Mac. The window now asks for the default (`ConfigOperation.reset`) and the service, which reads both files, writes it in this Mac's
+  file when taking it out would give config.toml's (`ConfigService.resolvingDefaults`); elsewhere the key is still taken out, so that a better default of a
+  later version reaches it. An empty Copy Path title is the default one (`title = ""`), which this Mac's file can now write. The way an agent takes a first
+  prompt and the flag that switches its prompts off are written out as their built-in values; for an agent with none built in, an emptied field still takes
+  the key out, and on this Mac's own file gives config.toml's value, since no word means "none".
 
 ## Consequences
 

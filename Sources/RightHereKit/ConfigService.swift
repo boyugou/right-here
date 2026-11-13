@@ -357,6 +357,8 @@ public struct ConfigService: Sendable {
         let file = file(of: target)
         let shared = try sharedText()
         let overlay = try localText()
+        // Every check, the hold and the history see the change that is written.
+        let operations = Self.resolvingDefaults(operations, target: target, shared: shared)
         let current = target == .shared ? shared : (overlay ?? "")
         if let digest, ConfigHistory.digest(current) != digest { throw Failure.editedMeanwhile(file: file.path) }
         var edited = ConfigDocument(current, validation: target == .shared ? .standalone : .overlay(over: shared))
@@ -461,7 +463,7 @@ public struct ConfigService: Sendable {
         }
         for operation in operations {
             switch operation {
-            case .set(let path, _), .unset(let path):
+            case .set(let path, _), .unset(let path), .reset(let path, _):
                 entry(of: path)
             case .remove(_, let path), .replace(_, let path, _), .move(_, _, let path):
                 add(.expect((try? document.elements(of: path)) ?? nil, in: path))
@@ -478,6 +480,16 @@ public struct ConfigService: Sendable {
         return checks
     }
 
+    /// What a default chosen in the window comes to (`ConfigOperation.reset`): the setting taken out, unless this Mac's own file would then give the shared file's value of it, which is
+    /// not the default that was chosen. Then the default is written in this Mac's file, and the shared file, which every Mac reads, is not touched.
+    static func resolvingDefaults(_ operations: [ConfigOperation], target: ConfigTarget, shared: String) -> [ConfigOperation] {
+        let sharedDocument = ConfigDocument(shared)
+        return operations.map { operation in
+            guard case .reset(let path, let value) = operation else { return operation }
+            return target == .local && sharedDocument.rawValue(at: path) != nil ? .set(path, value) : .unset(path)
+        }
+    }
+
     /// The config that two texts make, laid over each other.
     private func config(shared: String, local: String?) -> Config {
         ConfigLayers.load(base: .text(shared), local: local.map(ConfigSource.text) ?? .absent, overlayName: paths.localConfigFile.lastPathComponent).config
@@ -488,7 +500,7 @@ public struct ConfigService: Sendable {
         let shared = try sharedText()
         let overlay = try localText()
         var edited = ConfigDocument(target == .shared ? shared : (overlay ?? ""), validation: target == .shared ? .standalone : .overlay(over: shared))
-        for operation in operations { edited = try operation.apply(to: edited) }
+        for operation in Self.resolvingDefaults(operations, target: target, shared: shared) { edited = try operation.apply(to: edited) }
         return (config(shared: shared, local: overlay), config(shared: target == .shared ? edited.text : shared, local: target == .local ? edited.text : overlay))
     }
 
@@ -754,7 +766,7 @@ public struct ConfigService: Sendable {
         switch operation {
         case .removeEntry(let position, let table): (table, position)
         case .moveEntry(let from, _, let table): (table, from)
-        case .set(let path, _), .unset(let path): entryPlace(of: path)
+        case .set(let path, _), .unset(let path), .reset(let path, _): entryPlace(of: path)
         default: nil
         }
     }

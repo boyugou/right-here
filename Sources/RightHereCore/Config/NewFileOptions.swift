@@ -186,7 +186,7 @@ public enum NewFileOptions {
 
     public static func operations(settingThen then: Config.AfterNewFile, in state: NewFileState) -> [ConfigOperation] {
         guard then != state.then else { return [] }
-        return [then == .reveal ? .unset("new_file.then") : .set("new_file.then", .string(then.rawValue))]
+        return [then == .reveal ? .reset("new_file.then", to: .string(then.rawValue)) : .set("new_file.then", .string(then.rawValue))]
     }
 
     /// The entry taken out. The last one gives the built-in templates back.

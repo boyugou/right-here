@@ -129,7 +129,7 @@ public enum ConfigSchema {
                            example: "[\"open.terminal\", \"agent.claude\", \"copy-path.absolute\"]")
             ]),
             SchemaNode("copy_path", .table, "The \"Copy Path\" submenu.", children: [
-                SchemaNode("title", .string, "Your own title for the Copy Path entry or submenu, on one line. If the menu lists the full path on its own, the title is on that entry. The default is \"Copy Path\" in the language of the menu (general.language, or the Mac's).",
+                SchemaNode("title", .string, "Your own title for the Copy Path entry or submenu, on one line. If the menu lists the full path on its own, the title is on that entry. The default is \"Copy Path\" in the language of the menu (general.language, or the Mac's), which an empty title also gives.",
                            example: "\"Copy Path\"", pattern: displayNamePattern),
                 SchemaNode("styles", .stringArray, "The forms that the menu offers, in order.",
                            default: "[\"absolute\", \"tilde\", \"git-relative\", \"name\", \"shell-escaped\", \"ai-mention\"]",

@@ -15,6 +15,10 @@ public struct ConfigField: Sendable, Equatable {
 public enum ConfigOperation: Sendable, Equatable {
     case set(String, ConfigDocument.Value)
     case unset(String)
+    /// The setting's default, which is `to`: what the window writes when a person chooses the default of a setting. It is taken out, so that a better default of a later version reaches
+    /// it; but in this Mac's own file over a shared file that sets the key too, taking it out would give the shared file's value, so there `to` is written (`ConfigService` decides, as it
+    /// reads both files). Applied to one file alone, it is taken out.
+    case reset(String, to: ConfigDocument.Value)
     /// An element into a list of text (`menu.items`, `general.agents`); at the end without a position.
     case insert(String, into: String, at: Int? = nil)
     case remove(at: Int, from: String)
@@ -42,7 +46,7 @@ public enum ConfigOperation: Sendable, Equatable {
         switch self {
         case .set(let path, let value):
             return try document.setting(path, to: value)
-        case .unset(let path):
+        case .unset(let path), .reset(let path, _):
             do {
                 return try document.removing(path)
             } catch ConfigDocument.EditError.notFound(let missing) where missing == path {
@@ -91,6 +95,8 @@ public enum ConfigOperation: Sendable, Equatable {
             return shown("set \(path) = \(written)")
         case .unset(let path):
             return "unset \(path)"
+        case .reset(let path, _):
+            return "set \(path) to its default"
         case .insert(let element, let path, let position):
             return shown("add \(ConfigDocument.basicString(element)) to \(path)" + (position.map { " at \($0)" } ?? ""))
         case .remove(let position, let path):
@@ -122,7 +128,7 @@ public enum ConfigOperation: Sendable, Equatable {
     /// The settings and lists it writes where the file names them, as they are spelled in the file: what another file of the config may set as well.
     public var settingPaths: [String] {
         switch self {
-        case .set(let path, _), .unset(let path), .insert(_, let path, _), .remove(_, let path), .replace(_, let path, _), .move(_, _, let path):
+        case .set(let path, _), .unset(let path), .reset(let path, _), .insert(_, let path, _), .remove(_, let path), .replace(_, let path, _), .move(_, _, let path):
             return [path]
         case .expect, .expectEntry, .addEntry, .addTable, .removeTable, .removeEntry, .moveEntry, .replaceText:
             return []
@@ -133,7 +139,7 @@ public enum ConfigOperation: Sendable, Equatable {
     public var writtenKeys: [String] {
         func generic(_ path: String) -> String { ConfigSchema.genericKey(of: path) ?? path }
         switch self {
-        case .set(let path, _), .unset(let path), .insert(_, let path, _), .remove(_, let path), .replace(_, let path, _), .move(_, _, let path):
+        case .set(let path, _), .unset(let path), .reset(let path, _), .insert(_, let path, _), .remove(_, let path), .replace(_, let path, _), .move(_, _, let path):
             return [generic(path)]
         case .addEntry(let table, let fields, _):
             return fields.map { generic("\(table).1.\($0.key)") }

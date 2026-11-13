@@ -52,7 +52,7 @@ struct CopyPathOptionsTests {
         #expect(CopyPathOptions.operations(settingTitle: "  Paths ", in: plain) == [.set("copy_path.title", .string("Paths"))])
         #expect(CopyPathOptions.operations(settingTitle: " ", in: plain).isEmpty)
         let titled = state("[copy_path]\ntitle = \"Paths\"\n")
-        #expect(CopyPathOptions.operations(settingTitle: "", in: titled) == [.unset("copy_path.title")])
+        #expect(CopyPathOptions.operations(settingTitle: "", in: titled) == [.reset("copy_path.title", to: .string(""))])
         #expect(CopyPathOptions.operations(settingTitle: "Paths", in: titled).isEmpty)
     }
 }

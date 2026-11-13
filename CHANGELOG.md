@@ -27,6 +27,12 @@
   off the Mac; it is stored precomposed, as typed text is. Two New File runs at once (two clicks, or a Quick Action and
   a Shortcut) chose the same name and the second failed with "already exists"; it takes the next name now.
 
+- **The window's editors, after an independent review.** A choice that names a value gives that value on this Mac: with
+  `config.local.toml` and `config.toml` both setting it, "In a terminal" for an agent, its built-in command typed back,
+  "Select it in Finder" after a new file and an emptied Copy Path title gave config.toml's value, and the same choice
+  made again then changed config.toml for every Mac. An empty Copy Path title is the default one (it was an entry with
+  no title).
+
 ## 1.2.25 (2026-11-13)
 
 - **Test Terminal Start speaks your language.** The setup window's test of a terminal start said in English that the

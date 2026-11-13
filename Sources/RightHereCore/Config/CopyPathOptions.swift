@@ -45,10 +45,10 @@ public enum CopyPathOptions {
         return CopyPathState(title: config.copyPathTitle, offered: offered.map(form), others: PathStyle.allCases.filter { !offered.contains($0) }.map(form), list: list)
     }
 
-    /// The title of the entry; empty is the setting taken out (the menu says "Copy Path" in the person's language). The config refuses a title that is not a plain name.
+    /// The title of the entry; empty is the default (the menu says "Copy Path" in the person's language), which a file writes as `title = ""`. The config refuses a title that is not a plain name.
     public static func operations(settingTitle title: String, in state: CopyPathState) -> [ConfigOperation] {
         let text = title.trimmingCharacters(in: .whitespaces)
-        if text.isEmpty { return state.title == nil ? [] : [.unset(titleKey)] }
+        if text.isEmpty { return state.title == nil ? [] : [.reset(titleKey, to: .string(""))] }
         guard text != state.title else { return [] }
         return [.set(titleKey, .string(text))]
     }
