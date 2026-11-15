@@ -98,6 +98,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 22 | The setup window says where the app runs from before it tries, only a first run's Set Up makes a config, and a warning the person may leave is not "needs attention". | [0023](decisions/0023-the-window-says-before-it-tries.md) |
 | 23 | A built-in field of an agent (its prompt flag, its permission flag, its continue arguments) is confirmed by the tool's own documentation or help, or it is not there. | [0024](decisions/0024-a-built-in-agent-field-is-confirmed-or-absent.md) |
 | 24 | The flags a built-in terminal adapter starts its terminal with are the ones the terminal documents; Alacritty has an adapter, kitty quits with its last window. | [0025](decisions/0025-terminal-launch-flags-are-the-documented-ones.md) |
+| 25 | Setup shows the next action first: a neutral first run, a menu preview on the healthy Overview, actionable checks, and visible operation feedback. | [0026](decisions/0026-setup-next-actions.md) |
 
 ## 5. Platform facts
 
@@ -241,15 +242,15 @@ The extension caches the config by the modification dates of `config.toml` and t
 icons for the life of the process, so a right-click costs milliseconds.
 
 The setup window shows this menu without Finder, so that a person can see what the extension will offer and why an
-entry is missing (the extension needs System Settings and a Finder relaunch before anything shows).
+entry is missing. Its healthy Overview links to the preview; an unconfigured Mac links back to the first-run chooser.
 `MenuPreview.folderMenu` runs `MenuBuilder` on the config and the installed apps as they are when the window opens or
 `rh setup` has run, in the system language, with the context the extension makes for a click on a folder's
 background (`HereContext.finder`); `MenuPreview.rows` flattens the tree into the lines the window draws, with a
 submenu opening in place. The app carries the extension's glyph catalog (`Apps/FinderExtension/Assets.xcassets`, a
-source of both targets in `project.yml`), so the icons are the menu's own. The section "Finder menu" is open unless a
-check needs attention (the first-run card and the list of checks keep the focus), until the person opens or closes it
-once; it shows nothing when the config has errors (the extension would still offer what is valid in it, but a menu
-drawn from a broken config says something that is not true, and the doctor's config row says what is wrong). It is the
+source of both targets in `project.yml`), so the icons are the menu's own. The "Finder menu" page distinguishes an absent
+config, config errors and a valid config with no menu entries; each has an explanation and a route to its next action
+([0026](decisions/0026-setup-next-actions.md)). It suppresses the preview when the config has errors (the extension would still offer
+what is valid in it, but a menu drawn from a broken config says something that is not true, and the doctor's config row says what is wrong). It is the
 menu for a folder: the items a selection of files adds (the agent presets) appear in Finder only. It is the same
 code, not a statement about Finder; `docs/development/MANUAL_CHECKS.md` (5) compares the two in a real window.
 

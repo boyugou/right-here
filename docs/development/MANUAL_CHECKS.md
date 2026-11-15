@@ -90,17 +90,18 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    menu's own glyphs and the apps' icons) and the titles match the window's list. Click a line with a chevron in the
    window: its entries open in place, indented, and the chevron turns down; open the same submenu in Finder and compare
    its entries and separators. Clicking an entry in the window does nothing.
-3. Change `[menu] items`, or enable another agent, then choose Install or Repair and relaunch Finder: the window and
+3. Change `[menu] items`, or enable another agent, then refresh with Command-R: the window and
    the Finder menu both follow the config. An app that is not installed is missing from both.
-4. Put a syntax error in the config and choose Install or Repair: the "Finder menu" section says there is no menu to show, and
-   the config row under Checks says why; fix the file and the menu comes back.
+4. Put a syntax error in the config and refresh: the "Finder menu" section says the config errors must be fixed and offers Show Checks.
+   The config row under Checks says why; fix the file and refresh, and the menu comes back.
 5. In Arabic or Hebrew (System Settings, General, Language & Region; restart the app) the lines mirror: icons on the
    right, the chevron on the left and pointing left. In dark mode the glyphs are light and an app's icon keeps its
    colors.
 6. With VoiceOver, a submenu line reads like "Open With, submenu, collapsed, button" and says "expanded" once opened; an
    entry reads its title only.
 7. Overview is the first section. While the Finder extension is off it shows the three-step first-run card first; once the
-   extension is on it shows the status and the default terminal and editor. "Finder menu" is always the menu for a folder.
+   extension is on it shows the status and the default terminal and editor. A healthy setup offers Preview Finder Menu.
+   "Finder menu" is always the menu for a folder.
 8. Worktrees: the list is for the repository of the folder you chose with "Choose Folder…", or else the first repository of your
    pinned and recent folders (the app has no folder of its own to start from). Right Here's worktrees (under
    `.right-here/worktrees`) have a Remove… button, which asks first and never forces: a worktree with uncommitted work stays,
@@ -131,3 +132,9 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     `rh doctor` is all ok (open the app and press Install or Repair, or run `rh setup`). With "Keep Both" there are two copies, and the doctor says "not registered" with no extension
     (measured with a renamed copy: `rh setup` called the extension "already in place" and `pluginkit` knew none); `mdfind 'kMDItemCFBundleIdentifier == "com.boyugou.righthere"'`
     lists the copies. Which button the dialog makes the default has not been looked at on macOS 26.
+15. Setup guidance (ADR 0026): before the first setup there is no attention badge. Expand More AI agents, select an additional agent,
+    then close it: the selected agent stays visible. On Checks, optional and passed rows expand separately; issues stay above them.
+    A row's Set Up button goes to the chooser without writing anything, and other recovery buttons match the row's fix. Return on a
+    healthy page does not run repair. Command-R refreshes. Copy an MCP snippet or finish a terminal test: its result is visible above
+    the content, remains until dismissed or replaced, and is announced by VoiceOver. Check text and its action are separate accessible
+    controls. After dismissing a failure message, the diagnostic itself is still there.

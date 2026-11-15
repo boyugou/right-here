@@ -28,7 +28,7 @@ struct FlowLayout: Layout {
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let mirrored = subviews.layoutDirection == .rightToLeft
+        // SwiftUI mirrors these coordinates in a right-to-left layout; mirroring them here would flip them twice.
         var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
         for view in subviews {
             let size = view.sizeThatFits(.unspecified)
@@ -37,8 +37,7 @@ struct FlowLayout: Layout {
                 y += rowHeight + spacing
                 rowHeight = 0
             }
-            let left = mirrored ? bounds.maxX - x - size.width : bounds.minX + x
-            view.place(at: CGPoint(x: left, y: bounds.minY + y), proposal: ProposedViewSize(size))
+            view.place(at: CGPoint(x: bounds.minX + x, y: bounds.minY + y), proposal: ProposedViewSize(size))
             x += size.width + spacing
             rowHeight = max(rowHeight, size.height)
         }
@@ -116,6 +115,7 @@ struct LocationCard: View {
 /// because the file does not exist yet, and nothing here ever changes a file that is there.
 struct FirstRunChooser: View {
     @Bindable var model: SetupModel
+    @State private var showMoreAgents = false
     private let l10n = Localizer.system
 
     var body: some View {
@@ -151,16 +151,30 @@ struct FirstRunChooser: View {
                 }
                 choice(.appSetupAgents, hint: offer.loginShellAnswered ? .appSetupAgentsHint : .appSetupShellSilent) {
                     VStack(alignment: .leading, spacing: 10) {
-                        agentChips(offer.agents.filter(\.available))
+                        let found = offer.agents.filter(\.available)
                         let missing = offer.agents.filter { !$0.available }
-                        if !missing.isEmpty {
-                            // A shell that said nothing found none, and "not found" is true only of an agent it could have found.
-                            if offer.loginShellAnswered {
-                                Text(l10n.string(.appSetupNotFound))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                        if found.isEmpty {
+                            // A silent shell is not evidence that an agent is absent: keep every choice in reach.
+                            agentChips(offer.agents)
+                        } else {
+                            agentChips(found)
+                            if !showMoreAgents {
+                                agentChips(missing.filter { model.selectedAgents.contains($0.id) })
                             }
-                            agentChips(missing)
+                            if !missing.isEmpty {
+                                DisclosureGroup(isExpanded: $showMoreAgents) {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text(l10n.string(.appSetupNotFound))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        agentChips(missing)
+                                    }
+                                    .padding(.top, 8)
+                                } label: {
+                                    Text(l10n.string(.appMoreAgents))
+                                        .font(.callout)
+                                }
+                            }
                         }
                     }
                 }
@@ -208,6 +222,7 @@ struct FirstRunChooser: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(l10n.string(title))
+        .disabled(model.isWorking)
     }
 }
 

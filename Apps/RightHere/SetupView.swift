@@ -7,10 +7,14 @@ import SwiftUI
 /// extension, the command line and the Shortcuts actions all work without it.
 struct SetupView: View {
     @Bindable var model: SetupModel
+    let expandCheckDetails: Bool
+    let previewViewport: Bool
     private let l10n = Localizer.system
 
-    init(model: SetupModel) {
+    init(model: SetupModel, expandCheckDetails: Bool = false, previewViewport: Bool = false) {
         self.model = model
+        self.expandCheckDetails = expandCheckDetails
+        self.previewViewport = previewViewport
     }
 
     var body: some View {
@@ -28,7 +32,33 @@ struct SetupView: View {
 
                 Divider()
 
-                SetupPage {
+                if model.isWorking {
+                    ProgressRow(message: model.isTestingLaunch ? .appTesting : model.isSettingUp ? .appSettingUp : .appLoading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 14)
+                } else if let notice = model.notice {
+                    HStack(alignment: .top, spacing: 12) {
+                        NoticeLine(notice: notice, font: .callout)
+                        Spacer(minLength: 0)
+                        Button { model.dismissNotice() } label: {
+                            Image(systemName: "xmark")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 20, height: 20)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .help(l10n.string(.appDismissNotice))
+                        .accessibilityLabel(l10n.string(.appDismissNotice))
+                    }
+                    .padding(12)
+                    .background((notice.isProblem ? Color.orange : Color.green).opacity(0.09), in: RoundedRectangle(cornerRadius: 10))
+                    .padding(.horizontal, 24)
+                    .padding(.top, 14)
+                }
+
+                SetupPage(clipPreview: previewViewport) {
                     page
                         .padding(24)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -107,9 +137,9 @@ struct SetupView: View {
 
     private func sidebarRow(_ tab: SetupTab) -> some View {
         let selected = model.selectedTab == tab
-        let badge = model.summary.badge(for: tab)
+        let count = tab == .checks ? model.attentionCount : 0
         var attention = ""
-        if case .attention(let count)? = badge {
+        if count > 0 {
             attention = l10n.render(.appNeedAttentionCount(String(count)))
         }
         return Button {
@@ -128,7 +158,7 @@ struct SetupView: View {
 
                 Spacer(minLength: 4)
 
-                if case .attention(let count)? = badge {
+                if count > 0 {
                     Text(verbatim: String(count))
                         .font(.caption2.weight(.bold))
                         .padding(.horizontal, 6)
@@ -155,7 +185,7 @@ struct SetupView: View {
                     .fill(statusColor)
                     .frame(width: 8, height: 8)
                     .accessibilityHidden(true)
-                Text(l10n.string(statusTitle(model.summary.state)))
+                Text(l10n.string(model.statusTitle))
                     .font(.caption.weight(.medium))
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 4)
@@ -169,14 +199,13 @@ struct SetupView: View {
                 .foregroundStyle(.secondary)
                 .help(l10n.string(.appRefresh))
                 .accessibilityLabel(l10n.string(.appRefresh))
-                .disabled(model.isRefreshing)
+                .keyboardShortcut("r", modifiers: .command)
+                .disabled(model.isRefreshing || model.isWorking)
             }
 
             if model.isRefreshing {
                 ProgressRow(message: .appRefreshing)
                     .font(.caption2)
-            } else if let notice = model.notice {
-                NoticeLine(notice: notice)
             }
         }
         .padding(10)
@@ -184,46 +213,47 @@ struct SetupView: View {
     }
 
     private var statusColor: Color {
+        if model.needsFirstRunChoice { return .accentColor }
         switch model.summary.state {
-        case .checking: .secondary
-        case .allSet: .green
-        case .needsAttention: .orange
+        case .checking: return .secondary
+        case .allSet: return .green
+        case .needsAttention: return .orange
         }
     }
 
     // MARK: Header
 
     private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Text(l10n.string(title(for: model.selectedTab)))
-                .font(.title2.weight(.bold))
-                .lineLimit(1)
-                .accessibilityAddTraits(.isHeader)
-
-            Spacer(minLength: 12)
-
-            // On the first run the card of the first section is the way in: it makes the config file from what is chosen. These two act on a
-            // config that is there, and are not offered before the first look has found out whether it is.
-            if model.configIsThere {
-                Button {
-                    Task { await model.openConfig() }
-                } label: {
-                    Label(l10n.string(.appOpenConfig), systemImage: "square.and.pencil")
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .disabled(model.isWorking)
-
-                Button {
-                    Task { await model.repair() }
-                } label: {
-                    Label(l10n.string(.appInstallOrRepair), systemImage: "wrench.and.screwdriver")
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-                .keyboardShortcut(.defaultAction)
-                .disabled(model.isWorking || model.locationProblem != nil)
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 16) {
+                heading
+                Spacer(minLength: 12)
+                headerActions
             }
+            VStack(alignment: .leading, spacing: 10) {
+                heading
+                headerActions
+            }
+        }
+    }
+
+    private var heading: some View {
+        Text(l10n.string(title(for: model.selectedTab)))
+            .font(.title2.weight(.bold))
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    @ViewBuilder private var headerActions: some View {
+        if model.configIsThere {
+            Button {
+                Task { await model.openConfig() }
+            } label: {
+                Label(l10n.string(.appOpenConfig), systemImage: "square.and.pencil")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .disabled(model.isWorking)
         }
     }
 
@@ -231,7 +261,7 @@ struct SetupView: View {
         switch model.selectedTab {
         case .overview: OverviewPage(model: model)
         case .menu: MenuPage(model: model)
-        case .checks: ChecksPage(model: model)
+        case .checks: ChecksPage(model: model, expandDetails: expandCheckDetails)
         case .ai: AIPage(model: model)
         case .worktrees: WorktreesPage(model: model)
         case .folders: FoldersPage(model: model)
@@ -267,14 +297,25 @@ struct SetupView: View {
 /// A page of the window. The app scrolls it; the preview draws it whole, because ImageRenderer draws nothing inside a ScrollView.
 struct SetupPage<Content: View>: View {
     let content: () -> Content
+    let clipPreview: Bool
 
-    init(@ViewBuilder content: @escaping () -> Content) {
+    init(clipPreview: Bool = false, @ViewBuilder content: @escaping () -> Content) {
         self.content = content
+        self.clipPreview = clipPreview
     }
 
     var body: some View {
         #if PREVIEW
-        content()
+        if clipPreview {
+            GeometryReader { geometry in
+                content()
+                    .frame(width: geometry.size.width, alignment: .topLeading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .clipped()
+        } else {
+            content()
+        }
         #else
         ScrollView(.vertical) {
             content()

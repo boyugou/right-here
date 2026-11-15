@@ -71,6 +71,10 @@ extension LocalizedMessage {
     public static var appCheckTerminal: LocalizedMessage { LocalizedMessage(.appCheckTerminal) }
     /// Checking your setup…
     public static var appChecking: LocalizedMessage { LocalizedMessage(.appChecking) }
+    /// Optional
+    public static var appChecksOptional: LocalizedMessage { LocalizedMessage(.appChecksOptional) }
+    /// Passed checks
+    public static var appChecksPassed: LocalizedMessage { LocalizedMessage(.appChecksPassed) }
     /// Choose a folder in a git repository to list its worktrees.
     public static var appChooseFolderMessage: LocalizedMessage { LocalizedMessage(.appChooseFolderMessage) }
     /// Choose
@@ -85,6 +89,8 @@ extension LocalizedMessage {
     public static var appCopyPluginCommands: LocalizedMessage { LocalizedMessage(.appCopyPluginCommands) }
     /// Copy Setup Prompt for AI
     public static var appCopySetupPrompt: LocalizedMessage { LocalizedMessage(.appCopySetupPrompt) }
+    /// Dismiss message
+    public static var appDismissNotice: LocalizedMessage { LocalizedMessage(.appDismissNotice) }
     /// Finder Extension Settings
     public static var appExtensionSettings: LocalizedMessage { LocalizedMessage(.appExtensionSettings) }
     /// Press Install or Repair to remove the stale copies.
@@ -109,14 +115,20 @@ extension LocalizedMessage {
     public static var appMcpCopied: LocalizedMessage { LocalizedMessage(.appMcpCopied) }
     /// This is the menu for a folder. Items for selected files appear when you select files.
     public static var appMenuCaption: LocalizedMessage { LocalizedMessage(.appMenuCaption) }
+    /// The menu preview is unavailable until the configuration errors are fixed.
+    public static var appMenuConfigError: LocalizedMessage { LocalizedMessage(.appMenuConfigError) }
     /// There is no menu to show right now. The reason is listed under Checks.
     public static var appMenuEmpty: LocalizedMessage { LocalizedMessage(.appMenuEmpty) }
+    /// Set up Right Here to preview your Finder menu.
+    public static var appMenuNeedsSetup: LocalizedMessage { LocalizedMessage(.appMenuNeedsSetup) }
     /// Submenu, collapsed
     public static var appMenuSubmenuCollapsed: LocalizedMessage { LocalizedMessage(.appMenuSubmenuCollapsed) }
     /// Submenu, expanded
     public static var appMenuSubmenuExpanded: LocalizedMessage { LocalizedMessage(.appMenuSubmenuExpanded) }
     /// Finder menu
     public static var appMenuTitle: LocalizedMessage { LocalizedMessage(.appMenuTitle) }
+    /// More AI agents
+    public static var appMoreAgents: LocalizedMessage { LocalizedMessage(.appMoreAgents) }
     /// Needing attention: %@
     public static func appNeedAttentionCount(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appNeedAttentionCount, [argument1]) }
     /// Some checks need your attention.
@@ -139,6 +151,8 @@ extension LocalizedMessage {
     public static var appPinnedFolders: LocalizedMessage { LocalizedMessage(.appPinnedFolders) }
     /// Plugin commands copied. Paste them into Claude Code.
     public static var appPluginCopied: LocalizedMessage { LocalizedMessage(.appPluginCopied) }
+    /// Preview Finder Menu
+    public static var appPreviewMenu: LocalizedMessage { LocalizedMessage(.appPreviewMenu) }
     /// Setup prompt copied. Paste it into your AI assistant.
     public static var appPromptCopied: LocalizedMessage { LocalizedMessage(.appPromptCopied) }
     /// Quick Actions work without the extension: right-click a file or folder and choose Quick Actions. For a keyboard shortcut, go to System Settings › Keyboard › Keyboard Shortcuts › Services.
@@ -229,6 +243,8 @@ extension LocalizedMessage {
     public static var appTabWorktrees: LocalizedMessage { LocalizedMessage(.appTabWorktrees) }
     /// Test Terminal Launch
     public static var appTestLaunch: LocalizedMessage { LocalizedMessage(.appTestLaunch) }
+    /// Opens and closes a temporary terminal window. macOS may ask for permission.
+    public static var appTestLaunchHint: LocalizedMessage { LocalizedMessage(.appTestLaunchHint) }
     /// Opening a test window in your terminal…
     public static var appTesting: LocalizedMessage { LocalizedMessage(.appTesting) }
     /// Unpin

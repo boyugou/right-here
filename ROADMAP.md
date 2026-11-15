@@ -34,6 +34,8 @@
 - Config sync: `rh config sync` (push, pull, status) syncing across Macs through iCloud Drive or any local folder, with `--allow-commands` safety protection for executable templates.
 - Setup window: six sections (Overview, Finder menu preview, Checks, AI Assistants, Worktrees, Folders) with live status; its first run offers what is installed
   and sets it up. `rh doctor` also notices a Finder extension that crashed since it was installed.
+- Setup guidance: a neutral first run, detected agents first, a healthy Overview that opens the menu preview, actionable diagnostic rows,
+  optional and successful checks behind disclosures, and operation feedback above the page ([ADR 0026](docs/decisions/0026-setup-next-actions.md)).
 - Official Claude Code plugin with dedicated skills (`setup`, `open-here`, `review-changes`).
 
 ## Next

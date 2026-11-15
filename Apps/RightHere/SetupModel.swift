@@ -105,6 +105,22 @@ final class SetupModel {
     /// person's choices, not from what was found.
     var configIsThere: Bool { snapshot?.configExists ?? false }
 
+    /// Missing setup pieces are expected before the person has chosen anything.
+    var statusTitle: LocalizationKey { needsFirstRunChoice ? .appSetupTitle : summary.state.titleKey }
+
+    var attentionCount: Int { needsFirstRunChoice ? 0 : summary.attentionChecks.count }
+
+    enum MenuState: Equatable {
+        case loading, needsSetup, invalidConfig, empty, ready
+    }
+
+    var menuState: MenuState {
+        guard let snapshot else { return .loading }
+        guard snapshot.configExists else { return .needsSetup }
+        guard !snapshot.configHasErrors else { return .invalidConfig }
+        return snapshot.menu.isEmpty ? .empty : .ready
+    }
+
     func check(_ id: CheckID) -> DoctorCheck? {
         checks.first { $0.id == id }
     }
@@ -235,7 +251,7 @@ final class SetupModel {
         checks = checks.replacingOrAppending(check)
         isTestingLaunch = false
         isWorking = false
-        if let detail = check.detail { announce(Localizer.system.render(detail)) }
+        say(.launchFinished(check))
     }
 
     /// Opens the config file. It does not make one: a Mac without a config chooses first.
@@ -249,6 +265,17 @@ final class SetupModel {
     func showExtensionSettings() {
         FIFinderSyncController.showExtensionManagementInterface()
     }
+
+    func perform(_ action: SetupCheckAction) async {
+        switch action {
+        case .setup: select(.overview)
+        case .repair: await repair()
+        case .openConfig: await openConfig()
+        case .extensionSettings: showExtensionSettings()
+        }
+    }
+
+    func dismissNotice() { notice = nil }
 
     func copySetupPrompt() {
         copy(SetupSnippets.setupPrompt(command: mcpCommand), confirmed: .promptCopied)
@@ -385,7 +412,7 @@ final class SetupModel {
         say(confirmed)
     }
 
-    /// Shows what happened, and says it to VoiceOver: the notice is a line in the corner of the sidebar, which a person who cannot see it would never find.
+    /// Shows what happened, and announces it without moving the person's keyboard focus.
     private func say(_ new: SetupNotice?) {
         notice = new
         if let new { announce(Localizer.system.render(new.message)) }
@@ -437,18 +464,17 @@ final class SetupModel {
         setupReport = report
     }
 
+    func simulate(notice: SetupNotice) {
+        self.notice = notice
+    }
+
     /// For `--location`: the app runs from a disk image.
     func simulateLocationProblem() {
         locationProblem = .onAnotherVolume(path: "/Volumes/Right Here/Right Here.app/Contents/Helpers/rh")
     }
 
-    /// For `--onboarding`: the first-run card, as it is when the Finder extension is off.
-    func simulateExtensionOff() {
-        checks = checks.map { check in
-            var copy = check
-            if check.id == .finderExtension { copy.status = .needsUser }
-            return copy
-        }
+    func simulate(check: DoctorCheck) {
+        checks = checks.replacingOrAppending(check)
     }
 
     /// For `--submenus`: these submenus of the Finder menu start open.

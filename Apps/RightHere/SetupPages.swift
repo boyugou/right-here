@@ -84,6 +84,7 @@ struct CodeBlock: View {
     var body: some View {
         Text(verbatim: code)
             .font(.system(size: 11, design: .monospaced))
+            .fixedSize(horizontal: false, vertical: true)
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
@@ -107,13 +108,9 @@ struct OverviewPage: View {
                     LocationCard()
                 }
                 if model.needsFirstRunChoice {
-                    // A Set Up that did not come out leaves no config, so the chooser stays: what went wrong is said above it, where the person is
-                    // looking, and not only in the footnote of the sidebar. A refusal that started nothing has no report, only the notice.
+                    // A failed setup keeps the chooser and its report. A refusal that started nothing uses the window's feedback banner.
                     if let report = model.setupReport {
                         SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
-                            .id(Self.resultID)
-                    } else if let notice = model.notice, notice.isProblem {
-                        NoticeLine(notice: notice, font: .callout)
                             .id(Self.resultID)
                     }
                     // No config file yet: what is installed, to choose from, before anything is written.
@@ -130,9 +127,11 @@ struct OverviewPage: View {
                         StatusCard(model: model)
                     }
 
-                    HStack(alignment: .top, spacing: 14) {
-                        defaultApp(.appCheckTerminal, icon: "terminal", name: model.summary.terminal)
-                        defaultApp(.appCheckEditor, icon: "chevron.left.forwardslash.chevron.right", name: model.summary.editor)
+                    if model.snapshot != nil {
+                        ViewThatFits(in: .horizontal) {
+                            HStack(alignment: .top, spacing: 14) { defaults }
+                            VStack(spacing: 14) { defaults }
+                        }
                     }
                 }
             }
@@ -141,6 +140,11 @@ struct OverviewPage: View {
                 proxy.scrollTo(Self.resultID, anchor: .top)
             }
         }
+    }
+
+    @ViewBuilder private var defaults: some View {
+        defaultApp(.appCheckTerminal, icon: "terminal", name: model.summary.terminal)
+        defaultApp(.appCheckEditor, icon: "chevron.left.forwardslash.chevron.right", name: model.summary.editor)
     }
 
     private func defaultApp(_ title: LocalizationKey, icon: String, name: String?) -> some View {
@@ -161,7 +165,7 @@ struct OverviewPage: View {
                 } else {
                     Text(name ?? l10n.string(.appNoneFound))
                         .font(.body.weight(.semibold))
-                        .lineLimit(1)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer(minLength: 0)
@@ -191,6 +195,13 @@ struct StatusCard: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+                    Button {
+                        model.select(.menu)
+                    } label: {
+                        Label(l10n.string(.appPreviewMenu), systemImage: "contextualmenu.and.cursorarrow")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding(.top, 8)
                 } else if state == .needsAttention {
                     Text(model.summary.openTitles(in: l10n).formatted(.list(type: .and, width: .narrow)))
                         .font(.callout)
@@ -261,10 +272,13 @@ struct FirstRunCard: View {
                     .disabled(model.isWorking)
             }
 
-            step(2, title: .appStepTwoTitle, body: .appStepTwoBody, done: false) {
-                Button(l10n.string(.appExtensionSettings)) { model.showExtensionSettings() }
+            let extensionAction = model.check(.finderExtension)?.setupAction(firstRun: false) ?? .extensionSettings
+            step(2, title: extensionAction == .repair ? .appCheckExtension : .appStepTwoTitle,
+                 body: extensionAction == .repair ? .appFixRepair : .appStepTwoBody, done: false) {
+                Button(l10n.string(extensionAction.title)) { Task { await model.perform(extensionAction) } }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
+                    .disabled(model.isWorking || (extensionAction == .repair && model.locationProblem != nil))
             }
 
             step(3, title: .appStepThreeTitle, body: .appStepThreeBody, done: false) {
@@ -337,18 +351,23 @@ struct MenuPage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(l10n.string(.appMenuCaption))
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            if model.snapshot == nil {
-                ProgressRow(message: .appChecking)
-            } else if model.menuRows.isEmpty {
-                Text(l10n.string(.appMenuEmpty))
+            if model.menuState == .ready {
+                Text(l10n.string(.appMenuCaption))
                     .font(.callout)
+                    .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-            } else {
+            }
+
+            switch model.menuState {
+            case .loading:
+                ProgressRow(message: .appChecking)
+            case .needsSetup:
+                emptyState(.appMenuNeedsSetup, symbol: "slider.horizontal.3", action: .appSetupButton) { model.select(.overview) }
+            case .invalidConfig:
+                emptyState(.appMenuConfigError, symbol: "exclamationmark.triangle", action: .appShowChecks) { model.select(.checks) }
+            case .empty:
+                emptyState(.appMenuEmpty, symbol: "contextualmenu.and.cursorarrow", action: .appShowChecks) { model.select(.checks) }
+            case .ready:
                 VStack(spacing: 0) {
                     ForEach(model.menuRows) { row in
                         MenuLine(row: row, image: model.image(for: row.icon)) {
@@ -359,6 +378,23 @@ struct MenuPage: View {
                 .panel()
             }
         }
+    }
+
+    private func emptyState(_ message: LocalizationKey, symbol: String, action: LocalizationKey, perform: @escaping () -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Image(systemName: symbol)
+                .font(.title2)
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            Text(l10n.string(message))
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+            Button(l10n.string(action), action: perform)
+                .buttonStyle(.bordered)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .panel()
     }
 }
 
@@ -414,136 +450,6 @@ struct MenuLine: View {
                 .resizable()
                 .scaledToFit()
                 .foregroundStyle(.primary)
-        }
-    }
-}
-
-// MARK: Checks
-
-/// Every check of the doctor, with what it found and what to do. The launch test is here, where its answer goes.
-struct ChecksPage: View {
-    let model: SetupModel
-    private let l10n = Localizer.system
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .center, spacing: 12) {
-                Text(l10n.string(statusTitle(model.summary.state)))
-                    .font(.body.weight(.medium))
-                Spacer(minLength: 12)
-                Button {
-                    Task { await model.testLaunch() }
-                } label: {
-                    Label(l10n.string(.appTestLaunch), systemImage: "play.circle")
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                // The test goes through the extension: with it off it would wait its 75 seconds and say the extension did not answer.
-                .disabled(model.isWorking || model.isRefreshing || model.summary.extensionNeedsSetup)
-            }
-
-            if model.isTestingLaunch {
-                ProgressRow(message: .appTesting)
-            }
-
-            if model.checks.isEmpty {
-                ProgressRow(message: .appChecking)
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(model.checks.enumerated()), id: \.element.id) { index, check in
-                        CheckRow(check: check, home: model.homePath, firstRun: model.needsFirstRunChoice)
-                        if index < model.checks.count - 1 {
-                            Divider()
-                                .padding(.horizontal, 14)
-                        }
-                    }
-                }
-                .panel()
-            }
-        }
-    }
-}
-
-/// One check: its title, what was found, its notes and what to do. The status is spoken once, as the value of the row.
-struct CheckRow: View {
-    let check: DoctorCheck
-    let home: String
-    /// There is no config file yet: the way in is the Set Up button of the first page, not Install or Repair.
-    let firstRun: Bool
-    private let l10n = Localizer.system
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Image(systemName: symbol)
-                .foregroundStyle(color)
-                .frame(width: 20)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(check.title(in: l10n))
-                    .font(.body.weight(.medium))
-                if let detail = check.detail {
-                    line(detail, .secondary)
-                }
-                ForEach(Array(check.notes.enumerated()), id: \.offset) { _, note in
-                    line(note, .secondary)
-                }
-                if let fix = check.fix {
-                    line(inTheWindow(fix), .primary)
-                }
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        // One stop for VoiceOver per check (title, detail and fix read together) instead of three.
-        .accessibilityElement(children: .combine)
-        .accessibilityValue(l10n.string(statusKey))
-    }
-
-    /// The fixes of the doctor are written for a terminal ("Run `rh setup`"); in the window the same thing is a button, and the person has no command to run.
-    private func inTheWindow(_ fix: LocalizedMessage) -> LocalizedMessage {
-        switch fix.key {
-        case .doctorFixRunSetup, .doctorFixExtensionInstall: firstRun ? .appFixSetUp : .appFixRepair
-        case .doctorFixExtensionClean: firstRun ? .appFixSetUp : .appFixExtensionClean
-        case .doctorFixExtensionEnable: .appFixExtensionEnable
-        default: fix
-        }
-    }
-
-    /// One line of what the doctor says, in the system language, as long as it needs to be. A path or a command in a right-to-left
-    /// sentence stays in one piece, and the text stays selectable (a fix is a command a person copies).
-    private func line(_ message: LocalizedMessage, _ style: HierarchicalShapeStyle) -> some View {
-        Text(DoctorText.styled(l10n.render(message, isolatingValues: true), home: home))
-            .font(.callout)
-            .foregroundStyle(style)
-            .fixedSize(horizontal: false, vertical: true)
-            .textSelection(.enabled)
-    }
-
-    private var statusKey: LocalizationKey {
-        switch check.status {
-        case .ok: .appStatusOK
-        case .warn: .appStatusWarning
-        case .fail: .appStatusProblem
-        case .needsUser: .appStatusNeedsYou
-        }
-    }
-
-    private var symbol: String {
-        switch check.status {
-        case .ok: "checkmark.circle.fill"
-        case .warn: "exclamationmark.triangle.fill"
-        case .fail: "xmark.octagon.fill"
-        case .needsUser: "hand.raised.fill"
-        }
-    }
-
-    private var color: Color {
-        switch check.status {
-        case .ok: .green
-        case .warn: .orange
-        case .fail: .red
-        case .needsUser: .blue
         }
     }
 }

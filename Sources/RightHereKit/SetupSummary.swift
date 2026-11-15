@@ -42,6 +42,10 @@ public struct SetupSummary: Sendable, Equatable {
         openChecks.filter { !$0.isOptional }
     }
 
+    public var optionalChecks: [DoctorCheck] { openChecks.filter(\.isOptional) }
+
+    public var passedChecks: [DoctorCheck] { checks.filter { $0.status == .ok } }
+
     /// The Finder extension is the one step of the first run that only the person can take, in System Settings, and the
     /// first-run card waits for it. A row that is a warning says the extension is on (and registered more than once), so it
     /// is not a first run.

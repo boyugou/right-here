@@ -15,6 +15,10 @@
 #   ./script/preview_setup.sh out.png en --picks-not-applied  after a setup that kept a config that was there: the choices it could not apply, with the edits, and a warning
 #   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
 #   ./script/preview_setup.sh out.png en --demo --tab folders
+#   ./script/preview_setup.sh out.png en --config-error --tab menu  a broken config and its recovery action
+#   ./script/preview_setup.sh out.png en --empty-menu --tab menu    a valid config with no menu entries
+#   ./script/preview_setup.sh out.png de --feedback --tab ai        a localized copy confirmation
+#   ./script/preview_setup.sh out.png ar --failure-notice --tab worktrees  a localized action failure
 #   ./script/preview_setup.sh out.png en --demo --submenus  the Finder menu with every submenu open
 #   ./script/preview_setup.sh out.png de --gallery          every sentence the doctor can say, as rows of the checks
 #   ./script/preview_setup.sh out.png ar --minimum --large-text  the smallest window, with large text
@@ -32,7 +36,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--feedback] [--failure-notice]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -47,7 +51,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       TAB="${args[$i]:?preview_setup.sh: --tab needs a section}"
       ;;
     --details) TAB="checks" ;;
-    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text) FLAGS+=("$argument") ;;
+    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --feedback | --failure-notice) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -80,7 +84,7 @@ let package = Package(
 )
 PACKAGE
 # The window's own files, the same ones the app compiles.
-for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift; do
+for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift SetupChecks.swift; do
   ln -sf "$ROOT/Apps/RightHere/$file" "$PREVIEW/Sources/preview/$file"
 done
 # The Finder menu's own glyphs, which main.swift registers by name (the app finds them in its asset catalog), and the
@@ -351,6 +355,7 @@ func gallery() -> [DoctorCheck] {
         (.warn, .doctorEditorNone, .doctorFixEditor),
         (.fail, .doctorAppNotInstalled("Ghostty"), .doctorFixTerminal),
         (.warn, .doctorAgentNotFound("claude"), .doctorFixAgentRemove("claude")),
+        (.warn, .doctorAgentUnknown("claude"), nil),
         (.warn, .doctorVerbatim("Ghostty cannot run commands yet."), .doctorFixAgentLauncher(#"launcher = "link""#, #""desktop""#)),
         (.warn, .doctorAppFallback("iTerm", "Ghostty"), .doctorFixTerminalFallback),
         (.warn, .doctorAppFallback("Zed", "Visual Studio Code"), .doctorFixEditorFallback),
@@ -362,6 +367,7 @@ func gallery() -> [DoctorCheck] {
         (.warn, .doctorServicesNone, .doctorFixRunSetup),
         (.ok, .doctorServicesOk("12"), nil),
         (.warn, .doctorCliMissing("~/.local/bin/rh"), .doctorFixRunSetup),
+        (.warn, .doctorCliPathUnknown("~/.local/bin/rh"), nil),
         (.warn, .doctorExtensionMultiple("2", "\(target); ~/Library/Developer/Xcode/DerivedData/RightHere/Build/Products/Release/Right Here.app/Contents/PlugIns/FinderExtension.appex"), .doctorFixExtensionClean),
         (.fail, .doctorExtensionNotRegistered, .doctorFixExtensionInstall),
         (.needsUser, .doctorExtensionDisabled, .doctorFixExtensionEnable),
@@ -380,9 +386,11 @@ func gallery() -> [DoctorCheck] {
         rows.append(DoctorCheck(.agent("gallery\(number)"), title: "Agent \(number + 1)", status: row.0, detail: row.1, fix: row.2))
     }
     let said = Set(rows.flatMap { [$0.detail?.key, $0.fix?.key].compactMap { $0 } + $0.notes.map(\.key) })
-    for key in LocalizationKey.allCases where key.rawValue.hasPrefix("doctor.") && !said.contains(key) {
+    let missing = LocalizationKey.allCases.filter { $0.rawValue.hasPrefix("doctor.") && !said.contains($0) }
+    for key in missing {
         FileHandle.standardError.write(Data("the gallery has no row for \(key.rawValue)\n".utf8))
     }
+    guard missing.isEmpty else { exit(1) }
     requireNothingOfThisMac(rows.flatMap { $0.englishLines() })
     return rows
 }
@@ -398,20 +406,31 @@ func render(to path: String) async {
                                      home: URL(fileURLWithPath: demoHome)), tab: .checks)
     } else if flag("--first-run") || flag("--failed-set-up") || flag("--location") {
         model.simulate(SetupSnapshot(checks: firstRunChecks(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
-                                     configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: .overview)
-    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") {
+                                     configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: tab)
+    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--feedback") || flag("--failure-notice") {
         let facts = demoFacts()
-        model.simulate(demoSnapshot(facts), tab: tab, icons: IconProvider(facts: facts), worktrees: await demoWorktrees(), repository: demoRepository)
+        var snapshot = demoSnapshot(facts)
+        if flag("--config-error") {
+            snapshot.configProblems = ConfigParser.parse("[general\n").diagnostics
+            snapshot.checks = snapshot.checks.replacing(DoctorCheck(.config, status: .fail,
+                detail: .doctorVerbatim("config.toml:1: expected ] to close the table"), fix: .doctorFixConfigErrors))
+        }
+        if flag("--config-error") || flag("--empty-menu") { snapshot.menu = [] }
+        model.simulate(snapshot, tab: tab, icons: IconProvider(facts: facts), worktrees: await demoWorktrees(), repository: demoRepository)
     } else {
         await model.refresh()
         model.selectedTab = tab
         if tab == .worktrees { await model.refreshWorktrees() }
     }
-    if flag("--onboarding") || flag("--set-up") { model.simulateExtensionOff() }
+    if flag("--onboarding") || flag("--set-up") {
+        model.simulate(check: DoctorCheck(.finderExtension, status: .needsUser, detail: .doctorExtensionDisabled, fix: .doctorFixExtensionEnable))
+    }
     if flag("--set-up") { model.simulate(setupReport: demoSetupReport()) }
     if flag("--failed-set-up") { model.simulate(setupReport: demoFailedSetupReport()) }
     if flag("--location") { model.simulateLocationProblem() }
     if flag("--picks-not-applied") { model.simulate(setupReport: demoKeptConfigReport()) }
+    if flag("--feedback") { model.simulate(notice: .mcpConfigurationCopied) }
+    if flag("--failure-notice") { model.simulate(notice: .notARepository("~/Projects/notes")) }
     if flag("--submenus") { model.simulate(openSubmenus: allSubmenus(model.snapshot?.menu ?? [])) }
     // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.
     let language = Locale.preferredLanguages.first ?? "en"
@@ -419,7 +438,7 @@ func render(to path: String) async {
     // The width of the window: its default, or its smallest. The text wraps at that width, as it does in the window; without a width
     // the picture would be as wide as the longest line.
     let width: CGFloat = flag("--minimum") ? 800 : 860
-    let window = SetupView(model: model)
+    let window = SetupView(model: model, expandCheckDetails: flag("--gallery"), previewViewport: flag("--minimum"))
         .frame(width: width, height: flag("--minimum") ? 560 : nil, alignment: .topLeading)
         .background(Color(nsColor: .windowBackgroundColor))
         .environment(\.colorScheme, flag("--dark") ? .dark : .light)

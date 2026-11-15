@@ -98,6 +98,8 @@ struct SetupModelFirstRunTests {
         #expect(!mac.model.needsFirstRunChoice, "a window that has not looked must not claim a first run")
         #expect(!mac.model.configIsThere, "and must not offer what acts on a config")
         #expect(mac.model.summary.state == .checking)
+        #expect(mac.model.statusTitle == .appChecking && mac.model.attentionCount == 0)
+        #expect(mac.model.menuState == .loading)
     }
 
     @Test func aMacWithNoConfigIsOnItsFirstRunAfterTheLook() async throws {
@@ -107,6 +109,8 @@ struct SetupModelFirstRunTests {
         let offer = try #require(mac.model.offer)
         #expect(offer.terminals.map(\.id) == ["ghostty", "terminal"])
         #expect(mac.model.selectedTerminal == "ghostty" && mac.model.selectedEditor == "vscode", "the choices start from what the Mac has")
+        #expect(mac.model.statusTitle == .appSetupTitle && mac.model.attentionCount == 0, "missing setup pieces are expected before setup")
+        #expect(mac.model.menuState == .needsSetup, "a default menu is not presented as the person's configured menu")
     }
 
     @Test func theChoicesStayThePersonsThroughEveryRefresh() async throws {
@@ -116,6 +120,41 @@ struct SetupModelFirstRunTests {
         mac.model.selectedAgents = ["codex"]
         await mac.model.refresh()
         #expect(mac.model.selectedTerminal == "terminal" && mac.model.selectedAgents == ["codex"])
+    }
+
+    @Test func theSetUpActionFromChecksReturnsToTheChooserWithoutWritingAnything() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        await mac.model.refresh()
+        mac.model.select(.checks)
+        await mac.model.perform(.setup)
+        #expect(mac.model.selectedTab == .overview)
+        #expect(!mac.configExists && mac.model.setupAttempt == 0)
+    }
+
+    @Test func aMenuWithConfigErrorsIsDistinguishedFromAnIntentionallyEmptyMenu() throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        var snapshot = SetupSnapshot(configFile: mac.paths.configFile, home: mac.home)
+        mac.model.apply(snapshot)
+        #expect(mac.model.menuState == .empty)
+        snapshot.configProblems = ConfigParser.parse("[general\n").diagnostics
+        mac.model.apply(snapshot)
+        #expect(mac.model.menuState == .invalidConfig)
+        snapshot.configProblems = []
+        snapshot.menu = MenuPreview.folderMenu(ConfigParser.parse(""), facts: FakeSystemFacts(homeDirectory: mac.home, directories: [mac.home.path]),
+                                             folder: mac.home, localizer: .english)
+        mac.model.apply(snapshot)
+        #expect(mac.model.menuState == .ready)
+    }
+
+    @Test func dismissingAnErrorClearsOnlyTheMessage() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        await mac.model.refresh()
+        await mac.model.openConfig()
+        #expect(mac.model.notice?.isProblem == true)
+        let checks = mac.model.checks
+        mac.model.dismissNotice()
+        #expect(mac.model.notice == nil && mac.model.checks == checks)
+        #expect(mac.model.needsFirstRunChoice && !mac.configExists)
     }
 
     @Test func installOrRepairAndOpenConfigNeverMakeTheConfigBeforeOrDuringTheFirstRun() async throws {

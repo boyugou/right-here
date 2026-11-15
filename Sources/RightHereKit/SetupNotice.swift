@@ -7,6 +7,8 @@ public enum SetupNotice: Sendable, Equatable {
     case promptCopied
     case mcpConfigurationCopied
     case pluginCommandsCopied
+    /// The launch test's answer stays visible even when successful checks are folded away.
+    case launchFinished(DoctorCheck)
     /// The worktree in this folder was removed.
     case worktreeRemoved(String)
     /// The folder is not inside a git repository.
@@ -24,6 +26,7 @@ public enum SetupNotice: Sendable, Equatable {
         case .promptCopied: .appPromptCopied
         case .mcpConfigurationCopied: .appMcpCopied
         case .pluginCommandsCopied: .appPluginCopied
+        case .launchFinished(let check): check.detail ?? (check.status == .ok ? .appStatusOK : .appStatusProblem)
         case .worktreeRemoved(let folder): .appWorktreeRemoved(folder)
         case .notARepository(let folder): .appNotARepository(folder)
         case .notRemovable: .appWorktreeNotRemovable
@@ -36,6 +39,7 @@ public enum SetupNotice: Sendable, Equatable {
     public var isProblem: Bool {
         switch self {
         case .failed, .stopped, .notARepository, .notRemovable: true
+        case .launchFinished(let check): check.status != .ok
         case .promptCopied, .mcpConfigurationCopied, .pluginCommandsCopied, .worktreeRemoved: false
         }
     }
