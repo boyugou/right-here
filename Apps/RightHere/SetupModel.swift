@@ -19,6 +19,7 @@ final class SetupModel {
     /// An install, a repair, a launch test or a change to the folders is running: the buttons that would start another are off.
     private(set) var isWorking = false
     private(set) var isTestingLaunch = false
+    private(set) var isChoosingFolder = false
     /// What happened last: a confirmation, or why an action did not work. The next action replaces it.
     private(set) var notice: SetupNotice?
     private(set) var worktrees: WorktreeListing = .idle
@@ -52,6 +53,10 @@ final class SetupModel {
     private let idleInterval: Duration
     private let windowIsVisible: @MainActor () -> Bool
     private let activationQuietPeriod: Duration
+    private let readFolders: @Sendable () async -> FolderSnapshot
+    private let pickFolder: @MainActor (FolderChoice) async -> URL?
+
+    enum FolderChoice: Equatable { case pin, repository }
     /// When the state was last read; coming back to the app does not read it again within `activationQuietPeriod`.
     @ObservationIgnored private var lastRead: ContinuousClock.Instant?
     @ObservationIgnored private var icons: IconProvider
@@ -69,7 +74,9 @@ final class SetupModel {
     ///   - activationQuietPeriod: Coming back to the app reads the state again only when it was last read longer ago than this: each read starts the person's login
     ///     shell, which runs their startup files, and a person who switches between windows must not have those run at every switch.
     init(loader: SetupLoader, actions: SetupActions, facts: any SystemFacts, helper: String, pollInterval: Duration = .seconds(2), idleInterval: Duration = .seconds(30),
-         activationQuietPeriod: Duration = .seconds(20), windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible) {
+         activationQuietPeriod: Duration = .seconds(20), windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible,
+         readFolders: (@Sendable () async -> FolderSnapshot)? = nil,
+         pickFolder: @escaping @MainActor (FolderChoice) async -> URL? = SetupModel.livePickFolder) {
         self.loader = loader
         self.actions = actions
         icons = IconProvider(facts: facts)
@@ -79,6 +86,8 @@ final class SetupModel {
         self.idleInterval = idleInterval
         self.activationQuietPeriod = activationQuietPeriod
         self.windowIsVisible = windowIsVisible
+        self.readFolders = readFolders ?? { await loader.folders() }
+        self.pickFolder = pickFolder
     }
 
     /// The window of the app: this Mac, and the `rh` that ships inside the app.
@@ -291,20 +300,39 @@ final class SetupModel {
 
     /// Changes the folders only while no read of the state is running: a read that started before the change could finish after
     /// it and put the old list back. The buttons that do this are off meanwhile.
+    func pin(_ folder: String) async {
+        guard !isWorking, !isRefreshing else { return }
+        isWorking = true
+        defer { isWorking = false }
+        say(await actions.pin(folder) ?? .folderPinned(displayPath(folder)))
+        await refreshFolders()
+    }
+
     func unpin(_ folder: String) async {
         guard !isWorking, !isRefreshing else { return }
         isWorking = true
-        say(await actions.unpin(folder))
-        isWorking = false
+        defer { isWorking = false }
+        say(await actions.unpin(folder) ?? .folderUnpinned(displayPath(folder)))
         await refreshFolders()
     }
 
     func clearRecents() async {
         guard !isWorking, !isRefreshing else { return }
         isWorking = true
-        say(await actions.clearRecents())
-        isWorking = false
+        defer { isWorking = false }
+        say(await actions.clearRecents() ?? .recentsCleared)
         await refreshFolders()
+    }
+
+    func revealFolder(_ folder: String) async {
+        guard !isWorking, !isRefreshing else { return }
+        isWorking = true
+        defer { isWorking = false }
+        say(await actions.revealFolder(folder))
+    }
+
+    private func displayPath(_ path: String) -> String {
+        PathDisplay.abbreviatingHome(path.withControlCharactersEscaped, home: homePath)
     }
 
     /// Lists the worktrees of the repository the tab shows. A repository chosen meanwhile has its own list coming; this one is dropped.
@@ -327,18 +355,46 @@ final class SetupModel {
 
     /// Lets the person pick a folder; the git repository it is in is the one the worktrees tab lists.
     func chooseRepository() async {
+        await chooseFolder(for: .repository)
+    }
+
+    func choosePinnedFolder() async {
+        await chooseFolder(for: .pin)
+    }
+
+    private func chooseFolder(for purpose: FolderChoice) async {
+        guard !isWorking, !isRefreshing else { return }
+        isWorking = true
+        isChoosingFolder = true
+        defer { isWorking = false; isChoosingFolder = false }
+        guard let folder = await pickFolder(purpose) else { return }
+        isChoosingFolder = false
+        say(nil)
+        switch purpose {
+        case .pin:
+            say(await actions.pin(folder.path) ?? .folderPinned(displayPath(folder.path)))
+            await refreshFolders()
+        case .repository:
+            guard let root = await actions.repository(containing: folder) else {
+                say(.notARepository(displayPath(folder.path)))
+                return
+            }
+            chosenRepository = root
+            await refreshWorktrees()
+        }
+    }
+
+    static func livePickFolder(_ purpose: FolderChoice) async -> URL? {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
-        panel.message = Localizer.system.string(.appChooseFolderMessage)
-        panel.prompt = Localizer.system.string(.appChooseFolderPrompt)
-        guard panel.runModal() == .OK, let folder = panel.url else { return }
-        guard let root = await actions.repository(containing: folder) else {
-            say(.notARepository(PathDisplay.abbreviatingHome(folder.path, home: homePath)))
-            return
+        panel.canCreateDirectories = false
+        panel.prompt = Localizer.system.string(purpose == .pin ? .appPin : .appChooseFolderPrompt)
+        if purpose == .repository {
+            panel.message = Localizer.system.string(.appChooseFolderMessage)
         }
-        selectRepository(root)
+        return await panel.begin() == .OK ? panel.url : nil
     }
 
     func selectRepository(_ root: URL) {
@@ -402,7 +458,7 @@ final class SetupModel {
         #if PREVIEW
         if simulated { return }
         #endif
-        folders = await loader.folders()
+        folders = await readFolders()
         if selectedTab == .worktrees { await refreshWorktrees() }
     }
 

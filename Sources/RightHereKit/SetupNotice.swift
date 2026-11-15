@@ -9,6 +9,10 @@ public enum SetupNotice: Sendable, Equatable {
     case pluginCommandsCopied
     /// The launch test's answer stays visible even when successful checks are folded away.
     case launchFinished(DoctorCheck)
+    case folderPinned(String)
+    case folderUnpinned(String)
+    case recentsCleared
+    case folderUnavailable(String)
     /// The worktree in this folder was removed.
     case worktreeRemoved(String)
     /// The folder is not inside a git repository.
@@ -27,6 +31,10 @@ public enum SetupNotice: Sendable, Equatable {
         case .mcpConfigurationCopied: .appMcpCopied
         case .pluginCommandsCopied: .appPluginCopied
         case .launchFinished(let check): check.detail ?? (check.status == .ok ? .appStatusOK : .appStatusProblem)
+        case .folderPinned(let path): .appFolderPinned(path)
+        case .folderUnpinned(let path): .appFolderUnpinned(path)
+        case .recentsCleared: .appRecentsCleared
+        case .folderUnavailable(let path): .appFolderUnavailable(path)
         case .worktreeRemoved(let folder): .appWorktreeRemoved(folder)
         case .notARepository(let folder): .appNotARepository(folder)
         case .notRemovable: .appWorktreeNotRemovable
@@ -38,9 +46,9 @@ public enum SetupNotice: Sendable, Equatable {
     /// Whether this tells of something that did not work, so that the window shows it as a problem.
     public var isProblem: Bool {
         switch self {
-        case .failed, .stopped, .notARepository, .notRemovable: true
+        case .failed, .stopped, .notARepository, .notRemovable, .folderUnavailable: true
         case .launchFinished(let check): check.status != .ok
-        case .promptCopied, .mcpConfigurationCopied, .pluginCommandsCopied, .worktreeRemoved: false
+        case .promptCopied, .mcpConfigurationCopied, .pluginCommandsCopied, .worktreeRemoved, .folderPinned, .folderUnpinned, .recentsCleared: false
         }
     }
 }

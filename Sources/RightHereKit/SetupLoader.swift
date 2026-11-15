@@ -3,7 +3,7 @@ import RightHereCore
 
 /// The folders Right Here remembers, and the git repositories they are in.
 public struct FolderSnapshot: Sendable, Equatable {
-    /// Pinned with `rh pin`, in the order they were pinned.
+    /// Pinned from the app or with `rh pin`, in the order they were pinned.
     public var pins: [String]
     /// The folders of the actions run most recently, the newest first.
     public var recents: [String]

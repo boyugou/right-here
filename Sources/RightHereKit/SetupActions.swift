@@ -1,7 +1,7 @@
 import Foundation
 import RightHereCore
 
-/// What the setup window does besides reading the state: sets Right Here up, opens the config, forgets folders, looks at the
+/// What the setup window does besides reading the state: sets Right Here up, opens the config, manages saved folders, looks at the
 /// terminal and the Finder extension. Each is `async` and not isolated to an actor, so none holds the window's thread, and each
 /// says what went wrong as a `SetupNotice`, in the words of the process or the system where there are some.
 public struct SetupActions: Sendable {
@@ -83,6 +83,31 @@ public struct SetupActions: Sendable {
     }
 
     static let noConfigYet = "There is no config file yet. Choose what you use and press Set Up: the file is made from your choices."
+
+    public func pin(_ folder: String) async -> SetupNotice? {
+        guard let url = existingFolder(folder) else { return unavailableFolder(folder) }
+        return edit { $0.pin(url.path) }
+    }
+
+    /// Reveal only: the saved path is never handed to its default application.
+    public func revealFolder(_ folder: String) async -> SetupNotice? {
+        guard let url = existingFolder(folder) else { return unavailableFolder(folder) }
+        do {
+            return Self.failure(of: try await runner.run(ProcessStep(executable: "/usr/bin/open", arguments: ["-R", url.path])))
+        } catch {
+            return .failed(error.localizedDescription)
+        }
+    }
+
+    private func existingFolder(_ path: String) -> URL? {
+        guard let context = try? ContextInput(paths: [], container: path, resolution: .absoluteOnly).makeContext(),
+              let url = context.container?.lexicallyNormalized else { return nil }
+        return facts.isDirectory(url) == true ? url : nil
+    }
+
+    private func unavailableFolder(_ path: String) -> SetupNotice {
+        .folderUnavailable(PathDisplay.abbreviatingHome(path.withControlCharactersEscaped, home: facts.homeDirectory.path))
+    }
 
     /// Takes a folder out of the pinned ones. `nil` when it was saved, or when there was nothing to take out.
     public func unpin(_ folder: String) async -> SetupNotice? {

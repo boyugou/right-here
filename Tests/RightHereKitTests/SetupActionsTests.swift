@@ -25,9 +25,10 @@ private struct Home {
 
     /// The facts of this home: the config file is known to exist when it was written. A trial home, so nothing is registered for the
     /// whole Mac whatever the test does.
-    func actions(_ runner: any ProcessRunner) -> SetupActions {
+    func actions(_ runner: any ProcessRunner, directories: Set<String> = [], files: Set<String> = []) -> SetupActions {
         let existing = FileManager.default.fileExists(atPath: paths.configFile.path) ? [paths.configFile.path] : []
-        return SetupActions(facts: FakeSystemFacts(homeDirectory: home, files: Set(existing)), paths: paths, runner: runner, helperPath: "/opt/app/rh", trialHome: home)
+        return SetupActions(facts: FakeSystemFacts(homeDirectory: home, directories: directories, files: Set(existing).union(files)),
+                            paths: paths, runner: runner, helperPath: "/opt/app/rh", trialHome: home)
     }
 }
 
@@ -60,8 +61,9 @@ struct SetupNoticeTests {
     }
 
     @Test func onlyWhatDidNotWorkIsAProblem() {
-        let problems: [SetupNotice] = [.failed("x"), .stopped(status: 1), .notARepository("/x"), .notRemovable]
-        let confirmations: [SetupNotice] = [.promptCopied, .mcpConfigurationCopied, .pluginCommandsCopied, .worktreeRemoved("/x")]
+        let problems: [SetupNotice] = [.failed("x"), .stopped(status: 1), .notARepository("/x"), .notRemovable, .folderUnavailable("/x")]
+        let confirmations: [SetupNotice] = [.promptCopied, .mcpConfigurationCopied, .pluginCommandsCopied, .worktreeRemoved("/x"),
+                                            .folderPinned("/x"), .folderUnpinned("/x"), .recentsCleared]
         #expect(problems.allSatisfy { $0.isProblem })
         #expect(confirmations.allSatisfy { !$0.isProblem })
     }
@@ -231,6 +233,58 @@ struct SetupActionsTests {
 struct SetupFolderEditTests {
     private func seed(_ machine: Home) throws {
         try StateStore(pins: ["/work/app", "/work/web"], recents: ["/work/notes", "/work/app"]).save(paths: machine.paths)
+    }
+
+    @Test func aFolderCanBePinnedFromTheWindowWithoutChangingConfigOrRecents() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try seed(machine)
+        let runner = FakeProcessRunner()
+        let actions = machine.actions(runner, directories: ["/work/new"])
+        #expect(await actions.pin("/work/new") == nil)
+        #expect(await actions.pin("/work/./new/") == nil)
+        let state = StateStore.load(paths: machine.paths)
+        #expect(state.pins == ["/work/app", "/work/web", "/work/new"])
+        #expect(state.recents == ["/work/notes", "/work/app"])
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
+        #expect(runner.recorded.isEmpty)
+    }
+
+    @Test func onlyAnExistingAbsoluteFolderCanBePinnedOrRevealed() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        let runner = FakeProcessRunner()
+        let actions = machine.actions(runner, directories: ["/work\0suffix"], files: ["/work/script.command"])
+        for path in ["/work/missing", "/work/script.command", "work/relative", "", "/work\0suffix"] {
+            #expect(await actions.pin(path) == .folderUnavailable(path.withControlCharactersEscaped))
+            #expect(await actions.revealFolder(path) == .folderUnavailable(path.withControlCharactersEscaped))
+        }
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.stateFile.path))
+        #expect(runner.recorded.isEmpty)
+    }
+
+    @Test func revealCarriesTheWholeFolderAsOneArgumentAndNeverOpensItsDefaultApp() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        let folder = "/work/it's a \"folder\"; $(touch sentinel)\nsecond line"
+        let runner = FakeProcessRunner()
+        #expect(await machine.actions(runner, directories: [folder]).revealFolder(folder) == nil)
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-R", folder])])
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.stateFile.path))
+    }
+
+    @Test func aFailedRevealReportsTheProcessErrorAndKeepsTheSavedFolder() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try seed(machine)
+        let runner = FakeProcessRunner(results: [ProcessResult(status: 1, standardError: "Finder could not show the folder.")])
+        #expect(await machine.actions(runner, directories: ["/work/app"]).revealFolder("/work/app") == .failed("Finder could not show the folder."))
+        #expect(StateStore.load(paths: machine.paths).pins == ["/work/app", "/work/web"])
+    }
+
+    @Test func aPinThatCannotBeSavedReturnsAnError() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try seed(machine)
+        try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: machine.paths.configDirectory.path)
+        let notice = await machine.actions(FakeProcessRunner(), directories: ["/work/new"]).pin("/work/new")
+        #expect(notice?.isProblem == true)
+        #expect(StateStore.load(paths: machine.paths).pins == ["/work/app", "/work/web"])
     }
 
     @Test func aPinGoesAndTheOthersStay() async throws {

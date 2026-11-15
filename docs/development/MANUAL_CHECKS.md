@@ -106,7 +106,15 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    pinned and recent folders (the app has no folder of its own to start from). Right Here's worktrees (under
    `.right-here/worktrees`) have a Remove… button, which asks first and never forces: a worktree with uncommitted work stays,
    and the window shows what git said. The branch is kept. The main working copy and the worktrees you made by hand have no button.
-9. Folders: Unpin and Clear Recent Folders change `state.toml`; `rh pins` and `rh recents` show the same lists afterwards.
+9. Folders: Pin Folder opens a directory chooser; Cancel leaves the list unchanged. Pick a folder and check that it appears
+   with its name and path. A recent folder's Pin button adds it to the pinned list; both occurrences now offer Unpin. Reveal in
+   Finder selects the folder without launching a terminal or editor. Rename a pinned folder in Finder, then try to reveal it:
+   the app reports that it is unavailable, retains the pin, and still allows Unpin. Pin, Unpin and Clear Recent Folders change
+   `state.toml`; `rh pins` and `rh recents` show the same lists afterwards. Actions stay disabled until the updated list appears.
+   Use the chooser's Go to Folder sheet to enter a file path: if the panel returns it, the app must reject it and leave the pins
+   unchanged (the native panel did return a file in the check recorded in [ADR 0027](../decisions/0027-manage-folders-in-the-app.md)).
+   With keyboard navigation and VoiceOver, reach both row buttons; each says its action and the folder it acts on. Try long paths,
+   the minimum window and dark appearance. Returning from the chooser restores usable controls without leaving a spinner running.
 10. In Arabic or Hebrew, with a pinned folder whose names are right to left (for example a folder called مستندات): the Folders and
     Worktrees rows draw the names in reverse order in the preview (`script/preview_setup.sh --demo --tab folders ar`), and the
     left-to-right marks that are added did not change that. Look at the real window: if the names read in order there, the limit

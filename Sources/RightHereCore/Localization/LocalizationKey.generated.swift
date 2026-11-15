@@ -53,6 +53,9 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appFixExtensionEnable = "app.fixExtensionEnable"
     case appFixRepair = "app.fixRepair"
     case appFixSetUp = "app.fixSetUp"
+    case appFolderPinned = "app.folderPinned"
+    case appFolderUnavailable = "app.folderUnavailable"
+    case appFolderUnpinned = "app.folderUnpinned"
     case appFoldersNote = "app.foldersNote"
     case appInstallOrRepair = "app.installOrRepair"
     case appLoading = "app.loading"
@@ -76,6 +79,8 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appOnboardTitle = "app.onboardTitle"
     case appOpenChecksHint = "app.openChecksHint"
     case appOpenConfig = "app.openConfig"
+    case appPin = "app.pin"
+    case appPinFolder = "app.pinFolder"
     case appPinnedFolders = "app.pinnedFolders"
     case appPluginCopied = "app.pluginCopied"
     case appPreviewMenu = "app.previewMenu"
@@ -83,6 +88,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appQuickActionsBody = "app.quickActionsBody"
     case appQuickActionsTitle = "app.quickActionsTitle"
     case appRecentFolders = "app.recentFolders"
+    case appRecentsCleared = "app.recentsCleared"
     case appRefresh = "app.refresh"
     case appRefreshing = "app.refreshing"
     case appRemoveWorktree = "app.removeWorktree"
@@ -254,7 +260,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     /// How many arguments the English text takes: its `%@` placeholders, or the highest `%n$@`.
     public var arity: Int {
         switch self {
-        case .alertPermissionMessage, .appCommandStopped, .appNeedAttentionCount, .appNotARepository, .appRemoveWorktreeMessage, .appRemoveWorktreeNamed, .appUnpinFolder, .appVersion, .appWorktreeRemoved, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAgentUnknown, .doctorAppNotInstalled, .doctorClaudeLinkMissing, .doctorCliMissing, .doctorCliNotOnPath, .doctorCliPathUnknown, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorExtensionEnabled, .doctorFixAgentRemove, .doctorFixAgentsAdd, .doctorFixCliPath, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
+        case .alertPermissionMessage, .appCommandStopped, .appFolderPinned, .appFolderUnavailable, .appFolderUnpinned, .appNeedAttentionCount, .appNotARepository, .appRemoveWorktreeMessage, .appRemoveWorktreeNamed, .appUnpinFolder, .appVersion, .appWorktreeRemoved, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAgentUnknown, .doctorAppNotInstalled, .doctorClaudeLinkMissing, .doctorCliMissing, .doctorCliNotOnPath, .doctorCliPathUnknown, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorExtensionEnabled, .doctorFixAgentRemove, .doctorFixAgentsAdd, .doctorFixCliPath, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
         case .appStepLabel, .doctorAgentOk, .doctorAppFallback, .doctorExtensionMultiple, .doctorFixAgentLauncher, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
         case .doctorActivityRecent, .doctorAgentBypass, .doctorServicesDiffer, .menuAgentVariantIn: 3
         default: 0

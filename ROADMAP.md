@@ -36,6 +36,8 @@
   and sets it up. `rh doctor` also notices a Finder extension that crashed since it was installed.
 - Setup guidance: a neutral first run, detected agents first, a healthy Overview that opens the menu preview, actionable diagnostic rows,
   optional and successful checks behind disclosures, and operation feedback above the page ([ADR 0026](docs/decisions/0026-setup-next-actions.md)).
+- Folders: add a pin with the directory chooser, pin recent folders, reveal a folder in Finder, and see confirmation or a useful failure
+  without leaving the app ([ADR 0027](docs/decisions/0027-manage-folders-in-the-app.md)).
 - Official Claude Code plugin with dedicated skills (`setup`, `open-here`, `review-changes`).
 
 ## Next

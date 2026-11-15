@@ -32,12 +32,12 @@ struct SetupView: View {
 
                 Divider()
 
-                if model.isWorking {
+                if model.isWorking && !model.isChoosingFolder {
                     ProgressRow(message: model.isTestingLaunch ? .appTesting : model.isSettingUp ? .appSettingUp : .appLoading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 24)
                         .padding(.top, 14)
-                } else if let notice = model.notice {
+                } else if let notice = model.notice, !model.isWorking {
                     HStack(alignment: .top, spacing: 12) {
                         NoticeLine(notice: notice, font: .callout)
                         Spacer(minLength: 0)

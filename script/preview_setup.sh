@@ -15,6 +15,7 @@
 #   ./script/preview_setup.sh out.png en --picks-not-applied  after a setup that kept a config that was there: the choices it could not apply, with the edits, and a warning
 #   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
 #   ./script/preview_setup.sh out.png en --demo --tab folders
+#   ./script/preview_setup.sh out.png en --empty-folders --tab folders  no saved folders, with its add action
 #   ./script/preview_setup.sh out.png en --config-error --tab menu  a broken config and its recovery action
 #   ./script/preview_setup.sh out.png en --empty-menu --tab menu    a valid config with no menu entries
 #   ./script/preview_setup.sh out.png de --feedback --tab ai        a localized copy confirmation
@@ -36,7 +37,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--feedback] [--failure-notice]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--feedback] [--failure-notice]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -51,7 +52,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       TAB="${args[$i]:?preview_setup.sh: --tab needs a section}"
       ;;
     --details) TAB="checks" ;;
-    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --feedback | --failure-notice) FLAGS+=("$argument") ;;
+    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --empty-folders | --feedback | --failure-notice) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -84,7 +85,7 @@ let package = Package(
 )
 PACKAGE
 # The window's own files, the same ones the app compiles.
-for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift SetupChecks.swift; do
+for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift SetupChecks.swift SetupFolders.swift; do
   ln -sf "$ROOT/Apps/RightHere/$file" "$PREVIEW/Sources/preview/$file"
 done
 # The Finder menu's own glyphs, which main.swift registers by name (the app finds them in its asset catalog), and the
@@ -278,7 +279,8 @@ func demoKeptConfigReport() -> SetupReport {
 
 /// The folders of the demo: pinned and recent, and the repository they are in.
 let demoPins = ["\(demoHome)/Projects/app", "\(demoHome)/Projects/notes", "\(demoHome)/مستندات/مشروع"]
-let demoRecents = ["\(demoHome)/Projects/web", "\(demoHome)/Downloads", "\(demoHome)/Projects/app/Sources"]
+let demoRecents = ["\(demoHome)/Projects/web", "\(demoHome)/Downloads",
+                   "\(demoHome)/Projects/Shared resources/Design and research/Research notes and evaluation references for upcoming experiments"]
 
 /// `git worktree list --porcelain -z` of the demo repository: its main working copy, and two worktrees Right Here made for agents (every line ends with a NUL).
 let demoPorcelain = """
@@ -407,7 +409,7 @@ func render(to path: String) async {
     } else if flag("--first-run") || flag("--failed-set-up") || flag("--location") {
         model.simulate(SetupSnapshot(checks: firstRunChecks(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
                                      configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: tab)
-    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--feedback") || flag("--failure-notice") {
+    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--empty-folders") || flag("--feedback") || flag("--failure-notice") {
         let facts = demoFacts()
         var snapshot = demoSnapshot(facts)
         if flag("--config-error") {
@@ -416,6 +418,7 @@ func render(to path: String) async {
                 detail: .doctorVerbatim("config.toml:1: expected ] to close the table"), fix: .doctorFixConfigErrors))
         }
         if flag("--config-error") || flag("--empty-menu") { snapshot.menu = [] }
+        if flag("--empty-folders") { snapshot.folders = FolderSnapshot() }
         model.simulate(snapshot, tab: tab, icons: IconProvider(facts: facts), worktrees: await demoWorktrees(), repository: demoRepository)
     } else {
         await model.refresh()
@@ -429,8 +432,10 @@ func render(to path: String) async {
     if flag("--failed-set-up") { model.simulate(setupReport: demoFailedSetupReport()) }
     if flag("--location") { model.simulateLocationProblem() }
     if flag("--picks-not-applied") { model.simulate(setupReport: demoKeptConfigReport()) }
-    if flag("--feedback") { model.simulate(notice: .mcpConfigurationCopied) }
-    if flag("--failure-notice") { model.simulate(notice: .notARepository("~/Projects/notes")) }
+    if flag("--feedback") { model.simulate(notice: tab == .folders ? .folderPinned("~/Projects/app") : .mcpConfigurationCopied) }
+    if flag("--failure-notice") {
+        model.simulate(notice: tab == .folders ? .folderUnavailable("~/Projects/notes") : .notARepository("~/Projects/notes"))
+    }
     if flag("--submenus") { model.simulate(openSubmenus: allSubmenus(model.snapshot?.menu ?? [])) }
     // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.
     let language = Locale.preferredLanguages.first ?? "en"

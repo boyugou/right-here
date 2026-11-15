@@ -29,6 +29,7 @@
   - [0024 A built-in field of an agent is confirmed by the tool, or it is not there](decisions/0024-a-built-in-agent-field-is-confirmed-or-absent.md)
   - [0025 The flags a built-in terminal adapter uses are the ones the terminal documents](decisions/0025-terminal-launch-flags-are-the-documented-ones.md)
   - [0026 Setup shows the next action before the diagnostic detail](decisions/0026-setup-next-actions.md)
+  - [0027 Saved folders can be added and used in the app](decisions/0027-manage-folders-in-the-app.md)
 - [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.

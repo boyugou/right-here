@@ -99,6 +99,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 23 | A built-in field of an agent (its prompt flag, its permission flag, its continue arguments) is confirmed by the tool's own documentation or help, or it is not there. | [0024](decisions/0024-a-built-in-agent-field-is-confirmed-or-absent.md) |
 | 24 | The flags a built-in terminal adapter starts its terminal with are the ones the terminal documents; Alacritty has an adapter, kitty quits with its last window. | [0025](decisions/0025-terminal-launch-flags-are-the-documented-ones.md) |
 | 25 | Setup shows the next action first: a neutral first run, a menu preview on the healthy Overview, actionable checks, and visible operation feedback. | [0026](decisions/0026-setup-next-actions.md) |
+| 26 | Saved folders can be pinned and revealed from the app, with the same state as the CLI and controls held until the list refresh ends. | [0027](decisions/0027-manage-folders-in-the-app.md) |
 
 ## 5. Platform facts
 

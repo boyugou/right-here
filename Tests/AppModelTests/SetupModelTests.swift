@@ -52,7 +52,8 @@ private struct Mac {
     static let inTheApplicationsFolder = "/Applications/Right Here.app/Contents/Helpers/rh"
 
     init(helper: String = Mac.inTheApplicationsFolder, visible: Bool = true, pollInterval: Duration = .milliseconds(10), idleInterval: Duration = .milliseconds(10),
-         activationQuietPeriod: Duration = .zero) throws {
+         activationQuietPeriod: Duration = .zero, readFolders: (@Sendable () async -> FolderSnapshot)? = nil,
+         pickFolder: @escaping @MainActor (SetupModel.FolderChoice) async -> URL? = { _ in nil }) throws {
         home = try makeTemporaryDirectory()
         paths = RHPaths(environment: [:], home: home)
         let facts = FakeSystemFacts(homeDirectory: home, directories: [home.path], applications: [
@@ -66,7 +67,7 @@ private struct Mac {
             loader: SetupLoader(facts: facts, paths: paths, runner: runner, helperPath: helper, localizer: .english),
             actions: SetupActions(facts: facts, paths: paths, runner: runner, helperPath: helper, app: nil, trialHome: home),
             facts: facts, helper: helper, pollInterval: pollInterval, idleInterval: idleInterval,
-            activationQuietPeriod: activationQuietPeriod, windowIsVisible: { flag.isOn })
+            activationQuietPeriod: activationQuietPeriod, windowIsVisible: { flag.isOn }, readFolders: readFolders, pickFolder: pickFolder)
     }
 
     func cleanUp() { try? FileManager.default.removeItem(at: home) }
@@ -336,5 +337,127 @@ struct SetupModelRefreshTests {
         let looks = mac.runner.pluginkitLooks
         try await Task.sleep(for: .milliseconds(100))
         #expect(mac.runner.pluginkitLooks == looks, "the look went on after the window was closed")
+    }
+}
+
+@MainActor
+private final class FolderReadGate {
+    var started = false
+    private var pending: CheckedContinuation<FolderSnapshot, Never>?
+
+    func read() async -> FolderSnapshot {
+        started = true
+        return await withCheckedContinuation { pending = $0 }
+    }
+
+    func finish(_ folders: FolderSnapshot) {
+        pending?.resume(returning: folders)
+        pending = nil
+    }
+}
+
+@MainActor
+private final class FolderPickerGate {
+    var calls = 0
+    private var pending: CheckedContinuation<URL?, Never>?
+
+    func pick() async -> URL? {
+        calls += 1
+        return await withCheckedContinuation { pending = $0 }
+    }
+
+    func finish(_ folder: URL?) {
+        pending?.resume(returning: folder)
+        pending = nil
+    }
+}
+
+@Suite("The setup window's folder actions")
+@MainActor
+struct SetupModelFolderTests {
+    @Test func pinAndUnpinUpdateTheVisibleListAndReportWhatChanged() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        await mac.model.refresh()
+        await mac.model.pin(mac.home.path)
+        #expect(mac.model.folders.pins == [mac.home.path])
+        #expect(mac.model.notice == .folderPinned("~"))
+        #expect(!mac.model.isWorking && !mac.configExists)
+        await mac.model.unpin(mac.home.path)
+        #expect(mac.model.folders.pins.isEmpty)
+        #expect(mac.model.notice == .folderUnpinned("~"))
+    }
+
+    @Test func aMissingRecentFolderIsNotReportedAsPinned() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        await mac.model.refresh()
+        let missing = mac.home.appendingPathComponent("gone").path
+        await mac.model.pin(missing)
+        #expect(mac.model.folders.pins.isEmpty)
+        #expect(mac.model.notice == .folderUnavailable("~/gone"))
+    }
+
+    @Test func cancellingTheFolderPickerWritesNothingAndRestoresTheControls() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        await mac.model.pin("/missing")
+        await mac.model.choosePinnedFolder()
+        #expect(!FileManager.default.fileExists(atPath: mac.paths.stateFile.path))
+        #expect(mac.model.notice == .folderUnavailable("/missing"), "cancel leaves the previous message in place")
+        #expect(!mac.model.isWorking && !mac.model.isChoosingFolder)
+    }
+
+    @Test func aFolderPickerCannotBeOpenedTwiceAndTheChosenFolderIsApplied() async throws {
+        let gate = FolderPickerGate()
+        let mac = try Mac(pickFolder: { purpose in
+            #expect(purpose == .pin)
+            return await gate.pick()
+        })
+        defer { gate.finish(nil); mac.cleanUp() }
+        let picking = Task { await mac.model.choosePinnedFolder() }
+        try #require(await mac.eventually { gate.calls == 1 })
+        #expect(mac.model.isWorking && mac.model.isChoosingFolder)
+        await mac.model.choosePinnedFolder()
+        #expect(gate.calls == 1)
+        gate.finish(mac.home)
+        await picking.value
+        #expect(mac.model.folders.pins == [mac.home.path])
+        #expect(!mac.model.isWorking && !mac.model.isChoosingFolder)
+    }
+
+    @Test func theRepositoryPickerReportsANonRepositoryWithoutChangingTheSavedFolders() async throws {
+        let folder = URL(fileURLWithPath: "/work/notes")
+        let mac = try Mac(pickFolder: { purpose in
+            #expect(purpose == .repository)
+            return folder
+        })
+        defer { mac.cleanUp() }
+        await mac.model.chooseRepository()
+        #expect(mac.model.chosenRepository == nil)
+        #expect(mac.model.notice == .notARepository(folder.path))
+        #expect(!mac.model.isWorking && !mac.model.isChoosingFolder)
+        #expect(!FileManager.default.fileExists(atPath: mac.paths.stateFile.path))
+    }
+
+    @Test(arguments: [false, true])
+    func folderControlsStayDisabledUntilTheUpdatedListArrives(clear: Bool) async throws {
+        let gate = FolderReadGate()
+        let mac = try Mac(readFolders: { await gate.read() })
+        defer { gate.finish(FolderSnapshot()); mac.cleanUp() }
+        let first = mac.home.path
+        let second = mac.home.appendingPathComponent("other").path
+        try StateStore(pins: [first, second], recents: [first]).save(paths: mac.paths)
+        let changing = Task {
+            if clear { await mac.model.clearRecents() }
+            else { await mac.model.unpin(first) }
+        }
+        try #require(await mac.eventually { gate.started })
+        try #require(mac.model.isWorking, "a second action must not race the first action's list refresh")
+        await mac.model.unpin(second)
+        let saved = StateStore.load(paths: mac.paths)
+        #expect(saved.pins == (clear ? [first, second] : [second]))
+        #expect(saved.recents == (clear ? [] : [first]))
+        gate.finish(FolderSnapshot(pins: saved.pins, recents: saved.recents))
+        await changing.value
+        #expect(mac.model.folders.pins == saved.pins && mac.model.folders.recents == saved.recents)
+        #expect(!mac.model.isWorking)
     }
 }

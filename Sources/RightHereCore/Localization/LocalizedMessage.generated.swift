@@ -101,6 +101,12 @@ extension LocalizedMessage {
     public static var appFixRepair: LocalizedMessage { LocalizedMessage(.appFixRepair) }
     /// Press Set Up on the Overview page.
     public static var appFixSetUp: LocalizedMessage { LocalizedMessage(.appFixSetUp) }
+    /// Pinned %1$@.
+    public static func appFolderPinned(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appFolderPinned, [argument1]) }
+    /// The folder %1$@ is unavailable. It may have moved or access may be restricted.
+    public static func appFolderUnavailable(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appFolderUnavailable, [argument1]) }
+    /// Unpinned %1$@.
+    public static func appFolderUnpinned(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appFolderUnpinned, [argument1]) }
     /// Right Here remembers these folders on this Mac only, in a file next to your config. An AI assistant that you connect through MCP can read them.
     public static var appFoldersNote: LocalizedMessage { LocalizedMessage(.appFoldersNote) }
     /// Install or Repair
@@ -133,7 +139,7 @@ extension LocalizedMessage {
     public static func appNeedAttentionCount(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appNeedAttentionCount, [argument1]) }
     /// Some checks need your attention.
     public static var appNeedsAttention: LocalizedMessage { LocalizedMessage(.appNeedsAttention) }
-    /// No pinned folders. Pin one with `rh pin <folder>`.
+    /// No pinned folders yet. Pin a folder to keep it handy here.
     public static var appNoPinned: LocalizedMessage { LocalizedMessage(.appNoPinned) }
     /// No recent folders yet. Right Here lists the folders it has sent somewhere.
     public static var appNoRecents: LocalizedMessage { LocalizedMessage(.appNoRecents) }
@@ -147,6 +153,10 @@ extension LocalizedMessage {
     public static var appOpenChecksHint: LocalizedMessage { LocalizedMessage(.appOpenChecksHint) }
     /// Open Config
     public static var appOpenConfig: LocalizedMessage { LocalizedMessage(.appOpenConfig) }
+    /// Pin
+    public static var appPin: LocalizedMessage { LocalizedMessage(.appPin) }
+    /// Pin Folder…
+    public static var appPinFolder: LocalizedMessage { LocalizedMessage(.appPinFolder) }
     /// Pinned folders
     public static var appPinnedFolders: LocalizedMessage { LocalizedMessage(.appPinnedFolders) }
     /// Plugin commands copied. Paste them into Claude Code.
@@ -161,6 +171,8 @@ extension LocalizedMessage {
     public static var appQuickActionsTitle: LocalizedMessage { LocalizedMessage(.appQuickActionsTitle) }
     /// Recent folders
     public static var appRecentFolders: LocalizedMessage { LocalizedMessage(.appRecentFolders) }
+    /// Recent folders cleared.
+    public static var appRecentsCleared: LocalizedMessage { LocalizedMessage(.appRecentsCleared) }
     /// Refresh
     public static var appRefresh: LocalizedMessage { LocalizedMessage(.appRefresh) }
     /// Refreshing…

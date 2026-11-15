@@ -9301,6 +9301,564 @@
         }
       }
     },
+    "app.folderPinned": {
+      "comment": "Confirmation after adding a folder to the pinned list. The value is its path, already abbreviated and escaped for display.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تم تثبيت %1$@."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ পিন করা হয়েছে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ wurde angeheftet."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ο φάκελος %1$@ καρφιτσώθηκε."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pinned %1$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Se fijó %1$@."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ سنجاق شد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ a été épinglé."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ הוצמד."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ पिन किया गया।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ disematkan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ è stata fissata."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ をピン留めしました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 폴더를 고정했습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ पिन केले."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ telah disematkan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ is vastgemaakt."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Przypięto %1$@."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ foi fixada."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dosarul %1$@ a fost fixat."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папка %1$@ закреплена."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ பொருத்தப்பட்டது."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ పిన్ చేయబడింది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ปักหมุด %1$@ แล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ sabitlendi."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папку %1$@ закріплено."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ پن کر دیا گیا۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đã ghim %1$@."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已固定 %1$@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已釘選 %1$@。"
+          }
+        }
+      }
+    },
+    "app.folderUnavailable": {
+      "comment": "A saved or chosen path cannot currently be used as a folder. It is not automatically removed from the pinned list. The value is a display path.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "المجلد %1$@ غير متاح. ربما تم نقله أو أن الوصول إليه مقيّد."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ফোল্ডারটি ব্যবহার করা যাচ্ছে না। এটি সরানো হয়ে থাকতে পারে অথবা এতে প্রবেশ সীমিত হতে পারে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Der Ordner %1$@ ist nicht verfügbar. Er wurde möglicherweise verschoben oder der Zugriff ist eingeschränkt."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ο φάκελος %1$@ δεν είναι διαθέσιμος. Μπορεί να έχει μετακινηθεί ή η πρόσβαση να είναι περιορισμένη."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The folder %1$@ is unavailable. It may have moved or access may be restricted."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "La carpeta %1$@ no está disponible. Puede haberse movido o tener el acceso restringido."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پوشهٔ %1$@ در دسترس نیست. ممکن است جابه‌جا شده باشد یا دسترسی به آن محدود باشد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Le dossier %1$@ est indisponible. Il a peut-être été déplacé ou son accès est restreint."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "התיקייה %1$@ אינה זמינה. ייתכן שהיא הועברה או שהגישה אליה מוגבלת."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ फ़ोल्डर उपलब्ध नहीं है। हो सकता है कि उसे स्थानांतरित किया गया हो या उसकी पहुँच सीमित हो।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder %1$@ tidak tersedia. Folder mungkin telah dipindahkan atau aksesnya dibatasi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "La cartella %1$@ non è disponibile. Potrebbe essere stata spostata o l'accesso potrebbe essere limitato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "フォルダ %1$@ を利用できません。移動されたか、アクセスが制限されている可能性があります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 폴더를 사용할 수 없습니다. 이동되었거나 접근이 제한되었을 수 있습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ फोल्डर उपलब्ध नाही. तो हलवला गेला असू शकतो किंवा त्याचा प्रवेश मर्यादित असू शकतो."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder %1$@ tidak tersedia. Folder mungkin telah dipindahkan atau aksesnya dihadkan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "De map %1$@ is niet beschikbaar. De map is mogelijk verplaatst of de toegang is beperkt."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder %1$@ jest niedostępny. Mógł zostać przeniesiony lub dostęp do niego jest ograniczony."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "A pasta %1$@ não está disponível. Ela pode ter sido movida ou o acesso pode estar restrito."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dosarul %1$@ nu este disponibil. Este posibil să fi fost mutat sau accesul să fie restricționat."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папка %1$@ недоступна. Возможно, она перемещена или доступ к ней ограничен."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ கோப்புறை கிடைக்கவில்லை. அது நகர்த்தப்பட்டிருக்கலாம் அல்லது அணுகல் கட்டுப்படுத்தப்பட்டிருக்கலாம்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ఫోల్డర్ అందుబాటులో లేదు. అది తరలించబడి ఉండవచ్చు లేదా యాక్సెస్ పరిమితం చేయబడి ఉండవచ్చు."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ไม่สามารถใช้โฟลเดอร์ %1$@ ได้ โฟลเดอร์อาจถูกย้ายหรือถูกจำกัดการเข้าถึง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ klasörü kullanılamıyor. Taşınmış olabilir veya erişim kısıtlanmış olabilir."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папка %1$@ недоступна. Можливо, її переміщено або доступ до неї обмежено."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ فولڈر دستیاب نہیں ہے۔ ممکن ہے اسے منتقل کر دیا گیا ہو یا اس تک رسائی محدود ہو۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Không thể truy cập thư mục %1$@. Thư mục có thể đã được di chuyển hoặc bị hạn chế quyền truy cập."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "无法使用文件夹 %1$@。它可能已被移动，或访问权限受限。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "無法使用檔案夾 %1$@。它可能已被移動，或存取權限受限。"
+          }
+        }
+      }
+    },
+    "app.folderUnpinned": {
+      "comment": "Confirmation after removing a folder from the pinned list. This never deletes the folder. The value is a display path.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تم إلغاء تثبيت %1$@."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ আনপিন করা হয়েছে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ wurde gelöst."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ο φάκελος %1$@ ξεκαρφιτσώθηκε."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unpinned %1$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Se desfijó %1$@."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ از حالت سنجاق‌شده خارج شد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ a été désépinglé."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ההצמדה של %1$@ בוטלה."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ अनपिन किया गया।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ dilepas dari sematan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ non è più fissata."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ のピン留めを解除しました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ 폴더의 고정을 해제했습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ अनपिन केले."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ telah dinyahsematkan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ is losgemaakt."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Odpięto %1$@."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ foi desafixada."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dosarul %1$@ a fost desprins."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папка %1$@ откреплена."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ இன் பொருத்தம் நீக்கப்பட்டது."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ పిన్ తీసివేయబడింది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เลิกปักหมุด %1$@ แล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ sabitlemesi kaldırıldı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папку %1$@ відкріплено."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ کی پن ہٹا دی گئی۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đã bỏ ghim %1$@."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已取消固定 %1$@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已取消釘選 %1$@。"
+          }
+        }
+      }
+    },
     "app.foldersNote": {
       "comment": "Text at the top of the Folders section of the setup window: where the pinned and the recent folders are kept, and who can read them. 'MCP' stays as it is.",
       "extractionState": "manual",
@@ -12282,181 +12840,181 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "لا توجد مجلدات مثبّتة. ثبّت مجلداً باستخدام `rh pin <folder>`‎."
+            "value": "لا توجد مجلدات مثبتة بعد. ثبّت مجلدًا ليسهل الوصول إليه هنا."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "কোনো পিন করা ফোল্ডার নেই. `rh pin <folder>` দিয়ে একটি পিন করুন."
+            "value": "এখনও কোনো ফোল্ডার পিন করা হয়নি। এখানে সহজে খুঁজে পেতে একটি ফোল্ডার পিন করুন।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Keine angehefteten Ordner. Hefte einen Ordner mit `rh pin <folder>` an."
+            "value": "Noch keine angehefteten Ordner. Heften Sie einen Ordner an, um ihn hier schnell zu finden."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Δεν υπάρχουν καρφιτσωμένοι φάκελοι. Καρφιτσώστε έναν με την εντολή `rh pin <folder>`."
+            "value": "Δεν υπάρχουν ακόμη καρφιτσωμένοι φάκελοι. Καρφιτσώστε έναν φάκελο για να τον βρίσκετε εύκολα εδώ."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No pinned folders. Pin one with `rh pin <folder>`."
+            "value": "No pinned folders yet. Pin a folder to keep it handy here."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "No hay carpetas fijadas. Fija una con `rh pin <folder>`."
+            "value": "Aún no hay carpetas fijadas. Fija una carpeta para tenerla a mano aquí."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "هیچ پوشه‌ای سنجاق نشده است. با `rh pin <folder>`‎ یک پوشه را سنجاق کنید."
+            "value": "هنوز پوشه‌ای سنجاق نشده است. پوشه‌ای را سنجاق کنید تا اینجا به‌راحتی به آن دسترسی داشته باشید."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Aucun dossier épinglé. Épinglez-en un avec `rh pin <folder>`."
+            "value": "Aucun dossier épinglé pour le moment. Épinglez un dossier pour le retrouver facilement ici."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "אין תיקיות מוצמדות. הצמידו אחת עם `rh pin <folder>`‎."
+            "value": "אין עדיין תיקיות מוצמדות. הצמדת תיקייה מאפשרת למצוא אותה כאן בקלות."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "कोई पिन किया गया फ़ोल्डर नहीं है। `rh pin <folder>` से कोई एक फ़ोल्डर पिन करें।"
+            "value": "अभी कोई फ़ोल्डर पिन नहीं किया गया है। यहाँ आसानी से पाने के लिए कोई फ़ोल्डर पिन करें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Belum ada folder yang disematkan. Sematkan satu dengan `rh pin <folder>`."
+            "value": "Belum ada folder yang disematkan. Sematkan folder agar mudah ditemukan di sini."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Nessuna cartella fissata. Fissane una con `rh pin <folder>`."
+            "value": "Nessuna cartella fissata. Fissa una cartella per averla a portata di mano qui."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "固定したフォルダはありません。`rh pin <folder>` で固定できます。"
+            "value": "ピン留めされたフォルダはまだありません。フォルダをピン留めすると、ここからすぐにアクセスできます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "고정된 폴더가 없습니다. `rh pin <folder>` 명령으로 고정하세요."
+            "value": "아직 고정된 폴더가 없습니다. 폴더를 고정하면 여기에서 쉽게 찾을 수 있습니다."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "पिन केलेले फोल्डर नाहीत. `rh pin <folder>` वापरून एक फोल्डर पिन करा."
+            "value": "अजून कोणतेही फोल्डर पिन केलेले नाहीत. येथे सहज मिळवण्यासाठी एखादा फोल्डर पिन करा."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Tiada folder yang disemat. Semat satu dengan `rh pin <folder>`."
+            "value": "Belum ada folder yang disematkan. Sematkan folder supaya mudah dicari di sini."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Geen vastgezette mappen. Zet er een vast met `rh pin <folder>`."
+            "value": "Nog geen vastgemaakte mappen. Maak een map vast om deze hier snel te vinden."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Brak przypiętych folderów. Przypnij folder poleceniem `rh pin <folder>`."
+            "value": "Nie ma jeszcze przypiętych folderów. Przypnij folder, aby mieć go tutaj pod ręką."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Nenhuma pasta fixada. Fixe uma com `rh pin <folder>`."
+            "value": "Nenhuma pasta fixada ainda. Fixe uma pasta para encontrá-la facilmente aqui."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Niciun dosar fixat. Fixați unul cu `rh pin <folder>`."
+            "value": "Nu există încă dosare fixate. Fixează un dosar pentru a-l găsi ușor aici."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Закреплённых папок нет. Закрепите папку командой `rh pin <folder>`."
+            "value": "Закреплённых папок пока нет. Закрепите папку, чтобы быстро находить её здесь."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "பின் செய்யப்பட்ட கோப்புறைகள் எதுவும் இல்லை. `rh pin <folder>` மூலம் ஒன்றைப் பின் செய்யுங்கள்."
+            "value": "இன்னும் கோப்புறைகள் பொருத்தப்படவில்லை. இங்கு எளிதாகக் கண்டறிய ஒரு கோப்புறையைப் பொருத்தவும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "పిన్ చేసిన ఫోల్డర్లు ఏవీ లేవు. `rh pin <folder>` తో ఒకదాన్ని పిన్ చేయండి."
+            "value": "ఇంకా ఫోల్డర్‌లు పిన్ చేయబడలేదు. ఇక్కడ సులభంగా కనుగొనడానికి ఒక ఫోల్డర్‌ను పిన్ చేయండి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ยังไม่มีโฟลเดอร์ที่ปักหมุดไว้ ปักหมุดโดยใช้คำสั่ง `rh pin <folder>`."
+            "value": "ยังไม่มีโฟลเดอร์ที่ปักหมุดไว้ ปักหมุดโฟลเดอร์เพื่อให้หาได้ง่ายที่นี่"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Sabitlenmiş klasör yok. `rh pin <folder>` komutuyla bir klasörü sabitleyin."
+            "value": "Henüz sabitlenmiş klasör yok. Burada kolayca bulmak için bir klasör sabitleyin."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Закріплених папок немає. Закріпіть папку командою `rh pin <folder>`."
+            "value": "Закріплених папок ще немає. Закріпіть папку, щоб легко знаходити її тут."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "کوئی پن کیا ہوا فولڈر نہیں ہے۔ `rh pin <folder>`‎ سے ایک فولڈر پن کریں۔"
+            "value": "ابھی کوئی فولڈر پن نہیں کیا گیا۔ یہاں آسانی سے تلاش کرنے کے لیے کوئی فولڈر پن کریں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Chưa có thư mục nào được ghim. Hãy ghim một thư mục bằng `rh pin <folder>`."
+            "value": "Chưa có thư mục nào được ghim. Ghim một thư mục để dễ tìm tại đây."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "没有已固定的文件夹。请使用 `rh pin <folder>` 固定一个。"
+            "value": "还没有固定的文件夹。固定一个文件夹，方便随时从这里访问。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "沒有已釘選的資料夾。請使用 `rh pin <folder>` 釘選一個。"
+            "value": "尚無釘選的檔案夾。釘選一個檔案夾，方便隨時從這裡存取。"
           }
         }
       }
@@ -13573,6 +14131,378 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "打開設定檔"
+          }
+        }
+      }
+    },
+    "app.pin": {
+      "comment": "Verb: add this folder to the pinned folders list. Also the confirmation button in the folder chooser.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تثبيت"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "পিন করুন"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Anheften"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Καρφίτσωμα"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fijar"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "سنجاق کردن"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Épingler"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "הצמדה"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "पिन करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sematkan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fissa"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ピン留め"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "고정"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "पिन करा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sematkan"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Vastmaken"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Przypnij"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fixar"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fixează"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Закрепить"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "பொருத்து"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "పిన్ చేయండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ปักหมุด"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sabitle"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Закріпити"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پن کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ghim"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "固定"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "釘選"
+          }
+        }
+      }
+    },
+    "app.pinFolder": {
+      "comment": "Button opening a folder chooser to add a pinned folder. The ellipsis means another step follows.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تثبيت مجلد…"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ফোল্ডার পিন করুন…"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ordner anheften…"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Καρφίτσωμα φακέλου…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin Folder…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fijar carpeta…"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "سنجاق کردن پوشه…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Épingler un dossier…"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "הצמדת תיקייה…"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फ़ोल्डर पिन करें…"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sematkan Folder…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fissa cartella…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "フォルダをピン留め…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "폴더 고정…"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फोल्डर पिन करा…"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sematkan Folder…"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Map vastmaken…"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Przypnij folder…"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fixar pasta…"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fixează dosarul…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Закрепить папку…"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கோப்புறையைப் பொருத்து…"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఫోల్డర్‌ను పిన్ చేయండి…"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ปักหมุดโฟลเดอร์…"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Klasör Sabitle…"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Закріпити папку…"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فولڈر پن کریں…"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ghim thư mục…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "固定文件夹…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "釘選檔案夾…"
           }
         }
       }
@@ -14875,6 +15805,192 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "最近的資料夾"
+          }
+        }
+      }
+    },
+    "app.recentsCleared": {
+      "comment": "Confirmation that the recent folders history was cleared. No folders or files were deleted.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تم مسح قائمة المجلدات الأخيرة."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "সাম্প্রতিক ফোল্ডারের তালিকা সাফ করা হয়েছে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Die Liste der zuletzt verwendeten Ordner wurde geleert."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Η λίστα πρόσφατων φακέλων εκκαθαρίστηκε."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent folders cleared."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Se vació la lista de carpetas recientes."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فهرست پوشه‌های اخیر پاک شد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "La liste des dossiers récents a été effacée."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "רשימת התיקיות האחרונות נוקתה."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "हाल के फ़ोल्डरों की सूची साफ़ कर दी गई।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Daftar folder terbaru dikosongkan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "L'elenco delle cartelle recenti è stato svuotato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "最近使ったフォルダの履歴を消去しました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "최근 폴더 목록을 지웠습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "अलीकडील फोल्डरची यादी साफ केली."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Senarai folder terkini telah dikosongkan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "De lijst met recente mappen is gewist."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Wyczyszczono listę ostatnich folderów."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "A lista de pastas recentes foi limpa."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Lista dosarelor recente a fost golită."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Список недавних папок очищен."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "சமீபத்திய கோப்புறைகளின் பட்டியல் அழிக்கப்பட்டது."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఇటీవలి ఫోల్డర్‌ల జాబితా క్లియర్ చేయబడింది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ล้างรายการโฟลเดอร์ล่าสุดแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Son kullanılan klasörler listesi temizlendi."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Список нещодавніх папок очищено."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "حالیہ فولڈروں کی فہرست صاف کر دی گئی۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đã xóa danh sách thư mục gần đây."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已清空最近文件夹记录。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已清除最近使用的檔案夾記錄。"
           }
         }
       }
