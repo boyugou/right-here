@@ -64,10 +64,16 @@ public struct SetupActions: Sendable {
         return await run(.repair())
     }
 
-    /// Opens the config file in the default text editor. A Mac with no config is told to choose first and press Set Up, which makes the file
-    /// from the choices; this does not. `nil` when it worked.
-    public func openConfig() async -> SetupNotice? {
-        guard let file = existingConfigFile else { return .failed(Self.noConfigYet) }
+    /// Opens a known layer in the default text editor. Without an explicit choice, the config check's file takes precedence.
+    /// A missing selection is reported, never created or replaced with a different layer. `nil` when it worked.
+    public func openConfig(_ requested: SetupConfigFile? = nil) async -> SetupNotice? {
+        let loaded = ConfigStore.load(paths: paths)
+        let available = loaded.setupFiles
+        guard let selected = requested ?? loaded.setupErrorFile ?? available.first else { return .failed(Self.noConfigYet) }
+        let file = selected.url(relativeTo: paths.configFile)
+        guard available.contains(selected) else {
+            return .failed(CocoaError(.fileReadNoSuchFile, userInfo: [NSFilePathErrorKey: file.path]).localizedDescription)
+        }
         do {
             return Self.failure(of: try await runner.run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", file.path])))
         } catch {

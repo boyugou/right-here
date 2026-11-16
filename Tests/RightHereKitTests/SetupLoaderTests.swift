@@ -121,6 +121,49 @@ struct SetupLoaderTests {
         #expect(snapshot.checks.first { $0.id == .config }?.status == .fail)
     }
 
+    @Test func aPerMachineErrorOffersBothLayersAndNamesItsRecoveryTarget() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig("[general]\n")
+        try "[general\n".write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
+        let snapshot = await machine.loader(runner: FakeProcessRunner()).load()
+        #expect(snapshot.configFiles == [.main, .local])
+        #expect(snapshot.configErrorFile == .local)
+        #expect(snapshot.configHasErrors)
+        #expect(snapshot.checks.first { $0.id == .config }?.detail?.english().contains("config.local.toml") == true)
+    }
+
+    @Test func onlyAnOverlayOffersOnlyThatFileForEditing() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)
+        try "[general]\n".write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
+        let snapshot = await machine.loader(runner: FakeProcessRunner()).load()
+        #expect(snapshot.configExists)
+        #expect(snapshot.configFiles == [.local])
+        #expect(snapshot.configErrorFile == nil)
+    }
+
+    @Test func aDanglingLayerNamedByTheCheckTakesPrecedenceOverAnotherLayersSyntaxError() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig("[general\n")
+        let target = machine.home.appendingPathComponent("missing.toml")
+        try FileManager.default.createSymbolicLink(at: machine.paths.localConfigFile, withDestinationURL: target)
+        let snapshot = await machine.loader(runner: FakeProcessRunner()).load()
+        #expect(snapshot.checks.first { $0.id == .config }?.detail?.english().contains("config.local.toml") == true)
+        #expect(snapshot.configErrorFile == .local)
+        let runner = FakeProcessRunner()
+        let actions = SetupActions(facts: machine.facts, paths: machine.paths, runner: runner, helperPath: "/opt/rh/bin/rh")
+        #expect(await actions.openConfig() == nil)
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.localConfigFile.path])])
+        #expect(!FileManager.default.fileExists(atPath: target.path))
+    }
+
+    @Test func anUnrecognizedDiagnosticSourceDoesNotBecomeAFileToOpen() {
+        let snapshot = SetupSnapshot(configFile: URL(fileURLWithPath: "/tmp/config.toml"), configFiles: [.main, .local],
+                                     configProblems: [ConfigDiagnostic(severity: .error, path: "", message: "Invalid", file: "../../another-file")],
+                                     home: URL(fileURLWithPath: "/tmp"))
+        #expect(snapshot.configErrorFile == nil)
+    }
+
     @Test func aWarningIsAProblemButTheMenuIsStillThere() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         try machine.writeConfig("[general]\nterminal = \"ghostty\"\nunknown_setting = 1\n")

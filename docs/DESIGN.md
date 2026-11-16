@@ -107,6 +107,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 31 | The current-directory mark and a shared visual language connect the icon, navigation and content. | [0033](decisions/0033-current-design-language.md) |
 | 32 | After setup, the remaining task leads; a registered but disabled extension has a pending mark, and ordinary installation details are collapsed. | [0034](decisions/0034-setup-task-and-readiness.md) |
 | 33 | Sidebar groups, View-menu groups and numbered shortcuts come from the same navigation order. | [0035](decisions/0035-navigation-order.md) |
+| 34 | Config recovery opens the file named by the problem; the header offers both layers when they exist. | [0036](decisions/0036-open-the-diagnosed-config-file.md) |
 
 ## 5. Platform facts
 
@@ -271,6 +272,10 @@ applies. The app never rewrites the file, so comments and ordering stay the pers
 [0004](decisions/0004-config.md). An optional `config.local.toml` is merged over it (by id for apps, presets, templates
 and variants, `disabled` to remove ids), and `rh config sync` copies `config.toml` to and from a plain folder; see
 [0013](decisions/0013-config-sync.md).
+
+The setup window offers each existing layer for editing. A config problem's recovery button names and opens its source file;
+an explicit selection is never silently replaced with the other layer if it disappears before the click. See
+[0036](decisions/0036-open-the-diagnosed-config-file.md).
 
 ## 9. Security
 

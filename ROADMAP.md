@@ -52,6 +52,8 @@
   another section's scroll position ([ADR 0029](docs/decisions/0029-feedback-and-keyboard-navigation.md)).
 - Sidebar groups, View-menu groups and numbered shortcuts share one navigation order
   ([ADR 0035](docs/decisions/0035-navigation-order.md)).
+- Config errors open the file they name, and the header offers both main and local files when they exist
+  ([ADR 0036](docs/decisions/0036-open-the-diagnosed-config-file.md)).
 - Official Claude Code plugin with dedicated skills (`setup`, `open-here`, `review-changes`).
 
 ## Next

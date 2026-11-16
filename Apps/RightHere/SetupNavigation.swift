@@ -56,3 +56,59 @@ struct SetupCommands: Commands {
         }
     }
 }
+
+/// Open the diagnosed file directly, or let the person choose when both configuration layers exist.
+struct OpenConfigControl: View {
+    let snapshot: SetupSnapshot?
+    var preferred: SetupConfigFile? = nil
+    var showIcon = false
+    let open: (SetupConfigFile?) -> Void
+    private let l10n = Localizer.system
+
+    var body: some View {
+        if let preferred, let snapshot {
+            Button(l10n.render(.appOpenConfigFile(name(preferred, in: snapshot)), isolatingValues: true)) {
+                open(preferred)
+            }
+        } else if let snapshot, snapshot.configFiles.count > 1 {
+            #if PREVIEW
+            // ImageRenderer cannot draw a native menu. Its closed label stands in for it in canned previews.
+            HStack(spacing: 4) {
+                label
+                Image(systemName: "chevron.down").font(.caption.weight(.semibold))
+            }
+            .fixedSize()
+            #else
+            Menu {
+                ForEach(snapshot.configFiles) { file in
+                    Button { open(file) } label: {
+                        Text(verbatim: name(file, in: snapshot))
+                    }
+                    .help(PathDisplay.abbreviatingHome(file.url(relativeTo: snapshot.configFile).path.withControlCharactersEscaped,
+                                                     home: snapshot.home.path))
+                }
+            } label: {
+                label
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            #endif
+        } else {
+            Button { open(snapshot?.configFiles.first) } label: {
+                label
+            }
+        }
+    }
+
+    @ViewBuilder private var label: some View {
+        if showIcon {
+            Label(l10n.string(.appOpenConfig), systemImage: "square.and.pencil")
+        } else {
+            Text(l10n.string(.appOpenConfig))
+        }
+    }
+
+    private func name(_ file: SetupConfigFile, in snapshot: SetupSnapshot) -> String {
+        file.url(relativeTo: snapshot.configFile).lastPathComponent.withControlCharactersEscaped
+    }
+}

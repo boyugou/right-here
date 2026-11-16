@@ -108,9 +108,13 @@ struct ChecksPage: View {
         VStack(spacing: 0) {
             ForEach(Array(checks.enumerated()), id: \.element.id) { index, check in
                 let action = check.setupAction(firstRun: model.needsFirstRunChoice)
-                CheckRow(check: check, home: model.homePath, firstRun: model.needsFirstRunChoice,
-                         action: action, disabled: model.isWorking || model.isRefreshing || (action == .repair && model.locationProblem != nil)) {
-                    if let action { Task { await model.perform(action) } }
+                CheckRow(check: check, home: model.homePath, firstRun: model.needsFirstRunChoice, snapshot: model.snapshot,
+                         action: action, disabled: model.isWorking || model.isRefreshing || (action == .repair && model.locationProblem != nil)) { file in
+                    if action == .openConfig {
+                        Task { await model.openConfig(file) }
+                    } else if let action {
+                        Task { await model.perform(action) }
+                    }
                 }
                 if index < checks.count - 1 {
                     Divider().padding(.horizontal, 14)
@@ -126,9 +130,10 @@ struct CheckRow: View {
     let home: String
     /// There is no config file yet: the way in is the Set Up button of the first page, not Install or Repair.
     let firstRun: Bool
+    let snapshot: SetupSnapshot?
     let action: SetupCheckAction?
     let disabled: Bool
-    let perform: () -> Void
+    let perform: (SetupConfigFile?) -> Void
     private let l10n = Localizer.system
 
     var body: some View {
@@ -156,7 +161,13 @@ struct CheckRow: View {
                     Text(verbatim: accessibleDescription)
                 }
                 if let action {
-                    Button(l10n.string(action.title), action: perform)
+                    Group {
+                        if action == .openConfig {
+                            OpenConfigControl(snapshot: snapshot, preferred: check.id == .config ? snapshot?.configErrorFile : nil, open: perform)
+                        } else {
+                            Button(l10n.string(action.title)) { perform(nil) }
+                        }
+                    }
                         .buttonStyle(.bordered)
                         .controlSize(.small)
                         .disabled(disabled)

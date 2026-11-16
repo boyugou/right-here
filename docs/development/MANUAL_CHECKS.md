@@ -233,3 +233,13 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     Refresh. Changing it to missing exposed the reason and Install or Repair; that action returned to the enable-extension task.
     This verifies native interaction and state presentation, not real extension registration, the System Settings switch or
     spoken VoiceOver. The uniquely identified review app and its temporary home were removed.
+19. Config recovery (ADR 0036): with both config files present, introduce an error in the local file. Checks must name it in
+    the detail and in the recovery button; the button must open that exact file. The header menu must offer both actual file
+    names and open the chosen one, including the valid main file. With only one layer present after Refresh, the header is a
+    single button that opens that layer. Move the selected file aside after Refresh: clicking its recovery action must show
+    a missing-file message without opening the other file or creating anything. Repeat with a custom config basename.
+    With VoiceOver, verify the file menu and the named action remain distinct from the diagnostic text.
+
+    Native review with a separate app identity and temporary home verified the direct local-file action, both header choices,
+    the single-overlay state after refresh, and the missing-target message. Its fake runner recorded exact arguments and
+    started no editor; external-editor behavior and spoken VoiceOver remain manual. The review app and data were removed.

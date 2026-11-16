@@ -11,6 +11,7 @@
 #   ./script/preview_setup.sh out.png en --set-up           just after the first setup: the Finder extension still to switch on
 #   ./script/preview_setup.sh out.png en --set-up --setup-details  also expand what setup installed
 #   ./script/preview_setup.sh out.png en --demo --missing-extension  the extension is not registered, with its repair action
+#   ./script/preview_setup.sh out.png en --local-config --config-error --tab checks  a broken per-machine config, with a direct edit action
 #   ./script/preview_setup.sh out.png en --failed-set-up    the first run after a Set Up that did not come out: the chooser, and what went wrong above it
 #   ./script/preview_setup.sh out.png en --first-run --shell-silent  the first run when the login shell said nothing about the agents
 #   ./script/preview_setup.sh out.png en --location         the app runs from a disk image: the card that says to move it, with Set Up off
@@ -43,7 +44,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--setup-details] [--missing-extension] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--failed-folders] [--folder-query text] [--worktrees-state state] [--feedback] [--failure-notice] [--long-notice]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--setup-details] [--missing-extension] [--local-config] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--failed-folders] [--folder-query text] [--worktrees-state state] [--feedback] [--failure-notice] [--long-notice]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -68,7 +69,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       case "$state" in failed | empty | loading | none | long) ;; *) echo "preview_setup.sh: unknown worktree state $state" >&2; exit 2 ;; esac
       FLAGS+=(--worktrees-state "$state")
       ;;
-    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --setup-details | --missing-extension | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --empty-folders | --failed-folders | --feedback | --failure-notice | --long-notice) FLAGS+=("$argument") ;;
+    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --setup-details | --missing-extension | --local-config | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --empty-folders | --failed-folders | --feedback | --failure-notice | --long-notice) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -428,13 +429,23 @@ func render(to path: String) async {
     } else if flag("--first-run") || flag("--failed-set-up") || flag("--location") {
         model.simulate(SetupSnapshot(checks: firstRunChecks(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
                                      configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: tab)
-    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--empty-folders") || flag("--failed-folders") || flag("--feedback") || flag("--failure-notice") || flag("--long-notice") || value(of: "--worktrees-state") != nil || value(of: "--folder-query") != nil {
+    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--local-config") || flag("--empty-menu") || flag("--empty-folders") || flag("--failed-folders") || flag("--feedback") || flag("--failure-notice") || flag("--long-notice") || value(of: "--worktrees-state") != nil || value(of: "--folder-query") != nil {
         let facts = demoFacts()
         var snapshot = demoSnapshot(facts)
+        if flag("--local-config") {
+            snapshot.configFiles = [.main, .local]
+            if let index = snapshot.checks.firstIndex(where: { $0.id == .config }) {
+                snapshot.checks[index].notes.append(.doctorConfigOverlay(SetupConfigFile.local.url(relativeTo: snapshot.configFile).path))
+            }
+        }
         if flag("--config-error") {
-            snapshot.configProblems = ConfigParser.parse("[general\n").diagnostics
+            snapshot.configErrorFile = flag("--local-config") ? .local : .main
+            snapshot.configProblems = flag("--local-config")
+                ? ConfigLayers.load(base: .text("[general]\nterminal = \"terminal\"\n"), local: .text("[general\n"),
+                                    overlayName: SetupConfigFile.local.url(relativeTo: snapshot.configFile).lastPathComponent).diagnostics
+                : ConfigParser.parse("[general\n").diagnostics
             snapshot.checks = snapshot.checks.replacing(DoctorCheck(.config, status: .fail,
-                detail: .doctorVerbatim("config.toml:1: expected ] to close the table"), fix: .doctorFixConfigErrors))
+                detail: snapshot.configProblems.first.map { .doctorVerbatim($0.summary(file: snapshot.configFile)) }, fix: .doctorFixConfigErrors))
         }
         if flag("--config-error") || flag("--empty-menu") { snapshot.menu = [] }
         if flag("--empty-folders") { snapshot.folders = FolderSnapshot() }

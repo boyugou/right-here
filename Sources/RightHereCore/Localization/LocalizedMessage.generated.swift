@@ -167,6 +167,8 @@ extension LocalizedMessage {
     public static var appOpenChecksHint: LocalizedMessage { LocalizedMessage(.appOpenChecksHint) }
     /// Open Config
     public static var appOpenConfig: LocalizedMessage { LocalizedMessage(.appOpenConfig) }
+    /// Open %1$@
+    public static func appOpenConfigFile(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appOpenConfigFile, [argument1]) }
     /// Pin
     public static var appPin: LocalizedMessage { LocalizedMessage(.appPin) }
     /// Pin Folder…

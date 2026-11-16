@@ -27,6 +27,10 @@ public struct SetupSnapshot: Sendable, Equatable {
     public var menu: [MenuNode]
     public var folders: FolderSnapshot
     public var configFile: URL
+    /// Existing layers that the window can offer to open, including links whose targets are missing.
+    public var configFiles: [SetupConfigFile]
+    /// The file named by the config check, including a dangling link before any syntax errors.
+    public var configErrorFile: SetupConfigFile?
     /// Whether there is a config at all, `config.toml` or the per-machine overlay. Without one the window is on its first run.
     public var configExists: Bool
     /// What a person without a config can choose from; `nil` when there is a config.
@@ -39,12 +43,17 @@ public struct SetupSnapshot: Sendable, Equatable {
     public var home: URL
 
     public init(checks: [DoctorCheck] = [], menu: [MenuNode] = [], folders: FolderSnapshot = FolderSnapshot(), configFile: URL,
-                configExists: Bool = true, offer: SetupOffer? = nil, configProblems: [ConfigDiagnostic] = [], mcpCommand: String = AppIdentity.cliName, home: URL) {
+                configExists: Bool = true, configFiles: [SetupConfigFile]? = nil, configErrorFile: SetupConfigFile? = nil, offer: SetupOffer? = nil,
+                configProblems: [ConfigDiagnostic] = [], mcpCommand: String = AppIdentity.cliName, home: URL) {
         self.checks = checks
         self.menu = menu
         self.folders = folders
         self.configFile = configFile
         self.configExists = configExists
+        let available = configFiles ?? (configExists ? [.main] : [])
+        self.configFiles = available
+        let diagnosed = configErrorFile ?? configProblems.first { $0.severity == .error }.flatMap { SetupConfigFile.containing($0, mainFile: configFile) }
+        self.configErrorFile = diagnosed.flatMap { available.contains($0) ? $0 : nil }
         self.offer = offer
         self.configProblems = configProblems
         self.mcpCommand = mcpCommand
@@ -86,7 +95,8 @@ public struct SetupLoader: Sendable {
         let checks = await Doctor(facts: facts, paths: paths, loaded: loaded, runner: runner, rhPath: helperPath).run()
         let menu = MenuPreview.folderMenu(loaded.result, facts: facts, folder: facts.homeDirectory, localizer: localizer)
         return SetupSnapshot(
-            checks: checks, menu: menu, folders: await folders(), configFile: loaded.file, configExists: configExists, offer: offer,
+            checks: checks, menu: menu, folders: await folders(), configFile: loaded.file, configExists: configExists,
+            configFiles: loaded.setupFiles, configErrorFile: loaded.setupErrorFile, offer: offer,
             configProblems: loaded.result.diagnostics,
             mcpCommand: SetupSnippets.mcpCommand(home: facts.homeDirectory, helperPath: helperPath), home: facts.homeDirectory)
     }

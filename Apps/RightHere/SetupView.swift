@@ -240,10 +240,8 @@ struct SetupView: View {
 
     @ViewBuilder private var headerActions: some View {
         if model.configIsThere {
-            Button {
-                Task { await model.openConfig() }
-            } label: {
-                Label(l10n.string(.appOpenConfig), systemImage: "square.and.pencil")
+            OpenConfigControl(snapshot: model.snapshot, showIcon: true) { file in
+                Task { await model.openConfig(file) }
             }
             .buttonStyle(SetupQuietButtonStyle())
             .foregroundStyle(.secondary)

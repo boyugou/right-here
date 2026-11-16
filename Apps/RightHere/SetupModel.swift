@@ -292,10 +292,10 @@ final class SetupModel {
     }
 
     /// Opens the config file. It does not make one: a Mac without a config chooses first.
-    func openConfig() async {
+    func openConfig(_ file: SetupConfigFile? = nil) async {
         guard !isWorking else { return }
         isWorking = true
-        say(await actions.openConfig())
+        say(await actions.openConfig(file))
         isWorking = false
     }
 

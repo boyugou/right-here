@@ -151,6 +151,68 @@ struct SetupActionsTests {
         #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.configFile.path])])
     }
 
+    @Test func openingAConfigProblemOpensTheFileThatActuallyHasTheError() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try machine.writeConfig()
+        let broken = "[general\nterminal = \"ghostty\"\n"
+        try broken.write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
+        let loaded = ConfigStore.load(paths: machine.paths)
+        #expect(loaded.result.diagnostics.first { $0.severity == .error }?.file == "config.local.toml")
+        let runner = FakeProcessRunner()
+        #expect(await machine.actions(runner).openConfig() == nil)
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.localConfigFile.path])])
+        #expect(try String(contentsOf: machine.paths.configFile, encoding: .utf8) == "[general]\n")
+        #expect(try String(contentsOf: machine.paths.localConfigFile, encoding: .utf8) == broken)
+    }
+
+    @Test func anErrorInTheMainConfigStillOpensTheMainFileWhenAnOverlayExists() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try machine.writeConfig()
+        try "[general\n".write(to: machine.paths.configFile, atomically: true, encoding: .utf8)
+        try "[general]\n".write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
+        let runner = FakeProcessRunner()
+        #expect(await machine.actions(runner).openConfig() == nil)
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.configFile.path])])
+    }
+
+    @Test(arguments: SetupConfigFile.allCases)
+    func anExplicitChoiceOpensThatLayerEvenWhenTheOtherOneHasAnError(_ selected: SetupConfigFile) async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        let file = machine.home.appendingPathComponent("team's config.toml")
+        let paths = RHPaths(environment: ["RH_CONFIG": file.path], home: machine.home)
+        for layer in SetupConfigFile.allCases {
+            try (layer == selected ? "[general]\n" : "[general\n").write(to: layer.url(relativeTo: file), atomically: true, encoding: .utf8)
+        }
+        let runner = FakeProcessRunner()
+        let actions = SetupActions(facts: FakeSystemFacts(homeDirectory: machine.home), paths: paths, runner: runner, helperPath: "/opt/app/rh")
+        #expect(await actions.openConfig(selected) == nil)
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-t", selected.url(relativeTo: file).path])])
+    }
+
+    @Test func aSelectedLayerThatDisappearsIsNotReplacedWithTheOtherFile() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try machine.writeConfig()
+        try "[general]\n".write(to: machine.paths.localConfigFile, atomically: true, encoding: .utf8)
+        try FileManager.default.removeItem(at: machine.paths.localConfigFile)
+        let runner = FakeProcessRunner()
+        #expect(await machine.actions(runner).openConfig(.local)?.isProblem == true)
+        #expect(runner.recorded.isEmpty)
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.localConfigFile.path))
+        #expect(try String(contentsOf: machine.paths.configFile, encoding: .utf8) == "[general]\n")
+    }
+
+    @Test func aLocalDanglingLinkIsNotMistakenForTheMissingMainFile() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try FileManager.default.createDirectory(at: machine.paths.configDirectory, withIntermediateDirectories: true)
+        let target = machine.home.appendingPathComponent("not-created.toml")
+        try FileManager.default.createSymbolicLink(at: machine.paths.localConfigFile, withDestinationURL: target)
+        let runner = FakeProcessRunner()
+        #expect(await machine.actions(runner).openConfig() == nil)
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-t", machine.paths.localConfigFile.path])])
+        #expect(!FileManager.default.fileExists(atPath: target.path))
+        #expect(try FileManager.default.destinationOfSymbolicLink(atPath: machine.paths.localConfigFile.path) == target.path)
+    }
+
     @Test func aMissingConfigIsNotMadeByOpeningItAndTheEditorIsNotStarted() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
         let runner = FakeProcessRunner()
