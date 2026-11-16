@@ -85,6 +85,8 @@ extension LocalizedMessage {
     public static func appCommandStopped(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appCommandStopped, [argument1]) }
     /// Copy MCP Configuration
     public static var appCopyMCPConfig: LocalizedMessage { LocalizedMessage(.appCopyMCPConfig) }
+    /// Copy Message
+    public static var appCopyMessage: LocalizedMessage { LocalizedMessage(.appCopyMessage) }
     /// Copy Plugin Commands
     public static var appCopyPluginCommands: LocalizedMessage { LocalizedMessage(.appCopyPluginCommands) }
     /// Copy Setup Prompt for AI
@@ -133,8 +135,12 @@ extension LocalizedMessage {
     public static var appMenuSubmenuExpanded: LocalizedMessage { LocalizedMessage(.appMenuSubmenuExpanded) }
     /// Finder menu
     public static var appMenuTitle: LocalizedMessage { LocalizedMessage(.appMenuTitle) }
+    /// Message copied.
+    public static var appMessageCopied: LocalizedMessage { LocalizedMessage(.appMessageCopied) }
     /// More AI agents
     public static var appMoreAgents: LocalizedMessage { LocalizedMessage(.appMoreAgents) }
+    /// Navigation
+    public static var appNavigation: LocalizedMessage { LocalizedMessage(.appNavigation) }
     /// Needing attention: %@
     public static func appNeedAttentionCount(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appNeedAttentionCount, [argument1]) }
     /// Some checks need your attention.

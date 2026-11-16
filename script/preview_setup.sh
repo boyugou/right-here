@@ -21,6 +21,7 @@
 #   ./script/preview_setup.sh out.png en --empty-menu --tab menu    a valid config with no menu entries
 #   ./script/preview_setup.sh out.png de --feedback --tab ai        a localized copy confirmation
 #   ./script/preview_setup.sh out.png ar --failure-notice --tab worktrees  a localized action failure
+#   ./script/preview_setup.sh out.png en --long-notice --minimum --tab worktrees  a long process error above a usable page
 #   ./script/preview_setup.sh out.png en --demo --submenus  the Finder menu with every submenu open
 #   ./script/preview_setup.sh out.png de --gallery          every sentence the doctor can say, as rows of the checks
 #   ./script/preview_setup.sh out.png ar --minimum --large-text  the smallest window, with large text
@@ -38,7 +39,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--worktrees-state state] [--feedback] [--failure-notice]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--worktrees-state state] [--feedback] [--failure-notice] [--long-notice]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -59,7 +60,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       case "$state" in failed | empty | loading | none | long) ;; *) echo "preview_setup.sh: unknown worktree state $state" >&2; exit 2 ;; esac
       FLAGS+=(--worktrees-state "$state")
       ;;
-    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --empty-folders | --feedback | --failure-notice) FLAGS+=("$argument") ;;
+    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --empty-folders | --feedback | --failure-notice | --long-notice) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -92,7 +93,7 @@ let package = Package(
 )
 PACKAGE
 # The window's own files, the same ones the app compiles.
-for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift SetupChecks.swift SetupFolders.swift SetupWorktrees.swift; do
+for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift SetupChecks.swift SetupFolders.swift SetupWorktrees.swift SetupFeedback.swift SetupNavigation.swift; do
   ln -sf "$ROOT/Apps/RightHere/$file" "$PREVIEW/Sources/preview/$file"
 done
 # The Finder menu's own glyphs, which main.swift registers by name (the app finds them in its asset catalog), and the
@@ -419,7 +420,7 @@ func render(to path: String) async {
     } else if flag("--first-run") || flag("--failed-set-up") || flag("--location") {
         model.simulate(SetupSnapshot(checks: firstRunChecks(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
                                      configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: tab)
-    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--empty-folders") || flag("--feedback") || flag("--failure-notice") || value(of: "--worktrees-state") != nil {
+    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--empty-folders") || flag("--feedback") || flag("--failure-notice") || flag("--long-notice") || value(of: "--worktrees-state") != nil {
         let facts = demoFacts()
         var snapshot = demoSnapshot(facts)
         if flag("--config-error") {
@@ -457,6 +458,10 @@ func render(to path: String) async {
     if flag("--feedback") { model.simulate(notice: tab == .folders ? .folderPinned("~/Projects/app") : .mcpConfigurationCopied) }
     if flag("--failure-notice") {
         model.simulate(notice: tab == .folders ? .folderUnavailable("~/Projects/notes") : .notARepository("~/Projects/notes"))
+    }
+    if flag("--long-notice") {
+        let text = (1...12).map { "Diagnostic \($0): The operation could not finish. The repository is temporarily unavailable. This is a canned long error for checking that the rest of the window stays usable." }.joined(separator: "\n\n")
+        model.simulate(notice: .failed(text))
     }
     if flag("--submenus") { model.simulate(openSubmenus: allSubmenus(model.snapshot?.menu ?? [])) }
     // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.

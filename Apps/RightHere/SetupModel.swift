@@ -57,6 +57,7 @@ final class SetupModel {
     private let activationQuietPeriod: Duration
     private let readFolders: @Sendable () async -> FolderSnapshot
     private let pickFolder: @MainActor (FolderChoice) async -> URL?
+    private let writeClipboard: @MainActor (String) -> Void
 
     enum FolderChoice: Equatable { case pin, repository }
     /// When the state was last read; coming back to the app does not read it again within `activationQuietPeriod`.
@@ -79,7 +80,8 @@ final class SetupModel {
          activationQuietPeriod: Duration = .seconds(20), windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible,
          readFolders: (@Sendable () async -> FolderSnapshot)? = nil,
          pickFolder: @escaping @MainActor (FolderChoice) async -> URL? = SetupModel.livePickFolder,
-         browser: WorktreeBrowser = WorktreeBrowser()) {
+         browser: WorktreeBrowser = WorktreeBrowser(),
+         writeClipboard: @escaping @MainActor (String) -> Void = SetupModel.liveWriteClipboard) {
         self.loader = loader
         self.actions = actions
         icons = IconProvider(facts: facts)
@@ -92,6 +94,7 @@ final class SetupModel {
         self.readFolders = readFolders ?? { await loader.folders() }
         self.pickFolder = pickFolder
         self.browser = browser
+        self.writeClipboard = writeClipboard
     }
 
     /// The window of the app: this Mac, and the `rh` that ships inside the app.
@@ -298,6 +301,15 @@ final class SetupModel {
     }
 
     func dismissNotice() { notice = nil }
+
+    /// Copy the complete problem, including lines outside its viewport, without replacing it with a confirmation.
+    @discardableResult
+    func copyNotice(_ shown: SetupNotice) -> Bool {
+        guard notice == shown, shown.isProblem else { return false }
+        writeClipboard(Localizer.system.render(shown.message))
+        announce(Localizer.system.string(.appMessageCopied))
+        return true
+    }
 
     func copySetupPrompt() {
         copy(SetupSnippets.setupPrompt(command: mcpCommand), confirmed: .promptCopied)
@@ -523,9 +535,13 @@ final class SetupModel {
     }
 
     private func copy(_ text: String, confirmed: SetupNotice) {
+        writeClipboard(text)
+        say(confirmed)
+    }
+
+    static func liveWriteClipboard(_ text: String) {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
-        say(confirmed)
     }
 
     /// Shows what happened, and announces it without moving the person's keyboard focus.

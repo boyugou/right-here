@@ -96,6 +96,7 @@ struct WorktreesPage: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .panel()
+        .accessibilityElement(children: .contain)
     }
 
     private func repositoryName(_ root: URL) -> some View {
@@ -122,6 +123,7 @@ struct WorktreesPage: View {
             VStack(alignment: .leading, spacing: 12) {
                 Label(l10n.string(.appWorktreesLoadFailed), systemImage: "exclamationmark.triangle")
                     .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
                 Text(verbatim: text)
                     .font(.callout)
                     .foregroundStyle(.secondary)
@@ -134,6 +136,7 @@ struct WorktreesPage: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .panel()
+            .accessibilityElement(children: .contain)
         case .loaded(let rows) where rows.isEmpty:
             Text(l10n.string(.appWorktreesEmpty))
                 .font(.callout)

@@ -74,6 +74,7 @@ struct NoticeLine: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -492,7 +493,9 @@ struct AIPage: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(l10n.string(title))
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
             content()
         }
+        .accessibilityElement(children: .contain)
     }
 }

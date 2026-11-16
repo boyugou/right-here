@@ -152,3 +152,10 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     healthy page does not run repair. Command-R refreshes. Copy an MCP snippet or finish a terminal test: its result is visible above
     the content, remains until dismissed or replaced, and is announced by VoiceOver. Check text and its action are separate accessible
     controls. After dismissing a failure message, the diagnostic itself is still there.
+16. Feedback and navigation (ADR 0029): View lists the six sections with Command-1 through Command-6 and Refresh with Command-R.
+    Switch sections by shortcut and verify the matching heading and sidebar selection; Command-5 also loads the worktree list.
+    A short confirmation takes only the space it needs. With a long error at minimum window size, scroll the complete message
+    inside its banner while the heading, dismiss button and page remain reachable. Copy Message retains the error and copies all
+    of it; copying a successful MCP snippet leaves the snippet on the clipboard. With VoiceOver, navigate the sidebar, page,
+    feedback and repository groups separately, and find the AI-assistant and failed-list headings. Dismissing a notice must not
+    clear the diagnostic or change the selected section. See [ADR 0029](../decisions/0029-feedback-and-keyboard-navigation.md).

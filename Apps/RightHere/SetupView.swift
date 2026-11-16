@@ -22,6 +22,8 @@ struct SetupView: View {
             sidebar
                 .frame(width: 220)
                 .background(.ultraThinMaterial)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(l10n.string(.appNavigation))
 
             Divider()
 
@@ -38,24 +40,9 @@ struct SetupView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, 14)
                 } else if let notice = model.notice, !model.isWorking {
-                    HStack(alignment: .top, spacing: 12) {
-                        NoticeLine(notice: notice, font: .callout)
-                        Spacer(minLength: 0)
-                        Button { model.dismissNotice() } label: {
-                            Image(systemName: "xmark")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                                .frame(width: 20, height: 20)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .help(l10n.string(.appDismissNotice))
-                        .accessibilityLabel(l10n.string(.appDismissNotice))
-                    }
-                    .padding(12)
-                    .background((notice.isProblem ? Color.orange : Color.green).opacity(0.09), in: RoundedRectangle(cornerRadius: 10))
-                    .padding(.horizontal, 24)
-                    .padding(.top, 14)
+                    NoticeBanner(notice: notice, model: model)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 14)
                 }
 
                 SetupPage(clipPreview: previewViewport) {
@@ -66,6 +53,8 @@ struct SetupView: View {
             }
             .frame(minWidth: 580, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(Color(nsColor: .windowBackgroundColor))
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(l10n.string(model.selectedTab.title))
         }
         .frame(minWidth: 800, minHeight: 560)
         .task {
@@ -133,6 +122,7 @@ struct SetupView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 
     private func sidebarRow(_ tab: SetupTab) -> some View {
@@ -146,13 +136,13 @@ struct SetupView: View {
             model.select(tab)
         } label: {
             HStack(spacing: 9) {
-                Image(systemName: symbol(for: tab))
+                Image(systemName: tab.symbol)
                     .font(.system(size: 14, weight: selected ? .semibold : .regular))
                     .frame(width: 18)
                     .foregroundStyle(selected ? Color.accentColor : Color.secondary)
                     .accessibilityHidden(true)
 
-                Text(l10n.string(title(for: tab)))
+                Text(l10n.string(tab.title))
                     .font(.system(size: 13, weight: selected ? .semibold : .regular))
                     .foregroundStyle(selected ? Color.primary : Color.secondary)
 
@@ -199,7 +189,6 @@ struct SetupView: View {
                 .foregroundStyle(.secondary)
                 .help(l10n.string(.appRefresh))
                 .accessibilityLabel(l10n.string(.appRefresh))
-                .keyboardShortcut("r", modifiers: .command)
                 .disabled(model.isRefreshing || model.isWorking)
             }
 
@@ -238,7 +227,7 @@ struct SetupView: View {
     }
 
     private var heading: some View {
-        Text(l10n.string(title(for: model.selectedTab)))
+        Text(l10n.string(model.selectedTab.title))
             .font(.title2.weight(.bold))
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityAddTraits(.isHeader)
@@ -268,30 +257,6 @@ struct SetupView: View {
         }
     }
 
-    // MARK: Names
-
-    /// The catalog text that names a section, in the sidebar and above its page.
-    private func title(for tab: SetupTab) -> LocalizationKey {
-        switch tab {
-        case .overview: .appTabOverview
-        case .menu: .appMenuTitle
-        case .checks: .appTabChecks
-        case .ai: .appTabAI
-        case .worktrees: .appTabWorktrees
-        case .folders: .appTabFolders
-        }
-    }
-
-    private func symbol(for tab: SetupTab) -> String {
-        switch tab {
-        case .overview: "house"
-        case .menu: "contextualmenu.and.cursorarrow"
-        case .checks: "checklist"
-        case .ai: "sparkles"
-        case .worktrees: "arrow.triangle.branch"
-        case .folders: "folder"
-        }
-    }
 }
 
 /// A page of the window. The app scrolls it; the preview draws it whole, because ImageRenderer draws nothing inside a ScrollView.

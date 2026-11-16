@@ -36,5 +36,6 @@ struct RightHereApp: App {
         .windowResizability(.contentMinSize)
         .defaultSize(width: 860, height: 580)
         .defaultLaunchBehavior(.presented)
+        .commands { SetupCommands(model: model) }
     }
 }

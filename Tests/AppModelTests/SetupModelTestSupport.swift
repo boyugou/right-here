@@ -54,7 +54,8 @@ struct Mac {
     init(helper: String = Mac.inTheApplicationsFolder, visible: Bool = true, pollInterval: Duration = .milliseconds(10), idleInterval: Duration = .milliseconds(10),
          activationQuietPeriod: Duration = .zero, readFolders: (@Sendable () async -> FolderSnapshot)? = nil,
          pickFolder: @escaping @MainActor (SetupModel.FolderChoice) async -> URL? = { _ in nil },
-         worktreeRunner: (any ProcessRunner)? = nil, gitRoots: [String] = []) throws {
+         worktreeRunner: (any ProcessRunner)? = nil, gitRoots: [String] = [],
+         writeClipboard: @escaping @MainActor (String) -> Void = { _ in }) throws {
         home = try makeTemporaryDirectory()
         paths = RHPaths(environment: [:], home: home)
         let facts = FakeSystemFacts(homeDirectory: home, directories: [home.path], gitRoots: gitRoots, applications: [
@@ -69,7 +70,7 @@ struct Mac {
             actions: SetupActions(facts: facts, paths: paths, runner: runner, helperPath: helper, app: nil, trialHome: home),
             facts: facts, helper: helper, pollInterval: pollInterval, idleInterval: idleInterval,
             activationQuietPeriod: activationQuietPeriod, windowIsVisible: { flag.isOn }, readFolders: readFolders, pickFolder: pickFolder,
-            browser: WorktreeBrowser(runner: worktreeRunner ?? runner))
+            browser: WorktreeBrowser(runner: worktreeRunner ?? runner), writeClipboard: writeClipboard)
     }
 
     func cleanUp() { try? FileManager.default.removeItem(at: home) }

@@ -40,6 +40,8 @@
   without leaving the app ([ADR 0027](docs/decisions/0027-manage-folders-in-the-app.md)).
 - Worktrees: switch among known and newly chosen repositories, refresh or retry a failed read, reveal a checkout, and keep removal's
   confirmation and final refresh tied to the operation ([ADR 0028](docs/decisions/0028-worktree-browser-state.md)).
+- Feedback remains readable and scrollable without displacing the page, with complete error copying, separate accessibility
+  containers and View-menu shortcuts for all sections ([ADR 0029](docs/decisions/0029-feedback-and-keyboard-navigation.md)).
 - Official Claude Code plugin with dedicated skills (`setup`, `open-here`, `review-changes`).
 
 ## Next
