@@ -31,6 +31,12 @@ config, an invalid config and a valid config with no menu entries.
 - Keep native controls, semantic system colors, the existing six sections and the text config. Titles and values wrap; check text
   is one accessibility element and its recovery button remains separately reachable. New copy belongs to the catalog in all
   thirty shipped languages. Checks has its own view file instead of continuing to enlarge `SetupPages.swift`.
+  A diagnostic's accessibility representation explicitly includes its title, status, detail, every note and fix, in that order.
+  It uses the visible text's localization, home abbreviation and command formatting. Native inspection found that combining
+  the selectable text and assigning the status as its accessibility value discarded the detail, notes and fix. A synthetic
+  text element avoids that merge, following Apple's
+  [accessibilityRepresentation documentation](https://developer.apple.com/documentation/swiftui/view/accessibilityrepresentation(representation:)).
+  The visible text remains selectable; the recovery button remains outside the replacement representation.
 - The flow of choices uses leading-edge coordinates once. Its old manual RTL reversal duplicated SwiftUI's reversal and left
   Arabic choices on the left, separated from their headings. This was reproduced and corrected in the macOS headless render;
   Apple's [LayoutDirection documentation](https://developer.apple.com/documentation/swiftui/layoutdirection) describes the automatic reversal.
@@ -63,3 +69,16 @@ the manual checklist.
 The minimum-size preview now clips a natural-height page inside its viewport instead of compressing the text or moving the
 header offscreen. The diagnostic gallery also refuses to render when a doctor's message is not represented; the previously
 missing agent-detection and shell-PATH messages are included.
+
+Later native accessibility checks on macOS 27.2 (26B123) found that the combined diagnostic exposed only its title and status.
+A temporary config with a warning, per-machine overlay and symlink visibly showed a detail, two notes and a fix, but none of
+those appeared in its accessibility element. Attention, optional and passed rows all had the same omission. Replacing the
+combined element with the explicit text representation made all of those fields available, in English, Simplified Chinese
+and Arabic. Recovery buttons remained separate, and a visible instruction could still be selected with a mouse drag.
+
+Temporarily moving the isolated fixture's config and overlay aside changed the first-run instruction to Set Up on Overview.
+Pressing its separate diagnostic action opened the chooser without creating a config or command link. The fixture was restored
+and verified afterward. The full gate passed again with 1,718 tests, app and extension builds, localization, schema, docs,
+mutation-entry consistency and public-safety checks. The unique review app, registration, preferences, saved window state and
+temporary home were removed. These checks inspect native accessibility elements and interaction; actual spoken VoiceOver
+traversal remains a manual check.

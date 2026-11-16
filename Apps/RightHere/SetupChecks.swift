@@ -120,7 +120,7 @@ struct ChecksPage: View {
     }
 }
 
-/// One check: its title, what was found, its notes and what to do. The status is spoken once, as the value of the row.
+/// One check: its title, status, findings, notes and fix, with a separate recovery button.
 struct CheckRow: View {
     let check: DoctorCheck
     let home: String
@@ -151,8 +151,10 @@ struct CheckRow: View {
                         line(inTheWindow(fix), .primary)
                     }
                 }
-                .accessibilityElement(children: .combine)
-                .accessibilityValue(l10n.string(statusKey))
+                // Combining selectable text and overriding its value loses the detail, notes and fix on macOS.
+                .accessibilityRepresentation {
+                    Text(verbatim: accessibleDescription)
+                }
                 if let action {
                     Button(l10n.string(action.title), action: perform)
                         .buttonStyle(.bordered)
@@ -181,11 +183,22 @@ struct CheckRow: View {
     /// One line of what the doctor says, in the system language, as long as it needs to be. A path or a command in a right-to-left
     /// sentence stays in one piece, and the text stays selectable (a fix is a command a person copies).
     private func line(_ message: LocalizedMessage, _ style: HierarchicalShapeStyle) -> some View {
-        Text(DoctorText.styled(l10n.render(message, isolatingValues: true), home: home))
+        Text(styled(message))
             .font(.callout)
             .foregroundStyle(style)
             .fixedSize(horizontal: false, vertical: true)
             .textSelection(.enabled)
+    }
+
+    private func styled(_ message: LocalizedMessage) -> AttributedString {
+        DoctorText.styled(l10n.render(message, isolatingValues: true), home: home)
+    }
+
+    /// The same localized words and abbreviated paths as the visible row, without its command-formatting marks.
+    private var accessibleDescription: String {
+        let messages = [check.detail].compactMap { $0 } + check.notes + [check.fix.map(inTheWindow)].compactMap { $0 }
+        let lines = [check.title(in: l10n), l10n.string(statusKey)] + messages.map { String(styled($0).characters) }
+        return lines.joined(separator: "\n")
     }
 
     private var statusKey: LocalizationKey {

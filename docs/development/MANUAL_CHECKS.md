@@ -152,6 +152,11 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     healthy page does not run repair. Command-R refreshes. Copy an MCP snippet or finish a terminal test: its result is visible above
     the content, remains until dismissed or replaced, and is announced by VoiceOver. Check text and its action are separate accessible
     controls. After dismissing a failure message, the diagnostic itself is still there.
+    In Checks, inspect each row with VoiceOver: its name, status, complete detail, every additional note and its fix must be
+    readable, followed by its separate action button when there is one. Cover attention, optional and passed rows; a config
+    with an overlay and symlink is a useful case with multiple notes. The first-run fix must say Set Up, while an existing setup
+    says Install or Repair. Paths and commands must match the visible localized text. Drag over a visible instruction to verify
+    that it remains selectable. Do not accept a row that exposes only its name and status.
 16. Feedback and navigation (ADR 0029): View lists the six sections with Command-1 through Command-6 and Refresh with Command-R.
     Switch sections by shortcut and verify the matching heading and sidebar selection; Command-5 also loads the worktree list.
     With enough pinned folders to scroll, go to the bottom of Folders and switch to AI Assistants: its first heading and setup-prompt
