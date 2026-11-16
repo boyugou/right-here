@@ -656,7 +656,7 @@ MUTANTS = [
     ("Install or Repair makes the config from what was found", "Sources/RightHereKit/SetupActions.swift",
      "guard existingConfigFile != nil else { return SetupResult(report: nil, notice: .explained([.setupNoConfigYet])) }", "guard true else { return SetupResult(report: nil, notice: .explained([.setupNoConfigYet])) }"),
     ("Open Config opens an editor on a config that is not there", "Sources/RightHereKit/SetupActions.swift",
-     "guard let file = existingConfigFile else { return .explained([.setupNoConfigYet]) }", "let file = existingConfigFile ?? paths.configFile"),
+     "guard target != nil || loaded.hasConfig else { return .explained([.setupNoConfigYet]) }", "guard true else { return .explained([.setupNoConfigYet]) }"),
     ("setup runs from a disk image or another volume, which is ejected", "Sources/RightHereKit/Installer.swift",
      'guard helper.contains(".app/Contents/"), isOnAnotherVolume(helper) else { return nil }', 'guard false, isOnAnotherVolume(helper) else { return nil }'),
     ("the app quits between switching the extension off and on again, which leaves Finder without its menu", "Sources/RightHereKit/ExtensionProbe.swift",
@@ -686,7 +686,7 @@ MUTANTS = [
     ("the window offers what acts on a config before it has looked", "Apps/RightHere/SetupModel.swift",
      "var configIsThere: Bool { snapshot?.configExists ?? false }", "var configIsThere: Bool { snapshot?.configExists ?? true }"),
     ("the app's activation at launch starts a second look beside the first", "Apps/RightHere/SetupModel.swift",
-     "guard snapshot != nil, !isWorking, !isRefreshing else { return }", "guard !isWorking, !isRefreshing else { return }"),
+     "guard snapshot != nil, !isWorking else { return }", "guard !isWorking else { return }"),
     ("the extension is looked at every two seconds in a window nobody can see", "Apps/RightHere/SetupModel.swift",
      "guard !Task.isCancelled, !isWorking, !isRefreshing, windowIsVisible() else { continue }", "guard !Task.isCancelled, !isWorking, !isRefreshing else { continue }"),
     ("a login shell that said nothing is taken for one that found no agent", "Sources/RightHereKit/Detector.swift",
@@ -1173,7 +1173,7 @@ MUTANTS = [
     ("editing goes on when the config can no longer be edited", "Apps/RightHere/SetupModel.swift",
      "if shown.editor == nil { isEditingMenu = false }", "_ = shown.editor"),
     ("the menu rows are read with the doctor after every change", "Apps/RightHere/SetupModel.swift",
-     "        let shown = await loader.menu()\n", "        let shown = await loader.menu()\n        await refresh()\n"),
+     "        let read = await loader.configuration()\n", "        let read = await loader.configuration()\n        await refresh()\n"),
     # The Config page (ADR 0026).
     ("a whole text that does not read is saved", "Sources/RightHereCore/Config/ConfigDocument.swift",
      "    public func replacingText(_ text: String) throws -> ConfigDocument {\n        try checked(text)", "    public func replacingText(_ text: String) throws -> ConfigDocument {\n        ConfigDocument(text, validation: validation)"),
@@ -1190,7 +1190,7 @@ MUTANTS = [
     ("what was typed is thrown away by a refused save", "Apps/RightHere/SetupModel.swift",
      "await openConfigPage(keepingDraft: result.change == nil)", "await openConfigPage(keepingDraft: false)"),
     ("a read of the page moves the digest a draft is held to", "Apps/RightHere/SetupModel.swift",
-     "        if keepingDraft, textHasChanges, let started = configPage?.text, let now = page.text {", "        if false, let started = configPage?.text, let now = page.text {"),
+     "        if keepingDraft, textHasChanges, let started = configPage?.text {", "        if false, let started = configPage?.text {"),
     ("leaving the Config page throws away what was typed", "Apps/RightHere/SetupModel.swift",
      "if tab == .config { Task { await openConfigPage(keepingDraft: true) } }", "if tab == .config { Task { await openConfigPage() } }"),
     # A request is looked at under the lock, and a stored change keeps what it was for.
@@ -1885,7 +1885,7 @@ MUTANTS = [
     ("a drop moves a row picked up in another list", "Apps/RightHere/SetupModel.swift",
      "        guard let drag, drag.token == token, drag.scope == scope else { return nil }", "        guard let drag, drag.token == token else { return nil }"),
     ("the Quick Actions check is not asked again after a change", "Apps/RightHere/SetupModel.swift",
-     "        if !checks.isEmpty { checks = checks.replacing(services) }", "        if false { checks = checks.replacing(services) }"),
+     "        if let services, !checks.isEmpty { checks = checks.replacing(services) }", "        if false, let services { checks = checks.replacing(services) }"),
     ("a name of any length is accepted", "Sources/RightHereCore/Config/ConfigBuilder.swift",
      "        if text.count > limit {", "        if false {"),
     ("a template's contents of any size are accepted", "Sources/RightHereCore/Config/ConfigBuilder+NewFile.swift",
@@ -2213,7 +2213,7 @@ MUTANTS = [
     ("a run in a worktree is placed in the one it came from", "Sources/rh/Commands/Run.swift",
      "        let worktreeURL = GitWorktreeManager.worktreeDirectory(gitRoot: main, branch: name)", "        let worktreeURL = GitWorktreeManager.worktreeDirectory(gitRoot: root, branch: name)"),
     ("the window's second yes names no files", "Apps/RightHere/SetupModel.swift",
-     "        await remove(held.row, ignoredAgreed: held.files)", "        await remove(held.row, ignoredAgreed: [])"),
+     "        await performRemoval(held.request, ignoredAgreed: held.files)", "        await performRemoval(held.request, ignoredAgreed: [])"),
     ("a state file that cannot be read is written over", "Sources/RightHereKit/StateStore+IO.swift",
      "var state = try load(paths: paths)", "var state = (try? load(paths: paths)) ?? StateStore()"),
     ("a state file that does not parse is an empty state", "Sources/RightHereCore/Config/StateStore.swift",
@@ -2696,6 +2696,8 @@ MUTANTS = [
     ('a non-string saved folder is silently dropped', 'Sources/RightHereCore/Config/StateStore.swift', 'let text = try array.string(atIndex: index)', 'guard let text = try? array.string(atIndex: index) else { continue }'),
     ('saved-folder writes exceed the readable byte limit', 'Sources/RightHereKit/StateStore+IO.swift', 'guard data.count <= Self.maximumFileBytes else {', 'guard true else {'),
     ('the folder page presents a read failure as an empty list', 'Sources/RightHereKit/SetupLoader.swift', 'return FolderSnapshot(problem: error.message(home: facts.homeDirectory.path))', 'return FolderSnapshot()'),
+    ('a config change is hidden by the activation quiet period', 'Apps/RightHere/SetupModel.swift', 'if let previous = snapshot?.configState, state != previous {', 'if false, let previous = snapshot?.configState, state != previous {'),
+    ('a confirmed worktree is removed using the repository now selected', 'Apps/RightHere/SetupModel.swift', 'browser.remove(request.row, in: request.repository, ignoredAgreed: ignoredAgreed)', 'browser.remove(request.row, in: self.repository ?? request.repository, ignoredAgreed: ignoredAgreed)'),
 ]
 
 

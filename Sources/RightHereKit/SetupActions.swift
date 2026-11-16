@@ -77,13 +77,22 @@ public struct SetupActions: Sendable {
 
     /// Opens the config file in the default text editor. A Mac with no config is told to choose first and press Set Up, which makes the file
     /// from the choices; this does not. `nil` when it worked.
-    public func openConfig() async -> SetupNotice? {
-        guard let file = existingConfigFile else { return .explained([.setupNoConfigYet]) }
+    public func openConfig(target: ConfigTarget? = nil) async -> SetupNotice? {
+        let loaded = ConfigStore.load(paths: paths)
+        guard target != nil || loaded.hasConfig else { return .explained([.setupNoConfigYet]) }
+        let file = ConfigService(paths: paths).file(of: target ?? loaded.recoveryTarget)
+        guard FileManager.default.fileExists(atPath: file.path) || ConfigProblem.danglingTarget(of: file) != nil else {
+            return .explained([.refusalPathNotFound(file.path)])
+        }
         do {
             return Self.failure(of: try await runner.run(ProcessStep(executable: "/usr/bin/open", arguments: ["-t", file.path])))
         } catch {
             return .failure(error)
         }
+    }
+
+    public func configRecoveryTarget() async -> ConfigTarget {
+        ConfigStore.load(paths: paths).recoveryTarget
     }
 
     /// The config file, or when only the per-machine overlay is there, that: what a config that exists is, for the window (`LoadedConfig.hasConfig`).

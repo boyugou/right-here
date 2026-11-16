@@ -15,6 +15,9 @@ struct ConfigPage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: PageRhythm.section) {
+            if model.notice == .explained([.appConfigSaveBeforeSwitch]) {
+                NoticeLine(notice: .explained([.appConfigSaveBeforeSwitch]), font: .callout)
+            }
             Text(DoctorText.styled(l10n.string(.appConfigCaption), home: model.homePath))
                 .font(.callout)
                 .foregroundStyle(.secondary)
@@ -22,7 +25,7 @@ struct ConfigPage: View {
 
             if model.snapshot == nil {
                 ProgressRow(message: .appChecking)
-            } else if !model.configIsThere {
+            } else if !model.configIsThere && !model.textHasChanges {
                 Text(l10n.string(.appConfigNone))
                     .font(.callout)
                     .fixedSize(horizontal: false, vertical: true)
@@ -42,7 +45,9 @@ struct ConfigPage: View {
                         Text(problem.text(in: l10n))
                             .font(.callout)
                             .fixedSize(horizontal: false, vertical: true)
-                    } else {
+                            .textSelection(.enabled)
+                    }
+                    if page.text != nil {
                         if page.fileMovedUnderDraft {
                             movedUnderDraft
                         }
@@ -97,7 +102,9 @@ struct ConfigPage: View {
 
     /// A file by what it is for, then its name: Shared (config.toml), This Mac Only (config.local.toml).
     private func tabTitle(_ target: ConfigTarget) -> String {
-        target == .shared ? l10n.render(.appConfigTabShared("config.toml")) : l10n.render(.appConfigTabLocal("config.local.toml"))
+        let shared = model.snapshot?.configFile.lastPathComponent ?? "config.toml"
+        let name = (target == .shared ? shared : ConfigLayers.overlayName(forConfigFile: shared)).withControlCharactersEscaped
+        return target == .shared ? l10n.render(.appConfigTabShared(name)) : l10n.render(.appConfigTabLocal(name))
     }
 
     /// Something else changed the file after the person began to type: a save is refused until they have looked.
@@ -169,7 +176,7 @@ struct ConfigPage: View {
                 .disabled(!model.textHasChanges || model.isWorking)
             Button(l10n.string(.appConfigSave)) { Task { await model.saveConfigText() } }
                 .keyboardShortcut("s", modifiers: .command)
-                .modifier(DefaultButton(enabled: model.textHasChanges && !model.isWorking && !model.draftBringsErrors))
+                .modifier(DefaultButton(enabled: model.textHasChanges && !model.isWorking && !model.draftBringsErrors && model.configPage?.fileMovedUnderDraft != true))
         }
     }
 }

@@ -221,13 +221,16 @@ struct SetupDonePanel: View {
     /// Whether the Finder extension is switched on now. Registering it is what setup does; the switch in System Settings is the person's, and the
     /// mark of the extension says so while it is off, directly above the step of the card that tells them where.
     let extensionIsOn: Bool
+    var showTitle = true
     @Environment(\.localizer) private var l10n
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(l10n.string(.appSetupDoneTitle))
-                .font(.headline)
-                .accessibilityAddTraits(.isHeader)
+            if showTitle {
+                Text(l10n.string(.appSetupDoneTitle))
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+            }
             FlowLayout(spacing: 16) {
                 ForEach(Array(report.steps.enumerated()), id: \.offset) { _, step in
                     SetupStepMark(step: step, home: home, extensionIsOn: extensionIsOn)

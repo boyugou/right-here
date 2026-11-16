@@ -333,6 +333,7 @@ struct OverviewPage: View {
     @Environment(\.localizer) private var l10n
 
     private static let resultID = "setup-result"
+    private static let nextActionID = "setup-next"
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -358,15 +359,22 @@ struct OverviewPage: View {
                     if model.proposalsWaiting > 0 {
                         ProposalsNotice(model: model)
                     }
-                    if let report = model.setupReport, model.summary.state != .allSet || report.hasNews {
+                    if let report = model.setupReport, !report.ok {
                         SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
                             .id(Self.resultID)
                     }
 
                     if model.summary.extensionNeedsSetup {
                         FirstRunCard(model: model)
+                            .id(Self.nextActionID)
                     } else {
                         StatusCard(model: model)
+                            .id(Self.nextActionID)
+                    }
+
+                    if let report = model.setupReport, report.ok {
+                        SetupReportDisclosure(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
+                            .id(Self.resultID)
                     }
 
                     VStack(alignment: .leading, spacing: PageRhythm.inSection) {
@@ -388,7 +396,7 @@ struct OverviewPage: View {
             }
             // The button that was pressed may be far down the page; the answer is at the top.
             .onChange(of: model.setupAttempt) {
-                proxy.scrollTo(Self.resultID, anchor: .top)
+                proxy.scrollTo(model.setupReport?.ok == true ? Self.nextActionID : Self.resultID, anchor: .top)
             }
         }
     }
@@ -454,92 +462,92 @@ struct StatusCard: View {
     }
 }
 
-/// The three steps of a first run, in order, and a way around the extension. Shown until the extension is switched on.
+private struct SetupReportDisclosure: View {
+    let report: SetupReport
+    let home: String
+    let extensionIsOn: Bool
+    @State private var expanded: Bool
+    @Environment(\.localizer) private var l10n
+
+    init(report: SetupReport, home: String, extensionIsOn: Bool) {
+        self.report = report
+        self.home = home
+        self.extensionIsOn = extensionIsOn
+        _expanded = State(initialValue: report.hasNews)
+    }
+
+    var body: some View {
+        DisclosureGroup(isExpanded: $expanded) {
+            SetupDonePanel(report: report, home: home, extensionIsOn: extensionIsOn, showTitle: false)
+        } label: {
+            Text(l10n.string(.appSetupDoneTitle))
+                .font(.callout.weight(.medium))
+        }
+        .onChange(of: report) { expanded = report.hasNews }
+    }
+}
+
+/// The remaining Finder step, with one action that addresses the extension's actual check.
 struct FirstRunCard: View {
     let model: SetupModel
     @Environment(\.localizer) private var l10n
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(l10n.string(.appOnboardTitle))
+            let check = model.check(.finderExtension)
+            let action = check?.fix.flatMap { SetupFixAction(fix: $0, firstRun: false) }
+            Text(l10n.string(action == .extensionSettings ? .appStepTwoTitle : .appCheckExtension))
                 .font(.headline)
                 .accessibilityAddTraits(.isHeader)
-
-            step(1, title: .appStepOneTitle, body: .appStepOneBody,
-                 done: model.check(.terminalDefault)?.status == .ok && model.check(.editorDefault)?.status == .ok) {
-                ForEach([CheckID.terminalDefault, .editorDefault], id: \.self) { id in
-                    if let detail = model.check(id)?.detail {
-                        Text(DoctorText.styled(l10n.render(detail, isolatingValues: true), home: model.homePath))
-                            .font(.callout)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .textSelection(.enabled)
-                    }
-                }
+            if action == .extensionSettings {
+                Text(l10n.string(.appStepTwoBody))
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if let detail = check?.detail {
+                Text(DoctorText.styled(l10n.render(detail, isolatingValues: true), home: model.homePath))
+                    .font(.callout)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
             }
-
-            step(2, title: .appStepTwoTitle, body: .appStepTwoBody, done: false) {
+            if action == .extensionSettings {
                 Button(l10n.string(.appExtensionSettings)) { model.showExtensionSettings() }
                     .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
+            } else if action == .repair {
+                Button(l10n.string(.appInstallOrRepair)) { Task { await model.repair() } }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(model.isWorking || !model.canSetUp)
+            } else {
+                Button(l10n.string(.appShowChecks)) { model.select(.checks) }
+                    .buttonStyle(.borderedProminent)
             }
-
-            step(3, title: .appStepThreeTitle, body: .appStepThreeBody, done: false) {
+            Divider()
+            VStack(alignment: .leading, spacing: 6) {
+                Text(l10n.string(.appStepThreeTitle)).font(.callout.weight(.medium))
+                Text(l10n.string(.appStepThreeBody))
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 Button(l10n.string(.appShowChecks)) { model.select(.checks) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
-
-            Divider()
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(l10n.string(.appQuickActionsTitle))
-                    .font(.callout.weight(.medium))
+            DisclosureGroup {
                 Text(l10n.string(.appQuickActionsBody))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 6)
+            } label: {
+                Text(l10n.string(.appQuickActionsTitle))
+                    .font(.callout.weight(.medium))
             }
-            .accessibilityElement(children: .combine)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .callout(.accentColor)
     }
 
-    private func step<Actions: View>(_ number: Int, title: LocalizationKey, body: LocalizationKey, done: Bool,
-                                     @ViewBuilder actions: () -> Actions) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(done ? Color.green : Color.accentColor)
-                if done {
-                    Image(systemName: "checkmark")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.white)
-                } else {
-                    Text(l10n.number(number))
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.white)
-                }
-            }
-            .frame(width: 24, height: 24)
-            .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(l10n.string(title))
-                    .font(.body.weight(.medium))
-                Text(l10n.string(body))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                actions()
-            }
-            Spacer(minLength: 0)
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(l10n.render(.appStepLabel(l10n.number(number), l10n.string(title))))
-        .accessibilityValue(done ? l10n.string(.appStatusOK) : "")
-    }
 }
 
 // MARK: Finder menu
@@ -586,9 +594,18 @@ struct MenuPage: View {
             } else if model.isEditingMenu, let editor = model.menuEditor {
                 MenuEditorView(model: model, editor: editor)
             } else if model.menuRows.isEmpty {
-                Text(l10n.string(.appMenuEmpty))
-                    .font(.callout)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(l10n.string(model.snapshot?.configHasErrors == true ? .appMenuConfigError : !model.configIsThere ? .appMenuNeedsSetup : .appMenuEmpty))
+                        .font(.callout)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if model.snapshot?.configHasErrors == true {
+                        Button(l10n.string(SetupTab.config.titleKey)) { Task { await model.showConfigProblem() } }
+                            .buttonStyle(.bordered)
+                    } else if !model.configIsThere {
+                        Button(l10n.string(SetupTab.overview.titleKey)) { model.select(.overview) }
+                            .buttonStyle(.bordered)
+                    }
+                }
             } else {
                 // A picture of the menu as Finder shows it, as wide as its lines, so that it does not read as one more list of settings. A line
                 // longer than the page (a title of the person's own) cuts it at the page's width instead of widening the page.
@@ -639,6 +656,7 @@ struct MenuLine: View {
     let image: NSImage?
     let toggle: () -> Void
     @Environment(\.localizer) private var l10n
+    @State private var hovering = false
 
     var body: some View {
         switch row.kind {
@@ -650,6 +668,8 @@ struct MenuLine: View {
         case .submenu where row.hasChildren:
             Button(action: toggle) { line }
                 .buttonStyle(.plain)
+                .background(RoundedRectangle(cornerRadius: 4).fill(Color.primary.opacity(hovering ? 0.07 : 0)))
+                .onHover { hovering = $0 }
                 .accessibilityValue(l10n.string(row.isExpanded ? .appMenuSubmenuExpanded : .appMenuSubmenuCollapsed))
         case .action, .submenu:
             line.accessibilityElement(children: .combine)
@@ -728,6 +748,7 @@ struct ChecksPage: View {
                             case .repair: Task { await model.repair() }
                             case .extensionSettings: model.showExtensionSettings()
                             case .page(let tab): model.select(tab)
+                            case .diagnosedConfig: Task { await model.showConfigProblem() }
                             case .revealOtherCopies: NSWorkspace.shared.activateFileViewerSelecting(model.otherCopies.map { URL(fileURLWithPath: $0.path) })
                             }
                         }
@@ -802,6 +823,7 @@ struct CheckRow: View {
         case .repair: l10n.string(.appInstallOrRepair)
         case .extensionSettings: l10n.string(.appExtensionSettings)
         case .page(let tab): l10n.string(tab.titleKey)
+        case .diagnosedConfig: l10n.string(SetupTab.config.titleKey)
         case .revealOtherCopies: l10n.string(.actionReveal)
         }
     }
@@ -811,7 +833,7 @@ struct CheckRow: View {
         let symbol = switch action {
         case .repair: "wrench.and.screwdriver"
         case .extensionSettings: "gearshape"
-        case .page: "arrow.right.circle"
+        case .page, .diagnosedConfig: "arrow.right.circle"
         case .revealOtherCopies: "magnifyingglass"
         }
         return Button { perform(action) } label: { Label(title, systemImage: symbol) }
@@ -939,7 +961,7 @@ struct AIPage: View {
 /// The git worktrees Right Here made for agents, in one repository. Only those can be removed here, never forced.
 struct WorktreesPage: View {
     let model: SetupModel
-    @State private var pending: WorktreeRow?
+    @State private var pending: WorktreeRemovalRequest?
     @Environment(\.localizer) private var l10n
 
     var body: some View {
@@ -953,15 +975,15 @@ struct WorktreesPage: View {
         .confirmationDialog(l10n.string(.appRemoveWorktreeTitle), isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }),
                             titleVisibility: .visible) {
             Button(l10n.string(.appRemoveWorktreeConfirm), role: .destructive) {
-                if let row = pending { Task { await model.remove(row) } }
+                if let request = pending { Task { await model.remove(request) } }
                 pending = nil
             }
             Button(l10n.string(.appCancel), role: .cancel) {
                 pending = nil
             }
         } message: {
-            if let row = pending {
-                Text(l10n.render(.appRemoveWorktreeMessage(PathDisplay.folder(row.entry.path, home: model.homePath)), isolatingValues: true))
+            if let request = pending {
+                Text(verbatim: request.row.removalMessage(in: l10n, home: model.homePath))
             }
         }
         // Files git ignores would go with the folder: a second question names them, and its yes is held to exactly those.
@@ -970,41 +992,84 @@ struct WorktreesPage: View {
             Button(l10n.string(.appRemoveIgnoredConfirm), role: .destructive) { Task { await model.confirmIgnoredRemoval(held) } }
             Button(l10n.string(.appCancel), role: .cancel) { model.cancelIgnoredRemoval() }
         } message: { held in
-            Text(l10n.render(.appRemoveIgnoredMessage(WorktreeError.shown(held.files)), isolatingValues: true))
+            Text(verbatim: held.request.row.identity(in: l10n, home: model.homePath) + "\n\n" + l10n.render(.appRemoveIgnoredMessage(WorktreeError.shown(held.files)), isolatingValues: true))
         }
     }
 
     private var repositoryBar: some View {
-        HStack(alignment: .center, spacing: 10) {
-            Text(l10n.string(.appWorktreesRepository))
-                .font(.callout.weight(.medium))
-
-            if model.repositories.count > 1, let repository = model.repository {
-                Menu {
-                    ForEach(model.repositories, id: \.path) { root in
-                        Button(PathDisplay.folder(root.path, home: model.homePath)) { model.selectRepository(root) }
-                    }
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Text(l10n.string(.appWorktreesRepository))
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 8)
+                Button {
+                    Task { await model.chooseRepository() }
                 } label: {
-                    PathText(path: PathDisplay.folder(repository.path, home: model.homePath))
+                    Label(l10n.string(.appWorktreesChoose), systemImage: "folder.badge.plus")
                 }
-                .fixedSize()
-            } else if let repository = model.repository {
-                PathText(path: PathDisplay.folder(repository.path, home: model.homePath))
+                .disabled(model.isWorking || model.pendingIgnoredRemoval != nil)
+                if model.repository != nil {
+                    Button {
+                        Task { await model.refreshWorktrees() }
+                    } label: {
+                        Label(l10n.string(.appRefresh), systemImage: "arrow.clockwise")
+                    }
+                    .labelStyle(.iconOnly)
+                    .help(l10n.string(.appRefresh))
+                    .disabled(model.isWorking || model.pendingIgnoredRemoval != nil || model.isLoadingWorktrees)
+                }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+
+            if let repository = model.repository {
+                HStack {
+                    if model.repositories.count > 1 {
+                        Menu {
+                            ForEach(model.repositories, id: \.path) { root in
+                                Button { model.selectRepository(root) } label: {
+                                    if root.path == repository.path {
+                                        Label(displayPath(root), systemImage: "checkmark")
+                                    } else {
+                                        Text(verbatim: displayPath(root))
+                                    }
+                                }
+                            }
+                        } label: {
+                            repositoryName(repository)
+                        }
+                        .menuStyle(.borderlessButton)
+                        .disabled(model.isWorking || model.pendingIgnoredRemoval != nil)
+                        .accessibilityLabel(l10n.string(.appWorktreesRepository))
+                        .accessibilityValue(displayPath(repository))
+                    } else {
+                        repositoryName(repository)
+                    }
+                    Spacer(minLength: 8)
+                }
+                PathText(path: displayPath(repository), size: 11)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
+                    .help(displayPath(repository))
             }
-
-            Spacer(minLength: 8)
-
-            Button {
-                Task { await model.chooseRepository() }
-            } label: {
-                Label(l10n.string(.appWorktreesChoose), systemImage: "folder.badge.plus")
-            }
-            .buttonStyle(.bordered)
-            .disabled(model.isWorking)
         }
+        .padding(.bottom, 12)
+        .overlay(alignment: .bottom) { Divider() }
+    }
+
+    private func repositoryName(_ root: URL) -> some View {
+        Text(verbatim: root.lastPathComponent.withControlCharactersEscaped)
+            .font(.body.weight(.medium))
+            .lineLimit(1)
+            .truncationMode(.middle)
+            .help(displayPath(root))
+    }
+
+    private func displayPath(_ root: URL) -> String {
+        PathDisplay.folder(root.path.withControlCharactersEscaped, home: model.homePath)
     }
 
     @ViewBuilder private var listing: some View {
@@ -1014,16 +1079,30 @@ struct WorktreesPage: View {
         case .loading:
             ProgressRow(message: .appLoading)
         case .failed(let sentences):
-            Text(l10n.render(sentences: sentences, isolatingValues: true))
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .textSelection(.enabled)
+            RowGroup {
+                VStack(alignment: .leading, spacing: 10) {
+                    Label(l10n.string(.appWorktreesLoadFailed), systemImage: "exclamationmark.triangle")
+                        .font(.body.weight(.semibold))
+                        .accessibilityAddTraits(.isHeader)
+                    Text(l10n.render(sentences: sentences, isolatingValues: true))
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                    Button(l10n.string(.appTryAgain)) { Task { await model.refreshWorktrees() } }
+                        .buttonStyle(.bordered)
+                        .disabled(model.isWorking || model.pendingIgnoredRemoval != nil)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        case .loaded(let rows) where rows.isEmpty:
+            EmptyList { Text(l10n.string(.appWorktreesEmpty)) }
         case .loaded(let rows):
             RowGroup {
                 ForEach(rows) { row in
-                    WorktreeLine(row: row, home: model.homePath, disabled: model.isWorking) {
-                        pending = row
+                    WorktreeLine(row: row, home: model.homePath, disabled: model.isWorking || model.pendingIgnoredRemoval != nil) {
+                        pending = model.removalRequest(for: row)
                     }
                 }
             }
@@ -1052,18 +1131,20 @@ struct WorktreeLine: View {
                     Text(verbatim: row.branchTitle ?? l10n.string(.appWorktreeDetached))
                         .font(.body.weight(.semibold))
                         .lineLimit(1)
+                        .truncationMode(.middle)
                     if row.isMainWorkingCopy {
                         tag(.appWorktreeMain)
                     } else if row.canBeRemoved {
                         tag(.appWorktreeMadeHere)
                     }
                 }
-                PathText(path: PathDisplay.folder(row.entry.path, home: home), size: 11)
+                PathText(path: PathDisplay.folder(row.entry.path.withControlCharactersEscaped, home: home), size: 11)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
-                .environment(\.layoutDirection, .leftToRight)
+                    .environment(\.layoutDirection, .leftToRight)
             }
+            .help(row.identity(in: l10n, home: home))
 
             Spacer(minLength: 8)
 
@@ -1072,7 +1153,8 @@ struct WorktreeLine: View {
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                     .disabled(disabled)
-                    .accessibilityLabel(l10n.render(.appRemoveWorktreeNamed(row.entry.path.split(separator: "/").last.map(String.init) ?? "")))
+                    .accessibilityLabel(l10n.render(.appRemoveWorktreeNamed(row.branchTitle ?? l10n.string(.appWorktreeDetached))))
+                    .accessibilityHint(row.identity(in: l10n, home: home))
             }
             RevealButton(path: row.entry.path)
         }
@@ -1089,8 +1171,14 @@ struct WorktreeLine: View {
 
 /// The folders Right Here remembers: the pinned ones and the recent ones, kept on this Mac and readable only by its user.
 struct FoldersPage: View {
-    let model: SetupModel
+    @Bindable var model: SetupModel
+    @FocusState private var searchFocused: Bool
+    @State private var searchSelection: TextSelection?
     @Environment(\.localizer) private var l10n
+
+    private var query: FolderSearch { FolderSearch(model.folderQuery, locale: l10n.locale) }
+    private var pins: [String] { query.filter(model.folders.pins, home: model.homePath) }
+    private var recents: [String] { query.filter(model.folders.recents, home: model.homePath) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: PageRhythm.section) {
@@ -1099,7 +1187,9 @@ struct FoldersPage: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            if let problem = model.folders.problem {
+            if model.snapshot == nil {
+                ProgressRow(message: .appChecking)
+            } else if let problem = model.folders.problem {
                 VStack(alignment: .leading, spacing: 12) {
                     Label(l10n.string(.appFoldersLoadFailed), systemImage: "exclamationmark.triangle")
                         .font(.headline)
@@ -1119,10 +1209,75 @@ struct FoldersPage: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .panel()
             } else {
-                pinned
-                recent
+                if model.showsFolderSearch {
+                    HStack(spacing: 12) {
+                        searchField
+                        pinButton
+                    }
+                }
+                if !query.isEmpty && pins.isEmpty && recents.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(l10n.string(.appNoMatchingFolders))
+                            .font(.headline)
+                            .accessibilityAddTraits(.isHeader)
+                        Text(l10n.string(.appFindFoldersHint))
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        Button(l10n.string(.appClearSearch), action: clearSearch)
+                            .buttonStyle(.bordered)
+                    }
+                    .padding(18)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .panel()
+                } else {
+                    if query.isEmpty || !pins.isEmpty { pinned }
+                    if query.isEmpty || !recents.isEmpty { recent }
+                }
             }
         }
+    }
+
+    @ViewBuilder private var searchField: some View {
+        #if STANDINS
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+            Text(verbatim: model.folderQuery.isEmpty ? l10n.string(.appFindFolders) : model.folderQuery)
+        }
+        .font(.callout)
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity, minHeight: 24, alignment: .leading)
+        .padding(.horizontal, 8)
+        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 6))
+        #else
+        TextField(l10n.string(.appFindFolders), text: $model.folderQuery, selection: $searchSelection)
+            .textFieldStyle(.roundedBorder)
+            .focused($searchFocused)
+            .help(l10n.string(.appFindFoldersHint))
+            .onExitCommand {
+                if model.folderQuery.isEmpty { searchFocused = false }
+                else { clearSearch() }
+            }
+            .task(id: model.folderSearchRequest) {
+                guard model.folderSearchRequest > 0 else { return }
+                await Task.yield()
+                guard !Task.isCancelled, model.canFindFolders else { return }
+                searchFocused = true
+                searchSelection = TextSelection(range: model.folderQuery.startIndex..<model.folderQuery.endIndex)
+            }
+        #endif
+    }
+
+    private func clearSearch() {
+        searchSelection = nil
+        model.folderQuery = ""
+        searchFocused = true
+    }
+
+    private var pinButton: some View {
+        Button(l10n.string(.appPinChoose)) { Task { await model.choosePinnedFolder() } }
+            .buttonStyle(.bordered)
+            .fixedSize()
+            .disabled(model.isWorking || model.isRefreshing)
     }
 
     private var pinned: some View {
@@ -1131,15 +1286,13 @@ struct FoldersPage: View {
                 Text(l10n.string(.appPinnedFolders))
                     .font(.headline)
                 Spacer(minLength: 8)
-                Button(l10n.string(.appPinChoose)) { Task { await model.choosePinnedFolder() } }
-                    .buttonStyle(.bordered)
-                    .disabled(model.isWorking || model.isRefreshing)
+                if !model.showsFolderSearch { pinButton }
             }
-            if model.folders.pins.isEmpty {
+            if pins.isEmpty {
                 EmptyList { Prose(key: .appNoPinned, home: model.homePath) }
             } else {
                 RowGroup {
-                    ForEach(model.folders.pins, id: \.self) { path in
+                    ForEach(pins, id: \.self) { path in
                         folderLine(path, icon: "pin.fill") {
                             RowIconButton(symbol: "pin.slash", help: l10n.string(.appUnpin),
                                           accessibilityLabel: l10n.render(.appUnpinFolder(PathDisplay.folder(path, home: model.homePath)), isolatingValues: true)) {
@@ -1159,17 +1312,17 @@ struct FoldersPage: View {
                 Text(l10n.string(.appRecentFolders))
                     .font(.headline)
                 Spacer(minLength: 8)
-                if !model.folders.recents.isEmpty {
+                if !model.folders.recents.isEmpty && query.isEmpty {
                     Button(l10n.string(.appClearRecents)) { Task { await model.clearRecents() } }
                         .buttonStyle(.bordered)
                         .disabled(model.isWorking || model.isRefreshing)
                 }
             }
-            if model.folders.recents.isEmpty {
+            if recents.isEmpty {
                 EmptyList { Text(l10n.string(.appNoRecents)) }
             } else {
                 RowGroup {
-                    ForEach(model.folders.recents, id: \.self) { path in
+                    ForEach(recents, id: \.self) { path in
                         folderLine(path, icon: "clock") {
                             if !model.folders.pins.contains(path) {
                                 RowIconButton(symbol: "pin", help: l10n.string(.appPin),
@@ -1191,10 +1344,20 @@ struct FoldersPage: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 16)
                 .accessibilityHidden(true)
-            PathText(path: PathDisplay.folder(path, home: model.homePath))
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .environment(\.layoutDirection, .leftToRight)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(verbatim: (path as NSString).lastPathComponent.withControlCharactersEscaped)
+                    .font(.body.weight(.medium))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                PathText(path: PathDisplay.folder(path.withControlCharactersEscaped, home: model.homePath.withControlCharactersEscaped))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .environment(\.layoutDirection, .leftToRight)
+            }
+            .accessibilityElement(children: .combine)
+            .help(PathDisplay.abbreviatingHome(path.withControlCharactersEscaped, home: model.homePath.withControlCharactersEscaped))
             Spacer(minLength: 8)
             trailing()
             // Last, so that it stands in one column whatever the button before it says (Pin, Unpin, Remove…).

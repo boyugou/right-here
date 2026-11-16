@@ -679,7 +679,7 @@ func gallery() -> [DoctorCheck] {
     return rows
 }
 
-/// The window as the person sees it at the moment of the picture: the section the flags ask for, with the data they ask for.
+/// The preview executable has no asset catalog; canned pictures read the same default accent values as the app.
 @MainActor
 func previewAccent(dark: Bool) -> Color {
     guard let data = try? Data(contentsOf: URL(fileURLWithPath: "AccentColor.json")),

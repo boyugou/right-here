@@ -310,7 +310,7 @@ struct SetupView: View {
                 ProgressRow(message: .appRefreshing)
                     .font(.caption2)
             } else if let notice = model.notice {
-                NoticeLine(notice: notice)
+                SidebarNotice(model: model, notice: notice)
             }
         }
         .padding(.horizontal, 8)

@@ -37,6 +37,7 @@ jobs:
           swift test --filter RightHereKitTests.
           swift test --filter RightHereMCPTests.
           swift test --filter RightHereCLITests.
+          swift test --filter AppModelTests.
       - name: App and Finder extension build
         # Not part of the package: ad hoc signed, as script/verify_all.sh does it.
         run: |

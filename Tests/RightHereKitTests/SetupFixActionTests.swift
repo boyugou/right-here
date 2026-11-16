@@ -12,6 +12,8 @@ struct SetupFixActionTests {
         #expect(SetupFixAction(fix: .doctorFixTerminal, firstRun: false) == .page(.overview))
         #expect(SetupFixAction(fix: .doctorFixAgentRemove("claude"), firstRun: false) == .page(.agents))
         #expect(SetupFixAction(fix: .doctorFixPending, firstRun: false) == .page(.config))
+        #expect(SetupFixAction(fix: .doctorFixConfigErrors, firstRun: false) == .diagnosedConfig)
+        #expect(SetupFixAction(fix: .doctorFixConfigWarnings, firstRun: false) == .diagnosedConfig)
         #expect(SetupFixAction(fix: .doctorFixCliPath("~/.local/bin"), firstRun: false) == nil, "a shell profile is the person's to edit")
         #expect(SetupFixAction(fix: .doctorFixAppCopies("/Applications/Right Here.app"), firstRun: false) == .revealOtherCopies)
     }

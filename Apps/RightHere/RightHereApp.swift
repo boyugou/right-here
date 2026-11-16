@@ -57,6 +57,11 @@ struct RightHereApp: App {
         .defaultSize(width: 860, height: 580)
         .defaultLaunchBehavior(.presented)
         .commands {
+            CommandGroup(after: .textEditing) {
+                Button(model.localizer.string(.appFindFolders)) { model.findFolders() }
+                    .keyboardShortcut("f", modifiers: .command)
+                    .disabled(!model.canFindFolders)
+            }
             // The Help menu had only macOS's search: the guide on the website, in the window's language.
             CommandGroup(replacing: .help) {
                 Button(model.localizer.render(.appHelpMenu(AppIdentity.productName))) {

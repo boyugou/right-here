@@ -528,6 +528,97 @@ struct SetupModelAgentCommandTests {
 @Suite("The setup window's model: reading the Mac again")
 @MainActor
 struct SetupModelRefreshTests {
+    @Test func aChangedConfigDuringAReadQueuesOneNewReadInsteadOfLosingTheReturn() async throws {
+        let mac = try Mac(activationQuietPeriod: .seconds(60)); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\n")
+        await mac.model.refresh()
+        let shellsBefore = mac.runner.calls.filter { $0.arguments.first == "-lic" }.count
+        mac.runner.answerSlowly(.milliseconds(100))
+        let read = Task { await mac.model.refresh() }
+        #expect(await mac.eventually { mac.runner.calls.filter { $0.arguments.first == "-lic" }.count > shellsBefore })
+        try mac.writeConfig("[general]\nterminal = \"terminal\"\n")
+        let returning = Task { await mac.model.refreshOnActivation() }
+        await Task.yield()
+        await mac.model.refreshOnActivation()
+        await returning.value
+        await read.value
+        #expect(mac.model.general?.terminal == "terminal")
+        #expect(mac.runner.calls.filter { $0.arguments.first == "-lic" }.count == shellsBefore + 2, "the in-flight read and one new read answer both returns")
+    }
+
+    @Test func configRecoveryKeepsADraftThenOpensTheDiagnosedOverlayAfterRevert() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        let original = "[general]\nterminal = \"ghostty\"\n"
+        try mac.writeConfig(original)
+        try "[general]\nterminal = 3\n".write(to: mac.paths.localConfigFile, atomically: true, encoding: .utf8)
+        await mac.model.refresh()
+        await mac.model.openConfigPage()
+        mac.model.draftText = original + "# keep this draft\n"
+        await mac.model.showConfigProblem()
+        #expect(mac.model.selectedTab == .config && mac.model.configTarget == .shared)
+        #expect(mac.model.draftText == original + "# keep this draft\n")
+        #expect(mac.model.notice == .explained([.appConfigSaveBeforeSwitch]))
+        await mac.model.revertConfigText()
+        #expect(mac.model.notice == nil, "the instruction to save or revert no longer applies")
+        await mac.model.showConfigProblem()
+        #expect(mac.model.configTarget == .local && mac.model.draftText.contains("terminal = 3"))
+        #expect(mac.model.notice == nil)
+    }
+
+    @Test func aMissingFileUnderADraftKeepsTheTextAvailableAndRefusesToRecreateIt() async throws {
+        let mac = try Mac(activationQuietPeriod: .seconds(60)); defer { mac.cleanUp() }
+        try mac.writeConfig()
+        await mac.model.refresh()
+        mac.model.selectedTab = .config
+        await mac.model.openConfigPage()
+        let draft = mac.model.draftText + "# keep this draft\n"
+        mac.model.draftText = draft
+        try FileManager.default.removeItem(at: mac.paths.configFile)
+        await mac.model.refreshOnActivation()
+        #expect(await mac.eventually { mac.model.configPage?.fileMovedUnderDraft == true })
+        #expect(mac.model.draftText == draft && mac.model.configPage?.text != nil)
+        await mac.model.saveConfigText()
+        #expect(!FileManager.default.fileExists(atPath: mac.paths.configFile.path))
+    }
+
+    @Test func aQuickReturnAfterAConfigChangeDoesNotWaitForTheQuietPeriod() async throws {
+        let mac = try Mac(activationQuietPeriod: .seconds(60)); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\n")
+        await mac.model.refresh()
+        try mac.writeConfig("[general]\nterminal = \"terminal\"\n")
+        await mac.model.refreshOnActivation()
+        #expect(mac.model.general?.terminal == "terminal")
+    }
+
+    @Test func aQuickReturnWithOnlyACommentChangeUpdatesTheDraftConflictWithoutRunningTheShell() async throws {
+        let mac = try Mac(activationQuietPeriod: .seconds(60)); defer { mac.cleanUp() }
+        let original = "[general]\nterminal = \"ghostty\"\n"
+        try mac.writeConfig(original)
+        await mac.model.refresh()
+        mac.model.selectedTab = .config
+        await mac.model.openConfigPage()
+        mac.model.draftText += "# my draft\n"
+        let shellCalls = mac.runner.calls.filter { $0.arguments.first == "-lic" }.count
+        try mac.writeConfig(original + "# another editor\n")
+        await mac.model.refreshOnActivation()
+        #expect(mac.model.draftText == original + "# my draft\n")
+        #expect(mac.model.configPage?.fileMovedUnderDraft == true)
+        #expect(mac.runner.calls.filter { $0.arguments.first == "-lic" }.count == shellCalls)
+        await mac.model.saveConfigText()
+        #expect(try String(contentsOf: mac.paths.configFile, encoding: .utf8) == original + "# another editor\n")
+    }
+
+    @Test func theExternalEditorOpensTheFileSelectedOnTheConfigPage() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig()
+        try "# local\n".write(to: mac.paths.localConfigFile, atomically: true, encoding: .utf8)
+        await mac.model.refresh()
+        mac.model.selectedTab = .config
+        await mac.model.chooseConfigFile(.local)
+        await mac.model.openConfig()
+        #expect(mac.runner.calls.last { $0.executable == "/usr/bin/open" }?.arguments == ["-t", mac.paths.localConfigFile.path])
+    }
+
     @Test func comingBackToTheAppReadsAgainOnlyAfterTheFirstLookAndNotWhileSomethingRuns() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }
         await mac.model.refreshOnActivation()
@@ -3561,7 +3652,8 @@ struct EditingFlowTests {
         // Choosing the repository starts the listing itself.
         for _ in 0..<500 { if case .loaded = mac.model.worktrees { break }; try await Task.sleep(for: .milliseconds(10)) }
         guard case .loaded(let rows) = mac.model.worktrees, let row = rows.first(where: { $0.canBeRemoved }) else { Issue.record("no worktree to remove: \(mac.model.worktrees)"); return }
-        await mac.model.remove(row)
+        let request = try #require(mac.model.removalRequest(for: row))
+        await mac.model.remove(request)
         let held = try #require(mac.model.pendingIgnoredRemoval, "the first yes does not delete files that exist only there")
         #expect(held.files == [".env"] && FileManager.default.fileExists(atPath: made.worktreeURL.path))
         // Another file git ignores appears while the question is up.

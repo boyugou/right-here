@@ -237,6 +237,8 @@ extension LocalizedMessage {
     public static func appChooseNotInstalled(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appChooseNotInstalled, [argument1]) }
     /// Clear Recent Folders
     public static var appClearRecents: LocalizedMessage { LocalizedMessage(.appClearRecents) }
+    /// Clear Search
+    public static var appClearSearch: LocalizedMessage { LocalizedMessage(.appClearSearch) }
     /// It did not finish (exit status %@).
     public static func appCommandStopped(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appCommandStopped, [argument1]) }
     /// Apply
@@ -273,6 +275,8 @@ extension LocalizedMessage {
     public static var appConfigRevert: LocalizedMessage { LocalizedMessage(.appConfigRevert) }
     /// Save
     public static var appConfigSave: LocalizedMessage { LocalizedMessage(.appConfigSave) }
+    /// Save or revert your draft before switching to the config file that needs attention.
+    public static var appConfigSaveBeforeSwitch: LocalizedMessage { LocalizedMessage(.appConfigSaveBeforeSwitch) }
     /// Saved your changes.
     public static var appConfigSaved: LocalizedMessage { LocalizedMessage(.appConfigSaved) }
     /// config.toml holds your settings. When you sync your config, your other Macs use them too. What should be different on this Mac goes in config.local.toml.
@@ -291,6 +295,8 @@ extension LocalizedMessage {
     public static var appConfigWhoWindow: LocalizedMessage { LocalizedMessage(.appConfigWhoWindow) }
     /// Copy MCP Configuration
     public static var appCopyMCPConfig: LocalizedMessage { LocalizedMessage(.appCopyMCPConfig) }
+    /// Copy Message
+    public static var appCopyMessage: LocalizedMessage { LocalizedMessage(.appCopyMessage) }
     /// The forms of a path that “Copy Path” offers in the Finder menu, in this order.
     public static var appCopyPathCaption: LocalizedMessage { LocalizedMessage(.appCopyPathCaption) }
     /// The forms are written in your config file in a way this list cannot change one by one. Change them as text on the Config page.
@@ -299,6 +305,8 @@ extension LocalizedMessage {
     public static var appCopyPluginCommands: LocalizedMessage { LocalizedMessage(.appCopyPluginCommands) }
     /// Copy Setup Prompt for AI
     public static var appCopySetupPrompt: LocalizedMessage { LocalizedMessage(.appCopySetupPrompt) }
+    /// Dismiss message
+    public static var appDismissNotice: LocalizedMessage { LocalizedMessage(.appDismissNotice) }
     /// Right Here was busy with something else, so this change was not made. Try it again.
     public static var appEditBusy: LocalizedMessage { LocalizedMessage(.appEditBusy) }
     /// Saved to your config file
@@ -307,6 +315,10 @@ extension LocalizedMessage {
     public static var appEntryNotEditable: LocalizedMessage { LocalizedMessage(.appEntryNotEditable) }
     /// Finder Extension Settings
     public static var appExtensionSettings: LocalizedMessage { LocalizedMessage(.appExtensionSettings) }
+    /// Find Folders
+    public static var appFindFolders: LocalizedMessage { LocalizedMessage(.appFindFolders) }
+    /// Try part of a folder name or path.
+    public static var appFindFoldersHint: LocalizedMessage { LocalizedMessage(.appFindFoldersHint) }
     /// Choose another terminal or another way to start it on the agent's page (Agents).
     public static var appFixAgentLauncherWindow: LocalizedMessage { LocalizedMessage(.appFixAgentLauncherWindow) }
     /// Install it, or uncheck it on the Agents page.
@@ -357,8 +369,10 @@ extension LocalizedMessage {
     public static var appMcpCopied: LocalizedMessage { LocalizedMessage(.appMcpCopied) }
     /// Add to Menu
     public static var appMenuAdd: LocalizedMessage { LocalizedMessage(.appMenuAdd) }
-    /// This is the menu for a folder. Items for selected files appear when you select files.
+    /// This previews the menu for a folder. Expand submenus here; run actions in Finder. File-specific items appear when files are selected.
     public static var appMenuCaption: LocalizedMessage { LocalizedMessage(.appMenuCaption) }
+    /// The menu preview is unavailable until the configuration errors are fixed.
+    public static var appMenuConfigError: LocalizedMessage { LocalizedMessage(.appMenuConfigError) }
     /// This is the default menu. Your first change writes the list of lines to your config file, and from then on the file decides.
     public static var appMenuDefaultNote: LocalizedMessage { LocalizedMessage(.appMenuDefaultNote) }
     /// Edit Menu
@@ -387,6 +401,8 @@ extension LocalizedMessage {
     public static var appMenuMoveDown: LocalizedMessage { LocalizedMessage(.appMenuMoveDown) }
     /// Move Up
     public static var appMenuMoveUp: LocalizedMessage { LocalizedMessage(.appMenuMoveUp) }
+    /// Set up Right Here to preview your Finder menu.
+    public static var appMenuNeedsSetup: LocalizedMessage { LocalizedMessage(.appMenuNeedsSetup) }
     /// Nothing is shown for this on this Mac
     public static var appMenuNothingHere: LocalizedMessage { LocalizedMessage(.appMenuNothingHere) }
     /// Remove %@ from the menu
@@ -401,6 +417,8 @@ extension LocalizedMessage {
     public static var appMenuTitle: LocalizedMessage { LocalizedMessage(.appMenuTitle) }
     /// Undo
     public static var appMenuUndo: LocalizedMessage { LocalizedMessage(.appMenuUndo) }
+    /// Message copied.
+    public static var appMessageCopied: LocalizedMessage { LocalizedMessage(.appMessageCopied) }
     /// More AI agents
     public static var appMoreAgents: LocalizedMessage { LocalizedMessage(.appMoreAgents) }
     /// Needing attention: %@
@@ -429,6 +447,8 @@ extension LocalizedMessage {
     public static var appNewFileThenOpen: LocalizedMessage { LocalizedMessage(.appNewFileThenOpen) }
     /// Select it in Finder
     public static var appNewFileThenReveal: LocalizedMessage { LocalizedMessage(.appNewFileThenReveal) }
+    /// No matching folders
+    public static var appNoMatchingFolders: LocalizedMessage { LocalizedMessage(.appNoMatchingFolders) }
     /// No pinned folders. Pin a recent folder below, or press Pin a Folder…
     public static var appNoPinned: LocalizedMessage { LocalizedMessage(.appNoPinned) }
     /// No recent folders yet. Right Here lists the folders it has sent somewhere.
@@ -693,6 +713,8 @@ extension LocalizedMessage {
     public static var appTestLaunch: LocalizedMessage { LocalizedMessage(.appTestLaunch) }
     /// Opening a test window in your terminal…
     public static var appTesting: LocalizedMessage { LocalizedMessage(.appTesting) }
+    /// Try Again
+    public static var appTryAgain: LocalizedMessage { LocalizedMessage(.appTryAgain) }
     /// Something else changed the config after that change, so nothing was taken back. Recent changes on the Config page lists what happened.
     public static var appUndoRefused: LocalizedMessage { LocalizedMessage(.appUndoRefused) }
     /// Unpin
@@ -727,8 +749,12 @@ extension LocalizedMessage {
     public static func appWorktreeRemoved(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appWorktreeRemoved, [argument1]) }
     /// Choose Folder…
     public static var appWorktreesChoose: LocalizedMessage { LocalizedMessage(.appWorktreesChoose) }
-    /// Separate checkouts that `rh run --worktree` makes, so that an agent can work on a branch of its own.
+    /// No worktrees were found in this repository.
+    public static var appWorktreesEmpty: LocalizedMessage { LocalizedMessage(.appWorktreesEmpty) }
+    /// Browse a repository's worktrees and reveal their folders in Finder. Only worktrees made by Right Here can be removed here.
     public static var appWorktreesIntro: LocalizedMessage { LocalizedMessage(.appWorktreesIntro) }
+    /// Couldn't load worktrees.
+    public static var appWorktreesLoadFailed: LocalizedMessage { LocalizedMessage(.appWorktreesLoadFailed) }
     /// No git repository to show yet. Pin a folder that is in one, or choose a folder.
     public static var appWorktreesNoRepository: LocalizedMessage { LocalizedMessage(.appWorktreesNoRepository) }
     /// Repository

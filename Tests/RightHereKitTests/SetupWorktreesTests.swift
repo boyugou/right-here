@@ -124,6 +124,37 @@ struct WorktreeRowsTests {
         #expect(rows()[1].entry.branch == "rh/1760000000")
         #expect(rows()[1].id == "/work/app/.right-here/worktrees/rh-1760000000")
     }
+
+    @Test func removalNamesTheWholeBranchAndPathIncludingTheDistinguishingSuffix() {
+        let branch = "feature/reconcile-window-and-native-controls/review-in-arabic"
+        let path = "/work/app/.right-here/worktrees/feature-reconcile-window-and-native-controls-review-in-arabic"
+        let row = WorktreeRow(entry: WorktreeEntry(path: path, head: "abc", branch: branch), isMainWorkingCopy: false, canBeRemoved: true)
+        let message = row.removalMessage(in: .english, home: "/Users/tester")
+        #expect(message.contains(branch))
+        #expect(message.contains(PathDisplay.folder(path, home: "/Users/tester")))
+        #expect(message.contains("Its branch is kept"))
+        #expect(row.identity(in: .english, home: "/Users/tester").contains(branch))
+    }
+
+    @Test func detachedRemovalDoesNotPromiseToKeepANonexistentBranch() {
+        let row = WorktreeRow(entry: WorktreeEntry(path: "/work/app/.right-here/worktrees/detached", head: "abc", branch: nil, isDetached: true),
+                              isMainWorkingCopy: false, canBeRemoved: true)
+        let message = row.removalMessage(in: .english, home: "/Users/tester")
+        #expect(message.contains(Localizer.english.string(.appWorktreeDetached)))
+        #expect(!message.lowercased().contains("branch"))
+        #expect(message.contains("git refuses"))
+    }
+
+    @Test func removalIdentityEscapesAHiddenDirectionChangeWithoutChangingTheGitPath() {
+        let path = "/work/app/.right-here/worktrees/review-\u{202E}exe.doc"
+        let branch = "review/\u{202E}exe.doc"
+        let row = WorktreeRow(entry: WorktreeEntry(path: path, head: "abc", branch: branch), isMainWorkingCopy: false, canBeRemoved: true)
+        for text in [row.identity(in: .english, home: "/Users/tester"), row.removalMessage(in: Localizer(languages: ["ar"]), home: "/Users/tester")] {
+            #expect(text.contains("\\u202e"))
+            #expect(!text.contains("\u{202E}"))
+        }
+        #expect(row.entry.path == path && row.entry.branch == branch)
+    }
 }
 
 @Suite("WorktreeBrowser: listing and removing")

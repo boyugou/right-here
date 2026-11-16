@@ -71,11 +71,13 @@ public struct SetupSnapshot: Sendable, Equatable {
     /// When the config was read. A read of the whole state takes seconds (the doctor starts the login shell), and a change of the config made meanwhile is newer than
     /// what this says of it.
     public var readAt: ContinuousClock.Instant
+    public var configState: SetupConfigState?
 
     public init(checks: [DoctorCheck] = [], menu: [MenuNode] = [], menuEditor: MenuEditorState? = nil, menuTarget: ConfigTarget = .shared, general: GeneralSettingsState? = nil, agentsTarget: ConfigTarget = .shared,
                 agentOptions: [AgentOptionsState] = [], presets: PresetsState? = nil, newFile: NewFileState? = nil, copyPath: CopyPathState? = nil, quickActions: QuickActionsState? = nil, apps: AppsState? = nil, proposals: [ConfigProposal] = [], folders: FolderSnapshot = FolderSnapshot(),
                 configFile: URL, configExists: Bool = true, offer: SetupOffer? = nil, configProblems: [ConfigDiagnostic] = [], mcpCommand: String = AppIdentity.cliName, home: URL, readAt: ContinuousClock.Instant = .now,
-                agentCommands: LoginShellFacts? = nil, promptsOffByAlias: [String: String] = [:], language: String? = nil, installedCopies: [AppCopy]? = nil, underneath: [String: String] = [:]) {
+                agentCommands: LoginShellFacts? = nil, promptsOffByAlias: [String: String] = [:], language: String? = nil, installedCopies: [AppCopy]? = nil, underneath: [String: String] = [:], configState: SetupConfigState? = nil) {
+        self.configState = configState
         self.checks = checks
         self.promptsOffByAlias = promptsOffByAlias
         self.underneath = underneath
@@ -186,7 +188,8 @@ public struct SetupLoader: Sendable {
     ///   ones a repair ran at its end): the doctor, which starts the login shell and takes seconds, is not run again.
     public func load(reusing examined: (checks: [DoctorCheck], shell: LoginShellFacts)? = nil) async -> SetupSnapshot {
         let readAt = ContinuousClock.now
-        let loaded = ConfigStore.load(paths: paths, withOrigins: true)
+        let configState = ConfigStore.setupState(paths: paths)
+        let loaded = configState.loaded
         // Without a config the window is on its first run and offers what is installed; the login shell is asked once, for that.
         let configExists = loaded.hasConfig
         let offer = configExists ? nil : await SetupOffer.make(facts: facts, runner: runner)
@@ -206,7 +209,7 @@ public struct SetupLoader: Sendable {
             configProblems: loaded.result.diagnostics,
             mcpCommand: SetupSnippets.mcpCommand(home: facts.homeDirectory, helperPath: helperPath), home: facts.homeDirectory, readAt: readAt,
             agentCommands: doctor.shell, promptsOffByAlias: promptsOffByAlias, language: loaded.config.language,
-            installedCopies: AppCopies.installed(facts.applicationCopies(bundleID: AppIdentity.hostBundleID), home: facts.homeDirectory.path), underneath: shown.underneath)
+            installedCopies: AppCopies.installed(facts.applicationCopies(bundleID: AppIdentity.hostBundleID), home: facts.homeDirectory.path), underneath: shown.underneath, configState: configState)
     }
 
     /// The Quick Actions check as the config says it now, without the rest of the doctor (which starts the login shell).
@@ -216,7 +219,16 @@ public struct SetupLoader: Sendable {
 
     /// The menu, the editors and the config's problems as the config says them now, read without the doctor.
     public func menu() async -> MenuSnapshot {
-        menuSnapshot(ConfigStore.load(paths: paths, withOrigins: true))
+        await configuration().shown
+    }
+
+    public func configState() async -> SetupConfigState {
+        ConfigStore.setupState(paths: paths)
+    }
+
+    public func configuration() async -> (shown: MenuSnapshot, state: SetupConfigState) {
+        let state = ConfigStore.setupState(paths: paths)
+        return (menuSnapshot(state.loaded), state)
     }
 
     private func menuSnapshot(_ loaded: LoadedConfig) -> MenuSnapshot {

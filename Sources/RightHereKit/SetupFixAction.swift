@@ -8,6 +8,8 @@ public enum SetupFixAction: Sendable, Equatable {
     case extensionSettings
     /// The page of the window where the setting the fix names is changed.
     case page(SetupTab)
+    /// Open the Config page at the file the diagnostic belongs to, preserving any draft in the other file.
+    case diagnosedConfig
     /// Show the copies of the app other than the one to keep in Finder, to move them to the Trash.
     case revealOtherCopies
 
@@ -18,7 +20,8 @@ public enum SetupFixAction: Sendable, Equatable {
             if firstRun { return nil }
             self = .repair
         case .doctorFixExtensionEnable: self = .extensionSettings
-        case .doctorFixPending, .doctorFixConfigErrors, .doctorFixConfigWarnings: self = .page(.config)
+        case .doctorFixPending: self = .page(.config)
+        case .doctorFixConfigErrors, .doctorFixConfigWarnings: self = .diagnosedConfig
         case .doctorFixTerminal, .doctorFixTerminalFallback, .doctorFixEditor, .doctorFixEditorFallback: self = .page(.overview)
         case .doctorFixAgentRemove, .doctorFixAgentsAdd, .doctorFixAgentLauncher: self = .page(.agents)
         case .doctorFixAppCopies: self = .revealOtherCopies

@@ -21949,6 +21949,192 @@
         }
       }
     },
+    "app.clearSearch": {
+      "comment": "Clears only the current search query, never any saved folders.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "مسح البحث"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "অনুসন্ধান মুছুন"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Suche löschen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Εκκαθάριση αναζήτησης"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear Search"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Borrar búsqueda"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پاک کردن جستجو"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Effacer la recherche"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ניקוי החיפוש"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "खोज साफ़ करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Hapus Pencarian"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cancella ricerca"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "検索をクリア"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "검색 지우기"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "शोध साफ करा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kosongkan Carian"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Zoekopdracht wissen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Wyczyść wyszukiwanie"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Limpar busca"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Șterge căutarea"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Очистить поиск"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "தேடலை அழி"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "శోధనను క్లియర్ చేయండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ล้างการค้นหา"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aramayı Temizle"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Очистити пошук"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تلاش صاف کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Xóa tìm kiếm"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "清除搜索"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "清除搜尋"
+          }
+        }
+      }
+    },
     "app.commandStopped": {
       "comment": "Shown when a helper command that the setup window started (install, create the config file, open it) ended with an error and printed nothing. %@ is the exit status, a number.",
       "extractionState": "manual",
@@ -25297,6 +25483,192 @@
         }
       }
     },
+    "app.configSaveBeforeSwitch": {
+      "comment": "Config recovery found a problem in the other file. Keep the current unsaved draft and explain why the file was not switched.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "احفظ المسودة أو تراجع عن تغييراتها قبل الانتقال إلى ملف الإعدادات الذي يحتاج إلى معالجة."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "যে কনফিগ ফাইলটিতে সমস্যা আছে সেটিতে যাওয়ার আগে খসড়া সংরক্ষণ করুন বা পরিবর্তন বাতিল করুন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sichere oder verwirf deinen Entwurf, bevor du zur Konfigurationsdatei wechselst, die Aufmerksamkeit benötigt."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Αποθηκεύστε ή αναιρέστε το πρόχειρό σας πριν μεταβείτε στο αρχείο ρυθμίσεων που χρειάζεται προσοχή."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save or revert your draft before switching to the config file that needs attention."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Guarda o descarta tu borrador antes de cambiar al archivo de configuración que necesita atención."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پیش از رفتن به پروندهٔ تنظیماتی که نیاز به بررسی دارد، پیش‌نویس خود را ذخیره کنید یا تغییراتش را برگردانید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Enregistrez ou annulez votre brouillon avant de passer au fichier de configuration qui nécessite votre attention."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "יש לשמור את הטיוטה או לבטל את השינויים בה לפני המעבר לקובץ ההגדרות שדורש טיפול."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "जिस कॉन्फ़िग फ़ाइल पर ध्यान देना है उस पर जाने से पहले अपना ड्राफ़्ट सहेजें या बदलाव वापस करें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Simpan atau batalkan draf sebelum beralih ke file konfigurasi yang perlu diperbaiki."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Salva o annulla la bozza prima di passare al file di configurazione che richiede attenzione."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "問題のある設定ファイルに切り替える前に、下書きを保存するか変更を元に戻してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "문제가 있는 설정 파일로 전환하기 전에 초안을 저장하거나 변경 사항을 되돌리세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "लक्ष देण्याची गरज असलेल्या कॉन्फिग फाइलवर जाण्यापूर्वी मसुदा जतन करा किंवा बदल पूर्ववत करा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Simpan atau batalkan draf sebelum beralih ke fail konfigurasi yang memerlukan perhatian."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bewaar je concept of maak de wijzigingen ongedaan voordat je naar het configuratiebestand gaat dat aandacht nodig heeft."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Zapisz lub odrzuć wersję roboczą przed przejściem do pliku konfiguracji wymagającego uwagi."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Salve ou descarte seu rascunho antes de mudar para o arquivo de configuração que precisa de atenção."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Salvează sau anulează modificările ciornei înainte de a trece la fișierul de configurare care necesită atenție."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Сохраните черновик или отмените изменения, прежде чем переходить к файлу настроек, требующему внимания."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கவனம் தேவைப்படும் அமைப்புக் கோப்பிற்கு மாறும் முன் வரைவைச் சேமிக்கவும் அல்லது மாற்றங்களை மீட்டமைக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సరిచేయాల్సిన కాన్ఫిగ్ ఫైల్‌కు మారే ముందు మీ చిత్తుప్రతిని సేవ్ చేయండి లేదా మార్పులను రద్దు చేయండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "บันทึกหรือย้อนการเปลี่ยนแปลงของฉบับร่างก่อนสลับไปยังไฟล์การตั้งค่าที่ต้องแก้ไข"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "İlgilenilmesi gereken yapılandırma dosyasına geçmeden önce taslağınızı kaydedin veya değişiklikleri geri alın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Збережіть чернетку або скасуйте зміни, перш ніж переходити до файлу налаштувань, який потребує уваги."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "توجہ طلب ترتیب کی فائل پر جانے سے پہلے اپنا مسودہ محفوظ کریں یا تبدیلیاں واپس لیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Lưu hoặc hoàn tác bản nháp trước khi chuyển sang tệp cấu hình cần xử lý."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "请先保存或还原草稿，再切换到需要处理的配置文件。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "請先儲存或還原草稿，再切換到需要處理的設定檔。"
+          }
+        }
+      }
+    },
     "app.configSaved": {
       "comment": "Said aloud by VoiceOver after the edited text of the config file was saved.",
       "extractionState": "manual",
@@ -26971,6 +27343,192 @@
         }
       }
     },
+    "app.copyMessage": {
+      "comment": "Tooltip and accessible label of the button that copies the complete error message without dismissing it.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "نسخ الرسالة"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "বার্তা কপি করুন"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Meldung kopieren"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Αντιγραφή μηνύματος"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Message"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Copiar mensaje"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "کپی پیام"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Copier le message"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "העתקת ההודעה"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "संदेश कॉपी करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Salin Pesan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Copia messaggio"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "メッセージをコピー"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "메시지 복사"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "संदेश कॉपी करा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Salin Mesej"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bericht kopiëren"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kopiuj komunikat"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Copiar mensagem"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Copiază mesajul"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Скопировать сообщение"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "செய்தியை நகலெடு"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సందేశాన్ని కాపీ చేయండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "คัดลอกข้อความ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "İletiyi Kopyala"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Скопіювати повідомлення"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پیغام کاپی کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sao chép thông báo"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "复制提示信息"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "複製提示訊息"
+          }
+        }
+      }
+    },
     "app.copyPathCaption": {
       "comment": "Caption under the heading 'Copy Path' (glossary entry group.copyPath, the title of that Finder submenu: use its existing translation) on the Finder menu page of the setup window. A form is one way of writing the path of a file: its absolute path, with ~, from the git root, the name only.",
       "extractionState": "manual",
@@ -27715,6 +28273,192 @@
         }
       }
     },
+    "app.dismissNotice": {
+      "comment": "Accessibility label and tooltip of the close button on action feedback.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "إغلاق الرسالة"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "বার্তা বন্ধ করুন"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Meldung schließen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Κλείσιμο μηνύματος"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss message"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cerrar mensaje"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "بستن پیام"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fermer le message"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "סגירת ההודעה"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "संदेश बंद करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tutup pesan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Chiudi messaggio"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "メッセージを閉じる"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "메시지 닫기"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "संदेश बंद करा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tutup mesej"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Melding sluiten"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Zamknij komunikat"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Fechar mensagem"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Închide mesajul"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Закрыть сообщение"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "செய்தியை மூடு"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సందేశాన్ని మూసివేయి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ปิดข้อความ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mesajı kapat"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Закрити повідомлення"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پیغام بند کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đóng thông báo"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "关闭消息"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "關閉訊息"
+          }
+        }
+      }
+    },
     "app.editBusy": {
       "comment": "Said under the Undo note of a page of settings when a change that the person made was not written because the window stayed busy (an install or repair was running) for more than two seconds.",
       "extractionState": "manual",
@@ -28455,6 +29199,378 @@
           "stringUnit": {
             "state": "translated",
             "value": "Finder 延伸功能設定"
+          }
+        }
+      }
+    },
+    "app.findFolders": {
+      "comment": "Saved-folder search placeholder and Edit menu command (Command-F).",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "البحث عن المجلدات"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ফোল্ডার খুঁজুন"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ordner suchen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Εύρεση φακέλων"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find Folders"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Buscar carpetas"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "یافتن پوشه‌ها"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Rechercher des dossiers"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "חיפוש תיקיות"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फ़ोल्डर खोजें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cari Folder"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cerca cartelle"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "フォルダを検索"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "폴더 찾기"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फोल्डर शोधा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cari Folder"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mappen zoeken"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Znajdź foldery"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Buscar pastas"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Caută dosare"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Найти папки"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கோப்புறைகளைக் கண்டறி"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఫోల్డర్‌లను కనుగొనండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ค้นหาโฟลเดอร์"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Klasör Bul"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Знайти папки"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فولڈرز تلاش کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tìm thư mục"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "查找文件夹"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "尋找檔案夾"
+          }
+        }
+      }
+    },
+    "app.findFoldersHint": {
+      "comment": "Search-field help and guidance below an empty result.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "جرّب جزءًا من اسم المجلد أو مساره."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ফোল্ডারের নাম বা পাথের কোনো অংশ দিয়ে চেষ্টা করুন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Versuche es mit einem Teil des Ordnernamens oder Pfads."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δοκιμάστε ένα μέρος του ονόματος ή της διαδρομής ενός φακέλου."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try part of a folder name or path."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Prueba con parte del nombre o la ruta de una carpeta."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "بخشی از نام یا مسیر پوشه را امتحان کنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Essayez une partie du nom ou du chemin d’un dossier."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "אפשר לנסות חלק משם התיקייה או מהנתיב שלה."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फ़ोल्डर के नाम या पथ का कोई हिस्सा आज़माएँ।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Coba sebagian nama atau jalur folder."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Prova con una parte del nome o del percorso di una cartella."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "フォルダ名やパスの一部で検索してみてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "폴더 이름이나 경로의 일부로 검색해 보세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फोल्डरच्या नावाचा किंवा पाथचा काही भाग वापरून पाहा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cuba sebahagian nama atau laluan folder."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Probeer een deel van de mapnaam of het pad."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Spróbuj wpisać część nazwy lub ścieżki folderu."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tente parte do nome ou do caminho de uma pasta."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Încearcă o parte din numele sau calea unui dosar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Попробуйте ввести часть имени или пути папки."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கோப்புறையின் பெயர் அல்லது பாதையின் ஒரு பகுதியை முயலவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఫోల్డర్ పేరు లేదా పాత్‌లో కొంత భాగాన్ని ప్రయత్నించండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ลองใช้บางส่วนของชื่อหรือเส้นทางโฟลเดอร์"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Klasör adının veya yolunun bir bölümünü deneyin."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Спробуйте ввести частину назви або шляху папки."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فولڈر کے نام یا پاتھ کا کوئی حصہ آزمائیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thử nhập một phần tên hoặc đường dẫn thư mục."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "试试文件夹名称或路径的一部分。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "試試檔案夾名稱或路徑的一部分。"
           }
         }
       }
@@ -33114,182 +34230,367 @@
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "translated",
-            "value": "هذه قائمة المجلد. تظهر العناصر الخاصة بالملفات المحددة عند تحديد ملفات."
+            "state": "needs_review",
+            "value": "هذه معاينة لقائمة مجلد. يمكنك توسيع القوائم الفرعية هنا؛ أما تنفيذ الإجراءات فيكون في فايندر. تظهر العناصر الخاصة بالملفات عند تحديد ملفات."
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "translated",
-            "value": "এটি একটি ফোল্ডারের মেনু। আপনি ফাইল নির্বাচন করলে নির্বাচিত ফাইলের জন্য আইটেমগুলো দেখা যায়।"
+            "state": "needs_review",
+            "value": "এখানে একটি ফোল্ডারের মেনুর পূর্বরূপ দেখানো হচ্ছে। এখানে সাবমেনুগুলি প্রসারিত করুন; কাজগুলি চালাতে Finder ব্যবহার করুন। ফাইল নির্বাচন করলে ফাইল-নির্দিষ্ট আইটেম দেখা যায়।"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Das ist das Menü für einen Ordner. Befehle für ausgewählte Dateien erscheinen, wenn du Dateien auswählst."
+            "state": "needs_review",
+            "value": "Dies ist eine Vorschau des Menüs für einen Ordner. Untermenüs lassen sich hier aufklappen; Aktionen führen Sie im Finder aus. Einträge für Dateien erscheinen, wenn Dateien ausgewählt sind."
           }
         },
         "el": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Αυτό είναι το μενού για έναν φάκελο. Τα στοιχεία για επιλεγμένα αρχεία εμφανίζονται όταν επιλέξετε αρχεία."
+            "state": "needs_review",
+            "value": "Αυτή είναι μια προεπισκόπηση του μενού ενός φακέλου. Αναπτύξτε τα υπομενού εδώ· εκτελέστε τις ενέργειες στο Finder. Οι επιλογές για αρχεία εμφανίζονται όταν επιλέγετε αρχεία."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This is the menu for a folder. Items for selected files appear when you select files."
+            "value": "This previews the menu for a folder. Expand submenus here; run actions in Finder. File-specific items appear when files are selected."
           }
         },
         "es": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Este es el menú para una carpeta. Los comandos para los archivos seleccionados aparecen cuando seleccionas archivos."
+            "state": "needs_review",
+            "value": "Esta es una vista previa del menú de una carpeta. Aquí puede desplegar los submenús; las acciones se ejecutan en el Finder. Las opciones para archivos aparecen al seleccionar archivos."
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "translated",
-            "value": "این منوی یک پوشه است. گزینه‌های مربوط به فایل‌های انتخاب‌شده وقتی فایل انتخاب می‌کنید ظاهر می‌شوند."
+            "state": "needs_review",
+            "value": "این پیش‌نمایش منوی یک پوشه است. زیرمنوها را اینجا باز کنید؛ عملیات را در Finder انجام دهید. گزینه‌های مخصوص فایل‌ها هنگام انتخاب فایل نمایش داده می‌شوند."
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Voici le menu d’un dossier. Les commandes pour les fichiers sélectionnés apparaissent lorsque vous sélectionnez des fichiers."
+            "state": "needs_review",
+            "value": "Voici un aperçu du menu d’un dossier. Dépliez les sous-menus ici ; exécutez les actions dans le Finder. Les options propres aux fichiers apparaissent lorsque des fichiers sont sélectionnés."
           }
         },
         "he": {
           "stringUnit": {
-            "state": "translated",
-            "value": "זהו התפריט של תיקיה. כשבוחרים קבצים, מופיעים גם פריטים עבורם."
+            "state": "needs_review",
+            "value": "זו תצוגה מקדימה של תפריט עבור תיקייה. אפשר להרחיב כאן תפריטי משנה; את הפעולות מבצעים ב-Finder. פריטים המיועדים לקבצים מופיעים כשבוחרים קבצים."
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "translated",
-            "value": "यह एक फ़ोल्डर का मेन्यू है। चयनित फ़ाइलों के आइटम तभी दिखते हैं, जब आप फ़ाइलें चुनते हैं।"
+            "state": "needs_review",
+            "value": "यह फ़ोल्डर के मेनू का पूर्वावलोकन है। यहाँ सबमेनू खोलें; कार्रवाइयाँ चलाने के लिए Finder का उपयोग करें। फ़ाइलें चुनने पर फ़ाइलों से संबंधित विकल्प दिखाई देते हैं।"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Ini adalah menu untuk folder. Item untuk file yang dipilih muncul saat Anda memilih file."
+            "state": "needs_review",
+            "value": "Ini adalah pratinjau menu untuk folder. Buka submenu di sini; jalankan tindakan di Finder. Item khusus file muncul saat file dipilih."
           }
         },
         "it": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Questo è il menu per una cartella. Le voci per i file selezionati compaiono quando selezioni dei file."
+            "state": "needs_review",
+            "value": "Questa è un’anteprima del menu di una cartella. Espandi qui i sottomenu; esegui le azioni nel Finder. Le voci specifiche per i file appaiono quando selezioni dei file."
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "translated",
-            "value": "これはフォルダ用のメニューです。選択したファイル向けの項目は、ファイルを選択したときに表示されます。"
+            "state": "needs_review",
+            "value": "フォルダのメニューのプレビューです。ここではサブメニューを展開できます。アクションはFinderで実行してください。ファイル用の項目は、ファイルを選択すると表示されます。"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "translated",
-            "value": "이것은 폴더용 메뉴입니다. 선택한 파일에 해당하는 항목은 파일을 선택하면 나타납니다."
+            "state": "needs_review",
+            "value": "폴더 메뉴의 미리보기입니다. 여기서는 하위 메뉴를 펼칠 수 있으며, 동작은 Finder에서 실행하세요. 파일을 선택하면 파일 관련 항목이 표시됩니다."
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "translated",
-            "value": "हा एका फोल्डरचा मेनू आहे. निवडलेल्या फाइल्ससाठीचे आयटम्स तुम्ही फाइल्स निवडता तेव्हा दिसतात."
+            "state": "needs_review",
+            "value": "हे फोल्डरच्या मेनूचे पूर्वावलोकन आहे. येथे उपमेनू उघडा; कृती करण्यासाठी Finder वापरा. फाइल निवडल्यावर फाइलशी संबंधित पर्याय दिसतात."
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Ini ialah menu untuk folder. Item untuk fail yang dipilih muncul apabila anda memilih fail."
+            "state": "needs_review",
+            "value": "Ini ialah pratonton menu untuk folder. Kembangkan submenu di sini; jalankan tindakan dalam Finder. Item khusus fail muncul apabila fail dipilih."
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Dit is het menu voor een map. Onderdelen voor geselecteerde bestanden verschijnen wanneer je bestanden selecteert."
+            "state": "needs_review",
+            "value": "Dit is een voorvertoning van het menu voor een map. Klap hier submenu’s open; voer acties uit in de Finder. Opties voor bestanden verschijnen wanneer u bestanden selecteert."
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "translated",
-            "value": "To jest menu dla folderu. Pozycje dotyczące plików pojawiają się dopiero po ich zaznaczeniu."
+            "state": "needs_review",
+            "value": "To podgląd menu folderu. Tutaj możesz rozwijać podmenu; czynności wykonuj w Finderze. Pozycje dotyczące plików pojawiają się po zaznaczeniu plików."
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Este é o menu para uma pasta. Os itens para arquivos aparecem somente quando arquivos são selecionados."
+            "state": "needs_review",
+            "value": "Esta é uma prévia do menu de uma pasta. Expanda os submenus aqui; execute as ações no Finder. Os itens específicos de arquivos aparecem quando você seleciona arquivos."
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Acesta este meniul pentru un dosar. Articolele pentru fișiere apar când selectați fișiere."
+            "state": "needs_review",
+            "value": "Aceasta este o previzualizare a meniului unui dosar. Extindeți submeniurile aici; executați acțiunile în Finder. Opțiunile pentru fișiere apar când selectați fișiere."
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Это меню для папки. Пункты для выбранных файлов появляются только при выборе файлов."
+            "state": "needs_review",
+            "value": "Это предварительный просмотр меню папки. Здесь можно раскрыть подменю, а действия выполняются в Finder. Пункты для файлов появляются при выборе файлов."
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "translated",
-            "value": "இது ஒரு கோப்புறைக்கான மெனு. நீங்கள் கோப்புகளைத் தேர்ந்தெடுக்கும்போது, தேர்ந்தெடுத்த கோப்புகளுக்கான உருப்படிகள் தோன்றும்."
+            "state": "needs_review",
+            "value": "இது ஒரு கோப்புறையின் மெனு முன்னோட்டம். இங்கே துணைமெனுக்களை விரிவாக்கலாம்; செயல்களை Finder-இல் இயக்கவும். கோப்புகளைத் தேர்ந்தெடுக்கும்போது கோப்புகளுக்கான உருப்படிகள் தோன்றும்."
           }
         },
         "te": {
           "stringUnit": {
-            "state": "translated",
-            "value": "ఇది ఫోల్డర్ కోసం మెనూ. మీరు ఫైల్స్ ఎంచుకున్నప్పుడు, ఎంచుకున్న ఫైల్స్ కోసం అంశాలు కనిపిస్తాయి."
+            "state": "needs_review",
+            "value": "ఇది ఫోల్డర్ మెనూ ప్రివ్యూ. ఇక్కడ ఉపమెనూలను విస్తరించవచ్చు; చర్యలను Finderలో అమలు చేయండి. ఫైల్‌లను ఎంచుకున్నప్పుడు వాటికి సంబంధించిన అంశాలు కనిపిస్తాయి."
           }
         },
         "th": {
           "stringUnit": {
-            "state": "translated",
-            "value": "นี่คือเมนูสำหรับโฟลเดอร์ รายการสำหรับไฟล์ที่เลือกจะปรากฏขึ้นเมื่อคุณเลือกไฟล์"
+            "state": "needs_review",
+            "value": "นี่คือตัวอย่างเมนูสำหรับโฟลเดอร์ คุณสามารถขยายเมนูย่อยได้ที่นี่ ส่วนการเรียกใช้คำสั่งให้ทำใน Finder รายการสำหรับไฟล์จะปรากฏเมื่อเลือกไฟล์"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Bu, bir klasör için menüdür. Seçili dosyalara yönelik öğeler, dosya seçtiğinizde görünür."
+            "state": "needs_review",
+            "value": "Bu, bir klasör menüsünün önizlemesidir. Alt menüleri burada genişletin; eylemleri Finder’da çalıştırın. Dosyalara özgü öğeler, dosyalar seçildiğinde görünür."
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Це меню для папки. Пункти для вибраних файлів зʼявляються, коли ви вибираєте файли."
+            "state": "needs_review",
+            "value": "Це попередній перегляд меню папки. Тут можна розгорнути підменю, а дії виконуються у Finder. Пункти для файлів з’являються, коли вибрано файли."
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "translated",
-            "value": "یہ فولڈر کا مینو ہے۔ منتخب فائلوں سے متعلق آئٹمز اس وقت ظاہر ہوتے ہیں جب آپ فائلیں منتخب کرتے ہیں۔"
+            "state": "needs_review",
+            "value": "یہ فولڈر کے مینو کا پیش نظارہ ہے۔ یہاں ذیلی مینو کھولیں؛ کارروائیاں Finder میں چلائیں۔ فائلیں منتخب کرنے پر فائلوں سے متعلق آئٹمز ظاہر ہوتے ہیں۔"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Đây là menu cho một thư mục. Các mục dành cho tệp đã chọn chỉ xuất hiện khi bạn chọn tệp."
+            "state": "needs_review",
+            "value": "Đây là bản xem trước menu của thư mục. Bạn có thể mở rộng menu con tại đây; hãy thực hiện các thao tác trong Finder. Các mục dành riêng cho tệp xuất hiện khi bạn chọn tệp."
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "translated",
-            "value": "这是文件夹的菜单。选中文件时，针对所选文件的项目才会出现。"
+            "state": "needs_review",
+            "value": "文件夹菜单预览。可在此展开子菜单；执行操作请在访达中进行。选中文件后会显示针对文件的项目。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
+            "state": "needs_review",
+            "value": "檔案夾選單預覽。可在此展開子選單；執行操作請在 Finder 中進行。選取檔案後會顯示針對檔案的項目。"
+          }
+        }
+      }
+    },
+    "app.menuConfigError": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "لن تتوفر معاينة القائمة حتى تُصلح أخطاء الإعدادات."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "কনফিগারেশনের ত্রুটিগুলি ঠিক না করা পর্যন্ত মেনুর পূর্বরূপ দেখা যাবে না।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Die Menüvorschau ist verfügbar, sobald die Konfigurationsfehler behoben sind."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Η προεπισκόπηση μενού δεν είναι διαθέσιμη μέχρι να διορθωθούν τα σφάλματα διαμόρφωσης."
+          }
+        },
+        "en": {
+          "stringUnit": {
             "state": "translated",
-            "value": "這是檔案夾的選單。選取檔案時，針對所選檔案的項目才會出現。"
+            "value": "The menu preview is unavailable until the configuration errors are fixed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "La vista previa del menú estará disponible cuando se corrijan los errores de configuración."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پیش‌نمایش منو تا رفع خطاهای پیکربندی در دسترس نیست."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "L’aperçu du menu sera disponible une fois les erreurs de configuration corrigées."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "התצוגה המקדימה של התפריט לא זמינה עד לתיקון שגיאות ההגדרות."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "कॉन्फ़िगरेशन की त्रुटियाँ ठीक होने तक मेनू का पूर्वावलोकन उपलब्ध नहीं है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pratinjau menu belum tersedia sampai kesalahan konfigurasi diperbaiki."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "L’anteprima del menu sarà disponibile dopo aver corretto gli errori di configurazione."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "設定のエラーを修正すると、メニューをプレビューできます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "설정 오류를 수정해야 메뉴 미리보기를 사용할 수 있습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "कॉन्फिगरेशनमधील त्रुटी दुरुस्त होईपर्यंत मेनूचे पूर्वावलोकन उपलब्ध नाही."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pratonton menu tidak tersedia sehingga ralat konfigurasi dibetulkan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Het menuvoorbeeld is beschikbaar zodra de configuratiefouten zijn opgelost."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Podgląd menu będzie dostępny po naprawieniu błędów konfiguracji."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "A prévia do menu estará disponível após corrigir os erros de configuração."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Previzualizarea meniului va fi disponibilă după corectarea erorilor de configurare."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Предпросмотр меню станет доступен после исправления ошибок конфигурации."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "அமைவுப் பிழைகளைச் சரிசெய்யும் வரை மெனு முன்னோட்டம் கிடைக்காது."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "కాన్ఫిగరేషన్ లోపాలను సరిచేసే వరకు మెను ప్రివ్యూ అందుబాటులో ఉండదు."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "จะแสดงตัวอย่างเมนูได้เมื่อแก้ไขข้อผิดพลาดในการกำหนดค่าแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yapılandırma hataları düzeltilene kadar menü önizlemesi kullanılamaz."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Попередній перегляд меню стане доступним після виправлення помилок конфігурації."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ترتیب کی غلطیاں درست ہونے تک مینو کا پیش منظر دستیاب نہیں ہے۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bản xem trước menu sẽ khả dụng sau khi sửa các lỗi cấu hình."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "配置错误修复后，即可预览菜单。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "修正設定錯誤後，即可預覽選單。"
           }
         }
       }
@@ -35898,6 +37199,191 @@
         }
       }
     },
+    "app.menuNeedsSetup": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "أكمل إعداد Right Here لمعاينة قائمة Finder."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder মেনুর পূর্বরূপ দেখতে Right Here সেট আপ করুন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Richte Right Here ein, um dein Finder-Menü anzusehen."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ρυθμίστε το Right Here για να δείτε το μενού σας στο Finder."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up Right Here to preview your Finder menu."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configura Right Here para ver tu menú de Finder."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "برای پیش‌نمایش منوی Finder، ابتدا Right Here را راه‌اندازی کنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurez Right Here pour voir votre menu Finder."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "יש להגדיר את Right Here כדי להציג תצוגה מקדימה של תפריט Finder."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "अपने Finder मेनू का पूर्वावलोकन देखने के लिए Right Here सेट अप करें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Siapkan Right Here untuk melihat pratinjau menu Finder Anda."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configura Right Here per vedere l’anteprima del menu Finder."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finderメニューをプレビューするには、Right Hereを設定してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder 메뉴를 미리 보려면 Right Here를 설정하세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "तुमच्या Finder मेनूचे पूर्वावलोकन पाहण्यासाठी Right Here सेट अप करा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Sediakan Right Here untuk melihat pratonton menu Finder anda."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Stel Right Here in om je Finder-menu te bekijken."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Skonfiguruj Right Here, aby zobaczyć podgląd menu Findera."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configure o Right Here para ver a prévia do seu menu do Finder."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Configurează Right Here pentru a previzualiza meniul Finder."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Настройте Right Here, чтобы увидеть меню Finder."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "உங்கள் Finder மெனுவின் முன்னோட்டத்தைக் காண Right Here-ஐ அமைக்கவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "మీ Finder మెను ప్రివ్యూను చూడటానికి Right Hereను సెటప్ చేయండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ตั้งค่า Right Here เพื่อดูตัวอย่างเมนู Finder ของคุณ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Finder menünüzü önizlemek için Right Here’ı kurun."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Налаштуйте Right Here, щоб переглянути меню Finder."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اپنے Finder مینو کا پیش منظر دیکھنے کے لیے Right Here سیٹ اپ کریں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thiết lập Right Here để xem trước menu Finder của bạn."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "先设置 Right Here，即可预览你的 Finder 菜单。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "先設定 Right Here，即可預覽你的 Finder 選單。"
+          }
+        }
+      }
+    },
     "app.menuNothingHere": {
       "comment": "Said in the menu editor on a line whose entries are not in the Finder menu on this Mac, for example because an app is not installed or no agent is enabled. A short sentence with no final period.",
       "extractionState": "manual",
@@ -37196,6 +38682,192 @@
           "stringUnit": {
             "state": "translated",
             "value": "還原"
+          }
+        }
+      }
+    },
+    "app.messageCopied": {
+      "comment": "Confirmation on the copy-message button and accessibility announcement. The original error stays visible.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تم نسخ الرسالة."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "বার্তা কপি করা হয়েছে।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Meldung kopiert."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Το μήνυμα αντιγράφηκε."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message copied."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mensaje copiado."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پیام کپی شد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Message copié."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ההודעה הועתקה."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "संदेश कॉपी किया गया।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Pesan disalin."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Messaggio copiato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "メッセージをコピーしました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "메시지를 복사했습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "संदेश कॉपी केला."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mesej disalin."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bericht gekopieerd."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Komunikat skopiowany."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mensagem copiada."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mesaj copiat."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Сообщение скопировано."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "செய்தி நகலெடுக்கப்பட்டது."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సందేశం కాపీ చేయబడింది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "คัดลอกข้อความแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "İleti kopyalandı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Повідомлення скопійовано."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پیغام کاپی ہو گیا۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Đã sao chép thông báo."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已复制提示信息。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已複製提示訊息。"
           }
         }
       }
@@ -39799,6 +41471,192 @@
           "stringUnit": {
             "state": "translated",
             "value": "在 Finder 中選取"
+          }
+        }
+      }
+    },
+    "app.noMatchingFolders": {
+      "comment": "An empty filtered result, distinct from having no saved folders.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "لا توجد مجلدات مطابقة"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "কোনো মিল থাকা ফোল্ডার নেই"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Keine passenden Ordner"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δεν βρέθηκαν αντίστοιχοι φάκελοι"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No matching folders"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "No hay carpetas coincidentes"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پوشه‌ای مطابق جستجو یافت نشد"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aucun dossier correspondant"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "אין תיקיות תואמות"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "कोई मेल खाने वाला फ़ोल्डर नहीं"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tidak ada folder yang cocok"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nessuna cartella corrispondente"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "一致するフォルダがありません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "일치하는 폴더 없음"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "जुळणारे फोल्डर नाहीत"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tiada folder yang sepadan"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Geen overeenkomende mappen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Brak pasujących folderów"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nenhuma pasta correspondente"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Niciun dosar corespunzător"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Подходящие папки не найдены"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "பொருந்தும் கோப்புறைகள் இல்லை"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సరిపోలే ఫోల్డర్‌లు లేవు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ไม่พบโฟลเดอร์ที่ตรงกัน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Eşleşen klasör yok"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Відповідних папок немає"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "کوئی مماثل فولڈر نہیں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Không có thư mục phù hợp"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "没有匹配的文件夹"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "沒有相符的檔案夾"
           }
         }
       }
@@ -64352,6 +66210,192 @@
         }
       }
     },
+    "app.tryAgain": {
+      "comment": "Button that retries an unsuccessful read. It does not repeat a destructive action.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "المحاولة مجددًا"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "আবার চেষ্টা করুন"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Erneut versuchen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δοκιμή ξανά"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Volver a intentar"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تلاش دوباره"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Réessayer"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ניסיון נוסף"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फिर से प्रयास करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Coba Lagi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Riprova"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "再試行"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "다시 시도"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "पुन्हा प्रयत्न करा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cuba Lagi"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Opnieuw proberen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Spróbuj ponownie"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tentar novamente"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Încearcă din nou"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Повторить попытку"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "மீண்டும் முயல்க"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "మళ్లీ ప్రయత్నించండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ลองอีกครั้ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yeniden Dene"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Спробувати ще раз"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "دوبارہ کوشش کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thử lại"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "重试"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "重試"
+          }
+        }
+      }
+    },
     "app.undoRefused": {
       "comment": "Said when the person presses Undo next to a change they just made in the window, but the config file had been changed again by something else (an AI assistant, the command line, another change) in the meantime, so nothing was taken back. 'Config page' is the section of the window named by the glossary entry app.tabConfig; 'Recent changes' is a heading on that page.",
       "extractionState": "manual",
@@ -67513,188 +69557,560 @@
         }
       }
     },
+    "app.worktreesEmpty": {
+      "comment": "An empty result after successfully reading git's worktree list. The repository is selected and the read did not fail.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "لم يتم العثور على أشجار عمل في هذا المستودع."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "এই রিপোজিটরিতে কোনো ওয়ার্কট্রি পাওয়া যায়নি।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "In diesem Repository wurden keine Worktrees gefunden."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δεν βρέθηκαν worktrees σε αυτό το αποθετήριο."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No worktrees were found in this repository."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "No se encontraron árboles de trabajo en este repositorio."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "هیچ درخت کاری در این مخزن پیدا نشد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aucun arbre de travail trouvé dans ce dépôt."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לא נמצאו עצי עבודה במאגר הזה."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "इस रिपॉज़िटरी में कोई वर्कट्री नहीं मिली।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tidak ada worktree yang ditemukan di repositori ini."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nessun worktree trovato in questo repository."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "このリポジトリにはワークツリーが見つかりませんでした。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "이 저장소에서 워크트리를 찾지 못했습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "या रिपॉझिटरीमध्ये कोणतीही वर्कट्री आढळली नाही."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tiada worktree ditemui dalam repositori ini."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Er zijn geen worktrees gevonden in deze repository."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "W tym repozytorium nie znaleziono drzew roboczych."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nenhuma árvore de trabalho foi encontrada neste repositório."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nu s-au găsit arbori de lucru în acest depozit."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "В этом репозитории не найдено рабочих деревьев."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "இந்தக் களஞ்சியத்தில் பணிமரங்கள் எதுவும் கிடைக்கவில்லை."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఈ రిపోజిటరీలో వర్క్‌ట్రీలు కనుగొనబడలేదు."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ไม่พบเวิร์กทรีในคลังนี้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bu depoda çalışma ağacı bulunamadı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "У цьому репозиторії не знайдено робочих дерев."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اس ریپوزٹری میں کوئی ورک ٹری نہیں ملی۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Không tìm thấy cây làm việc nào trong kho lưu trữ này."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "此仓库中没有找到工作树。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "此儲存庫中找不到工作樹。"
+          }
+        }
+      }
+    },
     "app.worktreesIntro": {
       "comment": "Text at the top of the Worktrees section of the setup window. The command between backticks stays exactly as it is.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
-            "state": "translated",
-            "value": "نسخ عمل منفصلة يُنشئها `rh run --worktree`، ليتمكن وكيل من العمل على فرع خاص به."
+            "state": "needs_review",
+            "value": "تصفّح أشجار العمل في المستودع وأظهر مجلداتها في Finder. لا يمكن هنا إزالة سوى أشجار العمل التي أنشأها Right Here."
           }
         },
         "bn": {
           "stringUnit": {
-            "state": "translated",
-            "value": "আলাদা চেকআউট, যেগুলো `rh run --worktree` তৈরি করে, যাতে কোনো এজেন্ট নিজের একটি ব্রাঞ্চে কাজ করতে পারে।"
+            "state": "needs_review",
+            "value": "রিপোজিটরির ওয়ার্কট্রি দেখুন এবং Finder-এ তাদের ফোল্ডার খুঁজে নিন। এখানে শুধু Right Here দিয়ে তৈরি ওয়ার্কট্রি সরানো যায়।"
           }
         },
         "de": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Getrennte Arbeitskopien, die `rh run --worktree` anlegt, damit ein Agent an einem eigenen Branch arbeiten kann."
+            "state": "needs_review",
+            "value": "Sehen Sie sich die Worktrees eines Repositorys an und zeigen Sie ihre Ordner im Finder. Hier können nur von Right Here erstellte Worktrees entfernt werden."
           }
         },
         "el": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Ξεχωριστά αντίγραφα εργασίας που δημιουργεί το `rh run --worktree`, ώστε ένας πράκτορας να μπορεί να εργάζεται σε δικό του κλάδο."
+            "state": "needs_review",
+            "value": "Περιηγηθείτε στα worktrees ενός αποθετηρίου και εμφανίστε τους φακέλους τους στο Finder. Εδώ μπορούν να αφαιρεθούν μόνο worktrees που δημιούργησε το Right Here."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Separate checkouts that `rh run --worktree` makes, so that an agent can work on a branch of its own."
+            "value": "Browse a repository's worktrees and reveal their folders in Finder. Only worktrees made by Right Here can be removed here."
           }
         },
         "es": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Copias de trabajo separadas que crea `rh run --worktree`, para que un agente pueda trabajar en una rama propia."
+            "state": "needs_review",
+            "value": "Explora los árboles de trabajo de un repositorio y muestra sus carpetas en Finder. Aquí solo se pueden eliminar los creados por Right Here."
           }
         },
         "fa": {
           "stringUnit": {
-            "state": "translated",
-            "value": "نسخه‌های کاری جداگانه‌ای که `rh run --worktree` می‌سازد، تا یک عامل هوش مصنوعی بتواند روی شاخهٔ خودش کار کند."
+            "state": "needs_review",
+            "value": "درخت‌های کاری یک مخزن را مرور کنید و پوشه‌هایشان را در Finder نشان دهید. اینجا فقط درخت‌های کاری ساخته‌شده با Right Here را می‌توان حذف کرد."
           }
         },
         "fr": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Copies de travail séparées créées par `rh run --worktree`, pour qu’un agent puisse travailler sur sa propre branche."
+            "state": "needs_review",
+            "value": "Parcourez les arbres de travail d'un dépôt et affichez leurs dossiers dans le Finder. Seuls ceux créés par Right Here peuvent être supprimés ici."
           }
         },
         "he": {
           "stringUnit": {
-            "state": "translated",
-            "value": "עותקי עבודה נפרדים שנוצרים על ידי `rh run --worktree`, כך שסוכן AI יוכל לעבוד על ענף משלו."
+            "state": "needs_review",
+            "value": "אפשר לעיין בעצי העבודה של מאגר ולהציג את התיקיות שלהם ב-Finder. כאן אפשר להסיר רק עצי עבודה שנוצרו באמצעות Right Here."
           }
         },
         "hi": {
           "stringUnit": {
-            "state": "translated",
-            "value": "अलग-अलग वर्किंग कॉपी जो `rh run --worktree` बनाता है, ताकि कोई AI एजेंट अपनी एक अलग ब्रांच पर काम कर सके।"
+            "state": "needs_review",
+            "value": "रिपॉज़िटरी की वर्कट्री देखें और उनके फ़ोल्डर Finder में दिखाएँ। यहाँ केवल Right Here द्वारा बनाई गई वर्कट्री हटाई जा सकती हैं।"
           }
         },
         "id": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Salinan kerja terpisah yang dibuat oleh `rh run --worktree`, agar agen dapat bekerja pada branch-nya sendiri."
+            "state": "needs_review",
+            "value": "Jelajahi worktree repositori dan tampilkan foldernya di Finder. Hanya worktree yang dibuat oleh Right Here yang dapat dihapus di sini."
           }
         },
         "it": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Checkout separati creati con `rh run --worktree`, così un agente può lavorare su un branch proprio."
+            "state": "needs_review",
+            "value": "Esplora i worktree di un repository e mostra le loro cartelle nel Finder. Qui puoi rimuovere solo i worktree creati da Right Here."
           }
         },
         "ja": {
           "stringUnit": {
-            "state": "translated",
-            "value": "`rh run --worktree` が作る独立したチェックアウトです。エージェントはそれぞれ専用のブランチで作業できます。"
+            "state": "needs_review",
+            "value": "リポジトリのワークツリーを確認し、フォルダを Finder に表示できます。ここで削除できるのは Right Here が作成したワークツリーだけです。"
           }
         },
         "ko": {
           "stringUnit": {
-            "state": "translated",
-            "value": "에이전트가 자체 브랜치에서 작업할 수 있도록 `rh run --worktree`가 만드는 별도의 체크아웃입니다."
+            "state": "needs_review",
+            "value": "저장소의 워크트리를 살펴보고 Finder에서 폴더를 표시하세요. 여기에서는 Right Here가 만든 워크트리만 제거할 수 있습니다."
           }
         },
         "mr": {
           "stringUnit": {
-            "state": "translated",
-            "value": "`rh run --worktree` ने तयार केलेले वेगळे चेकआउट, जेणेकरून एखादा एजंट स्वतःच्या ब्रांचवर काम करू शकेल."
+            "state": "needs_review",
+            "value": "रिपॉझिटरीमधील वर्कट्री पाहा आणि त्यांचे फोल्डर Finder मध्ये दाखवा. येथे फक्त Right Here ने तयार केलेल्या वर्कट्री काढता येतात."
           }
         },
         "ms": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Checkout berasingan yang dibuat oleh `rh run --worktree`, supaya ejen boleh bekerja pada cawangannya sendiri."
+            "state": "needs_review",
+            "value": "Semak worktree repositori dan paparkan foldernya dalam Finder. Hanya worktree yang dibuat oleh Right Here boleh dialih keluar di sini."
           }
         },
         "nl": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Afzonderlijke werkkopieën die `rh run --worktree` maakt, zodat een agent op een eigen branch kan werken."
+            "state": "needs_review",
+            "value": "Bekijk de worktrees van een repository en toon hun mappen in Finder. Hier kunnen alleen worktrees worden verwijderd die door Right Here zijn gemaakt."
           }
         },
         "pl": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Osobne kopie robocze, które tworzy `rh run --worktree`, dzięki czemu agent może pracować na własnej gałęzi."
+            "state": "needs_review",
+            "value": "Przeglądaj drzewa robocze repozytorium i pokazuj ich foldery w Finderze. Tutaj można usuwać tylko drzewa utworzone przez Right Here."
           }
         },
         "pt-BR": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Cópias separadas que `rh run --worktree` cria, para que um agente possa trabalhar em uma branch própria."
+            "state": "needs_review",
+            "value": "Explore as árvores de trabalho de um repositório e mostre suas pastas no Finder. Aqui, só é possível remover as criadas pelo Right Here."
           }
         },
         "ro": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Copii de lucru separate, create de `rh run --worktree`, pentru ca un agent să poată lucra pe o ramură proprie."
+            "state": "needs_review",
+            "value": "Explorează arborii de lucru ai unui depozit și afișează dosarele lor în Finder. Aici pot fi eliminați doar arborii creați de Right Here."
           }
         },
         "ru": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Отдельные рабочие копии, которые создает `rh run --worktree`, чтобы агент мог работать в собственной ветке."
+            "state": "needs_review",
+            "value": "Просматривайте рабочие деревья репозитория и показывайте их папки в Finder. Здесь можно удалять только рабочие деревья, созданные Right Here."
           }
         },
         "ta": {
           "stringUnit": {
-            "state": "translated",
-            "value": "`rh run --worktree` உருவாக்கும் தனிப் பிரதிகள்; இதனால் ஒரு முகவர் தனக்கென ஒரு branch-இல் வேலை செய்ய முடியும்."
+            "state": "needs_review",
+            "value": "களஞ்சியத்தின் பணிமரங்களைப் பார்வையிட்டு அவற்றின் கோப்புறைகளை Finder இல் காட்டவும். Right Here உருவாக்கிய பணிமரங்களை மட்டுமே இங்கு அகற்ற முடியும்."
           }
         },
         "te": {
           "stringUnit": {
-            "state": "translated",
-            "value": "`rh run --worktree` తయారు చేసే వేర్వేరు చెక్అవుట్లు; తద్వారా ఒక ఏజెంట్ తనకంటూ ఒక బ్రాంచ్లో పని చేయగలదు."
+            "state": "needs_review",
+            "value": "రిపోజిటరీలోని వర్క్‌ట్రీలను పరిశీలించి, వాటి ఫోల్డర్‌లను Finderలో చూపించండి. Right Here సృష్టించిన వర్క్‌ట్రీలను మాత్రమే ఇక్కడ తొలగించవచ్చు."
           }
         },
         "th": {
           "stringUnit": {
-            "state": "translated",
-            "value": "สำเนาทำงานแยกที่ `rh run --worktree` สร้างขึ้น เพื่อให้เอเจนต์ทำงานบน branch ของตัวเองได้"
+            "state": "needs_review",
+            "value": "ดูเวิร์กทรีของคลังและแสดงโฟลเดอร์ใน Finder ที่นี่สามารถนำออกได้เฉพาะเวิร์กทรีที่สร้างโดย Right Here เท่านั้น"
           }
         },
         "tr": {
           "stringUnit": {
-            "state": "translated",
-            "value": "`rh run --worktree` komutunun oluşturduğu ayrı çalışma kopyaları; böylece bir ajan kendi dalında çalışabilir."
+            "state": "needs_review",
+            "value": "Bir deponun çalışma ağaçlarına göz atın ve klasörlerini Finder'da gösterin. Burada yalnızca Right Here tarafından oluşturulan çalışma ağaçları kaldırılabilir."
           }
         },
         "uk": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Окремі робочі копії, які створює `rh run --worktree`, щоб агент міг працювати на власній гілці."
+            "state": "needs_review",
+            "value": "Переглядайте робочі дерева репозиторію та показуйте їхні папки у Finder. Тут можна видаляти лише робочі дерева, створені Right Here."
           }
         },
         "ur": {
           "stringUnit": {
-            "state": "translated",
-            "value": "وہ الگ چیک آؤٹ جو `rh run --worktree` بناتا ہے، تاکہ کوئی AI ایجنٹ اپنی ایک الگ برانچ پر کام کر سکے۔"
+            "state": "needs_review",
+            "value": "ریپوزٹری کی ورک ٹری دیکھیں اور ان کے فولڈر Finder میں دکھائیں۔ یہاں صرف Right Here کی بنائی ہوئی ورک ٹری ہٹائی جا سکتی ہیں۔"
           }
         },
         "vi": {
           "stringUnit": {
-            "state": "translated",
-            "value": "Các bản sao làm việc riêng do `rh run --worktree` tạo ra, để tác tử AI có thể làm việc trên một nhánh riêng."
+            "state": "needs_review",
+            "value": "Duyệt các cây làm việc của kho lưu trữ và hiển thị thư mục của chúng trong Finder. Tại đây, chỉ có thể xóa các cây làm việc do Right Here tạo."
           }
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "translated",
-            "value": "由 `rh run --worktree` 创建的独立检出副本，让 AI 智能体可以在自己的分支上工作。"
+            "state": "needs_review",
+            "value": "查看仓库中的工作树，并在访达中定位其文件夹。这里只能移除由 Right Here 创建的工作树。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
+            "state": "needs_review",
+            "value": "查看儲存庫中的工作樹，並在 Finder 中顯示其檔案夾。這裡只能移除由 Right Here 建立的工作樹。"
+          }
+        }
+      }
+    },
+    "app.worktreesLoadFailed": {
+      "comment": "Heading above git's error and a button to retry reading the selected repository's worktrees.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تعذّر تحميل أشجار العمل."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ওয়ার্কট্রি লোড করা যায়নি।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Worktrees konnten nicht geladen werden."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δεν ήταν δυνατή η φόρτωση των worktrees."
+          }
+        },
+        "en": {
+          "stringUnit": {
             "state": "translated",
-            "value": "由 `rh run --worktree` 建立的獨立檢出副本，讓 AI 代理程式可以在自己的分支上作業。"
+            "value": "Couldn't load worktrees."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "No se pudieron cargar los árboles de trabajo."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "بارگیری درخت‌های کاری ممکن نشد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Impossible de charger les arbres de travail."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לא ניתן לטעון את עצי העבודה."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "वर्कट्री लोड नहीं हो सकीं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Worktree tidak dapat dimuat."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Impossibile caricare i worktree."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ワークツリーを読み込めませんでした。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "워크트리를 불러오지 못했습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "वर्कट्री लोड करता आल्या नाहीत."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Worktree tidak dapat dimuatkan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "De worktrees konden niet worden geladen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nie udało się wczytać drzew roboczych."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Não foi possível carregar as árvores de trabalho."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nu s-au putut încărca arborii de lucru."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не удалось загрузить рабочие деревья."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "பணிமரங்களை ஏற்ற முடியவில்லை."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "వర్క్‌ట్రీలను లోడ్ చేయలేకపోయాము."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ไม่สามารถโหลดเวิร์กทรีได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Çalışma ağaçları yüklenemedi."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не вдалося завантажити робочі дерева."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ورک ٹری لوڈ نہیں ہو سکیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Không thể tải các cây làm việc."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "无法加载工作树。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "無法載入工作樹。"
           }
         }
       }

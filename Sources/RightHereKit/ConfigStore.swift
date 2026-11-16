@@ -88,6 +88,17 @@ public struct LoadedConfig: Sendable, Equatable {
     public var hasConfig: Bool {
         fileExists || localFileExists || [file, localFile].contains { ConfigProblem.danglingTarget(of: $0) != nil }
     }
+
+    /// The file the first actionable problem belongs to, or the existing file when there is no problem.
+    public var recoveryTarget: ConfigTarget {
+        if ConfigProblem.danglingTarget(of: file) != nil { return .shared }
+        if ConfigProblem.danglingTarget(of: localFile) != nil { return .local }
+        let problems = result.diagnostics
+        if let problem = problems.first(where: { $0.severity == .error }) ?? problems.first(where: { $0.severity == .warning }) {
+            return problem.file == localFile.lastPathComponent || problem.file == localFile.path ? .local : .shared
+        }
+        return localFileExists && !fileExists ? .local : .shared
+    }
 }
 
 extension LoadedConfig {
@@ -114,6 +125,15 @@ public enum ConfigStore {
     /// `rh config validate` shows. The Finder menu and `rh run` read the config without it.
     /// - Parameter withOrigins: Also where each entry of the lists of tables is written (`ConfigLoadResult.entryOrigins`), for an editor that changes the entries by place.
     public static func load(paths: RHPaths, validating: Bool = false, withOrigins: Bool = false) -> LoadedConfig {
+        reading(paths: paths, validating: validating, withOrigins: withOrigins).loaded
+    }
+
+    static func setupState(paths: RHPaths) -> SetupConfigState {
+        let read = reading(paths: paths, validating: false, withOrigins: true)
+        return SetupConfigState(loaded: read.loaded, sources: read.sources)
+    }
+
+    private static func reading(paths: RHPaths, validating: Bool, withOrigins: Bool) -> (loaded: LoadedConfig, sources: [ConfigSource]) {
         let base = read(paths.configFile)
         let local = read(paths.localConfigFile)
         let name = paths.localConfigFile.lastPathComponent
@@ -122,7 +142,7 @@ public enum ConfigStore {
             : ConfigLayers.load(base: base.source, local: local.source, overlayName: name, withOrigins: withOrigins)
         var problem: ConfigDiagnostic?
         if case .unreadable(let diagnostic) = base.source { problem = diagnostic }
-        return LoadedConfig(result: result, fileExists: base.exists, file: paths.configFile, localFile: paths.localConfigFile, localFileExists: local.exists, fileProblem: problem)
+        return (LoadedConfig(result: result, fileExists: base.exists, file: paths.configFile, localFile: paths.localConfigFile, localFileExists: local.exists, fileProblem: problem), [base.source, local.source])
     }
 
     /// A config file's text as `rh config show` prints it: what `load` would have read (the size limit, a link followed, no byte

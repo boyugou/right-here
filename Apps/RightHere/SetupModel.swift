@@ -61,9 +61,15 @@ struct PendingLoosening: Equatable, Sendable {
     var agents: [PromptEffects.Entry]
 }
 
+/// The repository and worktree shown when the removal question opens, independent of any later selection.
+struct WorktreeRemovalRequest: Equatable, Sendable {
+    let row: WorktreeRow
+    let repository: URL
+}
+
 /// A worktree whose removal would delete files git ignores (a `.env`, a local database), which exist only there: held until the person agrees to lose exactly these.
 struct PendingIgnoredRemoval: Equatable, Sendable {
-    var row: WorktreeRow
+    var request: WorktreeRemovalRequest
     var files: [String]
 }
 
@@ -122,6 +128,9 @@ final class SetupModel {
     private(set) var snapshot: SetupSnapshot?
     private(set) var checks: [DoctorCheck] = []
     private(set) var folders = FolderSnapshot()
+    /// A window-local search survives reads, folder edits and visits to another section.
+    var folderQuery = ""
+    private(set) var folderSearchRequest = 0
     private(set) var isRefreshing = false
     /// An install, a repair, a launch test or a change to the folders is running: the buttons that would start another are off.
     private(set) var isWorking = false
@@ -134,6 +143,9 @@ final class SetupModel {
     private(set) var worktrees: WorktreeListing = .idle
     /// The repository the worktrees tab lists when the person chose one; otherwise the first repository of the folders.
     private(set) var chosenRepository: URL?
+    /// Choices in this window remain available without adding them to pinned or recent folders.
+    private var chosenRepositories: [URL] = []
+    private var isRemovingWorktree = false
     /// The submenus of the Finder menu that are open, by `MenuPreviewRow.id`.
     private(set) var openSubmenus: Set<String> = []
     /// The menu page shows rows to drag, remove and add to instead of the preview.
@@ -220,7 +232,7 @@ final class SetupModel {
 
     private let loader: SetupLoader
     let actions: SetupActions
-    private let browser = WorktreeBrowser()
+    private let browser: WorktreeBrowser
     private let home: URL
     private let pollInterval: Duration
     private let idleInterval: Duration
@@ -231,8 +243,9 @@ final class SetupModel {
     /// How long the window's change waits for the one that is being written: a write of the config, with its lock and its history, takes a moment on a busy Mac, and a click
     /// that came during it would be refused for nothing.
     static let defaultPatience: Duration = .seconds(2)
-    /// When the state was last read; coming back to the app does not read it again within `activationQuietPeriod`.
+    /// When the whole state was last read; an unchanged config does not run the doctor again within `activationQuietPeriod`.
     @ObservationIgnored private var lastRead: ContinuousClock.Instant?
+    @ObservationIgnored private var activationConfigRequest: SetupConfigState?
     @ObservationIgnored private var icons: IconProvider
     @ObservationIgnored private var loop: RefreshLoop<SetupSnapshot>?
 
@@ -249,9 +262,11 @@ final class SetupModel {
     ///     shell, which runs their startup files, and a person who switches between windows must not have those run at every switch.
     ///   - patience: How long a change waits for the one that is being written before it is refused and says so.
     init(loader: SetupLoader, actions: SetupActions, facts: any SystemFacts, helper: String, pollInterval: Duration = .seconds(2), idleInterval: Duration = .seconds(30),
-         activationQuietPeriod: Duration = .seconds(20), patience: Duration = SetupModel.defaultPatience, windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible) {
+         activationQuietPeriod: Duration = .seconds(20), patience: Duration = SetupModel.defaultPatience, worktreeBrowser: WorktreeBrowser = WorktreeBrowser(),
+         windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible) {
         self.loader = loader
         self.actions = actions
+        browser = worktreeBrowser
         icons = IconProvider(facts: facts)
         home = facts.homeDirectory
         locationProblem = InstallError.problem(runningFrom: helper)
@@ -331,7 +346,12 @@ final class SetupModel {
     /// The repository the worktrees tab lists now, if there is one.
     var repository: URL? { chosenRepository ?? folders.repositories.first }
 
-    var repositories: [URL] { folders.repositories }
+    var repositories: [URL] {
+        var seen = Set<String>()
+        return (folders.repositories + chosenRepositories).filter { seen.insert($0.path).inserted }
+    }
+
+    var isLoadingWorktrees: Bool { worktrees == .loading }
 
     /// The icon of a line of the window's lists. A new file's line has the New File glyph, as the lines around it have glyphs and apps' icons: the file type's
     /// own icon, a white page, drew as a faint sliver there (a design review of 0.3.21). The Finder menu's picture keeps the file type's icon, as Finder shows it.
@@ -361,6 +381,15 @@ final class SetupModel {
 
     func toggleSubmenu(_ id: String) {
         if !openSubmenus.insert(id).inserted { openSubmenus.remove(id) }
+    }
+
+    var showsFolderSearch: Bool { !folders.pins.isEmpty || !folders.recents.isEmpty || !folderQuery.isEmpty }
+
+    var canFindFolders: Bool { selectedTab == .folders && snapshot != nil && folders.problem == nil && showsFolderSearch }
+
+    func findFolders() {
+        guard canFindFolders else { return }
+        folderSearchRequest += 1
     }
 
     func select(_ tab: SetupTab) {
@@ -410,7 +439,25 @@ final class SetupModel {
     /// terminal where an AI assistant ran `rh setup`, and what the window shows is old. Not while the first look runs, or while something the
     /// person started does; each ends with a read of its own.
     func refreshOnActivation() async {
-        guard snapshot != nil, !isWorking, !isRefreshing else { return }
+        guard snapshot != nil, !isWorking else { return }
+        #if PREVIEW
+        if simulated { return }
+        #endif
+        let state = await loader.configState()
+        guard !isWorking else { return }
+        if let previous = snapshot?.configState, state != previous {
+            guard activationConfigRequest != state else { return }
+            activationConfigRequest = state
+            if state.changesSettings(from: previous) {
+                await refresh()
+            } else {
+                await refreshEditable(updatingServices: false)
+                if configPage != nil { await openConfigPage(keepingDraft: true) }
+            }
+            if activationConfigRequest == state { activationConfigRequest = nil }
+            return
+        }
+        guard !isRefreshing else { return }
         if let lastRead, ContinuousClock.now - lastRead < activationQuietPeriod { return }
         await refresh()
     }
@@ -539,11 +586,30 @@ final class SetupModel {
     func openConfig() async {
         guard !isWorking else { return }
         isWorking = true
-        say(await actions.openConfig())
+        say(await actions.openConfig(target: selectedTab == .config ? configTarget : nil))
         isWorking = false
     }
 
     // MARK: The Config page
+
+    func showConfigProblem() async {
+        guard !isWorking else { return }
+        let target = await actions.configRecoveryTarget()
+        guard !isWorking else { return }
+        if target != configTarget, textHasChanges {
+            select(.config)
+            say(.explained([.appConfigSaveBeforeSwitch]))
+            await openConfigPage(keepingDraft: true)
+            return
+        }
+        say(nil)
+        if target != configTarget {
+            configTarget = target
+            configPage = nil
+        }
+        select(.config)
+        await openConfigPage(keepingDraft: true)
+    }
 
     /// The text the file has and the draft differ: there is something to save, and something that a change of file or a reload would throw away.
     var textHasChanges: Bool {
@@ -571,9 +637,9 @@ final class SetupModel {
         let target = configTarget
         var page = await actions.configPage(target: target)
         guard target == configTarget else { return }
-        if keepingDraft, textHasChanges, let started = configPage?.text, let now = page.text {
+        if keepingDraft, textHasChanges, let started = configPage?.text {
             // The draft started from `started`, and a save is held to that text: a file that something else changed since is not thrown away by a save, and the page says so.
-            page.fileMovedUnderDraft = now.digest != started.digest
+            page.fileMovedUnderDraft = page.text?.digest != started.digest || page.problem != nil
             page.text = started
         } else if !(keepingDraft && textHasChanges) {
             draftText = page.text?.text ?? ""
@@ -588,6 +654,7 @@ final class SetupModel {
     /// Switches between the shared file and this Mac's own. Not while the text has changes: the person saves or reverts first, so that nothing they typed is lost.
     func chooseConfigFile(_ target: ConfigTarget) async {
         guard target != configTarget, !textHasChanges, !isWorking else { return }
+        say(nil)
         configTarget = target
         configPage = nil
         await openConfigPage()
@@ -624,6 +691,7 @@ final class SetupModel {
     /// Throws the changes in the editor away and reads the file again.
     func revertConfigText() async {
         guard !isWorking else { return }
+        say(nil)
         await openConfigPage()
     }
 
@@ -960,23 +1028,27 @@ final class SetupModel {
     }
 
     /// The menu, the rows of the editors and the config's problems read again from the config, without the doctor: what an edit shows at once.
-    private func refreshEditable() async {
+    private func refreshEditable(updatingServices: Bool = true) async {
         #if PREVIEW
         if simulated { return }
         #endif
-        let shown = await loader.menu()
+        let started = ContinuousClock.now
+        let read = await loader.configuration()
+        let shown = read.shown
         // A change of the list, of the agents that its default has or of the language of their names makes the Quick Actions on disk differ from the config. The person made it here, so
         // they are written again at once, as Install or Repair would (a few files and one `pbs -update`); where there are none yet, setting up is still the person's to start.
-        var services = await loader.servicesCheck()
+        var services: DoctorCheck?
+        if updatingServices { services = await loader.servicesCheck() }
         // From an older copy, or one that is not the one to keep, setup refuses (InstallError.notTheCopyToKeep), and the check says they differ.
-        if services.detail?.key == .doctorServicesDiffer, locationProblem == nil {
+        if services?.detail?.key == .doctorServicesDiffer, locationProblem == nil {
             _ = await actions.updateQuickActions()
             services = await loader.servicesCheck()
         }
-        guard var current = snapshot else { return }
-        if !checks.isEmpty { checks = checks.replacing(services) }
+        guard var current = snapshot, editedAt == nil || editedAt.map({ $0 <= started }) == true else { return }
+        if let services, !checks.isEmpty { checks = checks.replacing(services) }
         editedAt = .now
         current.take(shown)
+        current.configState = read.state
         snapshot = current
         if let open = templateDetail, !Self.templatePageStays(open, in: shown.newFile) { templateDetail = nil }
         if let open = appDetail, shown.apps?.row(id: open) == nil { appDetail = nil }
@@ -1059,6 +1131,11 @@ final class SetupModel {
 
     /// Lists the worktrees of the repository the tab shows. A repository chosen meanwhile has its own list coming; this one is dropped.
     func refreshWorktrees() async {
+        guard !isRemovingWorktree else { return }
+        await loadWorktrees()
+    }
+
+    private func loadWorktrees() async {
         #if PREVIEW
         if simulated { return }
         #endif
@@ -1077,9 +1154,13 @@ final class SetupModel {
 
     /// Lets the person pick a folder; the git repository it is in is the one the worktrees tab lists.
     func chooseRepository() async {
+        guard !isWorking, pendingIgnoredRemoval == nil else { return }
+        isWorking = true
+        defer { isWorking = false }
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
+        panel.canCreateDirectories = false
         panel.allowsMultipleSelection = false
         panel.message = localizer.string(.appChooseFolderMessage)
         panel.prompt = localizer.string(.appChooseFolderPrompt)
@@ -1088,43 +1169,79 @@ final class SetupModel {
             say(.notARepository(PathDisplay.abbreviatingHome(folder.path, home: homePath)))
             return
         }
-        selectRepository(root)
+        showRepository(root)
     }
 
     func selectRepository(_ root: URL) {
-        chosenRepository = root
-        Task { await refreshWorktrees() }
+        guard !isWorking, pendingIgnoredRemoval == nil else { return }
+        showRepository(root)
     }
 
-    /// Removes a worktree Right Here made, after the person confirmed it. Git decides whether that is safe (uncommitted work is
-    /// refused, and its refusal is what the window shows); the branch stays.
-    /// Removes a worktree the person was asked about. One that holds files git ignores, which exist nowhere else, is held for a second yes that names them
-    /// (`pendingIgnoredRemoval`), and that yes removes it only while those are all it holds: one that appeared meanwhile is asked about again.
-    func remove(_ row: WorktreeRow, ignoredAgreed: [String] = []) async {
-        guard let repository, !isWorking else { return }
+    private func showRepository(_ root: URL) {
+        chosenRepository = root
+        if !chosenRepositories.contains(where: { $0.path == root.path }) { chosenRepositories.append(root) }
+        say(nil)
+        // The new heading must never be paired with the previous repository's actionable rows, even before this Task starts.
+        worktreeRequest += 1
+        worktrees = .loading
+        Task {
+            guard repository == root else { return }
+            await refreshWorktrees()
+        }
+    }
+
+    func removalRequest(for row: WorktreeRow) -> WorktreeRemovalRequest? {
+        guard !isWorking, pendingIgnoredRemoval == nil, let repository, case .loaded(let rows) = worktrees,
+              row.canBeRemoved, rows.contains(row) else { return nil }
+        return WorktreeRemovalRequest(row: row, repository: repository)
+    }
+
+    /// A yes is for the repository and row the question named. Git refuses uncommitted work; the branch stays.
+    func remove(_ request: WorktreeRemovalRequest) async {
+        guard !isWorking, pendingIgnoredRemoval == nil else { return }
+        await performRemoval(request, ignoredAgreed: [])
+    }
+
+    private func performRemoval(_ request: WorktreeRemovalRequest, ignoredAgreed: [String]) async {
         isWorking = true
-        let result = await browser.remove(row, in: repository, ignoredAgreed: ignoredAgreed)
+        isRemovingWorktree = true
+        worktreeRequest += 1
+        defer { isWorking = false; isRemovingWorktree = false }
+        say(nil)
+        let result = await browser.remove(request.row, in: request.repository, ignoredAgreed: ignoredAgreed)
+        var ignored: PendingIgnoredRemoval?
         switch result {
         case .worktreeRemoved(let path):
             say(.worktreeRemoved(PathDisplay.abbreviatingHome(path, home: homePath)))
         case .worktreeHasIgnoredFiles(_, let files):
-            say(nil)
-            pendingIgnoredRemoval = PendingIgnoredRemoval(row: row, files: files)
+            ignored = PendingIgnoredRemoval(request: request, files: files)
         default:
             say(result)
         }
-        isWorking = false
-        await refreshWorktrees()
+        await loadWorktrees()
+        // Do not show a second question whose Yes would still be disabled by the final read of the first attempt.
+        pendingIgnoredRemoval = ignored
     }
 
     /// The person agreed to lose the files the second question named: the worktree is removed with them, and with nothing else that git ignores.
     func confirmIgnoredRemoval(_ held: PendingIgnoredRemoval) async {
+        guard !isWorking else { return }
         pendingIgnoredRemoval = nil
-        await remove(held.row, ignoredAgreed: held.files)
+        await performRemoval(held.request, ignoredAgreed: held.files)
     }
 
     func cancelIgnoredRemoval() {
         pendingIgnoredRemoval = nil
+    }
+
+    private func applyWorktreeFolders(_ loaded: FolderSnapshot) {
+        let previousRepository = repository
+        folders = loaded
+        // A refresh of saved folders can change the inferred repository without a manual selection.
+        if repository != previousRepository {
+            worktreeRequest += 1
+            worktrees = repository == nil ? .idle : .loading
+        }
     }
 
     private func refreshLoop() -> RefreshLoop<SetupSnapshot> {
@@ -1144,6 +1261,7 @@ final class SetupModel {
         if let editedAt, loaded.readAt < editedAt, let current = snapshot {
             // This read began before the config was last changed through the window, and the doctor made it take seconds: what it says of the config is older than what is shown.
             loaded.take(current.configPart)
+            loaded.configState = current.configState
             loaded.proposals = current.proposals
             // The check of the Quick Actions that a change of their list made says they differ (`refreshEditable`): an older read does not know of the change, and would say they are as the config asks.
             if let services = checks.first(where: { $0.id == .services }) { loaded.checks = loaded.checks.replacing(services) }
@@ -1159,7 +1277,7 @@ final class SetupModel {
         // A setup that failed is shown until the next read that is not the one it ends with: the Checks say the same, and somebody else (an AI assistant, `rh setup` in a
         // terminal) may have put it right meanwhile.
         if let report = setupReport, !report.ok, !isWorking { setupReport = nil }
-        folders = loaded.folders
+        applyWorktreeFolders(loaded.folders)
         offer = loaded.offer
         updateChoices(from: loaded.offer)
         // The ids of the open submenus are positions: a changed menu may have another entry at a position that was open.
@@ -1187,7 +1305,7 @@ final class SetupModel {
         #if PREVIEW
         if simulated { return }
         #endif
-        folders = await loader.folders()
+        applyWorktreeFolders(await loader.folders())
         if selectedTab == .worktrees { await refreshWorktrees() }
     }
 
@@ -1195,6 +1313,15 @@ final class SetupModel {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
         say(confirmed)
+    }
+
+    func copyNotice(_ shown: SetupNotice) -> Bool {
+        NSPasteboard.general.clearContents()
+        return NSPasteboard.general.setString(shown.text(in: localizer, isolatingValues: false), forType: .string)
+    }
+
+    func dismissNotice(_ shown: SetupNotice) {
+        if notice == shown { notice = nil }
     }
 
     /// Shows what happened, and says it to VoiceOver: the notice is a line in the corner of the sidebar, which a person who cannot see it would never find.
