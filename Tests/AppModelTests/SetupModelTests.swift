@@ -23,6 +23,9 @@ private final class ScriptedMac: ProcessRunner, Sendable {
 
     private let state = Mutex(State())
     static let appex = "/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex"
+    private let registeredPath: String
+
+    init(appex: String = ScriptedMac.appex) { registeredPath = appex }
 
     var calls: [ProcessStep] { state.withLock { $0.calls } }
     var pluginkitLooks: Int { calls.filter { $0.executable == "/usr/bin/pluginkit" && $0.arguments.first == "-m" }.count }
@@ -49,7 +52,7 @@ private final class ScriptedMac: ProcessRunner, Sendable {
         if step.arguments.first == "-lic" { return ProcessResult(status: 0, standardOutput: shell) }
         if step.executable == "/usr/bin/pluginkit", step.arguments.first == "-m", on {
             let line = { (path: String) in "+    \(AppIdentity.extensionBundleID)(0.3.0)\tAAAA\t2026-10-16 07:33:49 +0000\t\(path)\n" }
-            return ProcessResult(status: 0, standardOutput: line(Self.appex) + (lasting.map(line) ?? ""))
+            return ProcessResult(status: 0, standardOutput: line(registeredPath) + (lasting.map(line) ?? ""))
         }
         return ProcessResult(status: 0)
     }
@@ -69,21 +72,31 @@ private final class Switch: Sendable {
 private struct Mac {
     let home: URL
     let paths: RHPaths
-    let runner = ScriptedMac()
+    let runner: ScriptedMac
     /// The made-up Mac the window and its actions look at.
     let facts: FakeSystemFacts
     let model: SetupModel
     private let visible: Switch
 
-    static let inTheApplicationsFolder = "/Applications/Right Here.app/Contents/Helpers/rh"
+    static func makeHelper(in home: URL) throws -> String {
+        let executable = home.appendingPathComponent("Applications/Right Here.app/Contents/Helpers/rh")
+        try FileManager.default.createDirectory(at: executable.deletingLastPathComponent(), withIntermediateDirectories: true)
+        // The doctor checks the target on disk. A fake helper is never run; even an accidental launch cannot run commands.
+        try "#!/usr/bin/false\n".write(to: executable, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: executable.path)
+        return executable.path
+    }
 
     /// `patience` is how long a change waits for the one that is being written. Tests wait long by default: on a machine that runs four suites at once a write
     /// of a moment takes seconds, and a change refused for that would be a failure of the machine, not of the code.
-    init(helper: String = Mac.inTheApplicationsFolder, visible: Bool = true, pollInterval: Duration = .milliseconds(10), idleInterval: Duration = .milliseconds(10),
+    init(helper: String? = nil, visible: Bool = true, pollInterval: Duration = .milliseconds(10), idleInterval: Duration = .milliseconds(10),
          activationQuietPeriod: Duration = .zero, patience: Duration? = nil, trial: Bool = true, copies: [AppCopy] = [], app: URL? = nil) throws {
         let patience = patience ?? .seconds(30)
         home = try makeTemporaryDirectory()
         paths = RHPaths(environment: [:], home: home)
+        let helper = try helper ?? Self.makeHelper(in: home)
+        let bundle = URL(fileURLWithPath: helper).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        runner = ScriptedMac(appex: bundle.appendingPathComponent("Contents/PlugIns/FinderExtension.appex").path)
         var facts = FakeSystemFacts(homeDirectory: home, directories: [home.path], applications: [
             "com.mitchellh.ghostty": URL(fileURLWithPath: "/Applications/Ghostty.app"),
             "com.apple.Terminal": URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app"),
@@ -444,9 +457,10 @@ struct SetupModelPatienceTests {
         let home = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: home) }
         let facts = FakeSystemFacts(homeDirectory: home)
         let paths = RHPaths(environment: [:], home: home)
-        let model = SetupModel(loader: SetupLoader(facts: facts, paths: paths, runner: FakeProcessRunner(), helperPath: Mac.inTheApplicationsFolder),
-                               actions: SetupActions(facts: facts, paths: paths, runner: FakeProcessRunner(), helperPath: Mac.inTheApplicationsFolder, trialHome: home),
-                               facts: facts, helper: Mac.inTheApplicationsFolder, windowIsVisible: { false })
+        let helper = try Mac.makeHelper(in: home)
+        let model = SetupModel(loader: SetupLoader(facts: facts, paths: paths, runner: FakeProcessRunner(), helperPath: helper),
+                               actions: SetupActions(facts: facts, paths: paths, runner: FakeProcessRunner(), helperPath: helper, trialHome: home),
+                               facts: facts, helper: helper, windowIsVisible: { false })
         #expect(model.patience >= .seconds(1), "\(model.patience)")
     }
 }

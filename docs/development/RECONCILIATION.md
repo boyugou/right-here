@@ -60,6 +60,11 @@ The integrated behavioral revision passes 2,831 tests: 1,176 Core, 1,068 Kit, 11
 file selection, draft conflict refresh and worktree context, alongside the first-run and saved-state failures above. App-model
 tests now run in GitHub CI too.
 
+Their first CI run exposed four existing repair tests that silently depended on a helper installed in `/Applications`.
+Using an absent helper under a temporary home reproduced all seven assertions on the development Mac. The fixture now owns a
+non-command-running executable in that home, and its fake registration follows that bundle. The production checks remain intact;
+all 283 app-model tests then pass without using an installed app.
+
 Seventeen targeted protection-removal runs passed against committed combined revisions: 437, 535, 1029, 1030, 1105 and 1248–1251
 at `2af79bb`; 292, 307, 520, 528, 870, 1028, 1252 and 1253 at `d156047`. Each removed protection made a relevant test fail.
 The list has 1,254 matching entries; this is not a claim that all 1,254 were run. The old line's 1,775-test result and mutation sweep
