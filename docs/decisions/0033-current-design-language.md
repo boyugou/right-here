@@ -31,8 +31,9 @@ so that optional path was closed without accepting it. No system-generated icon 
 ## Window
 
 - A compact brand row replaces the permanent multiline pitch. Version moves to the foot of the sidebar. Existing pages are
-  grouped by purpose: Overview / Finder menu / AI Assistants, Folders / Worktrees, then Checks. The documented Command-1 through
-  Command-6 mappings remain unchanged. The native title bar retains window controls without repeating the product name.
+  grouped by purpose: Overview / Finder menu / AI Assistants, Folders / Worktrees, then Checks. The Command-1 through Command-6
+  mappings were initially retained; [0035](0035-navigation-order.md) subsequently aligns them and the View menu with these groups.
+  The native title bar retains window controls without repeating the product name.
 - A shared palette defines surfaces, separators and emphasis. Content keeps system text colors and fonts. Forest is the default
   accent asset; the native controls and custom selection marks resolve `Color.accentColor`, so the system's chosen accent can
   replace it. The scratch renderer has no asset catalog and uses the specified default color for its canned previews.

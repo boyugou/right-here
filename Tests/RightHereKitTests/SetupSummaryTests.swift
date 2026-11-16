@@ -145,8 +145,19 @@ struct DefaultAppNameTests {
 @Suite("Setup window: the sidebar")
 struct SetupTabTests {
     @Test func theSectionsAreListedInTheOrderOfUse() {
-        #expect(SetupTab.allCases == [.overview, .menu, .checks, .ai, .worktrees, .folders])
-        #expect(Set(SetupTab.allCases.map(\.id)).count == SetupTab.allCases.count)
+        #expect(SetupTab.navigationGroups == [[.overview, .menu, .ai], [.folders, .worktrees], [.checks]])
+        let listed = SetupTab.navigationGroups.flatMap { $0 }
+        #expect(listed == SetupTab.allCases)
+        #expect(Set(listed.map(\.id)).count == SetupTab.allCases.count)
+    }
+
+    @Test func numberedShortcutsMatchTheVisibleSections() {
+        #expect(SetupTab.overview.shortcutDigit == "1")
+        #expect(SetupTab.menu.shortcutDigit == "2")
+        #expect(SetupTab.ai.shortcutDigit == "3")
+        #expect(SetupTab.folders.shortcutDigit == "4")
+        #expect(SetupTab.worktrees.shortcutDigit == "5")
+        #expect(SetupTab.checks.shortcutDigit == "6")
     }
 
     @Test func theChecksRowCountsTheChecksThatAreNotOk() {

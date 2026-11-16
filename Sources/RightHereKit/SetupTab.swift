@@ -1,6 +1,6 @@
 import Foundation
 
-/// The sections of the setup window, in the order its sidebar lists them.
+/// The sections of the setup window. Navigation order and grouping are shared by the sidebar and View menu.
 ///
 /// The window is for setup and status; the Finder extension and `rh` work without it. A section is here only when
 /// the person can do or learn something in it: the first-run steps and the state of things, the menu the extension
@@ -9,12 +9,23 @@ import Foundation
 public enum SetupTab: String, CaseIterable, Identifiable, Sendable {
     case overview
     case menu
-    case checks
     case ai
-    case worktrees
     case folders
+    case worktrees
+    case checks
 
     public var id: String { rawValue }
+
+    public static let navigationGroups: [[SetupTab]] = [
+        [.overview, .menu, .ai],
+        [.folders, .worktrees],
+        [.checks]
+    ]
+
+    /// Numbered shortcuts follow the visible sections, across group separators.
+    public var shortcutDigit: Character? {
+        zip(Self.navigationGroups.joined(), "123456789").first { $0.0 == self }?.1
+    }
 }
 
 /// What a sidebar row shows beside its title.

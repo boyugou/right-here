@@ -25,15 +25,8 @@ extension SetupTab {
         }
     }
 
-    var shortcut: KeyEquivalent {
-        switch self {
-        case .overview: "1"
-        case .menu: "2"
-        case .checks: "3"
-        case .ai: "4"
-        case .worktrees: "5"
-        case .folders: "6"
-        }
+    var shortcut: KeyboardShortcut? {
+        shortcutDigit.map { KeyboardShortcut(KeyEquivalent($0), modifiers: .command) }
     }
 }
 
@@ -49,9 +42,12 @@ struct SetupCommands: Commands {
                 .disabled(!model.canFindFolders)
         }
         CommandGroup(after: .sidebar) {
-            ForEach(SetupTab.allCases) { tab in
-                Button(l10n.string(tab.title)) { model.select(tab) }
-                    .keyboardShortcut(tab.shortcut, modifiers: .command)
+            ForEach(Array(SetupTab.navigationGroups.enumerated()), id: \.offset) { index, tabs in
+                if index > 0 { Divider() }
+                ForEach(tabs) { tab in
+                    Button(l10n.string(tab.title)) { model.select(tab) }
+                        .keyboardShortcut(tab.shortcut)
+                }
             }
             Divider()
             Button(l10n.string(.appRefresh)) { Task { await model.refresh() } }

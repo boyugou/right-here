@@ -93,15 +93,14 @@ struct SetupView: View {
                 .padding(.bottom, 24)
 
             VStack(spacing: 2) {
-                ForEach([SetupTab.overview, .menu, .ai]) { tab in
-                    sidebarRow(tab)
+                ForEach(Array(SetupTab.navigationGroups.enumerated()), id: \.offset) { index, tabs in
+                    if index > 0 {
+                        Divider().padding(.horizontal, 10).padding(.vertical, 16)
+                    }
+                    ForEach(tabs) { tab in
+                        sidebarRow(tab)
+                    }
                 }
-                Divider().padding(.horizontal, 10).padding(.vertical, 16)
-                ForEach([SetupTab.folders, .worktrees]) { tab in
-                    sidebarRow(tab)
-                }
-                Divider().padding(.horizontal, 10).padding(.vertical, 16)
-                sidebarRow(.checks)
             }
             .padding(.horizontal, 10)
 

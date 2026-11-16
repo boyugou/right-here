@@ -106,6 +106,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 30 | Saved-folder search filters names and paths without changing the stored lists. | [0032](decisions/0032-find-saved-folders.md) |
 | 31 | The current-directory mark and a shared visual language connect the icon, navigation and content. | [0033](decisions/0033-current-design-language.md) |
 | 32 | After setup, the remaining task leads; a registered but disabled extension has a pending mark, and ordinary installation details are collapsed. | [0034](decisions/0034-setup-task-and-readiness.md) |
+| 33 | Sidebar groups, View-menu groups and numbered shortcuts come from the same navigation order. | [0035](decisions/0035-navigation-order.md) |
 
 ## 5. Platform facts
 

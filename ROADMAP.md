@@ -50,6 +50,8 @@
 - Feedback remains readable and scrollable without displacing the page, with complete error copying, separate accessibility
   containers and View-menu shortcuts for all sections. Switching sections starts at the page's introduction instead of inheriting
   another section's scroll position ([ADR 0029](docs/decisions/0029-feedback-and-keyboard-navigation.md)).
+- Sidebar groups, View-menu groups and numbered shortcuts share one navigation order
+  ([ADR 0035](docs/decisions/0035-navigation-order.md)).
 - Official Claude Code plugin with dedicated skills (`setup`, `open-here`, `review-changes`).
 
 ## Next

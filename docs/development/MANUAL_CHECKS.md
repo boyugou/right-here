@@ -139,7 +139,7 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    a filtered result: the query stays. An unmatched query offers Clear Search; its button, the field's clear button and Escape
    restore the list. A second Escape leaves the empty field. Clear Recent Folders is absent while filtering. Find is disabled
    in another section, during a failed read and for a genuinely empty list. From AI Assistants or Finder menu, press
-   Command-6 then Command-F immediately: the search field must take focus and select an existing query. Repeatedly switch
+   Command-4 then Command-F immediately: the search field must take focus and select an existing query. Repeatedly switch
    away and back, and leave immediately after Find; a pending focus request must not steal focus from the new page.
    Check field and clear-button labels with VoiceOver.
 10. In Arabic or Hebrew, use a pinned folder with two successive right-to-left names (for example `مستندات/أبحاث`). Check that the
@@ -180,7 +180,8 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     with an overlay and symlink is a useful case with multiple notes. The first-run fix must say Set Up, while an existing setup
     says Install or Repair. Paths and commands must match the visible localized text. Drag over a visible instruction to verify
     that it remains selectable. Do not accept a row that exposes only its name and status.
-16. Feedback and navigation (ADR 0029): View lists the six sections with Command-1 through Command-6 and Refresh with Command-R.
+16. Feedback and navigation (ADRs 0029, 0035): View lists the same three groups as the sidebar: Overview, Finder menu, AI Assistants;
+    Folders, Worktrees; Checks. Their shortcuts are Command-1 through Command-6 in that order; Refresh is Command-R.
     Switch sections by shortcut and verify the matching heading and sidebar selection; Command-5 also loads the worktree list.
     With enough pinned folders to scroll, go to the bottom of Folders and switch to AI Assistants: its first heading and setup-prompt
     action must be visible. Switch back: Pinned folders and Pin Folder are visible at the top. Repeat with the sidebar and with
@@ -191,6 +192,11 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     of it; copying a successful MCP snippet leaves the snippet on the clipboard. With VoiceOver, navigate the sidebar, page,
     feedback and repository groups separately, and find the AI-assistant and failed-list headings. Dismissing a notice must not
     clear the diagnostic or change the selected section. See [ADR 0029](../decisions/0029-feedback-and-keyboard-navigation.md).
+
+    After ADR 0035, a separate native review verified the View menu's accessible item order and each Command-1 through Command-6
+    destination against its sidebar selection and page heading. Command-4 / Command-F focused saved-folder search, including
+    selecting an existing query after returning from AI Assistants. The review used fake system facts and a runner that launched
+    no processes; its saved folders and other writes were confined to a temporary home.
 17. Visual system (ADR 0033): inspect Overview, first run, Folders, Worktrees and Checks at the minimum size in both appearances.
     The sidebar groups pages by purpose; View-menu shortcut mappings stay as documented above. The healthy Overview's bounded
     menu is a labeled preview of the actual configuration, including submenu indicators. Its button opens the complete preview.
@@ -210,7 +216,8 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     leaf rows. In AI Assistants, an unusually long helper path wrapped inside the code block and copied in full (pasted back
     into the app's search field to compare). Copy Plugin Commands at the bottom of the page kept both the confirmation and
     its paste destination visible above the scrolled content. The review used a separate app identity and temporary home.
-    That review also reproduced an intermittent lost search focus after rapid Command-6 / Command-F. Moving the focus
+    That review also reproduced an intermittent lost search focus after rapid Command-6 / Command-F (Folders was Command-6 then;
+    ADR 0035 changes it to Command-4). Moving the focus
     request from the appearance callback to a cancellable view task, yielding before assigning it, passed the same native
     sequence on first entry and repeated section switches. Existing queries were selected for replacement, Escape still
     cleared then unfocused the field, and leaving immediately after Find retained the other page's focus.
