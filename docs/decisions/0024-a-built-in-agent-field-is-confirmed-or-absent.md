@@ -44,6 +44,25 @@ found is in the decision above.
 Not confirmed, so not built in: Muse Code's prompt, bypass and continue arguments; Goose's "continue the latest session" (one page of its documentation says `goose session -r`, another says
 `--resume` needs a name or an id); whether opencode's `--prompt` submits at once or only fills the input; Amp's flag for a first prompt.
 
+### Installed command help, 2026-11-15
+
+The five agents installed on the review Mac were queried with `--version` and `--help`, with an empty temporary home and
+working directory. Codex's `resume --help` was also read. No interactive session, terminal window or model request was started.
+
+| Tool | Version | Confirmed built-in arguments |
+|---|---|---|
+| Claude Code | 2.1.319 | Positional prompt; `--continue`; `--resume` without an id opens a picker; `--dangerously-skip-permissions`. |
+| Codex CLI | 0.169.0 | Positional prompt; `resume` and `resume --last`; `--dangerously-bypass-approvals-and-sandbox` is also accepted by `resume`. |
+| Antigravity | 1.5.4 | `-i` starts with a prompt and keeps the session interactive; `--continue`; `--dangerously-skip-permissions`. |
+| Gemini CLI | 0.34.0 | `-i` executes a prompt and stays interactive; `--resume latest`; `--approval-mode=yolo`. |
+| OpenCode | 1.18.14 | `--continue`; `--auto` approves permissions except explicit denials. `--prompt` still does not say whether it submits, so it remains absent from presets. |
+
+All help commands exited successfully. Codex reported that it would not create helper aliases in the temporary home; Gemini's
+version command reported a failed project-registry write there. These are limitations of that isolated inspection, not
+Right Here launch results. The observations confirm argument contracts for these installed versions, not end-to-end launches
+or every release of the tools. The current [OpenCode CLI documentation](https://opencode.ai/docs/cli/) describes V2; it does not
+replace the measured V1 help. No built-in argument needed changing in this check.
+
 ## The editors and terminals
 
 The same rule for the apps: the bundle identifiers of the 29 built-in terminals and editors were compared with Homebrew's cask metadata on 2026-10-16 (a maintained list of what
