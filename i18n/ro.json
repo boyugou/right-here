@@ -91,7 +91,7 @@
   "home.setup.s3.body": "Fă clic dreapta pe un dosar în Finder. Meniul arată acțiunile Right Here.",
   "home.setup.allow": "Prima dată când un agent pornește în terminalul tău, macOS întreabă dacă Right Here poate controla terminalul. Alege „Permiteți”.",
   "home.setup.first.alt": "Fereastra de configurare la prima rulare. Ea cere terminalul implicit, editorul implicit și agenții AI. Claude Code și Codex sunt selectați. Butonul Configurați este jos.",
-  "home.setup.done.alt": "Fereastra de configurare după ce apeși butonul Configurați. Ea listează ce a configurat Right Here: fișierul de configurare, scriptul de execuție pentru Finder, instrumentul de linie de comandă, Acțiunile rapide și extensia Finder, care nu este încă activată. Un card cu trei pași arată că urmează extensia Finder.",
+  "home.setup.done.alt2": "Fereastra după configurare, cu pasul următor pentru Finder deasupra detaliilor configurării și a setărilor aplicației.",
   "home.setup.caption": "Fereastra de configurare cu valori de exemplu, înainte și după apăsarea butonului Configurați.",
   "home.setup.cli.title": "Dintr-un terminal",
   "home.setup.cli.body2": "`rh setup` face aceiași pași, iar `--dry-run` îi arată mai întâi. Înainte de prima configurare, `rh` există doar în interiorul aplicației. Configurarea creează o legătură către el în `~/.local/bin`.",

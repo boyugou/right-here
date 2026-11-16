@@ -460,11 +460,11 @@ __TRY__
 <div class="stack">
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="assets/setup-first-dark.png">
-<img src="assets/setup-first-light.png" width="800" height="522" loading="lazy" data-i18n-alt="home.setup.first.alt">
+<img src="assets/setup-first-light.png" width="800" height="521" loading="lazy" data-i18n-alt="home.setup.first.alt">
 </picture>
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="assets/setup-done-dark.png">
-<img src="assets/setup-done-light.png" width="800" height="892" loading="lazy" data-i18n-alt="home.setup.done.alt">
+<img src="assets/setup-done-light.png" width="800" height="693" loading="lazy" data-i18n-alt="home.setup.done.alt2">
 </picture>
 </div>
 <figcaption data-i18n="home.setup.caption"></figcaption>

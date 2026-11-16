@@ -57,7 +57,7 @@ macOS's (the names of buttons, pages and menu items are the app's); a review by 
   (it builds a throwaway package under `.build/preview`, so run it from a clone or worktree of `main` that you can build
   in, not from a checkout that something else builds in). Flags: `--tab overview|menu|checks|ai|worktrees|folders` (the
   section; Overview is the default), `--dark`, `--submenus` (every submenu of the Finder menu open), `--demo`,
-  `--first-run`, `--set-up`, `--onboarding` (the three-step card, as when the Finder extension is off), `--gallery` (text
+  `--first-run`, `--set-up`, `--onboarding` (the remaining Finder step, as when the extension is off), `--gallery` (text
   checks, not for the site), `--minimum` and `--large-text`. Always use `--demo`, `--first-run` or `--set-up` for the
   site: they show canned data, the same on every Mac, with no path, last action, agent or terminal of the Mac that
   renders them, and the script stops when a canned text names that Mac's home folder or account. Without them the
@@ -65,12 +65,12 @@ macOS's (the names of buttons, pages and menu items are the app's); a review by 
   (`--dark`), and the site uses these three:
   - `en --first-run`: the very first run, no config file yet, the choice of terminal, editor and agents
     (`setup-first-*.png`).
-  - `en --set-up`: just after Set Up, what it did and the three steps for the Finder extension (`setup-done-*.png`).
+  - `en --set-up`: just after Set Up, the remaining Finder step above setup details and app settings (`setup-done-*.png`).
   - `ja --demo --tab menu`: the same section in Japanese (`setup-ja-*.png`).
 
-  Each render is 860 points wide at 2x; resize it to 800 px wide (`sips --resampleWidth 800`). The icons of the menu's
-  apps (Ghostty, Visual Studio Code, Xcode, TextEdit, Terminal) are read from the Mac that renders, so render on one that
-  has them. Keep a light and a dark file the same size, and put the real size in the `width` and `height` of the `<img>`
+  Each render is 860 points wide at 2x; resize it to 800 px wide (`sips --resampleWidth 800`) and compress the PNGs losslessly
+  before checking the page-weight budget. The icons of the menu's apps are plain tiles drawn by the preview, so the pictures
+  look the same on every Mac. Keep a light and a dark file the same size, and put the real size in the `width` and `height` of the `<img>`
   (`tools/check_site.py` compares them): the page reserves the space from the HTML. Pictures go on `index.html` only: its
   page-weight budget has room, the docs page's does not. Look at every render before it goes in: no truncated text or
   clipped icon, no home folder, account name or real time. The captions say that the setup is an example; when the

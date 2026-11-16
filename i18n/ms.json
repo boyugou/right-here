@@ -91,7 +91,7 @@
   "home.setup.s3.body": "Klik kanan pada folder dalam Finder. Menu menunjukkan tindakan Right Here.",
   "home.setup.allow": "Kali pertama ejen dimulakan dalam terminal anda, macOS bertanya sama ada Right Here boleh mengawal terminal. Pilih Benarkan.",
   "home.setup.first.alt": "Tetingkap persediaan semasa larian pertama. Ia meminta terminal lalai, editor lalai dan ejen AI. Claude Code dan Codex dipilih. Butang Sediakan berada di bahagian bawah.",
-  "home.setup.done.alt": "Tetingkap persediaan selepas butang Sediakan ditekan. Ia menyenaraikan apa yang disediakan oleh Right Here: fail konfigurasi, skrip pelaksana Finder, alat baris arahan, Tindakan Cepat dan sambungan Finder, yang belum dihidupkan. Satu kad dengan tiga langkah menunjukkan bahawa sambungan Finder ialah langkah seterusnya.",
+  "home.setup.done.alt2": "Tetingkap selepas persediaan, dengan langkah Finder seterusnya di atas butiran persediaan dan tetapan aplikasi.",
   "home.setup.caption": "Tetingkap persediaan dengan nilai contoh, sebelum dan selepas butang Sediakan ditekan.",
   "home.setup.cli.title": "Daripada terminal",
   "home.setup.cli.body2": "`rh setup` melakukan langkah yang sama, dan `--dry-run` menunjukkannya dahulu. Sebelum persediaan pertama, `rh` hanya berada di dalam aplikasi. Persediaan memautkannya ke dalam `~/.local/bin`.",

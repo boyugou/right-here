@@ -91,7 +91,7 @@
   "home.setup.s3.body": "Finder’da bir klasöre sağ tıklayın. Menü, Right Here’in eylemlerini gösterir.",
   "home.setup.allow": "Bir ajan terminalinizde ilk kez başladığında macOS, Right Here’in terminali denetleyip denetleyemeyeceğini sorar. İzin Ver’i seçin.",
   "home.setup.first.alt": "İlk çalıştırmada kurulum penceresi. Varsayılan terminali, varsayılan düzenleyiciyi ve AI ajanlarını sorar. Claude Code ve Codex seçilidir. Kur düğmesi altta bulunur.",
-  "home.setup.done.alt": "Kur düğmesine basıldıktan sonra kurulum penceresi. Right Here’in neyi kurduğunu listeler: yapılandırma dosyası, Finder çalıştırma betiği, komut satırı aracı, Hızlı Eylemler ve henüz açılmamış Finder genişletmesi. Üç adımlı bir kart, sıradaki adımın Finder genişletmesi olduğunu gösterir.",
+  "home.setup.done.alt2": "Kurulumdan sonraki pencere; sıradaki Finder adımı, kurulum ayrıntılarının ve uygulama ayarlarının üstünde gösterilir.",
   "home.setup.caption": "Örnek değerlerle kurulum penceresi, Kur düğmesine basmadan önce ve sonra.",
   "home.setup.cli.title": "Bir terminalden",
   "home.setup.cli.body2": "`rh setup` aynı adımları yapar ve `--dry-run` önce onları gösterir. İlk kurulumdan önce `rh` yalnızca uygulamanın içindedir. Kurulum, onu `~/.local/bin` içine bağlar.",

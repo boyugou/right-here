@@ -91,7 +91,7 @@
   "home.setup.s3.body": "在访达中右键单击文件夹。菜单中会显示 Right Here 的操作。",
   "home.setup.allow": "第一次在你的终端中启动智能体时，macOS 会询问 Right Here 是否可以控制终端。请选择“允许”。",
   "home.setup.first.alt": "首次运行时的设置窗口。它询问默认终端、默认编辑器和 AI 智能体。Claude Code 和 Codex 已勾选。底部有“设置”按钮。",
-  "home.setup.done.alt": "点按“设置”之后的设置窗口。它列出 Right Here 已设置的内容：配置文件、运行脚本、命令行工具、快速操作，以及尚未开启的访达扩展。一张包含三个步骤的卡片显示，下一步是访达扩展。",
+  "home.setup.done.alt2": "设置完成后的窗口，下一步访达操作位于顶部，下方是设置详情和应用设置。",
   "home.setup.caption": "使用示例值的设置窗口，包括“设置”之前和之后。",
   "home.setup.cli.title": "在终端中",
   "home.setup.cli.body2": "`rh setup` 会执行同样的步骤，而 `--dry-run` 会先显示这些步骤。第一次设置之前，`rh` 只在 App 内部。设置会把它链接到 `~/.local/bin`。",

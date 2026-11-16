@@ -91,7 +91,7 @@
   "home.setup.s3.body": "Right-click a folder in Finder. The menu shows the actions of Right Here.",
   "home.setup.allow": "The first time an agent starts in your terminal, macOS asks whether Right Here may control the terminal. Choose Allow.",
   "home.setup.first.alt": "The setup window on its first run. It asks for the default terminal, the default editor and the AI agents. Claude Code and Codex are selected. The Set Up button is at the bottom.",
-  "home.setup.done.alt": "The setup window after Set Up. It lists what Right Here set up: the config file, the runner script, the command-line tool, the Quick Actions and the Finder extension, which is not on yet. A card of three steps shows that the Finder extension is next.",
+  "home.setup.done.alt2": "The setup window after Set Up, with the next Finder step above setup details and app settings.",
   "home.setup.caption": "The setup window with sample values, before Set Up and after it.",
   "home.setup.cli.title": "From a terminal",
   "home.setup.cli.body2": "`rh setup` does the same steps, and `--dry-run` shows them first. Before the first setup, `rh` is only inside the app. Setup links it into `~/.local/bin`.",

@@ -91,7 +91,7 @@
   "home.setup.s3.body": "在 Finder 中對檔案夾按右鍵。選單中會顯示 Right Here 的動作。",
   "home.setup.allow": "第一次在你的終端機中啟動代理程式時，macOS 會詢問 Right Here 是否可以控制終端機。請選擇「允許」。",
   "home.setup.first.alt": "首次執行時的設定視窗。它詢問預設終端機、預設編輯器和 AI 代理程式。Claude Code 和 Codex 已勾選。底部有「設定」按鈕。",
-  "home.setup.done.alt": "按下「設定」之後的設定視窗。它列出 Right Here 已設定的內容：設定檔、執行指令碼、命令列工具、快速動作，以及尚未開啟的 Finder 延伸功能。一張包含三個步驟的卡片顯示，下一步是 Finder 延伸功能。",
+  "home.setup.done.alt2": "設定完成後的視窗，下一步 Finder 操作位於頂部，下方是設定詳細資訊和 App 設定。",
   "home.setup.caption": "使用範例值的設定視窗，包括「設定」之前和之後。",
   "home.setup.cli.title": "在終端機中",
   "home.setup.cli.body2": "`rh setup` 會執行同樣的步驟，而 `--dry-run` 會先顯示這些步驟。第一次設定之前，`rh` 只在 App 內部。設定會把它連結到 `~/.local/bin`。",

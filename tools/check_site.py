@@ -166,14 +166,35 @@ for needed in ("assets/og-image.png", "assets/icon.png", "assets/favicon-32.png"
 account = getpass.getuser()
 LEAKS = [re.compile(p) for p in (r"/private/(?:tmp|var)/", r"/var/folders/", r"/Users/(?!you\b)[\w.-]+", r"%2F(?:Users|private)%2F",
                                  r"claude-\d{3}/")]
-if len(account) >= 3 and account != "you":
-    LEAKS.append(re.compile(re.escape(account), re.IGNORECASE))
+
+# The public repository owner may also be the local account. Ignore only the project's public references, never a home path or a bare account name.
+PUBLIC_REFERENCES = re.compile(
+    r"https://(?:github\.com/boyugou/right-here|boyugou\.github\.io/right-here)(?=/|[\s<>\"`)]|$)"
+    r"|(?<![\w./-])(?:github\.com/)?boyugou/(?:right-here|tap)(?![\w.-])"
+)
+
+
+def private_account(text, name):
+    if len(name) < 3 or name == "you":
+        return None
+    return re.search(re.escape(name), PUBLIC_REFERENCES.sub("", text), re.IGNORECASE)
+
+
+assert not private_account("https://github.com/boyugou/right-here/releases/latest", "boyugou")
+assert not private_account("[Right Here](https://github.com/boyugou/right-here)", "boyugou")
+assert not private_account("https://boyugou.github.io/right-here/", "boyugou")
+assert not private_account("brew install --cask boyugou/tap/right-here", "boyugou")
+assert private_account("/Users/tester/right-here", "tester")
+assert private_account("https://github.com/boyugou/right-here\nlocal account: boyugou", "boyugou")
+
 for path in sorted(ROOT.rglob("*")):
     relative = path.relative_to(ROOT)
     if not path.is_file() or relative.parts[0] in (".git", ".build") or path == pathlib.Path(__file__).resolve() or path.suffix not in (
             ".html", ".css", ".js", ".json", ".txt", ".xml", ".md", ".py", ".svg"):
         continue
     text = path.read_text(encoding="utf-8", errors="replace")
+    if found := private_account(text, account):
+        errors.append(f"{relative}: names the local account outside a public project reference: {found.group(0)!r}")
     for leak in LEAKS:
         if found := leak.search(text):
             errors.append(f"{relative}: names something of the Mac that made it: {found.group(0)!r}")

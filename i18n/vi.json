@@ -91,7 +91,7 @@
   "home.setup.s3.body": "Nhấp chuột phải vào một thư mục trong Finder. Menu hiển thị các tác vụ của Right Here.",
   "home.setup.allow": "Lần đầu một tác tử khởi động trong terminal của bạn, macOS hỏi liệu Right Here có được điều khiển terminal hay không. Hãy chọn “Cho phép”.",
   "home.setup.first.alt": "Cửa sổ thiết lập ở lần chạy đầu tiên. Cửa sổ hỏi terminal mặc định, trình soạn thảo mặc định và các tác tử AI. Claude Code và Codex được chọn. Nút “Thiết lập” nằm ở phía dưới.",
-  "home.setup.done.alt": "Cửa sổ thiết lập sau khi nhấn “Thiết lập”. Cửa sổ liệt kê những gì Right Here đã thiết lập: tệp cấu hình, tập lệnh chạy, công cụ dòng lệnh, Tác vụ nhanh và phần mở rộng Finder, hiện chưa được bật. Một thẻ gồm ba bước cho thấy phần mở rộng Finder là bước tiếp theo.",
+  "home.setup.done.alt2": "Cửa sổ sau khi thiết lập, với bước tiếp theo cho Finder nằm phía trên chi tiết thiết lập và cài đặt ứng dụng.",
   "home.setup.caption": "Cửa sổ thiết lập với các giá trị mẫu, trước và sau khi nhấn “Thiết lập”.",
   "home.setup.cli.title": "Từ terminal",
   "home.setup.cli.body2": "`rh setup` thực hiện cùng các bước đó, và `--dry-run` cho xem chúng trước. Trước lần thiết lập đầu tiên, `rh` chỉ nằm trong ứng dụng. Thiết lập liên kết nó vào `~/.local/bin`.",

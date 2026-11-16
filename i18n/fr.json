@@ -91,7 +91,7 @@
   "home.setup.s3.body": "Faites un clic droit sur un dossier dans le Finder. Le menu affiche les actions de Right Here.",
   "home.setup.allow": "La première fois qu’un agent démarre dans votre terminal, macOS demande si Right Here peut contrôler le terminal. Choisissez Autoriser.",
   "home.setup.first.alt": "La fenêtre de configuration au premier lancement. Elle demande le terminal par défaut, l’éditeur par défaut et les agents IA. Claude Code et Codex sont sélectionnés. Le bouton Configurer est en bas.",
-  "home.setup.done.alt": "La fenêtre de configuration après un clic sur Configurer. Elle liste ce que Right Here a configuré : le fichier de configuration, le script d’exécution, l’outil en ligne de commande, les Actions rapides et l’extension du Finder, qui n’est pas encore activée. Une carte de trois étapes montre que l’extension du Finder vient ensuite.",
+  "home.setup.done.alt2": "La fenêtre après la configuration, avec la prochaine étape du Finder au-dessus des détails de configuration et des réglages de l’app.",
   "home.setup.caption": "La fenêtre de configuration avec des valeurs d’exemple, avant et après un clic sur Configurer.",
   "home.setup.cli.title": "Depuis un terminal",
   "home.setup.cli.body2": "`rh setup` effectue les mêmes étapes, et `--dry-run` les montre d’abord. Avant la première configuration, `rh` se trouve seulement dans l’app. La configuration en crée un lien dans `~/.local/bin`.",

@@ -91,7 +91,7 @@
   "home.setup.s3.body": "Finder에서 폴더를 오른쪽 클릭하세요. 메뉴에 Right Here의 동작이 표시됩니다.",
   "home.setup.allow": "터미널에서 에이전트를 처음 시작할 때 macOS가 Right Here에 터미널 제어를 허용할지 묻습니다. “허용”을 선택하세요.",
   "home.setup.first.alt": "처음 실행했을 때의 설정 윈도우입니다. 기본 터미널, 기본 편집기, AI 에이전트를 묻고 있습니다. Claude Code와 Codex가 선택되어 있습니다. 아래쪽에 “설정하기” 버튼이 있습니다.",
-  "home.setup.done.alt": "“설정하기”를 누른 뒤의 설정 윈도우입니다. Right Here가 설정한 항목이 나열되어 있습니다. 설정 파일, 실행 스크립트, 명령줄 도구, 빠른 동작, 그리고 아직 켜지지 않은 Finder 확장 프로그램입니다. 세 단계로 된 카드는 다음 단계가 Finder 확장 프로그램임을 보여 줍니다.",
+  "home.setup.done.alt2": "설정 후의 윈도우로, 설정 세부 정보와 앱 설정 위에 다음 Finder 단계가 표시됩니다.",
   "home.setup.caption": "예시 값을 넣은 설정 윈도우로, “설정하기” 전과 후의 모습입니다.",
   "home.setup.cli.title": "터미널에서",
   "home.setup.cli.body2": "`rh setup`은 같은 단계를 수행하며, `--dry-run`을 붙이면 먼저 그 단계를 보여 줍니다. 처음 설정하기 전에는 `rh`가 앱 안에만 있습니다. 설정하면 `~/.local/bin`에 연결됩니다.",

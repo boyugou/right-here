@@ -43,20 +43,13 @@ def font(size, bold):
 
 
 W, H = 1200, 630
-card = Image.new("RGB", (W, H))
-top, bottom = (36, 28, 96), (12, 10, 32)  # the icon's violet, darkened
-px = card.load()
-for y in range(H):
-    t = y / (H - 1)
-    row = tuple(round(top[i] + (bottom[i] - top[i]) * t) for i in range(3))
-    for x in range(W):
-        px[x, y] = row
+card = Image.new("RGB", (W, H), (244, 245, 240))
 card = card.convert("RGBA")
 card.alpha_composite(resized(300), (110, 165))
 d = ImageDraw.Draw(card)
-d.text((470, 190), "Right Here", font=font(96, True), fill=(255, 255, 255))
-d.text((474, 315), "Send a folder to your terminals,", font=font(38, False), fill=(206, 200, 240))
-d.text((474, 365), "editors and AI agents.", font=font(38, False), fill=(206, 200, 240))
-d.text((474, 450), "macOS 26+  ·  Apple silicon  ·  Apache-2.0  ·  open source", font=font(26, False), fill=(160, 150, 250))
+d.text((470, 190), "Right Here", font=font(96, True), fill=(36, 56, 48))
+d.text((474, 315), "Send a folder to your terminals,", font=font(38, False), fill=(64, 82, 72))
+d.text((474, 365), "editors and AI agents.", font=font(38, False), fill=(64, 82, 72))
+d.text((474, 450), "macOS 26+  ·  Apple silicon  ·  Apache-2.0  ·  open source", font=font(26, False), fill=(75, 98, 84))
 card.convert("RGB").save(ASSETS / "og-image.png", optimize=True)
 print("wrote icon.png, favicon-32.png, apple-touch-icon.png, og-image.png")

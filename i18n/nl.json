@@ -91,7 +91,7 @@
   "home.setup.s3.body": "Klik in de Finder met de rechtermuisknop op een map. Het menu toont de acties van Right Here.",
   "home.setup.allow": "De eerste keer dat een agent in je terminal start, vraagt macOS of Right Here de terminal mag bedienen. Kies „Sta toe”.",
   "home.setup.first.alt": "Het instelvenster bij de eerste start. Het vraagt om de standaardterminal, de standaardeditor en de AI-agenten. Claude Code en Codex zijn geselecteerd. De knop Stel in staat onderaan.",
-  "home.setup.done.alt": "Het instelvenster nadat je op „Stel in” hebt geklikt. Het somt op wat Right Here heeft ingesteld: het configuratiebestand, het Finder-uitvoerscript, het commandoregelprogramma, de Snelle taken en de Finder-extensie, die nog niet aan staat. Een kaart met drie stappen laat zien dat de Finder-extensie de volgende stap is.",
+  "home.setup.done.alt2": "Het venster na het instellen, met de volgende Finder-stap boven de instellingsdetails en de app-instellingen.",
   "home.setup.caption": "Het instelvenster met voorbeeldwaarden, voor en na het klikken op „Stel in”.",
   "home.setup.cli.title": "Vanuit een terminal",
   "home.setup.cli.body2": "`rh setup` voert dezelfde stappen uit, en `--dry-run` toont ze eerst. Vóór het eerste instellen zit `rh` alleen in de app. Het instellen maakt een koppeling ernaar in `~/.local/bin`.",

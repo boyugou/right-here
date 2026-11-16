@@ -91,7 +91,7 @@
   "home.setup.s3.body": "Klik kanan sebuah folder di Finder. Menu menampilkan tindakan Right Here.",
   "home.setup.allow": "Saat pertama kali agen dimulai di terminal Anda, macOS bertanya apakah Right Here boleh mengendalikan terminal. Pilih Izinkan.",
   "home.setup.first.alt": "Jendela penyiapan saat pertama kali dijalankan. Jendela ini menanyakan terminal default, editor default, dan agen AI. Claude Code dan Codex dipilih. Tombol Siapkan ada di bagian bawah.",
-  "home.setup.done.alt": "Jendela penyiapan setelah tombol Siapkan ditekan. Jendela ini mencantumkan apa yang disiapkan Right Here: file konfigurasi, skrip penjalan Finder, alat baris perintah, Tindakan Cepat, dan ekstensi Finder yang belum aktif. Kartu berisi tiga langkah menunjukkan bahwa ekstensi Finder adalah langkah berikutnya.",
+  "home.setup.done.alt2": "Jendela setelah penyiapan, dengan langkah Finder berikutnya di atas rincian penyiapan dan pengaturan aplikasi.",
   "home.setup.caption": "Jendela penyiapan dengan nilai contoh, sebelum dan sesudah tombol Siapkan ditekan.",
   "home.setup.cli.title": "Dari terminal",
   "home.setup.cli.body2": "`rh setup` melakukan langkah yang sama, dan `--dry-run` menampilkannya lebih dulu. Sebelum penyiapan pertama, `rh` hanya ada di dalam aplikasi. Penyiapan menautkannya ke `~/.local/bin`.",
