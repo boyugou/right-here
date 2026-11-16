@@ -898,11 +898,11 @@ private final class ServeSession: @unchecked Sendable {
 /// Records the time limit each process was given, and answers at once.
 private final class RecordsLimits: ProcessRunner, @unchecked Sendable {
     private let lock = NSLock()
-    private var seen: [Duration?] = []
-    var limits: [Duration?] { lock.withLock { seen } }
+    private var seen: [(step: ProcessStep, timeout: Duration?)] = []
+    var calls: [(step: ProcessStep, timeout: Duration?)] { lock.withLock { seen } }
 
     func run(_ step: ProcessStep, timeout: Duration?) async throws -> ProcessResult {
-        lock.withLock { seen.append(timeout) }
+        lock.withLock { seen.append((step, timeout)) }
         return ProcessResult(status: 0)
     }
 }
@@ -952,17 +952,21 @@ struct MCPServingTests {
         #expect(all.filter { $0.reply["result"]?["isError"]?.boolValue == true }.count == limits.outstanding, "the rest ran, and ended as tool errors")
     }
 
-    @Test func theDoctorRunsNoProcessWithoutATimeLimitOfTheServersAtMost() async throws {
-        // A pluginkit that never answers would otherwise keep a request slot for good.
+    @Test func theDoctorsShellAndExtensionChecksHaveTheirOwnDeadlines() async throws {
+        // Both paths must run: a fixture without agents exercises only pluginkit.
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("rh-doc-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: home) }
+        try "[general]\nagents = [\"codex\"]\n".write(to: home.appendingPathComponent("config.toml"), atomically: true, encoding: .utf8)
         let recorder = RecordsLimits()
-        let facts = FakeSystemFacts()
-        let paths = RHPaths(environment: ["RH_CONFIG_DIR": FileManager.default.temporaryDirectory.appendingPathComponent("rh-doc-\(UUID().uuidString)").path], home: URL(fileURLWithPath: "/Users/tester"))
-        let server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: recorder, pasteboard: RecordingPasteboard(), rhPath: nil, executionLimit: .seconds(42)))
+        let facts = FakeSystemFacts(homeDirectory: home)
+        let paths = RHPaths(environment: ["RH_CONFIG_DIR": home.path], home: home)
+        let server = MCPServer(context: ServerContext(facts: facts, paths: paths, runner: recorder, pasteboard: RecordingPasteboard(), rhPath: nil))
         let reply = await server.handle(#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"right_here_doctor","arguments":{}}}"#)
         #expect(reply != nil)
-        #expect(!recorder.limits.isEmpty, "the doctor ran no process at all, so there is nothing to check")
-        // A process that has a limit of its own keeps it (a look at the registration stops after twenty seconds); every other one gets the server's.
-        #expect(recorder.limits.allSatisfy { ($0 ?? .seconds(1_000_000)) <= .seconds(42) }, "a process ran without the limit, or beyond it: \(recorder.limits)")
+        let calls = recorder.calls
+        #expect(calls.map(\.step.executable) == [facts.loginShell, "/usr/bin/pluginkit"])
+        #expect(calls.map(\.timeout) == [.seconds(10), .seconds(20)], "a hung shell or plug-in daemon must release the request slot")
     }
 
     @Test func aClientThatHasGoneIsReportedToTheCallerInsteadOfEndingTheProcess() async throws {

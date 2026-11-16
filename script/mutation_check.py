@@ -159,8 +159,8 @@ MUTANTS = [
      "requested && !dryRun && environment", "requested && environment"),
     ("a plan summary prints names raw", "Sources/RightHereCore/Plan/LaunchPlan.swift",
      "self.summary = summary.withControlCharactersEscaped", "self.summary = summary"),
-    ("the MCP doctor runs without the time limit", "Sources/RightHereMCP/Tools.swift",
-     "runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), rhPath: server.rhPath).run()", "runner: server.runner, rhPath: server.rhPath).run()"),
+    ("checking the Finder extension can wait forever", "Sources/RightHereKit/Installer.swift",
+     "), timeout: Self.lookTimeout)", "), timeout: nil)"),
     ("uninstall removes any link", "Sources/RightHereKit/Installer.swift",
      'if resolved.contains("/Right Here.app/Contents/Helpers/") { return true }', "return true"),
     ("a config that is there is replaced when setup is run without --force", "Sources/RightHereKit/ConfigStore.swift",
@@ -820,6 +820,8 @@ MUTANTS = [
      'if false, let unknown = table.keys.sorted().first(where: { !["pins", "recents"].contains($0) }) {'),
     ("deeply nested state reaches the parser", "Sources/RightHereCore/Config/StateStore.swift",
      "guard !NestingDepth.tomlExceeds(text, limit: 8) else {", "guard true else {"),
+    ("checking the login shell can wait forever", "Sources/RightHereKit/Detector.swift",
+     'arguments: ["-lic", script] + operands), timeout: .seconds(10))', 'arguments: ["-lic", script] + operands), timeout: nil)'),
 ]
 
 

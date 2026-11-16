@@ -261,7 +261,7 @@ enum Tools {
 
     private static func doctor(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
         let loaded = server.loadConfig()
-        let checks = await Doctor(facts: server.facts, paths: server.paths, loaded: loaded, runner: TimeLimitedRunner(base: server.runner, limit: server.executionLimit), rhPath: server.rhPath).run()
+        let checks = await Doctor(facts: server.facts, paths: server.paths, loaded: loaded, runner: server.runner, rhPath: server.rhPath).run()
         // What a check quotes (a config problem, a command, a path) is text somebody else may have written; the agent
         // reading this must be able to tell it from the tool's own words. Only an agent's check is titled by the config.
         return ToolOutput(text: checks.flatMap { $0.englishLines(quoting: Fence.wrap) }.joined(separator: "\n"), structured: .object(["checks": try JSONValue(encoding: checks)]))

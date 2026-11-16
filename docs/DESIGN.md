@@ -311,7 +311,8 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    units a minute, so a loop cannot flood the screen however it splits the work; a dry run is free. Only existing
    paths are copied to the clipboard. Tool calls run eight at a time, up to 256 (and 16 MB of requests) are held waiting
    for a turn, a call past that is answered with a server-busy error at once, `ping` and the other quick requests are
-   never held up, and a request line is capped at 2 MB.
+   never held up, and a request line is capped at 2 MB. The doctor's login-shell check stops after 10 seconds and
+   its Finder-extension lookup after 20 seconds, so either can release its request slot when the child process stalls.
    Names in logs and plan output have control characters escaped, and so have the characters that draw nothing (the Unicode tag
    characters that spell ASCII, the zero-width space, the byte order mark, a joiner that joins nothing, a run of variation selectors:
    a name that shows as `report.txt` must not carry a sentence for an agent), and the log is private and capped. The values of every
