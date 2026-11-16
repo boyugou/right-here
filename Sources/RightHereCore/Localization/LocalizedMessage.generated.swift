@@ -163,8 +163,6 @@ extension LocalizedMessage {
     public static var appNoneFound: LocalizedMessage { LocalizedMessage(.appNoneFound) }
     /// %@ is not in a git repository.
     public static func appNotARepository(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appNotARepository, [argument1]) }
-    /// Set up in three steps
-    public static var appOnboardTitle: LocalizedMessage { LocalizedMessage(.appOnboardTitle) }
     /// Open Checks to see what to do.
     public static var appOpenChecksHint: LocalizedMessage { LocalizedMessage(.appOpenChecksHint) }
     /// Open Config
@@ -247,12 +245,6 @@ extension LocalizedMessage {
     public static var appStatusProblem: LocalizedMessage { LocalizedMessage(.appStatusProblem) }
     /// Warning
     public static var appStatusWarning: LocalizedMessage { LocalizedMessage(.appStatusWarning) }
-    /// Step %1$@: %2$@
-    public static func appStepLabel(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.appStepLabel, [argument1, argument2]) }
-    /// Right Here opens these by default. To change them, edit the config file.
-    public static var appStepOneBody: LocalizedMessage { LocalizedMessage(.appStepOneBody) }
-    /// Your terminal and editor
-    public static var appStepOneTitle: LocalizedMessage { LocalizedMessage(.appStepOneTitle) }
     /// After that, right-click a folder in Finder. The Checks page also has a test that opens a terminal window and closes it again.
     public static var appStepThreeBody: LocalizedMessage { LocalizedMessage(.appStepThreeBody) }
     /// Try it

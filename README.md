@@ -121,7 +121,7 @@ brew install xcodegen
 
 Then, in three steps:
 
-1. **Set up.** Open Right Here and press **Set Up** (it asks which terminal, editor and AI agents you use), or run `rh setup` in a terminal. It makes your config file, connects Finder and says what is left for you. Run it again at any time: it only does what is missing, and never rewrites a config that exists.
+1. **Set up.** Open Right Here, choose your terminal, editor and AI agents, then press **Set Up**, or run `rh setup` in a terminal. It makes your config file, connects Finder and shows what is left for you. Run it again at any time: it only does what is missing, and never rewrites a config that exists.
 2. **Switch the extension on.** System Settings › General › Login Items & Extensions › Finder › Right Here. The app's window opens that page and notices when you switch it on.
 3. **Right-click a folder** in Finder.
 

@@ -2,6 +2,9 @@
 
 Date: 2026-10-12. Status: decided.
 
+The three-step presentation is superseded by [0034](0034-setup-task-and-readiness.md). The person still controls the extension's
+switch; the window observes its state and retains Quick Actions as the fallback.
+
 ## Decision
 
 While the doctor's Finder extension check is not ok, the setup window shows a three-step card above the checks:

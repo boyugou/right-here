@@ -108,7 +108,8 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    colors.
 6. With VoiceOver, a submenu line reads like "Open With, submenu, collapsed, button" and says "expanded" once opened; an
    entry reads its title only.
-7. Overview is the first section. While the Finder extension is off it shows the three-step first-run card first; once the
+7. Overview is the first section. With a config in place, a switched-off Finder extension shows Turn on the Finder extension
+   and Finder Extension Settings; an unregistered extension shows its actual reason and Install or Repair. Once the
    extension is on it shows the status and the default terminal and editor. A healthy setup offers Preview Finder Menu.
    "Finder menu" is always the menu for a folder.
 8. Worktrees: the list is for the repository of the folder you chose with "Choose Folder…", or else the first repository of your
@@ -147,8 +148,10 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     ([ADR 0006](../decisions/0006-localization.md)); the corresponding Worktrees and Hebrew cases still need native inspection.
 11. The first run, with no config file (move yours aside first, and put it back afterwards). Overview offers the terminals and editors
     installed here and the agents Right Here knows, with the ones your login shell finds checked. Choose and press Set Up: `rh config
-    show` has what you chose, "What Right Here set up" lists the pieces, and the three-step card waits for the Finder extension, as in
-    item 7. Open the window again with a config in place: the chooser is gone, and nothing rewrites the file (compare it byte for
+    show` has what you chose, and the page returns to the remaining Finder task. "What Right Here set up" is collapsed below it;
+    expand it and verify that a registered but disabled extension has an orange hollow circle and says it is switched off.
+    Successful installation steps retain their green checks. Failures, warnings and choices that could not be applied stay
+    visible above the task. Open the window again with a config in place: the chooser is gone, and nothing rewrites the file (compare it byte for
     byte). `script/preview_setup.sh --first-run` shows the card without a screen; this check is the real window, once.
 12. The first run's failure paths, in the real window (each is rendered and tested with a made-up Mac; a person has not seen them):
     - Open the app from the mounted disk image without moving it: the first thing on Overview is the orange card "Move Right Here to your Applications folder
@@ -211,3 +214,15 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     request from the appearance callback to a cancellable view task, yielding before assigning it, passed the same native
     sequence on first entry and repeated section switches. Existing queries were selected for replacement, Escape still
     cleared then unfocused the field, and leaving immediately after Find retained the other page's focus.
+18. Remaining setup task (ADR 0034): perform item 11 from the bottom of the first-run chooser. The next task and its button must
+    return into view after Set Up. Expanding the installation record must leave that task at the top. Switching the extension
+    on updates Overview without Refresh and removes the ordinary installation record once the setup is healthy. With the
+    extension unregistered, verify that Repair is offered instead of instructions for a switch that does not exist yet.
+
+    Native review on the machine reporting macOS 27.2 (26B123) used the production views, model and setup actions with fake
+    system facts, a process runner that executed nothing, and a temporary home. Set Up from the bottom of the chooser brought
+    the remaining task into view. The initially collapsed disclosure opened, and its accessible text included "registered but switched
+    off". A review-only change to the fake extension state reached the healthy Overview through the existing watcher without
+    Refresh. Changing it to missing exposed the reason and Install or Repair; that action returned to the enable-extension task.
+    This verifies native interaction and state presentation, not real extension registration, the System Settings switch or
+    spoken VoiceOver. The uniquely identified review app and its temporary home were removed.

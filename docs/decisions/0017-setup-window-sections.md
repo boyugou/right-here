@@ -7,7 +7,7 @@ Date: 2026-10-15. Status: decided.
 The setup window (`Apps/RightHere`) has six sections in its sidebar, in this order:
 
 1. **Overview**: how the setup stands, and the default terminal and editor. While the Finder extension is off, the three-step
-   first run (ADR 0011) comes first on this page.
+   first run (ADR 0011) comes first on this page. [ADR 0034](0034-setup-task-and-readiness.md) later replaces that card with the remaining task.
 2. **Finder menu**: the menu the extension builds for a folder, from the same code. Submenus open in place.
 3. **Checks**: every check of the doctor, with what it found and what to do. Test Terminal Launch is here, and its answer
    stays in the list through refreshes until the next test.

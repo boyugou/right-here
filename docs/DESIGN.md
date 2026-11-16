@@ -102,6 +102,10 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 26 | Saved folders can be pinned and revealed from the app, with the same state as the CLI and controls held until the list refresh ends. | [0027](decisions/0027-manage-folders-in-the-app.md) |
 | 27 | The worktree browser remembers repository choices for the window, offers read recovery, and keeps removal tied to its confirmed repository. | [0028](decisions/0028-worktree-browser-state.md) |
 | 28 | Feedback stays readable without displacing the page; section navigation has View-menu shortcuts. | [0029](decisions/0029-feedback-and-keyboard-navigation.md) |
+| 29 | A failed saved-folder read is an error, and no subsequent write may replace the unread file with an empty list. | [0030](decisions/0030-saved-folder-read-failures.md) |
+| 30 | Saved-folder search filters names and paths without changing the stored lists. | [0032](decisions/0032-find-saved-folders.md) |
+| 31 | The current-directory mark and a shared visual language connect the icon, navigation and content. | [0033](decisions/0033-current-design-language.md) |
+| 32 | After setup, the remaining task leads; a registered but disabled extension has a pending mark, and ordinary installation details are collapsed. | [0034](decisions/0034-setup-task-and-readiness.md) |
 
 ## 5. Platform facts
 

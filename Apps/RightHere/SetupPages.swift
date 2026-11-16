@@ -89,12 +89,18 @@ struct CodeBlock: View {
 
 // MARK: Overview
 
-/// How the setup stands, and the first steps while the Finder extension is off.
+/// How the setup stands, with the remaining task before an ordinary installation record.
 struct OverviewPage: View {
     let model: SetupModel
+    @State private var showSetupDetails = false
     private let l10n = Localizer.system
 
     private static let resultID = "setup-result"
+
+    init(model: SetupModel, expandSetupDetails: Bool = false) {
+        self.model = model
+        _showSetupDetails = State(initialValue: expandSetupDetails)
+    }
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -105,21 +111,31 @@ struct OverviewPage: View {
                 if model.needsFirstRunChoice {
                     // A failed setup keeps the chooser and its report. A refusal that started nothing uses the window's feedback banner.
                     if let report = model.setupReport {
-                        SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
+                        setupResult(report)
                             .id(Self.resultID)
                     }
                     // No config file yet: what is installed, to choose from, before anything is written.
                     FirstRunChooser(model: model)
                 } else {
-                    if let report = model.setupReport, model.summary.state != .allSet || report.hasNews {
-                        SetupDonePanel(report: report, home: model.homePath, extensionIsOn: !model.summary.extensionNeedsSetup)
-                            .id(Self.resultID)
+                    VStack(alignment: .leading, spacing: 28) {
+                        if let report = model.setupReport, report.hasNews {
+                            setupResult(report)
+                        }
+                        if model.summary.extensionNeedsSetup {
+                            FinderSetupCard(model: model)
+                        } else {
+                            StatusCard(model: model)
+                        }
                     }
+                    .id(Self.resultID)
 
-                    if model.summary.extensionNeedsSetup {
-                        FirstRunCard(model: model)
-                    } else {
-                        StatusCard(model: model)
+                    if let report = model.setupReport, !report.hasNews, model.summary.state != .allSet {
+                        DisclosureGroup(isExpanded: $showSetupDetails) {
+                            setupResult(report, showsTitle: false).padding(.top, 8)
+                        } label: {
+                            Text(l10n.string(.appSetupDoneTitle))
+                                .font(.callout)
+                        }
                     }
 
                     if model.snapshot != nil {
@@ -139,6 +155,10 @@ struct OverviewPage: View {
                 proxy.scrollTo(Self.resultID, anchor: .top)
             }
         }
+    }
+
+    private func setupResult(_ report: SetupReport, showsTitle: Bool = true) -> some View {
+        SetupDonePanel(report: report, home: model.homePath, extensionCheck: model.check(.finderExtension), showsTitle: showsTitle)
     }
 
     @ViewBuilder private var defaults: some View {
@@ -295,47 +315,54 @@ struct StatusCard: View {
 }
 
 
-/// The three steps of a first run, in order, and a way around the extension. Shown until the extension is switched on.
-struct FirstRunCard: View {
+/// The remaining Finder task, after the person has chosen their tools and the config exists.
+struct FinderSetupCard: View {
     let model: SetupModel
-    @Environment(\.setupPalette) private var palette
     private let l10n = Localizer.system
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(l10n.string(.appOnboardTitle))
-                .font(.system(size: 22, weight: .semibold))
-                .accessibilityAddTraits(.isHeader)
-
-            step(1, title: .appStepOneTitle, body: .appStepOneBody,
-                 done: model.check(.terminalDefault)?.status == .ok && model.check(.editorDefault)?.status == .ok) {
-                ForEach([CheckID.terminalDefault, .editorDefault], id: \.self) { id in
-                    if let detail = model.check(id)?.detail {
-                        Text(DoctorText.styled(l10n.render(detail, isolatingValues: true), home: model.homePath))
-                            .font(.callout)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .textSelection(.enabled)
-                    }
+        let check = model.check(.finderExtension)
+        let action = check?.setupAction(firstRun: false)
+        return VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(l10n.string(action == .extensionSettings ? .appStepTwoTitle : .appCheckExtension))
+                    .font(.system(size: 22, weight: .semibold))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
+                if action == .extensionSettings {
+                    Text(l10n.string(.appStepTwoBody))
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else if let detail = check?.detail {
+                    Text(DoctorText.styled(l10n.render(detail, isolatingValues: true), home: model.homePath))
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
                 }
-                Button(l10n.string(.appOpenConfig)) { Task { await model.openConfig() } }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .disabled(model.isWorking)
+                if let action {
+                    Button(l10n.string(action.title)) { Task { await model.perform(action) } }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(model.isWorking || (action == .repair && model.locationProblem != nil))
+                } else {
+                    Button(l10n.string(.appShowChecks)) { model.select(.checks) }
+                        .buttonStyle(.borderedProminent)
+                }
             }
 
-            let extensionAction = model.check(.finderExtension)?.setupAction(firstRun: false) ?? .extensionSettings
-            step(2, title: extensionAction == .repair ? .appCheckExtension : .appStepTwoTitle,
-                 body: extensionAction == .repair ? .appFixRepair : .appStepTwoBody, done: false) {
-                Button(l10n.string(extensionAction.title)) { Task { await model.perform(extensionAction) } }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                    .disabled(model.isWorking || (extensionAction == .repair && model.locationProblem != nil))
-            }
-
-            step(3, title: .appStepThreeTitle, body: .appStepThreeBody, done: false) {
-                Button(l10n.string(.appShowChecks)) { model.select(.checks) }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(l10n.string(.appStepThreeTitle))
+                    .font(.callout.weight(.medium))
+                Text(l10n.string(.appStepThreeBody))
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if action != nil {
+                    Button(l10n.string(.appShowChecks)) { model.select(.checks) }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                }
             }
 
             Divider()
@@ -351,41 +378,6 @@ struct FirstRunCard: View {
             .accessibilityElement(children: .combine)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func step<Actions: View>(_ number: Int, title: LocalizationKey, body: LocalizationKey, done: Bool,
-                                     @ViewBuilder actions: () -> Actions) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(done ? Color.green : palette.accent)
-                if done {
-                    Image(systemName: "checkmark")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.white)
-                } else {
-                    Text(number.formatted())
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.white)
-                }
-            }
-            .frame(width: 24, height: 24)
-            .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(l10n.string(title))
-                    .font(.body.weight(.medium))
-                Text(l10n.string(body))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                actions()
-            }
-            Spacer(minLength: 0)
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(l10n.render(.appStepLabel(number.formatted(), l10n.string(title))))
-        .accessibilityValue(done ? l10n.string(.appStatusOK) : "")
     }
 }
 

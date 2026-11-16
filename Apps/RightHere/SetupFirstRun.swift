@@ -225,26 +225,27 @@ struct FirstRunChooser: View {
     }
 }
 
-/// What the first setup did: each thing it put in place, with a mark. The way it came out is said only when it is not simply "created",
-/// and the reason when a step was skipped or failed, so that a setup that went well is one calm line. What the person chose that could
+/// What setup installed, with the extension's current readiness distinguished from registration. Skipped and failed steps keep their
+/// reasons; ordinary results can be disclosed below the next task. What the person chose that could
 /// not be applied (the config was there, and a config is never rewritten) is said with the edits that would apply it, and every warning of
 /// the report is said: both are English as the command line says them, since they are the report's own sentences.
 struct SetupDonePanel: View {
     let report: SetupReport
     let home: String
-    /// Whether the Finder extension is switched on now. Registering it is what setup does; the switch in System Settings is the person's, and the
-    /// mark of the extension says so while it is off, directly above the step of the card that tells them where.
-    let extensionIsOn: Bool
+    let extensionCheck: DoctorCheck?
+    var showsTitle = true
     private let l10n = Localizer.system
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(l10n.string(.appSetupDoneTitle))
-                .font(.headline)
-                .accessibilityAddTraits(.isHeader)
+            if showsTitle {
+                Text(l10n.string(.appSetupDoneTitle))
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+            }
             FlowLayout(spacing: 16) {
                 ForEach(Array(report.steps.enumerated()), id: \.offset) { _, step in
-                    SetupStepMark(step: step, home: home, extensionIsOn: extensionIsOn)
+                    SetupStepMark(step: step, home: home, extensionCheck: extensionCheck)
                 }
             }
             ForEach(Array(report.steps.enumerated()), id: \.offset) { _, step in
@@ -301,8 +302,9 @@ extension SetupDonePanel {
 struct SetupStepMark: View {
     let step: SetupStep
     let home: String
-    let extensionIsOn: Bool
+    let extensionCheck: DoctorCheck?
     private let l10n = Localizer.system
+    private var summary: SetupStepSummary { SetupStepSummary(step, extensionCheck: extensionCheck) }
 
     var body: some View {
         HStack(spacing: 5) {
@@ -311,30 +313,14 @@ struct SetupStepMark: View {
                 .accessibilityHidden(true)
             Text(DoctorText.styled(l10n.string(Self.title(step.piece)), home: home))
                 .font(.callout)
-            if let remark {
-                Text(remark)
+            if let remark = summary.remark {
+                Text(l10n.render(remark))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
         }
         // One stop for VoiceOver: the name, then how it came out.
         .accessibilityElement(children: .combine)
-    }
-
-    /// How it came out, when "created" does not say it: updated, already in place, skipped, failed, or how many Quick Actions.
-    private var remark: String? {
-        if step.piece == .finderExtension, !extensionIsOn, step.outcome == .created || step.outcome == .updated || step.outcome == .unchanged {
-            return l10n.render(.doctorExtensionDisabled)
-        }
-        switch step.outcome {
-        case .created:
-            guard step.piece == .services, let detail = step.detail else { return nil }
-            return l10n.render(detail)
-        case .updated: return l10n.string(.appSetupUpdated)
-        case .unchanged: return l10n.string(.appSetupUnchanged)
-        case .skipped: return l10n.string(.appSetupSkipped)
-        case .failed: return l10n.string(.appSetupFailed)
-        }
     }
 
     /// Why a step was skipped or failed, in its own words; nothing for a step that worked.
@@ -353,18 +339,22 @@ struct SetupStepMark: View {
     }
 
     private var symbol: String {
-        switch step.outcome {
-        case .created, .updated, .unchanged: "checkmark.circle.fill"
+        switch summary.state {
+        case .complete: "checkmark.circle.fill"
         case .skipped: "minus.circle.fill"
         case .failed: "xmark.octagon.fill"
+        case .needsUser: "circle"
+        case .warning: "exclamationmark.triangle.fill"
+        case .checking: "circle.dotted"
         }
     }
 
     private var color: Color {
-        switch step.outcome {
-        case .created, .updated, .unchanged: .green
-        case .skipped: .secondary
+        switch summary.state {
+        case .complete: .green
+        case .skipped, .checking: .secondary
         case .failed: .red
+        case .needsUser, .warning: .orange
         }
     }
 }

@@ -8,15 +8,17 @@ import SwiftUI
 struct SetupView: View {
     @Bindable var model: SetupModel
     let expandCheckDetails: Bool
+    let expandSetupDetails: Bool
     let previewViewport: Bool
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var contrast
     private let l10n = Localizer.system
     private var palette: SetupPalette { SetupPalette(dark: colorScheme == .dark, increasedContrast: contrast == .increased) }
 
-    init(model: SetupModel, expandCheckDetails: Bool = false, previewViewport: Bool = false) {
+    init(model: SetupModel, expandCheckDetails: Bool = false, expandSetupDetails: Bool = false, previewViewport: Bool = false) {
         self.model = model
         self.expandCheckDetails = expandCheckDetails
+        self.expandSetupDetails = expandSetupDetails
         self.previewViewport = previewViewport
     }
 
@@ -253,7 +255,7 @@ struct SetupView: View {
 
     @ViewBuilder private var page: some View {
         switch model.selectedTab {
-        case .overview: OverviewPage(model: model)
+        case .overview: OverviewPage(model: model, expandSetupDetails: expandSetupDetails)
         case .menu: MenuPage(model: model)
         case .checks: ChecksPage(model: model, expandDetails: expandCheckDetails)
         case .ai: AIPage(model: model)

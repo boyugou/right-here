@@ -6,9 +6,11 @@
 #   ./script/preview_setup.sh out.png de                    German
 #   ./script/preview_setup.sh out.png en --dark             dark mode
 #   ./script/preview_setup.sh out.png en --tab worktrees    one section: overview, menu, checks, ai, worktrees or folders
-#   ./script/preview_setup.sh out.png en --onboarding       the first-run card, as when the Finder extension is off
+#   ./script/preview_setup.sh out.png en --onboarding       the remaining task when the Finder extension is off
 #   ./script/preview_setup.sh out.png en --first-run        the very first run: no config file yet, the choice of terminal, editor and agents
-#   ./script/preview_setup.sh out.png en --set-up           just after the first setup: what it did, and the Finder extension still to switch on
+#   ./script/preview_setup.sh out.png en --set-up           just after the first setup: the Finder extension still to switch on
+#   ./script/preview_setup.sh out.png en --set-up --setup-details  also expand what setup installed
+#   ./script/preview_setup.sh out.png en --demo --missing-extension  the extension is not registered, with its repair action
 #   ./script/preview_setup.sh out.png en --failed-set-up    the first run after a Set Up that did not come out: the chooser, and what went wrong above it
 #   ./script/preview_setup.sh out.png en --first-run --shell-silent  the first run when the login shell said nothing about the agents
 #   ./script/preview_setup.sh out.png en --location         the app runs from a disk image: the card that says to move it, with Set Up off
@@ -41,7 +43,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--failed-folders] [--folder-query text] [--worktrees-state state] [--feedback] [--failure-notice] [--long-notice]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--setup-details] [--missing-extension] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--failed-folders] [--folder-query text] [--worktrees-state state] [--feedback] [--failure-notice] [--long-notice]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -66,7 +68,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       case "$state" in failed | empty | loading | none | long) ;; *) echo "preview_setup.sh: unknown worktree state $state" >&2; exit 2 ;; esac
       FLAGS+=(--worktrees-state "$state")
       ;;
-    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --empty-folders | --failed-folders | --feedback | --failure-notice | --long-notice) FLAGS+=("$argument") ;;
+    --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --setup-details | --missing-extension | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --empty-folders | --failed-folders | --feedback | --failure-notice | --long-notice) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
   esac
@@ -460,6 +462,9 @@ func render(to path: String) async {
     if flag("--onboarding") || flag("--set-up") {
         model.simulate(check: DoctorCheck(.finderExtension, status: .needsUser, detail: .doctorExtensionDisabled, fix: .doctorFixExtensionEnable))
     }
+    if flag("--missing-extension") {
+        model.simulate(check: DoctorCheck(.finderExtension, status: .fail, detail: .doctorExtensionNotRegistered, fix: .doctorFixExtensionInstall))
+    }
     if flag("--set-up") { model.simulate(setupReport: demoSetupReport()) }
     if flag("--failed-set-up") { model.simulate(setupReport: demoFailedSetupReport()) }
     if flag("--location") { model.simulateLocationProblem() }
@@ -480,7 +485,7 @@ func render(to path: String) async {
     // The width of the window: its default, or its smallest. The text wraps at that width, as it does in the window; without a width
     // the picture would be as wide as the longest line.
     let width: CGFloat = flag("--minimum") ? 800 : 860
-    let window = SetupView(model: model, expandCheckDetails: flag("--gallery"), previewViewport: flag("--minimum"))
+    let window = SetupView(model: model, expandCheckDetails: flag("--gallery"), expandSetupDetails: flag("--setup-details"), previewViewport: flag("--minimum"))
         .frame(width: width, height: flag("--minimum") ? 560 : nil, alignment: .topLeading)
         .background(Color(nsColor: .windowBackgroundColor))
         .environment(\.colorScheme, flag("--dark") ? .dark : .light)
