@@ -67,6 +67,13 @@ yet is enough), look at the order of the path, and select a command in a fix lin
 invisible character came with it. The relative time of the last action ("5 minutes ago") is formatted when the doctor
 runs, in the locale of the process.
 
+With a left-to-right system language, set only Right Here's app language to Arabic or Hebrew and reopen it. The sidebar must
+move to the right, headings and action groups must follow that direction, and menu-preview chevrons must point toward their
+submenus. On AI Assistants, JSON and command blocks must still start at the left and preserve indentation. Folder paths keep
+their component order, including an Arabic or Hebrew folder name. Check the first-run choices too. Switching the app back to
+English must restore the left-to-right layout. The headless preview uses the setup view's own direction setting; it must not
+apply a separate correction that hides a native-window problem. See [ADR 0006](../decisions/0006-localization.md).
+
 ## 4. Agent prompt presets (0012)
 
 Needs a real Finder and a terminal that can run commands; nothing here is covered by the tests, which only plan.
@@ -121,10 +128,10 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    unchanged (the native panel did return a file in the check recorded in [ADR 0027](../decisions/0027-manage-folders-in-the-app.md)).
    With keyboard navigation and VoiceOver, reach both row buttons; each says its action and the folder it acts on. Try long paths,
    the minimum window and dark appearance. Returning from the chooser restores usable controls without leaving a spinner running.
-10. In Arabic or Hebrew, with a pinned folder whose names are right to left (for example a folder called مستندات): the Folders and
-    Worktrees rows draw the names in reverse order in the preview (`script/preview_setup.sh --demo --tab folders ar`), and the
-    left-to-right marks that are added did not change that. Look at the real window: if the names read in order there, the limit
-    is the preview's; if not, the path rows need another way to be drawn, and this check says so in the decision record.
+10. In Arabic or Hebrew, use a pinned folder with two successive right-to-left names (for example `مستندات/أبحاث`). Check that the
+    Folders and Worktrees paths keep their component order and agree with the tooltip and basename. Earlier headless checks showed
+    reversed names despite the left-to-right marks. The later native Arabic Folders check preserved both nested names in order
+    ([ADR 0006](../decisions/0006-localization.md)); the corresponding Worktrees and Hebrew cases still need native inspection.
 11. The first run, with no config file (move yours aside first, and put it back afterwards). Overview offers the terminals and editors
     installed here and the agents Right Here knows, with the ones your login shell finds checked. Choose and press Set Up: `rh config
     show` has what you chose, "What Right Here set up" lists the pieces, and the three-step card waits for the Finder extension, as in

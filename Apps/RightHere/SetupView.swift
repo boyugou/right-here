@@ -59,6 +59,8 @@ struct SetupView: View {
             .accessibilityLabel(l10n.string(model.selectedTab.title))
         }
         .frame(minWidth: 800, minHeight: 560)
+        // The catalog can choose a different language from macOS's layout locale, including an English fallback.
+        .environment(\.layoutDirection, l10n.isRightToLeft ? .rightToLeft : .leftToRight)
         .task {
             await model.refresh()
             await model.watchExtension()

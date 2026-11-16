@@ -148,3 +148,31 @@ compile, verify. `CONTRIBUTING.md` has the steps.
 
 Terminals and editors are shown by the name the system gives them in the person's language
 (`FileManager.displayName`), so Terminal appears as "终端" or "ターミナル" where macOS says so.
+
+## The window follows its displayed language
+
+The setup view sets SwiftUI's layout direction from `Localizer.system.isRightToLeft`, which uses the resolved catalog language.
+The same view owns this behavior in the app and in headless previews. A preferred language that falls back to English therefore
+also gets an English layout. JSON and command blocks keep a left-to-right layout so their indentation and punctuation remain
+readable; folder-path rows already keep their own left-to-right direction. These are presentation choices, not changes to copied
+commands, configuration or paths.
+
+Native inspection found that a review app with Arabic saved as its app-specific language displayed Arabic text but retained the
+host's left-to-right arrangement. The preview script independently forced right-to-left layout, hiding the discrepancy. SwiftUI
+documents that its default direction follows the user's locale and permits an explicit override
+([LayoutDirection](https://developer.apple.com/documentation/swiftui/layoutdirection)). For this app, the catalog's selected
+language is the source for both its words and layout. The preview-only override was removed so a preview cannot correct a
+direction problem that remains in the app. Code blocks previously inherited the preview's right alignment, losing the visible
+nesting of JSON; their local direction now preserves it inside the mirrored page.
+
+Verified on macOS 27.2 (26B123), with the host using `en_US` and an isolated review app's saved language preference set to Arabic,
+without a language argument at launch or changes to the system language. Before the change its sidebar stayed left; afterward
+the sidebar, headings, action groups, menu arrows and submenu indentation mirrored. JSON and command blocks remained left
+aligned. First-run choices flowed from the right, and choosing a terminal changed the selection without writing setup files.
+The Folders page retained the component order of a nested Arabic path, including both names. Returning the app preference to
+English and reopening restored the left-to-right layout. The review bundle, temporary home and unique preferences were removed.
+
+The same setup view rendered Arabic AI and first-run pages at minimum size, a Hebrew menu in dark appearance, and an unsupported
+Pashto preference that fell back to English text and left-to-right layout. The full verification gate passed with 1,718 tests,
+the app and extension build, all catalogs, schema, docs, mutation-entry consistency and public-safety checks. Native Hebrew and
+Worktrees path inspection remain in the manual checklist; the headless Hebrew image is not evidence of those interactions.

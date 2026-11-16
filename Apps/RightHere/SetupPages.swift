@@ -90,6 +90,8 @@ struct CodeBlock: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
             .textSelection(.enabled)
+            // Code keeps its indentation and reading direction inside a mirrored interface.
+            .environment(\.layoutDirection, .leftToRight)
     }
 }
 

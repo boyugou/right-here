@@ -464,9 +464,6 @@ func render(to path: String) async {
         model.simulate(notice: .failed(text))
     }
     if flag("--submenus") { model.simulate(openSubmenus: allSubmenus(model.snapshot?.menu ?? [])) }
-    // A real window mirrors itself for a right-to-left system language; the renderer needs to be told.
-    let language = Locale.preferredLanguages.first ?? "en"
-    let rightToLeft = Locale.Language(identifier: language).characterDirection == .rightToLeft
     // The width of the window: its default, or its smallest. The text wraps at that width, as it does in the window; without a width
     // the picture would be as wide as the longest line.
     let width: CGFloat = flag("--minimum") ? 800 : 860
@@ -474,7 +471,6 @@ func render(to path: String) async {
         .frame(width: width, height: flag("--minimum") ? 560 : nil, alignment: .topLeading)
         .background(Color(nsColor: .windowBackgroundColor))
         .environment(\.colorScheme, flag("--dark") ? .dark : .light)
-        .environment(\.layoutDirection, rightToLeft ? .rightToLeft : .leftToRight)
     let sized: AnyView = flag("--minimum") ? AnyView(window.clipped()) : AnyView(window)
     let scaled: AnyView = flag("--large-text") ? AnyView(sized.environment(\.dynamicTypeSize, .accessibility2)) : sized
     let renderer = ImageRenderer(content: scaled)
