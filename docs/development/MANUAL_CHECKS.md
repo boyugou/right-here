@@ -137,7 +137,10 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    query. Try a name, part of a path, multiple words, accents and an input method. Refresh, switch sections and pin or unpin
    a filtered result: the query stays. An unmatched query offers Clear Search; its button, the field's clear button and Escape
    restore the list. A second Escape leaves the empty field. Clear Recent Folders is absent while filtering. Find is disabled
-   in another section, during a failed read and for a genuinely empty list. Check field and clear-button labels with VoiceOver.
+   in another section, during a failed read and for a genuinely empty list. From AI Assistants or Finder menu, press
+   Command-6 then Command-F immediately: the search field must take focus and select an existing query. Repeatedly switch
+   away and back, and leave immediately after Find; a pending focus request must not steal focus from the new page.
+   Check field and clear-button labels with VoiceOver.
 10. In Arabic or Hebrew, use a pinned folder with two successive right-to-left names (for example `مستندات/أبحاث`). Check that the
     Folders and Worktrees paths keep their component order and agree with the tooltip and basename. Earlier headless checks showed
     reversed names despite the left-to-right marks. The later native Arabic Folders check preserved both nested names in order
@@ -204,3 +207,7 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     leaf rows. In AI Assistants, an unusually long helper path wrapped inside the code block and copied in full (pasted back
     into the app's search field to compare). Copy Plugin Commands at the bottom of the page kept both the confirmation and
     its paste destination visible above the scrolled content. The review used a separate app identity and temporary home.
+    That review also reproduced an intermittent lost search focus after rapid Command-6 / Command-F. Moving the focus
+    request from the appearance callback to a cancellable view task, yielding before assigning it, passed the same native
+    sequence on first entry and repeated section switches. Existing queries were selected for replacement, Escape still
+    cleared then unfocused the field, and leaving immediately after Find retained the other page's focus.

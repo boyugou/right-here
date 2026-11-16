@@ -81,8 +81,11 @@ struct FoldersPage: View {
         .frame(minHeight: 28)
         .background(palette.canvas, in: RoundedRectangle(cornerRadius: 7))
         .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(searchFocused ? palette.accent : palette.rule, lineWidth: searchFocused ? 2 : 1))
-        .onChange(of: model.folderSearchRequest, initial: true) {
+        .task(id: model.folderSearchRequest) {
             guard model.folderSearchRequest > 0 else { return }
+            // A fast section switch can request focus before the native field has joined the window.
+            await Task.yield()
+            guard !Task.isCancelled, model.canFindFolders else { return }
             searchFocused = true
             searchSelection = TextSelection(range: model.folderQuery.startIndex..<model.folderQuery.endIndex)
         }

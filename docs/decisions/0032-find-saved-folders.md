@@ -37,3 +37,11 @@ composition, spoken VoiceOver and all keyboard clearing paths remain in the manu
 English, German, Chinese and Arabic previews cover matching and no-result states, minimum width, large text and dark
 appearance. ImageRenderer cannot render the native text field, so previews draw its static value in the same position;
 editing and focus are checked in the native app.
+
+## Focus timing follow-up
+
+A native review reproduced an intermittent lost Command-F focus when the Folders page appeared during a rapid section switch.
+The field handles the request in its own cancellable task and yields before assigning focus, so a disappearing page abandons
+the request. The same native sequence then focused and selected the query on first entry and repeated visits; the manual
+checklist also covers leaving immediately after Find. This is a measured UI fix, not a claim that task scheduling guarantees
+native-view attachment on every system.
