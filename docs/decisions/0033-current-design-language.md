@@ -38,7 +38,9 @@ so that optional path was closed without accepting it. No system-generated icon 
   replace it. The scratch renderer has no asset catalog and uses the specified default color for its canned previews.
 - The healthy Overview gives the readiness statement and its next action the strongest hierarchy. A bounded, labeled preview
   reads the actual menu tree; it shows up to five entries and preserves submenu indicators. The full preview remains one click
-  away. Default apps use light information rows. First-run, incomplete setup and failed checks retain their own states.
+  away. The full preview explains that submenus expand here and actions run in Finder; only expandable rows receive hover and
+  pressed feedback, with their text kept at normal contrast. Default apps use light information rows. First-run, incomplete
+  setup and failed checks retain their own states.
 - First-run choices use restrained rectangular controls with separate single- and multiple-choice marks. There is one prominent
   Set Up action and no enclosing colored card. Long descriptions and additional agent choices remain available.
 - Folders and worktrees use a shared list container with inset separators. Names lead, paths are secondary, and actions remain

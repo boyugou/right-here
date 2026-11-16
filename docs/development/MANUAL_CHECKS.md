@@ -96,7 +96,9 @@ open one, and the preview is the same code as the extension's, not Finder's own 
 2. Right-click the empty background of a folder window. The entries, their order, the separators, the icons (the
    menu's own glyphs and the apps' icons) and the titles match the window's list. Click a line with a chevron in the
    window: its entries open in place, indented, and the chevron turns down; open the same submenu in Finder and compare
-   its entries and separators. Clicking an entry in the window does nothing.
+   its entries and separators. The introduction identifies the list as a preview and directs actual actions to Finder.
+   Hovering and pressing a submenu gives feedback without dimming its title; static entries remain readable and do nothing
+   when clicked. With keyboard navigation enabled, reach a submenu, verify its focus indication and expand it with Space.
 3. Change `[menu] items`, or enable another agent, then refresh with Command-R: the window and
    the Finder menu both follow the config. An app that is not installed is missing from both.
 4. Put a syntax error in the config and refresh: the "Finder menu" section says the config errors must be fixed and offers Show Checks.
@@ -197,3 +199,8 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     changed. Accessibility exposed every row action and its complete path. The current system's Tab navigation remained on
     text fields; full keyboard-navigation mode and spoken VoiceOver still need the manual check above. Dark appearance was
     inspected in SwiftUI renders, including dark text on the light primary button. Dock was not verified in this revision.
+
+    A follow-up native review verified submenu expansion and collapse with the corresponding accessibility values, and static
+    leaf rows. In AI Assistants, an unusually long helper path wrapped inside the code block and copied in full (pasted back
+    into the app's search field to compare). Copy Plugin Commands at the bottom of the page kept both the confirmation and
+    its paste destination visible above the scrolled content. The review used a separate app identity and temporary home.

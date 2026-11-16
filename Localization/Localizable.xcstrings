@@ -11906,187 +11906,187 @@
       }
     },
     "app.menuCaption": {
-      "comment": "Caption under the title of the Finder menu preview in the setup window: it shows the menu for a folder, and Finder adds items for selected files when files are selected. Two short sentences at most.",
+      "comment": "Above the Finder menu preview. Only submenus expand here; action rows are static. The real actions and file-selection entries are available in Finder. Use the localized macOS name for Finder.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "هذه قائمة المجلد. تظهر العناصر الخاصة بالملفات المحددة عند تحديد ملفات."
+            "value": "هذه معاينة لقائمة مجلد. يمكنك توسيع القوائم الفرعية هنا؛ أما تنفيذ الإجراءات فيكون في فايندر. تظهر العناصر الخاصة بالملفات عند تحديد ملفات."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "এটি একটি ফোল্ডারের মেনু। আপনি ফাইল নির্বাচন করলে নির্বাচিত ফাইলের জন্য আইটেমগুলো দেখা যায়।"
+            "value": "এখানে একটি ফোল্ডারের মেনুর পূর্বরূপ দেখানো হচ্ছে। এখানে সাবমেনুগুলি প্রসারিত করুন; কাজগুলি চালাতে Finder ব্যবহার করুন। ফাইল নির্বাচন করলে ফাইল-নির্দিষ্ট আইটেম দেখা যায়।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Das ist das Menü für einen Ordner. Befehle für ausgewählte Dateien erscheinen, wenn du Dateien auswählst."
+            "value": "Dies ist eine Vorschau des Menüs für einen Ordner. Untermenüs lassen sich hier aufklappen; Aktionen führen Sie im Finder aus. Einträge für Dateien erscheinen, wenn Dateien ausgewählt sind."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Αυτό είναι το μενού για έναν φάκελο. Τα στοιχεία για επιλεγμένα αρχεία εμφανίζονται όταν επιλέξετε αρχεία."
+            "value": "Αυτή είναι μια προεπισκόπηση του μενού ενός φακέλου. Αναπτύξτε τα υπομενού εδώ· εκτελέστε τις ενέργειες στο Finder. Οι επιλογές για αρχεία εμφανίζονται όταν επιλέγετε αρχεία."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This is the menu for a folder. Items for selected files appear when you select files."
+            "value": "This previews the menu for a folder. Expand submenus here; run actions in Finder. File-specific items appear when files are selected."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Este es el menú para una carpeta. Los comandos para los archivos seleccionados aparecen cuando seleccionas archivos."
+            "value": "Esta es una vista previa del menú de una carpeta. Aquí puede desplegar los submenús; las acciones se ejecutan en el Finder. Las opciones para archivos aparecen al seleccionar archivos."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "این منوی یک پوشه است. گزینه‌های مربوط به فایل‌های انتخاب‌شده وقتی فایل انتخاب می‌کنید ظاهر می‌شوند."
+            "value": "این پیش‌نمایش منوی یک پوشه است. زیرمنوها را اینجا باز کنید؛ عملیات را در Finder انجام دهید. گزینه‌های مخصوص فایل‌ها هنگام انتخاب فایل نمایش داده می‌شوند."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Voici le menu d’un dossier. Les commandes pour les fichiers sélectionnés apparaissent lorsque vous sélectionnez des fichiers."
+            "value": "Voici un aperçu du menu d’un dossier. Dépliez les sous-menus ici ; exécutez les actions dans le Finder. Les options propres aux fichiers apparaissent lorsque des fichiers sont sélectionnés."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "זהו התפריט לתיקייה. פריטים עבור הקבצים שנבחרו מופיעים כשאתם בוחרים קבצים."
+            "value": "זו תצוגה מקדימה של תפריט עבור תיקייה. אפשר להרחיב כאן תפריטי משנה; את הפעולות מבצעים ב-Finder. פריטים המיועדים לקבצים מופיעים כשבוחרים קבצים."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "यह एक फ़ोल्डर का मेनू है। चयनित फ़ाइलों के आइटम तभी दिखते हैं, जब आप फ़ाइलें चुनते हैं।"
+            "value": "यह फ़ोल्डर के मेनू का पूर्वावलोकन है। यहाँ सबमेनू खोलें; कार्रवाइयाँ चलाने के लिए Finder का उपयोग करें। फ़ाइलें चुनने पर फ़ाइलों से संबंधित विकल्प दिखाई देते हैं।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ini adalah menu untuk folder. Item untuk file yang dipilih muncul saat Anda memilih file."
+            "value": "Ini adalah pratinjau menu untuk folder. Buka submenu di sini; jalankan tindakan di Finder. Item khusus file muncul saat file dipilih."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Questo è il menu per una cartella. I comandi per i file selezionati compaiono quando selezioni dei file."
+            "value": "Questa è un’anteprima del menu di una cartella. Espandi qui i sottomenu; esegui le azioni nel Finder. Le voci specifiche per i file appaiono quando selezioni dei file."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "これはフォルダ用のメニューです。選択したファイル向けの項目は、ファイルを選択したときに表示されます。"
+            "value": "フォルダのメニューのプレビューです。ここではサブメニューを展開できます。アクションはFinderで実行してください。ファイル用の項目は、ファイルを選択すると表示されます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "이것은 폴더용 메뉴입니다. 선택한 파일에 해당하는 항목은 파일을 선택하면 나타납니다."
+            "value": "폴더 메뉴의 미리보기입니다. 여기서는 하위 메뉴를 펼칠 수 있으며, 동작은 Finder에서 실행하세요. 파일을 선택하면 파일 관련 항목이 표시됩니다."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "हा एका फोल्डरचा मेनू आहे. निवडलेल्या फाइल्ससाठीचे आयटम्स तुम्ही फाइल्स निवडता तेव्हा दिसतात."
+            "value": "हे फोल्डरच्या मेनूचे पूर्वावलोकन आहे. येथे उपमेनू उघडा; कृती करण्यासाठी Finder वापरा. फाइल निवडल्यावर फाइलशी संबंधित पर्याय दिसतात."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ini ialah menu untuk folder. Item untuk fail yang dipilih muncul apabila anda memilih fail."
+            "value": "Ini ialah pratonton menu untuk folder. Kembangkan submenu di sini; jalankan tindakan dalam Finder. Item khusus fail muncul apabila fail dipilih."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Dit is het menu voor een map. Opdrachten voor geselecteerde bestanden verschijnen wanneer je bestanden selecteert."
+            "value": "Dit is een voorvertoning van het menu voor een map. Klap hier submenu’s open; voer acties uit in de Finder. Opties voor bestanden verschijnen wanneer u bestanden selecteert."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "To jest menu dla folderu. Pozycje dotyczące plików pojawiają się dopiero po ich zaznaczeniu."
+            "value": "To podgląd menu folderu. Tutaj możesz rozwijać podmenu; czynności wykonuj w Finderze. Pozycje dotyczące plików pojawiają się po zaznaczeniu plików."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Este é o menu para uma pasta. Os itens para arquivos aparecem somente quando arquivos são selecionados."
+            "value": "Esta é uma prévia do menu de uma pasta. Expanda os submenus aqui; execute as ações no Finder. Os itens específicos de arquivos aparecem quando você seleciona arquivos."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Acesta este meniul pentru un dosar. Elementele pentru fișiere apar doar la selectarea fișierelor."
+            "value": "Aceasta este o previzualizare a meniului unui dosar. Extindeți submeniurile aici; executați acțiunile în Finder. Opțiunile pentru fișiere apar când selectați fișiere."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Это меню для папки. Пункты для выбранных файлов появляются только при выборе файлов."
+            "value": "Это предварительный просмотр меню папки. Здесь можно раскрыть подменю, а действия выполняются в Finder. Пункты для файлов появляются при выборе файлов."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "இது ஒரு கோப்புறைக்கான மெனு. நீங்கள் கோப்புகளைத் தேர்ந்தெடுக்கும்போது, தேர்ந்தெடுத்த கோப்புகளுக்கான உருப்படிகள் தோன்றும்."
+            "value": "இது ஒரு கோப்புறையின் மெனு முன்னோட்டம். இங்கே துணைமெனுக்களை விரிவாக்கலாம்; செயல்களை Finder-இல் இயக்கவும். கோப்புகளைத் தேர்ந்தெடுக்கும்போது கோப்புகளுக்கான உருப்படிகள் தோன்றும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "ఇది ఫోల్డర్ కోసం మెనూ. మీరు ఫైల్స్ ఎంచుకున్నప్పుడు, ఎంచుకున్న ఫైల్స్ కోసం అంశాలు కనిపిస్తాయి."
+            "value": "ఇది ఫోల్డర్ మెనూ ప్రివ్యూ. ఇక్కడ ఉపమెనూలను విస్తరించవచ్చు; చర్యలను Finderలో అమలు చేయండి. ఫైల్‌లను ఎంచుకున్నప్పుడు వాటికి సంబంధించిన అంశాలు కనిపిస్తాయి."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "นี่คือเมนูสำหรับโฟลเดอร์ รายการสำหรับไฟล์ที่เลือกจะปรากฏขึ้นเมื่อคุณเลือกไฟล์"
+            "value": "นี่คือตัวอย่างเมนูสำหรับโฟลเดอร์ คุณสามารถขยายเมนูย่อยได้ที่นี่ ส่วนการเรียกใช้คำสั่งให้ทำใน Finder รายการสำหรับไฟล์จะปรากฏเมื่อเลือกไฟล์"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Bu, bir klasör için menüdür. Seçili dosyalara yönelik öğeler, dosya seçtiğinizde görünür."
+            "value": "Bu, bir klasör menüsünün önizlemesidir. Alt menüleri burada genişletin; eylemleri Finder’da çalıştırın. Dosyalara özgü öğeler, dosyalar seçildiğinde görünür."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Це меню для папки. Пункти для файлів відображаються лише тоді, коли файли виділено."
+            "value": "Це попередній перегляд меню папки. Тут можна розгорнути підменю, а дії виконуються у Finder. Пункти для файлів з’являються, коли вибрано файли."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "یہ فولڈر کا مینو ہے۔ منتخب فائلوں سے متعلق آئٹمز اس وقت ظاہر ہوتے ہیں جب آپ فائلیں منتخب کرتے ہیں۔"
+            "value": "یہ فولڈر کے مینو کا پیش نظارہ ہے۔ یہاں ذیلی مینو کھولیں؛ کارروائیاں Finder میں چلائیں۔ فائلیں منتخب کرنے پر فائلوں سے متعلق آئٹمز ظاہر ہوتے ہیں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Đây là menu cho một thư mục. Các mục dành cho tệp đã chọn chỉ xuất hiện khi bạn chọn tệp."
+            "value": "Đây là bản xem trước menu của thư mục. Bạn có thể mở rộng menu con tại đây; hãy thực hiện các thao tác trong Finder. Các mục dành riêng cho tệp xuất hiện khi bạn chọn tệp."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "这是文件夹的菜单。选中文件时，针对所选文件的项目才会出现。"
+            "value": "文件夹菜单预览。可在此展开子菜单；执行操作请在访达中进行。选中文件后会显示针对文件的项目。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "這是資料夾的選單。選取檔案時，針對所選檔案的項目才會出現。"
+            "value": "檔案夾選單預覽。可在此展開子選單；執行操作請在 Finder 中進行。選取檔案後會顯示針對檔案的項目。"
           }
         }
       }

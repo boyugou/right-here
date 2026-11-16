@@ -462,7 +462,7 @@ struct MenuLine: View {
                 .accessibilityHidden(true)
         case .submenu where row.hasChildren:
             Button(action: toggle) { line }
-                .buttonStyle(.plain)
+                .buttonStyle(SetupQuietButtonStyle())
                 .accessibilityValue(l10n.string(row.isExpanded ? .appMenuSubmenuExpanded : .appMenuSubmenuCollapsed))
         case .action, .submenu:
             line.accessibilityElement(children: .combine)
@@ -476,6 +476,7 @@ struct MenuLine: View {
                 .accessibilityHidden(true)
             Text(row.title)
                 .font(.body)
+                .foregroundStyle(.primary)
             Spacer(minLength: 8)
             if row.hasChildren {
                 // Not a rotated chevron: the forward one is drawn mirrored in a right-to-left language, the down one is not.

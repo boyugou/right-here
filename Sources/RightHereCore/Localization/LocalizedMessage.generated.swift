@@ -129,7 +129,7 @@ extension LocalizedMessage {
     public static var appLocationTitle: LocalizedMessage { LocalizedMessage(.appLocationTitle) }
     /// MCP configuration copied. Paste it into your assistant's MCP settings.
     public static var appMcpCopied: LocalizedMessage { LocalizedMessage(.appMcpCopied) }
-    /// This is the menu for a folder. Items for selected files appear when you select files.
+    /// This previews the menu for a folder. Expand submenus here; run actions in Finder. File-specific items appear when files are selected.
     public static var appMenuCaption: LocalizedMessage { LocalizedMessage(.appMenuCaption) }
     /// The menu preview is unavailable until the configuration errors are fixed.
     public static var appMenuConfigError: LocalizedMessage { LocalizedMessage(.appMenuConfigError) }

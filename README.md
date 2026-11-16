@@ -34,7 +34,7 @@ The open-source action layer for macOS: send folders and selections to terminals
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/setup-dark.png">
-  <img src="docs/images/setup-light.png" alt="The Right Here setup window: a sidebar of six sections (Overview, Finder menu, Checks, AI Assistants, Worktrees, Folders) and a preview of the Finder menu for a folder: Open in Ghostty, Open in Visual Studio Code, Claude Code Here, Codex Here, New File and Copy Path." width="640">
+  <img src="docs/images/setup-light.png" alt="The Right Here setup window: the current-directory icon, a grouped sidebar, and the Finder menu preview. Submenus expand here; actions run in Finder." width="640">
 </picture>
 
 <sub>The setup window with example data, rendered without a screen from the app's own view.</sub>

@@ -18,7 +18,7 @@ fonts or scripts). It is served by GitHub Pages from that branch.
   and menu): they show canned data, the same on every Mac, with no path, last action, agent or terminal of the Mac that renders
   them, and the script stops when a canned text names that Mac's home folder or account.
 - The screenshots to use, each light and dark (`--dark`), 860 points wide at 2x and resized to 800 px: `en --demo --tab menu` for
-  the hero (the Finder menu section next to the sidebar of six sections; plain `--demo` is the Overview, which is mostly empty),
+  the hero (the Finder menu section next to the sidebar of six sections; plain `--demo` shows Overview with readiness and a bounded menu preview),
   `en --first-run` for the very first run (no config file, the choice of terminal, editor and agents), `en --set-up` for just after
   Set Up (what it did, and the Finder extension still to switch on) and `ja --demo --tab menu` for the translated window. The
   site draws its menu mock-up from `tools/rh-menu-output.json`, so `--submenus` is not used. The icons of the menu's apps
