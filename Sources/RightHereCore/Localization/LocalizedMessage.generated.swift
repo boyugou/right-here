@@ -331,6 +331,8 @@ extension LocalizedMessage {
     public static var appFixSetUp: LocalizedMessage { LocalizedMessage(.appFixSetUp) }
     /// Install a terminal, or choose one on the Overview.
     public static var appFixTerminalWindow: LocalizedMessage { LocalizedMessage(.appFixTerminalWindow) }
+    /// Couldn’t read saved folders.
+    public static var appFoldersLoadFailed: LocalizedMessage { LocalizedMessage(.appFoldersLoadFailed) }
     /// Right Here remembers these folders on this Mac only, in a file next to your config. An AI assistant that you connect through MCP can read them.
     public static var appFoldersNote: LocalizedMessage { LocalizedMessage(.appFoldersNote) }
     /// %1$@ Help
@@ -399,6 +401,8 @@ extension LocalizedMessage {
     public static var appMenuTitle: LocalizedMessage { LocalizedMessage(.appMenuTitle) }
     /// Undo
     public static var appMenuUndo: LocalizedMessage { LocalizedMessage(.appMenuUndo) }
+    /// More AI agents
+    public static var appMoreAgents: LocalizedMessage { LocalizedMessage(.appMoreAgents) }
     /// Needing attention: %@
     public static func appNeedAttentionCount(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appNeedAttentionCount, [argument1]) }
     /// Some checks need your attention.
@@ -551,6 +555,8 @@ extension LocalizedMessage {
     public static var appRefresh: LocalizedMessage { LocalizedMessage(.appRefresh) }
     /// Refreshing…
     public static var appRefreshing: LocalizedMessage { LocalizedMessage(.appRefreshing) }
+    /// The folder %1$@ will be deleted. git refuses if it has uncommitted changes.
+    public static func appRemoveDetachedWorktreeMessage(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appRemoveDetachedWorktreeMessage, [argument1]) }
     /// Remove Anyway
     public static var appRemoveIgnoredConfirm: LocalizedMessage { LocalizedMessage(.appRemoveIgnoredConfirm) }
     /// Removing this worktree also deletes these files, which git ignores and which exist only there: %@
@@ -573,6 +579,10 @@ extension LocalizedMessage {
     public static var appRepairDoneUnchanged: LocalizedMessage { LocalizedMessage(.appRepairDoneUnchanged) }
     /// Install or Repair is done, but these checks still ask for it: %@. The Checks page says what is wrong.
     public static func appRepairLeft(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appRepairLeft, [argument1]) }
+    /// Couldn’t read %1$@. %2$@ The file hasn’t been changed. Check it, then try again.
+    public static func appSavedFoldersReadFailed(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.appSavedFoldersReadFailed, [argument1, argument2]) }
+    /// Saved folders exceed the %2$@-byte limit. %1$@ hasn’t been changed.
+    public static func appSavedFoldersTooLarge(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.appSavedFoldersTooLarge, [argument1, argument2]) }
     /// Setting up…
     public static var appSettingUp: LocalizedMessage { LocalizedMessage(.appSettingUp) }
     /// The config has an error, so it cannot be changed here. Fix it on the Config page first.
@@ -703,6 +713,8 @@ extension LocalizedMessage {
     public static var appVariantTagBuiltIn: LocalizedMessage { LocalizedMessage(.appVariantTagBuiltIn) }
     /// Version %@
     public static func appVersion(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appVersion, [argument1]) }
+    /// Branch: %1$@
+    public static func appWorktreeBranch(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appWorktreeBranch, [argument1]) }
     /// Detached HEAD
     public static var appWorktreeDetached: LocalizedMessage { LocalizedMessage(.appWorktreeDetached) }
     /// Made by Right Here

@@ -201,12 +201,8 @@ struct UnboundedReadReviewTests {
         try sparseFile(at: target.stateFile, bytes: 1 << 30)
         let clock = ContinuousClock()
         let started = clock.now
-        let reading = StateStore.read(paths: target)
+        #expect(throws: StateStoreError.self) { try StateStore.load(paths: target) }
         let took = clock.now - started
-        guard case .unreadable = reading else {
-            Issue.record("a state file of 1 GB was read as \(reading)")
-            return
-        }
         #expect(took < .milliseconds(50), "a state file of 1 GB was read whole before its size was looked at (\(took))")
     }
 }

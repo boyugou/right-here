@@ -190,7 +190,7 @@ public enum KnownAgents {
 
     public static let opencode = AgentDescriptor(
         id: "opencode",
-        name: "opencode",
+        name: "OpenCode",
         command: "opencode",
         variants: [.init(id: "continue", title: "Continue Last Session", arguments: ["--continue"], titleKey: .variantContinue)],
         bypassPermissionArgument: "--auto",

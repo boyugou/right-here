@@ -233,12 +233,12 @@ struct StateFileSafetyTests {
         try handEdited.write(to: paths.stateFile, atomically: true, encoding: .utf8)
 
         // The click that records the folder is best effort (`try?` in Run); a pin or an unpin is refused, and says why.
-        #expect(throws: StateFileNotRead.self) { try StateStore.update(paths: paths) { $0.recordRecent(root.path) } }
-        #expect(throws: StateFileNotRead.self) { try StateStore.update(paths: paths) { $0.pin("/Users/me/other") } }
+        #expect(throws: StateStoreError.self) { try StateStore.update(paths: paths) { $0.recordRecent(root.path) } }
+        #expect(throws: StateStoreError.self) { try StateStore.update(paths: paths) { $0.pin("/Users/me/other") } }
 
         let after = (try? String(contentsOf: paths.stateFile, encoding: .utf8)) ?? ""
         #expect(after == handEdited, "the pinned folders were written over: \(after.debugDescription)")
-        #expect(StateStore.read(paths: paths) == .unreadable("it is not valid TOML"))
+        #expect(throws: StateStoreError.self) { try StateStore.load(paths: paths) }
     }
 
     /// The file that is not there yet starts the state, and one that was too large or is a link that points nowhere is not written over either.
@@ -246,14 +246,14 @@ struct StateFileSafetyTests {
         let root = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: root) }
         let paths = RHPaths(environment: ["RH_CONFIG_DIR": root.path], home: root)
-        #expect(StateStore.read(paths: paths) == .absent)
+        #expect(try StateStore.load(paths: paths) == StateStore())
         try StateStore.update(paths: paths) { $0.pin("/work/app") }
-        #expect(StateStore.load(paths: paths).pins == ["/work/app"])
+        #expect(try StateStore.load(paths: paths).pins == ["/work/app"])
         try String(repeating: "# a long comment line\n", count: 8000).write(to: paths.stateFile, atomically: true, encoding: .utf8)
-        #expect(throws: StateFileNotRead.self) { try StateStore.update(paths: paths) { $0.pin("/work/other") } }
+        #expect(throws: StateStoreError.self) { try StateStore.update(paths: paths) { $0.pin("/work/other") } }
         try FileManager.default.removeItem(at: paths.stateFile)
         try FileManager.default.createSymbolicLink(atPath: paths.stateFile.path, withDestinationPath: root.appendingPathComponent("gone/state.toml").path)
-        #expect(throws: StateFileNotRead.self) { try StateStore.update(paths: paths) { $0.pin("/work/other") } }
+        #expect(throws: StateStoreError.self) { try StateStore.update(paths: paths) { $0.pin("/work/other") } }
         #expect((try? FileManager.default.destinationOfSymbolicLink(atPath: paths.stateFile.path)) != nil, "the link was not replaced by a regular file")
     }
 }

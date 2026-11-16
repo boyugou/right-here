@@ -93,6 +93,9 @@ struct SetupView: View {
                         .padding(.bottom, 28)
                         .modifier(PageColumn(inset: pageInset))
                 }
+                .id(model.pageIdentity)
+                .onChange(of: model.pageIdentity) { pageIsScrolled = false }
+                .clipped()
             }
             .frame(minWidth: 560, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { columnWidth = $0 }
@@ -159,6 +162,11 @@ struct SetupView: View {
 
             VStack(spacing: 1) {
                 ForEach(SetupTab.allCases) { tab in
+                    if tab == .checks || tab == .worktrees {
+                        Divider()
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 10)
+                    }
                     SidebarRow(tab: tab, selected: model.selectedTab == tab, badge: model.badge(for: tab)) {
                         model.select(tab)
                     }
@@ -196,8 +204,7 @@ struct SetupView: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// A section of the sidebar, as System Settings draws its own: the section's symbol on a tile of its colour, and the chosen one on the
-    /// system's colour of a selection.
+    /// A section's symbol and name. Only the selected section uses the accent; the page's controls keep the visual emphasis.
     private struct SidebarRow: View {
         let tab: SetupTab
         let selected: Bool
@@ -205,6 +212,9 @@ struct SetupView: View {
         let select: () -> Void
         @Environment(\.localizer) private var l10n
         @Environment(\.appearsActive) private var appearsActive
+        @Environment(\.colorScheme) private var colorScheme
+        @Environment(\.colorSchemeContrast) private var contrast
+        @State private var hovering = false
 
         /// A window in the background marks its section in grey, as the sidebars of the system do.
         private var windowIsActive: Bool {
@@ -215,9 +225,9 @@ struct SetupView: View {
             #endif
         }
 
-        /// The system's colours of a chosen row, which hold white text whatever accent colour the person chose.
-        private static let chosen = Color(nsColor: .selectedContentBackgroundColor)
-        private static let chosenInBackground = Color(nsColor: .unemphasizedSelectedContentBackgroundColor)
+        private var selection: Color {
+            windowIsActive ? Color.accentColor.opacity(colorScheme == .dark ? 0.22 : 0.12) : Color.primary.opacity(0.07)
+        }
 
         var body: some View {
             var attention = ""
@@ -227,11 +237,11 @@ struct SetupView: View {
             let highlighted = selected && windowIsActive
             return Button(action: select) {
                 HStack(spacing: 9) {
-                    SectionTile(symbol: tab.symbol, tint: tab.tint)
+                    SectionSymbol(symbol: tab.symbol, color: highlighted ? .accentColor : .secondary)
 
                     Text(l10n.string(tab.titleKey))
-                        .font(.system(size: 13))
-                        .foregroundStyle(highlighted ? Color.white : Color.primary)
+                        .font(.system(size: 13, weight: selected ? .semibold : .regular))
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
 
                     Spacer(minLength: 4)
@@ -241,18 +251,25 @@ struct SetupView: View {
                             .font(.caption2.weight(.bold).monospacedDigit())
                             .padding(.horizontal, 6)
                             .padding(.vertical, 1.5)
-                            .background(highlighted ? Color.white : Color.orange, in: Capsule())
-                            .foregroundStyle(highlighted ? Self.chosen : Color.white)
+                            .background(Color.orange.opacity(colorScheme == .dark ? 0.25 : 0.18), in: Capsule())
+                            .foregroundStyle(.primary)
                             .accessibilityHidden(true)
                     }
                 }
                 .padding(.horizontal, 6)
                 .padding(.vertical, 5)
-                .background(selected ? (windowIsActive ? Self.chosen : Self.chosenInBackground) : Color.clear,
+                .background(selected ? selection : hovering ? Color.primary.opacity(0.04) : Color.clear,
                             in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay {
+                    if selected && contrast == .increased {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.5), lineWidth: 1)
+                    }
+                }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .onHover { hovering = $0 }
             .accessibilityAddTraits(selected ? .isSelected : [])
             .accessibilityValue(attention)
         }
@@ -575,48 +592,33 @@ private struct TitlebarDirectionReader: NSViewRepresentable {
 }
 
 extension SetupTab {
-    /// The symbol on the section's tile in the sidebar.
+    /// The symbol beside the section's name in the sidebar.
     var symbol: String {
         switch self {
-        case .overview: "house.fill"
+        case .overview: "square.grid.2x2"
         case .menu: "contextualmenu.and.cursorarrow"
-        case .agents: "terminal.fill"
-        case .config: "doc.text.fill"
+        case .agents: "terminal"
+        case .config: "doc.text"
         case .checks: "checklist"
         case .ai: "sparkles"
         case .worktrees: "arrow.triangle.branch"
-        case .folders: "folder.fill"
+        case .folders: "folder"
         }
     }
 
-    /// The colour of the section's tile: one hue each, so a section is found by its colour as well as its name.
-    var tint: Color {
-        switch self {
-        case .overview: .blue
-        case .menu: .indigo
-        case .agents: .purple
-        case .config: .gray
-        case .checks: .green
-        case .ai: .pink
-        case .worktrees: .orange
-        case .folders: .teal
-        }
-    }
 }
 
-/// A white symbol on a rounded tile of one colour, like the icons of System Settings' sidebar.
-struct SectionTile: View {
+/// A shared optical size for navigation and settings symbols, without a second colored surface behind every one.
+struct SectionSymbol: View {
     let symbol: String
-    let tint: Color
+    var color: Color = .secondary
     var size: CGFloat = 22
 
     var body: some View {
         Image(systemName: symbol)
-            .font(.system(size: size * 0.5, weight: .semibold))
-            .foregroundStyle(.white)
+            .font(.system(size: size * 0.78, weight: .regular))
+            .foregroundStyle(color)
             .frame(width: size, height: size)
-            .background(LinearGradient(colors: [tint.mix(with: .white, by: 0.18), tint], startPoint: .top, endPoint: .bottom),
-                        in: RoundedRectangle(cornerRadius: size * 0.26, style: .continuous))
             .accessibilityHidden(true)
     }
 }
@@ -637,7 +639,8 @@ struct SidebarPanel: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        (scheme == .dark ? Color(white: 0.155) : Color(white: 0.96))
+        (scheme == .dark ? Color(.sRGB, red: 0.102, green: 0.118, blue: 0.110, opacity: 1)
+                        : Color(.sRGB, red: 0.941, green: 0.949, blue: 0.941, opacity: 1))
             .overlay(alignment: .trailing) {
                 Rectangle()
                     .fill(Color.primary.opacity(scheme == .dark ? 0.12 : 0.07))

@@ -359,7 +359,7 @@ enum Tools {
     }
 
     private static func bookmarks(_ arguments: JSONValue, _ server: ServerContext) async throws -> ToolOutput {
-        let state = StateStore.load(paths: server.paths)
+        let state = try StateStore.load(paths: server.paths)
         let structured = JSONValue.object([
             "pins": .array(state.pins.map(JSONValue.string)),
             "recents": .array(state.recents.map(JSONValue.string))

@@ -1042,6 +1042,21 @@ final class SetupModel {
         await refreshFolders()
     }
 
+    func retryFolders() async {
+        guard !isWorking, !isRefreshing else { return }
+        isWorking = true
+        defer { isWorking = false }
+        say(nil)
+        await refreshFolders()
+    }
+
+    func revealSavedFolders() async {
+        guard !isWorking else { return }
+        isWorking = true
+        defer { isWorking = false }
+        say(await actions.revealSavedFolders())
+    }
+
     /// Lists the worktrees of the repository the tab shows. A repository chosen meanwhile has its own list coming; this one is dropped.
     func refreshWorktrees() async {
         #if PREVIEW
@@ -1146,7 +1161,7 @@ final class SetupModel {
         if let report = setupReport, !report.ok, !isWorking { setupReport = nil }
         folders = loaded.folders
         offer = loaded.offer
-        seedChoices(from: loaded.offer)
+        updateChoices(from: loaded.offer)
         // The ids of the open submenus are positions: a changed menu may have another entry at a position that was open.
         openSubmenus = MenuPreview.keepingOpen(openSubmenus, in: loaded.menu)
         warmIcons(loaded.menu, editor: loaded.menuEditor, general: loaded.general, apps: loaded.apps, offer: loaded.offer)
@@ -1154,14 +1169,18 @@ final class SetupModel {
         if selectedTab == .config { Task { await openConfigPage(keepingDraft: true) } }
     }
 
-    /// The first time the window is offered what is installed, the choices start from what the Mac has. They stay the person's after
-    /// that, through every refresh.
-    private func seedChoices(from offer: SetupOffer?) {
-        guard let offer, !choicesSeeded else { return }
+    /// An installed-app refresh can remove a Picker's selected option. Keep available choices, then use an available default.
+    private func updateChoices(from offer: SetupOffer?) {
+        guard let offer else { return }
+        func available(_ selected: String?, detected: String?, among options: [SetupOffer.Option]) -> String? {
+            if let selected, options.contains(where: { $0.id == selected }) { return selected }
+            if let detected, options.contains(where: { $0.id == detected }) { return detected }
+            return options.first?.id
+        }
+        selectedTerminal = available(choicesSeeded ? selectedTerminal : nil, detected: offer.detected.terminal, among: offer.terminals)
+        selectedEditor = available(choicesSeeded ? selectedEditor : nil, detected: offer.detected.editor, among: offer.editors)
+        if !choicesSeeded { selectedAgents = Set(offer.detected.agents) }
         choicesSeeded = true
-        selectedTerminal = offer.detected.terminal ?? offer.terminals.first?.id
-        selectedEditor = offer.detected.editor ?? offer.editors.first?.id
-        selectedAgents = Set(offer.detected.agents)
     }
 
     private func refreshFolders() async {
@@ -1224,6 +1243,7 @@ final class SetupModel {
     /// For `script/preview_setup.sh`: the window shows what it is given and nothing this Mac says, now or later (a refresh is
     /// ignored from here on).
     @ObservationIgnored private var simulated = false
+    var previewIsSimulated: Bool { simulated }
 
     func simulate(_ demo: SetupSnapshot, tab: SetupTab, icons provider: IconProvider? = nil, worktrees listing: WorktreeListing = .idle,
                   repository: URL? = nil) {

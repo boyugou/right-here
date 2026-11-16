@@ -192,6 +192,14 @@ public struct SetupActions: Sendable {
         edit { $0.clearRecents(); return true }
     }
 
+    public func revealSavedFolders() async -> SetupNotice? {
+        do {
+            return Self.failure(of: try await runner.run(ProcessStep(executable: "/usr/bin/open", arguments: ["-R", paths.stateFile.path])))
+        } catch {
+            return .failure(error)
+        }
+    }
+
     /// The git repository a folder is in, as the setup window looks it up (`nil` when there is none).
     public func repository(containing folder: URL) async -> URL? {
         facts.gitRoot(containing: folder)?.standardizedFileURL

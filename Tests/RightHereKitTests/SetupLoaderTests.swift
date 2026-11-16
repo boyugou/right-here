@@ -33,6 +33,26 @@ private struct Machine {
     }
 }
 
+@Suite("Saved-folder read recovery")
+struct SavedFolderReadRecoveryTests {
+    @Test func anInvalidFileIsAProblemAndRepairingItRestoresTheList() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        try machine.writeConfig("[general]\nagents = []\n")
+        let invalid = "pins = [\"/work/keep\", 3]\n"
+        try invalid.write(to: machine.paths.stateFile, atomically: true, encoding: .utf8)
+        let runner = FakeProcessRunner()
+        let loader = machine.loader(runner: runner)
+        let failed = await loader.folders()
+        #expect(failed.problem != nil)
+        #expect(failed.pins.isEmpty && failed.recents.isEmpty)
+        #expect(try String(contentsOf: machine.paths.stateFile, encoding: .utf8) == invalid)
+        try StateStore(pins: ["/work/keep"]).render().write(to: machine.paths.stateFile, atomically: true, encoding: .utf8)
+        let restored = await loader.folders()
+        #expect(restored.problem == nil && restored.pins == ["/work/keep"])
+        #expect(runner.recorded.isEmpty)
+    }
+}
+
 private let pluginkitEnabled = "+    \(AppIdentity.extensionBundleID)(1.0)\tU1\t2026-10-11 23:29:41 +0000\t/Applications/Right Here.app/Contents/PlugIns/FinderExtension.appex\n"
 
 /// Remembers whether each question about the machine was asked on the main thread. The questions the loader asks of the

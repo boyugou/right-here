@@ -414,7 +414,7 @@ struct SetupFolderEditTests {
         let machine = try Home(); defer { machine.cleanUp() }
         try seed(machine)
         #expect(await machine.actions(FakeProcessRunner()).unpin("/work/app") == nil)
-        let state = StateStore.load(paths: machine.paths)
+        let state = try StateStore.load(paths: machine.paths)
         #expect(state.pins == ["/work/web"])
         #expect(state.recents == ["/work/notes", "/work/app"])
     }
@@ -429,7 +429,7 @@ struct SetupFolderEditTests {
         let machine = try Home(); defer { machine.cleanUp() }
         try seed(machine)
         #expect(await machine.actions(FakeProcessRunner()).clearRecents() == nil)
-        let state = StateStore.load(paths: machine.paths)
+        let state = try StateStore.load(paths: machine.paths)
         #expect(state.recents.isEmpty)
         #expect(state.pins == ["/work/app", "/work/web"])
     }
@@ -448,7 +448,7 @@ struct SetupFolderEditTests {
         try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: machine.paths.configDirectory.path)
         let notice = await machine.actions(FakeProcessRunner()).clearRecents()
         #expect(notice?.isProblem == true)
-        #expect(StateStore.load(paths: machine.paths).recents == ["/work/notes", "/work/app"], "the window must not claim a clear that did not happen")
+        #expect(try StateStore.load(paths: machine.paths).recents == ["/work/notes", "/work/app"], "the window must not claim a clear that did not happen")
     }
 }
 

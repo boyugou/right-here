@@ -12,21 +12,20 @@ enum DefaultAppRole {
     case terminal, editor
 }
 
-/// A row of the Overview's settings: the setting's tile and name at the leading edge, notes under the name, and its value at the trailing edge.
+/// A row of the Overview's settings: its symbol and name at the leading edge, notes under the name, and its value at the trailing edge.
 struct SettingRow<Value: View, Notes: View>: View {
     let symbol: String?
-    var tint: Color = .gray
     let title: String
     @ViewBuilder let value: () -> Value
     @ViewBuilder let notes: () -> Notes
 
-    /// The size of the sidebar's tiles: a setting's tile larger than its section's looked like the bigger thing.
+    /// The symbol's slot also determines where the line between settings starts.
     static var tileSize: CGFloat { 22 }
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             if let symbol {
-                SectionTile(symbol: symbol, tint: tint, size: Self.tileSize)
+                SectionSymbol(symbol: symbol, size: Self.tileSize)
             } else {
                 Color.clear
                     .frame(width: Self.tileSize, height: 1)
@@ -60,7 +59,7 @@ struct LanguageRow: View {
     }
 
     var body: some View {
-        SettingRow(symbol: "globe", tint: .blue, title: l10n.string(.appLanguageTitle)) {
+        SettingRow(symbol: "globe", title: l10n.string(.appLanguageTitle)) {
             ChoiceMenu(shown: shown, font: .body, accessibilityLabel: l10n.string(.appLanguageTitle)) {
                 Picker(selection: Binding(get: { model.snapshot?.language ?? "" }, set: { code in Task { await model.setLanguage(code.isEmpty ? nil : code) } })) {
                     Text(model.defaultChoiceTitle(for: GeneralSettings.languageKey, automatic: l10n.render(.appLanguageSystem(Self.name(Localizer.system.resolvedLanguage))), naming: Self.name)).tag("")
@@ -96,7 +95,7 @@ struct DefaultAppRow: View {
     private var symbol: String { role == .terminal ? "terminal.fill" : "chevron.left.forwardslash.chevron.right" }
 
     var body: some View {
-        SettingRow(symbol: symbol, tint: role == .terminal ? Color(white: 0.3) : .indigo, title: l10n.string(title)) {
+        SettingRow(symbol: symbol, title: l10n.string(title)) {
             if let general = model.general {
                 chooser(general)
             } else if model.checks.isEmpty {
@@ -208,7 +207,7 @@ struct PlacementRow: View {
 
     var body: some View {
         // A tile of its own like every row of the group: a row without one read as missing its icon.
-        SettingRow(symbol: "macwindow.on.rectangle", tint: .teal, title: l10n.string(.appPlacementLabel)) {
+        SettingRow(symbol: "macwindow.on.rectangle", title: l10n.string(.appPlacementLabel)) {
             // The label says what a session does: a split the config asks of Warp, which has none, is a window, and the note under the
             // terminal says why. The selection stays what the config says, so that choosing New window then writes it.
             ChoiceMenu(shown: Self.title(general.effectivePlacement, l10n), font: .body, accessibilityLabel: l10n.string(.appPlacementLabel)) {
@@ -228,7 +227,7 @@ struct PlacementRow: View {
     }
 }
 
-/// What is chosen, with the chevrons of a menu after it; the choices open when it is clicked. SwiftUI draws all of it, so `script/preview_setup.sh` draws it as the window does.
+/// A native pop-up menu for a setting. Its title and optional app icon are supplied here; AppKit supplies its indicator and interaction.
 struct ChoiceMenu<Choices: View>: View {
     let shown: String
     /// The icon of the app that is chosen, before its name, as the pop-up of a default app in System Settings has it.
@@ -236,8 +235,6 @@ struct ChoiceMenu<Choices: View>: View {
     let font: Font
     let accessibilityLabel: String
     @ViewBuilder let choices: () -> Choices
-    @State private var hovering = false
-    @Environment(\.isEnabled) private var isEnabled
 
     private var label: some View {
         HStack(spacing: 6) {
@@ -245,33 +242,20 @@ struct ChoiceMenu<Choices: View>: View {
                 Image(nsImage: icon)
                     .accessibilityHidden(true)
             }
-            HStack(spacing: 4) {
-                Text(verbatim: shown)
-                    .font(font)
-                Image(systemName: "chevron.up.chevron.down")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .accessibilityHidden(true)
-            }
+            Text(verbatim: shown)
+                .font(font)
         }
         .contentShape(Rectangle())
     }
 
     var body: some View {
-        // Not `.borderlessButton`: that is an AppKit pop-up button, which keeps the label's text and its first image and draws the image first, so the
-        // chevrons stood before what is chosen (measured in a window that was never put on screen, ADR 0029). A plain button draws the label as it is.
         Menu {
             choices()
         } label: {
             label
         }
-        .menuStyle(.button)
-        .buttonStyle(.plain)
-        .menuIndicator(.hidden)
+        .menuStyle(.borderlessButton)
         .fixedSize()
-        // A light ground under the pointer, as a pop-up button of System Settings has: words and chevrons alone do not look like something to click.
-        .background(RoundedRectangle(cornerRadius: 5).fill(Color.primary.opacity(hovering && isEnabled ? 0.07 : 0)).padding(-4))
-        .onHover { hovering = $0 }
         .accessibilityLabel(accessibilityLabel)
         .accessibilityValue(shown)
     }

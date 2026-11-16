@@ -28,7 +28,6 @@ struct FlowLayout: Layout {
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let mirrored = subviews.layoutDirection == .rightToLeft
         var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
         for view in subviews {
             let size = view.sizeThatFits(.unspecified)
@@ -37,58 +36,10 @@ struct FlowLayout: Layout {
                 y += rowHeight + spacing
                 rowHeight = 0
             }
-            let left = mirrored ? bounds.maxX - x - size.width : bounds.minX + x
-            view.place(at: CGPoint(x: left, y: bounds.minY + y), proposal: ProposedViewSize(size))
+            // SwiftUI mirrors layout coordinates; doing it here too puts RTL choices on the opposite side of their heading.
+            view.place(at: CGPoint(x: bounds.minX + x, y: bounds.minY + y), proposal: ProposedViewSize(size))
             x += size.width + spacing
             rowHeight = max(rowHeight, size.height)
-        }
-    }
-}
-
-/// One thing to choose: a round mark when exactly one can be chosen, a square one when several can. What it is called is a name.
-struct ChoiceChip: View {
-    let title: String
-    let selected: Bool
-    let multiple: Bool
-    /// The app's own icon, between the mark and the name: a terminal or an editor is known by it before its name is read.
-    var icon: NSImage?
-    /// An agent the login shell did not find: it can be chosen, and says less than the ones that are there.
-    var quiet = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: mark)
-                    .foregroundStyle(selected ? Color.accentColor : Color.secondary)
-                    .accessibilityHidden(true)
-                if let icon {
-                    Image(nsImage: icon)
-                        .resizable()
-                        .frame(width: 16, height: 16)
-                        .accessibilityHidden(true)
-                }
-                Text(verbatim: title)
-                    .font(.callout)
-                    .foregroundStyle(quiet && !selected ? Color.secondary : Color.primary)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            // A chosen chip is a tint without an edge; one that is not is an edge alone.
-            .background(selected ? Color.accentColor.opacity(0.14) : Color.clear, in: Capsule())
-            .overlay(Capsule().strokeBorder(selected ? Color.clear : Color.primary.opacity(0.15), lineWidth: 1))
-            .contentShape(Capsule())
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(selected ? .isSelected : [])
-    }
-
-    private var mark: String {
-        switch (multiple, selected) {
-        case (true, true): "checkmark.square.fill"
-        case (true, false): "square"
-        case (false, true): "largecircle.fill.circle"
-        case (false, false): "circle"
         }
     }
 }
@@ -127,6 +78,7 @@ struct LocationCard: View {
 /// because the file does not exist yet, and nothing here ever changes a file that is there.
 struct FirstRunChooser: View {
     @Bindable var model: SetupModel
+    @State private var showMoreAgents = false
     @Environment(\.localizer) private var l10n
 
     var body: some View {
@@ -143,35 +95,35 @@ struct FirstRunChooser: View {
 
             if let offer = model.offer {
                 choice(.appCheckTerminal) {
-                    FlowLayout(spacing: 8) {
-                        ForEach(offer.terminals) { option in
-                            ChoiceChip(title: option.name, selected: model.selectedTerminal == option.id, multiple: false, icon: model.image(for: option.icon)) {
-                                model.selectedTerminal = option.id
-                            }
-                        }
-                    }
+                    applicationPicker(.appCheckTerminal, options: offer.terminals, selection: $model.selectedTerminal)
                 }
                 choice(.appCheckEditor) {
-                    FlowLayout(spacing: 8) {
-                        ForEach(offer.editors) { option in
-                            ChoiceChip(title: option.name, selected: model.selectedEditor == option.id, multiple: false, icon: model.image(for: option.icon)) {
-                                model.selectedEditor = option.id
-                            }
-                        }
-                    }
+                    applicationPicker(.appCheckEditor, options: offer.editors, selection: $model.selectedEditor)
                 }
                 choice(.appSetupAgents, hint: offer.loginShellAnswered ? .appSetupAgentsHint : .appSetupShellSilent) {
                     VStack(alignment: .leading, spacing: 10) {
-                        agentChips(offer.agents.filter(\.available))
+                        let found = offer.agents.filter(\.available)
                         let missing = offer.agents.filter { !$0.available }
-                        if !missing.isEmpty {
-                            // A shell that said nothing found none, and "not found" is true only of an agent it could have found.
-                            if offer.loginShellAnswered {
-                                Text(l10n.string(.appSetupNotFound))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                        if found.isEmpty {
+                            agentChoices(offer.agents)
+                        } else {
+                            agentChoices(found)
+                            if !showMoreAgents {
+                                agentChoices(missing.filter { model.selectedAgents.contains($0.id) })
                             }
-                            agentChips(missing, quiet: true)
+                            if !missing.isEmpty {
+                                DisclosureGroup(isExpanded: $showMoreAgents) {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text(l10n.string(.appSetupNotFound))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        agentChoices(missing, quiet: true)
+                                    }
+                                    .padding(.top, 8)
+                                } label: {
+                                    Text(l10n.string(.appMoreAgents)).font(.callout)
+                                }
+                            }
                         }
                     }
                 }
@@ -196,12 +148,47 @@ struct FirstRunChooser: View {
         .panel()
     }
 
-    private func agentChips(_ agents: [SetupOffer.Option], quiet: Bool = false) -> some View {
-        FlowLayout(spacing: 8) {
-            ForEach(agents) { agent in
-                ChoiceChip(title: agent.name, selected: model.selectedAgents.contains(agent.id), multiple: true, quiet: quiet) {
-                    if !model.selectedAgents.insert(agent.id).inserted { model.selectedAgents.remove(agent.id) }
+    @ViewBuilder private func applicationPicker(_ title: LocalizationKey, options: [SetupOffer.Option], selection: Binding<String?>) -> some View {
+        if !options.isEmpty {
+            Picker(l10n.string(title), selection: Binding(get: { selection.wrappedValue ?? "" }, set: { selection.wrappedValue = $0 })) {
+                ForEach(options) { option in
+                    Group {
+                        if let icon = model.image(for: option.icon) {
+                            Label { Text(verbatim: option.name) } icon: { Image(nsImage: icon) }
+                        } else {
+                            Text(verbatim: option.name)
+                        }
+                    }
+                    .tag(option.id)
                 }
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .fixedSize()
+            .accessibilityLabel(l10n.string(title))
+            .padding(.vertical, 6)
+        } else {
+            Text(l10n.string(.appNoneFound))
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func agentChoices(_ agents: [SetupOffer.Option], quiet: Bool = false) -> some View {
+        FlowLayout(spacing: 12) {
+            ForEach(agents) { agent in
+                Toggle(isOn: Binding(
+                    get: { model.selectedAgents.contains(agent.id) },
+                    set: { selected in
+                        if selected { model.selectedAgents.insert(agent.id) } else { model.selectedAgents.remove(agent.id) }
+                    })) {
+                    Text(verbatim: agent.name)
+                        .font(.callout)
+                        .foregroundStyle(quiet && !model.selectedAgents.contains(agent.id) ? Color.secondary : Color.primary)
+                }
+                .toggleStyle(.checkbox)
+                .fixedSize()
+                .frame(minHeight: 28)
             }
         }
     }
@@ -220,6 +207,7 @@ struct FirstRunChooser: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(l10n.string(title))
+        .disabled(model.isWorking)
     }
 }
 

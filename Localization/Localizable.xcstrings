@@ -30691,6 +30691,191 @@
         }
       }
     },
+    "app.foldersLoadFailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تعذّرت قراءة المجلدات المحفوظة."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "সংরক্ষিত ফোল্ডারগুলি পড়া যায়নি।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Gespeicherte Ordner konnten nicht gelesen werden."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δεν ήταν δυνατή η ανάγνωση των αποθηκευμένων φακέλων."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t read saved folders."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "No se pudieron leer las carpetas guardadas."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "خواندن پوشه‌های ذخیره‌شده ممکن نشد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Impossible de lire les dossiers enregistrés."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לא ניתן לקרוא את התיקיות השמורות."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सहेजे गए फ़ोल्डर पढ़े नहीं जा सके।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder tersimpan tidak dapat dibaca."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Impossibile leggere le cartelle salvate."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "保存済みフォルダを読み込めませんでした。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "저장된 폴더를 읽을 수 없습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "जतन केलेले फोल्डर वाचता आले नाहीत."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder yang disimpan tidak dapat dibaca."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Opgeslagen mappen konden niet worden gelezen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nie udało się odczytać zapisanych folderów."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Não foi possível ler as pastas salvas."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dosarele salvate nu au putut fi citite."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не удалось прочитать сохранённые папки."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "சேமித்த கோப்புறைகளைப் படிக்க முடியவில்லை."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సేవ్ చేసిన ఫోల్డర్‌లను చదవలేకపోయాం."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ไม่สามารถอ่านโฟลเดอร์ที่บันทึกไว้ได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kaydedilen klasörler okunamadı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не вдалося прочитати збережені папки."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "محفوظ فولڈرز پڑھے نہیں جا سکے۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Không thể đọc các thư mục đã lưu."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "无法读取已保存的文件夹。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "無法讀取已儲存的檔案夾。"
+          }
+        }
+      }
+    },
     "app.foldersNote": {
       "comment": "Text at the top of the Folders section of the setup window: where the pinned and the recent folders are kept, and who can read them. 'MCP' stays as it is.",
       "extractionState": "manual",
@@ -37011,6 +37196,191 @@
           "stringUnit": {
             "state": "translated",
             "value": "還原"
+          }
+        }
+      }
+    },
+    "app.moreAgents": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "المزيد من وكلاء الذكاء الاصطناعي"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "আরও AI এজেন্ট"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Weitere KI-Agenten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Περισσότεροι βοηθοί AI"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More AI agents"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Más agentes de IA"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "عامل‌های هوش مصنوعی بیشتر"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Autres agents IA"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "סוכני בינה מלאכותית נוספים"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "और AI एजेंट"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Agen AI lainnya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Altri agenti IA"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "その他のAIエージェント"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "다른 AI 에이전트"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "आणखी AI एजंट"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ejen AI lain"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Meer AI-agents"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Więcej agentów AI"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Mais agentes de IA"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Alți agenți AI"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Другие ИИ-агенты"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "மேலும் AI முகவர்கள்"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "మరిన్ని AI ఏజెంట్లు"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "เอเจนต์ AI เพิ่มเติม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Diğer yapay zekâ ajanları"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Інші ШІ-агенти"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "مزید AI ایجنٹس"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Các tác nhân AI khác"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "更多 AI 智能体"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "更多 AI 代理"
           }
         }
       }
@@ -51151,6 +51521,191 @@
         }
       }
     },
+    "app.removeDetachedWorktreeMessage": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "سيُحذف المجلد %1$@. سيرفض git الحذف إذا كانت فيه تغييرات غير مثبتة."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ফোল্ডারটি মুছে ফেলা হবে। কমিট না করা পরিবর্তন থাকলে git মুছতে দেবে না।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Der Ordner %1$@ wird gelöscht. git verweigert dies bei nicht committeten Änderungen."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ο φάκελος %1$@ θα διαγραφεί. Το git θα αρνηθεί αν υπάρχουν μη καταχωρισμένες αλλαγές."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The folder %1$@ will be deleted. git refuses if it has uncommitted changes."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Se eliminará la carpeta %1$@. git lo impedirá si contiene cambios sin confirmar."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پوشهٔ %1$@ حذف خواهد شد. اگر تغییرات ثبت‌نشده‌ای وجود داشته باشد، git از حذف آن خودداری می‌کند."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Le dossier %1$@ sera supprimé. git refusera s’il contient des modifications non commitées."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "התיקייה %1$@ תימחק. git יסרב למחוק אותה אם יש בה שינויים שלא בוצע להם commit."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फ़ोल्डर %1$@ हटा दिया जाएगा। यदि उसमें कमिट न किए गए बदलाव हैं, तो git उसे हटाने से मना कर देगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder %1$@ akan dihapus. git akan menolak jika ada perubahan yang belum di-commit."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "La cartella %1$@ verrà eliminata. git rifiuterà se contiene modifiche non sottoposte a commit."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "フォルダ %1$@ が削除されます。未コミットの変更がある場合、git は削除を拒否します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "폴더 %1$@이(가) 삭제됩니다. 커밋하지 않은 변경 사항이 있으면 git이 삭제를 거부합니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ फोल्डर हटवला जाईल. कमिट न केलेले बदल असल्यास git तो हटवण्यास नकार देईल."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder %1$@ akan dipadamkan. git akan menolak jika terdapat perubahan yang belum dikomitkan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "De map %1$@ wordt verwijderd. git weigert dit als er wijzigingen zijn die niet zijn gecommit."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder %1$@ zostanie usunięty. git odmówi, jeśli są w nim niezatwierdzone zmiany."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "A pasta %1$@ será excluída. O git recusará se houver alterações sem commit."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dosarul %1$@ va fi șters. git va refuza dacă există modificări neincluse într-un commit."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папка %1$@ будет удалена. git откажет, если в ней есть незакоммиченные изменения."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ கோப்புறை நீக்கப்படும். கமிட் செய்யப்படாத மாற்றங்கள் இருந்தால் git நீக்க மறுக்கும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ఫోల్డర్ తొలగించబడుతుంది. కమిట్ చేయని మార్పులు ఉంటే git తొలగించడానికి నిరాకరిస్తుంది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "โฟลเดอร์ %1$@ จะถูกลบ git จะปฏิเสธหากมีการเปลี่ยนแปลงที่ยังไม่ได้คอมมิต"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ klasörü silinecek. Commit edilmemiş değişiklikler varsa git silmeyi reddeder."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папку %1$@ буде видалено. git відмовить, якщо в ній є незакомічені зміни."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فولڈر %1$@ حذف کر دیا جائے گا۔ اگر اس میں ایسی تبدیلیاں ہوں جو کمیٹ نہیں کی گئیں تو git حذف کرنے سے انکار کر دے گا۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thư mục %1$@ sẽ bị xóa. git sẽ từ chối nếu có thay đổi chưa được commit."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "将删除文件夹 %1$@。如果存在未提交的更改，git 会拒绝删除。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "將刪除資料夾 %1$@。若有尚未提交的變更，git 會拒絕刪除。"
+          }
+        }
+      }
+    },
     "app.removeIgnoredConfirm": {
       "comment": "The destructive button of that confirmation (app.removeIgnoredTitle): removes the worktree and the listed files with it. Short, a verb phrase.",
       "extractionState": "manual",
@@ -53193,6 +53748,376 @@
           "stringUnit": {
             "state": "translated",
             "value": "「安裝或修復」已完成，但以下檢查仍需要它：%@。「檢查」頁面會說明問題所在。"
+          }
+        }
+      }
+    },
+    "app.savedFoldersReadFailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تعذّرت قراءة %1$@. %2$@\nلم يُغيَّر الملف. تحقّق منه، ثم حاول مجددًا."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ পড়া যায়নি। %2$@\nফাইলটি পরিবর্তন করা হয়নি। এটি পরীক্ষা করে আবার চেষ্টা করুন।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ konnte nicht gelesen werden. %2$@\nDie Datei wurde nicht verändert. Prüfe sie und versuche es erneut."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δεν ήταν δυνατή η ανάγνωση του %1$@. %2$@\nΤο αρχείο δεν άλλαξε. Ελέγξτε το και δοκιμάστε ξανά."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t read %1$@. %2$@\nThe file hasn’t been changed. Check it, then try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "No se pudo leer %1$@. %2$@\nEl archivo no se ha modificado. Revísalo y vuelve a intentarlo."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "خواندن %1$@ ممکن نشد. %2$@\nفایل تغییر نکرده است. آن را بررسی کنید و دوباره تلاش کنید."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Impossible de lire %1$@. %2$@\nLe fichier n’a pas été modifié. Vérifiez-le, puis réessayez."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לא ניתן לקרוא את %1$@. %2$@\nהקובץ לא שונה. יש לבדוק אותו ולנסות שוב."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ पढ़ा नहीं जा सका। %2$@\nफ़ाइल बदली नहीं गई है। इसे जाँचें, फिर दोबारा कोशिश करें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ tidak dapat dibaca. %2$@\nFile belum diubah. Periksa file, lalu coba lagi."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Impossibile leggere %1$@. %2$@\nIl file non è stato modificato. Controllalo, poi riprova."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ を読み込めませんでした。%2$@\nファイルは変更されていません。内容を確認してから、もう一度お試しください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@을(를) 읽을 수 없습니다. %2$@\n파일은 변경되지 않았습니다. 파일을 확인한 후 다시 시도하세요."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ वाचता आले नाही. %2$@\nफाइल बदललेली नाही. ती तपासा, नंतर पुन्हा प्रयत्न करा."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ tidak dapat dibaca. %2$@\nFail tidak diubah. Semak fail, kemudian cuba lagi."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ kon niet worden gelezen. %2$@\nHet bestand is niet gewijzigd. Controleer het en probeer het opnieuw."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nie udało się odczytać %1$@. %2$@\nPlik nie został zmieniony. Sprawdź go i spróbuj ponownie."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Não foi possível ler %1$@. %2$@\nO arquivo não foi alterado. Verifique-o e tente novamente."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ nu a putut fi citit. %2$@\nFișierul nu a fost modificat. Verifică-l, apoi încearcă din nou."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не удалось прочитать %1$@. %2$@\nФайл не изменён. Проверьте его и повторите попытку."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ஐப் படிக்க முடியவில்லை. %2$@\nகோப்பு மாற்றப்படவில்லை. அதைச் சரிபார்த்து, மீண்டும் முயலவும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ చదవలేకపోయాం. %2$@\nఫైల్ మార్చబడలేదు. దాన్ని తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ไม่สามารถอ่าน %1$@ ได้ %2$@\nไฟล์ยังไม่ได้รับการเปลี่ยนแปลง ตรวจสอบไฟล์แล้วลองอีกครั้ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ okunamadı. %2$@\nDosya değiştirilmedi. Dosyayı kontrol edip yeniden deneyin."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не вдалося прочитати %1$@. %2$@\nФайл не змінено. Перевірте його та спробуйте ще раз."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "‏%1$@ پڑھا نہیں جا سکا۔ %2$@\nفائل تبدیل نہیں کی گئی۔ اسے چیک کریں، پھر دوبارہ کوشش کریں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Không thể đọc %1$@. %2$@\nTệp chưa bị thay đổi. Hãy kiểm tra rồi thử lại."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "无法读取 %1$@。%2$@\n文件未被更改。请检查文件后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "無法讀取 %1$@。%2$@\n檔案未被更改。請檢查檔案後再試一次。"
+          }
+        }
+      }
+    },
+    "app.savedFoldersTooLarge": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تتجاوز المجلدات المحفوظة الحدّ البالغ %2$@ بايت. لم يُغيَّر %1$@."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "সংরক্ষিত ফোল্ডারগুলি %2$@ বাইটের সীমা অতিক্রম করেছে। %1$@ পরিবর্তন করা হয়নি।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Die gespeicherten Ordner überschreiten das Limit von %2$@ Byte. %1$@ wurde nicht verändert."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Οι αποθηκευμένοι φάκελοι υπερβαίνουν το όριο των %2$@ byte. Το %1$@ δεν άλλαξε."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved folders exceed the %2$@-byte limit. %1$@ hasn’t been changed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Las carpetas guardadas superan el límite de %2$@ bytes. No se ha modificado %1$@."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پوشه‌های ذخیره‌شده از محدودیت %2$@ بایت فراتر رفته‌اند. %1$@ تغییر نکرده است."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Les dossiers enregistrés dépassent la limite de %2$@ octets. %1$@ n’a pas été modifié."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "התיקיות השמורות חורגות מהמגבלה של %2$@ בתים. %1$@ לא שונה."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "सहेजे गए फ़ोल्डर %2$@ बाइट की सीमा से अधिक हैं। %1$@ बदला नहीं गया है।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder tersimpan melebihi batas %2$@ byte. %1$@ belum diubah."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Le cartelle salvate superano il limite di %2$@ byte. %1$@ non è stato modificato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "保存済みフォルダが %2$@ バイトの上限を超えています。%1$@ は変更されていません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "저장된 폴더가 %2$@바이트 제한을 초과합니다. %1$@은(는) 변경되지 않았습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "जतन केलेले फोल्डर %2$@ बाइटची मर्यादा ओलांडतात. %1$@ बदललेले नाही."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder yang disimpan melebihi had %2$@ bait. %1$@ tidak diubah."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "De opgeslagen mappen overschrijden de limiet van %2$@ bytes. %1$@ is niet gewijzigd."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Zapisane foldery przekraczają limit %2$@ bajtów. Plik %1$@ nie został zmieniony."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "As pastas salvas excedem o limite de %2$@ bytes. %1$@ não foi alterado."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dosarele salvate depășesc limita de %2$@ octeți. %1$@ nu a fost modificat."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Сохранённые папки превышают лимит в %2$@ байт. Файл %1$@ не изменён."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "சேமித்த கோப்புறைகள் %2$@ பைட் வரம்பை மீறுகின்றன. %1$@ மாற்றப்படவில்லை."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "సేవ్ చేసిన ఫోల్డర్‌లు %2$@ బైట్‌ల పరిమితిని మించాయి. %1$@ మార్చబడలేదు."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "โฟลเดอร์ที่บันทึกไว้เกินขีดจำกัด %2$@ ไบต์ %1$@ ยังไม่ได้รับการเปลี่ยนแปลง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Kaydedilen klasörler %2$@ bayt sınırını aşıyor. %1$@ değiştirilmedi."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Збережені папки перевищують обмеження в %2$@ байтів. Файл %1$@ не змінено."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "محفوظ فولڈرز %2$@ بائٹس کی حد سے تجاوز کر گئے ہیں۔ %1$@ تبدیل نہیں کیا گیا۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Các thư mục đã lưu vượt quá giới hạn %2$@ byte. %1$@ chưa bị thay đổi."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已保存的文件夹超出了 %2$@ 字节的容量限制。%1$@ 未被更改。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已儲存的檔案夾超出了 %2$@ 位元組的容量限制。%1$@ 未被更改。"
           }
         }
       }
@@ -65283,6 +66208,191 @@
           "stringUnit": {
             "state": "translated",
             "value": "版本 %@"
+          }
+        }
+      }
+    },
+    "app.worktreeBranch": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "الفرع: %1$@"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ব্রাঞ্চ: %1$@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Branch: %1$@"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Κλάδος: %1$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Branch: %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Rama: %1$@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "شاخه: %1$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Branche : %1$@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ענף: %1$@"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ब्रांच: %1$@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cabang: %1$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ramo: %1$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ブランチ: %1$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "브랜치: %1$@"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ब्रांच: %1$@"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cabang: %1$@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Branch: %1$@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Gałąź: %1$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Branch: %1$@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ramură: %1$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ветка: %1$@"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கிளை: %1$@"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "బ్రాంచ్: %1$@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "บรานช์: %1$@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dal: %1$@"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Гілка: %1$@"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "برانچ: %1$@"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nhánh: %1$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "分支：%1$@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "分支：%1$@"
           }
         }
       }

@@ -95,7 +95,7 @@ struct Pins: ParsableCommand {
 
     func run() throws {
         let runtime = Runtime()
-        let state = StateStore.load(paths: runtime.paths)
+        let state = try StateStore.load(paths: runtime.paths)
         if json {
             try Output.json(state.pins)
         } else {
@@ -131,7 +131,7 @@ struct Recents: ParsableCommand {
             }
             return
         }
-        let state = StateStore.load(paths: runtime.paths)
+        let state = try StateStore.load(paths: runtime.paths)
         if json {
             try Output.json(state.recents)
         } else {

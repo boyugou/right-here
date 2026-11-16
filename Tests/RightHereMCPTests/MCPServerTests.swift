@@ -436,6 +436,18 @@ struct MCPToolTests {
         #expect(text.contains("⟦user⟧/Users/tester/code⟦/user⟧"))
     }
 
+    @Test func invalidSavedFoldersAreAToolErrorAndStayUnchanged() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let file = harness.configDirectory.appendingPathComponent("state.toml")
+        let invalid = "pins = [\"/work/keep\", 3]\n"
+        try invalid.write(to: file, atomically: true, encoding: .utf8)
+        let result = try await harness.call("right_here_bookmarks")
+        #expect(result["isError"] == .bool(true))
+        #expect(result["structuredContent"] == nil)
+        #expect((result["content"]?.arrayValue?.first?["text"]?.stringValue ?? "").contains("state.toml"))
+        #expect(try String(contentsOf: file, encoding: .utf8) == invalid)
+    }
+
     /// `rh docs mcp` tells an agent that a name in the text of a result is marked as data "with control characters shown as escapes": a terminal escape in a folder name
     /// stays an escape, a bidirectional control cannot make it read backwards, a line break cannot start a line of the text, and a character that draws nothing is shown.
     @Test func theBookmarksToolShowsControlAndInvisibleCharactersOfAFolderNameAsEscapes() async throws {

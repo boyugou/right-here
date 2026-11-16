@@ -135,6 +135,7 @@ done
 # icon the window's header shows (this executable has none of its own).
 ln -sfn "$ROOT/Apps/FinderExtension/Assets.xcassets" "$PREVIEW/Assets.xcassets"
 ln -sf "$ROOT/docs/images/icon.png" "$PREVIEW/icon.png"
+ln -sf "$ROOT/Apps/RightHere/Assets.xcassets/AccentColor.colorset/Contents.json" "$PREVIEW/AccentColor.json"
 # An app of the demo menu that this Mac does not have is drawn with the plain icon of an app that has none of its own. The
 # bundle is made in a temporary folder: inside the hidden .build folder macOS draws a "prohibited" sign on it instead.
 STANDIN="$(mktemp -d)"
@@ -680,6 +681,21 @@ func gallery() -> [DoctorCheck] {
 
 /// The window as the person sees it at the moment of the picture: the section the flags ask for, with the data they ask for.
 @MainActor
+func previewAccent(dark: Bool) -> Color {
+    guard let data = try? Data(contentsOf: URL(fileURLWithPath: "AccentColor.json")),
+          let catalog = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let colors = catalog["colors"] as? [[String: Any]],
+          let entry = colors.first(where: { entry in
+              let appearances = entry["appearances"] as? [[String: String]] ?? []
+              return dark ? appearances.contains { $0["value"] == "dark" } : appearances.isEmpty
+          }), let color = entry["color"] as? [String: Any], let parts = color["components"] as? [String: String],
+          let red = parts["red"].flatMap(Double.init), let green = parts["green"].flatMap(Double.init), let blue = parts["blue"].flatMap(Double.init) else {
+        return .accentColor
+    }
+    return Color(.sRGB, red: red, green: green, blue: blue)
+}
+
+@MainActor
 func render(to path: String) async {
     let model = SetupModel()
     registerMenuGlyphs()
@@ -754,6 +770,8 @@ func render(to path: String) async {
     let titlebarRightToLeft = flag("--titlebar-rtl") ? true : flag("--titlebar-ltr") ? false : rightToLeft
     // The part of the window under the header shows the page.
     let window = SetupView(model: model)
+        // The scratch executable has no asset catalog. Canned pictures use the same default colors as the app's catalog.
+        .accentColor(model.previewIsSimulated ? previewAccent(dark: flag("--dark")) : nil)
         .environment(\.previewPageHeight, height.map { $0 - SetupView.headerHeight })
         .environment(\.previewTitlebarRightToLeft, titlebarRightToLeft)
         .environment(\.previewWindowWidth, width)

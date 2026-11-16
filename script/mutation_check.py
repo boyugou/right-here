@@ -999,7 +999,7 @@ MUTANTS = [
      "if managed.count == 1, let only = managed.first { return only }", "if let only = managed.first { return only }"),
     # 22. ADR 0008 / 0021: a nested state.toml never reaches the TOML library, which overflows its stack (no test found)
     ("a deeply nested state file reaches the TOML parser", "Sources/RightHereCore/Config/StateStore.swift",
-     "guard !NestingDepth.tomlExceeds(text, limit: 8),", "guard true,"),
+     "guard !NestingDepth.tomlExceeds(text, limit: 8) else { throw ParseError.tooDeep }", "guard true else { throw ParseError.tooDeep }"),
     # 23. the same for sync.toml (no test found)
     ("a deeply nested sync state file reaches the TOML parser", "Sources/RightHereCore/Config/SyncSettings.swift",
      "guard !NestingDepth.tomlExceeds(text, limit: 8),", "guard true,"),
@@ -1206,7 +1206,7 @@ MUTANTS = [
     ("the sidebar says nothing of the changes that wait", "Apps/RightHere/SetupModel.swift",
      "if tab == .config, let waiting = snapshot?.proposals.count, waiting > 0 { return .attention(waiting) }", "if tab == .config, let waiting = snapshot?.proposals.count, waiting > 100 { return .attention(waiting) }"),
     ("a read of the whole state leaves the Config page as it was", "Apps/RightHere/SetupModel.swift",
-     "        if selectedTab == .config { Task { await openConfigPage(keepingDraft: true) } }\n    }\n\n    /// The first time the window is offered", "    }\n\n    /// The first time the window is offered"),
+     "if selectedTab == .config { Task { await openConfigPage(keepingDraft: true) } }", ""),
     ("a proposal that is not there is not said", "Apps/RightHere/SetupModel.swift",
      "say(result.change == nil ? result.notice : nil)", "say(nil)"),
     # What goes to Finder (ADR 0027).
@@ -2215,9 +2215,9 @@ MUTANTS = [
     ("the window's second yes names no files", "Apps/RightHere/SetupModel.swift",
      "        await remove(held.row, ignoredAgreed: held.files)", "        await remove(held.row, ignoredAgreed: [])"),
     ("a state file that cannot be read is written over", "Sources/RightHereKit/StateStore+IO.swift",
-     "        case .unreadable(let reason): throw StateFileNotRead(file: paths.stateFile.path, reason: reason)", "        case .unreadable: break"),
+     "var state = try load(paths: paths)", "var state = (try? load(paths: paths)) ?? StateStore()"),
     ("a state file that does not parse is an empty state", "Sources/RightHereCore/Config/StateStore.swift",
-     "              let table = try? TOMLTable(source: text + \"\\n\") else {\n            return nil\n        }", "              let table = try? TOMLTable(source: text + \"\\n\") else {\n            return StateStore()\n        }"),
+     "throw ParseError.invalidDocument((explained.line.map { \"Line \\($0): \" } ?? \"\") + explained.message + \".\")", "return StateStore()"),
     ("a link that points nowhere is written over", "Sources/RightHereKit/ConfigStore.swift",
      "        guard FileManager.default.fileExists(atPath: file.path) else {\n            let destination", "        guard true || FileManager.default.fileExists(atPath: file.path) else {\n            let destination"),
     ("a forced replacement of a linked config ends the link", "Sources/RightHereKit/ConfigStore.swift",
@@ -2383,7 +2383,7 @@ MUTANTS = [
     ("the Finder extension reads the probe request whole", "Sources/RightHereKit/ProbeMarker.swift",
      '''              case .data(let data) = BoundedRead.read(file, limit: maxRequestBytes) else { return nil }''', '''              let data = FileManager.default.contents(atPath: file.path) else { return nil }'''),
     ("rh run reads the state file whole before its size", "Sources/RightHereKit/StateStore+IO.swift",
-     '''BoundedRead.read(paths.stateFile, limit: 128 * 1024 - 1)''', '''BoundedRead.read(paths.stateFile, limit: Int.max)'''),
+     '''BoundedRead.read(paths.stateFile, limit: maximumFileBytes)''', '''BoundedRead.read(paths.stateFile, limit: Int.max)'''),
     ("Start AI Agent takes an answer it cannot read for an agent that asks", "Sources/RightHereKit/IntentInvocation.swift",
      '''let row = rows.first(where: { $0.id == agent }) else { return true }''', '''let row = rows.first(where: { $0.id == agent }) else { return false }'''),
     ("Start AI Agent does not count an alias that switches the prompts off", "Sources/RightHereKit/IntentInvocation.swift",
@@ -2692,6 +2692,10 @@ MUTANTS = [
      "        copy.isolatesNames = true\n", ""),
     ("Open in names its app without an isolate in the drawn menu", "Sources/RightHereCore/Localization/Localizer+Titles.swift",
      "render(.menuOpenIn(appName), isolatingValues: isolatesNames)", "render(.menuOpenIn(appName))"),
+    ('an unknown saved-folder field is silently discarded on write', 'Sources/RightHereCore/Config/StateStore.swift', 'if let unknown = table.keys.sorted().first(where: { !["pins", "recents"].contains($0) }) {', 'if false, let unknown = table.keys.sorted().first(where: { !["pins", "recents"].contains($0) }) {'),
+    ('a non-string saved folder is silently dropped', 'Sources/RightHereCore/Config/StateStore.swift', 'let text = try array.string(atIndex: index)', 'guard let text = try? array.string(atIndex: index) else { continue }'),
+    ('saved-folder writes exceed the readable byte limit', 'Sources/RightHereKit/StateStore+IO.swift', 'guard data.count <= Self.maximumFileBytes else {', 'guard true else {'),
+    ('the folder page presents a read failure as an empty list', 'Sources/RightHereKit/SetupLoader.swift', 'return FolderSnapshot(problem: error.message(home: facts.homeDirectory.path))', 'return FolderSnapshot()'),
 ]
 
 

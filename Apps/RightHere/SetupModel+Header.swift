@@ -2,7 +2,7 @@ import RightHereCore
 import RightHereKit
 
 /// The page of one thing that a section shows in place of its list.
-enum DetailPage: Equatable {
+enum DetailPage: Hashable {
     case variant(VariantRef)
     case agent(String)
     case preset(String)
@@ -11,6 +11,13 @@ enum DetailPage: Equatable {
 }
 
 extension SetupModel {
+    struct PageIdentity: Hashable {
+        let section: SetupTab
+        let detail: DetailPage?
+    }
+
+    var pageIdentity: PageIdentity { PageIdentity(section: selectedTab, detail: openDetailPage) }
+
     /// Which page of one thing is open in the section that is shown. The sections show it and the header names it from this one answer, so the two
     /// cannot tell different stories; a page of a thing that is gone is no page.
     var openDetailPage: DetailPage? {

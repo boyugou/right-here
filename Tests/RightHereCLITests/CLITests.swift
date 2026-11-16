@@ -193,6 +193,20 @@ private func scalarsATerminalActsOn(_ text: String) -> [String] {
 
 @Suite("rh command line")
 struct CLITests {
+    @Test func unreadableSavedFoldersAreReportedInsteadOfAnEmptyJSONList() throws {
+        let rh = try RH(); defer { rh.cleanUp() }
+        let file = rh.configDirectory.appendingPathComponent("state.toml")
+        let invalid = "pins = [\"/work/keep\", 3]\n"
+        try invalid.write(to: file, atomically: true, encoding: .utf8)
+        for command in ["pins", "recents"] {
+            let result = try rh.run([command, "--json"])
+            #expect(result.status != 0)
+            #expect(result.standardOutput.isEmpty)
+            #expect(result.standardError.contains("state.toml"))
+        }
+        #expect(try String(contentsOf: file, encoding: .utf8) == invalid)
+    }
+
     @Test func versionIsPrinted() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         let result = try rh.run(["--version"])

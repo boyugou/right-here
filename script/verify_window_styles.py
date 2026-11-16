@@ -1,16 +1,11 @@
-"""Refuses the control styles of the window that AppKit draws other than the window's own views draw them.
+"""Refuses control styles demonstrated to break the window (ADRs 0029 and 0034).
 
-The window is drawn by its own SwiftUI views so that the pictures of `preview_setup.sh` are the window (ADR 0029). Two styles put an
-AppKit control under a SwiftUI label and draw it their own way, measured in a window that was never put on screen (ADR 0029, 10 and
-11):
+Value menus use ChoiceMenu's native pop-up, with an optional app icon and the system's own indicator. A hand-drawn indicator in its
+label was extracted as the leading image by AppKit (0029); removing the native control instead made the resulting plain-button menu
+fail to open in the combined native review (0034). Real-control previews verify AppKit geometry.
 
-- `.menuStyle(.borderlessButton)` is an AppKit pop-up button, which keeps the label's text and its first image and draws the image
-  first: the window showed "⇕ Ghostty" while every picture of it showed "Ghostty ⇕".
-- `.buttonStyle(.borderless)` is an AppKit button, which drew the words of a whole row grey, as a disabled row's.
-
-`ChoiceMenu` and `PlainButton` (Apps/RightHere) are the way to make a value menu and a plain button; both are SwiftUI's own. This
-check reads the window's Swift files and fails on either style. `self_test` runs first, so that a net that has stopped catching what
-it is for fails the build.
+Borderless plain buttons still draw whole-row labels grey (0029). The plain-button Menu combination is also refused: .buttonStyle(.plain)
+alone is fine for a Button, but not following .menuStyle(.button). self_test checks both patterns before scanning production files.
 
     uv run script/verify_window_styles.py            the window's files
     uv run script/verify_window_styles.py <folder>   the Swift files of another folder (to try it against an older tree)
@@ -25,7 +20,7 @@ WINDOW = ROOT / "Apps" / "RightHere"
 # Each pattern with the decision it comes from. A comment that names a style (to say why it is not used) is not a use: the check looks at
 # code with the comments taken out.
 REFUSED = [
-    (re.compile(r"\.menuStyle\(\s*\.borderlessButton\s*\)"), "an AppKit pop-up button: it draws the label's image before its text (ADR 0029, 10); use ChoiceMenu"),
+    (re.compile(r"\.menuStyle\(\s*\.button\s*\)\s*\.buttonStyle\(\s*\.plain\s*\)"), "a plain-button menu that did not open in native review (ADR 0034); use ChoiceMenu"),
     (re.compile(r"\.buttonStyle\(\s*\.borderless\s*\)"), "an AppKit button: it drew the words of a whole row grey (ADR 0029, 11); use PlainButton or .plain"),
 ]
 
@@ -45,7 +40,7 @@ def findings(text: str) -> list[tuple[int, str]]:
 def self_test() -> None:
     sample = """
     Menu { choices() } label: { label }
-        .menuStyle(.borderlessButton)   // the old way
+        .menuStyle(.button).buttonStyle(.plain)   // the broken menu
     // .buttonStyle(.borderless) in a comment is not a use
     Button(action: action, label: label)
         .buttonStyle( .borderless )
@@ -53,7 +48,7 @@ def self_test() -> None:
     """
     lines = [line for line, _reason in findings(sample)]
     assert lines == [3, 6], f"self test: the check found lines {lines}, not [3, 6]"
-    assert findings("Menu {}.menuStyle(.button).buttonStyle(.plain)") == []
+    assert findings("Menu {}.menuStyle(.borderlessButton)") == []
 
 
 def main() -> int:
@@ -70,7 +65,7 @@ def main() -> int:
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
-    print(f"ok: {len(files)} window files use no control style that AppKit draws its own way")
+    print(f"ok: {len(files)} window files use no control style known to break native interaction or appearance")
     return 0
 
 

@@ -1099,9 +1099,29 @@ struct FoldersPage: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            pinned
-
-            recent
+            if let problem = model.folders.problem {
+                VStack(alignment: .leading, spacing: 12) {
+                    Label(l10n.string(.appFoldersLoadFailed), systemImage: "exclamationmark.triangle")
+                        .font(.headline)
+                        .accessibilityAddTraits(.isHeader)
+                    Text(l10n.render(problem, isolatingValues: true))
+                        .font(.callout)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                    HStack {
+                        Button(l10n.string(.actionReveal)) { Task { await model.revealSavedFolders() } }
+                        Button(l10n.string(.appRefresh)) { Task { await model.retryFolders() } }
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(model.isWorking || model.isRefreshing)
+                }
+                .padding(18)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .panel()
+            } else {
+                pinned
+                recent
+            }
         }
     }
 

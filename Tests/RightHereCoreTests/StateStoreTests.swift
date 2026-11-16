@@ -4,20 +4,28 @@ import Testing
 
 @Suite("StateStore (pins and recents)")
 struct StateStoreTests {
-    @Test func aFileNestedDeeperThanAnythingRightHereWritesIsNeverGivenToTheTOMLParser() {
-        // A parser with a recursion limit of its own can overflow the stack on a file somebody made on purpose: the file is refused as a whole, whatever else is in it.
-        let deep = String(repeating: "[", count: 40) + String(repeating: "]", count: 40)
-        #expect(StateStore.parse("pins = [\"/a\"]\nnested = \(deep)\n").pins.isEmpty)
-        #expect(StateStore.parse("pins = [\"/a\"]\n").pins == ["/a"], "control: the same file without the nesting is read")
+    @Test("Invalid saved-folder documents are reported", arguments: ["pins = [", "pins = '/work/app'", "recents = false", "pins = ['/work/app', 42]", "recents = [false]", "pin = ['/work/app']", "[extra]\npins = []"])
+    func invalidStateIsReportedInsteadOfSilentlyDiscarded(_ text: String) {
+        #expect(throws: (any Error).self) { try StateStore.parse(text) }
     }
 
-    @Test func emptyStateStoreParsesAndRendersCleanly() {
+    @Test func deepNestingIsRefusedBeforeParsing() {
+        let text = "pins = " + String(repeating: "[", count: 9) + String(repeating: "]", count: 9)
+        #expect(throws: StateStore.ParseError.tooDeep) { try StateStore.parse(text) }
+    }
+
+    @Test(arguments: ["", "# No folders yet\n", "pins = []", "recents = []"])
+    func absentOptionalListsAreEmpty(_ text: String) throws {
+        #expect(try StateStore.parse(text) == StateStore())
+    }
+
+    @Test func emptyStateStoreParsesAndRendersCleanly() throws {
         let store = StateStore()
         #expect(store.pins.isEmpty)
         #expect(store.recents.isEmpty)
 
         let rendered = store.render()
-        let parsed = StateStore.parse(rendered)
+        let parsed = try StateStore.parse(rendered)
         #expect(parsed == store)
     }
 
@@ -72,7 +80,7 @@ struct StateStoreTests {
         #expect(store.pins == ["/Users/tester/code"])
     }
 
-    @Test func tomlRoundTripPreservesPinsAndRecents() {
+    @Test func tomlRoundTripPreservesPinsAndRecents() throws {
         let toml = """
         # Right Here local state (pins and recent folders)
 
@@ -86,17 +94,17 @@ struct StateStoreTests {
           "/Users/tester/downloads",
         ]
         """
-        let parsed = StateStore.parse(toml)
+        let parsed = try StateStore.parse(toml)
         #expect(parsed.pins == ["/Users/tester/project-alpha", "/Users/tester/docs"])
         #expect(parsed.recents == ["/Users/tester/project-alpha", "/Users/tester/downloads"])
 
         let reRendered = parsed.render()
-        let reParsed = StateStore.parse(reRendered)
+        let reParsed = try StateStore.parse(reRendered)
         #expect(reParsed == parsed)
     }
 
-    @Test func aFileHoldsOnlyAbsoluteFolders() {
-        let parsed = StateStore.parse("""
+    @Test func aFileHoldsOnlyAbsoluteFolders() throws {
+        let parsed = try StateStore.parse("""
         pins = ["relative/project", "~/project", "/Users/tester/code/", "/Users/tester/./code", "", "/Users/tester/../tester/notes"]
         recents = ["../elsewhere", "/Users/tester/a", "."]
         """)
@@ -104,9 +112,9 @@ struct StateStoreTests {
         #expect(parsed.recents == ["/Users/tester/a"])
     }
 
-    @Test func aFileWithMoreRecentsThanTheLimitKeepsTheNewest() {
+    @Test func aFileWithMoreRecentsThanTheLimitKeepsTheNewest() throws {
         let many = (1...StateStore.maxRecents + 5).map { "\"/folder/\($0)\"" }.joined(separator: ", ")
-        let parsed = StateStore.parse("recents = [\(many)]")
+        let parsed = try StateStore.parse("recents = [\(many)]")
         #expect(parsed.recents.count == StateStore.maxRecents)
         #expect(parsed.recents.first == "/folder/1")
     }

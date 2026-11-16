@@ -23,6 +23,7 @@
   safety rules.
 - [`development/SETUP.md`](development/SETUP.md): build, install and test.
 - [`development/WRITING.md`](development/WRITING.md): how to write the text that people read.
+- [`development/RECONCILIATION.md`](development/RECONCILIATION.md): the current-main baseline, comparison with the earlier development line and integration evidence.
 - [`development/RELEASING.md`](development/RELEASING.md): sign, notarize and publish a release.
 - [`development/MANUAL_CHECKS.md`](development/MANUAL_CHECKS.md): the checks that need a real Finder, real terminals or a native speaker.
 - [`development/SETUP_EVALUATION.md`](development/SETUP_EVALUATION.md): how cold AI agents tested `rh setup` and its playbook.
@@ -69,3 +70,4 @@ Each record says what we decided, the alternatives, and the evidence.
 - [0031 Right Here reads no settings from the folder it acts on](decisions/0031-no-settings-from-the-folder-acted-on.md)
 - [0032 New File makes blank Word, Excel and PowerPoint documents, and each template can be left out](decisions/0032-office-documents-from-new-file.md)
 - [0033 A file's link on its git host, copied or opened](decisions/0033-links-to-the-git-host.md)
+- [0034 Reconcile the window on current main](decisions/0034-reconcile-the-window-on-current-main.md)

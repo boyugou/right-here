@@ -150,6 +150,35 @@ struct SetupModelFirstRunTests {
         #expect(mac.model.selectedTerminal == "terminal" && mac.model.selectedAgents == ["codex"])
     }
 
+    @Test func aChosenAppThatDisappearsIsReplacedByAnAvailableDefault() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        await mac.model.refresh()
+        mac.model.selectedTerminal = "terminal"
+        mac.model.selectedEditor = "vscode"
+        mac.model.selectedAgents = ["amp"]
+        var snapshot = try #require(mac.model.snapshot)
+        snapshot.offer?.terminals.removeAll { $0.id == "terminal" }
+        snapshot.offer?.editors.removeAll()
+        mac.model.apply(snapshot)
+        #expect(mac.model.selectedTerminal == "ghostty")
+        #expect(mac.model.selectedEditor == nil)
+        #expect(mac.model.selectedAgents == ["amp"], "agent opt-ins do not depend on detection")
+    }
+
+    @Test func newlyAvailableAppsCanBecomeDefaultsAfterAnEmptyFirstRead() throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        var snapshot = SetupSnapshot(configFile: mac.paths.configFile, configExists: false, offer: SetupOffer(), home: mac.home)
+        mac.model.apply(snapshot)
+        #expect(mac.model.selectedTerminal == nil && mac.model.selectedEditor == nil)
+        mac.model.selectedAgents = ["opencode"]
+        snapshot.offer = SetupOffer(
+            terminals: [.init(id: "terminal", name: "Terminal", available: true)],
+            editors: [.init(id: "textedit", name: "TextEdit", available: true)])
+        mac.model.apply(snapshot)
+        #expect(mac.model.selectedTerminal == "terminal" && mac.model.selectedEditor == "textedit")
+        #expect(mac.model.selectedAgents == ["opencode"])
+    }
+
     @Test func installOrRepairAndOpenConfigNeverMakeTheConfigBeforeOrDuringTheFirstRun() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }
         // Before the first look has ended (the window is on screen while the login shell is asked), and then on the first run itself.
