@@ -50,6 +50,8 @@ struct SetupView: View {
                         .padding(24)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                // A different section starts at its introduction, not at the previous section's scroll offset.
+                .id(model.selectedTab)
             }
             .frame(minWidth: 580, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(Color(nsColor: .windowBackgroundColor))

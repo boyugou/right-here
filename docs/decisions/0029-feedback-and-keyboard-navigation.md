@@ -27,6 +27,10 @@ for switching sections; Command-R existed only on the footer button.
 - The View menu contains all six section commands, in sidebar order, with Command-1 through Command-6. Refresh is Command-R in
   the same menu, disabled under the same conditions as the footer button. Every entry calls the same model operation as its
   visible button. Titles, symbols and shortcuts are defined together in the app's navigation file.
+- Switching sections starts the new page at the top, including when returning to a section. The page's scroll container has the
+  selected section as its identity, so an offset from another section cannot hide its introduction and first actions. Refreshing,
+  opening a disclosure or reselecting the current section keeps that identity; these do not request a scroll reset. The feedback
+  banner remains outside it, and a completed setup still explicitly scrolls to its result.
 
 ## Alternatives
 
@@ -36,6 +40,10 @@ cause. A bounded, independently scrollable message retains both the error and th
 
 Adding shortcuts only to sidebar buttons would make them harder to discover. A second navigation state for menu commands could
 disagree with the selected page, so the menu uses the existing model.
+
+Keeping one scroll position for every section is not meaningful: the same offset points at unrelated content in each. Remembering
+six independent positions could help repeated browsing, but this window is for setup and status, and its sections can change after
+a refresh or operation. Starting at the introduction makes each navigation predictable without retaining stale positions or hidden views.
 
 ## Verification
 
@@ -60,3 +68,12 @@ showed the list failure and Try Again; restoring it and retrying restored the wo
 The native check inspected the copy control; the injected-writer tests verified its complete payload without modifying the real
 clipboard. Spoken VoiceOver traversal and complete keyboard Tab traversal remain manual checks. The review process exited when
 its window closed, and its temporary files, registration, preferences and saved window state were removed afterward.
+
+A subsequent native navigation regression check on the same OS used twenty pinned folders in a temporary home. Before the scroll
+identity change, scrolling Folders to the bottom and selecting AI Assistants left its scrollbar at the bottom and hid the first
+section heading. Returning to Folders inherited a third, unrelated position. With the change, both destinations started at zero;
+the AI introduction and its first action were visible. Sidebar clicks and shortcuts both passed. Reselecting Folders and
+Command-R retained its intermediate position when its list was unchanged, and expanding Passed checks retained the reading area
+instead of jumping to the top. Switching away from Checks and back started it at the top. The full gate again passed with 1,718
+tests and the app and extension build. This is a native regression check: the headless preview does not exercise scroll offsets.
+The review app and its temporary state were cleaned up after the window closed.

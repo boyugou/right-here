@@ -154,6 +154,10 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     controls. After dismissing a failure message, the diagnostic itself is still there.
 16. Feedback and navigation (ADR 0029): View lists the six sections with Command-1 through Command-6 and Refresh with Command-R.
     Switch sections by shortcut and verify the matching heading and sidebar selection; Command-5 also loads the worktree list.
+    With enough pinned folders to scroll, go to the bottom of Folders and switch to AI Assistants: its first heading and setup-prompt
+    action must be visible. Switch back: Pinned folders and Pin Folder are visible at the top. Repeat with the sidebar and with
+    Checks, including expanded check groups. Scrolling partway down Folders, reselecting Folders and refreshing with Command-R
+    must each retain the current position when the list is unchanged. Expanding content within a page must not jump to its top.
     A short confirmation takes only the space it needs. With a long error at minimum window size, scroll the complete message
     inside its banner while the heading, dismiss button and page remain reachable. Copy Message retains the error and copies all
     of it; copying a successful MCP snippet leaves the snippet on the clipboard. With VoiceOver, navigate the sidebar, page,
