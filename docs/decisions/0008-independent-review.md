@@ -22,6 +22,19 @@ library is now given a final line break, which turns it into the ordinary syntax
 documents) then ran clean. Run the fuzzer wider after touching the parser. The upstream report is drafted in
 [`docs/development/UPSTREAM_REPORTS.md`](../development/UPSTREAM_REPORTS.md).
 
+## Recorded mutation sweep, 2026-11-15–16
+
+The sweep started from `16c6171` and completed all 374 entries: 373 were killed by test failures, and the outer time-limit
+wrapper of the MCP doctor survived. While that sweep ran, `cfd111f` removed the redundant wrapper and added a test of the
+actual process deadlines: ten seconds for the login shell and twenty for the extension lookup. Selected mutation runs
+removed each of those deadlines and both were killed. The current list has 375 entries.
+
+Config recovery and activation changes retargeted entries 291, 306 and 315 during the sweep. Their current forms were each
+run separately and killed by the corresponding regressions. Entry 93's heavily loaded run took over thirty minutes; a
+separate run killed it with the intended config-sync regressions in 104 seconds. These supplementary runs and the completed
+older snapshot are the evidence, rather than a claim that a fresh full sweep of the current checkout passed. `--check`
+only establishes that each current mutation pattern matches exactly once.
+
 ## Findings by class
 
 ### Quoting and text that reaches a shell or terminal
