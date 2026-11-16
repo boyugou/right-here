@@ -100,6 +100,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 24 | The flags a built-in terminal adapter starts its terminal with are the ones the terminal documents; Alacritty has an adapter, kitty quits with its last window. | [0025](decisions/0025-terminal-launch-flags-are-the-documented-ones.md) |
 | 25 | Setup shows the next action first: a neutral first run, a menu preview on the healthy Overview, actionable checks, and visible operation feedback. | [0026](decisions/0026-setup-next-actions.md) |
 | 26 | Saved folders can be pinned and revealed from the app, with the same state as the CLI and controls held until the list refresh ends. | [0027](decisions/0027-manage-folders-in-the-app.md) |
+| 27 | The worktree browser remembers repository choices for the window, offers read recovery, and keeps removal tied to its confirmed repository. | [0028](decisions/0028-worktree-browser-state.md) |
 
 ## 5. Platform facts
 

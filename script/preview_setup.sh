@@ -16,6 +16,7 @@
 #   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
 #   ./script/preview_setup.sh out.png en --demo --tab folders
 #   ./script/preview_setup.sh out.png en --empty-folders --tab folders  no saved folders, with its add action
+#   ./script/preview_setup.sh out.png en --tab worktrees --worktrees-state failed  failed, empty, loading, none or long
 #   ./script/preview_setup.sh out.png en --config-error --tab menu  a broken config and its recovery action
 #   ./script/preview_setup.sh out.png en --empty-menu --tab menu    a valid config with no menu entries
 #   ./script/preview_setup.sh out.png de --feedback --tab ai        a localized copy confirmation
@@ -37,7 +38,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--feedback] [--failure-notice]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--worktrees-state state] [--feedback] [--failure-notice]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -52,6 +53,12 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       TAB="${args[$i]:?preview_setup.sh: --tab needs a section}"
       ;;
     --details) TAB="checks" ;;
+    --worktrees-state)
+      i=$((i + 1))
+      state="${args[$i]:?preview_setup.sh: --worktrees-state needs a state}"
+      case "$state" in failed | empty | loading | none | long) ;; *) echo "preview_setup.sh: unknown worktree state $state" >&2; exit 2 ;; esac
+      FLAGS+=(--worktrees-state "$state")
+      ;;
     --dark | --onboarding | --first-run | --shell-silent | --failed-set-up | --location | --set-up | --picks-not-applied | --demo | --submenus | --gallery | --minimum | --large-text | --config-error | --empty-menu | --empty-folders | --feedback | --failure-notice) FLAGS+=("$argument") ;;
     --*) echo "preview_setup.sh: unknown option $argument" >&2; exit 2 ;;
     *) LANGUAGE="$argument" ;;
@@ -85,7 +92,7 @@ let package = Package(
 )
 PACKAGE
 # The window's own files, the same ones the app compiles.
-for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift SetupChecks.swift SetupFolders.swift; do
+for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift SetupChecks.swift SetupFolders.swift SetupWorktrees.swift; do
   ln -sf "$ROOT/Apps/RightHere/$file" "$PREVIEW/Sources/preview/$file"
 done
 # The Finder menu's own glyphs, which main.swift registers by name (the app finds them in its asset catalog), and the
@@ -126,7 +133,9 @@ func value(of name: String) -> String? {
 let appContents = "/Applications/Right Here.app/Contents"
 /// The home folder and the repository of the demo: fixed, and not this Mac's.
 let demoHome = "/Users/tester"
-let demoRepository = URL(fileURLWithPath: "\(demoHome)/Projects/app")
+let demoRepository = URL(fileURLWithPath: value(of: "--worktrees-state") == "long"
+    ? "\(demoHome)/Projects/Shared resources/Research and evaluation for upcoming agent experiments"
+    : "\(demoHome)/Projects/app")
 
 /// What a check that was a minute ago reads as, in the language of the window and from a fixed pair of dates.
 func ago(_ seconds: Double) -> String {
@@ -284,15 +293,15 @@ let demoRecents = ["\(demoHome)/Projects/web", "\(demoHome)/Downloads",
 
 /// `git worktree list --porcelain -z` of the demo repository: its main working copy, and two worktrees Right Here made for agents (every line ends with a NUL).
 let demoPorcelain = """
-worktree \(demoHome)/Projects/app
+worktree \(demoRepository.path)
 HEAD 1f2e3d4c5b6a
 branch refs/heads/main
 
-worktree \(demoHome)/Projects/app/.right-here/worktrees/rh-1760000000
+worktree \(demoRepository.path)/.right-here/worktrees/rh-1760000000
 HEAD 9a8b7c6d5e4f
 branch refs/heads/rh/1760000000
 
-worktree \(demoHome)/Projects/app/.right-here/worktrees/fix-login
+worktree \(demoRepository.path)/.right-here/worktrees/fix-login
 HEAD 5e4d3c2b1a09
 branch refs/heads/fix/login
 
@@ -310,7 +319,8 @@ func demoWorktrees() async -> WorktreeListing {
 
 /// Everything the window shows in the demo: a healthy setup, the Finder menu, the folders and the repository.
 func demoSnapshot(_ facts: FakeSystemFacts) -> SetupSnapshot {
-    let folders = FolderSnapshot(pins: demoPins, recents: demoRecents, repositories: [demoRepository])
+    let folders = FolderSnapshot(pins: demoPins, recents: demoRecents,
+                                 repositories: [demoRepository, URL(fileURLWithPath: "\(demoHome)/Projects/web")])
     requireNothingOfThisMac(demoPins + demoRecents + [demoRepository.path])
     return SetupSnapshot(
         checks: demoChecks(), menu: demoMenu(facts), folders: folders,
@@ -409,7 +419,7 @@ func render(to path: String) async {
     } else if flag("--first-run") || flag("--failed-set-up") || flag("--location") {
         model.simulate(SetupSnapshot(checks: firstRunChecks(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
                                      configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: tab)
-    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--empty-folders") || flag("--feedback") || flag("--failure-notice") {
+    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--empty-folders") || flag("--feedback") || flag("--failure-notice") || value(of: "--worktrees-state") != nil {
         let facts = demoFacts()
         var snapshot = demoSnapshot(facts)
         if flag("--config-error") {
@@ -419,7 +429,19 @@ func render(to path: String) async {
         }
         if flag("--config-error") || flag("--empty-menu") { snapshot.menu = [] }
         if flag("--empty-folders") { snapshot.folders = FolderSnapshot() }
-        model.simulate(snapshot, tab: tab, icons: IconProvider(facts: facts), worktrees: await demoWorktrees(), repository: demoRepository)
+        var worktrees = await demoWorktrees()
+        var repository: URL? = demoRepository
+        switch value(of: "--worktrees-state") {
+        case "failed": worktrees = .failed("git worktree list failed: The repository is temporarily unavailable.")
+        case "empty": worktrees = .loaded([])
+        case "loading": worktrees = .loading
+        case "none":
+            worktrees = .idle
+            repository = nil
+            snapshot.folders.repositories = []
+        default: break
+        }
+        model.simulate(snapshot, tab: tab, icons: IconProvider(facts: facts), worktrees: worktrees, repository: repository)
     } else {
         await model.refresh()
         model.selectedTab = tab

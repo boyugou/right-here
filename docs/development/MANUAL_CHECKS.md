@@ -105,8 +105,14 @@ open one, and the preview is the same code as the extension's, not Finder's own 
 8. Worktrees: the list is for the repository of the folder you chose with "Choose Folder…", or else the first repository of your
    pinned and recent folders (the app has no folder of its own to start from). Right Here's worktrees (under
    `.right-here/worktrees`) have a Remove… button, which asks first and never forces: a worktree with uncommitted work stays,
-   and the window shows what git said. The branch is kept. The main working copy and the worktrees you made by hand have no button.
-9. Folders: Pin Folder opens a directory chooser; Cancel leaves the list unchanged. Pick a folder and check that it appears
+   and the window shows what git said. The branch is kept. The main working copy and the worktrees you made by hand offer only
+   Reveal in Finder. Choose a second repository, switch back through the menu and verify that both remain available. Long names
+   and paths must leave Choose Folder and Refresh usable. Refresh updates just the worktree list. In a throwaway repository,
+   temporarily move its `.git` directory aside, refresh, restore it and use Try Again: the list returns. Cancel a removal once,
+   then confirm a clean worktree's removal; the row disappears and its branch remains. Repeat with a changed worktree: it stays,
+   git's reason is shown and controls become usable after the list refresh. See [ADR 0028](../decisions/0028-worktree-browser-state.md).
+9. Folders: Pin Folder opens a directory chooser attached to the app window; Cancel and Escape leave the list unchanged and
+   restore the controls. The repository chooser uses the same sheet. Pick a folder and check that it appears
    with its name and path. A recent folder's Pin button adds it to the pinned list; both occurrences now offer Unpin. Reveal in
    Finder selects the folder without launching a terminal or editor. Rename a pinned folder in Finder, then try to reveal it:
    the app reports that it is unavailable, retains the pin, and still allows Unpin. Pin, Unpin and Clear Recent Folders change

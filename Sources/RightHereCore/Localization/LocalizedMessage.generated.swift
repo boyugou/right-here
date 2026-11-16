@@ -259,6 +259,8 @@ extension LocalizedMessage {
     public static var appTestLaunchHint: LocalizedMessage { LocalizedMessage(.appTestLaunchHint) }
     /// Opening a test window in your terminal…
     public static var appTesting: LocalizedMessage { LocalizedMessage(.appTesting) }
+    /// Try Again
+    public static var appTryAgain: LocalizedMessage { LocalizedMessage(.appTryAgain) }
     /// Unpin
     public static var appUnpin: LocalizedMessage { LocalizedMessage(.appUnpin) }
     /// Unpin %@
@@ -277,8 +279,12 @@ extension LocalizedMessage {
     public static func appWorktreeRemoved(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appWorktreeRemoved, [argument1]) }
     /// Choose Folder…
     public static var appWorktreesChoose: LocalizedMessage { LocalizedMessage(.appWorktreesChoose) }
-    /// Separate checkouts that `rh run --worktree` makes, so that an agent can work on a branch of its own.
+    /// No worktrees were found in this repository.
+    public static var appWorktreesEmpty: LocalizedMessage { LocalizedMessage(.appWorktreesEmpty) }
+    /// Browse a repository's worktrees and reveal their folders in Finder. Only worktrees made by Right Here can be removed here.
     public static var appWorktreesIntro: LocalizedMessage { LocalizedMessage(.appWorktreesIntro) }
+    /// Couldn't load worktrees.
+    public static var appWorktreesLoadFailed: LocalizedMessage { LocalizedMessage(.appWorktreesLoadFailed) }
     /// No git repository to show yet. Pin a folder that is in one, or choose a folder.
     public static var appWorktreesNoRepository: LocalizedMessage { LocalizedMessage(.appWorktreesNoRepository) }
     /// Repository

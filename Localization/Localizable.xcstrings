@@ -23993,6 +23993,192 @@
         }
       }
     },
+    "app.tryAgain": {
+      "comment": "Button that retries an unsuccessful read. It does not repeat a destructive action.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "المحاولة مجددًا"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "আবার চেষ্টা করুন"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Erneut versuchen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δοκιμή ξανά"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Volver a intentar"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تلاش دوباره"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Réessayer"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ניסיון נוסף"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फिर से प्रयास करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Coba Lagi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Riprova"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "再試行"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "다시 시도"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "पुन्हा प्रयत्न करा"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cuba Lagi"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Opnieuw proberen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Spróbuj ponownie"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tentar novamente"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Încearcă din nou"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Повторить попытку"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "மீண்டும் முயல்க"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "మళ్లీ ప్రయత్నించండి"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ลองอีกครั้ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Yeniden Dene"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Спробувати ще раз"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "دوبارہ کوشش کریں"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thử lại"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "重试"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "重試"
+          }
+        }
+      }
+    },
     "app.unpin": {
       "comment": "Button on a pinned folder of the setup window: it takes the folder out of the pinned ones. The folder itself stays on disk.",
       "extractionState": "manual",
@@ -25667,6 +25853,192 @@
         }
       }
     },
+    "app.worktreesEmpty": {
+      "comment": "An empty result after successfully reading git's worktree list. The repository is selected and the read did not fail.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "لم يتم العثور على أشجار عمل في هذا المستودع."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "এই রিপোজিটরিতে কোনো ওয়ার্কট্রি পাওয়া যায়নি।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "In diesem Repository wurden keine Worktrees gefunden."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δεν βρέθηκαν worktrees σε αυτό το αποθετήριο."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No worktrees were found in this repository."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "No se encontraron árboles de trabajo en este repositorio."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "هیچ درخت کاری در این مخزن پیدا نشد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Aucun arbre de travail trouvé dans ce dépôt."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לא נמצאו עצי עבודה במאגר הזה."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "इस रिपॉज़िटरी में कोई वर्कट्री नहीं मिली।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tidak ada worktree yang ditemukan di repositori ini."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nessun worktree trovato in questo repository."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "このリポジトリにはワークツリーが見つかりませんでした。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "이 저장소에서 워크트리를 찾지 못했습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "या रिपॉझिटरीमध्ये कोणतीही वर्कट्री आढळली नाही."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tiada worktree ditemui dalam repositori ini."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Er zijn geen worktrees gevonden in deze repository."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "W tym repozytorium nie znaleziono drzew roboczych."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nenhuma árvore de trabalho foi encontrada neste repositório."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nu s-au găsit arbori de lucru în acest depozit."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "В этом репозитории не найдено рабочих деревьев."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "இந்தக் களஞ்சியத்தில் பணிமரங்கள் எதுவும் கிடைக்கவில்லை."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ఈ రిపోజిటరీలో వర్క్‌ట్రీలు కనుగొనబడలేదు."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ไม่พบเวิร์กทรีในคลังนี้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Bu depoda çalışma ağacı bulunamadı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "У цьому репозиторії не знайдено робочих дерев."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "اس ریپوزٹری میں کوئی ورک ٹری نہیں ملی۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Không tìm thấy cây làm việc nào trong kho lưu trữ này."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "此仓库中没有找到工作树。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "此儲存庫中找不到工作樹。"
+          }
+        }
+      }
+    },
     "app.worktreesIntro": {
       "comment": "Text at the top of the Worktrees section of the setup window. The command between backticks stays exactly as it is.",
       "extractionState": "manual",
@@ -25674,181 +26046,367 @@
         "ar": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "نسخ عمل منفصلة يُنشئها `rh run --worktree`، ليتمكن وكيل من العمل على فرع خاص به."
+            "value": "تصفّح أشجار العمل في المستودع وأظهر مجلداتها في Finder. لا يمكن هنا إزالة سوى أشجار العمل التي أنشأها Right Here."
           }
         },
         "bn": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "আলাদা চেকআউট, যেগুলো `rh run --worktree` তৈরি করে, যাতে একজন এজেন্ট নিজের একটি ব্রাঞ্চে কাজ করতে পারে."
+            "value": "রিপোজিটরির ওয়ার্কট্রি দেখুন এবং Finder-এ তাদের ফোল্ডার খুঁজে নিন। এখানে শুধু Right Here দিয়ে তৈরি ওয়ার্কট্রি সরানো যায়।"
           }
         },
         "de": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Getrennte Arbeitskopien, die `rh run --worktree` anlegt, damit ein Agent an einem eigenen Branch arbeiten kann."
+            "value": "Sehen Sie sich die Worktrees eines Repositorys an und zeigen Sie ihre Ordner im Finder. Hier können nur von Right Here erstellte Worktrees entfernt werden."
           }
         },
         "el": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Ξεχωριστά αντίγραφα εργασίας που δημιουργεί το `rh run --worktree`, ώστε ένας πράκτορας να μπορεί να εργάζεται σε δικό του κλάδο."
+            "value": "Περιηγηθείτε στα worktrees ενός αποθετηρίου και εμφανίστε τους φακέλους τους στο Finder. Εδώ μπορούν να αφαιρεθούν μόνο worktrees που δημιούργησε το Right Here."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Separate checkouts that `rh run --worktree` makes, so that an agent can work on a branch of its own."
+            "value": "Browse a repository's worktrees and reveal their folders in Finder. Only worktrees made by Right Here can be removed here."
           }
         },
         "es": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copias de trabajo separadas que crea `rh run --worktree`, para que un agente pueda trabajar en una rama propia."
+            "value": "Explora los árboles de trabajo de un repositorio y muestra sus carpetas en Finder. Aquí solo se pueden eliminar los creados por Right Here."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "نسخه‌های کاری جداگانه‌ای که `rh run --worktree` می‌سازد، تا یک عامل هوش مصنوعی بتواند روی شاخه‌ی خودش کار کند."
+            "value": "درخت‌های کاری یک مخزن را مرور کنید و پوشه‌هایشان را در Finder نشان دهید. اینجا فقط درخت‌های کاری ساخته‌شده با Right Here را می‌توان حذف کرد."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copies de travail séparées créées par `rh run --worktree`, pour qu’un agent puisse travailler sur sa propre branche."
+            "value": "Parcourez les arbres de travail d'un dépôt et affichez leurs dossiers dans le Finder. Seuls ceux créés par Right Here peuvent être supprimés ici."
           }
         },
         "he": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "עותקי עבודה נפרדים שנוצרים על ידי `rh run --worktree`, כך שסוכן AI יוכל לעבוד על ענף משלו."
+            "value": "אפשר לעיין בעצי העבודה של מאגר ולהציג את התיקיות שלהם ב-Finder. כאן אפשר להסיר רק עצי עבודה שנוצרו באמצעות Right Here."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "अलग-अलग वर्किंग कॉपी जो `rh run --worktree` बनाता है, ताकि कोई AI एजेंट अपनी एक अलग ब्रांच पर काम कर सके।"
+            "value": "रिपॉज़िटरी की वर्कट्री देखें और उनके फ़ोल्डर Finder में दिखाएँ। यहाँ केवल Right Here द्वारा बनाई गई वर्कट्री हटाई जा सकती हैं।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Salinan kerja terpisah yang dibuat oleh `rh run --worktree`, agar agen dapat bekerja pada branch-nya sendiri."
+            "value": "Jelajahi worktree repositori dan tampilkan foldernya di Finder. Hanya worktree yang dibuat oleh Right Here yang dapat dihapus di sini."
           }
         },
         "it": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Checkout separati creati con `rh run --worktree`, così un agente può lavorare su un branch proprio."
+            "value": "Esplora i worktree di un repository e mostra le loro cartelle nel Finder. Qui puoi rimuovere solo i worktree creati da Right Here."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh run --worktree` が作る独立したチェックアウトです。エージェントはそれぞれ専用のブランチで作業できます。"
+            "value": "リポジトリのワークツリーを確認し、フォルダを Finder に表示できます。ここで削除できるのは Right Here が作成したワークツリーだけです。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh run --worktree`가 만드는 별도의 체크아웃입니다. 에이전트가 자신만의 브랜치에서 작업할 수 있습니다."
+            "value": "저장소의 워크트리를 살펴보고 Finder에서 폴더를 표시하세요. 여기에서는 Right Here가 만든 워크트리만 제거할 수 있습니다."
           }
         },
         "mr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh run --worktree` ने तयार केलेले वेगळे चेकआउट, जेणेकरून एखादा एजंट स्वतःच्या ब्रांचवर काम करू शकेल."
+            "value": "रिपॉझिटरीमधील वर्कट्री पाहा आणि त्यांचे फोल्डर Finder मध्ये दाखवा. येथे फक्त Right Here ने तयार केलेल्या वर्कट्री काढता येतात."
           }
         },
         "ms": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Checkout berasingan yang dibuat oleh `rh run --worktree`, supaya ejen boleh bekerja pada cawangannya sendiri."
+            "value": "Semak worktree repositori dan paparkan foldernya dalam Finder. Hanya worktree yang dibuat oleh Right Here boleh dialih keluar di sini."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Afzonderlijke werkkopieën die `rh run --worktree` maakt, zodat een agent op een eigen branch kan werken."
+            "value": "Bekijk de worktrees van een repository en toon hun mappen in Finder. Hier kunnen alleen worktrees worden verwijderd die door Right Here zijn gemaakt."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Osobne kopie robocze, które tworzy `rh run --worktree`, dzięki czemu agent może pracować na własnej gałęzi."
+            "value": "Przeglądaj drzewa robocze repozytorium i pokazuj ich foldery w Finderze. Tutaj można usuwać tylko drzewa utworzone przez Right Here."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Cópias separadas que `rh run --worktree` cria, para que um agente possa trabalhar em uma branch própria."
+            "value": "Explore as árvores de trabalho de um repositório e mostre suas pastas no Finder. Aqui, só é possível remover as criadas pelo Right Here."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Copii de lucru separate, create de `rh run --worktree`, pentru ca un agent să poată lucra pe o ramură proprie."
+            "value": "Explorează arborii de lucru ai unui depozit și afișează dosarele lor în Finder. Aici pot fi eliminați doar arborii creați de Right Here."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Отдельные рабочие копии, которые создаёт `rh run --worktree`, чтобы агент мог работать в собственной ветке."
+            "value": "Просматривайте рабочие деревья репозитория и показывайте их папки в Finder. Здесь можно удалять только рабочие деревья, созданные Right Here."
           }
         },
         "ta": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh run --worktree` உருவாக்கும் தனிப் பிரதிகள்; இதனால் ஒரு முகவர் தனக்கென ஒரு branch-இல் வேலை செய்ய முடியும்."
+            "value": "களஞ்சியத்தின் பணிமரங்களைப் பார்வையிட்டு அவற்றின் கோப்புறைகளை Finder இல் காட்டவும். Right Here உருவாக்கிய பணிமரங்களை மட்டுமே இங்கு அகற்ற முடியும்."
           }
         },
         "te": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh run --worktree` తయారు చేసే వేర్వేరు చెక్అవుట్లు; తద్వారా ఒక ఏజెంట్ తనకంటూ ఒక బ్రాంచ్లో పని చేయగలదు."
+            "value": "రిపోజిటరీలోని వర్క్‌ట్రీలను పరిశీలించి, వాటి ఫోల్డర్‌లను Finderలో చూపించండి. Right Here సృష్టించిన వర్క్‌ట్రీలను మాత్రమే ఇక్కడ తొలగించవచ్చు."
           }
         },
         "th": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "สำเนาทำงานแยกที่ `rh run --worktree` สร้างขึ้น เพื่อให้เอเจนต์ทำงานบน branch ของตัวเองได้."
+            "value": "ดูเวิร์กทรีของคลังและแสดงโฟลเดอร์ใน Finder ที่นี่สามารถนำออกได้เฉพาะเวิร์กทรีที่สร้างโดย Right Here เท่านั้น"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "`rh run --worktree` komutunun oluşturduğu ayrı çalışma kopyaları; böylece bir ajan kendi dalında çalışabilir."
+            "value": "Bir deponun çalışma ağaçlarına göz atın ve klasörlerini Finder'da gösterin. Burada yalnızca Right Here tarafından oluşturulan çalışma ağaçları kaldırılabilir."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Окремі робочі копії, які створює `rh run --worktree`, щоб агент міг працювати на власній гілці."
+            "value": "Переглядайте робочі дерева репозиторію та показуйте їхні папки у Finder. Тут можна видаляти лише робочі дерева, створені Right Here."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "وہ الگ چیک آؤٹ جو `rh run --worktree` بناتا ہے، تاکہ کوئی AI ایجنٹ اپنی ایک الگ برانچ پر کام کر سکے۔"
+            "value": "ریپوزٹری کی ورک ٹری دیکھیں اور ان کے فولڈر Finder میں دکھائیں۔ یہاں صرف Right Here کی بنائی ہوئی ورک ٹری ہٹائی جا سکتی ہیں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "Các bản sao làm việc riêng do `rh run --worktree` tạo ra, để tác tử AI có thể làm việc trên một nhánh riêng."
+            "value": "Duyệt các cây làm việc của kho lưu trữ và hiển thị thư mục của chúng trong Finder. Tại đây, chỉ có thể xóa các cây làm việc do Right Here tạo."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "由 `rh run --worktree` 创建的独立检出副本，让 AI 智能体可以在自己的分支上工作。"
+            "value": "查看仓库中的工作树，并在访达中定位其文件夹。这里只能移除由 Right Here 创建的工作树。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "needs_review",
-            "value": "由 `rh run --worktree` 建立的獨立檢出副本，讓 AI 代理程式可以在自己的分支上作業。"
+            "value": "查看儲存庫中的工作樹，並在 Finder 中顯示其檔案夾。這裡只能移除由 Right Here 建立的工作樹。"
+          }
+        }
+      }
+    },
+    "app.worktreesLoadFailed": {
+      "comment": "Heading above git's error and a button to retry reading the selected repository's worktrees.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تعذّر تحميل أشجار العمل."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ওয়ার্কট্রি লোড করা যায়নি।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Worktrees konnten nicht geladen werden."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Δεν ήταν δυνατή η φόρτωση των worktrees."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load worktrees."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "No se pudieron cargar los árboles de trabajo."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "بارگیری درخت‌های کاری ممکن نشد."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Impossible de charger les arbres de travail."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "לא ניתן לטעון את עצי העבודה."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "वर्कट्री लोड नहीं हो सकीं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Worktree tidak dapat dimuat."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Impossibile caricare i worktree."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ワークツリーを読み込めませんでした。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "워크트리를 불러오지 못했습니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "वर्कट्री लोड करता आल्या नाहीत."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Worktree tidak dapat dimuatkan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "De worktrees konden niet worden geladen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nie udało się wczytać drzew roboczych."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Não foi possível carregar as árvores de trabalho."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nu s-au putut încărca arborii de lucru."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не удалось загрузить рабочие деревья."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "பணிமரங்களை ஏற்ற முடியவில்லை."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "వర్క్‌ట్రీలను లోడ్ చేయలేకపోయాము."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ไม่สามารถโหลดเวิร์กทรีได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Çalışma ağaçları yüklenemedi."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Не вдалося завантажити робочі дерева."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ورک ٹری لوڈ نہیں ہو سکیں۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Không thể tải các cây làm việc."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "无法加载工作树。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "無法載入工作樹。"
           }
         }
       }

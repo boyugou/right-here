@@ -25,6 +25,7 @@ final class SetupModel {
     private(set) var worktrees: WorktreeListing = .idle
     /// The repository the worktrees tab lists when the person chose one; otherwise the first repository of the folders.
     private(set) var chosenRepository: URL?
+    private var chosenRepositories: [URL] = []
     /// The submenus of the Finder menu that are open, by `MenuPreviewRow.id`.
     private(set) var openSubmenus: Set<String> = []
     /// What a person with no config file can choose from, and what they have chosen so far. The choices start from what the Mac
@@ -44,10 +45,11 @@ final class SetupModel {
     @ObservationIgnored private var launchResult: DoctorCheck?
     /// Each listing of the worktrees gets a number; only the newest one is shown, so a listing that ends late cannot overwrite it.
     @ObservationIgnored private var worktreeRequest = 0
+    @ObservationIgnored private var isRemovingWorktree = false
 
     private let loader: SetupLoader
     private let actions: SetupActions
-    private let browser = WorktreeBrowser()
+    private let browser: WorktreeBrowser
     private let home: URL
     private let pollInterval: Duration
     private let idleInterval: Duration
@@ -76,7 +78,8 @@ final class SetupModel {
     init(loader: SetupLoader, actions: SetupActions, facts: any SystemFacts, helper: String, pollInterval: Duration = .seconds(2), idleInterval: Duration = .seconds(30),
          activationQuietPeriod: Duration = .seconds(20), windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible,
          readFolders: (@Sendable () async -> FolderSnapshot)? = nil,
-         pickFolder: @escaping @MainActor (FolderChoice) async -> URL? = SetupModel.livePickFolder) {
+         pickFolder: @escaping @MainActor (FolderChoice) async -> URL? = SetupModel.livePickFolder,
+         browser: WorktreeBrowser = WorktreeBrowser()) {
         self.loader = loader
         self.actions = actions
         icons = IconProvider(facts: facts)
@@ -88,6 +91,7 @@ final class SetupModel {
         self.windowIsVisible = windowIsVisible
         self.readFolders = readFolders ?? { await loader.folders() }
         self.pickFolder = pickFolder
+        self.browser = browser
     }
 
     /// The window of the app: this Mac, and the `rh` that ships inside the app.
@@ -148,7 +152,16 @@ final class SetupModel {
     /// The repository the worktrees tab lists now, if there is one.
     var repository: URL? { chosenRepository ?? folders.repositories.first }
 
-    var repositories: [URL] { folders.repositories }
+    /// Choices made in this window stay available when another repository is selected. They are not added to pinned folders.
+    var repositories: [URL] {
+        var seen = Set<URL>()
+        return (folders.repositories + chosenRepositories + (chosenRepository.map { [$0] } ?? [])).filter { seen.insert($0).inserted }
+    }
+
+    var isLoadingWorktrees: Bool {
+        if case .loading = worktrees { return true }
+        return false
+    }
 
     func image(for icon: Icon?) -> NSImage? {
         let image = icons.image(for: icon)
@@ -337,6 +350,11 @@ final class SetupModel {
 
     /// Lists the worktrees of the repository the tab shows. A repository chosen meanwhile has its own list coming; this one is dropped.
     func refreshWorktrees() async {
+        guard !isRemovingWorktree else { return }
+        await loadWorktrees()
+    }
+
+    private func loadWorktrees() async {
         #if PREVIEW
         if simulated { return }
         #endif
@@ -379,12 +397,14 @@ final class SetupModel {
                 say(.notARepository(displayPath(folder.path)))
                 return
             }
-            chosenRepository = root
-            await refreshWorktrees()
+            showRepository(root)
         }
     }
 
     static func livePickFolder(_ purpose: FolderChoice) async -> URL? {
+        // Accessibility can press the button while the app is inactive and has neither a key nor a main window.
+        let app = NSApplication.shared
+        guard let window = app.keyWindow ?? app.mainWindow ?? app.windows.first(where: { $0.isVisible && $0.canBecomeMain }) else { return nil }
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
@@ -394,27 +414,57 @@ final class SetupModel {
         if purpose == .repository {
             panel.message = Localizer.system.string(.appChooseFolderMessage)
         }
-        return await panel.begin() == .OK ? panel.url : nil
+        return await panel.beginSheetModal(for: window) == .OK ? panel.url : nil
     }
 
     func selectRepository(_ root: URL) {
+        guard !isWorking, !isRefreshing, root != repository else { return }
+        showRepository(root)
+    }
+
+    private func showRepository(_ root: URL) {
         chosenRepository = root
-        Task { await refreshWorktrees() }
+        rememberRepository(root)
+        say(nil)
+        // The old rows must disappear with their old heading, before the asynchronous read gets a turn.
+        worktrees = .loading
+        Task {
+            guard repository == root else { return }
+            await refreshWorktrees()
+        }
+    }
+
+    private func rememberRepository(_ root: URL) {
+        if !chosenRepositories.contains(root) { chosenRepositories.append(root) }
+    }
+
+    struct WorktreeRemovalRequest: Equatable {
+        let row: WorktreeRow
+        let repository: URL
+    }
+
+    func removalRequest(for row: WorktreeRow) -> WorktreeRemovalRequest? {
+        guard !isWorking, !isRefreshing, let repository, case .loaded(let rows) = worktrees,
+              row.canBeRemoved, rows.contains(row) else { return nil }
+        return WorktreeRemovalRequest(row: row, repository: repository)
     }
 
     /// Removes a worktree Right Here made, after the person confirmed it. Git decides whether that is safe (uncommitted work is
     /// refused, and its refusal is what the window shows); the branch stays.
-    func remove(_ row: WorktreeRow) async {
-        guard let repository, !isWorking else { return }
+    func remove(_ request: WorktreeRemovalRequest) async {
+        guard !isWorking, !isRefreshing else { return }
         isWorking = true
-        let result = await browser.remove(row, in: repository)
+        isRemovingWorktree = true
+        worktreeRequest += 1
+        defer { isWorking = false; isRemovingWorktree = false }
+        say(nil)
+        let result = await browser.remove(request.row, in: request.repository)
         if case .worktreeRemoved(let path) = result {
-            say(.worktreeRemoved(PathDisplay.abbreviatingHome(path, home: homePath)))
+            say(.worktreeRemoved(displayPath(path)))
         } else {
             say(result)
         }
-        isWorking = false
-        await refreshWorktrees()
+        await loadWorktrees()
     }
 
     private func refreshLoop() -> RefreshLoop<SetupSnapshot> {
@@ -435,7 +485,7 @@ final class SetupModel {
         // A setup that failed is shown until the next read that is not the one it ends with: the Checks say the same, and somebody else (an AI assistant, `rh setup` in a
         // terminal) may have put it right meanwhile.
         if let report = setupReport, !report.ok, !isWorking { setupReport = nil }
-        folders = loaded.folders
+        applyFolders(loaded.folders)
         offer = loaded.offer
         seedChoices(from: loaded.offer)
         // The ids of the open submenus are positions: a changed menu may have another entry at a position that was open.
@@ -458,8 +508,18 @@ final class SetupModel {
         #if PREVIEW
         if simulated { return }
         #endif
-        folders = await readFolders()
+        applyFolders(await readFolders())
         if selectedTab == .worktrees { await refreshWorktrees() }
+    }
+
+    private func applyFolders(_ loaded: FolderSnapshot) {
+        let previousRepository = repository
+        folders = loaded
+        // Without a chosen repository the first saved folder determines the heading, so refreshing folders can switch it too.
+        if repository != previousRepository {
+            worktreeRequest += 1
+            worktrees = repository == nil ? .idle : .loading
+        }
     }
 
     private func copy(_ text: String, confirmed: SetupNotice) {
