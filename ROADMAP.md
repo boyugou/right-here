@@ -54,6 +54,8 @@
   ([ADR 0035](docs/decisions/0035-navigation-order.md)).
 - Config errors open the file they name, and the header offers both main and local files when they exist
   ([ADR 0036](docs/decisions/0036-open-the-diagnosed-config-file.md)).
+- Returning after a config edit updates the checks, tool defaults and menu preview immediately, including during the ordinary
+  refresh quiet period; unchanged returns do not repeat the full check ([ADR 0037](docs/decisions/0037-refresh-config-changes-on-return.md)).
 - Official Claude Code plugin with dedicated skills (`setup`, `open-here`, `review-changes`).
 
 ## Next

@@ -108,6 +108,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 32 | After setup, the remaining task leads; a registered but disabled extension has a pending mark, and ordinary installation details are collapsed. | [0034](decisions/0034-setup-task-and-readiness.md) |
 | 33 | Sidebar groups, View-menu groups and numbered shortcuts come from the same navigation order. | [0035](decisions/0035-navigation-order.md) |
 | 34 | Config recovery opens the file named by the problem; the header offers both layers when they exist. | [0036](decisions/0036-open-the-diagnosed-config-file.md) |
+| 35 | Returning after a config edit bypasses the refresh quiet period only when the configuration changed. | [0037](decisions/0037-refresh-config-changes-on-return.md) |
 
 ## 5. Platform facts
 
@@ -276,6 +277,9 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
 The setup window offers each existing layer for editing. A config problem's recovery button names and opens its source file;
 an explicit selection is never silently replaced with the other layer if it disappears before the click. See
 [0036](decisions/0036-open-the-diagnosed-config-file.md).
+Returning to the window checks for meaningful changes even within its twenty-second refresh quiet period. Unchanged
+configuration does not restart the login shell; changes made during a full read request a subsequent read. See
+[0037](decisions/0037-refresh-config-changes-on-return.md).
 
 ## 9. Security
 

@@ -39,6 +39,7 @@
   - [0034 The next setup task leads; registration is not readiness](decisions/0034-setup-task-and-readiness.md)
   - [0035 Sidebar, View menu and shortcuts share their order](decisions/0035-navigation-order.md)
   - [0036 Open the config file named by the problem](decisions/0036-open-the-diagnosed-config-file.md)
+  - [0037 Returning after a config edit updates the window](decisions/0037-refresh-config-changes-on-return.md)
 - [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.

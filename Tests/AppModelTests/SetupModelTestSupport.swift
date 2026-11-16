@@ -55,6 +55,7 @@ struct Mac {
          activationQuietPeriod: Duration = .zero, readFolders: (@Sendable () async -> FolderSnapshot)? = nil,
          pickFolder: @escaping @MainActor (SetupModel.FolderChoice) async -> URL? = { _ in nil },
          worktreeRunner: (any ProcessRunner)? = nil, gitRoots: [String] = [],
+         loaderRunner: (any ProcessRunner)? = nil, afterConfigRead: (@Sendable () async -> Void)? = nil,
          writeClipboard: @escaping @MainActor (String) -> Void = { _ in }) throws {
         home = try makeTemporaryDirectory()
         paths = RHPaths(environment: [:], home: home)
@@ -65,11 +66,23 @@ struct Mac {
         ])
         let flag = Switch(visible)
         self.visible = flag
+        let loader = SetupLoader(facts: facts, paths: paths, runner: loaderRunner ?? runner, helperPath: helper, localizer: .english)
+        let configRead: (@Sendable () async -> SetupConfigState)?
+        if let afterConfigRead {
+            configRead = {
+                let state = await loader.configState()
+                await afterConfigRead()
+                return state
+            }
+        } else {
+            configRead = nil
+        }
         model = SetupModel(
-            loader: SetupLoader(facts: facts, paths: paths, runner: runner, helperPath: helper, localizer: .english),
+            loader: loader,
             actions: SetupActions(facts: facts, paths: paths, runner: runner, helperPath: helper, app: nil, trialHome: home),
             facts: facts, helper: helper, pollInterval: pollInterval, idleInterval: idleInterval,
-            activationQuietPeriod: activationQuietPeriod, windowIsVisible: { flag.isOn }, readFolders: readFolders, pickFolder: pickFolder,
+            activationQuietPeriod: activationQuietPeriod, windowIsVisible: { flag.isOn }, readFolders: readFolders,
+            readConfigState: configRead, pickFolder: pickFolder,
             browser: WorktreeBrowser(runner: worktreeRunner ?? runner), writeClipboard: writeClipboard)
     }
 

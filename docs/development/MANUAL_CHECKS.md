@@ -243,3 +243,13 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     Native review with a separate app identity and temporary home verified the direct local-file action, both header choices,
     the single-overlay state after refresh, and the missing-target message. Its fake runner recorded exact arguments and
     started no editor; external-editor behavior and spoken VoiceOver remain manual. The review app and data were removed.
+20. Returning from a config edit (ADR 0037): refresh Checks, fix a config error in the editor and return within twenty seconds.
+    The error must clear without Command-R, the selected section must stay unchanged, and Finder menu must show the updated
+    configuration. Add and remove a local override and verify its file choice and effective default tool update on return.
+    Switch away and back without editing: this must not run the full doctor again within the quiet period. Test an edit while
+    a slow full check is in progress; its older result must not remain the final state.
+
+    A native review with fake processes and a temporary home verified the production notification handler and visible error
+    recovery through a review-only activation-notification action. It retained Checks and issued no further full read for an
+    unchanged notification. Window-sharing interactions did not yield repeatable actual app activation transitions, so the
+    ordinary external-editor switch above is still manual; this review does not claim that OS transition was verified.

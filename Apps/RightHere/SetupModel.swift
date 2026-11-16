@@ -59,12 +59,15 @@ final class SetupModel {
     private let windowIsVisible: @MainActor () -> Bool
     private let activationQuietPeriod: Duration
     private let readFolders: @Sendable () async -> FolderSnapshot
+    private let readConfigState: @Sendable () async -> SetupConfigState
     private let pickFolder: @MainActor (FolderChoice) async -> URL?
     private let writeClipboard: @MainActor (String) -> Void
 
     enum FolderChoice: Equatable { case pin, repository }
-    /// When the state was last read; coming back to the app does not read it again within `activationQuietPeriod`.
+    /// When the full state was last read; unchanged returns within `activationQuietPeriod` skip another full read.
     @ObservationIgnored private var lastRead: ContinuousClock.Instant?
+    @ObservationIgnored private var loadingConfigState: SetupConfigState?
+    @ObservationIgnored private var activationLoop: RefreshLoop<Void>?
     @ObservationIgnored private var icons: IconProvider
     @ObservationIgnored private var loop: RefreshLoop<SetupSnapshot>?
 
@@ -79,9 +82,11 @@ final class SetupModel {
     /// Everything it asks of the Mac comes through these, so that a test gives it a temporary home, a made-up Mac and a runner that answers as scripted.
     ///   - activationQuietPeriod: Coming back to the app reads the state again only when it was last read longer ago than this: each read starts the person's login
     ///     shell, which runs their startup files, and a person who switches between windows must not have those run at every switch.
+    ///     A changed config bypasses this quiet period.
     init(loader: SetupLoader, actions: SetupActions, facts: any SystemFacts, helper: String, pollInterval: Duration = .seconds(2), idleInterval: Duration = .seconds(30),
          activationQuietPeriod: Duration = .seconds(20), windowIsVisible: @escaping @MainActor () -> Bool = SetupModel.liveWindowIsVisible,
          readFolders: (@Sendable () async -> FolderSnapshot)? = nil,
+         readConfigState: (@Sendable () async -> SetupConfigState)? = nil,
          pickFolder: @escaping @MainActor (FolderChoice) async -> URL? = SetupModel.livePickFolder,
          browser: WorktreeBrowser = WorktreeBrowser(),
          writeClipboard: @escaping @MainActor (String) -> Void = SetupModel.liveWriteClipboard) {
@@ -95,6 +100,7 @@ final class SetupModel {
         self.activationQuietPeriod = activationQuietPeriod
         self.windowIsVisible = windowIsVisible
         self.readFolders = readFolders ?? { await loader.folders() }
+        self.readConfigState = readConfigState ?? { await loader.configState() }
         self.pickFolder = pickFolder
         self.browser = browser
         self.writeClipboard = writeClipboard
@@ -211,11 +217,31 @@ final class SetupModel {
     }
 
     /// Reads the state again when the app comes to the front: the person may be back from System Settings, from the editor of the config or from a
-    /// terminal where an AI assistant ran `rh setup`, and what the window shows is old. Not while the first look runs, or while something the
-    /// person started does; each ends with a read of its own.
+    /// terminal where an AI assistant ran `rh setup`, and what the window shows is old. During the quiet period, only a changed config
+    /// starts the full doctor again. A change during a refresh queues one more read through RefreshLoop.
     func refreshOnActivation() async {
-        guard snapshot != nil, !isWorking, !isRefreshing else { return }
-        if let lastRead, ContinuousClock.now - lastRead < activationQuietPeriod { return }
+        #if PREVIEW
+        if simulated { return }
+        #endif
+        guard snapshot != nil, !isWorking else { return }
+        if activationLoop == nil {
+            activationLoop = RefreshLoop<Void>(load: { [weak self] in
+                if let self { await self.refreshForActivation() }
+            }, apply: { _ in })
+        }
+        await activationLoop?.refresh()
+    }
+
+    private func refreshForActivation() async {
+        guard !isWorking else { return }
+        let isRecent = lastRead.map { ContinuousClock.now - $0 < activationQuietPeriod } ?? false
+        if !isRefreshing, !isRecent {
+            await refresh()
+            return
+        }
+        let current = await readConfigState()
+        guard !Task.isCancelled, !isWorking,
+              let previous = loadingConfigState ?? snapshot?.configState, current != previous else { return }
         await refresh()
     }
 
@@ -509,12 +535,19 @@ final class SetupModel {
     private func refreshLoop() -> RefreshLoop<SetupSnapshot> {
         if let loop { return loop }
         let made = RefreshLoop<SetupSnapshot>(
-            load: { [loader] in await loader.load() },
+            load: { [loader, weak self] in
+                await loader.load { [weak self] state in await self?.readingConfig(state) }
+            },
             apply: { [weak self] loaded in self?.apply(loaded) },
-            busyChanged: { [weak self] busy in self?.isRefreshing = busy })
+            busyChanged: { [weak self] busy in
+                self?.isRefreshing = busy
+                if !busy { self?.loadingConfigState = nil }
+            })
         loop = made
         return made
     }
+
+    private func readingConfig(_ state: SetupConfigState) { loadingConfigState = state }
 
     /// What a read found, shown. A test hands it a snapshot of its own.
     func apply(_ loaded: SetupSnapshot) {

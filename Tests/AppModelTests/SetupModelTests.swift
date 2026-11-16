@@ -183,6 +183,42 @@ struct SetupModelRefreshTests {
         #expect(mac.runner.calls.count > after, "the refresh button always reads")
     }
 
+    @Test(arguments: SetupConfigFile.allCases)
+    func fixingEitherConfigUpdatesTheWindowEvenDuringTheActivationQuietPeriod(_ file: SetupConfigFile) async throws {
+        let mac = try Mac(activationQuietPeriod: .seconds(60)); defer { mac.cleanUp() }
+        try mac.writeConfig()
+        let edited = file.url(relativeTo: mac.paths.configFile)
+        try "[general\n".write(to: edited, atomically: true, encoding: .utf8)
+        await mac.model.refresh()
+        #expect(mac.model.menuState == .invalidConfig)
+        mac.model.select(.checks)
+        let originalDate = try #require(FileManager.default.attributesOfItem(atPath: edited.path)[.modificationDate] as? Date)
+        try "[general]\n".write(to: edited, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.modificationDate: originalDate], ofItemAtPath: edited.path)
+        await mac.model.refreshOnActivation()
+        #expect(mac.model.check(.config)?.status == .ok)
+        #expect(mac.model.menuState == .ready)
+        #expect(mac.model.selectedTab == .checks)
+        let calls = mac.runner.calls.count
+        await mac.model.refreshOnActivation()
+        #expect(mac.runner.calls.count == calls, "an unchanged return must not start the login shell again")
+    }
+
+    @Test func addingAndRemovingTheLocalConfigUpdatesItsEffectiveDefaultOnReturn() async throws {
+        let mac = try Mac(activationQuietPeriod: .seconds(60)); defer { mac.cleanUp() }
+        try mac.writeConfig("[general]\nterminal = \"ghostty\"\n")
+        await mac.model.refresh()
+        #expect(mac.model.summary.terminal == "Ghostty")
+        try "[general]\nterminal = \"terminal\"\n".write(to: mac.paths.localConfigFile, atomically: true, encoding: .utf8)
+        await mac.model.refreshOnActivation()
+        #expect(mac.model.summary.terminal == "Terminal")
+        #expect(mac.model.snapshot?.configFiles == [.main, .local])
+        try FileManager.default.removeItem(at: mac.paths.localConfigFile)
+        await mac.model.refreshOnActivation()
+        #expect(mac.model.summary.terminal == "Ghostty")
+        #expect(mac.model.snapshot?.configFiles == [.main])
+    }
+
     @Test func aFailedSetupIsShownUntilTheNextReadOfItsOwnAndNoLonger() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }
         await mac.model.refresh()

@@ -31,6 +31,8 @@ public struct SetupSnapshot: Sendable, Equatable {
     public var configFiles: [SetupConfigFile]
     /// The file named by the config check, including a dangling link before any syntax errors.
     public var configErrorFile: SetupConfigFile?
+    /// The same config consumed by this snapshot, captured before the doctor's asynchronous checks.
+    public var configState: SetupConfigState?
     /// Whether there is a config at all, `config.toml` or the per-machine overlay. Without one the window is on its first run.
     public var configExists: Bool
     /// What a person without a config can choose from; `nil` when there is a config.
@@ -43,7 +45,8 @@ public struct SetupSnapshot: Sendable, Equatable {
     public var home: URL
 
     public init(checks: [DoctorCheck] = [], menu: [MenuNode] = [], folders: FolderSnapshot = FolderSnapshot(), configFile: URL,
-                configExists: Bool = true, configFiles: [SetupConfigFile]? = nil, configErrorFile: SetupConfigFile? = nil, offer: SetupOffer? = nil,
+                configExists: Bool = true, configFiles: [SetupConfigFile]? = nil, configErrorFile: SetupConfigFile? = nil,
+                configState: SetupConfigState? = nil, offer: SetupOffer? = nil,
                 configProblems: [ConfigDiagnostic] = [], mcpCommand: String = AppIdentity.cliName, home: URL) {
         self.checks = checks
         self.menu = menu
@@ -54,6 +57,7 @@ public struct SetupSnapshot: Sendable, Equatable {
         self.configFiles = available
         let diagnosed = configErrorFile ?? configProblems.first { $0.severity == .error }.flatMap { SetupConfigFile.containing($0, mainFile: configFile) }
         self.configErrorFile = diagnosed.flatMap { available.contains($0) ? $0 : nil }
+        self.configState = configState
         self.offer = offer
         self.configProblems = configProblems
         self.mcpCommand = mcpCommand
@@ -87,8 +91,11 @@ public struct SetupLoader: Sendable {
         self.localizer = localizer
     }
 
-    public func load() async -> SetupSnapshot {
+    public func load(configRead: @Sendable (SetupConfigState) async -> Void = { _ in }) async -> SetupSnapshot {
         let loaded = ConfigStore.load(paths: paths)
+        let state = SetupConfigState(loaded)
+        // The window needs the in-flight read's baseline too: an edit made while the doctor runs must queue another read.
+        await configRead(state)
         // Without a config the window is on its first run and offers what is installed; the login shell is asked once, for that.
         let configExists = loaded.hasConfig
         let offer = configExists ? nil : await SetupOffer.make(facts: facts, runner: runner)
@@ -96,9 +103,14 @@ public struct SetupLoader: Sendable {
         let menu = MenuPreview.folderMenu(loaded.result, facts: facts, folder: facts.homeDirectory, localizer: localizer)
         return SetupSnapshot(
             checks: checks, menu: menu, folders: await folders(), configFile: loaded.file, configExists: configExists,
-            configFiles: loaded.setupFiles, configErrorFile: loaded.setupErrorFile, offer: offer,
+            configFiles: loaded.setupFiles, configErrorFile: loaded.setupErrorFile, configState: state, offer: offer,
             configProblems: loaded.result.diagnostics,
             mcpCommand: SetupSnippets.mcpCommand(home: facts.homeDirectory, helperPath: helperPath), home: facts.homeDirectory)
+    }
+
+    /// Bounded config reads only; no shell, process, app discovery or background polling.
+    public func configState() async -> SetupConfigState {
+        SetupConfigState(ConfigStore.load(paths: paths))
     }
 
     /// The folders Right Here remembers, as they are on disk now.
