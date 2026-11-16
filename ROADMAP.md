@@ -37,6 +37,8 @@
   and sets it up. `rh doctor` also notices a Finder extension that crashed since it was installed.
 - Setup guidance: a neutral first run, detected agents first, a healthy Overview that opens the menu preview, actionable diagnostic rows,
   optional and successful checks behind disclosures, and operation feedback above the page ([ADR 0026](docs/decisions/0026-setup-next-actions.md)).
+- First-run defaults use native menus and agents use native checkboxes, with app selections kept valid across installed-app
+  changes ([ADR 0039](docs/decisions/0039-native-first-run-choices.md)).
 - After setup, the remaining Finder task comes before the collapsed installation record. Registering an extension does not earn
   a completed mark while its switch is off; failures and warnings remain visible ([ADR 0034](docs/decisions/0034-setup-task-and-readiness.md)).
 - Folders: add a pin with the directory chooser, pin recent folders, reveal a folder in Finder, and see confirmation or a useful failure

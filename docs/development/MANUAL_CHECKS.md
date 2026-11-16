@@ -112,6 +112,13 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    and Finder Extension Settings; an unregistered extension shows its actual reason and Install or Repair. Once the
    extension is on it shows the status and the default terminal and editor. A healthy setup offers Preview Finder Menu.
    "Finder menu" is always the menu for a folder.
+   On a first run, Default terminal and Default editor expose named native selection menus with the current app as their value.
+   Agents expose native checkboxes with checked/unchecked states. With keyboard navigation enabled, reach the two menus,
+   choose with arrow keys and Return, then reach each checkbox and toggle it with Space. Confirm focus remains visible and
+   VoiceOver reports the group, control type and value. Expand More AI agents, check one and collapse it: the selected agent
+   must remain visible and checked. Repeat in an RTL language. A native fake-process review verified roles, menu arrow-key
+   selection, independent checkboxes, the disclosure and written choices in English and Arabic; full Tab traversal and spoken
+   VoiceOver remain manual ([ADR 0039](../decisions/0039-native-first-run-choices.md)).
 8. Worktrees: the list is for the repository of the folder you chose with "Choose Folder…", or else the first repository of your
    pinned and recent folders (the app has no folder of its own to start from). Right Here's worktrees (under
    `.right-here/worktrees`) have a Remove… button, which asks first and never forces: a worktree with uncommitted work stays,

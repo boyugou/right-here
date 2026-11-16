@@ -32,7 +32,7 @@ final class SetupModel {
     /// The submenus of the Finder menu that are open, by `MenuPreviewRow.id`.
     private(set) var openSubmenus: Set<String> = []
     /// What a person with no config file can choose from, and what they have chosen so far. The choices start from what the Mac
-    /// has (`SetupOffer.detected`) once, and are the person's from then on: a refresh does not put them back.
+    /// has (`SetupOffer.detected`); a refresh preserves the person's choices while those apps remain available.
     private(set) var offer: SetupOffer?
     var selectedTerminal: String?
     var selectedEditor: String?
@@ -559,21 +559,25 @@ final class SetupModel {
         if let report = setupReport, !report.ok, !isWorking { setupReport = nil }
         applyFolders(loaded.folders)
         offer = loaded.offer
-        seedChoices(from: loaded.offer)
+        updateChoices(from: loaded.offer)
         // The ids of the open submenus are positions: a changed menu may have another entry at a position that was open.
         openSubmenus = MenuPreview.keepingOpen(openSubmenus, in: loaded.menu)
         warmIcons(loaded.menu)
         if selectedTab == .worktrees { Task { await refreshWorktrees() } }
     }
 
-    /// The first time the window is offered what is installed, the choices start from what the Mac has. They stay the person's after
-    /// that, through every refresh.
-    private func seedChoices(from offer: SetupOffer?) {
-        guard let offer, !choicesSeeded else { return }
+    /// An installed-app refresh can remove a Picker's selected option. Keep available choices, then use an available default.
+    private func updateChoices(from offer: SetupOffer?) {
+        guard let offer else { return }
+        func available(_ selected: String?, detected: String?, among options: [SetupOffer.Option]) -> String? {
+            if let selected, options.contains(where: { $0.id == selected }) { return selected }
+            if let detected, options.contains(where: { $0.id == detected }) { return detected }
+            return options.first?.id
+        }
+        selectedTerminal = available(choicesSeeded ? selectedTerminal : nil, detected: offer.detected.terminal, among: offer.terminals)
+        selectedEditor = available(choicesSeeded ? selectedEditor : nil, detected: offer.detected.editor, among: offer.editors)
+        if !choicesSeeded { selectedAgents = Set(offer.detected.agents) }
         choicesSeeded = true
-        selectedTerminal = offer.detected.terminal ?? offer.terminals.first?.id
-        selectedEditor = offer.detected.editor ?? offer.editors.first?.id
-        selectedAgents = Set(offer.detected.agents)
     }
 
     private func refreshFolders() async {

@@ -41,6 +41,7 @@
   - [0036 Open the config file named by the problem](decisions/0036-open-the-diagnosed-config-file.md)
   - [0037 Returning after a config edit updates the window](decisions/0037-refresh-config-changes-on-return.md)
   - [0038 Keep the worktree identifiable through removal confirmation](decisions/0038-worktree-identity-through-confirmation.md)
+  - [0039 First-run choices use native selection controls](decisions/0039-native-first-run-choices.md)
 - [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.

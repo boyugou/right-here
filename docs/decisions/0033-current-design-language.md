@@ -42,8 +42,8 @@ so that optional path was closed without accepting it. No system-generated icon 
   away. The full preview explains that submenus expand here and actions run in Finder; only expandable rows receive hover and
   pressed feedback, with their text kept at normal contrast. Default apps use light information rows. First-run, incomplete
   setup and failed checks retain their own states.
-- First-run choices use restrained rectangular controls with separate single- and multiple-choice marks. There is one prominent
-  Set Up action and no enclosing colored card. Long descriptions and additional agent choices remain available.
+- First-run defaults use native selection menus, and agents use native checkboxes ([0039](0039-native-first-run-choices.md)).
+  There is one prominent Set Up action and no enclosing colored card. Long descriptions and additional agent choices remain available.
 - Folders and worktrees use a shared list container with inset separators. Names lead, paths are secondary, and actions remain
   visible with a full hit area. Quiet buttons retain their labels and disabled states and add hover/pressed feedback. Search,
   no-match, empty, read-failure and operation feedback remain distinct. No storage or worktree-removal rule changes.

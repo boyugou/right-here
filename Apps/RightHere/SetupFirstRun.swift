@@ -44,43 +44,6 @@ struct FlowLayout: Layout {
     }
 }
 
-/// One thing to choose: a round mark when exactly one can be chosen, a square one when several can. What it is called is a name.
-struct ChoiceChip: View {
-    let title: String
-    let selected: Bool
-    let multiple: Bool
-    let action: () -> Void
-    @Environment(\.setupPalette) private var palette
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: mark)
-                    .foregroundStyle(selected ? palette.accent : Color.secondary)
-                    .accessibilityHidden(true)
-                Text(verbatim: title)
-                    .font(.callout)
-            }
-            .padding(.horizontal, 10)
-            .frame(minHeight: 32)
-            .background(selected ? palette.selection : palette.canvas, in: RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(selected ? palette.accent.opacity(0.6) : palette.rule, lineWidth: 0.5))
-            .contentShape(RoundedRectangle(cornerRadius: 6))
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(selected ? .isSelected : [])
-    }
-
-    private var mark: String {
-        switch (multiple, selected) {
-        case (true, true): "checkmark.square.fill"
-        case (true, false): "square"
-        case (false, true): "largecircle.fill.circle"
-        case (false, false): "circle"
-        }
-    }
-}
-
 /// The app runs from a disk image, another volume or the temporary copy macOS makes of a download. Said before anything is tried, with what to do: the
 /// buttons that would set up are off until the app is somewhere that stays.
 struct LocationCard: View {
@@ -133,22 +96,10 @@ struct FirstRunChooser: View {
 
             if let offer = model.offer {
                 choice(.appCheckTerminal) {
-                    FlowLayout(spacing: 8) {
-                        ForEach(offer.terminals) { option in
-                            ChoiceChip(title: option.name, selected: model.selectedTerminal == option.id, multiple: false) {
-                                model.selectedTerminal = option.id
-                            }
-                        }
-                    }
+                    applicationPicker(.appCheckTerminal, options: offer.terminals, selection: $model.selectedTerminal)
                 }
                 choice(.appCheckEditor) {
-                    FlowLayout(spacing: 8) {
-                        ForEach(offer.editors) { option in
-                            ChoiceChip(title: option.name, selected: model.selectedEditor == option.id, multiple: false) {
-                                model.selectedEditor = option.id
-                            }
-                        }
-                    }
+                    applicationPicker(.appCheckEditor, options: offer.editors, selection: $model.selectedEditor)
                 }
                 choice(.appSetupAgents, hint: offer.loginShellAnswered ? .appSetupAgentsHint : .appSetupShellSilent) {
                     VStack(alignment: .leading, spacing: 10) {
@@ -156,11 +107,11 @@ struct FirstRunChooser: View {
                         let missing = offer.agents.filter { !$0.available }
                         if found.isEmpty {
                             // A silent shell is not evidence that an agent is absent: keep every choice in reach.
-                            agentChips(offer.agents)
+                            agentChoices(offer.agents)
                         } else {
-                            agentChips(found)
+                            agentChoices(found)
                             if !showMoreAgents {
-                                agentChips(missing.filter { model.selectedAgents.contains($0.id) })
+                                agentChoices(missing.filter { model.selectedAgents.contains($0.id) })
                             }
                             if !missing.isEmpty {
                                 DisclosureGroup(isExpanded: $showMoreAgents) {
@@ -168,7 +119,7 @@ struct FirstRunChooser: View {
                                         Text(l10n.string(.appSetupNotFound))
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
-                                        agentChips(missing)
+                                        agentChoices(missing)
                                     }
                                     .padding(.top, 8)
                                 } label: {
@@ -196,12 +147,37 @@ struct FirstRunChooser: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func agentChips(_ agents: [SetupOffer.Option]) -> some View {
-        FlowLayout(spacing: 8) {
-            ForEach(agents) { agent in
-                ChoiceChip(title: agent.name, selected: model.selectedAgents.contains(agent.id), multiple: true) {
-                    if !model.selectedAgents.insert(agent.id).inserted { model.selectedAgents.remove(agent.id) }
+    @ViewBuilder private func applicationPicker(_ title: LocalizationKey, options: [SetupOffer.Option], selection: Binding<String?>) -> some View {
+        if options.isEmpty {
+            Text(l10n.string(.appNoneFound))
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        } else {
+            Picker(l10n.string(title), selection: selection) {
+                ForEach(options) { option in
+                    Text(verbatim: option.name).tag(Optional(option.id))
                 }
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .frame(minWidth: 220, idealWidth: 280, maxWidth: 360, alignment: .leading)
+        }
+    }
+
+    private func agentChoices(_ agents: [SetupOffer.Option]) -> some View {
+        FlowLayout(spacing: 16) {
+            ForEach(agents) { agent in
+                Toggle(isOn: Binding(
+                    get: { model.selectedAgents.contains(agent.id) },
+                    set: { selected in
+                        if selected { model.selectedAgents.insert(agent.id) } else { model.selectedAgents.remove(agent.id) }
+                    })) {
+                    Text(verbatim: agent.name)
+                        .font(.callout)
+                }
+                .toggleStyle(.checkbox)
+                .fixedSize()
+                .frame(minHeight: 32)
             }
         }
     }
