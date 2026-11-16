@@ -16,10 +16,10 @@ extension SetupTab {
 
     var symbol: String {
         switch self {
-        case .overview: "house"
+        case .overview: "square.grid.2x2"
         case .menu: "contextualmenu.and.cursorarrow"
         case .checks: "checklist"
-        case .ai: "sparkles"
+        case .ai: "sparkle"
         case .worktrees: "arrow.triangle.branch"
         case .folders: "folder"
         }

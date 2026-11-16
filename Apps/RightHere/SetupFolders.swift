@@ -7,6 +7,7 @@ struct FoldersPage: View {
     @Bindable var model: SetupModel
     @FocusState private var searchFocused: Bool
     @State private var searchSelection: TextSelection?
+    @Environment(\.setupPalette) private var palette
     private let l10n = Localizer.system
 
     var body: some View {
@@ -78,8 +79,8 @@ struct FoldersPage: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 3)
         .frame(minHeight: 28)
-        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 7))
-        .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(searchFocused ? Color.accentColor : Color.secondary.opacity(0.25), lineWidth: searchFocused ? 2 : 1))
+        .background(palette.canvas, in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(searchFocused ? palette.accent : palette.rule, lineWidth: searchFocused ? 2 : 1))
         .onChange(of: model.folderSearchRequest, initial: true) {
             guard model.folderSearchRequest > 0 else { return }
             searchFocused = true
@@ -170,10 +171,16 @@ struct FoldersPage: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
                 Text(l10n.string(.appPinnedFolders))
-                    .font(.headline)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
                     .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 8)
                 if !model.showsFolderSearch { pinButton }
+                else if !paths.isEmpty {
+                    Text(paths.count.formatted())
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
             }
             if paths.isEmpty {
                 Prose(key: .appNoPinned, home: model.homePath)
@@ -190,12 +197,16 @@ struct FoldersPage: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
                 Text(l10n.string(.appRecentFolders))
-                    .font(.headline)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
                     .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 8)
                 if !searching && !paths.isEmpty {
                     Button(l10n.string(.appClearRecents)) { Task { await model.clearRecents() } }
-                        .buttonStyle(.bordered)
+                        .font(.system(size: 11))
+                        .frame(minHeight: 28)
+                        .buttonStyle(SetupQuietButtonStyle())
+                        .foregroundStyle(.secondary)
                         .controlSize(.small)
                         .disabled(model.isWorking || model.isRefreshing)
                 }
@@ -212,8 +223,8 @@ struct FoldersPage: View {
     }
 
     private func rows(_ paths: [String]) -> some View {
-        VStack(spacing: 8) {
-            ForEach(paths, id: \.self) { path in
+        VStack(spacing: 0) {
+            ForEach(Array(paths.enumerated()), id: \.element) { index, path in
                 SavedFolderRow(path: path, home: model.homePath, pinned: model.folders.pins.contains(path),
                                disabled: model.isWorking || model.isRefreshing,
                                reveal: { Task { await model.revealFolder(path) } },
@@ -223,8 +234,12 @@ struct FoldersPage: View {
                         else { await model.pin(path) }
                     }
                 })
+                if index < paths.count - 1 {
+                    Divider().padding(.leading, 46).padding(.trailing, 14)
+                }
             }
         }
+        .panel()
     }
 }
 
@@ -235,6 +250,7 @@ private struct SavedFolderRow: View {
     let disabled: Bool
     let reveal: () -> Void
     let togglePin: () -> Void
+    @Environment(\.setupPalette) private var palette
     private let l10n = Localizer.system
 
     private var displayedPath: String { PathDisplay.abbreviatingHome(path.withControlCharactersEscaped, home: home) }
@@ -242,8 +258,9 @@ private struct SavedFolderRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "folder.fill")
-                .font(.title3)
-                .foregroundStyle(Color.accentColor)
+                .font(.system(size: 18))
+                .foregroundStyle(palette.folder)
+                .frame(width: 20)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
                 Text(verbatim: (path as NSString).lastPathComponent.withControlCharactersEscaped)
@@ -251,7 +268,7 @@ private struct SavedFolderRow: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text(verbatim: PathDisplay.folder(path.withControlCharactersEscaped, home: home))
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -264,6 +281,7 @@ private struct SavedFolderRow: View {
 
             Button(action: reveal) {
                 Label(l10n.string(.actionReveal), systemImage: "arrow.up.forward.square")
+                    .frame(width: 26, height: 28)
             }
             .labelStyle(.iconOnly)
             .help(l10n.string(.actionReveal))
@@ -271,17 +289,18 @@ private struct SavedFolderRow: View {
 
             Button(action: togglePin) {
                 Label(l10n.string(pinned ? .appUnpin : .appPin), systemImage: pinned ? "pin.fill" : "pin")
+                    .frame(width: 26, height: 28)
             }
             .labelStyle(.iconOnly)
             .help(l10n.string(pinned ? .appUnpin : .appPin))
             .accessibilityValue(displayedPath)
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(SetupQuietButtonStyle())
         .controlSize(.small)
         .disabled(disabled)
-        .padding(12)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .panel(cornerRadius: 8)
         .accessibilityElement(children: .contain)
     }
 }

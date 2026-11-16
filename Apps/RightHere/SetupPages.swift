@@ -6,14 +6,6 @@ import SwiftUI
 // The sections of the setup window. Each is written from the model's answers; the words are catalog entries (`Localizer`), and what
 // is only a name, a path or a command is `Text(verbatim:)`, so that a literal that a translation would miss does not get in.
 
-extension View {
-    /// A panel of the window: the control background with a hairline edge, which holds up in both appearances.
-    func panel(cornerRadius: CGFloat = 10) -> some View {
-        background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(RoundedRectangle(cornerRadius: cornerRadius).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-    }
-}
-
 /// The sentence that says how the setup stands.
 func statusTitle(_ state: SetupSummary.State) -> LocalizationKey { state.titleKey }
 
@@ -106,7 +98,7 @@ struct OverviewPage: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 28) {
                 if model.locationProblem != nil {
                     LocationCard()
                 }
@@ -131,9 +123,13 @@ struct OverviewPage: View {
                     }
 
                     if model.snapshot != nil {
-                        ViewThatFits(in: .horizontal) {
-                            HStack(alignment: .top, spacing: 14) { defaults }
-                            VStack(spacing: 14) { defaults }
+                        VStack(spacing: 18) {
+                            Divider()
+                            ViewThatFits(in: .horizontal) {
+                                HStack(alignment: .top, spacing: 24) { defaults }
+                                VStack(spacing: 18) { defaults }
+                            }
+                            Divider()
                         }
                     }
                 }
@@ -153,10 +149,9 @@ struct OverviewPage: View {
     private func defaultApp(_ title: LocalizationKey, icon: String, name: String?) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 32, height: 32)
-                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                .font(.system(size: 18, weight: .regular))
+                .foregroundStyle(.secondary)
+                .frame(width: 24, height: 28)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 Text(l10n.string(title))
@@ -173,9 +168,7 @@ struct OverviewPage: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .panel()
         .accessibilityElement(children: .combine)
     }
 }
@@ -183,47 +176,104 @@ struct OverviewPage: View {
 /// The status once the Finder extension is on: a line that says whether anything needs the person, and which checks.
 struct StatusCard: View {
     let model: SetupModel
+    @Environment(\.setupPalette) private var palette
     private let l10n = Localizer.system
 
     var body: some View {
         let state = model.summary.state
-        HStack(alignment: .top, spacing: 16) {
-            symbol(state)
-            VStack(alignment: .leading, spacing: 6) {
-                Text(l10n.string(statusTitle(state)))
-                    .font(.headline)
-                    .accessibilityAddTraits(.isHeader)
-                if state == .allSet {
-                    Text(l10n.string(.appAllSetHint))
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Button {
-                        model.select(.menu)
-                    } label: {
-                        Label(l10n.string(.appPreviewMenu), systemImage: "contextualmenu.and.cursorarrow")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .padding(.top, 8)
-                } else if state == .needsAttention {
-                    Text(model.summary.openTitles(in: l10n).formatted(.list(type: .and, width: .narrow)))
-                        .font(.callout)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(l10n.string(.appOpenChecksHint))
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Button(l10n.string(.appShowChecks)) { model.select(.checks) }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .padding(.top, 4)
+        if state == .allSet {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: 28) {
+                    readyMessage.frame(minWidth: 244, idealWidth: 250, maxWidth: .infinity, alignment: .leading)
+                    if model.menuState == .ready { menuSnapshot.frame(width: 260) }
+                }
+                VStack(alignment: .leading, spacing: 24) {
+                    readyMessage
+                    if model.menuState == .ready { menuSnapshot }
                 }
             }
-            Spacer(minLength: 0)
+        } else {
+            HStack(alignment: .top, spacing: 14) {
+                symbol(state)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(l10n.string(statusTitle(state)))
+                        .font(.system(size: 22, weight: .semibold))
+                        .accessibilityAddTraits(.isHeader)
+                    if state == .needsAttention {
+                        Text(model.summary.openTitles(in: l10n).formatted(.list(type: .and, width: .narrow)))
+                            .font(.callout)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(l10n.string(.appOpenChecksHint))
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button(l10n.string(.appShowChecks)) { model.select(.checks) }
+                            .buttonStyle(.borderedProminent)
+                            .padding(.top, 8)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, 12)
         }
-        .padding(18)
+    }
+
+    private var readyMessage: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(l10n.string(.appAllSet))
+                .font(.system(size: 25, weight: .semibold))
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            Text(l10n.string(.appAllSetHint))
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Button(l10n.string(.appPreviewMenu)) { model.select(.menu) }
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 8)
+        }
+        .padding(.top, 6)
+    }
+
+    private var menuSnapshot: some View {
+        let rows = MenuPreview.rows(model.snapshot?.menu ?? []).filter { $0.kind != .separator }
+        return VStack(alignment: .leading, spacing: 12) {
+            Label(l10n.string(.appPreviewMenu), systemImage: "contextualmenu.and.cursorarrow")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+            Divider()
+            VStack(alignment: .leading, spacing: 15) {
+                ForEach(Array(rows.prefix(5))) { row in
+                    HStack(spacing: 10) {
+                        if let icon = model.image(for: row.icon) {
+                            Image(nsImage: icon)
+                                .renderingMode(icon.isTemplate ? .template : .original)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 16, height: 16)
+                                .accessibilityHidden(true)
+                        }
+                        Text(verbatim: row.title)
+                            .font(.system(size: 12))
+                            .lineLimit(1)
+                            .help(row.title)
+                        Spacer(minLength: 0)
+                        if row.hasChildren {
+                            Image(systemName: "chevron.forward")
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundStyle(.secondary)
+                                .accessibilityHidden(true)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .panel()
+        .background(palette.surface, in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(palette.rule, lineWidth: 0.5))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(l10n.string(.appPreviewMenu))
     }
 
     @ViewBuilder private func symbol(_ state: SetupSummary.State) -> some View {
@@ -231,32 +281,30 @@ struct StatusCard: View {
         case .checking:
             ProgressView()
                 .controlSize(.small)
-                .frame(width: 40, height: 40)
+                .frame(width: 28, height: 28)
         case .allSet:
-            Image(systemName: "checkmark.seal.fill")
-                .font(.title)
-                .foregroundStyle(Color.green)
-                .frame(width: 40, height: 40)
-                .accessibilityHidden(true)
+            EmptyView()
         case .needsAttention:
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.title)
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 24, weight: .regular))
                 .foregroundStyle(Color.orange)
-                .frame(width: 40, height: 40)
+                .frame(width: 28, height: 28)
                 .accessibilityHidden(true)
         }
     }
 }
 
+
 /// The three steps of a first run, in order, and a way around the extension. Shown until the extension is switched on.
 struct FirstRunCard: View {
     let model: SetupModel
+    @Environment(\.setupPalette) private var palette
     private let l10n = Localizer.system
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(l10n.string(.appOnboardTitle))
-                .font(.headline)
+                .font(.system(size: 22, weight: .semibold))
                 .accessibilityAddTraits(.isHeader)
 
             step(1, title: .appStepOneTitle, body: .appStepOneBody,
@@ -302,10 +350,7 @@ struct FirstRunCard: View {
             }
             .accessibilityElement(children: .combine)
         }
-        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.accentColor.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1.5))
     }
 
     private func step<Actions: View>(_ number: Int, title: LocalizationKey, body: LocalizationKey, done: Bool,
@@ -313,7 +358,7 @@ struct FirstRunCard: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(done ? Color.green : Color.accentColor)
+                    .fill(done ? Color.green : palette.accent)
                 if done {
                     Image(systemName: "checkmark")
                         .font(.caption.weight(.bold))

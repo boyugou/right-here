@@ -37,7 +37,8 @@ struct WorktreesPage: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 Text(l10n.string(.appWorktreesRepository))
-                    .font(.headline)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
                     .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 8)
                 Button {
@@ -85,7 +86,7 @@ struct WorktreesPage: View {
                 }
                 .help(displayPath(repository))
                 Text(verbatim: displayPath(repository))
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -93,9 +94,9 @@ struct WorktreesPage: View {
                     .help(displayPath(repository))
             }
         }
-        .padding(16)
+        .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .panel()
+        .overlay(alignment: .bottom) { Divider() }
         .accessibilityElement(children: .contain)
     }
 
@@ -143,13 +144,17 @@ struct WorktreesPage: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         case .loaded(let rows):
-            VStack(spacing: 8) {
-                ForEach(rows) { row in
+            VStack(spacing: 0) {
+                ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                     WorktreeLine(row: row, home: model.homePath, disabled: model.isWorking || model.isRefreshing,
                                  onReveal: { Task { await model.revealFolder(row.entry.path) } },
                                  onRemove: { pending = model.removalRequest(for: row) })
+                    if index < rows.count - 1 {
+                        Divider().padding(.leading, 46).padding(.trailing, 14)
+                    }
                 }
             }
+            .panel()
         }
     }
 }
@@ -161,12 +166,13 @@ struct WorktreeLine: View {
     let disabled: Bool
     let onReveal: () -> Void
     let onRemove: () -> Void
+    @Environment(\.setupPalette) private var palette
     private let l10n = Localizer.system
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             Image(systemName: row.isMainWorkingCopy ? "house" : "arrow.triangle.branch")
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(palette.folder)
                 .frame(width: 20)
                 .accessibilityHidden(true)
 
@@ -182,7 +188,7 @@ struct WorktreeLine: View {
                     }
                 }
                 Text(verbatim: PathDisplay.folder(row.entry.path.withControlCharactersEscaped, home: home))
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -195,6 +201,7 @@ struct WorktreeLine: View {
 
             Button(action: onReveal) {
                 Label(l10n.string(.actionReveal), systemImage: "arrow.up.forward.square")
+                    .frame(width: 26, height: 28)
             }
             .labelStyle(.iconOnly)
             .help(l10n.string(.actionReveal))
@@ -205,20 +212,21 @@ struct WorktreeLine: View {
                     .accessibilityLabel(l10n.render(.appRemoveWorktreeNamed((row.entry.path as NSString).lastPathComponent)))
             }
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(SetupQuietButtonStyle())
         .controlSize(.small)
         .disabled(disabled)
-        .padding(12)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .panel(cornerRadius: 8)
         .accessibilityElement(children: .contain)
     }
 
     private func tag(_ key: LocalizationKey) -> some View {
         Text(l10n.string(key))
-            .font(.caption2.weight(.semibold))
+            .font(.caption2)
+            .foregroundStyle(.secondary)
             .padding(.horizontal, 7)
             .padding(.vertical, 2)
-            .background(Color.accentColor.opacity(0.15), in: Capsule())
+            .background(palette.surface, in: RoundedRectangle(cornerRadius: 4))
     }
 }

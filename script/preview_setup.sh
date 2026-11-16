@@ -99,7 +99,7 @@ let package = Package(
 )
 PACKAGE
 # The window's own files, the same ones the app compiles.
-for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift SetupChecks.swift SetupFolders.swift SetupWorktrees.swift SetupFeedback.swift SetupNavigation.swift; do
+for file in SetupView.swift SetupModel.swift SetupPages.swift SetupFirstRun.swift SetupChecks.swift SetupFolders.swift SetupWorktrees.swift SetupFeedback.swift SetupNavigation.swift SetupAppearance.swift; do
   ln -sf "$ROOT/Apps/RightHere/$file" "$PREVIEW/Sources/preview/$file"
 done
 # The Finder menu's own glyphs, which main.swift registers by name (the app finds them in its asset catalog), and the

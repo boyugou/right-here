@@ -79,6 +79,7 @@ targets:
         PRODUCT_NAME: Right Here
         EXECUTABLE_NAME: RightHere
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         CODE_SIGN_ENTITLEMENTS: Apps/RightHere/RightHere.entitlements
 
   FinderExtension:

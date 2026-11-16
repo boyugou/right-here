@@ -50,21 +50,22 @@ struct ChoiceChip: View {
     let selected: Bool
     let multiple: Bool
     let action: () -> Void
+    @Environment(\.setupPalette) private var palette
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: mark)
-                    .foregroundStyle(selected ? Color.accentColor : Color.secondary)
+                    .foregroundStyle(selected ? palette.accent : Color.secondary)
                     .accessibilityHidden(true)
                 Text(verbatim: title)
                     .font(.callout)
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(selected ? Color.accentColor.opacity(0.14) : Color.primary.opacity(0.05), in: Capsule())
-            .overlay(Capsule().strokeBorder(selected ? Color.accentColor.opacity(0.5) : Color.primary.opacity(0.12), lineWidth: 1))
-            .contentShape(Capsule())
+            .frame(minHeight: 32)
+            .background(selected ? palette.selection : palette.canvas, in: RoundedRectangle(cornerRadius: 6))
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(selected ? palette.accent.opacity(0.6) : palette.rule, lineWidth: 0.5))
+            .contentShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -120,9 +121,9 @@ struct FirstRunChooser: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text(l10n.string(.appSetupTitle))
-                    .font(.headline)
+                    .font(.system(size: 22, weight: .semibold))
                     .accessibilityAddTraits(.isHeader)
                 Text(l10n.string(.appSetupBody))
                     .font(.callout)
@@ -192,10 +193,7 @@ struct FirstRunChooser: View {
                 }
             }
         }
-        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.accentColor.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1.5))
     }
 
     private func agentChips(_ agents: [SetupOffer.Option]) -> some View {
@@ -210,6 +208,7 @@ struct FirstRunChooser: View {
 
     private func choice<Content: View>(_ title: LocalizationKey, hint: LocalizationKey? = nil, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
+            Divider().padding(.bottom, 8)
             Text(l10n.string(title))
                 .font(.callout.weight(.medium))
             content()

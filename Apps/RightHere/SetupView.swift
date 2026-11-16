@@ -9,7 +9,10 @@ struct SetupView: View {
     @Bindable var model: SetupModel
     let expandCheckDetails: Bool
     let previewViewport: Bool
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorSchemeContrast) private var contrast
     private let l10n = Localizer.system
+    private var palette: SetupPalette { SetupPalette(dark: colorScheme == .dark, increasedContrast: contrast == .increased) }
 
     init(model: SetupModel, expandCheckDetails: Bool = false, previewViewport: Bool = false) {
         self.model = model
@@ -20,8 +23,8 @@ struct SetupView: View {
     var body: some View {
         HStack(spacing: 0) {
             sidebar
-                .frame(width: 220)
-                .background(.ultraThinMaterial)
+                .frame(width: 196)
+                .background(palette.sidebar)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(l10n.string(.appNavigation))
 
@@ -29,26 +32,26 @@ struct SetupView: View {
 
             VStack(spacing: 0) {
                 header
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 14)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 15)
 
                 Divider()
 
                 if model.isWorking && !model.isChoosingFolder {
                     ProgressRow(message: model.isTestingLaunch ? .appTesting : model.isSettingUp ? .appSettingUp : .appLoading)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 24)
+                        .padding(.horizontal, 28)
                         .padding(.top, 14)
                 } else if let notice = model.notice, !model.isWorking {
                     NoticeBanner(notice: notice, model: model)
-                        .padding(.horizontal, 24)
+                        .padding(.horizontal, 28)
                         .padding(.top, 14)
                 }
 
                 ScrollViewReader { proxy in
                     SetupPage(clipPreview: previewViewport) {
                         page
-                            .padding(24)
+                            .padding(28)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .id("setup-page-start")
                     }
@@ -59,12 +62,14 @@ struct SetupView: View {
                     }
                 }
             }
-            .frame(minWidth: 580, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(Color(nsColor: .windowBackgroundColor))
+            .frame(minWidth: 604, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(palette.canvas)
             .accessibilityElement(children: .contain)
             .accessibilityLabel(l10n.string(model.selectedTab.title))
         }
         .frame(minWidth: 800, minHeight: 560)
+        .environment(\.setupPalette, palette)
+        .tint(palette.accent)
         // The catalog can choose a different language from macOS's layout locale, including an English fallback.
         .environment(\.layoutDirection, l10n.isRightToLeft ? .rightToLeft : .leftToRight)
         .task {
@@ -82,55 +87,39 @@ struct SetupView: View {
         VStack(alignment: .leading, spacing: 0) {
             brand
                 .padding(.horizontal, 16)
-                .padding(.top, 20)
-                .padding(.bottom, 16)
-
-            Divider()
-                .padding(.horizontal, 12)
+                .padding(.top, 18)
+                .padding(.bottom, 24)
 
             VStack(spacing: 2) {
-                ForEach(SetupTab.allCases) { tab in
+                ForEach([SetupTab.overview, .menu, .ai]) { tab in
                     sidebarRow(tab)
                 }
+                Divider().padding(.horizontal, 10).padding(.vertical, 16)
+                ForEach([SetupTab.folders, .worktrees]) { tab in
+                    sidebarRow(tab)
+                }
+                Divider().padding(.horizontal, 10).padding(.vertical, 16)
+                sidebarRow(.checks)
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 12)
 
             Spacer(minLength: 8)
 
-            Divider()
-                .padding(.horizontal, 12)
-
             footer
-                .padding(12)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 18)
         }
     }
 
     private var brand: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(spacing: 10) {
             Image(nsImage: NSApplication.shared.applicationIconImage)
                 .resizable()
-                .frame(width: 36, height: 36)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .frame(width: 32, height: 32)
                 .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text(verbatim: AppIdentity.productName)
-                        .font(.headline.weight(.bold))
-                    Text(verbatim: AppIdentity.version)
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 1.5)
-                        .background(.quaternary.opacity(0.6), in: Capsule())
-                        .foregroundStyle(.secondary)
-                        .accessibilityLabel(l10n.render(.appVersion(AppIdentity.version)))
-                }
-                Text(l10n.string(.appSubtitle))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            Text(verbatim: AppIdentity.productName)
+                .font(.system(size: 14, weight: .semibold))
         }
         .accessibilityElement(children: .combine)
     }
@@ -147,14 +136,15 @@ struct SetupView: View {
         } label: {
             HStack(spacing: 9) {
                 Image(systemName: tab.symbol)
-                    .font(.system(size: 14, weight: selected ? .semibold : .regular))
+                    .font(.system(size: 14, weight: .regular))
                     .frame(width: 18)
-                    .foregroundStyle(selected ? Color.accentColor : Color.secondary)
+                    .foregroundStyle(selected ? palette.accent : Color.secondary)
                     .accessibilityHidden(true)
 
                 Text(l10n.string(tab.title))
                     .font(.system(size: 13, weight: selected ? .semibold : .regular))
                     .foregroundStyle(selected ? Color.primary : Color.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Spacer(minLength: 4)
 
@@ -163,14 +153,14 @@ struct SetupView: View {
                         .font(.caption2.weight(.bold))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color.orange.opacity(0.3), in: Capsule())
+                        .background(Color.orange.opacity(0.16), in: Capsule())
                         .foregroundStyle(Color.primary)
                         .accessibilityHidden(true)
                 }
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(selected ? Color.accentColor.opacity(0.14) : Color.clear, in: RoundedRectangle(cornerRadius: 8))
+            .padding(.vertical, 8)
+            .background(selected ? palette.selection : Color.clear, in: RoundedRectangle(cornerRadius: 7))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -179,14 +169,15 @@ struct SetupView: View {
     }
 
     private var footer: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Circle()
                     .fill(statusColor)
-                    .frame(width: 8, height: 8)
+                    .frame(width: 5, height: 5)
                     .accessibilityHidden(true)
                 Text(l10n.string(model.statusTitle))
-                    .font(.caption.weight(.medium))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 4)
                 Button {
@@ -206,13 +197,16 @@ struct SetupView: View {
                 ProgressRow(message: .appRefreshing)
                     .font(.caption2)
             }
+
+            Text(verbatim: AppIdentity.version)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(.secondary)
+                .accessibilityLabel(l10n.render(.appVersion(AppIdentity.version)))
         }
-        .padding(10)
-        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
     }
 
     private var statusColor: Color {
-        if model.needsFirstRunChoice { return .accentColor }
+        if model.needsFirstRunChoice { return palette.accent }
         switch model.summary.state {
         case .checking: return .secondary
         case .allSet: return .green
@@ -238,7 +232,7 @@ struct SetupView: View {
 
     private var heading: some View {
         Text(l10n.string(model.selectedTab.title))
-            .font(.title2.weight(.bold))
+            .font(.system(size: 16, weight: .semibold))
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityAddTraits(.isHeader)
     }
@@ -250,7 +244,8 @@ struct SetupView: View {
             } label: {
                 Label(l10n.string(.appOpenConfig), systemImage: "square.and.pencil")
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(SetupQuietButtonStyle())
+            .foregroundStyle(.secondary)
             .controlSize(.small)
             .disabled(model.isWorking)
         }

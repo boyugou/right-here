@@ -3206,7 +3206,7 @@ enum Localizations {
         "uk": "Переглянути меню Finder",
         "ur": "‏Finder مینو کا پیش منظر",
         "vi": "Xem trước menu Finder",
-        "zh-Hans": "预览 Finder 菜单",
+        "zh-Hans": "预览访达菜单",
         "zh-Hant": "預覽 Finder 選單",
     ]
 

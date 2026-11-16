@@ -1,6 +1,6 @@
 # 0031: The app icon uses a folder and one action mark
 
-Date: 2026-11-15. Status: accepted.
+Date: 2026-11-15. Status: superseded by [0033](0033-current-design-language.md) after the user's visual review.
 
 ## Problem
 

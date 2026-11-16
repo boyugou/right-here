@@ -34,6 +34,7 @@ struct RightHereApp: App {
             SetupView(model: model)
         }
         .windowResizability(.contentMinSize)
+        .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 860, height: 580)
         .defaultLaunchBehavior(.presented)
         .commands { SetupCommands(model: model) }

@@ -183,3 +183,17 @@ open one, and the preview is the same code as the extension's, not Finder's own 
     of it; copying a successful MCP snippet leaves the snippet on the clipboard. With VoiceOver, navigate the sidebar, page,
     feedback and repository groups separately, and find the AI-assistant and failed-list headings. Dismissing a notice must not
     clear the diagnostic or change the selected section. See [ADR 0029](../decisions/0029-feedback-and-keyboard-navigation.md).
+17. Visual system (ADR 0033): inspect Overview, first run, Folders, Worktrees and Checks at the minimum size in both appearances.
+    The sidebar groups pages by purpose; View-menu shortcut mappings stay as documented above. The healthy Overview's bounded
+    menu is a labeled preview of the actual configuration, including submenu indicators. Its button opens the complete preview.
+    Long translations wrap; folder paths retain their full accessibility values. Quiet row actions remain visible before hover.
+    With keyboard navigation enabled, verify focus and activation of each action, and read them with VoiceOver. Check a system
+    accent override, increased contrast and the icon in Dock as well as the window.
+
+    Native review on the machine reporting macOS 27.2 (26B123), using a separately identified app and temporary home, verified
+    the new icon and hidden-title window, Chinese navigation and checks, search focus and Escape clearing, pin/unpin feedback,
+    and retained queries through refresh and section switching. The original folder lists were preserved. A pink accent
+    override in the review app's own defaults changed selection, focus and native buttons; no global appearance preference was
+    changed. Accessibility exposed every row action and its complete path. The current system's Tab navigation remained on
+    text fields; full keyboard-navigation mode and spoken VoiceOver still need the manual check above. Dark appearance was
+    inspected in SwiftUI renders, including dark text on the light primary button. Dock was not verified in this revision.
