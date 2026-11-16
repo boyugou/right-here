@@ -32,6 +32,7 @@
   - [0027 Saved folders can be added and used in the app](decisions/0027-manage-folders-in-the-app.md)
   - [0028 The worktree browser keeps its repository and operation states clear](decisions/0028-worktree-browser-state.md)
   - [0029 Feedback stays readable without displacing the page](decisions/0029-feedback-and-keyboard-navigation.md)
+  - [0030 A failed saved-folder read never becomes an empty list](decisions/0030-saved-folder-read-failures.md)
 - [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.

@@ -231,6 +231,29 @@ struct SetupActionsTests {
 
 @Suite("SetupActions: the folders Right Here remembers")
 struct SetupFolderEditTests {
+    @Test func failedReadsNeverClaimSuccessfulFolderEdits() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        try seed(machine)
+        let original = Data("pins = [\"/work/app\"".utf8)
+        try original.write(to: machine.paths.stateFile)
+        let actions = machine.actions(FakeProcessRunner(), directories: ["/work/new"])
+        let results = [await actions.pin("/work/new"), await actions.unpin("/work/app"), await actions.clearRecents()]
+        for notice in results {
+            guard case .savedFoldersProblem(let message) = notice else { Issue.record("The edit did not report its saved-folder error."); continue }
+            #expect(notice?.isProblem == true)
+            #expect(!message.english().contains(machine.paths.home.path))
+        }
+        #expect(try Data(contentsOf: machine.paths.stateFile) == original)
+    }
+
+    @Test func theRecoveryActionRevealsTheStateFileWithoutOpeningIt() async throws {
+        let machine = try Home(); defer { machine.cleanUp() }
+        let runner = FakeProcessRunner()
+        #expect(await machine.actions(runner).revealSavedFolders() == nil)
+        #expect(runner.recorded == [ProcessStep(executable: "/usr/bin/open", arguments: ["-R", machine.paths.stateFile.path])])
+        #expect(!FileManager.default.fileExists(atPath: machine.paths.stateFile.path))
+    }
+
     private func seed(_ machine: Home) throws {
         try StateStore(pins: ["/work/app", "/work/web"], recents: ["/work/notes", "/work/app"]).save(paths: machine.paths)
     }
@@ -242,7 +265,7 @@ struct SetupFolderEditTests {
         let actions = machine.actions(runner, directories: ["/work/new"])
         #expect(await actions.pin("/work/new") == nil)
         #expect(await actions.pin("/work/./new/") == nil)
-        let state = StateStore.load(paths: machine.paths)
+        let state = try StateStore.load(paths: machine.paths)
         #expect(state.pins == ["/work/app", "/work/web", "/work/new"])
         #expect(state.recents == ["/work/notes", "/work/app"])
         #expect(!FileManager.default.fileExists(atPath: machine.paths.configFile.path))
@@ -275,7 +298,7 @@ struct SetupFolderEditTests {
         try seed(machine)
         let runner = FakeProcessRunner(results: [ProcessResult(status: 1, standardError: "Finder could not show the folder.")])
         #expect(await machine.actions(runner, directories: ["/work/app"]).revealFolder("/work/app") == .failed("Finder could not show the folder."))
-        #expect(StateStore.load(paths: machine.paths).pins == ["/work/app", "/work/web"])
+        #expect(try StateStore.load(paths: machine.paths).pins == ["/work/app", "/work/web"])
     }
 
     @Test func aPinThatCannotBeSavedReturnsAnError() async throws {
@@ -284,14 +307,14 @@ struct SetupFolderEditTests {
         try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: machine.paths.configDirectory.path)
         let notice = await machine.actions(FakeProcessRunner(), directories: ["/work/new"]).pin("/work/new")
         #expect(notice?.isProblem == true)
-        #expect(StateStore.load(paths: machine.paths).pins == ["/work/app", "/work/web"])
+        #expect(try StateStore.load(paths: machine.paths).pins == ["/work/app", "/work/web"])
     }
 
     @Test func aPinGoesAndTheOthersStay() async throws {
         let machine = try Home(); defer { machine.cleanUp() }
         try seed(machine)
         #expect(await machine.actions(FakeProcessRunner()).unpin("/work/app") == nil)
-        let state = StateStore.load(paths: machine.paths)
+        let state = try StateStore.load(paths: machine.paths)
         #expect(state.pins == ["/work/web"])
         #expect(state.recents == ["/work/notes", "/work/app"])
     }
@@ -306,7 +329,7 @@ struct SetupFolderEditTests {
         let machine = try Home(); defer { machine.cleanUp() }
         try seed(machine)
         #expect(await machine.actions(FakeProcessRunner()).clearRecents() == nil)
-        let state = StateStore.load(paths: machine.paths)
+        let state = try StateStore.load(paths: machine.paths)
         #expect(state.recents.isEmpty)
         #expect(state.pins == ["/work/app", "/work/web"])
     }
@@ -325,6 +348,6 @@ struct SetupFolderEditTests {
         try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: machine.paths.configDirectory.path)
         let notice = await machine.actions(FakeProcessRunner()).clearRecents()
         #expect(notice?.isProblem == true)
-        #expect(StateStore.load(paths: machine.paths).recents == ["/work/notes", "/work/app"], "the window must not claim a clear that did not happen")
+        #expect(try StateStore.load(paths: machine.paths).recents == ["/work/notes", "/work/app"], "the window must not claim a clear that did not happen")
     }
 }

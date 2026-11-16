@@ -92,6 +92,14 @@ public struct SetupActions: Sendable {
     /// Reveal only: the saved path is never handed to its default application.
     public func revealFolder(_ folder: String) async -> SetupNotice? {
         guard let url = existingFolder(folder) else { return unavailableFolder(folder) }
+        return await reveal(url)
+    }
+
+    public func revealSavedFolders() async -> SetupNotice? {
+        await reveal(paths.stateFile)
+    }
+
+    private func reveal(_ url: URL) async -> SetupNotice? {
         do {
             return Self.failure(of: try await runner.run(ProcessStep(executable: "/usr/bin/open", arguments: ["-R", url.path])))
         } catch {
@@ -147,6 +155,8 @@ public struct SetupActions: Sendable {
         do {
             try StateStore.update(paths: paths) { _ = change(&$0) }
             return nil
+        } catch let error as StateStoreError {
+            return .savedFoldersProblem(error.message(home: facts.homeDirectory.path))
         } catch {
             return .failed(error.localizedDescription)
         }

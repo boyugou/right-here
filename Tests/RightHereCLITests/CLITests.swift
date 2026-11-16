@@ -229,6 +229,22 @@ struct CLITests {
         #expect(Set(pins.map { URL(fileURLWithPath: $0).lastPathComponent }) == Set(folders.map(\.lastPathComponent)))
     }
 
+    @Test func unreadableSavedFoldersFailReadsAndEditsWithoutLosingTheFile() throws {
+        let rh = try RH(trialHome: true); defer { rh.cleanUp() }
+        let home = try #require(rh.home)
+        let paths = RHPaths(environment: [:], home: home)
+        try FileManager.default.createDirectory(at: paths.configDirectory, withIntermediateDirectories: true)
+        try "[general]\nagents = []\n[menu]\nitems = []\n".write(to: paths.configFile, atomically: true, encoding: .utf8)
+        let original = Data("pins = [\"/work/important\"".utf8)
+        try original.write(to: paths.stateFile)
+        for arguments in [["pins"], ["pins", "--json"], ["recents", "--json"], ["pin", home.path], ["unpin", home.path], ["recents", "--clear"]] {
+            let result = try rh.run(arguments)
+            #expect(result.status != 0, "\(arguments) must not report a successful empty read or edit")
+            #expect(result.standardError.contains("state.toml"), Comment(rawValue: result.standardError))
+            #expect(try Data(contentsOf: paths.stateFile) == original)
+        }
+    }
+
     @Test func anEmptyListOfPinsOrRecentsSaysWhyOnStandardErrorOnly() throws {
         let rh = try RH(); defer { rh.cleanUp() }
         for command in ["pins", "recents"] {

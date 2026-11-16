@@ -6,6 +6,17 @@ import RightHereCore
 
 @Suite("The state file under several writers")
 struct StateStoreUpdateTests {
+    @Test("An unreadable state is never replaced with a new empty list", arguments: [Data("pins = [\"/work/important\"\n".utf8), Data([0xff, 0xfe]),
+                      Data("pins = \"/work/important\"\n".utf8), Data(repeating: 0x23, count: 128 * 1024 + 1)])
+    func anUnreadableStateIsNeverReplacedWithANewEmptyList(_ original: Data) throws {
+        let root = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: root) }
+        let paths = RHPaths(environment: [:], home: root)
+        try FileManager.default.createDirectory(at: paths.configDirectory, withIntermediateDirectories: true)
+        try original.write(to: paths.stateFile)
+        #expect(throws: (any Error).self) { try StateStore.update(paths: paths) { $0.pin("/work/new") } }
+        #expect(try Data(contentsOf: paths.stateFile) == original, "a failed read must never erase the saved folders")
+    }
+
     @Test func pinsMadeAtTheSameTimeAreAllKept() throws {
         // Twenty `rh pin` started together kept twelve: each read the file, added its folder and wrote it back.
         let root = try makeTemporaryDirectory(); defer { try? FileManager.default.removeItem(at: root) }
@@ -16,7 +27,7 @@ struct StateStoreUpdateTests {
             DispatchQueue.concurrentPerform(iterations: folders.count) { index in
                 do { try StateStore.update(paths: paths) { $0.pin(folders[index]) } } catch { lost.withLock { $0.append("round \(round): \(error)") } }
             }
-            let kept = StateStore.load(paths: paths).pins
+            let kept = try StateStore.load(paths: paths).pins
             if Set(kept) != Set(folders) { lost.withLock { $0.append("round \(round): \(kept.count) of \(folders.count)") } }
         }
         #expect(lost.withLock { $0 }.isEmpty, "\(lost.withLock { $0 }.count) rounds lost a pin; the first: \(lost.withLock { $0 }.first ?? "")")
@@ -33,7 +44,7 @@ struct StateStoreUpdateTests {
             default: try? StateStore.update(paths: paths) { $0.unpin("/work/old") }
             }
         }
-        let state = StateStore.load(paths: paths)
+        let state = try StateStore.load(paths: paths)
         #expect(Set(state.pins) == ["/work/pin-0", "/work/pin-3", "/work/pin-6", "/work/pin-9"], "\(state.pins)")
         #expect(Set(state.recents) == ["/work/recent-1", "/work/recent-4", "/work/recent-7", "/work/recent-10"], "\(state.recents)")
     }
@@ -51,7 +62,7 @@ struct StateStoreUpdateTests {
         // A change that throws writes nothing.
         struct Refused: Error {}
         #expect(throws: Refused.self) { try StateStore.update(paths: paths) { $0.pin("/work/b"); throw Refused() } }
-        #expect(StateStore.load(paths: paths).pins == ["/work/a"])
+        #expect(try StateStore.load(paths: paths).pins == ["/work/a"])
     }
 
     @Test func aStateThatAnotherProgramIsChangingIsNotChangedByAnUpdateThatGivesUp() throws {
@@ -59,7 +70,7 @@ struct StateStoreUpdateTests {
         let paths = RHPaths(environment: [:], home: root)
         let holder = try FileLock.acquireNow(paths.stateLockFile, timeout: .milliseconds(50))
         #expect(throws: FileLock.Busy.self) { try StateStore.update(paths: paths, timeout: .milliseconds(100)) { $0.pin("/work/a") } }
-        #expect(StateStore.load(paths: paths).pins.isEmpty)
+        #expect(try StateStore.load(paths: paths).pins.isEmpty)
         // A setup, which takes seconds, is not what the state waits for.
         let setup = try FileLock.acquireNow(paths.setupLockFile, timeout: .milliseconds(50))
         holder.release()

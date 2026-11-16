@@ -12,7 +12,7 @@ struct NoticeBanner: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            NoticeViewportLayout(maximumHeight: Self.maximumMessageHeight) {
+            MessageViewportLayout(maximumHeight: Self.maximumMessageHeight) {
                 ViewThatFits(in: .vertical) {
                     message
                     ScrollViewReader { proxy in
@@ -67,7 +67,7 @@ struct NoticeBanner: View {
 }
 
 /// ViewThatFits fills a proposed height even for a short message. Measure its natural height before bounding the viewport.
-private struct NoticeViewportLayout: Layout {
+struct MessageViewportLayout: Layout {
     let maximumHeight: CGFloat
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {

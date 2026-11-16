@@ -9,11 +9,14 @@ public struct FolderSnapshot: Sendable, Equatable {
     public var recents: [String]
     /// The repositories the pinned and the recent folders are in, the first the most likely one to be asked about.
     public var repositories: [URL]
+    /// A failed read is different from a successfully read empty list.
+    public var problem: LocalizedMessage?
 
-    public init(pins: [String] = [], recents: [String] = [], repositories: [URL] = []) {
+    public init(pins: [String] = [], recents: [String] = [], repositories: [URL] = [], problem: LocalizedMessage? = nil) {
         self.pins = pins
         self.recents = recents
         self.repositories = repositories
+        self.problem = problem
     }
 }
 
@@ -90,7 +93,11 @@ public struct SetupLoader: Sendable {
 
     /// The folders Right Here remembers, as they are on disk now.
     public func folders() async -> FolderSnapshot {
-        let state = StateStore.load(paths: paths)
-        return FolderSnapshot(pins: state.pins, recents: state.recents, repositories: WorktreeRepositories.among(state.pins + state.recents, facts: facts))
+        do {
+            let state = try StateStore.load(paths: paths)
+            return FolderSnapshot(pins: state.pins, recents: state.recents, repositories: WorktreeRepositories.among(state.pins + state.recents, facts: facts))
+        } catch {
+            return FolderSnapshot(problem: error.message(home: facts.homeDirectory.path))
+        }
     }
 }

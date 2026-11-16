@@ -356,6 +356,21 @@ final class SetupModel {
         say(await actions.revealFolder(folder))
     }
 
+    func retryFolders() async {
+        guard !isWorking, !isRefreshing else { return }
+        isWorking = true
+        defer { isWorking = false }
+        say(nil)
+        await refreshFolders()
+    }
+
+    func revealSavedFolders() async {
+        guard !isWorking, !isRefreshing else { return }
+        isWorking = true
+        defer { isWorking = false }
+        say(await actions.revealSavedFolders())
+    }
+
     private func displayPath(_ path: String) -> String {
         PathDisplay.abbreviatingHome(path.withControlCharactersEscaped, home: homePath)
     }

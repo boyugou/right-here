@@ -289,6 +289,38 @@ private final class FolderPickerGate {
 @Suite("The setup window's folder actions")
 @MainActor
 struct SetupModelFolderTests {
+    @Test func retryingARepairedFileRestoresFoldersWithoutRepeatingTheWholeDoctor() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        try mac.writeConfig()
+        try Data("pins = [".utf8).write(to: mac.paths.stateFile)
+        await mac.model.refresh()
+        #expect(mac.model.folders.problem != nil)
+        let checks = mac.model.checks
+        let calls = mac.runner.calls
+        try StateStore(pins: [mac.home.path]).save(paths: mac.paths)
+        await mac.model.retryFolders()
+        #expect(mac.model.folders.problem == nil && mac.model.folders.pins == [mac.home.path])
+        #expect(mac.model.checks == checks && mac.runner.calls == calls)
+        #expect(!mac.model.isWorking)
+    }
+
+    @Test func retryKeepsFolderActionsDisabledUntilTheReadFinishes() async throws {
+        let gate = FolderReadGate()
+        let mac = try Mac(readFolders: { await gate.read() })
+        defer { gate.finish(FolderSnapshot()); mac.cleanUp() }
+        let retry = Task { await mac.model.retryFolders() }
+        try #require(await mac.eventually { gate.started })
+        #expect(mac.model.isWorking)
+        await mac.model.pin(mac.home.path)
+        await mac.model.revealSavedFolders()
+        #expect(!FileManager.default.fileExists(atPath: mac.paths.stateFile.path))
+        #expect(mac.runner.calls.isEmpty)
+        let problem = LocalizedMessage.appSavedFoldersReadFailed("state.toml", "Still unavailable.")
+        gate.finish(FolderSnapshot(problem: problem))
+        await retry.value
+        #expect(mac.model.folders.problem == problem && !mac.model.isWorking)
+    }
+
     @Test func pinAndUnpinUpdateTheVisibleListAndReportWhatChanged() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }
         await mac.model.refresh()
@@ -366,7 +398,7 @@ struct SetupModelFolderTests {
         try #require(await mac.eventually { gate.started })
         try #require(mac.model.isWorking, "a second action must not race the first action's list refresh")
         await mac.model.unpin(second)
-        let saved = StateStore.load(paths: mac.paths)
+        let saved = try StateStore.load(paths: mac.paths)
         #expect(saved.pins == (clear ? [first, second] : [second]))
         #expect(saved.recents == (clear ? [] : [first]))
         gate.finish(FolderSnapshot(pins: saved.pins, recents: saved.recents))

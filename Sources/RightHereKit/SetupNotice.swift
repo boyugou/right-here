@@ -13,6 +13,7 @@ public enum SetupNotice: Sendable, Equatable {
     case folderUnpinned(String)
     case recentsCleared
     case folderUnavailable(String)
+    case savedFoldersProblem(LocalizedMessage)
     /// The worktree in this folder was removed.
     case worktreeRemoved(String)
     /// The folder is not inside a git repository.
@@ -35,6 +36,7 @@ public enum SetupNotice: Sendable, Equatable {
         case .folderUnpinned(let path): .appFolderUnpinned(path)
         case .recentsCleared: .appRecentsCleared
         case .folderUnavailable(let path): .appFolderUnavailable(path)
+        case .savedFoldersProblem(let message): message
         case .worktreeRemoved(let folder): .appWorktreeRemoved(folder)
         case .notARepository(let folder): .appNotARepository(folder)
         case .notRemovable: .appWorktreeNotRemovable
@@ -46,7 +48,7 @@ public enum SetupNotice: Sendable, Equatable {
     /// Whether this tells of something that did not work, so that the window shows it as a problem.
     public var isProblem: Bool {
         switch self {
-        case .failed, .stopped, .notARepository, .notRemovable, .folderUnavailable: true
+        case .failed, .stopped, .notARepository, .notRemovable, .folderUnavailable, .savedFoldersProblem: true
         case .launchFinished(let check): check.status != .ok
         case .promptCopied, .mcpConfigurationCopied, .pluginCommandsCopied, .worktreeRemoved, .folderPinned, .folderUnpinned, .recentsCleared: false
         }

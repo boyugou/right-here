@@ -439,6 +439,19 @@ struct MCPToolTests {
         #expect(pin.contains("\u{1b}") && pin.contains("\u{202E}"))
     }
 
+    @Test func theBookmarksToolReportsAReadFailureInsteadOfAnEmptySuccess() async throws {
+        let harness = try Harness(); defer { harness.cleanUp() }
+        let file = harness.configDirectory.appendingPathComponent("state.toml")
+        let original = Data("pins = [".utf8)
+        try original.write(to: file)
+        let result = try await harness.call("right_here_bookmarks")
+        #expect(result["isError"]?.boolValue == true)
+        #expect(result["structuredContent"]?["pins"] == nil)
+        let text = result["content"]?.arrayValue?.first?["text"]?.stringValue ?? ""
+        #expect(text.contains("state.toml") && text.contains("hasn’t been changed"))
+        #expect(try Data(contentsOf: file) == original)
+    }
+
     @Test func theBookmarksToolSaysSoWhenNothingIsPinnedOrRecent() async throws {
         let harness = try Harness(); defer { harness.cleanUp() }
         let result = try await harness.call("right_here_bookmarks")

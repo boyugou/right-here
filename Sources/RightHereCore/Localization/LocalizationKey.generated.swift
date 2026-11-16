@@ -57,6 +57,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appFolderPinned = "app.folderPinned"
     case appFolderUnavailable = "app.folderUnavailable"
     case appFolderUnpinned = "app.folderUnpinned"
+    case appFoldersLoadFailed = "app.foldersLoadFailed"
     case appFoldersNote = "app.foldersNote"
     case appInstallOrRepair = "app.installOrRepair"
     case appLoading = "app.loading"
@@ -99,6 +100,8 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appRemoveWorktreeMessage = "app.removeWorktreeMessage"
     case appRemoveWorktreeNamed = "app.removeWorktreeNamed"
     case appRemoveWorktreeTitle = "app.removeWorktreeTitle"
+    case appSavedFoldersReadFailed = "app.savedFoldersReadFailed"
+    case appSavedFoldersTooLarge = "app.savedFoldersTooLarge"
     case appSettingUp = "app.settingUp"
     case appSetupAgents = "app.setupAgents"
     case appSetupAgentsHint = "app.setupAgentsHint"
@@ -267,7 +270,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     public var arity: Int {
         switch self {
         case .alertPermissionMessage, .appCommandStopped, .appFolderPinned, .appFolderUnavailable, .appFolderUnpinned, .appNeedAttentionCount, .appNotARepository, .appRemoveWorktreeMessage, .appRemoveWorktreeNamed, .appUnpinFolder, .appVersion, .appWorktreeRemoved, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAgentUnknown, .doctorAppNotInstalled, .doctorClaudeLinkMissing, .doctorCliMissing, .doctorCliNotOnPath, .doctorCliPathUnknown, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorExtensionEnabled, .doctorFixAgentRemove, .doctorFixAgentsAdd, .doctorFixCliPath, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
-        case .appStepLabel, .doctorAgentOk, .doctorAppFallback, .doctorExtensionMultiple, .doctorFixAgentLauncher, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
+        case .appSavedFoldersReadFailed, .appSavedFoldersTooLarge, .appStepLabel, .doctorAgentOk, .doctorAppFallback, .doctorExtensionMultiple, .doctorFixAgentLauncher, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
         case .doctorActivityRecent, .doctorAgentBypass, .doctorServicesDiffer, .menuAgentVariantIn: 3
         default: 0
         }

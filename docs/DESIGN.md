@@ -343,6 +343,10 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    change the Finder extension's registration (`RealHomeGuard`), and the mutation check stops at the first mutant that changes the runner script, the link or the Quick Actions; see
    [0022](decisions/0022-a-test-cannot-change-the-real-home.md), which says what happened before it.
 
+10. Saved-folder updates require a successful read before changing anything. Invalid, unreadable or oversized state is not an
+    empty list; a dangling symlink is not an absent file. Reads and atomic writes share a 128 KiB limit, so a rejected update keeps
+    the original bytes and a successful write remains readable. See [0030](decisions/0030-saved-folder-read-failures.md).
+
 An independent review and a cold-start usability test shaped several of these; see
 [0008](decisions/0008-independent-review.md). The Mac App Store question is in [0007](decisions/0007-app-store-edition.md).
 

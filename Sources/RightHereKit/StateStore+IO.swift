@@ -1,15 +1,51 @@
+import Darwin
 import Foundation
 import RightHereCore
 
-extension StateStore {
-    /// Loads state from `state.toml`, returning an empty store if the file does not exist or cannot be parsed.
-    public static func load(paths: RHPaths) -> StateStore {
-        guard let data = try? Data(contentsOf: paths.stateFile),
-              data.count < 128 * 1024,
-              let text = String(data: data, encoding: .utf8) else {
-            return StateStore()
+public enum StateStoreError: Error, LocalizedError, Sendable {
+    case unreadable(file: String, detail: String)
+    case tooLarge(file: String, limit: Int)
+
+    public func message(home: String? = nil) -> LocalizedMessage {
+        func display(_ file: String) -> String {
+            let path = home.map { PathDisplay.abbreviatingHome(file, home: $0) } ?? file
+            return path.withControlCharactersEscaped
         }
-        return parse(text)
+        switch self {
+        case .unreadable(let file, let detail): return .appSavedFoldersReadFailed(display(file), detail.withControlCharactersEscaped)
+        case .tooLarge(let file, let limit): return .appSavedFoldersTooLarge(display(file), String(limit))
+        }
+    }
+
+    public var errorDescription: String? { message().english() }
+}
+
+extension StateStore {
+    public static let maximumFileBytes = 128 * 1024
+
+    /// Only an absent file means no saved folders. A read failure must never become the starting point for an update.
+    public static func load(paths: RHPaths) throws(StateStoreError) -> StateStore {
+        let data: Data
+        switch BoundedRead.read(paths.stateFile, limit: maximumFileBytes) {
+        case .data(let read): data = read
+        case .absent:
+            var metadata = stat()
+            // Reading a dangling symlink also reports ENOENT; lstat must confirm that the entry itself is absent.
+            let failed = lstat(paths.stateFile.path, &metadata) != 0
+            let code = failed ? errno : ENOENT
+            if failed, code == ENOENT { return StateStore() }
+            throw StateStoreError.unreadable(file: paths.stateFile.path, detail: String(cString: strerror(code)))
+        case .unreadable(let reason):
+            throw StateStoreError.unreadable(file: paths.stateFile.path, detail: reason)
+        case .tooLarge:
+            throw StateStoreError.tooLarge(file: paths.stateFile.path, limit: maximumFileBytes)
+        }
+        do {
+            guard let text = String(data: data, encoding: .utf8) else { throw CocoaError(.fileReadInapplicableStringEncoding) }
+            return try parse(text)
+        } catch {
+            throw StateStoreError.unreadable(file: paths.stateFile.path, detail: error.localizedDescription)
+        }
     }
 
     /// Reads the state, changes it and writes it back as one step that nobody else takes part in, and says what `change` says. The write
@@ -20,7 +56,7 @@ extension StateStore {
     public static func update<Value>(paths: RHPaths, timeout: Duration = .seconds(5), _ change: (inout StateStore) throws -> Value) throws -> Value {
         let lock = try FileLock.acquireNow(paths.stateLockFile, timeout: timeout)
         defer { lock.release() }
-        var state = load(paths: paths)
+        var state = try load(paths: paths)
         let before = state
         let result = try change(&state)
         if state != before { try state.save(paths: paths) }
@@ -29,9 +65,12 @@ extension StateStore {
 
     /// Saves state to `state.toml` atomically.
     public func save(paths: RHPaths) throws {
+        let data = Data(render().utf8)
+        guard data.count <= Self.maximumFileBytes else {
+            throw StateStoreError.tooLarge(file: paths.stateFile.path, limit: Self.maximumFileBytes)
+        }
         try FileManager.default.createDirectory(at: paths.configDirectory, withIntermediateDirectories: true)
-        let text = render()
         // Folders the person worked in: readable by them only, like the run log.
-        try AtomicFile.write(Data(text.utf8), to: paths.stateFile, mode: 0o600)
+        try AtomicFile.write(data, to: paths.stateFile, mode: 0o600)
     }
 }

@@ -128,6 +128,9 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    unchanged (the native panel did return a file in the check recorded in [ADR 0027](../decisions/0027-manage-folders-in-the-app.md)).
    With keyboard navigation and VoiceOver, reach both row buttons; each says its action and the folder it acts on. Try long paths,
    the minimum window and dark appearance. Returning from the chooser restores usable controls without leaving a spinner running.
+   In an isolated review home, replace `state.toml` with malformed TOML and refresh: the failure panel must appear instead of an
+   empty list, with Try Again and Reveal in Finder. Repair the fixture and retry; pins return without a full diagnostic refresh.
+   Check the error and both actions in the accessibility tree. See [ADR 0030](../decisions/0030-saved-folder-read-failures.md).
 10. In Arabic or Hebrew, use a pinned folder with two successive right-to-left names (for example `مستندات/أبحاث`). Check that the
     Folders and Worktrees paths keep their component order and agree with the tooltip and basename. Earlier headless checks showed
     reversed names despite the left-to-right marks. The later native Arabic Folders check preserved both nested names in order

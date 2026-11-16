@@ -11,6 +11,8 @@ struct FoldersPage: View {
         VStack(alignment: .leading, spacing: 24) {
             if model.snapshot == nil {
                 ProgressRow(message: .appLoading)
+            } else if let problem = model.folders.problem {
+                failure(problem)
             } else {
                 pinned
                 recent
@@ -20,6 +22,49 @@ struct FoldersPage: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    private func failure(_ problem: LocalizedMessage) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label(l10n.string(.appFoldersLoadFailed), systemImage: "exclamationmark.triangle")
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+            MessageViewportLayout(maximumHeight: 180) {
+                ViewThatFits(in: .vertical) {
+                    problemText(problem)
+                    ScrollViewReader { proxy in
+                        SetupPage(clipPreview: true) { problemText(problem).id("folder-problem") }
+                            .onChange(of: problem) { proxy.scrollTo("folder-problem", anchor: .top) }
+                    }
+                    .frame(height: 180)
+                }
+            }
+            .accessibilityRepresentation { Text(l10n.render(problem, isolatingValues: true)) }
+            ViewThatFits(in: .horizontal) {
+                HStack { recoveryActions }
+                VStack(alignment: .leading) { recoveryActions }
+            }
+            .buttonStyle(.bordered)
+            .disabled(model.isWorking || model.isRefreshing)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .panel()
+        .accessibilityElement(children: .contain)
+    }
+
+    private func problemText(_ problem: LocalizedMessage) -> some View {
+        Text(verbatim: l10n.render(problem, isolatingValues: true))
+            .font(.callout)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .textSelection(.enabled)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder private var recoveryActions: some View {
+        Button(l10n.string(.appTryAgain)) { Task { await model.retryFolders() } }
+        Button(l10n.string(.actionReveal)) { Task { await model.revealSavedFolders() } }
     }
 
     private var pinned: some View {

@@ -13,13 +13,34 @@ public struct StateStore: Sendable, Equatable, Codable {
         self.recents = recents
     }
 
-    public static func parse(_ text: String) -> StateStore {
-        guard !NestingDepth.tomlExceeds(text, limit: 8),
-              let table = try? TOMLTable(source: text + "\n") else {
-            return StateStore()
+    public enum ParseError: Error, LocalizedError, Equatable {
+        case tooDeep
+        case unknownKey(String)
+        case invalidDocument(String)
+
+        public var errorDescription: String? {
+            switch self {
+            case .tooDeep: "Saved folders are nested too deeply."
+            case .unknownKey(let key): "Unknown saved-folder field: \(key.withControlCharactersEscaped)."
+            case .invalidDocument(let reason): reason
+            }
         }
-        return StateStore(pins: folders(in: table, key: "pins"),
-                          recents: Array(folders(in: table, key: "recents").prefix(maxRecents)))
+    }
+
+    public static func parse(_ text: String) throws -> StateStore {
+        guard !NestingDepth.tomlExceeds(text, limit: 8) else { throw ParseError.tooDeep }
+        do {
+            let table = try TOMLTable(source: text + "\n")
+            if let unknown = table.keys.sorted().first(where: { !["pins", "recents"].contains($0) }) {
+                throw ParseError.unknownKey(unknown)
+            }
+            return try StateStore(pins: folders(in: table, key: "pins"),
+                                  recents: Array(folders(in: table, key: "recents").prefix(maxRecents)))
+        } catch let error as TOMLError {
+            // TOMLError describes the line and cause, but NSError bridging otherwise reduces it to "error 1".
+            let explained = TOMLSyntax.explain(error.description, outline: TOMLOutline(text))
+            throw ParseError.invalidDocument((explained.line.map { "Line \($0): " } ?? "") + explained.message + ".")
+        }
     }
 
     /// A pin or a recent folder is an absolute path. A relative one (the file is meant to be written by `rh`, but it is plain text) would name a
@@ -28,11 +49,13 @@ public struct StateStore: Sendable, Equatable, Codable {
         path.hasPrefix("/") ? (path as NSString).standardizingPath : nil
     }
 
-    private static func folders(in table: TOMLTable, key: String) -> [String] {
-        guard let array = try? table.array(forKey: key) else { return [] }
+    private static func folders(in table: TOMLTable, key: String) throws -> [String] {
+        guard table.contains(key: key) else { return [] }
+        let array = try table.array(forKey: key)
         var folders: [String] = []
         for index in 0..<array.count {
-            if let text = try? array.string(atIndex: index), let path = absolute(text), !folders.contains(path) {
+            let text = try array.string(atIndex: index)
+            if let path = absolute(text), !folders.contains(path) {
                 folders.append(path)
             }
         }

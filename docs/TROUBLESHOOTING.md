@@ -47,6 +47,17 @@ repository is cloned. No Quick Actions are made from it and no edits are listed 
 Fix the line (`rh config validate` says what is wrong), or restore the file the link points to, and run `rh setup` again. To start the
 config over, `rh setup --force` saves the old file next to it first.
 
+## Saved folders cannot be read
+
+Folders shows an error instead of an empty list when `state.toml` cannot be read. The message names the file and the reason;
+Reveal in Finder selects it. Check its read permissions, restore a missing symlink target, or repair its TOML in a text editor.
+The file contains `pins` and `recents`, each an array of quoted absolute folder paths, and must fit within 128 KiB of UTF-8.
+Keep a copy before editing it. Choose Try Again after repairing it; the saved lists return without rerunning setup.
+
+`rh pins`, `rh recents` and the bookmarks MCP tool report the same failure. Pin, Unpin and Clear Recent Folders preserve the
+file when it cannot be read, and an update that exceeds the size limit leaves the previous file intact. Launching an action
+still works, but cannot add its folder to recent history until the state is readable again.
+
 ## `rh setup` says another setup is running
 
 Setups take turns, so that the setup window, `rh setup` in a terminal and an AI agent's setup cannot undo each other's Quick Actions. A

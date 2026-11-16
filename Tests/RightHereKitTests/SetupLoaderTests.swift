@@ -64,6 +64,24 @@ private final class ThreadProbeFacts: SystemFacts, Sendable {
 
 @Suite("SetupLoader")
 struct SetupLoaderTests {
+    @Test func aFailedFolderReadIsDistinguishedFromAnEmptyListAndCanBeRetried() async throws {
+        let machine = try Machine(); defer { machine.cleanUp() }
+        let runner = FakeProcessRunner()
+        let loader = machine.loader(runner: runner)
+        #expect(await loader.folders() == FolderSnapshot())
+        try machine.writeConfig("[general]\n")
+        try Data("pins = [\"/work/important\"\n".utf8).write(to: machine.paths.stateFile)
+        let failed = await loader.folders()
+        let message = try #require(failed.problem)
+        #expect(message.english().contains("~/.config/right-here/state.toml"))
+        #expect(!message.english().contains(machine.home.path))
+        #expect(message.english().contains("Line 1: array not closed: missing `]`"), "the error must point to the actual line and explain its repair")
+        #expect(!message.english().contains("TOMLDecoder.TOMLError"))
+        try StateStore(pins: ["/work/recovered"]).save(paths: machine.paths)
+        #expect(await loader.folders() == FolderSnapshot(pins: ["/work/recovered"]))
+        #expect(runner.recorded.isEmpty)
+    }
+
     @Test func readsTheChecksTheMenuAndTheFoldersInOnePass() async throws {
         let machine = try Machine(); defer { machine.cleanUp() }
         try machine.writeConfig("[general]\nterminal = \"ghostty\"\neditor = \"vscode\"\nagents = []\n")

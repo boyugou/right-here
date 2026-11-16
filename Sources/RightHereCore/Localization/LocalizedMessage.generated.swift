@@ -109,6 +109,8 @@ extension LocalizedMessage {
     public static func appFolderUnavailable(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appFolderUnavailable, [argument1]) }
     /// Unpinned %1$@.
     public static func appFolderUnpinned(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appFolderUnpinned, [argument1]) }
+    /// Couldn’t read saved folders.
+    public static var appFoldersLoadFailed: LocalizedMessage { LocalizedMessage(.appFoldersLoadFailed) }
     /// Right Here remembers these folders on this Mac only, in a file next to your config. An AI assistant that you connect through MCP can read them.
     public static var appFoldersNote: LocalizedMessage { LocalizedMessage(.appFoldersNote) }
     /// Install or Repair
@@ -193,6 +195,10 @@ extension LocalizedMessage {
     public static func appRemoveWorktreeNamed(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appRemoveWorktreeNamed, [argument1]) }
     /// Remove this worktree?
     public static var appRemoveWorktreeTitle: LocalizedMessage { LocalizedMessage(.appRemoveWorktreeTitle) }
+    /// Couldn’t read %1$@. %2$@ The file hasn’t been changed. Check it, then try again.
+    public static func appSavedFoldersReadFailed(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.appSavedFoldersReadFailed, [argument1, argument2]) }
+    /// Saved folders exceed the %2$@-byte limit. %1$@ hasn’t been changed.
+    public static func appSavedFoldersTooLarge(_ argument1: String, _ argument2: String) -> LocalizedMessage { LocalizedMessage(.appSavedFoldersTooLarge, [argument1, argument2]) }
     /// Setting up…
     public static var appSettingUp: LocalizedMessage { LocalizedMessage(.appSettingUp) }
     /// AI agents
