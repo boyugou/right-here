@@ -17,6 +17,10 @@
 
 ## For contributors
 
+Before new development, run `git fetch origin`, inspect `git status --short --branch` and compare the checkout with `origin/main`.
+Start from the current main. Preserve work on an older line separately and compare its behavior and contracts before adapting it;
+a cached remote-tracking ref does not establish the current baseline.
+
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md): how to build, test and contribute.
 - [`../CLAUDE.md`](../CLAUDE.md): the rules for coding agents that work in this repository.
 - [`DESIGN.md`](DESIGN.md): the architecture, the decisions, and the facts about the platform that we verified. Section 9 lists the

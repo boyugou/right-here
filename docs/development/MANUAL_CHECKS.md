@@ -155,7 +155,7 @@ they never open one. The preview is the same code as the extension's, not Finder
    - Once opened, it says "expanded".
    - An entry reads its title only.
 7. Overview is the first section.
-   - While the Finder extension is off, it shows the three-step first-run card first.
+   - While the Finder extension is off, it shows its remaining action first: Settings to turn it on, or Repair when installation needs repair.
    - Once the extension is on, it shows the status and the default terminal and editor.
    - "Finder Menu" is always the menu for a folder.
 8. Open Worktrees.
@@ -183,7 +183,7 @@ they never open one. The preview is the same code as the extension's, not Finder
     - Overview checks the ones that your login shell finds.
     - Choose and press Set Up. `rh config show` has what you chose.
     - "What Right Here set up" lists the pieces.
-    - The three-step card waits for the Finder extension, as in item 7.
+    - The Finder setup card waits for the extension, as in item 7. Ordinary successful setup records are a disclosure below it; new warnings expand it.
     - Open the window again with a config in place. The chooser is gone.
     - Nothing rewrites the file. Compare it byte for byte.
     - `script/preview_setup.sh --first-run` shows the card without a screen. This check is the real window, once.

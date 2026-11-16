@@ -46,7 +46,7 @@ MESSAGES_FILE = SWIFT_DIRECTORY / "LocalizedMessage.generated.swift"
 # system by key (and table) from the app bundle, not compiled into Swift.
 # A line that names a catalog entry may show it as code (`Prose(key: .appNoPinned, ..)`, `DoctorText.styled(..)`) or map something to it
 # (`case .cliLink: .appSetupCommandLink`, whose display is the place that styles it).
-STYLED_USE = re.compile(r"\bProse\(|\bstyled\(|^\s*case\b.*:\s*\.\w+\s*$")
+STYLED_USE = re.compile(r"\bProse\(|\bstyled\(|^\s*case\b.*:\s*\.\w+\s*$|^\s*\w+\.fix\s*=\s*\.\w+\s*$")
 RESOURCE = re.compile(r'LocalizedStringResource\(\s*"([^"]+)"\s*,\s*defaultValue:\s*"((?:[^"\\]|\\.)*)"(?:\s*,\s*table:\s*"([^"]+)")?')
 
 
@@ -183,12 +183,12 @@ def unstyled_uses_of(source: str, names: set[str]) -> list[tuple[int, str]]:
 
 def check_code_in_plain_text(strings: dict, problems: list[str]) -> None:
     """The window shows a command between backticks as code (`Prose`, `DoctorText.styled`); in a plain `Text` the backticks would be on the
-    screen, which is what the AI assistants section did with `rh setup` once. So a catalog entry with a command in it is named in Apps/ only
-    where it is shown as code or mapped to (a `case` that returns it). A net, not a proof: the `Text` that shows a mapped key is not looked at."""
+    screen, which is what the AI assistants section did with `rh setup` once. A case returning a message or an assignment to a check's fix
+    is metadata: CheckRow styles it when displayed. A net, not a proof: the Text that shows a mapped key is not looked at."""
     english = source_language()
     names = {case_name(key): key for key, entry in strings.items() if "`" in entry["localizations"][english]["stringUnit"]["value"]}
     fixture = ["section(.a, .b) { go() }", "Prose(key: .b, home: home)", "case .cli: .b", "Text(DoctorText.styled(l10n.string(.b), home: home))",
-               "Text(l10n.string(.b))", "Text(l10n.string(.c))"]
+               "Text(l10n.string(.b))", "Text(l10n.string(.c))", "copy.fix = .b"]
     found = unstyled_uses_of("\n".join(fixture), {"b"})
     if found != [(1, "b"), (5, "b")]:
         problems.append(f"check_code_in_plain_text: the self test found {found}, expected [(1, 'b'), (5, 'b')]")

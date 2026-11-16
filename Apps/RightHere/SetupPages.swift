@@ -528,9 +528,11 @@ struct FirstRunCard: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Button(l10n.string(.appShowChecks)) { model.select(.checks) }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
+                if action == .extensionSettings || action == .repair {
+                    Button(l10n.string(.appShowChecks)) { model.select(.checks) }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                }
             }
             DisclosureGroup {
                 Text(l10n.string(.appQuickActionsBody))

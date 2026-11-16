@@ -24,8 +24,9 @@ if command -v xcodegen >/dev/null && [[ "$have_xcode" == 1 ]]; then
     # sentences: a sentence taken out of the catalog broke it after the gate had passed. One page, rendered off screen.
     picture="$(mktemp -d)/check.png"
     ./script/preview_setup.sh "$picture" en --demo >/dev/null
+    ./script/preview_setup.sh "$picture" en --demo --real-controls >/dev/null
     rm -rf "$(dirname "$picture")"
-    echo "ok: the harness that renders the release pictures builds and renders"
+    echo "ok: the preview harness builds and renders with stand-ins and native controls"
 else
     echo "note: xcodegen or a full Xcode (not only the Command Line Tools) is missing, so the app and extension were not built" >&2
 fi

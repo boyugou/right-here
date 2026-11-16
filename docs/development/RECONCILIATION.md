@@ -9,6 +9,7 @@ The published main was not replaced. Both lines remain available.
 
 The combined version starts from current main. Useful behavior is rewritten against its contracts.
 The older tree is a source of ideas and regression cases, not a replacement tree.
+The contributor entry point now requires fetching and comparing the live main before new development.
 
 ## Product foundation
 
@@ -54,6 +55,44 @@ The first integrated state passes 2,802 tests and builds the app and Finder exte
 current main for invalid saved-folder fields and vanished first-run app choices. The work also checks failed reads in the
 window loader, CLI and MCP, preserves unreadable bytes, and keeps saved-folder writes within the readable byte limit.
 
-Further behavioral ports and their native verification are still in progress. The old line's 1,775-test result and mutation
-sweep are not validation of this tree. The current mutation list has more than twelve hundred entries; matching patterns is
-not a completed mutation run. Changed protections need targeted removal tests against a committed combined tree.
+The integrated behavioral revision passes 2,831 tests: 1,176 Core, 1,068 Kit, 116 MCP, 188 CLI and 283 app-model tests. The extra
+47 tests are relative to the exact current base. Newly reproduced regressions include quiet-period config changes, external-editor
+file selection, draft conflict refresh and worktree context, alongside the first-run and saved-state failures above. App-model
+tests now run in GitHub CI too.
+
+Seventeen targeted protection-removal runs passed against committed combined revisions: 437, 535, 1029, 1030, 1105 and 1248–1251
+at `2af79bb`; 292, 307, 520, 528, 870, 1028, 1252 and 1253 at `d156047`. Each removed protection made a relevant test fail.
+The list has 1,254 matching entries; this is not a claim that all 1,254 were run. The old line's 1,775-test result and mutation sweep
+are historical evidence only.
+
+## Native acceptance
+
+Interactive checks used a separate review bundle, temporary home, fake system facts and fake process runner on macOS 27.2
+(26B123), Xcode 27.2 (27B52). No terminal, editor or Finder extension belonging to the person was controlled or installed by the
+review. Worktree deletion with real git remains a regression test in temporary repositories.
+
+- First-run app pickers opened and changed their values. More AI agents exposed all remaining choices, including OpenCode.
+  Setup retained a checked missing agent and put the remaining Finder action first.
+- A settings menu changed the default terminal, wrote the temporary config and exposed Undo. Undo restored the previous value.
+- Command-F focused folder search and selected its current query. `resume` matched `Résumé 2026`. A no-match query had its own
+  explanation and Clear Search; another section and back retained it. Escape cleared it.
+- Worktrees showed complete branch/path identity in accessibility and confirmation. The second question named `.env` and the
+  same worktree; Cancel retained the row. Repository switching and a failed listing followed by Try Again worked.
+- An external comment change kept a native text-editor draft, displayed the conflict and disabled Save. An overlay error's Config
+  action preserved the shared draft with an explanation; after Revert it selected This Mac Only and displayed the diagnosed text.
+  A regression also clears the now-obsolete save-or-revert notice.
+- A malformed saved-folder file showed its error, source-file action and Refresh. Repairing the temporary file and pressing Refresh
+  restored the list. A long operation error kept navigation visible and opened a bounded, selectable details popover with reachable
+  Copy Message and Dismiss controls.
+- Switching from a scrolled page reset its successor to the top. Scroll content stopped at the fixed header after clipping was added.
+  The Checks accessibility tree retained diagnostic text, status and fix actions; its current-main implementation was kept.
+- An app-local red system-accent preference changed selection, checkboxes and the default button. Forest remains the default when
+  the system allows an app accent. Offscreen native pictures cover light/dark, Arabic flow and German long text at the minimum width.
+
+Full Tab navigation, spoken VoiceOver, increased-contrast preferences and native-speaker translation review remain the manual
+checks they were before this integration. Offscreen native controls draw as an inactive window; their grey selection is not a
+disabled interactive control. Xcode 26 is not installed locally; the local gate reports that supported-floor build as skipped,
+and CI's macOS 26 job builds the app and extension.
+
+The preview source list was also repaired: both modes link current sources, removing stale links from an older checkout, and the
+pre-push gate builds and renders both the stand-in and native-control modes. README pictures are regenerated from the combined view.

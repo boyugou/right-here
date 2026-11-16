@@ -1416,7 +1416,11 @@ final class SetupModel {
     func simulateExtensionOff() {
         checks = checks.map { check in
             var copy = check
-            if check.id == .finderExtension { copy.status = .needsUser }
+            if check.id == .finderExtension {
+                copy.status = .needsUser
+                copy.detail = .doctorExtensionDisabled
+                copy.fix = .doctorFixExtensionEnable
+            }
             return copy
         }
     }

@@ -127,9 +127,13 @@ let package = Package(
     ]
 )
 PACKAGE
-# The window's own files, the same ones the app compiles.
-for file in SetupView.swift SetupModel.swift SetupModel+Header.swift SetupModel+Agents.swift SetupModel+Presets.swift SetupModel+NewFile.swift SetupModel+Variants.swift SetupModel+Lists.swift SetupModel+Apps.swift SetupPages.swift SetupFirstRun.swift MenuEditorView.swift ConfigPageView.swift ReorderableList.swift EditableText.swift FieldDraft.swift PlainTextView.swift AgentsPageView.swift AgentOptionsView.swift ArgumentListView.swift VariantView.swift PresetsView.swift NewFileView.swift ChoiceListView.swift AppsView.swift DefaultAppsView.swift; do
-  ln -sf "$ROOT/Apps/RightHere/$file" "$PREVIEW/Sources/preview/$file"
+# Both preview modes compile the window's current sources. Remove old links so a previous checkout cannot supply a missing file.
+for file in "$PREVIEW/Sources/preview/"*.swift; do
+  if [[ -L "$file" ]]; then rm "$file"; fi
+done
+for file in "$ROOT/Apps/RightHere/"*.swift; do
+  case "$(basename "$file")" in RightHereApp.swift | Intents.swift) continue ;; esac
+  ln -sf "$file" "$PREVIEW/Sources/preview/$(basename "$file")"
 done
 # The Finder menu's own glyphs, which main.swift registers by name (the app finds them in its asset catalog), and the
 # icon the window's header shows (this executable has none of its own).

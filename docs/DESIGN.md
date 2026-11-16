@@ -399,7 +399,9 @@ and variants, `disabled` to remove ids), and `rh config sync` copies `config.tom
    (`Installer.heldByThePerson`); a pulled config can choose titles, and a swap would delete what had the name.
 12. Files that any program of the person's can write and that Right Here reads on a click are read only once their size is known
    (`BoundedRead`): the state file each `rh run` reads (and the `rh pins` and `rh recents` that Shortcuts starts), and the probe
-   request the Finder extension reads in its `init`, on the main thread.
+   request the Finder extension reads in its `init`, on the main thread. Saved-folder updates refuse unreadable or invalid documents
+   (including unknown keys and wrong field types) before mutation, and refuse an encoded write above the readable limit. The window,
+   CLI and MCP report a failed read instead of presenting an empty list; see [0034](decisions/0034-reconcile-the-window-on-current-main.md).
 13. Shortcuts runs an app's actions without asking, so Start AI Agent asks before an agent that starts without asking starts in a
    folder the person did not pin; see [0030](decisions/0030-saved-folders-for-shortcuts.md).
 
