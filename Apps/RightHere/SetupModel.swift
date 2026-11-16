@@ -15,6 +15,9 @@ final class SetupModel {
     private(set) var snapshot: SetupSnapshot?
     private(set) var checks: [DoctorCheck] = []
     private(set) var folders = FolderSnapshot()
+    /// A window-local query survives reads, folder edits and visits to another section.
+    var folderQuery = ""
+    private(set) var folderSearchRequest = 0
     private(set) var isRefreshing = false
     /// An install, a repair, a launch test or a change to the folders is running: the buttons that would start another are off.
     private(set) var isWorking = false
@@ -148,6 +151,15 @@ final class SetupModel {
 
     /// The home folder the paths of the window are written from `~` against: the snapshot's, which is the demo's in a preview.
     var homePath: String { snapshot?.home.path ?? home.path }
+
+    var showsFolderSearch: Bool { !folders.pins.isEmpty || !folders.recents.isEmpty || !folderQuery.isEmpty }
+
+    var canFindFolders: Bool { selectedTab == .folders && snapshot != nil && folders.problem == nil && showsFolderSearch }
+
+    func findFolders() {
+        guard canFindFolders else { return }
+        folderSearchRequest += 1
+    }
 
     /// The program an MCP client starts (`SetupSnippets.mcpCommand`).
     var mcpCommand: String { snapshot?.mcpCommand ?? AppIdentity.cliName }

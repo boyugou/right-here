@@ -131,6 +131,11 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    In an isolated review home, replace `state.toml` with malformed TOML and refresh: the failure panel must appear instead of an
    empty list, with Try Again and Reveal in Finder. Repair the fixture and retry; pins return without a full diagnostic refresh.
    Check the error and both actions in the accessibility tree. See [ADR 0030](../decisions/0030-saved-folder-read-failures.md).
+   With enough folders to scroll, reach the bottom and press Command-F: the field returns into view and selects the current
+   query. Try a name, part of a path, multiple words, accents and an input method. Refresh, switch sections and pin or unpin
+   a filtered result: the query stays. An unmatched query offers Clear Search; its button, the field's clear button and Escape
+   restore the list. A second Escape leaves the empty field. Clear Recent Folders is absent while filtering. Find is disabled
+   in another section, during a failed read and for a genuinely empty list. Check field and clear-button labels with VoiceOver.
 10. In Arabic or Hebrew, use a pinned folder with two successive right-to-left names (for example `مستندات/أبحاث`). Check that the
     Folders and Worktrees paths keep their component order and agree with the tooltip and basename. Earlier headless checks showed
     reversed names despite the left-to-right marks. The later native Arabic Folders check preserved both nested names in order

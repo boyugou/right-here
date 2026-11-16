@@ -15,6 +15,7 @@
 #   ./script/preview_setup.sh out.png en --picks-not-applied  after a setup that kept a config that was there: the choices it could not apply, with the edits, and a warning
 #   ./script/preview_setup.sh out.png en --demo             a healthy setup with canned checks, folders, worktrees and menu (screenshots)
 #   ./script/preview_setup.sh out.png en --demo --tab folders
+#   ./script/preview_setup.sh out.png en --tab folders --folder-query notes  filtered saved folders
 #   ./script/preview_setup.sh out.png de --failed-folders --tab folders  failed read and recovery actions
 #   ./script/preview_setup.sh out.png en --empty-folders --tab folders  no saved folders, with its add action
 #   ./script/preview_setup.sh out.png en --tab worktrees --worktrees-state failed  failed, empty, loading, none or long
@@ -40,7 +41,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--failed-folders] [--worktrees-state state] [--feedback] [--failure-notice] [--long-notice]}"
+OUT="${1:?usage: preview_setup.sh out.png [language] [--tab section] [--dark] [--onboarding] [--first-run] [--shell-silent] [--failed-set-up] [--location] [--set-up] [--picks-not-applied] [--demo] [--submenus] [--gallery] [--minimum] [--large-text] [--config-error] [--empty-menu] [--empty-folders] [--failed-folders] [--folder-query text] [--worktrees-state state] [--feedback] [--failure-notice] [--long-notice]}"
 # The script changes folder before it renders, so a relative output path is resolved against where it was started.
 case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
 LANGUAGE="en"
@@ -55,6 +56,10 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       TAB="${args[$i]:?preview_setup.sh: --tab needs a section}"
       ;;
     --details) TAB="checks" ;;
+    --folder-query)
+      i=$((i + 1))
+      FLAGS+=(--folder-query "${args[$i]:?preview_setup.sh: --folder-query needs text}")
+      ;;
     --worktrees-state)
       i=$((i + 1))
       state="${args[$i]:?preview_setup.sh: --worktrees-state needs a state}"
@@ -421,7 +426,7 @@ func render(to path: String) async {
     } else if flag("--first-run") || flag("--failed-set-up") || flag("--location") {
         model.simulate(SetupSnapshot(checks: firstRunChecks(), configFile: URL(fileURLWithPath: "\(demoHome)/.config/right-here/config.toml"),
                                      configExists: false, offer: demoOffer(), home: URL(fileURLWithPath: demoHome)), tab: tab)
-    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--empty-folders") || flag("--failed-folders") || flag("--feedback") || flag("--failure-notice") || flag("--long-notice") || value(of: "--worktrees-state") != nil {
+    } else if flag("--demo") || flag("--set-up") || flag("--picks-not-applied") || flag("--config-error") || flag("--empty-menu") || flag("--empty-folders") || flag("--failed-folders") || flag("--feedback") || flag("--failure-notice") || flag("--long-notice") || value(of: "--worktrees-state") != nil || value(of: "--folder-query") != nil {
         let facts = demoFacts()
         var snapshot = demoSnapshot(facts)
         if flag("--config-error") {
@@ -459,6 +464,10 @@ func render(to path: String) async {
     if flag("--failed-set-up") { model.simulate(setupReport: demoFailedSetupReport()) }
     if flag("--location") { model.simulateLocationProblem() }
     if flag("--picks-not-applied") { model.simulate(setupReport: demoKeptConfigReport()) }
+    if let query = value(of: "--folder-query") {
+        requireNothingOfThisMac([query])
+        model.folderQuery = query
+    }
     if flag("--feedback") { model.simulate(notice: tab == .folders ? .folderPinned("~/Projects/app") : .mcpConfigurationCopied) }
     if flag("--failure-notice") {
         model.simulate(notice: tab == .folders ? .folderUnavailable("~/Projects/notes") : .notARepository("~/Projects/notes"))

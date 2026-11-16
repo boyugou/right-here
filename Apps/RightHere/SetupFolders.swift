@@ -4,7 +4,9 @@ import RightHereKit
 import SwiftUI
 
 struct FoldersPage: View {
-    let model: SetupModel
+    @Bindable var model: SetupModel
+    @FocusState private var searchFocused: Bool
+    @State private var searchSelection: TextSelection?
     private let l10n = Localizer.system
 
     var body: some View {
@@ -14,14 +16,111 @@ struct FoldersPage: View {
             } else if let problem = model.folders.problem {
                 failure(problem)
             } else {
-                pinned
-                recent
+                savedFolders
                 Text(l10n.string(.appFoldersNote))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    @ViewBuilder private var savedFolders: some View {
+        let query = FolderSearch(model.folderQuery, locale: Locale(identifier: l10n.resolvedLanguage))
+        let pins = query.filter(model.folders.pins, home: model.homePath)
+        let recents = query.filter(model.folders.recents, home: model.homePath)
+        if model.showsFolderSearch {
+            HStack(spacing: 12) {
+                searchField
+                    .frame(minWidth: 160)
+                pinButton
+            }
+        }
+        if !query.isEmpty && pins.isEmpty && recents.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(l10n.string(.appNoMatchingFolders))
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                Text(l10n.string(.appFindFoldersHint))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button(l10n.string(.appClearSearch), action: clearSearch)
+                    .buttonStyle(.bordered)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .panel()
+            .accessibilityElement(children: .contain)
+        } else {
+            if query.isEmpty || !pins.isEmpty { pinned(pins) }
+            if query.isEmpty || !recents.isEmpty { recent(recents, searching: !query.isEmpty) }
+        }
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            searchInput
+            if !model.folderQuery.isEmpty {
+                Button(action: clearSearch) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 22, height: 22)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(l10n.string(.appClearSearch))
+                .help(l10n.string(.appClearSearch))
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .frame(minHeight: 28)
+        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 7))
+        .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(searchFocused ? Color.accentColor : Color.secondary.opacity(0.25), lineWidth: searchFocused ? 2 : 1))
+        .onChange(of: model.folderSearchRequest, initial: true) {
+            guard model.folderSearchRequest > 0 else { return }
+            searchFocused = true
+            searchSelection = TextSelection(range: model.folderQuery.startIndex..<model.folderQuery.endIndex)
+        }
+    }
+
+    @ViewBuilder private var searchInput: some View {
+        #if PREVIEW
+        // ImageRenderer cannot draw the native text field. Its static value occupies the same place in a canned preview.
+        Text(verbatim: model.folderQuery.isEmpty ? l10n.string(.appFindFolders) : model.folderQuery)
+            .foregroundStyle(model.folderQuery.isEmpty ? .secondary : .primary)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        #else
+        TextField(l10n.string(.appFindFolders), text: $model.folderQuery, selection: $searchSelection)
+            .textFieldStyle(.plain)
+            .focused($searchFocused)
+            .help(l10n.string(.appFindFoldersHint))
+            .onExitCommand {
+                if model.folderQuery.isEmpty { searchFocused = false }
+                else { clearSearch() }
+            }
+        #endif
+    }
+
+    private func clearSearch() {
+        searchSelection = nil
+        model.folderQuery = ""
+        searchFocused = true
+    }
+
+    private var pinButton: some View {
+        Button {
+            Task { await model.choosePinnedFolder() }
+        } label: {
+            Label(l10n.string(.appPinFolder), systemImage: "folder.badge.plus")
+        }
+        .buttonStyle(.bordered)
+        .fixedSize()
+        .disabled(model.isWorking || model.isRefreshing)
     }
 
     private func failure(_ problem: LocalizedMessage) -> some View {
@@ -67,53 +166,47 @@ struct FoldersPage: View {
         Button(l10n.string(.actionReveal)) { Task { await model.revealSavedFolders() } }
     }
 
-    private var pinned: some View {
+    private func pinned(_ paths: [String]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
                 Text(l10n.string(.appPinnedFolders))
                     .font(.headline)
                     .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 8)
-                Button {
-                    Task { await model.choosePinnedFolder() }
-                } label: {
-                    Label(l10n.string(.appPinFolder), systemImage: "folder.badge.plus")
-                }
-                .buttonStyle(.bordered)
-                .disabled(model.isWorking || model.isRefreshing)
+                if !model.showsFolderSearch { pinButton }
             }
-            if model.folders.pins.isEmpty {
+            if paths.isEmpty {
                 Prose(key: .appNoPinned, home: model.homePath)
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .panel()
             } else {
-                rows(model.folders.pins)
+                rows(paths)
             }
         }
     }
 
-    private var recent: some View {
+    private func recent(_ paths: [String], searching: Bool) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
                 Text(l10n.string(.appRecentFolders))
                     .font(.headline)
                     .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 8)
-                if !model.folders.recents.isEmpty {
+                if !searching && !paths.isEmpty {
                     Button(l10n.string(.appClearRecents)) { Task { await model.clearRecents() } }
                         .buttonStyle(.bordered)
                         .controlSize(.small)
                         .disabled(model.isWorking || model.isRefreshing)
                 }
             }
-            if model.folders.recents.isEmpty {
+            if paths.isEmpty {
                 Text(l10n.string(.appNoRecents))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
-                rows(model.folders.recents)
+                rows(paths)
             }
         }
     }

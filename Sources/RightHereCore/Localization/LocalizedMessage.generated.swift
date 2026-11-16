@@ -81,6 +81,8 @@ extension LocalizedMessage {
     public static var appChooseFolderPrompt: LocalizedMessage { LocalizedMessage(.appChooseFolderPrompt) }
     /// Clear Recent Folders
     public static var appClearRecents: LocalizedMessage { LocalizedMessage(.appClearRecents) }
+    /// Clear Search
+    public static var appClearSearch: LocalizedMessage { LocalizedMessage(.appClearSearch) }
     /// It did not finish (exit status %@).
     public static func appCommandStopped(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appCommandStopped, [argument1]) }
     /// Copy MCP Configuration
@@ -95,6 +97,10 @@ extension LocalizedMessage {
     public static var appDismissNotice: LocalizedMessage { LocalizedMessage(.appDismissNotice) }
     /// Finder Extension Settings
     public static var appExtensionSettings: LocalizedMessage { LocalizedMessage(.appExtensionSettings) }
+    /// Find Folders
+    public static var appFindFolders: LocalizedMessage { LocalizedMessage(.appFindFolders) }
+    /// Try part of a folder name or path.
+    public static var appFindFoldersHint: LocalizedMessage { LocalizedMessage(.appFindFoldersHint) }
     /// Press Install or Repair to remove the stale copies.
     public static var appFixExtensionClean: LocalizedMessage { LocalizedMessage(.appFixExtensionClean) }
     /// Switch on Right Here in System Settings › General › Login Items & Extensions › Finder.
@@ -147,6 +153,8 @@ extension LocalizedMessage {
     public static func appNeedAttentionCount(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appNeedAttentionCount, [argument1]) }
     /// Some checks need your attention.
     public static var appNeedsAttention: LocalizedMessage { LocalizedMessage(.appNeedsAttention) }
+    /// No matching folders
+    public static var appNoMatchingFolders: LocalizedMessage { LocalizedMessage(.appNoMatchingFolders) }
     /// No pinned folders yet. Pin a folder to keep it handy here.
     public static var appNoPinned: LocalizedMessage { LocalizedMessage(.appNoPinned) }
     /// No recent folders yet. Right Here lists the folders it has sent somewhere.

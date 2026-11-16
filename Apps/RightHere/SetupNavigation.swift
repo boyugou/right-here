@@ -43,6 +43,11 @@ struct SetupCommands: Commands {
     private let l10n = Localizer.system
 
     var body: some Commands {
+        CommandGroup(after: .textEditing) {
+            Button(l10n.string(.appFindFolders)) { model.findFolders() }
+                .keyboardShortcut("f", modifiers: .command)
+                .disabled(!model.canFindFolders)
+        }
         CommandGroup(after: .sidebar) {
             ForEach(SetupTab.allCases) { tab in
                 Button(l10n.string(tab.title)) { model.select(tab) }

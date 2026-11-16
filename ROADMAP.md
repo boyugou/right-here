@@ -38,6 +38,8 @@
   optional and successful checks behind disclosures, and operation feedback above the page ([ADR 0026](docs/decisions/0026-setup-next-actions.md)).
 - Folders: add a pin with the directory chooser, pin recent folders, reveal a folder in Finder, and see confirmation or a useful failure
   without leaving the app ([ADR 0027](docs/decisions/0027-manage-folders-in-the-app.md)).
+- Find saved folders by name or path, with Command-F, query retention and explicit recovery from no matches
+  ([ADR 0032](docs/decisions/0032-find-saved-folders.md)).
 - Unreadable saved folders report their failure and preserve the original file across app, CLI and MCP; the app offers Reveal
   and Retry, and writes cannot exceed the read limit ([ADR 0030](docs/decisions/0030-saved-folder-read-failures.md)).
 - Worktrees: switch among known and newly chosen repositories, refresh or retry a failed read, reveal a checkout, and keep removal's

@@ -45,13 +45,19 @@ struct SetupView: View {
                         .padding(.top, 14)
                 }
 
-                SetupPage(clipPreview: previewViewport) {
-                    page
-                        .padding(24)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                ScrollViewReader { proxy in
+                    SetupPage(clipPreview: previewViewport) {
+                        page
+                            .padding(24)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .id("setup-page-start")
+                    }
+                    // A different section starts at its introduction, not at the previous section's scroll offset.
+                    .id(model.selectedTab)
+                    .onChange(of: model.folderSearchRequest) {
+                        if model.selectedTab == .folders { proxy.scrollTo("setup-page-start", anchor: .top) }
+                    }
                 }
-                // A different section starts at its introduction, not at the previous section's scroll offset.
-                .id(model.selectedTab)
             }
             .frame(minWidth: 580, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(Color(nsColor: .windowBackgroundColor))

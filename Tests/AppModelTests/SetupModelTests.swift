@@ -289,6 +289,42 @@ private final class FolderPickerGate {
 @Suite("The setup window's folder actions")
 @MainActor
 struct SetupModelFolderTests {
+    @Test func findingFoldersIsAvailableOnlyWhereTheSearchFieldIsShown() throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        mac.model.select(.folders)
+        mac.model.findFolders()
+        #expect(mac.model.folderSearchRequest == 0, "the initial loading page has no search field")
+        mac.model.apply(SetupSnapshot(configFile: mac.paths.configFile, home: mac.home))
+        #expect(!mac.model.canFindFolders, "a genuinely empty list needs only Pin Folder")
+        mac.model.apply(SetupSnapshot(folders: FolderSnapshot(pins: [mac.home.path]), configFile: mac.paths.configFile, home: mac.home))
+        #expect(mac.model.canFindFolders)
+        mac.model.findFolders()
+        #expect(mac.model.folderSearchRequest == 1)
+        mac.model.select(.overview)
+        mac.model.findFolders()
+        #expect(mac.model.folderSearchRequest == 1, "Find must not jump to another section")
+        mac.model.select(.folders)
+        mac.model.apply(SetupSnapshot(folders: FolderSnapshot(problem: .appSavedFoldersReadFailed("state.toml", "unavailable")), configFile: mac.paths.configFile, home: mac.home))
+        #expect(!mac.model.canFindFolders)
+    }
+
+    @Test func aFolderQuerySurvivesAnEditAndARefreshAndCanRecoverFromNoMatches() async throws {
+        let mac = try Mac(); defer { mac.cleanUp() }
+        await mac.model.pin(mac.home.path)
+        await mac.model.refresh()
+        mac.model.select(.folders)
+        mac.model.folderQuery = "a missing folder"
+        await mac.model.unpin(mac.home.path)
+        await mac.model.refresh()
+        mac.model.select(.overview)
+        mac.model.select(.folders)
+        #expect(mac.model.folderQuery == "a missing folder")
+        #expect(mac.model.canFindFolders, "an empty result must keep its field and clear action")
+        mac.model.folderQuery = ""
+        #expect(!mac.model.showsFolderSearch)
+        #expect(try StateStore.load(paths: mac.paths).pins.isEmpty)
+    }
+
     @Test func retryingARepairedFileRestoresFoldersWithoutRepeatingTheWholeDoctor() async throws {
         let mac = try Mac(); defer { mac.cleanUp() }
         try mac.writeConfig()

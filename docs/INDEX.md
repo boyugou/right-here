@@ -34,6 +34,7 @@
   - [0029 Feedback stays readable without displacing the page](decisions/0029-feedback-and-keyboard-navigation.md)
   - [0030 A failed saved-folder read never becomes an empty list](decisions/0030-saved-folder-read-failures.md)
   - [0031 The app icon uses a folder and one action mark](decisions/0031-app-icon-geometry.md)
+  - [0032 Find saved folders without changing their order or contents](decisions/0032-find-saved-folders.md)
 - [`AGENT_SETUP.md`](AGENT_SETUP.md): the playbook an AI agent follows to set Right Here up for a person (also `rh docs agent-setup`).
 - [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md): the menu does not appear, a click does nothing, permission prompts.
 - [`development/SETUP.md`](development/SETUP.md): building, installing and testing.
