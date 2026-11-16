@@ -1,6 +1,25 @@
 # Changelog
 
-## Unreleased
+## 1.3.0 (2026-11-16)
+
+- **A quieter, consistent interface.** A new current-directory icon and forest accent connect the app, the Finder toolbar and the
+  setup window. Navigation uses monochrome symbols. Native value menus open reliably, and first-run agent choices use real
+  checkboxes, with found agents first and the remaining agents behind More AI agents. OpenCode has its proper display name.
+- **The next setup step comes first.** After Set Up, the window leads with the remaining Finder action. Successful installation
+  details can be folded away; failures and new warnings stay visible. Menu previews explain where actions actually run.
+- **Find a saved folder.** Search names and paths with Command-F, keep the query across visits, and clear it with Escape. Rows show
+  the folder name with its path underneath. An unreadable saved-folder file offers a source-file action and a retry, while invalid
+  fields and oversized writes leave existing data intact.
+- **Recover the right config file without losing a draft.** A diagnostic opens the shared or per-machine file it belongs to. The
+  external editor opens the file selected on the Config page. Returning after an external edit updates the window immediately;
+  comment-only changes refresh conflict information without starting another login shell. Changed files cannot be overwritten by
+  an older draft.
+- **Worktrees keep their context.** Repository changes clear old rows immediately, manually selected repositories remain available,
+  and failed listings can be retried. Removal questions retain the complete branch and path and the repository they came from.
+  Ignored files still require a second confirmation for exactly the files shown.
+- **Readable feedback and fresh previews.** Long errors stay in a bounded details popover instead of pushing navigation away.
+  Switching pages resets scrolling, drafts survive navigation, and first-run layouts align correctly in right-to-left languages.
+  App-model tests now run in CI with their own temporary helpers, and both preview modes build from current source files.
 
 - **`rh doctor`, after an independent review of its checks.** `rh` that Homebrew put on the PATH is not called
   unreachable any more; a `~/.local/bin/rh` that leads nowhere (the app was moved) is no longer ok; an agent command
@@ -67,8 +86,6 @@
   presets say which agent they start ("Claude Code: Review"), and a preset named with a terminal says which terminal.
   In Arabic, Persian, Hebrew and Urdu, a name that starts or ends with digits or punctuation is drawn in one piece in
   the menu ("Open in 010 Editor" drew "Editor 010").
-
-## 1.2.25 (2026-11-13)
 
 - **Test Terminal Start speaks your language.** The setup window's test of a terminal start said in English that the
   command ran, that macOS waits for you to click Allow, that it refused, or that the terminal cannot run commands. These

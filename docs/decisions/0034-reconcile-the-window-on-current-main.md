@@ -64,3 +64,7 @@ navigation remain manual checks. English, German and Arabic offscreen native ren
 Both preview modes now enumerate current view sources and remove old symlinks. The former fixed list omitted a newly added file;
 a stale link let one cached preview build while a fresh native preview failed. The pre-push gate now builds and renders both modes.
 Current-base tests and targeted mutation runs are recorded in [the reconciliation record](../development/RECONCILIATION.md).
+
+The 1.3.0 website render found that ImageRenderer draws the native borderless menu as a prohibited sign. A `--set-up --real-controls`
+render on macOS 27.2 confirms the value, app icon and small trailing indicator. Only the `STANDINS` build draws that label itself;
+the app and the native review keep the actual menu.

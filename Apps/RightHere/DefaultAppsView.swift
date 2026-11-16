@@ -249,12 +249,24 @@ struct ChoiceMenu<Choices: View>: View {
     }
 
     var body: some View {
-        Menu {
-            choices()
-        } label: {
-            label
+        Group {
+            #if STANDINS
+            // ImageRenderer cannot draw AppKit's borderless menu. Match its label and indicator, measured with --real-controls.
+            HStack(spacing: 4) {
+                label
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 9, weight: .semibold))
+                    .accessibilityHidden(true)
+            }
+            #else
+            Menu {
+                choices()
+            } label: {
+                label
+            }
+            .menuStyle(.borderlessButton)
+            #endif
         }
-        .menuStyle(.borderlessButton)
         .fixedSize()
         .accessibilityLabel(accessibilityLabel)
         .accessibilityValue(shown)
