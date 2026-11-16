@@ -109,6 +109,7 @@ Short records with the full reasoning are in [`decisions/`](decisions/).
 | 33 | Sidebar groups, View-menu groups and numbered shortcuts come from the same navigation order. | [0035](decisions/0035-navigation-order.md) |
 | 34 | Config recovery opens the file named by the problem; the header offers both layers when they exist. | [0036](decisions/0036-open-the-diagnosed-config-file.md) |
 | 35 | Returning after a config edit bypasses the refresh quiet period only when the configuration changed. | [0037](decisions/0037-refresh-config-changes-on-return.md) |
+| 36 | Worktree rows preserve long branch suffixes, and removal confirmation repeats the full branch or detached state and folder. | [0038](decisions/0038-worktree-identity-through-confirmation.md) |
 
 ## 5. Platform facts
 

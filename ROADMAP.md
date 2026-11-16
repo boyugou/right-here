@@ -47,6 +47,8 @@
   and Retry, and writes cannot exceed the read limit ([ADR 0030](docs/decisions/0030-saved-folder-read-failures.md)).
 - Worktrees: switch among known and newly chosen repositories, refresh or retry a failed read, reveal a checkout, and keep removal's
   confirmation and final refresh tied to the operation ([ADR 0028](docs/decisions/0028-worktree-browser-state.md)).
+- Long worktree branches retain their suffixes; help and removal confirmation show the complete branch and folder, with an
+  accurate consequence for Detached HEAD ([ADR 0038](docs/decisions/0038-worktree-identity-through-confirmation.md)).
 - Feedback remains readable and scrollable without displacing the page, with complete error copying, separate accessibility
   containers and View-menu shortcuts for all sections. Switching sections starts at the page's introduction instead of inheriting
   another section's scroll position ([ADR 0029](docs/decisions/0029-feedback-and-keyboard-navigation.md)).

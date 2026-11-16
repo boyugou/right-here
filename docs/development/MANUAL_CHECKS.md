@@ -121,6 +121,11 @@ open one, and the preview is the same code as the extension's, not Finder's own 
    temporarily move its `.git` directory aside, refresh, restore it and use Try Again: the list returns. Cancel a removal once,
    then confirm a clean worktree's removal; the row disappears and its branch remains. Repeat with a changed worktree: it stays,
    git's reason is shown and controls become usable after the list refresh. See [ADR 0028](../decisions/0028-worktree-browser-state.md).
+   With two long branches sharing a prefix, verify that their suffixes remain distinct and hover shows the complete branch
+   and folder. Open Remove for each: the complete branch and folder must remain readable in the native confirmation,
+   including at minimum window size. A detached worktree must say Detached HEAD and must not promise to keep a branch.
+   Cancel must preserve every row. Repeat the dialog check in an RTL language; native sheet wrapping remains a manual
+   check because the review capture returned blank sheet images ([ADR 0038](../decisions/0038-worktree-identity-through-confirmation.md)).
 9. Folders: Pin Folder opens a directory chooser attached to the app window; Cancel and Escape leave the list unchanged and
    restore the controls. The repository chooser uses the same sheet. Pick a folder and check that it appears
    with its name and path. A recent folder's Pin button adds it to the pinned list; both occurrences now offer Unpin. Reveal in

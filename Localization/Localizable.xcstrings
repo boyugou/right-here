@@ -17855,6 +17855,192 @@
         }
       }
     },
+    "app.removeDetachedWorktreeMessage": {
+      "comment": "Removal confirmation for a detached worktree, which has no branch to keep. The value is its full folder path, abbreviated only at the home folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "سيُحذف المجلد %1$@. سيرفض git الحذف إذا كانت فيه تغييرات غير مثبتة."
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ফোল্ডারটি মুছে ফেলা হবে। কমিট না করা পরিবর্তন থাকলে git মুছতে দেবে না।"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Der Ordner %1$@ wird gelöscht. git verweigert dies bei nicht committeten Änderungen."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ο φάκελος %1$@ θα διαγραφεί. Το git θα αρνηθεί αν υπάρχουν μη καταχωρισμένες αλλαγές."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The folder %1$@ will be deleted. git refuses if it has uncommitted changes."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Se eliminará la carpeta %1$@. git lo impedirá si contiene cambios sin confirmar."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "پوشهٔ %1$@ حذف خواهد شد. اگر تغییرات ثبت‌نشده‌ای وجود داشته باشد، git از حذف آن خودداری می‌کند."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Le dossier %1$@ sera supprimé. git refusera s’il contient des modifications non commitées."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "התיקייה %1$@ תימחק. git יסרב למחוק אותה אם יש בה שינויים שלא בוצע להם commit."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "फ़ोल्डर %1$@ हटा दिया जाएगा। यदि उसमें कमिट न किए गए बदलाव हैं, तो git उसे हटाने से मना कर देगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder %1$@ akan dihapus. git akan menolak jika ada perubahan yang belum di-commit."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "La cartella %1$@ verrà eliminata. git rifiuterà se contiene modifiche non sottoposte a commit."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "フォルダ %1$@ が削除されます。未コミットの変更がある場合、git は削除を拒否します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "폴더 %1$@이(가) 삭제됩니다. 커밋하지 않은 변경 사항이 있으면 git이 삭제를 거부합니다."
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ फोल्डर हटवला जाईल. कमिट न केलेले बदल असल्यास git तो हटवण्यास नकार देईल."
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder %1$@ akan dipadamkan. git akan menolak jika terdapat perubahan yang belum dikomitkan."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "De map %1$@ wordt verwijderd. git weigert dit als er wijzigingen zijn die niet zijn gecommit."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Folder %1$@ zostanie usunięty. git odmówi, jeśli są w nim niezatwierdzone zmiany."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "A pasta %1$@ será excluída. O git recusará se houver alterações sem commit."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dosarul %1$@ va fi șters. git va refuza dacă există modificări neincluse într-un commit."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папка %1$@ будет удалена. git откажет, если в ней есть незакоммиченные изменения."
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ கோப்புறை நீக்கப்படும். கமிட் செய்யப்படாத மாற்றங்கள் இருந்தால் git நீக்க மறுக்கும்."
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ఫోల్డర్ తొలగించబడుతుంది. కమిట్ చేయని మార్పులు ఉంటే git తొలగించడానికి నిరాకరిస్తుంది."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "โฟลเดอร์ %1$@ จะถูกลบ git จะปฏิเสธหากมีการเปลี่ยนแปลงที่ยังไม่ได้คอมมิต"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ klasörü silinecek. Commit edilmemiş değişiklikler varsa git silmeyi reddeder."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Папку %1$@ буде видалено. git відмовить, якщо в ній є незакомічені зміни."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "فولڈر %1$@ حذف کر دیا جائے گا۔ اگر اس میں ایسی تبدیلیاں ہوں جو کمیٹ نہیں کی گئیں تو git حذف کرنے سے انکار کر دے گا۔"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Thư mục %1$@ sẽ bị xóa. git sẽ từ chối nếu có thay đổi chưa được commit."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "将删除文件夹 %1$@。如果存在未提交的更改，git 会拒绝删除。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "將刪除資料夾 %1$@。若有尚未提交的變更，git 會拒絕刪除。"
+          }
+        }
+      }
+    },
     "app.removeWorktree": {
       "comment": "Button on a line of the list of worktrees. It asks for confirmation before it removes anything, which is what the dots say.",
       "extractionState": "manual",
@@ -26035,6 +26221,192 @@
           "stringUnit": {
             "state": "needs_review",
             "value": "版本 %@"
+          }
+        }
+      }
+    },
+    "app.worktreeBranch": {
+      "comment": "Identifies the full git branch in a worktree removal confirmation or tooltip. The value is the untruncated branch name.",
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "الفرع: %1$@"
+          }
+        },
+        "bn": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ব্রাঞ্চ: %1$@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Branch: %1$@"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Κλάδος: %1$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Branch: %1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Rama: %1$@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "شاخه: %1$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Branche : %1$@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ענף: %1$@"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ब्रांच: %1$@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cabang: %1$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ramo: %1$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ブランチ: %1$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "브랜치: %1$@"
+          }
+        },
+        "mr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "ब्रांच: %1$@"
+          }
+        },
+        "ms": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Cabang: %1$@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Branch: %1$@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Gałąź: %1$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Branch: %1$@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ramură: %1$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Ветка: %1$@"
+          }
+        },
+        "ta": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "கிளை: %1$@"
+          }
+        },
+        "te": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "బ్రాంచ్: %1$@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "บรานช์: %1$@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Dal: %1$@"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Гілка: %1$@"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "برانچ: %1$@"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Nhánh: %1$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "分支：%1$@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "分支：%1$@"
           }
         }
       }

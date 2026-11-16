@@ -16,6 +16,21 @@ public struct WorktreeRow: Sendable, Equatable, Identifiable {
     /// (U+202E), so that one branch reads as another; those are shown as escapes. The branch itself, which removal and the actions use, is `entry.branch`.
     public var branchTitle: String? { entry.branch?.withControlCharactersEscaped }
 
+    /// Full identity for a tooltip; truncation in the row must not hide the branch or folder.
+    public func identity(in localizer: Localizer, home: String) -> String {
+        branchDescription(in: localizer) + "\n" + PathDisplay.folder(entry.path.withControlCharactersEscaped, home: home)
+    }
+
+    public func removalMessage(in localizer: Localizer, home: String) -> String {
+        let folder = PathDisplay.folder(entry.path.withControlCharactersEscaped, home: home)
+        let consequence: LocalizedMessage = branchTitle == nil ? .appRemoveDetachedWorktreeMessage(folder) : .appRemoveWorktreeMessage(folder)
+        return branchDescription(in: localizer) + "\n\n" + localizer.render(consequence, isolatingValues: true)
+    }
+
+    private func branchDescription(in localizer: Localizer) -> String {
+        branchTitle.map { localizer.render(.appWorktreeBranch($0), isolatingValues: true) } ?? localizer.string(.appWorktreeDetached)
+    }
+
     public init(entry: WorktreeEntry, isMainWorkingCopy: Bool, canBeRemoved: Bool) {
         self.entry = entry
         self.isMainWorkingCopy = isMainWorkingCopy

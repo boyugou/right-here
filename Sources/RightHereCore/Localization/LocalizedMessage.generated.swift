@@ -193,6 +193,8 @@ extension LocalizedMessage {
     public static var appRefresh: LocalizedMessage { LocalizedMessage(.appRefresh) }
     /// Refreshing…
     public static var appRefreshing: LocalizedMessage { LocalizedMessage(.appRefreshing) }
+    /// The folder %1$@ will be deleted. git refuses if it has uncommitted changes.
+    public static func appRemoveDetachedWorktreeMessage(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appRemoveDetachedWorktreeMessage, [argument1]) }
     /// Remove…
     public static var appRemoveWorktree: LocalizedMessage { LocalizedMessage(.appRemoveWorktree) }
     /// Remove Worktree
@@ -281,6 +283,8 @@ extension LocalizedMessage {
     public static func appUnpinFolder(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appUnpinFolder, [argument1]) }
     /// Version %@
     public static func appVersion(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appVersion, [argument1]) }
+    /// Branch: %1$@
+    public static func appWorktreeBranch(_ argument1: String) -> LocalizedMessage { LocalizedMessage(.appWorktreeBranch, [argument1]) }
     /// Detached HEAD
     public static var appWorktreeDetached: LocalizedMessage { LocalizedMessage(.appWorktreeDetached) }
     /// Made by Right Here

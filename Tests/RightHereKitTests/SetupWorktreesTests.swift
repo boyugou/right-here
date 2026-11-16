@@ -124,6 +124,40 @@ struct WorktreeRowsTests {
         #expect(rows()[1].entry.branch == "rh/1760000000")
         #expect(rows()[1].id == "/work/app/.right-here/worktrees/rh-1760000000")
     }
+
+    @Test func removalConfirmationNamesTheCompleteBranchAndFolder() {
+        let branch = "feature/improve-worktree-identification-for-long-branch-names-with-a-distinct-ending"
+        let path = "/Users/tester/Projects/app/.right-here/worktrees/generated-folder"
+        let row = WorktreeRow(entry: WorktreeEntry(path: path, head: "a", branch: branch), isMainWorkingCopy: false, canBeRemoved: true)
+        let message = row.removalMessage(in: .english, home: "/Users/tester").replacingOccurrences(of: "\u{200E}", with: "")
+        #expect(message.contains(branch))
+        #expect(message.contains("~/Projects/app/.right-here/worktrees/generated-folder"))
+        #expect(message.contains("branch") && message.contains("kept"))
+    }
+
+    @Test func detachedRemovalDoesNotClaimThatABranchWillBeKept() {
+        let row = WorktreeRow(entry: WorktreeEntry(path: "/work/app/.right-here/worktrees/detached", head: "a", branch: nil, isDetached: true),
+                              isMainWorkingCopy: false, canBeRemoved: true)
+        let message = row.removalMessage(in: .english, home: "/Users/tester").replacingOccurrences(of: "\u{200E}", with: "")
+        #expect(message.contains("Detached HEAD"))
+        #expect(!message.contains("branch"))
+        #expect(message.contains("/work/app/.right-here/worktrees/detached"))
+    }
+
+    @Test func displayedIdentityEscapesNamesWithoutChangingTheRemovalTarget() {
+        let path = "/work/app/.right-here/worktrees/look\nagain"
+        let branch = "feature/\u{202E}display"
+        let row = WorktreeRow(entry: WorktreeEntry(path: path, head: "a", branch: branch), isMainWorkingCopy: false, canBeRemoved: true)
+        for language in Localizer.supportedLanguages {
+            let localizer = Localizer(languages: [language])
+            for text in [row.identity(in: localizer, home: "/Users/tester"), row.removalMessage(in: localizer, home: "/Users/tester")] {
+                #expect(text.contains("feature/\\u202edisplay"))
+                #expect(text.contains("look\\nagain"))
+                #expect(!text.contains("\u{202E}"))
+            }
+        }
+        #expect(row.entry.path == path && row.entry.branch == branch)
+    }
 }
 
 @Suite("WorktreeBrowser: listing and removing")

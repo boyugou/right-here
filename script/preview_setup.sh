@@ -301,21 +301,23 @@ let demoPins = ["\(demoHome)/Projects/app", "\(demoHome)/Projects/notes", "\(dem
 let demoRecents = ["\(demoHome)/Projects/web", "\(demoHome)/Downloads",
                    "\(demoHome)/Projects/Shared resources/Design and research/Research notes and evaluation references for upcoming experiments"]
 
-/// `git worktree list --porcelain -z` of the demo repository: its main working copy, and two worktrees Right Here made for agents (every line ends with a NUL).
-let demoPorcelain = """
+/// `git worktree list --porcelain -z` of the demo repository; long mode also includes a detached worktree (every line ends with a NUL).
+let demoBranchPrefix = "feature/worktree-identity-and-confirmation-for-parallel-agent-runs-"
+let demoPorcelain = ("""
 worktree \(demoRepository.path)
 HEAD 1f2e3d4c5b6a
 branch refs/heads/main
 
 worktree \(demoRepository.path)/.right-here/worktrees/rh-1760000000
 HEAD 9a8b7c6d5e4f
-branch refs/heads/rh/1760000000
+branch refs/heads/\(value(of: "--worktrees-state") == "long" ? demoBranchPrefix + "keep-cache" : "rh/1760000000")
 
 worktree \(demoRepository.path)/.right-here/worktrees/fix-login
 HEAD 5e4d3c2b1a09
-branch refs/heads/fix/login
+branch refs/heads/\(value(of: "--worktrees-state") == "long" ? demoBranchPrefix + "clear-cache" : "fix/login")
 
-""".replacingOccurrences(of: "\n", with: "\0")
+""" + (value(of: "--worktrees-state") == "long"
+    ? "\nworktree \(demoRepository.path)/.right-here/worktrees/detached\nHEAD 6e4d3c2b1a09\ndetached\n\n" : "")).replacingOccurrences(of: "\n", with: "\0")
 
 /// The worktrees of the demo, read through the same code the window uses, with git's answer given.
 func demoWorktrees() async -> WorktreeListing {

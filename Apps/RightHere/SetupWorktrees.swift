@@ -28,7 +28,7 @@ struct WorktreesPage: View {
             }
         } message: {
             if let request = pending {
-                Text(l10n.render(.appRemoveWorktreeMessage(PathDisplay.folder(request.row.entry.path.withControlCharactersEscaped, home: model.homePath)), isolatingValues: true))
+                Text(verbatim: request.row.removalMessage(in: l10n, home: model.homePath))
             }
         }
     }
@@ -181,6 +181,7 @@ struct WorktreeLine: View {
                     Text(verbatim: row.branchTitle ?? l10n.string(.appWorktreeDetached))
                         .font(.body.weight(.semibold))
                         .lineLimit(1)
+                        .truncationMode(.middle)
                     if row.isMainWorkingCopy {
                         tag(.appWorktreeMain)
                     } else if row.canBeRemoved {
@@ -195,7 +196,7 @@ struct WorktreeLine: View {
                     .environment(\.layoutDirection, .leftToRight)
             }
             .accessibilityElement(children: .combine)
-            .help(PathDisplay.abbreviatingHome(row.entry.path.withControlCharactersEscaped, home: home))
+            .help(row.identity(in: l10n, home: home))
 
             Spacer(minLength: 8)
 
@@ -209,7 +210,7 @@ struct WorktreeLine: View {
 
             if row.canBeRemoved {
                 Button(l10n.string(.appRemoveWorktree), action: onRemove)
-                    .accessibilityLabel(l10n.render(.appRemoveWorktreeNamed((row.entry.path as NSString).lastPathComponent)))
+                    .accessibilityLabel(l10n.render(.appRemoveWorktreeNamed((row.entry.path as NSString).lastPathComponent.withControlCharactersEscaped), isolatingValues: true))
             }
         }
         .buttonStyle(SetupQuietButtonStyle())

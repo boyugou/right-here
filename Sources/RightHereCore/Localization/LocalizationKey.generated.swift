@@ -99,6 +99,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appRecentsCleared = "app.recentsCleared"
     case appRefresh = "app.refresh"
     case appRefreshing = "app.refreshing"
+    case appRemoveDetachedWorktreeMessage = "app.removeDetachedWorktreeMessage"
     case appRemoveWorktree = "app.removeWorktree"
     case appRemoveWorktreeConfirm = "app.removeWorktreeConfirm"
     case appRemoveWorktreeMessage = "app.removeWorktreeMessage"
@@ -143,6 +144,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     case appUnpin = "app.unpin"
     case appUnpinFolder = "app.unpinFolder"
     case appVersion = "app.version"
+    case appWorktreeBranch = "app.worktreeBranch"
     case appWorktreeDetached = "app.worktreeDetached"
     case appWorktreeMadeHere = "app.worktreeMadeHere"
     case appWorktreeMain = "app.worktreeMain"
@@ -270,7 +272,7 @@ public enum LocalizationKey: String, Sendable, CaseIterable {
     /// How many arguments the English text takes: its `%@` placeholders, or the highest `%n$@`.
     public var arity: Int {
         switch self {
-        case .alertPermissionMessage, .appCommandStopped, .appFolderPinned, .appFolderUnavailable, .appFolderUnpinned, .appNeedAttentionCount, .appNotARepository, .appOpenConfigFile, .appRemoveWorktreeMessage, .appRemoveWorktreeNamed, .appUnpinFolder, .appVersion, .appWorktreeRemoved, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAgentUnknown, .doctorAppNotInstalled, .doctorClaudeLinkMissing, .doctorCliMissing, .doctorCliNotOnPath, .doctorCliPathUnknown, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorExtensionEnabled, .doctorFixAgentRemove, .doctorFixAgentsAdd, .doctorFixCliPath, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
+        case .alertPermissionMessage, .appCommandStopped, .appFolderPinned, .appFolderUnavailable, .appFolderUnpinned, .appNeedAttentionCount, .appNotARepository, .appOpenConfigFile, .appRemoveDetachedWorktreeMessage, .appRemoveWorktreeMessage, .appRemoveWorktreeNamed, .appUnpinFolder, .appVersion, .appWorktreeBranch, .appWorktreeRemoved, .copyPathTitleFormat, .doctorAgentNotFound, .doctorAgentUnknown, .doctorAppNotInstalled, .doctorClaudeLinkMissing, .doctorCliMissing, .doctorCliNotOnPath, .doctorCliPathUnknown, .doctorConfigMissing, .doctorConfigOverlay, .doctorConfigSymlink, .doctorConfigWarnings, .doctorExtensionEnabled, .doctorFixAgentRemove, .doctorFixAgentsAdd, .doctorFixCliPath, .doctorRunnerOk, .doctorRunnerStale, .doctorRunnerTargetMissing, .doctorServicesOk, .doctorSyncCommandsMore, .doctorSyncFolderUnreachable, .doctorSyncStateUnreadable, .doctorVerbatim, .intentDone, .intentFailed, .menuAgentDesktop, .menuAgentHere, .menuAgentLink, .menuNewFile, .menuOpenIn: 1
         case .appSavedFoldersReadFailed, .appSavedFoldersTooLarge, .doctorAgentOk, .doctorAppFallback, .doctorExtensionMultiple, .doctorFixAgentLauncher, .doctorSyncCommandsOwn, .doctorSyncCommandsPending, .doctorSyncConflict, .menuAgentIn, .menuAgentVariant: 2
         case .doctorActivityRecent, .doctorAgentBypass, .doctorServicesDiffer, .menuAgentVariantIn: 3
         default: 0
