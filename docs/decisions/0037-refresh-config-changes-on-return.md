@@ -12,9 +12,9 @@ required the person to discover that extra step.
 ## Decision
 
 Activation during the quiet period reads the two known config paths through the existing bounded config loader. A meaningful
-change starts a full refresh immediately. Unchanged configuration and comment-only edits do not restart the doctor or the
-login shell. After the quiet period, activation still performs the ordinary full refresh. A lightweight read does not reset
-the time of the last full read, and this adds no background file polling.
+change starts a full refresh immediately. Unchanged configuration and comment-only edits that leave diagnostics unchanged
+do not restart the doctor or the login shell. After the quiet period, activation still performs the ordinary full refresh.
+A lightweight read does not reset the time of the last full read, and this adds no background file polling.
 
 The comparison uses the parsed settings, diagnostics, file-presence state and symbolic-link targets. It checks both paths,
 including a local file that did not exist before. File modification dates alone would miss a replacement that preserves its
@@ -61,3 +61,7 @@ menu action cleared the visible error 14.6 seconds after the preceding full read
 additional login-shell request. Repeating the notification without an edit issued none. The review app and data were removed.
 Window-sharing interactions did not produce repeatable system activation transitions, so this verifies the notification
 route and native UI update; ordinary switching from an external editor remains a manual check.
+
+The full gate passed with 1,770 tests, the app and Finder extension builds, localization, schema, documentation and public-safety
+checks. Selected mutation checks removed the initial-activation guard and the quiet-period condition; each was caught by the
+corresponding regression tests. This is not a claim that the separate, ongoing full mutation sweep has completed.
